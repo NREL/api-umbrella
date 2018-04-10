@@ -96,7 +96,7 @@ class Api::V0::AnalyticsController < Api::V1::BaseController
 
     # Now that we've 0-filled any missing months, add the data to the summary
     # and sort it.
-    by_month.each do |key, value|
+    by_month.each_value do |value|
       summary[:users_by_month] << value
     end
     summary[:users_by_month].sort_by! { |data| [data[:year], data[:month]] }

@@ -510,7 +510,7 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
   end
 
   def test_does_not_website_backend_requests
-    response = Typhoeus.get("http://127.0.0.1:9080/", log_http_options)
+    response = Typhoeus.get("https://127.0.0.1:9081/", log_http_options)
     assert_response_code(200, response)
 
     error = assert_raises Timeout::Error do
@@ -520,7 +520,7 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
   end
 
   def test_does_not_log_web_app_requests
-    FactoryGirl.create(:admin)
+    FactoryBot.create(:admin)
     response = Typhoeus.get("https://127.0.0.1:9081/admin/login", log_http_options)
     assert_response_code(200, response)
 

@@ -18,7 +18,7 @@ class Test::Apis::V1::Users::TestCreateNotifyEmail < Minitest::Test
     response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(admin_token).deep_merge({
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => {
-        :user => FactoryGirl.attributes_for(:api_user),
+        :user => FactoryBot.attributes_for(:api_user),
         :options => { :send_notify_email => true },
       },
     }))
@@ -30,7 +30,7 @@ class Test::Apis::V1::Users::TestCreateNotifyEmail < Minitest::Test
     response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(admin_token).deep_merge({
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => {
-        :user => FactoryGirl.attributes_for(:api_user),
+        :user => FactoryBot.attributes_for(:api_user),
         :options => { :send_notify_email => false },
       },
     }))
@@ -42,7 +42,7 @@ class Test::Apis::V1::Users::TestCreateNotifyEmail < Minitest::Test
     response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(admin_token).deep_merge({
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => {
-        :user => FactoryGirl.attributes_for(:api_user),
+        :user => FactoryBot.attributes_for(:api_user),
         :options => { :send_notify_email => 1 },
       },
     }))
@@ -54,7 +54,7 @@ class Test::Apis::V1::Users::TestCreateNotifyEmail < Minitest::Test
     response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(admin_token).deep_merge({
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => {
-        :user => FactoryGirl.attributes_for(:api_user),
+        :user => FactoryBot.attributes_for(:api_user),
       },
     }))
     assert_response_code(201, response)
@@ -65,7 +65,7 @@ class Test::Apis::V1::Users::TestCreateNotifyEmail < Minitest::Test
     response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(admin_token).deep_merge({
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => {
-        :user => FactoryGirl.attributes_for(:api_user, :use_description => "I wanna do everything."),
+        :user => FactoryBot.attributes_for(:api_user, :use_description => "I wanna do everything."),
         :options => { :send_notify_email => true },
       },
     }))
@@ -100,7 +100,7 @@ class Test::Apis::V1::Users::TestCreateNotifyEmail < Minitest::Test
       response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(admin_token).deep_merge({
         :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
         :body => {
-          :user => FactoryGirl.attributes_for(:api_user),
+          :user => FactoryBot.attributes_for(:api_user),
         },
       }))
       assert_response_code(201, response)

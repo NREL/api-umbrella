@@ -1,13 +1,16 @@
 import BaseField from './base-field';
-import Ember from 'ember';
+import { observer } from '@ember/object';
+import { on } from '@ember/object/evented';
 
 export default BaseField.extend({
   optionValuePath: 'id',
   optionLabelPath: 'id',
-  defaultOptions: [],
 
   init() {
-    this._super();
+    this._super(...arguments);
+
+    this.defaultOptions =  [];
+
     this.set('selectizeTextInputId', this.get('elementId') + '-selectize_text_input');
     this.addObserver('model.' + this.get('fieldName'), this, this.valueDidChange);
   },
@@ -38,7 +41,8 @@ export default BaseField.extend({
     this.selectize.$control_input.attr('data-selectize-control-id', controlId);
   },
 
-  defaultOptionsDidChange: Ember.on('init', Ember.observer('options.@each', function() {
+  // eslint-disable-next-line ember/no-on-calls-in-components
+  defaultOptionsDidChange: on('init', observer('options.@each', function() {
     this.set('defaultOptions', this.get('options').map(_.bind(function(item) {
       return {
         id: item.get(this.get('optionValuePath')),

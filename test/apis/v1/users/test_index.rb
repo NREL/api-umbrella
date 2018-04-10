@@ -13,7 +13,7 @@ class Test::Apis::V1::Users::TestIndex < Minitest::Test
   include ApiUmbrellaSharedTests::DataTablesApi
 
   def test_response_fields
-    record = FactoryGirl.create(data_tables_factory_name, {
+    record = FactoryBot.create(data_tables_factory_name, {
       :created_at => Time.utc(2017, 1, 1),
       :created_by => SecureRandom.uuid,
       :disabled_at => Time.utc(2017, 1, 2),
@@ -27,9 +27,9 @@ class Test::Apis::V1::Users::TestIndex < Minitest::Test
       :registration_source => "test",
       :registration_user_agent => "curl",
       :roles => ["role1", "role2"],
-      :settings => FactoryGirl.attributes_for(:custom_rate_limit_api_setting, {
+      :settings => FactoryBot.attributes_for(:custom_rate_limit_api_setting, {
         :rate_limits => [
-          FactoryGirl.attributes_for(:api_rate_limit, :duration => 5000, :limit_by => "ip", :limit => 10),
+          FactoryBot.attributes_for(:api_rate_limit, :duration => 5000, :limit_by => "ip", :limit => 10),
         ],
       }),
       :throttle_by_ip => true,
@@ -111,7 +111,7 @@ class Test::Apis::V1::Users::TestIndex < Minitest::Test
   end
 
   def test_empty_response_fields
-    record = FactoryGirl.create(data_tables_factory_name)
+    record = FactoryBot.create(data_tables_factory_name)
 
     response = Typhoeus.get(data_tables_api_url, http_options.deep_merge(admin_token).deep_merge({
       :params => {
@@ -145,7 +145,7 @@ class Test::Apis::V1::Users::TestIndex < Minitest::Test
   end
 
   def test_includes_api_key_preview_not_full_api_key
-    api_user = FactoryGirl.create(:api_user)
+    api_user = FactoryBot.create(:api_user)
 
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(admin_token))
     assert_response_code(200, response)

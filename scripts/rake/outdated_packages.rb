@@ -133,7 +133,7 @@ class OutdatedPackages
     },
     "nodejs" => {
       :git => "https://github.com/nodejs/node.git",
-      :constraint => "~> 6.10.2",
+      :constraint => "~> 8.10",
     },
     "openldap" => {
       :git => "https://github.com/openldap/openldap.git",
@@ -159,7 +159,7 @@ class OutdatedPackages
     },
     "ruby" => {
       :git => "https://github.com/ruby/ruby.git",
-      :constraint => "~> 2.3.4",
+      :constraint => "~> 2.4.3",
     },
     "rubygems" => {
       :git => "https://github.com/rubygems/rubygems.git",

@@ -115,7 +115,7 @@ module ApiUmbrellaTestHelpers
 
         unless self.setup_api_user_complete
           ApiUser.where(:registration_source.ne => "seed").delete_all
-          user = FactoryGirl.create(:api_user, {
+          user = FactoryBot.create(:api_user, {
             :registration_source => "seed",
             :settings => {
               :rate_limit_mode => "unlimited",
@@ -285,11 +285,7 @@ module ApiUmbrellaTestHelpers
     end
 
     def unique_test_ip_addr
-      unless @unique_test_ip_addr
-        @unique_test_ip_addr = next_unique_ip_addr
-      end
-
-      @unique_test_ip_addr
+      @unique_test_ip_addr ||= next_unique_ip_addr
     end
 
     # Typheous/Ethon doesn't currently support sending empty HTTP headers by

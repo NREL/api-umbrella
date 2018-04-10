@@ -13,7 +13,7 @@ class Test::Apis::V1::Admins::TestIndex < Minitest::Test
   include ApiUmbrellaSharedTests::DataTablesApi
 
   def test_filled_attributes_response_fields
-    record = FactoryGirl.create(:filled_attributes_admin)
+    record = FactoryBot.create(:filled_attributes_admin)
 
     response = Typhoeus.get(data_tables_api_url, http_options.deep_merge(admin_token).deep_merge({
       :params => {
@@ -61,7 +61,7 @@ class Test::Apis::V1::Admins::TestIndex < Minitest::Test
   end
 
   def test_empty_attributes_response_fields
-    record = FactoryGirl.create(:empty_attributes_admin)
+    record = FactoryBot.create(:empty_attributes_admin)
 
     response = Typhoeus.get(data_tables_api_url, http_options.deep_merge(admin_token).deep_merge({
       :params => {

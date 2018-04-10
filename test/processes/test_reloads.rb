@@ -171,7 +171,7 @@ class Test::Processes::TestReloads < Minitest::Test
   end
 
   def test_file_based_config_changes_updates_apis
-    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/file-config/info/", http_options)
+    response = Typhoeus.get("https://127.0.0.1:9081/#{unique_test_id}/file-config/info/", http_options)
     assert_response_code(404, response)
 
     override_config({
@@ -187,13 +187,13 @@ class Test::Processes::TestReloads < Minitest::Test
         },
       ],
     }, "--router") do
-      response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/file-config/info/", http_options)
+      response = Typhoeus.get("https://127.0.0.1:9081/#{unique_test_id}/file-config/info/", http_options)
       assert_response_code(200, response)
       data = MultiJson.load(response.body)
       assert_equal(data["headers"]["x-test-file-config"], "foo")
     end
 
-    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/file-config/info/", http_options)
+    response = Typhoeus.get("https://127.0.0.1:9081/#{unique_test_id}/file-config/info/", http_options)
     assert_response_code(404, response)
   end
 

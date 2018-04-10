@@ -1,7 +1,10 @@
-import Ember from 'ember';
+import { computed, observer } from '@ember/object';
+
+import $ from 'jquery';
+import Component from '@ember/component';
 import DataTablesHelpers from 'api-umbrella-admin-ui/utils/data-tables-helpers';
 
-export default Ember.Component.extend({
+export default Component.extend({
   didInsertElement() {
     this.$().find('table').DataTable({
       searching: false,
@@ -16,25 +19,26 @@ export default Ember.Component.extend({
         }.bind(this),
       },
       drawCallback: _.bind(function() {
-        this.$().find('td').truncate({
-          width: 400,
-          addtitle: true,
-          addclass: 'truncated',
-        });
+        this.$().find('td').each(function() {
+          if(this.scrollWidth > this.offsetWidth) {
+            const $cell = $(this);
+            $cell.prop('title', $cell.text());
 
-        this.$().find('.truncated').qtip({
-          style: {
-            classes: 'qtip-bootstrap qtip-forced-wide',
-          },
-          hide: {
-            fixed: true,
-            delay: 200,
-          },
-          position: {
-            viewport: false,
-            my: 'bottom center',
-            at: 'top center',
-          },
+            $cell.qtip({
+              style: {
+                classes: 'qtip-bootstrap qtip-forced-wide',
+              },
+              hide: {
+                fixed: true,
+                delay: 200,
+              },
+              position: {
+                viewport: false,
+                my: 'bottom center',
+                at: 'top center',
+              },
+            });
+          }
         });
       }, this),
       order: [[0, 'desc']],
@@ -174,11 +178,11 @@ export default Ember.Component.extend({
     });
   },
 
-  refreshData: Ember.observer('backendQueryParamValues', function() {
+  refreshData: observer('backendQueryParamValues', function() {
     this.$().find('table').DataTable().draw();
   }),
 
-  downloadUrl: Ember.computed('backendQueryParamValues', function() {
+  downloadUrl: computed('backendQueryParamValues', function() {
     return '/admin/stats/logs.csv?' + $.param(this.get('backendQueryParamValues'));
   }),
 });

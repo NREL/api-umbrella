@@ -1,27 +1,35 @@
-import Ember from 'ember';
 import BufferedProxy from 'ember-buffered-proxy/proxy';
+import Component from '@ember/component';
 import Rewrite from 'api-umbrella-admin-ui/models/api/rewrite';
+import { computed } from '@ember/object';
+import { getOwner } from '@ember/application';
 
-export default Ember.Component.extend({
+export default Component.extend({
   openModal: false,
-  matcherTypeOptions: [
-    { id: 'route', name: 'Route Pattern' },
-    { id: 'regex', name: 'Regular Expression' },
-  ],
-  httpMethodOptions: [
-    { id: 'any', name: 'Any' },
-    { id: 'GET', name: 'GET' },
-    { id: 'POST', name: 'POST' },
-    { id: 'PUT', name: 'PUT' },
-    { id: 'DELETE', name: 'DELETE' },
-    { id: 'HEAD', name: 'HEAD' },
-    { id: 'TRACE', name: 'TRACE' },
-    { id: 'OPTIONS', name: 'OPTIONS' },
-    { id: 'CONNECT', name: 'CONNECT' },
-    { id: 'PATCH', name: 'PATCH' },
-  ],
 
-  modalTitle: Ember.computed('model', function() {
+  init() {
+    this._super(...arguments);
+
+    this.matcherTypeOptions = [
+      { id: 'route', name: 'Route Pattern' },
+      { id: 'regex', name: 'Regular Expression' },
+    ];
+
+    this.httpMethodOptions = [
+      { id: 'any', name: 'Any' },
+      { id: 'GET', name: 'GET' },
+      { id: 'POST', name: 'POST' },
+      { id: 'PUT', name: 'PUT' },
+      { id: 'DELETE', name: 'DELETE' },
+      { id: 'HEAD', name: 'HEAD' },
+      { id: 'TRACE', name: 'TRACE' },
+      { id: 'OPTIONS', name: 'OPTIONS' },
+      { id: 'CONNECT', name: 'CONNECT' },
+      { id: 'PATCH', name: 'PATCH' },
+    ];
+  },
+
+  modalTitle: computed('model', function() {
     if(this.get('model.isNew')) {
       return 'Add Matching URL Prefix';
     } else {
@@ -29,8 +37,8 @@ export default Ember.Component.extend({
     }
   }),
 
-  bufferedModel: Ember.computed('model', function() {
-    let owner = Ember.getOwner(this).ownerInjection();
+  bufferedModel: computed('model', function() {
+    let owner = getOwner(this).ownerInjection();
     return BufferedProxy.extend(Rewrite.validationClass).create(owner, { content: this.get('model') });
   }),
 
@@ -46,6 +54,7 @@ export default Ember.Component.extend({
 
     closed() {
       this.get('bufferedModel').discardChanges();
+      this.set('openModal', false);
     },
   },
 });

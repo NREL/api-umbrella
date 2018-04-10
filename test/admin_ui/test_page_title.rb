@@ -11,7 +11,7 @@ class Test::AdminUi::TestPageTitle < Minitest::Capybara::Test
   end
 
   def test_rails_login_page_title
-    FactoryGirl.create(:admin)
+    FactoryBot.create(:admin)
     visit "/admin/"
     assert_text("Admin Sign In")
     assert_equal("API Umbrella Admin", page.title)

@@ -1,6 +1,9 @@
-import Ember from 'ember';
+import $ from 'jquery';
+import EmberObject from '@ember/object';
+import Evented from '@ember/object/evented';
+import { Promise } from 'rsvp';
 
-let ConfigPendingChanges = Ember.Object.extend(Ember.Evented, {
+let ConfigPendingChanges = EmberObject.extend(Evented, {
   config: null,
 });
 
@@ -8,7 +11,7 @@ ConfigPendingChanges.reopenClass({
   urlRoot: '/api-umbrella/v1/config/pending_changes.json',
 
   fetch(params) {
-    return new Ember.RSVP.Promise(function(resolve, reject) {
+    return new Promise(function(resolve, reject) {
       return $.ajax({
         url: this.urlRoot,
         data: params,

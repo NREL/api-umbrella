@@ -1,4 +1,4 @@
-FactoryGirl.define do
+FactoryBot.define do
   factory :admin do
     sequence(:username) { |n| "aburnside#{n}@example.com" }
     email { username }
@@ -8,26 +8,26 @@ FactoryGirl.define do
     factory :limited_admin do
       superuser false
       groups do
-        [FactoryGirl.create(:admin_group)]
+        [FactoryBot.create(:admin_group)]
       end
 
       factory :localhost_root_admin do
         groups do
-          [FactoryGirl.create(:localhost_root_admin_group)]
+          [FactoryBot.create(:localhost_root_admin_group)]
         end
       end
 
       factory :google_admin do
         groups do
-          [FactoryGirl.create(:google_admin_group)]
+          [FactoryBot.create(:google_admin_group)]
         end
       end
 
       factory :google_and_yahoo_multi_group_admin do
         groups do
           [
-            FactoryGirl.create(:google_admin_group),
-            FactoryGirl.create(:yahoo_admin_group),
+            FactoryBot.create(:google_admin_group),
+            FactoryBot.create(:yahoo_admin_group),
           ]
         end
       end
@@ -35,7 +35,7 @@ FactoryGirl.define do
       factory :google_and_yahoo_single_group_admin do
         groups do
           [
-            FactoryGirl.create(:google_and_yahoo_multi_scope_admin_group),
+            FactoryBot.create(:google_and_yahoo_multi_scope_admin_group),
           ]
         end
       end
@@ -65,7 +65,7 @@ FactoryGirl.define do
       updated_at Time.utc(2017, 1, 2)
       updated_by { SecureRandom.uuid }
       groups do
-        [FactoryGirl.create(:admin_group, :name => "ExampleFilledGroup")]
+        [FactoryBot.create(:admin_group, :name => "ExampleFilledGroup")]
       end
     end
   end

@@ -9,7 +9,7 @@ class Test::AdminUi::Login::TestLogout < Minitest::Capybara::Test
     super
     setup_server
     Admin.delete_all
-    @admin = FactoryGirl.create(:admin)
+    @admin = FactoryBot.create(:admin)
   end
 
   def test_logout

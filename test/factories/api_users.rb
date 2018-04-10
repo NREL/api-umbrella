@@ -1,4 +1,4 @@
-FactoryGirl.define do
+FactoryBot.define do
   factory :api_user do
     first_name "Ambrose"
     last_name "Burnside"
@@ -19,7 +19,7 @@ FactoryGirl.define do
 
     factory :custom_rate_limit_api_user do
       settings do
-        FactoryGirl.build(:custom_rate_limit_api_setting)
+        FactoryBot.build(:custom_rate_limit_api_setting)
       end
     end
   end

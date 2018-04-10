@@ -417,3 +417,9 @@ td.reorder-handle {
   padding: 0px;
   margin: 0px;
 }
+
+table.table-max-width-cells td {
+  max-width: 400px;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}

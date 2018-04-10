@@ -88,7 +88,7 @@ module ApiUmbrellaTestHelpers
       api_key = nil
       unless(options[:omit_api_key])
         options[:user_factory_overrides] ||= {}
-        api_key = FactoryGirl.create(:api_user, options[:user_factory_overrides]).api_key
+        api_key = FactoryBot.create(:api_user, options[:user_factory_overrides]).api_key
       end
 
       api_key

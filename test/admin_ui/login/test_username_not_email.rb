@@ -11,7 +11,7 @@ class Test::AdminUi::Login::TestUsernameNotEmail < Minitest::Capybara::Test
     setup_server
     once_per_class_setup do
       Admin.delete_all
-      @admin = FactoryGirl.create(:admin)
+      @admin = FactoryBot.create(:admin)
 
       override_config_set({
         "web" => {

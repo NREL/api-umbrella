@@ -442,6 +442,7 @@ en:
   devise:
     sessions:
       new:
+        sign_in: Sign in
         admin_sign_in: Admin Sign In
     passwords:
       password_length_hint: "%{min} characters minimum"
@@ -450,3 +451,6 @@ en:
         change_your_password: Change Your Password
         new_password: New Password
         confirm_new_password: Confirm New Password
+    shared:
+      links:
+        sign_in: Sign in

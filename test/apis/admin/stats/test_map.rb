@@ -11,8 +11,8 @@ class Test::Apis::Admin::Stats::TestMap < Minitest::Test
   end
 
   def test_world
-    FactoryGirl.create_list(:log_item, 2, :request_at => Time.parse("2015-01-16T06:06:28.816Z").utc, :request_ip_country => "US", :request_ip_region => "CO", :request_ip_city => "Golden")
-    FactoryGirl.create_list(:log_item, 1, :request_at => Time.parse("2015-01-16T06:06:28.816Z").utc, :request_ip_country => "CA", :request_ip_region => "ON", :request_ip_city => "Toronto")
+    FactoryBot.create_list(:log_item, 2, :request_at => Time.parse("2015-01-16T06:06:28.816Z").utc, :request_ip_country => "US", :request_ip_region => "CO", :request_ip_city => "Golden")
+    FactoryBot.create_list(:log_item, 1, :request_at => Time.parse("2015-01-16T06:06:28.816Z").utc, :request_ip_country => "CA", :request_ip_region => "ON", :request_ip_city => "Toronto")
     LogItem.gateway.refresh_index!
 
     response = Typhoeus.get("https://127.0.0.1:9081/admin/stats/map.json", http_options.deep_merge(admin_session).deep_merge({
@@ -41,10 +41,10 @@ class Test::Apis::Admin::Stats::TestMap < Minitest::Test
   end
 
   def test_country_non_us
-    FactoryGirl.create(:log_city_location, :country => "CA", :region => "ON", :city => "Toronto", :location => { :type => "Point", :coordinates => [-79.5323, 43.6949] })
-    FactoryGirl.create(:log_city_location, :country => "CA", :region => "QC", :city => "Montréal", :location => { :type => "Point", :coordinates => [-73.5877, 45.5009] })
-    FactoryGirl.create_list(:log_item, 2, :request_at => Time.parse("2015-01-16T06:06:28.816Z").utc, :request_ip_country => "CA", :request_ip_region => "ON", :request_ip_city => "Toronto")
-    FactoryGirl.create_list(:log_item, 1, :request_at => Time.parse("2015-01-16T06:06:28.816Z").utc, :request_ip_country => "CA", :request_ip_region => "QC", :request_ip_city => "Montréal")
+    FactoryBot.create(:log_city_location, :country => "CA", :region => "ON", :city => "Toronto", :location => { :type => "Point", :coordinates => [-79.5323, 43.6949] })
+    FactoryBot.create(:log_city_location, :country => "CA", :region => "QC", :city => "Montréal", :location => { :type => "Point", :coordinates => [-73.5877, 45.5009] })
+    FactoryBot.create_list(:log_item, 2, :request_at => Time.parse("2015-01-16T06:06:28.816Z").utc, :request_ip_country => "CA", :request_ip_region => "ON", :request_ip_city => "Toronto")
+    FactoryBot.create_list(:log_item, 1, :request_at => Time.parse("2015-01-16T06:06:28.816Z").utc, :request_ip_country => "CA", :request_ip_region => "QC", :request_ip_city => "Montréal")
     LogItem.gateway.refresh_index!
 
     response = Typhoeus.get("https://127.0.0.1:9081/admin/stats/map.json", http_options.deep_merge(admin_session).deep_merge({
@@ -76,8 +76,8 @@ class Test::Apis::Admin::Stats::TestMap < Minitest::Test
   end
 
   def test_country_us
-    FactoryGirl.create_list(:log_item, 2, :request_at => Time.parse("2015-01-16T06:06:28.816Z").utc, :request_ip_country => "US", :request_ip_region => "CO", :request_ip_city => "Golden")
-    FactoryGirl.create_list(:log_item, 1, :request_at => Time.parse("2015-01-16T06:06:28.816Z").utc, :request_ip_country => "US", :request_ip_region => "CA", :request_ip_city => "San Diego")
+    FactoryBot.create_list(:log_item, 2, :request_at => Time.parse("2015-01-16T06:06:28.816Z").utc, :request_ip_country => "US", :request_ip_region => "CO", :request_ip_city => "Golden")
+    FactoryBot.create_list(:log_item, 1, :request_at => Time.parse("2015-01-16T06:06:28.816Z").utc, :request_ip_country => "US", :request_ip_region => "CA", :request_ip_city => "San Diego")
     LogItem.gateway.refresh_index!
 
     response = Typhoeus.get("https://127.0.0.1:9081/admin/stats/map.json", http_options.deep_merge(admin_session).deep_merge({
@@ -109,9 +109,9 @@ class Test::Apis::Admin::Stats::TestMap < Minitest::Test
   end
 
   def test_us_state
-    FactoryGirl.create(:log_city_location, :country => "US", :region => "CO", :city => "Golden", :location => { :type => "Point", :coordinates => [-105.2433, 39.7146] })
-    FactoryGirl.create_list(:log_item, 2, :request_at => Time.parse("2015-01-16T06:06:28.816Z").utc, :request_ip_country => "US", :request_ip_region => "CO", :request_ip_city => "Golden")
-    FactoryGirl.create_list(:log_item, 1, :request_at => Time.parse("2015-01-16T06:06:28.816Z").utc, :request_ip_country => "US", :request_ip_region => "CA", :request_ip_city => "San Diego")
+    FactoryBot.create(:log_city_location, :country => "US", :region => "CO", :city => "Golden", :location => { :type => "Point", :coordinates => [-105.2433, 39.7146] })
+    FactoryBot.create_list(:log_item, 2, :request_at => Time.parse("2015-01-16T06:06:28.816Z").utc, :request_ip_country => "US", :request_ip_region => "CO", :request_ip_city => "Golden")
+    FactoryBot.create_list(:log_item, 1, :request_at => Time.parse("2015-01-16T06:06:28.816Z").utc, :request_ip_country => "US", :request_ip_region => "CA", :request_ip_city => "San Diego")
     LogItem.gateway.refresh_index!
 
     response = Typhoeus.get("https://127.0.0.1:9081/admin/stats/map.json", http_options.deep_merge(admin_session).deep_merge({

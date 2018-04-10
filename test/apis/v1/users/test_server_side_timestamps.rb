@@ -11,7 +11,7 @@ class Test::Apis::V1::Users::TestServerSideTimestamps < Minitest::Test
   end
 
   def test_create
-    attributes = FactoryGirl.attributes_for(:api_user)
+    attributes = FactoryBot.attributes_for(:api_user)
     response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(admin_token).deep_merge({
       :headers => { "Content-Type" => "application/json" },
       :body => MultiJson.dump(:user => attributes),
@@ -21,7 +21,7 @@ class Test::Apis::V1::Users::TestServerSideTimestamps < Minitest::Test
   end
 
   def test_update
-    record = FactoryGirl.create(:api_user)
+    record = FactoryBot.create(:api_user)
     attributes = record.serializable_hash
     attributes["use_description"] = rand(999_999).to_s
     response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/users/#{record.id}.json", http_options.deep_merge(admin_token).deep_merge({

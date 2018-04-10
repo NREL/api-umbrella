@@ -140,7 +140,7 @@ class Test::Proxy::ApiKeyValidation::TestEmailVerification < Minitest::Test
   private
 
   def make_request(path, user_options)
-    user = FactoryGirl.create(:api_user, user_options)
+    user = FactoryBot.create(:api_user, user_options)
     Typhoeus.get("http://127.0.0.1:9080#{path}", http_options.deep_merge({
       :headers => {
         "X-Api-Key" => user.api_key,

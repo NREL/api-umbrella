@@ -1,27 +1,33 @@
-import Ember from 'ember';
+import Component from '@ember/component';
+import { computed } from '@ember/object';
+import { inject } from '@ember/service';
 
-export default Ember.Component.extend({
-  store: Ember.inject.service(),
+export default Component.extend({
+  store: inject(),
 
-  rateLimitModeOptions: [
-    { id: null, name: 'Default rate limits' },
-    { id: 'custom', name: 'Custom rate limits' },
-    { id: 'unlimited', name: 'Unlimited requests' },
-  ],
+  init() {
+    this._super(...arguments);
 
-  rateLimitDurationUnitOptions: [
-    { id: 'seconds', name: 'seconds' },
-    { id: 'minutes', name: 'minutes' },
-    { id: 'hours', name: 'hours' },
-    { id: 'days', name: 'days' },
-  ],
+    this.rateLimitModeOptions = [
+      { id: null, name: 'Default rate limits' },
+      { id: 'custom', name: 'Custom rate limits' },
+      { id: 'unlimited', name: 'Unlimited requests' },
+    ];
 
-  rateLimitLimitByOptions: [
-    { id: 'apiKey', name: 'API Key' },
-    { id: 'ip', name: 'IP Address' },
-  ],
+    this.rateLimitDurationUnitOptions = [
+      { id: 'seconds', name: 'seconds' },
+      { id: 'minutes', name: 'minutes' },
+      { id: 'hours', name: 'hours' },
+      { id: 'days', name: 'days' },
+    ];
 
-  uniqueSettingsId: Ember.computed(function() {
+    this.rateLimitLimitByOptions = [
+      { id: 'apiKey', name: 'API Key' },
+      { id: 'ip', name: 'IP Address' },
+    ];
+  },
+
+  uniqueSettingsId: computed(function() {
     return _.uniqueId('api_settings_');
   }),
 

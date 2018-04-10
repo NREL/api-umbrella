@@ -11,7 +11,7 @@ class Test::Apis::V1::Users::TestUpdate < Minitest::Test
   end
 
   def test_valid_update
-    user = FactoryGirl.create(:api_user)
+    user = FactoryBot.create(:api_user)
 
     attributes = user.serializable_hash
     attributes["first_name"] = "Updated"
@@ -29,7 +29,7 @@ class Test::Apis::V1::Users::TestUpdate < Minitest::Test
   end
 
   def test_does_not_replace_existing_registration_source
-    user = FactoryGirl.create(:api_user, :registration_source => "something")
+    user = FactoryBot.create(:api_user, :registration_source => "something")
 
     attributes = user.serializable_hash
     response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/users/#{user.id}.json", http_options.deep_merge(admin_token).deep_merge({
@@ -46,7 +46,7 @@ class Test::Apis::V1::Users::TestUpdate < Minitest::Test
   end
 
   def test_keeps_api_key
-    user = FactoryGirl.create(:api_user)
+    user = FactoryBot.create(:api_user)
     original_api_key = user.api_key
     attributes = user.serializable_hash.except("api_key")
     refute(attributes["api_key"])
@@ -63,7 +63,7 @@ class Test::Apis::V1::Users::TestUpdate < Minitest::Test
   end
 
   def test_does_not_replace_api_key
-    user = FactoryGirl.create(:api_user)
+    user = FactoryBot.create(:api_user)
     original_api_key = user.api_key
     attributes = user.serializable_hash
     assert(attributes["api_key"])

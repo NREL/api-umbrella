@@ -11,7 +11,7 @@ class Test::Apis::V1::Apis::TestCreateSortOrder < Minitest::Test
   end
 
   def test_start_0_increment_10000
-    attributes = FactoryGirl.attributes_for(:api)
+    attributes = FactoryBot.attributes_for(:api)
     3.times do |i|
       response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/apis.json", http_options.deep_merge(admin_token).deep_merge({
         :headers => { "Content-Type" => "application/json" },
@@ -24,7 +24,7 @@ class Test::Apis::V1::Apis::TestCreateSortOrder < Minitest::Test
   end
 
   def test_saves_when_sort_order_is_null
-    attributes = FactoryGirl.attributes_for(:api, :sort_order => nil)
+    attributes = FactoryBot.attributes_for(:api, :sort_order => nil)
     response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/apis.json", http_options.deep_merge(admin_token).deep_merge({
       :headers => { "Content-Type" => "application/json" },
       :body => MultiJson.dump(:api => attributes),
@@ -35,7 +35,7 @@ class Test::Apis::V1::Apis::TestCreateSortOrder < Minitest::Test
   end
 
   def test_pre_set_sort_order
-    attributes = FactoryGirl.attributes_for(:api, :sort_order => 8)
+    attributes = FactoryBot.attributes_for(:api, :sort_order => 8)
     response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/apis.json", http_options.deep_merge(admin_token).deep_merge({
       :headers => { "Content-Type" => "application/json" },
       :body => MultiJson.dump(:api => attributes),
@@ -46,9 +46,9 @@ class Test::Apis::V1::Apis::TestCreateSortOrder < Minitest::Test
   end
 
   def test_fills_in_sort_order_as_approaching_integer_range
-    FactoryGirl.create(:api, :sort_order => 2_147_483_600)
+    FactoryBot.create(:api, :sort_order => 2_147_483_600)
 
-    attributes = FactoryGirl.attributes_for(:api)
+    attributes = FactoryBot.attributes_for(:api)
     response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/apis.json", http_options.deep_merge(admin_token).deep_merge({
       :headers => { "Content-Type" => "application/json" },
       :body => MultiJson.dump(:api => attributes),
@@ -75,10 +75,10 @@ class Test::Apis::V1::Apis::TestCreateSortOrder < Minitest::Test
   end
 
   def test_reshuffles_sort_order_when_integer_range_exceeded
-    api1 = FactoryGirl.create(:api, :sort_order => 2_147_483_000)
-    api2 = FactoryGirl.create(:api, :sort_order => 2_147_483_645)
+    api1 = FactoryBot.create(:api, :sort_order => 2_147_483_000)
+    api2 = FactoryBot.create(:api, :sort_order => 2_147_483_645)
 
-    attributes = FactoryGirl.attributes_for(:api)
+    attributes = FactoryBot.attributes_for(:api)
     response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/apis.json", http_options.deep_merge(admin_token).deep_merge({
       :headers => { "Content-Type" => "application/json" },
       :body => MultiJson.dump(:api => attributes),

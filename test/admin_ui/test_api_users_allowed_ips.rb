@@ -42,7 +42,7 @@ class Test::AdminUi::TestApiUsersAllowedIps < Minitest::Capybara::Test
   end
 
   def test_displays_existing_array_as_multiple_lines
-    user = FactoryGirl.create(:api_user, :settings => { :allowed_ips => ["10.0.0.0/24", "10.2.2.2"] })
+    user = FactoryBot.create(:api_user, :settings => { :allowed_ips => ["10.0.0.0/24", "10.2.2.2"] })
     admin_login
     visit "/admin/#/api_users/#{user.id}/edit"
 
@@ -50,7 +50,7 @@ class Test::AdminUi::TestApiUsersAllowedIps < Minitest::Capybara::Test
   end
 
   def test_nullifies_existing_array_when_empty_input_saved
-    user = FactoryGirl.create(:api_user, :settings => { :allowed_ips => ["10.0.0.0/24", "10.2.2.2"] })
+    user = FactoryBot.create(:api_user, :settings => { :allowed_ips => ["10.0.0.0/24", "10.2.2.2"] })
     admin_login
     visit "/admin/#/api_users/#{user.id}/edit"
 

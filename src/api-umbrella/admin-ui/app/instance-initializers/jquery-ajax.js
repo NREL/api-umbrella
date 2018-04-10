@@ -1,11 +1,20 @@
+import $ from 'jquery';
+
 export function initialize(appInstance) {
-  let session = appInstance.lookup('service:session');
+  const session = appInstance.lookup('service:session');
   $.ajaxPrefilter(function(options) {
-    session.authorize('authorizer:devise-server-side', function(apiKey, adminAuthToken) {
+    const data = session.get('data.authenticated');
+    if(data) {
       options.headers = options.headers || {};
-      options.headers['X-Api-Key'] = apiKey;
-      options.headers['X-Admin-Auth-Token'] = adminAuthToken;
-    });
+
+      if(data.api_key) {
+        options.headers['X-Api-Key'] = data.api_key;
+      }
+
+      if(data.admin_auth_token) {
+        options.headers['X-Admin-Auth-Token'] = data.admin_auth_token;
+      }
+    }
   });
 }
 

@@ -1,5 +1,7 @@
-import Ember from 'ember';
+import $ from 'jquery';
 import Base from 'ember-simple-auth/authenticators/base';
+import { Promise } from 'rsvp';
+import { run } from '@ember/runloop';
 
 export default Base.extend({
   restore() {
@@ -11,34 +13,36 @@ export default Base.extend({
   },
 
   authenticate() {
-    return new Ember.RSVP.Promise((resolve, reject) => {
+    return new Promise((resolve, reject) => {
       $.ajax({
         url: '/admin/auth',
       }).done((data) => {
         if(this._validate(data)) {
-          Ember.run(null, resolve, data);
+          run(null, resolve, data);
         } else {
-          Ember.run(null, reject, 'unauthenticated');
+          run(null, reject, 'unauthenticated');
         }
       }).fail((xhr) => {
-        Ember.Logger.error('Unexpected error: ' + xhr.status + ' ' + xhr.statusText + ' (' + xhr.readyState + '): ' + xhr.responseText);
+        // eslint-disable-next-line no-console
+        console.error('Unexpected error: ' + xhr.status + ' ' + xhr.statusText + ' (' + xhr.readyState + '): ' + xhr.responseText);
         bootbox.alert('An unexpected server error occurred during authentication');
-        Ember.run(null, reject, 'unexpected_error');
+        run(null, reject, 'unexpected_error');
       });
     });
   },
 
   invalidate() {
-    return new Ember.RSVP.Promise((resolve, reject) => {
+    return new Promise((resolve, reject) => {
       $.ajax({
         url: '/admin/logout',
         method: 'DELETE',
       }).done(() => {
-        Ember.run(null, resolve);
+        run(null, resolve);
       }).fail((xhr) => {
-        Ember.Logger.error('Unexpected error: ' + xhr.status + ' ' + xhr.statusText + ' (' + xhr.readyState + '): ' + xhr.responseText);
+        // eslint-disable-next-line no-console
+        console.error('Unexpected error: ' + xhr.status + ' ' + xhr.statusText + ' (' + xhr.readyState + '): ' + xhr.responseText);
         bootbox.alert('An unexpected server error occurred during logout');
-        Ember.run(null, reject, 'unexpected_error');
+        run(null, reject, 'unexpected_error');
       });
     });
   },

@@ -187,7 +187,7 @@ class Api
     # Apply the new sort_order value first.
     self.sort_order = order
     unless(self.new_record?)
-      self.update_attributes(:sort_order => order)
+      self.update(:sort_order => order)
     end
 
     # Next look for any existing records that have conflicting sort_order

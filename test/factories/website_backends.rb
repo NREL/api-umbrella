@@ -1,4 +1,4 @@
-FactoryGirl.define do
+FactoryBot.define do
   factory :website_backend do
     frontend_host "localhost"
     backend_protocol "http"

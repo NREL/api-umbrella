@@ -1,13 +1,18 @@
-import Ember from 'ember';
+import Component from '@ember/component';
 import Save from 'api-umbrella-admin-ui/mixins/save';
+import { observer } from '@ember/object';
 
-export default Ember.Component.extend(Save, {
-  backendProtocolOptions: [
-    { id: 'http', name: 'http' },
-    { id: 'https', name: 'https' },
-  ],
+export default Component.extend(Save, {
+  init() {
+    this._super(...arguments);
 
-  changeDefaultPort: function() {
+    this.backendProtocolOptions = [
+      { id: 'http', name: 'http' },
+      { id: 'https', name: 'https' },
+    ];
+  },
+
+  changeDefaultPort: observer('model.backendProtocol', function() {
     let protocol = this.get('model.backendProtocol');
     let port = parseInt(this.get('model.serverPort'), 10);
     if(protocol === 'https') {
@@ -19,7 +24,7 @@ export default Ember.Component.extend(Save, {
         this.set('model.serverPort', 80);
       }
     }
-  }.observes('model.backendProtocol'),
+  }),
 
   actions: {
     submit() {

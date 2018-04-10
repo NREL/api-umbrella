@@ -67,7 +67,7 @@ class Test::Apis::V1::Apis::TestSaveEmbeddedPresence < Minitest::Test
 
   def assert_embedded_presence_exists(action, field)
     attributes = attributes_for(action)
-    attributes[field.to_s] = [FactoryGirl.attributes_for(:"api_#{field.to_s.singularize}")]
+    attributes[field.to_s] = [FactoryBot.attributes_for(:"api_#{field.to_s.singularize}")]
 
     response = create_or_update(action, attributes)
     if(action == :create)
@@ -83,9 +83,9 @@ class Test::Apis::V1::Apis::TestSaveEmbeddedPresence < Minitest::Test
 
   def attributes_for(action)
     if(action == :create)
-      FactoryGirl.attributes_for(:api).deep_stringify_keys
+      FactoryBot.attributes_for(:api).deep_stringify_keys
     elsif(action == :update)
-      FactoryGirl.create(:api).serializable_hash
+      FactoryBot.create(:api).serializable_hash
     else
       flunk("Unknown action: #{action.inspect}")
     end

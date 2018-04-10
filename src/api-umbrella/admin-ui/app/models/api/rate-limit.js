@@ -1,6 +1,6 @@
-import Ember from 'ember';
 import DS from 'ember-data';
 import moment from 'npm:moment-timezone';
+import { observer } from '@ember/object';
 
 export default DS.Model.extend({
   duration: DS.attr('number'),
@@ -45,7 +45,7 @@ export default DS.Model.extend({
     }
   },
 
-  durationInUnitsDidChange: Ember.observer('durationInUnits', 'durationUnits', function() {
+  durationInUnitsDidChange: observer('durationInUnits', 'durationUnits', function() {
     if(this.get('durationUnits')) {
       let inUnits = parseInt(this.get('durationInUnits'), 10);
       let units = this.get('durationUnits');

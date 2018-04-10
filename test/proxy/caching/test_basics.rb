@@ -11,11 +11,11 @@ class Test::Proxy::Caching::TestBasics < Minitest::Test
   end
 
   def test_caches_across_different_api_keys
-    user = FactoryGirl.create(:api_user)
+    user = FactoryBot.create(:api_user)
     first = Typhoeus.get("http://127.0.0.1:9080/api/cacheable-cache-control-max-age/#{unique_test_id}?api_key=#{user.api_key}", http_options)
     assert_equal(200, first.code, first.body)
 
-    user = FactoryGirl.create(:api_user)
+    user = FactoryBot.create(:api_user)
     second = Typhoeus.get("http://127.0.0.1:9080/api/cacheable-cache-control-max-age/#{unique_test_id}?api_key=#{user.api_key}", http_options)
     assert_equal(200, second.code, second.body)
 

@@ -5,7 +5,7 @@ module ApiUmbrellaSharedTests
     include ApiUmbrellaTestHelpers::AdminAuth
 
     def test_paginate_results
-      FactoryGirl.create_list(data_tables_factory_name, 11)
+      FactoryBot.create_list(data_tables_factory_name, 11)
 
       http_opts = http_options.deep_merge(admin_token)
 
@@ -47,7 +47,7 @@ module ApiUmbrellaSharedTests
     end
 
     def test_no_default_limit
-      FactoryGirl.create_list(data_tables_factory_name, 101)
+      FactoryBot.create_list(data_tables_factory_name, 101)
 
       http_opts = http_options.deep_merge(admin_token)
 
@@ -95,10 +95,10 @@ module ApiUmbrellaSharedTests
 
     def test_order_multiple
       records = [
-        FactoryGirl.create(data_tables_factory_name, :created_at => Time.utc(2017, 1, 1), :updated_at => Time.utc(2017, 1, 2)),
-        FactoryGirl.create(data_tables_factory_name, :created_at => Time.utc(2017, 1, 1), :updated_at => Time.utc(2017, 1, 3)),
-        FactoryGirl.create(data_tables_factory_name, :created_at => Time.utc(2017, 1, 2), :updated_at => Time.utc(2017, 1, 3)),
-        FactoryGirl.create(data_tables_factory_name, :created_at => Time.utc(2017, 1, 3), :updated_at => Time.utc(2017, 1, 3)),
+        FactoryBot.create(data_tables_factory_name, :created_at => Time.utc(2017, 1, 1), :updated_at => Time.utc(2017, 1, 2)),
+        FactoryBot.create(data_tables_factory_name, :created_at => Time.utc(2017, 1, 1), :updated_at => Time.utc(2017, 1, 3)),
+        FactoryBot.create(data_tables_factory_name, :created_at => Time.utc(2017, 1, 2), :updated_at => Time.utc(2017, 1, 3)),
+        FactoryBot.create(data_tables_factory_name, :created_at => Time.utc(2017, 1, 3), :updated_at => Time.utc(2017, 1, 3)),
       ]
 
       ordered_ids = response_order({
@@ -165,7 +165,7 @@ module ApiUmbrellaSharedTests
     end
 
     def assert_data_tables_search(field, value, search)
-      record = FactoryGirl.create(data_tables_factory_name, field => value)
+      record = FactoryBot.create(data_tables_factory_name, field => value)
 
       # Ensure the search value (which should represent a wildcard search) can
       # be found in a case insensitive manner.
@@ -225,7 +225,7 @@ module ApiUmbrellaSharedTests
     def assert_data_tables_order(field, values)
       assert_equal(2, values.length)
       records = values.sort.map do |value|
-        FactoryGirl.create(data_tables_factory_name, field => value)
+        FactoryBot.create(data_tables_factory_name, field => value)
       end
 
       # Test that ascending order is default if no explicit order is given.

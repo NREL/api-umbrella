@@ -25,7 +25,7 @@ class Test::AdminUi::Login::TestForgotPassword < Minitest::Capybara::Test
   end
 
   def test_reset_process
-    admin = FactoryGirl.create(:admin, :username => "admin@example.com")
+    admin = FactoryBot.create(:admin, :username => "admin@example.com")
     assert_nil(admin.reset_password_token)
     assert_nil(admin.reset_password_sent_at)
     original_encrypted_password = admin.encrypted_password

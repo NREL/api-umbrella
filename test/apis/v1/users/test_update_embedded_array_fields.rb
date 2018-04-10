@@ -11,7 +11,7 @@ class Test::Apis::V1::Users::TestUpdateEmbeddedArrayFields < Minitest::Test
   end
 
   def test_adds
-    user = FactoryGirl.create(:api_user)
+    user = FactoryBot.create(:api_user)
     assert_nil(user.roles)
     assert_nil(user.settings)
 
@@ -22,8 +22,8 @@ class Test::Apis::V1::Users::TestUpdateEmbeddedArrayFields < Minitest::Test
     attributes["settings"]["allowed_referers"] = ["http://google.com/", "http://yahoo.com/"]
     attributes["settings"]["rate_limit_mode"] = "custom"
     attributes["settings"]["rate_limits"] = [
-      FactoryGirl.attributes_for(:api_rate_limit, :duration => 5000, :limit => 10),
-      FactoryGirl.attributes_for(:api_rate_limit, :duration => 10000, :limit => 20),
+      FactoryBot.attributes_for(:api_rate_limit, :duration => 5000, :limit => 10),
+      FactoryBot.attributes_for(:api_rate_limit, :duration => 10000, :limit => 20),
     ]
     response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/users/#{user.id}.json", http_options.deep_merge(admin_token).deep_merge({
       :headers => { "Content-Type" => "application/json" },
@@ -41,15 +41,15 @@ class Test::Apis::V1::Users::TestUpdateEmbeddedArrayFields < Minitest::Test
   end
 
   def test_updates
-    user = FactoryGirl.create(:api_user, {
+    user = FactoryBot.create(:api_user, {
       :roles => ["test-role1"],
-      :settings => FactoryGirl.build(:api_setting, {
+      :settings => FactoryBot.build(:api_setting, {
         :allowed_ips => ["127.0.0.1"],
         :allowed_referers => ["http://google.com/"],
         :rate_limit_mode => "custom",
         :rate_limits => [
-          FactoryGirl.attributes_for(:api_rate_limit, :duration => 5000, :limit => 10),
-          FactoryGirl.attributes_for(:api_rate_limit, :duration => 10000, :limit => 20),
+          FactoryBot.attributes_for(:api_rate_limit, :duration => 5000, :limit => 10),
+          FactoryBot.attributes_for(:api_rate_limit, :duration => 10000, :limit => 20),
         ],
       }),
     })
@@ -86,15 +86,15 @@ class Test::Apis::V1::Users::TestUpdateEmbeddedArrayFields < Minitest::Test
   end
 
   def test_removes_single_value
-    user = FactoryGirl.create(:api_user, {
+    user = FactoryBot.create(:api_user, {
       :roles => ["test-role1", "test-role2"],
-      :settings => FactoryGirl.build(:api_setting, {
+      :settings => FactoryBot.build(:api_setting, {
         :allowed_ips => ["127.0.0.1", "127.0.0.2"],
         :allowed_referers => ["http://google.com/", "http://yahoo.com/"],
         :rate_limit_mode => "custom",
         :rate_limits => [
-          FactoryGirl.attributes_for(:api_rate_limit, :duration => 5000, :limit => 10),
-          FactoryGirl.attributes_for(:api_rate_limit, :duration => 10000, :limit => 20),
+          FactoryBot.attributes_for(:api_rate_limit, :duration => 5000, :limit => 10),
+          FactoryBot.attributes_for(:api_rate_limit, :duration => 10000, :limit => 20),
         ],
       }),
     })
@@ -135,15 +135,15 @@ class Test::Apis::V1::Users::TestUpdateEmbeddedArrayFields < Minitest::Test
       end
 
     define_method("test_removes_#{empty_method_name}") do
-      user = FactoryGirl.create(:api_user, {
+      user = FactoryBot.create(:api_user, {
         :roles => ["test-role1"],
-        :settings => FactoryGirl.build(:api_setting, {
+        :settings => FactoryBot.build(:api_setting, {
           :allowed_ips => ["127.0.0.1"],
           :allowed_referers => ["http://google.com/"],
           :rate_limit_mode => "custom",
           :rate_limits => [
-            FactoryGirl.attributes_for(:api_rate_limit, :duration => 5000, :limit => 10),
-            FactoryGirl.attributes_for(:api_rate_limit, :duration => 10000, :limit => 20),
+            FactoryBot.attributes_for(:api_rate_limit, :duration => 5000, :limit => 10),
+            FactoryBot.attributes_for(:api_rate_limit, :duration => 10000, :limit => 20),
           ],
         }),
       })
@@ -179,15 +179,15 @@ class Test::Apis::V1::Users::TestUpdateEmbeddedArrayFields < Minitest::Test
   end
 
   def test_keeps_not_present_keys
-    user = FactoryGirl.create(:api_user, {
+    user = FactoryBot.create(:api_user, {
       :roles => ["test-role1"],
-      :settings => FactoryGirl.build(:api_setting, {
+      :settings => FactoryBot.build(:api_setting, {
         :allowed_ips => ["127.0.0.1"],
         :allowed_referers => ["http://google.com/"],
         :rate_limit_mode => "custom",
         :rate_limits => [
-          FactoryGirl.attributes_for(:api_rate_limit, :duration => 5000, :limit => 10),
-          FactoryGirl.attributes_for(:api_rate_limit, :duration => 10000, :limit => 20),
+          FactoryBot.attributes_for(:api_rate_limit, :duration => 5000, :limit => 10),
+          FactoryBot.attributes_for(:api_rate_limit, :duration => 10000, :limit => 20),
         ],
       }),
     })
