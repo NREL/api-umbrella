@@ -146,7 +146,7 @@ class OutdatedPackages
       :string_version => true,
     },
     "pcre" => {
-      :http => "http://ftp.csx.cam.ac.uk/pub/software/programming/pcre/",
+      :http => "https://ftp.pcre.org/pub/pcre/",
     },
     "perp" => {
       :http => "http://b0llix.net/perp/site.cgi?page=download",
