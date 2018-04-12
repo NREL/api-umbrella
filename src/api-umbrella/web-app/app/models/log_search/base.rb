@@ -8,7 +8,6 @@ class LogSearch::Base
   ].freeze
 
   UPPERCASE_FIELDS = [
-    "request_method",
     "request_ip_country",
     "request_ip_region",
   ].freeze
