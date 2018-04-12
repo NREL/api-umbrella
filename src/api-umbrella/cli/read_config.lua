@@ -1,5 +1,6 @@
 local array_includes = require "api-umbrella.utils.array_includes"
 local array_last = require "api-umbrella.utils.array_last"
+local deep_defaults = require "api-umbrella.utils.deep_defaults"
 local deep_merge_overwrite_arrays = require "api-umbrella.utils.deep_merge_overwrite_arrays"
 local dir = require "pl.dir"
 local file = require "pl.file"
@@ -376,28 +377,31 @@ local function set_cached_random_tokens()
     local cached = {}
     if content then
       cached = lyaml.load(content)
-      deep_merge_overwrite_arrays(config, cached)
+      deep_defaults(config, cached)
     end
 
     -- If the tokens haven't already been written to the cache, generate them.
     if not config["web"]["rails_secret_token"] or not config["static_site"]["api_key"] then
       if not config["web"]["rails_secret_token"] then
-        cached["web"] = {
-          rails_secret_token = random_token(128),
-        }
+        deep_defaults(cached, {
+          web = {
+            rails_secret_token = random_token(128),
+          },
+        })
       end
 
       if not config["static_site"]["api_key"] then
-        cached["static_site"] = {
-          api_key = random_token(40),
-        }
+        deep_defaults(cached, {
+          static_site = {
+            api_key = random_token(40),
+          },
+        })
       end
 
       -- Persist the cached tokens.
       dir.makepath(config["run_dir"])
       file.write(cached_path, lyaml.dump({ cached }))
-
-      deep_merge_overwrite_arrays(config, cached)
+      deep_defaults(config, cached)
     end
   end
 end
