@@ -20,7 +20,7 @@ services:
     networks:
       main:
         aliases:
-          - umbrella2.docker
+          - umbrella.docker
 
 networks: 
   main:

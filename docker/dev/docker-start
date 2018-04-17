@@ -8,7 +8,7 @@ mkdir -p /etc/api-umbrella
   echo "http_port: $HTTP_PORT"
   echo "https_port: $HTTPS_PORT"
   echo "gatekeeper:"
-  echo "  api_key_cache: true"
+  echo "  api_key_cache: false"
   echo "  default_idp:"
   echo "    backend_name: fiware-oauth2"
   echo "    host: http://idm.docker:8000"

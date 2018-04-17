@@ -1,5 +1,6 @@
 local _M = {}
 
+local admin_utils = require "api-umbrella.utils.admin"
 local cmsgpack = require "cmsgpack"
 local cjson = require "cjson"
 local invert_table = require "api-umbrella.utils.invert_table"
@@ -42,7 +43,6 @@ local function lookup_user(api_key)
   end
 
   -- If the external user has been provided, use email information to locate an internal user
-  -- TODO: Create the user using the external user information
   if not raw_user and ext_user then
     raw_user, db_err = mongo.first("api_users", {
       query = {
@@ -50,8 +50,17 @@ local function lookup_user(api_key)
       },
     })
 
-    if db_err then
-      ngx.log(ngx.ERR, "failed to fetch user from mongodb", db_err)
+    if not raw_user then
+      local err;
+
+      ngx.log(ngx.ERR, "failed to fetch user from mongodb, creating user", db_err)
+      -- The external user is correct, but it does not exists locally
+      -- Create new user, using external idp info
+      raw_user, err = admin_utils.create_user(ext_user)
+
+      if err then
+        ngx.log(ngx.ERR, "New user could not be created", db_err)
+      end
     end
   end
 
@@ -72,16 +81,6 @@ local function lookup_user(api_key)
     else
       user["id"] = raw_user["_id"]
     end
-
-    -- NOT OVERRIDING EMAIL AND ID TO USE EXISTING USER INFORMATION
-
-    -- if api_key["idp"] and api_key["key_type"]=="token" and api_key["idp"]["backend_name"]== "fiware-oauth2" then
-    --  user["id"] = raw_user.id
-    --  user["email"] = raw_user.email
-    -- elseif api_key["idp"] and api_key["key_type"]=="token" and api_key["idp"]["backend_name"]~= "fiware-oauth2" then
-    --  user["id"] = raw_user.name
-    --  user["email"] = raw_user.email
-    --end
 
     -- Invert the array of roles into a hashy table for more optimized
     -- lookups (so we can just check if the key exists, rather than

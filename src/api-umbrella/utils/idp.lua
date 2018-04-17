@@ -50,7 +50,7 @@ function _M.first(dict)
 
         -- Validate the app id (token scope) for FIWARE services
         if idp_back_name == "fiware-oauth2" and dict["idp"]["app_id"] ~= result["app_id"] then
-            return nil
+            return nil, "The provided token is not valid for the current scope"
         end
     end
 
