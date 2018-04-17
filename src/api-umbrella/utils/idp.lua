@@ -41,7 +41,7 @@ function _M.first(dict)
         ssl_verify = ssl,
     })
 
-    if res and res.status == 200 then
+    if res and (res.status == 200 or res.status == 201) then
         local body= res.body
         if not body then
             return nil
