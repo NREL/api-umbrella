@@ -1,10 +1,11 @@
 FROM ubuntu:xenial
 
 # Copy binary file
-COPY ../build/package/work/current/ubuntu-16.04/core/api-umbrella_0.14.4-1~xenial_amd64.deb .
+# It requires deb package to have been built using: make -C build/package -j4 docker_ubuntu1604 
+COPY api-umbrella_0.15.0-0.1.pre2~xenial_amd64.deb .
 
 # Install API Umbrella
-RUN apt-get update; dpkg -i api-umbrella_0.14.4-1~xenial_amd64.deb; apt-get install -f -y
+RUN apt-get update; dpkg -i api-umbrella_0.15.0-0.1.pre2~xenial_amd64.deb; apt-get install -f -y
 
 # Define mountable directories
 VOLUME ["/etc/api-umbrella", "/opt/api-umbrella/var/db", "/opt/api-umbrella/var/log"]
