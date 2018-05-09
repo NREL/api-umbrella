@@ -12,7 +12,7 @@
       <% flash.each do |flash_type, message| %>
         <% next unless(message.kind_of?(String)) %>
         <div class="alert <%= bootstrap_class_for(flash_type) %>">
-          <%= message.html_safe %>
+          <%= if(flash[:html_safe]) then message.html_safe else message end %>
         </div>
       <% end %>
 

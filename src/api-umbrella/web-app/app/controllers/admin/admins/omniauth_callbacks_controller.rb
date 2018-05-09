@@ -98,6 +98,7 @@ class Admin::Admins::OmniauthCallbacksController < Devise::OmniauthCallbacksCont
         ActionController::Base.helpers.content_tag(:a, "contact us", :href => ApiUmbrellaConfig[:contact_url]),
         " for further assistance.",
       ])
+      flash[:html_safe] = true
 
       redirect_to new_admin_session_path
     end
@@ -111,6 +112,7 @@ class Admin::Admins::OmniauthCallbacksController < Devise::OmniauthCallbacksCont
       ActionController::Base.helpers.content_tag(:a, "contact us", :href => ApiUmbrellaConfig[:contact_url]),
       " for further assistance.",
     ])
+    flash[:html_safe] = true
 
     redirect_to new_admin_session_path
   end
@@ -121,6 +123,7 @@ class Admin::Admins::OmniauthCallbacksController < Devise::OmniauthCallbacksCont
       ActionController::Base.helpers.content_tag(:a, "contact us", :href => ApiUmbrellaConfig[:contact_url]),
       " for further assistance.",
     ])
+    flash[:html_safe] = true
 
     redirect_to new_admin_session_path
   end
