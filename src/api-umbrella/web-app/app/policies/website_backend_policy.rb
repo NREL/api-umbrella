@@ -1,10 +1,15 @@
 class WebsiteBackendPolicy < ApplicationPolicy
   class Scope < Scope
-    def resolve
+    def resolve(permission = "backend_manage")
       if(user.superuser?)
         scope.all
       else
-        api_scopes = user.api_scopes_with_permission("backend_manage")
+        api_scopes = []
+        if(permission == :any)
+          api_scopes = user.api_scopes
+        else
+          api_scopes = user.api_scopes_with_permission(permission)
+        end
 
         query_scopes = []
         api_scopes.each do |api_scope|

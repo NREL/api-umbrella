@@ -23,6 +23,7 @@ class ConfigVersion
   def self.pending_config
     {
       "apis" => Api.order_by(:sort_order.asc).all.map { |api| Hash[api.attributes] },
+      "website_backends" => WebsiteBackend.order_by(:frontend_host.asc).all.map { |api| Hash[api.attributes] },
     }
   end
 

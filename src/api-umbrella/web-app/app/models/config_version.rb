@@ -70,7 +70,11 @@ class ConfigVersion
                         end
 
       if(current_admin)
-        pending_records = ApiPolicy::Scope.new(current_admin, pending_records).resolve("backend_publish")
+        if(category == "website_backends")
+          pending_records = WebsiteBackendPolicy::Scope.new(current_admin, pending_records).resolve("backend_publish")
+        else
+          pending_records = ApiPolicy::Scope.new(current_admin, pending_records).resolve("backend_publish")
+        end
       end
 
       pending_records = pending_records.sorted.all
