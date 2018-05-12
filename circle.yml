@@ -30,7 +30,7 @@ dependencies:
     # - ./build/work/git-restore-mtime -f .
   override:
     # Build all the API Umbrella software dependencies.
-    - ./configure --enable-test-dependencies
+    - ./configure
     - make all test-deps
     # Remove the download archives, since we don't need to cache these in
     # CircleCI, and doing so also leads to multiple versions being kept around

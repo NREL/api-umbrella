@@ -5,6 +5,7 @@ local deep_merge_overwrite_arrays = require "api-umbrella.utils.deep_merge_overw
 local dir = require "pl.dir"
 local file = require "pl.file"
 local host_normalize = require "api-umbrella.utils.host_normalize"
+local invert_table = require "api-umbrella.utils.invert_table"
 local lyaml = require "lyaml"
 local nillify_yaml_nulls = require "api-umbrella.utils.nillify_yaml_nulls"
 local path = require "pl.path"
@@ -215,6 +216,27 @@ local function set_computed_config()
     config["_default_hostname_normalized"] = host_normalize(default_hostname)
   end
 
+  if not config["web"] then
+    config["web"] = {}
+  end
+
+  -- Set the default host used for web application links (for mailers, contact
+  -- URLs, etc).
+  --
+  -- By default, pick this up from the `hosts` array where `default` has been
+  -- set to true (this gets put on `_default_hostname` for easier access). But
+  -- still allow the web host to be explicitly set via `web.default_host`.
+  if not config["web"]["default_host"] then
+    config["web"]["default_host"] = config["_default_hostname"]
+
+    -- Fallback to something that will at least generate valid URLs if there's
+    -- no default, or the default is "*" (since in this context, a wildcard
+    -- doesn't make sense for generating URLs).
+    if not config["web"]["default_host"] or config["web"]["default_host"] == "*" then
+      config["web"]["default_host"] = "localhost"
+    end
+  end
+
   -- Determine the nameservers for DNS resolution. Prefer explicitly configured
   -- nameservers, but fallback to nameservers defined in resolv.conf, and then
   -- Google's DNS servers if nothing else is defined.
@@ -308,17 +330,34 @@ local function set_computed_config()
   deep_merge_overwrite_arrays(config, {
     _embedded_root_dir = embedded_root_dir,
     _src_root_dir = src_root_dir,
+    _api_umbrella_config_runtime_file = path.join(config["run_dir"], "runtime_config.yml"),
     _package_path = package.path,
     _package_cpath = package.cpath,
+    ["_test_env?"] = (config["app_env"] == "test"),
+    ["_development_env?"] = (config["app_env"] == "development"),
     analytics = {
       ["_output_elasticsearch?"] = array_includes(config["analytics"]["outputs"], "elasticsearch"),
       ["_output_kylin?"] = array_includes(config["analytics"]["outputs"], "kylin"),
     },
     mongodb = {
       _database = plutils.split(array_last(plutils.split(config["mongodb"]["url"], "/", true)), "?", true)[1],
+      embedded_server_config = {
+        storage = {
+          dbPath = path.join(config["db_dir"], "mongodb"),
+        },
+      },
     },
     elasticsearch = {
       _first_server = config["elasticsearch"]["_servers"][1],
+      embedded_server_config = {
+        path = {
+          data = path.join(config["db_dir"], "elasticsearch"),
+          logs = path.join(config["log_dir"], "elasticsearch"),
+        },
+      },
+      ["_template_version_v1?"] = (config["elasticsearch"]["template_version"] == 1),
+      ["_template_version_v2?"] = (config["elasticsearch"]["template_version"] == 2),
+      ["_api_version_lte_2?"] = (config["elasticsearch"]["api_version"] <= 2),
     },
     ["_service_general_db_enabled?"] = array_includes(config["services"], "general_db"),
     ["_service_log_db_enabled?"] = array_includes(config["services"], "log_db"),
@@ -335,7 +374,7 @@ local function set_computed_config()
     web = {
       admin = {
         auth_strategies = {
-          ["_local_enabled?"] = array_includes(config["web"]["admin"]["auth_strategies"]["enabled"], "local"),
+          ["_enabled"] = invert_table(config["web"]["admin"]["auth_strategies"]["enabled"]),
           ["_only_ldap_enabled?"] = (#config["web"]["admin"]["auth_strategies"]["enabled"] == 1 and config["web"]["admin"]["auth_strategies"]["enabled"][1] == "ldap"),
         },
       },
@@ -348,6 +387,24 @@ local function set_computed_config()
       dir = path.join(embedded_root_dir, "apps/static-site/current"),
       build_dir = path.join(embedded_root_dir, "apps/static-site/current/build"),
     },
+  })
+
+  if config["elasticsearch"]["api_version"] <= 2 then
+    deep_merge_overwrite_arrays(config, {
+      elasticsearch = {
+        embedded_server_config = {
+          path = {
+            conf = path.join(config["etc_dir"], "elasticsearch"),
+            scripts = path.join(config["etc_dir"], "elasticsearch_scripts"),
+          },
+        },
+      },
+    })
+  end
+
+  deep_merge_overwrite_arrays(config, {
+    _mongodb_yaml = lyaml.dump({ config["mongodb"]["embedded_server_config"] }),
+    _elasticsearch_yaml = lyaml.dump({ config["elasticsearch"]["embedded_server_config"] }),
   })
 
   if config["app_env"] == "development" then

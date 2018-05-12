@@ -8,8 +8,7 @@ add_custom_command(
   COMMAND touch ${STAMP_DIR}/package-bundle
 )
 
-add_custom_target(
-  package-core
+add_custom_target(package-core
   DEPENDS ${STAMP_DIR}/package-bundle
   COMMAND rm -rf ${WORK_DIR}/package-dest-core
   COMMAND make
@@ -18,28 +17,4 @@ add_custom_target(
   COMMAND rm -rf ${WORK_DIR}/package-dest-core
 )
 
-if(ENABLE_HADOOP_ANALYTICS)
-  add_custom_target(
-    package-hadoop-analytics
-    DEPENDS ${STAMP_DIR}/package-bundle
-    COMMAND rm -rf ${WORK_DIR}/package-dest-hadoop-analytics
-    COMMAND make
-    COMMAND make install-hadoop-analytics DESTDIR=${WORK_DIR}/package-dest-hadoop-analytics
-    COMMAND env PATH=${STAGE_EMBEDDED_DIR}/bin:$ENV{PATH} BUNDLE_GEMFILE=${CMAKE_SOURCE_DIR}/build/package/Gemfile BUNDLE_APP_CONFIG=${WORK_DIR}/src/package/.bundle WORK_DIR=${WORK_DIR} PACKAGE_WORK_DIR=${PACKAGE_WORK_DIR} PACKAGE=hadoop-analytics ${CMAKE_SOURCE_DIR}/build/package/build_package
-    COMMAND rm -rf ${WORK_DIR}/package-dest-hadoop-analytics
-  )
-endif()
-
-# CMake policy CMP0037 to allow target named "package".
-cmake_policy(PUSH)
-if(POLICY CMP0037)
-  cmake_policy(SET CMP0037 OLD)
-endif()
-add_custom_target(
-  package
-  DEPENDS package-core
-)
-if(ENABLE_HADOOP_ANALYTICS)
-  add_dependencies(package package-hadoop-analytics)
-endif()
-cmake_policy(POP)
+add_custom_target(package DEPENDS package-core)

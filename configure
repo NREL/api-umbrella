@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
 # Autotools-style (./configure) wrapper for CMake
 # <https://github.com/nemequ/configure-cmake>
@@ -21,7 +21,18 @@
 # copyright and related or neighboring rights to this work.  For
 # details, see <https://creativecommons.org/publicdomain/zero/1.0/>
 
-TOP_SRCDIR="$(dirname $0)"
+set -e
+
+# Resolve the current path, taking into account symlinks.
+# http://stackoverflow.com/a/246128/222487
+source="${BASH_SOURCE[0]}"
+while [ -L "$source" ]; do
+  dir="$(cd -P "$(dirname "$source")" && pwd)"
+  source="$(readlink "$source")"
+  [[ $source != /* ]] && source="$dir/$source"
+done
+TOP_SRCDIR="$(cd -P "$(dirname "$source")" && pwd)"
+
 CMAKE_CMD="cmake ${TOP_SRCDIR}"
 
 BUILD_TYPE="Debug"
@@ -34,7 +45,6 @@ if [ -e "${TOP_SRCDIR}/.configure-custom.sh" ]; then
 fi
 
 PREFIX=/opt/api-umbrella
-ENABLE_VARS="hadoop-analytics|on|ENABLE_HADOOP_ANALYTICS test-dependencies|on|ENABLE_TEST_DEPENDENCIES deploy-only|on|ENABLE_DEPLOY_ONLY"
 
 quote() {
     echo "$1" | sed -e "s|'|'\\\\''|g; 1s/^/'/; \$s/\$/'/"
@@ -299,9 +309,35 @@ if [ "x${LDFLAGS}" != "x" ]; then
     done
 fi
 
+# If running in the docker development environment, always force the build to
+# happen in the out-of source /build location. This helps ensure that even if
+# you manually run "./configure" from inside the default /app directory, the
+# generated files still assume /build as the build root.
+if [ "${DOCKER_DEV:-}" == "true" ]; then
+  cd /build
+
+  # Remove existing /app symlinks before running cmake again, or else the
+  # cached files might cause cmake to not consider this an out-of-source build.
+  # We'll re-create the symlinks after cmake has been executed.
+  rm -f /app/CMakeCache.txt \
+    /app/CMakeFiles \
+    /app/Makefile \
+    /app/cmake_install.cmake
+fi
+
 "$TOP_SRCDIR/build/scripts/download_cmake"
 build_dir="$(pwd)"
 PATH="$build_dir/build/work/cmake/bin:$PATH"
 export PATH
 
 eval "cmake ${TOP_SRCDIR} -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -DCMAKE_INSTALL_PREFIX=${PREFIX} ${CMAKE_ARGS}"
+
+# If running in the docker development environment, ensure symlinks are in
+# place from the /app working directory to the /build location, so "make"
+# commands can work from the default /app directory.
+if [ "${DOCKER_DEV:-}" == "true" ]; then
+  ln -snf /build/CMakeCache.txt /app/CMakeCache.txt
+  ln -snf /build/CMakeFiles /app/CMakeFiles
+  ln -snf /build/Makefile /app/Makefile
+  ln -snf /build/cmake_install.cmake /app/cmake_install.cmake
+fi

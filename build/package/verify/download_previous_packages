@@ -25,10 +25,11 @@ previous_versions=(
 distros=(
   centos-6
   centos-7
-  ubuntu-12.04
   ubuntu-14.04
-  debian-7
+  ubuntu-16.04
+  ubuntu-18.04
   debian-8
+  debian-9
 )
 
 if [ -n "${DIST:-}" ]; then
@@ -53,10 +54,6 @@ for dist in "${distros[@]}"; do
         filename="api-umbrella-${version}.el7.x86_64.rpm"
         url_prefix="$bintray_url_root/api-umbrella-el7"
         ;;
-      ubuntu-12.04)
-        filename="api-umbrella_${version}~precise_amd64.deb"
-        url_prefix="$bintray_url_root/api-umbrella-ubuntu/pool/main/a/api-umbrella"
-        ;;
       ubuntu-14.04)
         filename="api-umbrella_${version}~trusty_amd64.deb"
         url_prefix="$bintray_url_root/api-umbrella-ubuntu/pool/main/a/api-umbrella"
@@ -69,13 +66,25 @@ for dist in "${distros[@]}"; do
           filename=""
         fi
         ;;
-      debian-7)
-        filename="api-umbrella_${version}~wheezy_amd64.deb"
-        url_prefix="$bintray_url_root/api-umbrella-debian/pool/main/a/api-umbrella"
+      ubuntu-18.04)
+        filename="api-umbrella_${version}~bionic_amd64.deb"
+        url_prefix="$bintray_url_root/api-umbrella-ubuntu/pool/main/a/api-umbrella"
+        if [ "$(compare_version "$version")" -lt "$(compare_version "0.15.0")" ]; then
+          # No Ubuntu 18.04 packages until v0.15
+          filename=""
+        fi
         ;;
       debian-8)
         filename="api-umbrella_${version}~jessie_amd64.deb"
         url_prefix="$bintray_url_root/api-umbrella-debian/pool/main/a/api-umbrella"
+        ;;
+      debian-9)
+        filename="api-umbrella_${version}~stretch_amd64.deb"
+        url_prefix="$bintray_url_root/api-umbrella-debian/pool/main/a/api-umbrella"
+        if [ "$(compare_version "$version")" -lt "$(compare_version "0.15.0")" ]; then
+          # No Debian 9 packages until v0.15
+          filename=""
+        fi
         ;;
       *)
         echo "Unknown distribution: $dist"

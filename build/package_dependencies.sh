@@ -8,12 +8,12 @@ if [ -f /etc/os-release ]; then
 fi
 
 if [ -f /etc/redhat-release ]; then
-  util_linux_package="util-linux-ng"
-  procps_package="procps"
+  util_linux_package="util-linux"
+  procps_package="procps-ng"
 
-  if [[ "${VERSION_ID:-}" == "7" ]]; then
-    util_linux_package="util-linux"
-    procps_package="procps-ng"
+  if [[ "${VERSION_ID:-}" == "6" ]]; then
+    util_linux_package="util-linux-ng"
+    procps_package="procps"
   fi
 
   core_package_dependencies=(
@@ -57,6 +57,9 @@ if [ -f /etc/redhat-release ]; then
     # For OpenResty's "resty" CLI.
     perl
     perl-Time-HiRes
+
+    # lua-icu-date
+    libicu-devel
   )
   hadoop_analytics_package_dependencies=(
     java-1.8.0-openjdk-headless
@@ -77,7 +80,6 @@ if [ -f /etc/redhat-release ]; then
     libyaml-devel
     make
     ncurses-devel
-    openssl
     openssl-devel
     patch
     pcre-devel
@@ -119,20 +121,27 @@ if [ -f /etc/redhat-release ]; then
     groff
   )
 elif [ -f /etc/debian_version ]; then
-  libffi_version=6
-  openjdk_version=7
+  libcurl_version=3
+  libtool_bin_package="libtool-bin"
+  openjdk_version=8
 
-  if [[ "$ID" == "debian" && "$VERSION_ID" == "7" ]]; then
-    libffi_version=5
-  elif [[ "$ID" == "ubuntu" && "$VERSION_ID" == "16.04" ]]; then
-    openjdk_version=8
+  if [[ "$ID" == "ubuntu" && "$VERSION_ID" == "18.04" ]]; then
+    libcurl_version=4
+  fi
+
+  if [[ "$ID" == "ubuntu" && "$VERSION_ID" == "14.04" ]]; then
+    libtool_bin_package="libtool"
+  fi
+
+  if [[ "$ID" == "debian" && "$VERSION_ID" == "8" ]] || [[ "$ID" == "ubuntu" && "$VERSION_ID" == "14.04" ]]; then
+    openjdk_version=7
   fi
 
   core_package_dependencies=(
     # General
     bash
     libc6
-    "libffi$libffi_version"
+    libffi6
     libncurses5
     libpcre3
     libuuid1
@@ -154,7 +163,7 @@ elif [ -f /etc/debian_version ]; then
     "openjdk-$openjdk_version-jre-headless"
 
     # rsyslog omelasticsearch
-    libcurl3
+    "libcurl$libcurl_version"
 
     # init.d script helpers
     sysvinit-utils
@@ -168,6 +177,9 @@ elif [ -f /etc/debian_version ]; then
 
     # For OpenResty's "resty" CLI.
     perl
+
+    # lua-icu-date
+    libicu-dev
   )
   hadoop_analytics_package_dependencies=(
     "openjdk-$openjdk_version-jre-headless"
@@ -186,11 +198,11 @@ elif [ -f /etc/debian_version ]; then
     libpcre3-dev
     libssl-dev
     libtool
+    "$libtool_bin_package"
     libxml2-dev
     libyaml-dev
     lsb-release
     make
-    openssl
     patch
     pkg-config
     python
@@ -211,6 +223,7 @@ elif [ -f /etc/debian_version ]; then
 
     # For installing the mongo-orchestration test dependency.
     python-virtualenv
+    virtualenv
 
     # For checking for file descriptor leaks during the tests.
     lsof
@@ -229,10 +242,6 @@ elif [ -f /etc/debian_version ]; then
     # OpenLDAP
     groff-base
   )
-
-  if [[ "$ID" == "debian" && "$VERSION_ID" == "8" ]] || [[ "$ID" == "ubuntu" && "$VERSION_ID" == "16.04" ]]; then
-    core_build_dependencies+=("libtool-bin")
-  fi
 else
   echo "Unknown build system"
   exit 1

@@ -20,7 +20,6 @@ nginx:
     port: 13005
 trafficserver:
   port: 13009
-  autoconf_port: 13007
   management_port: 13008
   embedded_server_config:
     records:
@@ -109,3 +108,9 @@ openldap:
   port: 13104
 apiSettings:
   require_https: optional
+_test_config:
+  default_null_override_hash:
+    foo: bar
+  default_null_override_string: foobar
+  default_empty_hash_override_hash:
+    baz: qux

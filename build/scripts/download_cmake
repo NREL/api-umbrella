@@ -2,8 +2,8 @@
 
 set -e -u
 
-version=3.8.2
-checksum=33e4851d3219b720f4b64fcf617151168f1bffdf5afad25eb4b7f5f58cee3a08
+version=3.11.1
+checksum=3aa8d3b53903563bdc13dfec80716c286b2228db36ef65c23bc616f9bb930367
 
 build_dir=$(pwd)
 work_dir="$build_dir/build/work"
@@ -20,7 +20,7 @@ if [[ ! -e "$prefix/bin/cmake" || ! -e "$version_stamp" ]]; then
   download_path="$work_dir/$download_filename"
   if [ ! -e "$download_path" ]; then
     echo "Downloading CMake $version..."
-    curl -fL -o "$download_path" "$download_url"
+    curl -fL --retry 3 -o "$download_path" "$download_url"
   fi
 
   actual_checksum=$(openssl sha256 "$download_path" | awk '{print $2}')

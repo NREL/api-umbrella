@@ -11,9 +11,14 @@ rlimits:
   nproc: 20000
 http_port: 80
 https_port: 443
+listen:
+  addresses:
+    - "*"
+    - "[::]"
 nginx:
   workers: auto
   worker_connections: 8192
+  error_log_level: notice
   access_log_filename: access.log
   access_log_options: buffer=256k flush=10s
   proxy_connect_timeout: 60
@@ -62,7 +67,6 @@ gatekeeper:
 trafficserver:
   host: 127.0.0.1
   port: 14009
-  autoconf_port: 14007
   management_port: 14008
   storage:
     size: 256M
@@ -94,7 +98,11 @@ web:
       enabled:
         - local
       cas:
-        options: {}
+        options:
+          service_validate_url: /serviceValidate
+          login_url: /login
+          logout_url: /logout
+          ssl: true
       facebook:
         client_id:
         client_secret:
@@ -108,9 +116,18 @@ web:
         client_id:
         client_secret:
       ldap:
-        options: {}
+        options:
+          port: 389
+          method: plain
+          uid: sAMAccountName
       max.gov:
         require_mfa: true
+        options:
+          host: login.max.gov
+          login_url: /cas/login
+          service_validate_url: /cas/serviceValidate
+          logout_url: /cas/logout
+          ssl: true
   mailer:
     smtp_settings:
 static_site:
@@ -138,6 +155,8 @@ router:
 rsyslog:
   host: 127.0.0.1
   port: 14014
+log:
+  destination: file
 dns_resolver:
   negative_ttl: 60
   max_stale: 86400
@@ -162,6 +181,7 @@ elasticsearch:
   embedded_server_env:
     heap_size: 512m
   api_version: 2
+  template_version: 1
   embedded_server_config:
     network:
       host: 127.0.0.1
@@ -214,7 +234,6 @@ flume:
 kafka:
   brokers: []
   topic: api_umbrella_logs
-log_template_version: v1
 strip_cookies:
   - ^__utm.*$
   - ^_ga$
@@ -372,3 +391,7 @@ ban:
 ember_server:
   port: 14050
   live_reload_port: 14051
+_test_config:
+  default_null_override_hash:
+  default_null_override_string:
+  default_empty_hash_override_hash: {}

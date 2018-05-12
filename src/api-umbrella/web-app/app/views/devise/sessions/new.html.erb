@@ -1,7 +1,7 @@
 <h1><%= t(".admin_sign_in") %></h1>
 
 <div class="login-container">
-  <% if(!ApiUmbrellaConfig[:web][:admin][:auth_strategies][:_local_enabled?] && Admin.count == 0) %>
+  <% if(!ApiUmbrellaConfig[:web][:admin][:auth_strategies][:_enabled][:local] && Admin.count == 0) %>
     <div class="alert alert-danger">
       <strong>No admins currently exist.</strong><br>
       Initial admin accounts may be defined in <code>/etc/api-umbrella/api-umbrella.yml</code> (see the <code>web.admin.initial_superusers</code> section)
@@ -9,7 +9,7 @@
   <% end %>
 
   <% if(display_login_form?) %>
-    <% if(ApiUmbrellaConfig[:web][:admin][:auth_strategies][:_local_enabled?]) %>
+    <% if(ApiUmbrellaConfig[:web][:admin][:auth_strategies][:_enabled][:local]) %>
       <%= render("local_login_form") %>
     <% elsif(ApiUmbrellaConfig[:web][:admin][:auth_strategies][:_only_ldap_enabled?]) %>
       <%= render("ldap_login_form") %>

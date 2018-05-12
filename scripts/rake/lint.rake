@@ -18,7 +18,7 @@ namespace :lint do
   task :lua do
     require "childprocess"
 
-    lua_files = `git ls-files #{API_UMBRELLA_SRC_ROOT} | grep "\.lua$"`.split("\n")
+    lua_files = `git ls-files #{API_UMBRELLA_SRC_ROOT} | grep "\\.lua$"`.split("\n")
     process = ChildProcess.build("build/work/test-env/vendor/bin/luacheck", *lua_files)
     process.cwd = API_UMBRELLA_SRC_ROOT
     process.environment["LUA_PATH"] = "build/work/test-env/vendor/share/lua/5.1/?.lua;build/work/test-env/vendor/share/lua/5.1/?/init.lua;;"
