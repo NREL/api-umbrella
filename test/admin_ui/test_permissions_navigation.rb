@@ -210,24 +210,24 @@ class Test::AdminUi::TestPermissionsNavigation < Minitest::Capybara::Test
 
   def assert_nav(menus)
     nav = find("nav.navbar")
-    assert_equal(menus.join(" "), nav.text)
+    assert_equal(menus.join("\n"), nav.text)
   end
 
   def assert_analytics_menu(items)
     nav = find("nav.navbar")
     menu = nav.find(".nav-analytics .dropdown-menu", :visible => :hidden)
-    assert_equal(items.join(" "), menu.text(:all))
+    assert_equal(items.join("\n"), menu.text(:all))
   end
 
   def assert_users_menu(items)
     nav = find("nav.navbar")
     menu = nav.find(".nav-users .dropdown-menu", :visible => :hidden)
-    assert_equal(items.join(" "), menu.text(:all))
+    assert_equal(items.join("\n"), menu.text(:all))
   end
 
   def assert_config_menu(items)
     nav = find("nav.navbar")
     menu = nav.find(".nav-config .dropdown-menu", :visible => :hidden)
-    assert_equal(items.join(" "), menu.text(:all))
+    assert_equal(items.join("\n"), menu.text(:all))
   end
 end
