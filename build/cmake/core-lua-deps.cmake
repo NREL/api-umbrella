@@ -6,7 +6,6 @@ luarocks_install(inspect ${LUAROCK_INSPECT_VERSION} ${LUAROCK_INSPECT_HASH})
 luarocks_install(libcidr-ffi ${LUAROCK_LIBCIDR_VERSION} ${LUAROCK_LIBCIDR_HASH} CIDR_DIR=${LUA_PREFIX} libcidr)
 luarocks_install(lua-cmsgpack ${LUAROCK_CMSGPACK_VERSION} ${LUAROCK_CMSGPACK_HASH})
 luarocks_install(lua-iconv ${LUAROCK_ICONV_VERSION} ${LUAROCK_ICONV_HASH})
-luarocks_install(lua-resty-auto-ssl ${LUAROCK_RESTY_AUTO_SSL_VERSION} ${LUAROCK_RESTY_AUTO_SSL_HASH})
 luarocks_install(lua-resty-http ${LUAROCK_RESTY_HTTP_VERSION} ${LUAROCK_RESTY_HTTP_HASH})
 luarocks_install(lua-resty-uuid ${LUAROCK_RESTY_UUID_VERSION} ${LUAROCK_RESTY_UUID_HASH})
 luarocks_install(luaposix ${LUAROCK_LUAPOSIX_VERSION} ${LUAROCK_LUAPOSIX_HASH})
@@ -73,7 +72,6 @@ set(
   luarock_libcidr-ffi
   luarock_lua-cmsgpack
   luarock_lua-iconv
-  luarock_lua-resty-auto-ssl
   luarock_lua-resty-http
   luarock_lua-resty-uuid
   luarock_luaposix

@@ -14,7 +14,7 @@ class FixCustomRateLimits < Mongoid::Migration
 
         # Assign one of the limits to be primary if that hadn't gotten set.
         if(rate_limits.none? { |limit| limit.response_headers })
-          primary = rate_limits.sort_by { |limit| limit.duration }.first
+          primary = rate_limits.min_by { |limit| limit.duration }
           primary.response_headers = true
         end
 

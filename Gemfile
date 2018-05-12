@@ -18,7 +18,7 @@ gem "minitest-hooks", "~> 1.4.2"
 gem "minitest-ci", "~> 3.4.0"
 
 # Ruby lint/style checker
-gem "rubocop", "~> 0.54.0", :require => false
+gem "rubocop", "~> 0.55.0", :require => false
 
 # Running background processes
 gem "childprocess", "~> 0.9.0"
@@ -28,7 +28,7 @@ gem "typhoeus", "~> 1.3.0"
 
 # JSON parsing
 gem "multi_json", "~> 1.13.1"
-gem "oj", "~> 3.5.0"
+gem "oj", "~> 3.6.0"
 
 # Database libraries
 gem "mongoid", "~> 6.3.0"
@@ -39,7 +39,7 @@ gem "elasticsearch-persistence", "~> 0.1.9"
 gem "factory_bot", "~> 4.8.2"
 
 # Deleting database data between tests.
-gem "database_cleaner", "~> 1.6.2"
+gem "database_cleaner", "~> 1.7.0"
 
 # Programmatically generate Rails session cookies.
 gem "rails_compatible_cookies_utils", "~> 0.1.0"
@@ -48,13 +48,10 @@ gem "rails_compatible_cookies_utils", "~> 0.1.0"
 gem "addressable", "~> 2.5.2"
 
 # Browser/JavaScript integration tests
-gem "capybara", "~> 2.18.0"
-# Use fork to fix failure messages:
-# https://github.com/wojtekmach/minitest-capybara/pull/17
-gem "minitest-capybara", "~> 0.8.2", :git => "https://github.com/GUI/minitest-capybara.git"
+gem "capybara", "~> 3.1.0"
 
 # Webkit-based driver for capybara
-gem "poltergeist", "~> 1.17.0"
+gem "poltergeist", "~> 1.18.0"
 
 # Take screenshots on capybara test failures
 gem "capybara-screenshot", "~> 1.0.14"
