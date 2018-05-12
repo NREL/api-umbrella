@@ -15,8 +15,8 @@ class Test::AdminUi::TestPermissionsNavigation < Minitest::Capybara::Test
 
     assert_nav([
       "API Umbrella",
-      "Analytics",
-      "Users",
+      "Analytics ",
+      "Users ",
       "Configuration",
     ])
 
@@ -216,18 +216,18 @@ class Test::AdminUi::TestPermissionsNavigation < Minitest::Capybara::Test
   def assert_analytics_menu(items)
     nav = find("nav.navbar")
     menu = nav.find(".nav-analytics .dropdown-menu", :visible => :hidden)
-    assert_equal(items.join("\n"), menu.text(:all))
+    assert_equal(items.join(" "), menu.text(:all))
   end
 
   def assert_users_menu(items)
     nav = find("nav.navbar")
     menu = nav.find(".nav-users .dropdown-menu", :visible => :hidden)
-    assert_equal(items.join("\n"), menu.text(:all))
+    assert_equal(items.join(" "), menu.text(:all))
   end
 
   def assert_config_menu(items)
     nav = find("nav.navbar")
     menu = nav.find(".nav-config .dropdown-menu", :visible => :hidden)
-    assert_equal(items.join("\n"), menu.text(:all))
+    assert_equal(items.join(" "), menu.text(:all))
   end
 end
