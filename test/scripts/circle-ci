@@ -2,14 +2,17 @@
 
 set -e -u -x
 
+export PATH="build/work/stage/opt/api-umbrella/embedded/bin:$PATH"
+export BUNDLE_APP_CONFIG=build/work/.bundle
+
 # Always run the lint tests on the first node (since these are quick and only
 # need to be run on a single node).
 if [ "$CIRCLE_NODE_INDEX" -eq "0" ]; then
-  time env PATH="build/work/stage/opt/api-umbrella/embedded/bin:$PATH" bundle exec rake lint
+  time bundle exec rake lint
 fi
 
 # Circle's parallel command will pass this script a list of test files to run
 # on this node as arguments. Pass those along to the rake task via the TESTS
 # environment variable.
 tests=("$@")
-env PATH="build/work/stage/opt/api-umbrella/embedded/bin:$PATH" TESTOPTS="--ci-dir=./test/tmp/reports" TESTS="${tests[*]}" N=12 bundle exec rake test
+env TESTOPTS="--ci-dir=./test/tmp/reports" TESTS="${tests[*]}" N=12 bundle exec rake test
