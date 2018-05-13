@@ -31,6 +31,7 @@ RUN /app/configure && make test-deps
 
 COPY Gemfile /app/Gemfile
 COPY Gemfile.lock /app/Gemfile.lock
+COPY build/cmake/test-bundle.cmake /app/build/cmake/test-bundle.cmake
 RUN /app/configure && make test-bundle
 
 COPY build/cmake/app-deps /app/build/cmake/app-deps
