@@ -296,12 +296,6 @@ local function set_computed_config()
     config["analytics"]["outputs"] = { config["analytics"]["adapter"] }
   end
 
-  config["kafka"]["_rsyslog_broker"] = {}
-  for _, broker in ipairs(config["kafka"]["brokers"]) do
-    table.insert(config["kafka"]["_rsyslog_broker"], '"' .. broker["host"] .. ":" .. broker["port"] .. '"')
-  end
-  config["kafka"]["_rsyslog_broker"] = table.concat(config["kafka"]["_rsyslog_broker"], ",")
-
   -- Setup the request/response timeouts for the different pieces of the stack.
   -- Since we traverse multiple proxies, we want to make sure the timeouts of
   -- the different proxies are kept in sync.
@@ -337,7 +331,6 @@ local function set_computed_config()
     ["_development_env?"] = (config["app_env"] == "development"),
     analytics = {
       ["_output_elasticsearch?"] = array_includes(config["analytics"]["outputs"], "elasticsearch"),
-      ["_output_kylin?"] = array_includes(config["analytics"]["outputs"], "kylin"),
     },
     mongodb = {
       _database = plutils.split(array_last(plutils.split(config["mongodb"]["url"], "/", true)), "?", true)[1],
@@ -361,7 +354,6 @@ local function set_computed_config()
     },
     ["_service_general_db_enabled?"] = array_includes(config["services"], "general_db"),
     ["_service_log_db_enabled?"] = array_includes(config["services"], "log_db"),
-    ["_service_hadoop_db_enabled?"] = array_includes(config["services"], "hadoop_db"),
     ["_service_router_enabled?"] = array_includes(config["services"], "router"),
     ["_service_web_enabled?"] = array_includes(config["services"], "web"),
     ["_service_nginx_reloader_enabled?"] = (array_includes(config["services"], "router") and config["nginx"]["_reloader_frequency"]),

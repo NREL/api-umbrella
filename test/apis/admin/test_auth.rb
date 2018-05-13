@@ -36,7 +36,6 @@ class Test::Apis::Admin::TestAuth < Minitest::Test
       "api_key",
       "api_umbrella_version",
       "authenticated",
-      "enable_beta_analytics",
       "local_auth_enabled",
       "password_length_min",
       "username_is_email",
@@ -48,7 +47,6 @@ class Test::Apis::Admin::TestAuth < Minitest::Test
     assert_kind_of(String, data["api_key"])
     assert_kind_of(String, data["api_umbrella_version"])
     assert_includes([TrueClass, FalseClass], data["authenticated"].class)
-    assert_includes([TrueClass, FalseClass], data["enable_beta_analytics"].class)
 
     assert_equal([
       "email",

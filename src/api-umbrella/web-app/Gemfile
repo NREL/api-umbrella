@@ -18,9 +18,6 @@ gem "rack-proxy", "~> 0.6.4"
 gem "multi_json", "~> 1.13.1"
 gem "oj", "~> 3.6.0", :platforms => [:ruby]
 
-# SQL escape libraries for Kylin analytics.
-gem "sequel", "~> 5.8.0"
-
 # MongoDB
 gem "mongoid", "~> 5.2.1"
 

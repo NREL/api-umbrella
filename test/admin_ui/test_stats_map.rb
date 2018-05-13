@@ -42,7 +42,6 @@ class Test::AdminUi::TestStatsMap < Minitest::Capybara::Test
       "search" => "",
       "query" => default_query,
       "region" => "world",
-      "beta_analytics" => "false",
     }, uri.query_values)
 
     # Wait for the ajax actions to fetch the graph and tables to both

@@ -65,9 +65,6 @@ if [ -f /etc/redhat-release ]; then
     libxml2-devel
     libxslt-devel
   )
-  hadoop_analytics_package_dependencies=(
-    java-1.8.0-openjdk-headless
-  )
   core_build_dependencies=(
     autoconf
     automake
@@ -95,9 +92,6 @@ if [ -f /etc/redhat-release ]; then
     tcl-devel
     unzip
     xz
-  )
-  hadoop_analytics_build_dependencies=(
-    java-1.8.0-openjdk-devel
   )
   test_build_dependencies=(
     # Binary and readelf tests
@@ -189,9 +183,6 @@ elif [ -f /etc/debian_version ]; then
     libxml2-dev
     libxslt-dev
   )
-  hadoop_analytics_package_dependencies=(
-    "openjdk-$openjdk_version-jre-headless"
-  )
   core_build_dependencies=(
     autoconf
     automake
@@ -220,9 +211,6 @@ elif [ -f /etc/debian_version ]; then
     unzip
     uuid-dev
     xz-utils
-  )
-  hadoop_analytics_build_dependencies=(
-    "openjdk-$openjdk_version-jdk"
   )
   test_build_dependencies=(
     # Binary and readelf tests
@@ -257,9 +245,7 @@ fi
 
 all_build_dependencies=(
   "${core_package_dependencies[@]}"
-  "${hadoop_analytics_package_dependencies[@]}"
   "${core_build_dependencies[@]}"
-  "${hadoop_analytics_build_dependencies[@]}"
 )
 
 # shellcheck disable=SC2034

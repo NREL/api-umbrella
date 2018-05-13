@@ -19,5 +19,4 @@ export default Controller.extend({
       value: null,
     }],
   }),
-  beta_analytics: false,
 });

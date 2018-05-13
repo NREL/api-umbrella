@@ -17,7 +17,6 @@ class Admin::SessionsController < Devise::SessionsController
     if current_admin
       response.merge!({
         "analytics_timezone" => ApiUmbrellaConfig[:analytics][:timezone],
-        "enable_beta_analytics" => (ApiUmbrellaConfig[:analytics][:adapter] == "kylin" || (ApiUmbrellaConfig[:analytics][:outputs] && ApiUmbrellaConfig[:analytics][:outputs].include?("kylin"))),
         "username_is_email" => ApiUmbrellaConfig[:web][:admin][:username_is_email],
         "local_auth_enabled" => ApiUmbrellaConfig[:web][:admin][:auth_strategies][:_enabled][:local],
         "password_length_min" => ApiUmbrellaConfig[:web][:admin][:password_length_min],

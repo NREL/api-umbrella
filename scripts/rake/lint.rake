@@ -52,7 +52,6 @@ namespace :lint do
     # Ignore certain vendored files for linting.
     ignore_files = [
       "configure",
-      "templates/etc/perp/kylin/rc.run.mustache",
     ]
 
     ["sh", "bash"].each do |shell|

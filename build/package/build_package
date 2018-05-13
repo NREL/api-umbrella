@@ -49,14 +49,6 @@ if [ "$PACKAGE" == "core" ]; then
   fpm_args+=("--after-remove" "$source_dir/build/package/scripts/after-remove")
   fpm_args+=("--directories" "/opt/api-umbrella")
   fpm_args+=("--directories" "/etc/api-umbrella")
-elif [ "$PACKAGE" == "hadoop-analytics" ]; then
-  for dep in "${hadoop_analytics_package_dependencies[@]}"; do
-    fpm_args+=("-d" "$dep")
-  done
-
-  fpm_args+=("-C" "$WORK_DIR/package-dest-hadoop-analytics")
-  fpm_args+=("--name" "api-umbrella-hadoop-analytics")
-  fpm_args+=("--depends" "api-umbrella")
 fi
 
 mkdir -p "$PACKAGE_WORK_DIR/build/$PACKAGE"

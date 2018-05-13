@@ -43,7 +43,6 @@ class Test::AdminUi::TestStatsDrilldown < Minitest::Capybara::Test
       "search" => "",
       "query" => default_query,
       "prefix" => "0/",
-      "beta_analytics" => "false",
     }, uri.query_values.except("api_key"))
     assert_equal(40, uri.query_values["api_key"].length)
 
