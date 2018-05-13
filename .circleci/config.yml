@@ -2,7 +2,7 @@ version: 2
 jobs:
   build:
     parallelism: 3
-    working_directory: ~/app
+    working_directory: /app
     docker:
       - image: ubuntu:18.04
     steps:
