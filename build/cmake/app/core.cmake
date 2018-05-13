@@ -72,9 +72,10 @@ add_custom_command(
     ${STAMP_DIR}/core-build-release-vendor-symlink
   WORKING_DIRECTORY ${CORE_BUILD_DIR}/releases/0/src/api-umbrella/web-app
   # Disable all non-production gems and remove any old, unused gems.
-  COMMAND env PATH=${STAGE_EMBEDDED_DIR}/bin:$ENV{PATH} bundle install --path=../../../vendor/bundle --without=development test assets --clean --deployment
+  COMMAND env PATH=${STAGE_EMBEDDED_PATH} bundle config --local build.nokogiri --use-system-libraries
+  COMMAND env PATH=${STAGE_EMBEDDED_PATH} bundle install --path=../../../vendor/bundle --without=development test assets --clean --deployment
   # Purge gem files we don't need to make for a lighter package distribution.
-  COMMAND cd ${CORE_BUILD_DIR}/shared/vendor/bundle && rm -rf ruby/*/cache ruby/*/gems/*/test* ruby/*/gems/*/spec ruby/*/bundler/gems/*/test* ruby/*/bundler/gems/*/spec ruby/*/bundl
+  COMMAND cd ${CORE_BUILD_DIR}/shared/vendor/bundle && rm -rf ruby/*/cache ruby/*/gems/*/test* ruby/*/gems/*/spec ruby/*/bundler/gems/*/test* ruby/*/bundler/gems/*/spec ruby/*/bundler/gems/*/.git
   COMMAND touch -c ${CORE_BUILD_DIR}/releases/0/src/api-umbrella/web-app/.bundle/config
 )
 

@@ -60,6 +60,10 @@ if [ -f /etc/redhat-release ]; then
 
     # lua-icu-date
     libicu-devel
+
+    # nokogiri
+    libxml2-devel
+    libxslt-devel
   )
   hadoop_analytics_package_dependencies=(
     java-1.8.0-openjdk-headless
@@ -180,6 +184,10 @@ elif [ -f /etc/debian_version ]; then
 
     # lua-icu-date
     libicu-dev
+
+    # nokogiri
+    libxml2-dev
+    libxslt-dev
   )
   hadoop_analytics_package_dependencies=(
     "openjdk-$openjdk_version-jre-headless"

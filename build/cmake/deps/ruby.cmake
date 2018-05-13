@@ -33,7 +33,7 @@ ExternalProject_Add(
   DOWNLOAD_NO_EXTRACT 1
   CONFIGURE_COMMAND ""
   BUILD_COMMAND ""
-  INSTALL_COMMAND env PATH=${STAGE_EMBEDDED_DIR}/bin:$ENV{PATH} gem update --system ${RUBYGEMS_VERSION} --no-document
+  INSTALL_COMMAND env PATH=${STAGE_EMBEDDED_PATH} gem update --system ${RUBYGEMS_VERSION} --no-document
 )
 
 ExternalProject_Add(
@@ -45,5 +45,5 @@ ExternalProject_Add(
   DOWNLOAD_NO_EXTRACT 1
   CONFIGURE_COMMAND ""
   BUILD_COMMAND ""
-  INSTALL_COMMAND env PATH=${STAGE_EMBEDDED_DIR}/bin:$ENV{PATH} gem install <DOWNLOADED_FILE> --no-document --env-shebang --local --force
+  INSTALL_COMMAND env PATH=${STAGE_EMBEDDED_PATH} gem install <DOWNLOADED_FILE> --no-document --env-shebang --local --force
 )

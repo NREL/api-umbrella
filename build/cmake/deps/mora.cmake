@@ -26,6 +26,6 @@ ExternalProject_Add(
   SOURCE_DIR ${WORK_DIR}/gocode/src/github.com/emicklei/mora
   BUILD_IN_SOURCE 1
   CONFIGURE_COMMAND ""
-  BUILD_COMMAND env PATH=${GOLANG_SOURCE_DIR}/bin:${WORK_DIR}/gocode/bin:$ENV{PATH} GOPATH=${WORK_DIR}/gocode GOROOT=${GOLANG_SOURCE_DIR} go install
+  BUILD_COMMAND env PATH=${GOLANG_SOURCE_DIR}/bin:${WORK_DIR}/gocode/bin:${DEFAULT_PATH} GOPATH=${WORK_DIR}/gocode GOROOT=${GOLANG_SOURCE_DIR} go install
   INSTALL_COMMAND install -D -m 755 ${WORK_DIR}/gocode/bin/mora ${STAGE_EMBEDDED_DIR}/bin/mora
 )

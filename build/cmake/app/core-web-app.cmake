@@ -7,7 +7,8 @@ add_custom_command(
     bundler
     ${CMAKE_SOURCE_DIR}/src/api-umbrella/web-app/Gemfile
     ${CMAKE_SOURCE_DIR}/src/api-umbrella/web-app/Gemfile.lock
-  COMMAND env PATH=${STAGE_EMBEDDED_DIR}/bin:$ENV{PATH} BUNDLE_GEMFILE=${CMAKE_SOURCE_DIR}/src/api-umbrella/web-app/Gemfile BUNDLE_APP_CONFIG=${WORK_DIR}/src/web-app/.bundle bundle install --clean --path=${VENDOR_DIR}/bundle
+  COMMAND env PATH=${STAGE_EMBEDDED_PATH} BUNDLE_GEMFILE=${CMAKE_SOURCE_DIR}/src/api-umbrella/web-app/Gemfile BUNDLE_APP_CONFIG=${WORK_DIR}/src/web-app/.bundle bundle config --local build.nokogiri --use-system-libraries
+  COMMAND env PATH=${STAGE_EMBEDDED_PATH} BUNDLE_GEMFILE=${CMAKE_SOURCE_DIR}/src/api-umbrella/web-app/Gemfile BUNDLE_APP_CONFIG=${WORK_DIR}/src/web-app/.bundle bundle install --path=${VENDOR_DIR}/bundle
   COMMAND touch -c ${WORK_DIR}/src/web-app/.bundle
   COMMAND touch -c ${VENDOR_DIR}/bundle
   COMMAND touch ${STAMP_DIR}/core-web-app-bundle
@@ -25,7 +26,7 @@ add_custom_command(
     ${STAMP_DIR}/core-web-app-bundle
     ${web_asset_files}
     ${CMAKE_SOURCE_DIR}/src/api-umbrella/web-app/config/initializers/assets.rb
-  COMMAND env PATH=${STAGE_EMBEDDED_DIR}/bin:$ENV{PATH} BUNDLE_GEMFILE=${CMAKE_SOURCE_DIR}/src/api-umbrella/web-app/Gemfile BUNDLE_APP_CONFIG=${WORK_DIR}/src/web-app/.bundle RAILS_TMP_PATH=${CORE_BUILD_DIR}/tmp/web-app-tmp RAILS_PUBLIC_PATH=${CORE_BUILD_DIR}/tmp/web-app-build RAILS_ENV=production RAILS_SECRET_TOKEN=temp RAILS_ASSETS_PRECOMPILE=true bundle exec rake -f ${CMAKE_SOURCE_DIR}/src/api-umbrella/web-app/Rakefile assets:clobber assets:precompile
+  COMMAND env PATH=${STAGE_EMBEDDED_PATH} BUNDLE_GEMFILE=${CMAKE_SOURCE_DIR}/src/api-umbrella/web-app/Gemfile BUNDLE_APP_CONFIG=${WORK_DIR}/src/web-app/.bundle RAILS_TMP_PATH=${CORE_BUILD_DIR}/tmp/web-app-tmp RAILS_PUBLIC_PATH=${CORE_BUILD_DIR}/tmp/web-app-build RAILS_ENV=production RAILS_SECRET_TOKEN=temp RAILS_ASSETS_PRECOMPILE=true bundle exec rake -f ${CMAKE_SOURCE_DIR}/src/api-umbrella/web-app/Rakefile assets:clobber assets:precompile
   COMMAND touch ${STAMP_DIR}/core-web-app-precompile
 )
 

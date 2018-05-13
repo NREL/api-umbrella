@@ -31,7 +31,7 @@ dependencies:
   override:
     # Build all the API Umbrella software dependencies.
     - ./configure
-    - make all test-deps
+    - make all test-deps test-bundle
     # Remove the download archives, since we don't need to cache these in
     # CircleCI, and doing so also leads to multiple versions being kept around
     # whenever we bump our dependency versions.
