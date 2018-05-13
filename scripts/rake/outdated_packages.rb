@@ -100,10 +100,6 @@ class OutdatedPackages
       :git => "https://github.com/yzprofile/ngx_http_dyups_module.git",
       :git_ref => "master",
     },
-    "ngx_txid" => {
-      :git => "https://github.com/streadway/ngx_txid.git",
-      :git_ref => "master",
-    },
     "nodejs" => {
       :git => "https://github.com/nodejs/node.git",
       :constraint => "~> 8.10",
@@ -127,6 +123,9 @@ class OutdatedPackages
     },
     "opm_resty_http" => {
       :git => "https://github.com/pintsized/lua-resty-http.git",
+    },
+    "opm_resty_txid" => {
+      :git => "https://github.com/GUI/lua-resty-txid.git",
     },
     "pcre" => {
       :http => "https://ftp.pcre.org/pub/pcre/",

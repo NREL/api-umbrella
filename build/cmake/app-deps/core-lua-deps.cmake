@@ -30,6 +30,8 @@ set(OPM_LIBCIDR_VERSION 0.1.3)
 set(OPM_LIBCIDR_HASH 9d995b83a7d857fcdec949725711b784)
 set(OPM_RESTY_HTTP_VERSION 0.12)
 set(OPM_RESTY_HTTP_HASH edc5d6deb82c1f5f628e382290c79209)
+set(OPM_RESTY_TXID_VERSION 1.0.0)
+set(OPM_RESTY_TXID_HASH 0c2ebfef460d537316e52f696d8bbfb7)
 
 # LuaRock app dependencies
 luarocks_install(argparse ${LUAROCK_ARGPARSE_VERSION} ${LUAROCK_ARGPARSE_HASH})
@@ -45,6 +47,7 @@ luarocks_install(penlight ${LUAROCK_PENLIGHT_VERSION} ${LUAROCK_PENLIGHT_HASH})
 # OPM app dependencies
 opm_install(lua-libcidr-ffi GUI ${OPM_LIBCIDR_VERSION} ${OPM_LIBCIDR_HASH} libcidr)
 opm_install(lua-resty-http pintsized ${OPM_RESTY_HTTP_VERSION} ${OPM_RESTY_HTTP_HASH})
+opm_install(lua-resty-txid GUI ${OPM_RESTY_TXID_VERSION} ${OPM_RESTY_TXID_HASH})
 
 ExternalProject_Add(
   opm_lua-icu-date
@@ -127,6 +130,7 @@ set(
   opm_lua-icu-date
   opm_lua-libcidr-ffi
   opm_lua-resty-http
+  opm_lua-resty-txid
 )
 
 # Also depend on the internal stamp files used by ExternalProject_Add, since
