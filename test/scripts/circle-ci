@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 set -e -u -x
+shopt -s globstar
 
 export PATH="build/work/stage/opt/api-umbrella/embedded/bin:$PATH"
 export BUNDLE_APP_CONFIG=build/work/.bundle
@@ -17,5 +18,5 @@ fi
 # Circle's parallel command will pass this script a list of test files to run
 # on this node as arguments. Pass those along to the rake task via the TESTS
 # environment variable.
-tests=("$@")
+tests="$(circleci tests glob test/**/test_*.rb | circleci tests split --split-by=timings)"
 env TESTOPTS="--ci-dir=./test/tmp/reports" TESTS="${tests[*]}" N=12 bundle exec rake test
