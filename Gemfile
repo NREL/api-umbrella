@@ -32,7 +32,7 @@ gem "oj", "~> 3.6.0"
 
 # Database libraries
 gem "mongoid", "~> 6.3.0"
-gem "elasticsearch", "~> 2.0.2"
+gem "elasticsearch", "~> 5.0.1"
 gem "elasticsearch-persistence", "~> 0.1.9"
 
 # Factories for test database data

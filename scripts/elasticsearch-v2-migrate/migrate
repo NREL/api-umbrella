@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+set -e -u
+
+dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+export API_UMBRELLA_RUNTIME_CONFIG="/opt/api-umbrella/var/run/runtime_config.yml"
+
+api-umbrella-exec resty --http-include "$dir/migrate.conf" "$dir/migrate.lua" "$@"
