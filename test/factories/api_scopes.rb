@@ -35,5 +35,10 @@ FactoryBot.define do
     factory :bing_maps_api_scope do
       path_prefix "/bing/maps"
     end
+
+    factory :example_com_root_api_scope do
+      host "example.com"
+      path_prefix "/"
+    end
   end
 end

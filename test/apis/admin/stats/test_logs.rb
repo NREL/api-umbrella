@@ -143,6 +143,28 @@ class Test::Apis::Admin::Stats::TestLogs < Minitest::Test
     assert_equal("#{unique_test_id}-not-null", data["data"][0]["request_user_agent"])
   end
 
+  def test_query_builder_request_method
+    FactoryBot.create(:log_item, :request_at => Time.parse("2015-01-16T06:06:28.816Z").utc, :request_method => "POST", :request_user_agent => unique_test_id)
+    LogItem.gateway.refresh_index!
+
+    response = Typhoeus.get("https://127.0.0.1:9081/admin/stats/logs.json", http_options.deep_merge(admin_session).deep_merge({
+      :params => {
+        "start_at" => "2015-01-13",
+        "end_at" => "2015-01-18",
+        "interval" => "day",
+        "start" => "0",
+        "length" => "10",
+        "query" => '{"condition":"AND","rules":[{"id":"request_method","field":"request_method","type":"string","input":"select","operator":"equal","value":"post"}]}',
+      },
+    }))
+
+    assert_response_code(200, response)
+    data = MultiJson.load(response.body)
+    assert_equal(1, data["recordsTotal"])
+    assert_equal("POST", data["data"][0]["request_method"])
+    assert_equal(unique_test_id, data["data"][0]["request_user_agent"])
+  end
+
   def test_no_results_non_existent_indices
     response = Typhoeus.get("https://127.0.0.1:9081/admin/stats/logs.json", http_options.deep_merge(admin_session).deep_merge({
       :params => {

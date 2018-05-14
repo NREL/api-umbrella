@@ -77,5 +77,9 @@ FactoryBot.define do
         ]
       end
     end
+
+    factory :example_com_admin_group do
+      api_scopes { [ApiScope.find_or_create_by_instance!(FactoryBot.build(:example_com_root_api_scope))] }
+    end
   end
 end

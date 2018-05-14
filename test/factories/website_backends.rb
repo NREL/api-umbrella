@@ -8,5 +8,9 @@ FactoryBot.define do
     factory :website_backend_localhost do
       frontend_host "localhost"
     end
+
+    factory :example_com_website_backend do
+      frontend_host "example.com"
+    end
   end
 end

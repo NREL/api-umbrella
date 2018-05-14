@@ -5,7 +5,7 @@ local gsub = ngx.re.gsub
 local random_bytes = resty_random.bytes
 
 return function(length)
-  local token
+  local token = ""
   -- Loop until we've generated a valid token. The basic process:
   --
   -- 1. Generate secure random bytes.
@@ -16,7 +16,7 @@ return function(length)
   -- It should be extraordinarily rare that this needs to loop, but since we
   -- strip out some of the special characters from the resulting base64 string,
   -- this loops in case we strip more than expected.
-  while not token or string.len(token) < length do
+  while string.len(token) < length do
     -- Attempt to generate cryptographically secure random bytes. We
     -- purposefully generate more bytes than we need, since we'll be stripping
     -- some of the base64 characters out.
@@ -28,7 +28,7 @@ return function(length)
     end
 
     -- Encode with base64.
-    token = encode_base64(strong_random)
+    token = token .. encode_base64(strong_random)
 
     -- Strip +, /, and = out of the base64 result, since we just want a-z, A-Z,
     -- and 0-9 in our tokens.
