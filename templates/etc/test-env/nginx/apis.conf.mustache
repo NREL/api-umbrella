@@ -304,10 +304,12 @@ server {
       return ngx.shared.test_data:incr(key, 1) or ngx.shared.test_data:set(key, 1)
     ';
 
-    echo_sleep 1;
+    echo_sleep 2;
     set_secure_random_alphanum $random 50;
-    more_set_headers "Cache-Control: max-age=60";
+    more_set_headers "Cache-Control: max-age=4";
     more_set_headers "X-Unique-Output: $random";
+    more_set_headers "X-Request-Id: $x_api_umbrella_request_id";
+    more_set_headers "X-Unique-ID: $http_x_unique_id";
     echo $random;
   }
 
@@ -318,10 +320,12 @@ server {
       return ngx.shared.test_data:incr(key, 1) or ngx.shared.test_data:set(key, 1)
     ';
 
-    echo_sleep 1;
+    echo_sleep 2;
     set_secure_random_alphanum $random 50;
-    more_set_headers "Cache-Control: public, max-age=60";
+    more_set_headers "Cache-Control: public, max-age=4";
     more_set_headers "X-Unique-Output: $random";
+    more_set_headers "X-Request-Id: $x_api_umbrella_request_id";
+    more_set_headers "X-Unique-ID: $http_x_unique_id";
     echo $random;
   }
 
@@ -332,10 +336,12 @@ server {
       return ngx.shared.test_data:incr(key, 1) or ngx.shared.test_data:set(key, 1)
     ';
 
-    echo_sleep 1;
+    echo_sleep 2;
     set_secure_random_alphanum $random 50;
-    more_set_headers "Cache-Control: private, max-age=60";
+    more_set_headers "Cache-Control: private, max-age=4";
     more_set_headers "X-Unique-Output: $random";
+    more_set_headers "X-Request-Id: $x_api_umbrella_request_id";
+    more_set_headers "X-Unique-ID: $http_x_unique_id";
     echo $random;
   }
 
@@ -346,9 +352,11 @@ server {
       return ngx.shared.test_data:incr(key, 1) or ngx.shared.test_data:set(key, 1)
     ';
 
-    echo_sleep 1;
+    echo_sleep 2;
     set_secure_random_alphanum $random 50;
     more_set_headers "X-Unique-Output: $random";
+    more_set_headers "X-Request-Id: $x_api_umbrella_request_id";
+    more_set_headers "X-Unique-ID: $http_x_unique_id";
     echo $random;
   }
 
@@ -359,10 +367,12 @@ server {
       return ngx.shared.test_data:incr(key, 1) or ngx.shared.test_data:set(key, 1)
     ';
 
-    echo_sleep 1;
+    echo_sleep 2;
     set_secure_random_alphanum $random 50;
     more_set_headers "Cache-Control: max-age=0, private, must-revalidate";
     more_set_headers "X-Unique-Output: $random";
+    more_set_headers "X-Request-Id: $x_api_umbrella_request_id";
+    more_set_headers "X-Unique-ID: $http_x_unique_id";
     echo $random;
   }
 

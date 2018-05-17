@@ -57,7 +57,24 @@ CONFIG proxy.config.http.cache.cache_responses_to_cookies INT 0
 # methods: https://issues.apache.org/jira/browse/TS-3431
 # Instead, we'll use the connection collapsing plugin, which actually seems
 # closer to the behavior we want.
-CONFIG proxy.config.cache.enable_read_while_writer INT 0
+CONFIG proxy.config.cache.enable_read_while_writer INT 1
+CONFIG proxy.config.cache.read_while_writer.max_retries INT 10
+CONFIG proxy.config.cache.read_while_writer_retry.delay INT 50
+CONFIG proxy.config.http.cache.max_stale_age INT 604800
+# CONFIG proxy.config.http.cache.open_write_fail_action INT 1
+# CONFIG proxy.config.http.cache.max_open_read_retries INT 10
+# CONFIG proxy.config.http.cache.open_read_retry_time INT 10
+# CONFIG proxy.config.http.cache.open_write_fail_action INT 2
+# CONFIG proxy.config.cache.enable_read_while_writer INT 1
+#CONFIG proxy.config.http.redirection_enabled INT 1
+#CONFIG proxy.config.http.number_of_redirections INT 10
+#CONFIG proxy.config.http.redirect_use_orig_cache_key INT 1
+# CONFIG proxy.config.http.background_fill_active_timeout INT 0
+# CONFIG proxy.config.http.background_fill_completed_threshold FLOAT 0.0
+# CONFIG proxy.config.cache.max_doc_size INT 0
+CONFIG proxy.config.http.wait_for_cache INT 1
+# CONFIG proxy.config.cache.read_while_writer.max_retries INT 10
+# CONFIG proxy.config.cache.read_while_writer_retry.delay INT 50
 
 # Include information in the Via response indicating whether this was a cache
 # hit or not.
@@ -82,6 +99,13 @@ CONFIG proxy.config.http.response_server_enabled INT 0
 # Retain the Host header we send to trafficserver for cache key purposes so
 # that each host gets cached separately.
 CONFIG proxy.config.url_remap.pristine_host_hdr INT 1
+
+CONFIG proxy.config.dns.nameservers STRING {{dns_resolver._nameservers_nginx}}
+
+# CONFIG proxy.config.url_remap.remap_required INT 0
+
+CONFIG proxy.config.diags.debug.enabled INT 1
+CONFIG proxy.config.diags.debug.tags STRING .*
 
 # Additional custom configuration
 {{#trafficserver.embedded_server_config.records}}
