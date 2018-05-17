@@ -16,6 +16,7 @@ module ApiUmbrellaTestHelpers
           redirect_time: #{response.redirect_time}
           effective_url: #{response.effective_url}
           primary_ip: #{response.primary_ip}
+          response_headers: #{response.headers.inspect}
           response_body: #{response.body}
         EOS
       end
