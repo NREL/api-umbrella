@@ -17,14 +17,20 @@ export default Component.extend({
       { id: false, name: I18n.t('admin.api.settings.disable_api_key_options.required') },
       { id: true, name: I18n.t('admin.api.settings.disable_api_key_options.disabled') },
     ];
-
+    this.requireIdpOptions: [
+      { id: null, name: I18n.t('admin.api.settings.require_idp_options.inherit') },
+      { id: 'none', name: I18n.t('admin.api.settings.require_idp_options.none') },
+      { id: 'fiware-oauth2', name: "FIWARE" },
+      { id: 'github-oauth2', name: "GitHub" },
+      { id: 'facebook-oauth2', name: "Facebook" },
+      { id: 'google-oauth2', name: "Google" },
+    ];
     this.apiKeyVerificationLevelOptions = [
       { id: null, name: I18n.t('admin.api.settings.api_key_verification_level_options.inherit') },
       { id: 'none', name: I18n.t('admin.api.settings.api_key_verification_level_options.none') },
       { id: 'transition_email', name: I18n.t('admin.api.settings.api_key_verification_level_options.transition_email') },
       { id: 'required_email', name: I18n.t('admin.api.settings.api_key_verification_level_options.required_email') },
     ];
-
     this.passApiKeyOptions = [
       { id: 'header', name: I18n.t('admin.api.settings.pass_api_key_header') },
       { id: 'param', name: I18n.t('admin.api.settings.pass_api_key_param') },

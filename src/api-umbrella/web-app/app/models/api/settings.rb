@@ -10,6 +10,7 @@ class Api::Settings
   field :disable_api_key, :type => Boolean
   field :api_key_verification_level, :type => String
   field :api_key_verification_transition_start_at, :type => Time
+  field :require_idp, :type => String
   field :required_roles, :type => Array
   field :required_roles_override, :type => Boolean
   field :allowed_ips, :type => Array

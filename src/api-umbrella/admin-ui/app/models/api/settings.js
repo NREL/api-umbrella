@@ -10,6 +10,7 @@ export default DS.Model.extend({
   requireHttps: DS.attr(),
   disableApiKey: DS.attr(),
   apiKeyVerificationLevel: DS.attr(),
+  requireIdp: DS.attr(),
   requiredRoles: DS.attr(),
   requiredRolesOverride: DS.attr(),
   allowedIps: DS.attr(),
