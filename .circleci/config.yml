@@ -14,10 +14,6 @@ jobs:
       # Build all the API Umbrella software dependencies.
       - run: ./configure
       - run: make all test-deps test-bundle
-      # Remove the download archives, since we don't need to cache these in
-      # CircleCI, and doing so also leads to multiple versions being kept
-      # around whenever we bump our dependency versions.
-      - run: make clean-download-archives
       - save_cache:
           key: build-deps-{{ .Branch }}
           paths:
