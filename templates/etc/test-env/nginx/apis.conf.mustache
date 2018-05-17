@@ -299,81 +299,30 @@ server {
 
   location ~ ^/cacheable-thundering-herd/(.+)$ {
     set $unique_id $1;
-    access_by_lua '
-      local key = "backend_call_count:" .. ngx.var.unique_id
-      return ngx.shared.test_data:incr(key, 1) or ngx.shared.test_data:set(key, 1)
-    ';
-
-    echo_sleep 2;
     set_secure_random_alphanum $random 50;
-    more_set_headers "Cache-Control: max-age=4";
-    more_set_headers "X-Unique-Output: $random";
-    more_set_headers "X-Request-Id: $x_api_umbrella_request_id";
-    more_set_headers "X-Unique-ID: $http_x_unique_id";
-    echo $random;
-  }
-
-  location ~ ^/cacheable-thundering-herd-public/(.+)$ {
-    set $unique_id $1;
-    access_by_lua '
+    content_by_lua_block {
       local key = "backend_call_count:" .. ngx.var.unique_id
-      return ngx.shared.test_data:incr(key, 1) or ngx.shared.test_data:set(key, 1)
-    ';
+      local ok = ngx.shared.test_data:incr(key, 1) or ngx.shared.test_data:set(key, 1)
 
-    echo_sleep 2;
-    set_secure_random_alphanum $random 50;
-    more_set_headers "Cache-Control: public, max-age=4";
-    more_set_headers "X-Unique-Output: $random";
-    more_set_headers "X-Request-Id: $x_api_umbrella_request_id";
-    more_set_headers "X-Unique-ID: $http_x_unique_id";
-    echo $random;
-  }
+      local delay = tonumber(ngx.var.http_x_delay)
 
-  location ~ ^/cacheable-thundering-herd-private/(.+)$ {
-    set $unique_id $1;
-    access_by_lua '
-      local key = "backend_call_count:" .. ngx.var.unique_id
-      return ngx.shared.test_data:incr(key, 1) or ngx.shared.test_data:set(key, 1)
-    ';
+      if ngx.var.http_x_delay_before == "headers" then
+        ngx.sleep(delay)
+      end
 
-    echo_sleep 2;
-    set_secure_random_alphanum $random 50;
-    more_set_headers "Cache-Control: private, max-age=4";
-    more_set_headers "X-Unique-Output: $random";
-    more_set_headers "X-Request-Id: $x_api_umbrella_request_id";
-    more_set_headers "X-Unique-ID: $http_x_unique_id";
-    echo $random;
-  }
+      ngx.header["Cache-Control"] = ngx.var.http_x_cache_control_response
+      ngx.header["X-Unique-Output"] = ngx.var.random
+      ngx.header["X-Request-Id"] = ngx.var.http_x_api_umbrella_request_id
+      ngx.header["X-Unique-Id"] = ngx.var.http_x_unique_id
+      ngx.print("")
+      ngx.flush(true)
 
-  location ~ ^/cacheable-but-no-explicit-cache-thundering-herd/(.+)$ {
-    set $unique_id $1;
-    access_by_lua '
-      local key = "backend_call_count:" .. ngx.var.unique_id
-      return ngx.shared.test_data:incr(key, 1) or ngx.shared.test_data:set(key, 1)
-    ';
+      if ngx.var.http_x_delay_before == "body" then
+        ngx.sleep(delay)
+      end
 
-    echo_sleep 2;
-    set_secure_random_alphanum $random 50;
-    more_set_headers "X-Unique-Output: $random";
-    more_set_headers "X-Request-Id: $x_api_umbrella_request_id";
-    more_set_headers "X-Unique-ID: $http_x_unique_id";
-    echo $random;
-  }
-
-  location ~ ^/cacheable-but-cache-forbidden-thundering-herd/(.+)$ {
-    set $unique_id $1;
-    access_by_lua '
-      local key = "backend_call_count:" .. ngx.var.unique_id
-      return ngx.shared.test_data:incr(key, 1) or ngx.shared.test_data:set(key, 1)
-    ';
-
-    echo_sleep 2;
-    set_secure_random_alphanum $random 50;
-    more_set_headers "Cache-Control: max-age=0, private, must-revalidate";
-    more_set_headers "X-Unique-Output: $random";
-    more_set_headers "X-Request-Id: $x_api_umbrella_request_id";
-    more_set_headers "X-Unique-ID: $http_x_unique_id";
-    echo $random;
+      ngx.print(ngx.var.random)
+    }
   }
 
   location /cacheable-cache-control-max-age/ {

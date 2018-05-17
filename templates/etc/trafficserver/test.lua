@@ -49,3 +49,14 @@ function do_global_send_response()
 
   return 0
 end
+
+function do_global_cache_lookup_complete()
+  local cache = ts.http.get_cache_lookup_url()
+  ts.error("CACHE URL: " .. tostring(cache))
+
+  local cache_status = ts.http.get_cache_lookup_status()
+  ts.error("CACHE STATUS: " .. tostring(cache_status))
+
+  ts.http.config_int_set(TS_LUA_CONFIG_HTTP_CACHE_OPEN_READ_RETRY_TIME, 10)
+  ts.http.config_int_set(TS_LUA_CONFIG_HTTP_CACHE_MAX_OPEN_READ_RETRIES, 10)
+end

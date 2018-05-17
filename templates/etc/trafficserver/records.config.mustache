@@ -58,12 +58,12 @@ CONFIG proxy.config.http.cache.cache_responses_to_cookies INT 0
 # Instead, we'll use the connection collapsing plugin, which actually seems
 # closer to the behavior we want.
 CONFIG proxy.config.cache.enable_read_while_writer INT 1
-CONFIG proxy.config.cache.read_while_writer.max_retries INT 10
+CONFIG proxy.config.cache.read_while_writer.max_retries INT 1000
 CONFIG proxy.config.cache.read_while_writer_retry.delay INT 50
 CONFIG proxy.config.http.cache.max_stale_age INT 604800
 # CONFIG proxy.config.http.cache.open_write_fail_action INT 1
-# CONFIG proxy.config.http.cache.max_open_read_retries INT 10
-# CONFIG proxy.config.http.cache.open_read_retry_time INT 10
+# CONFIG proxy.config.http.cache.max_open_read_retries INT 1000
+# CONFIG proxy.config.http.cache.open_read_retry_time INT 50
 # CONFIG proxy.config.http.cache.open_write_fail_action INT 2
 # CONFIG proxy.config.cache.enable_read_while_writer INT 1
 #CONFIG proxy.config.http.redirection_enabled INT 1
