@@ -20,6 +20,7 @@ nginx:
     port: 13005
 trafficserver:
   port: 13009
+  autoconf_port: 13007
   management_port: 13008
   embedded_server_config:
     records:

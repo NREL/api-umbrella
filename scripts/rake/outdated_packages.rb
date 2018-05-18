@@ -154,6 +154,7 @@ class OutdatedPackages
     },
     "trafficserver" => {
       :git => "https://github.com/apache/trafficserver.git",
+      :constraint => "~> 5.3.2",
     },
     "unbound" => {
       :http => "https://www.unbound.net/download.html",

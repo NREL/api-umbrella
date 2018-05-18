@@ -1,5 +1,6 @@
 LOCAL proxy.local.incoming_ip_to_bind STRING {{trafficserver.host}}
 CONFIG proxy.config.http.server_ports STRING {{trafficserver.port}}
+CONFIG proxy.config.admin.autoconf_port INT {{trafficserver.autoconf_port}}
 CONFIG proxy.config.process_manager.mgmt_port INT {{trafficserver.management_port}}
 
 # Use the special "#-1" value to keep running as the current user (perp will
@@ -21,6 +22,9 @@ CONFIG proxy.config.body_factory.template_sets_dir STRING {{_embedded_root_dir}}
 
 # Log to the standard API Umbrella log directory location.
 CONFIG proxy.config.log.logfile_dir STRING {{log_dir}}/trafficserver
+
+# Use logs_xml.config for defining the logs.
+CONFIG proxy.config.log.squid_log_enabled INT 0
 
 # Rotate log files with logrotate to be consistent with all the other API
 # Umbrella components.
@@ -47,7 +51,7 @@ CONFIG proxy.config.http.down_server.cache_time INT 0
 
 # Don't append IP information to X-Forwarded-For or Client-IP headers, since
 # we've already dealt with those at the first nginx proxy layer.
-CONFIG proxy.config.http.insert_client_ip INT 0
+CONFIG proxy.config.http.anonymize_insert_client_ip INT 0
 CONFIG proxy.config.http.insert_squid_x_forwarded_for INT 0
 
 # Don't perform caching when the request contains cookies.

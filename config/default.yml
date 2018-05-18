@@ -67,6 +67,7 @@ gatekeeper:
 trafficserver:
   host: 127.0.0.1
   port: 14009
+  autoconf_port: 14007
   management_port: 14008
   storage:
     size: 256M
