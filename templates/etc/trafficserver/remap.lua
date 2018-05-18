@@ -1,21 +1,21 @@
-function cache_lookup()
-  local cache_status = ts.http.get_cache_lookup_status()
-  ts.error("REMAP CACHE_LOOKUP CACHE STATUS: " .. tostring(cache_status))
-
-  -- ts.http.config_int_set(TS_LUA_CONFIG_HTTP_CACHE_OPEN_READ_RETRY_TIME, 10)
-  -- ts.http.config_int_set(TS_LUA_CONFIG_HTTP_CACHE_MAX_OPEN_READ_RETRIES, 10)
-end
-
 function do_remap()
   ts.client_request.set_url_host(ts.client_request.header["X-Api-Umbrella-Backend-Server-Host"])
   ts.client_request.set_url_port(ts.client_request.header["X-Api-Umbrella-Backend-Server-Port"])
   ts.client_request.set_url_scheme(ts.client_request.header["X-Api-Umbrella-Backend-Server-Scheme"])
 
-  ts.hook(TS_LUA_HOOK_CACHE_LOOKUP_COMPLETE, cache_lookup)
+  local cache_key = {
+    -- Include the HTTP method (GET, POST, etc) in the cache key. This prevents
+    -- delayed processing when long-running GET and POSTs are running against
+    -- the same URL:  https://issues.apache.org/jira/browse/TS-3431
+    ts.client_request.get_method(),
 
-  local cache_status = ts.http.get_cache_lookup_status()
-  ts.error("REMAP CACHE STATUS: " .. tostring(cache_status))
-  -- ts.http.config_int_set(TS_LUA_CONFIG_HTTP_CACHE_OPEN_READ_RETRY_TIME, 10)
-  -- ts.http.config_int_set(TS_LUA_CONFIG_HTTP_CACHE_MAX_OPEN_READ_RETRIES, 10)
+    -- Note that by default, the cache key doesn't include the backend host
+    -- port, so by re-setting the cache key based on the full URL here, this
+    -- also helps ensure the backend port is included (so backends running on
+    -- separate ports are kept separate).
+    ts.client_request.get_url(),
+  }
+  ts.http.set_cache_lookup_url(table.concat(cache_key, "/"))
+
   return TS_LUA_REMAP_DID_REMAP
 end
