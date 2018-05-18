@@ -89,11 +89,15 @@ class Test::Processes::TestReloads < Minitest::Test
     assert_equal(15, descriptor_counts.length)
     assert_equal(15, urandom_descriptor_counts.length)
 
-    # Test to ensure ngx_txid isn't leaving open file descriptors around on
-    # reloads test for this patch: https://github.com/streadway/ngx_txid/pull/6
-    # Allow for some small fluctuations in the /dev/urandom sockets, since
-    # other nginx modules might also be using them.
-    assert_operator(urandom_descriptor_counts.min, :>, 0)
+    # Test to ensure nginx modules aren't leaking urandom descriptors. Allow
+    # for some small fluctuations in the /dev/urandom sockets, since nginx
+    # modules might be using them.
+    #
+    # This stems from this leak with ngx_tixd:
+    # https://github.com/streadway/ngx_txid/pull/6 We're no longer using
+    # ngx_txid (using lua-resty-txid instead), so urandom descriptors shouldn't
+    # actually be present, but we'll keep this test in place to ensure similar
+    # leaks don't crop up again.
     range = urandom_descriptor_counts.max - urandom_descriptor_counts.min
     assert_operator(range, :<=, $config["nginx"]["workers"] * 4)
 
