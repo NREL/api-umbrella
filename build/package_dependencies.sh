@@ -219,7 +219,6 @@ elif [ -f /etc/debian_version ]; then
 
     # For installing the mongo-orchestration test dependency.
     python-virtualenv
-    virtualenv
 
     # For checking for file descriptor leaks during the tests.
     lsof
@@ -238,6 +237,10 @@ elif [ -f /etc/debian_version ]; then
     # OpenLDAP
     groff-base
   )
+
+  if [[ "$ID" != "ubuntu" || "$VERSION_ID" != "14.04" ]]; then
+    test_build_dependencies+=("virtualenv")
+  fi
 else
   echo "Unknown build system"
   exit 1
