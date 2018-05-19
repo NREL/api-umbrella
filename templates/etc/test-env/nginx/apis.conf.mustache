@@ -301,20 +301,6 @@ server {
     echo $random;
   }
 
-  location ~ ^/cacheable-thundering-herd-public/(.+)$ {
-    set $unique_id $1;
-    access_by_lua_block {
-      local key = "backend_call_count:" .. ngx.var.unique_id
-      return ngx.shared.test_data:incr(key, 1) or ngx.shared.test_data:set(key, 1)
-    }
-
-    echo_sleep 1;
-    set_secure_random_alphanum $random 50;
-    more_set_headers "Cache-Control: public, max-age=60";
-    more_set_headers "X-Unique-Output: $random";
-    echo $random;
-  }
-
   location ~ ^/cacheable-thundering-herd/(.+)$ {
     set $unique_id $1;
     set_secure_random_alphanum $random 50;
