@@ -385,7 +385,7 @@ local function set_cached_random_tokens()
       if not config["web"]["rails_secret_token"] then
         deep_defaults(cached, {
           web = {
-            rails_secret_token = random_token(128),
+            rails_secret_token = random_token(64),
           },
         })
       end
