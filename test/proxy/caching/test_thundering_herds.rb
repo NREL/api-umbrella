@@ -22,18 +22,6 @@ class Test::Proxy::Caching::TestThunderingHerds < Minitest::Test
   end
 
   def test_connection_collapsing_for_cacheable
-    # FIXME: The Traffic Server collapsed_connection plugin currently requires
-    # the Cache-Control explicitly be marked as "public" for it to do its
-    # collapsing:
-    # https://github.com/apache/trafficserver/blob/5.3.2/plugins/experimental/collapsed_connection/collapsed_connection.cc#L603
-    #
-    # I think this is incorrect behavior and the plugin should be updated to
-    # use the newer TSHttpTxnIsCacheable API:
-    # https://issues.apache.org/jira/browse/TS-1622 This will allow the plugin
-    # to more accurately know whether the response is cacheable according to
-    # the more complex TrafficServer logic. We should see about submitting a
-    # pull request or filing an issue.
-    skip("TrafficServer's collapsed_connection requires explicit public cache-control headers to work properly.")
     assert_connections_collapsed("/api/cacheable-thundering-herd/", {
       :headers => {
         "X-Cache-Control-Response" => "max-age=2",
@@ -46,7 +34,6 @@ class Test::Proxy::Caching::TestThunderingHerds < Minitest::Test
   end
 
   def test_connection_collapsing_for_cacheable_precache_fresh
-    skip("TrafficServer's collapsed_connection requires explicit public cache-control headers to work properly.")
     assert_connections_collapsed("/api/cacheable-thundering-herd/", {
       :headers => {
         "X-Cache-Control-Response" => "max-age=2",
@@ -60,7 +47,6 @@ class Test::Proxy::Caching::TestThunderingHerds < Minitest::Test
   end
 
   def test_connection_collapsing_for_cacheable_precache_stale
-    skip("TrafficServer's collapsed_connection requires explicit public cache-control headers to work properly.")
     assert_connections_collapsed("/api/cacheable-thundering-herd/", {
       :headers => {
         "X-Cache-Control-Response" => "max-age=2",
@@ -75,7 +61,6 @@ class Test::Proxy::Caching::TestThunderingHerds < Minitest::Test
   end
 
   def test_connection_collapsing_for_cacheable_streaming
-    skip("TrafficServer's collapsed_connection requires explicit public cache-control headers to work properly.")
     assert_connections_collapsed("/api/cacheable-thundering-herd/", {
       :headers => {
         "X-Cache-Control-Response" => "max-age=2",
@@ -88,7 +73,6 @@ class Test::Proxy::Caching::TestThunderingHerds < Minitest::Test
   end
 
   def test_connection_collapsing_for_cacheable_streaming_precache_fresh
-    skip("TrafficServer's collapsed_connection requires explicit public cache-control headers to work properly.")
     assert_connections_collapsed("/api/cacheable-thundering-herd/", {
       :headers => {
         "X-Cache-Control-Response" => "max-age=2",
@@ -102,7 +86,6 @@ class Test::Proxy::Caching::TestThunderingHerds < Minitest::Test
   end
 
   def test_connection_collapsing_for_cacheable_streaming_precache_stale
-    skip("TrafficServer's collapsed_connection requires explicit public cache-control headers to work properly.")
     assert_connections_collapsed("/api/cacheable-thundering-herd/", {
       :headers => {
         "X-Cache-Control-Response" => "max-age=2",
@@ -703,14 +686,6 @@ class Test::Proxy::Caching::TestThunderingHerds < Minitest::Test
     # response won't be cacheable without actually receiving the response (eg,
     # POST requests), then all the requests should be parallelized immediately.
     elsif(!options.fetch(:cacheable) && custom_http_options[:method] == "POST")
-      assert_includes(0.9..1.5, timings.min)
-      assert_includes(0.9..1.5, timings.max)
-
-    # For non-cacheable responses, if the response has previously been seen
-    # (even if it's expired), then the collapsed_connection plugin is smart
-    # enough to avoid waiting for the first response and can make all the
-    # requests in parallel.
-    elsif(!options.fetch(:cacheable) && options[:precache])
       assert_includes(0.9..1.5, timings.min)
       assert_includes(0.9..1.5, timings.max)
 

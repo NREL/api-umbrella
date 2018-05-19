@@ -57,12 +57,13 @@ CONFIG proxy.config.http.cache.cache_responses_to_cookies INT 0
 # herd scenarios for parallel requests to the same resource:
 # https://docs.trafficserver.apache.org/en/7.1.x/admin-guide/configuration/cache-basics.en.html?highlight=thundering#reducing-origin-server-requests-avoiding-the-thundering-herd
 #
-# This is tuned to try and wait up to 5 seconds for the API response before
-# making another request.
+# This is tuned to try and wait up to 2 seconds for the API response before
+# making another request (this was the default in the old collapsed_connection
+plugin).
 #
 # Note that the retry delay is doubled on the 3rd retry onwards. So retries 1-2
-# will delay 50ms each, retries 3-50 will delay 100ms each (50*2 + 100*48 =
-# 4900ms total wait).
+# will delay 50ms each, retries 3-21 will delay 100ms each (50*2 + 100*19 =
+# 2000ms total wait).
 #
 # Note that read_while_writer helps for the most part, but there's still other
 # edge-cases where some connections aren't collapsed. However, this is okay,
@@ -87,8 +88,11 @@ CONFIG proxy.config.http.cache.cache_responses_to_cookies INT 0
 #   responses:
 #   https://lists.apache.org/thread.html/0eff5d9a53ef8fdf28be341f648c708bd651ad1208cddf71d532d78d@%3Cusers.trafficserver.apache.org%3E
 CONFIG proxy.config.cache.enable_read_while_writer INT 1
-CONFIG proxy.config.cache.read_while_writer.max_retries INT 50
+CONFIG proxy.config.cache.read_while_writer.max_retries INT 21
 CONFIG proxy.config.cache.read_while_writer_retry.delay INT 50
+CONFIG proxy.config.http.background_fill_active_timeout INT 0
+CONFIG proxy.config.http.background_fill_completed_threshold FLOAT 0.0
+CONFIG proxy.config.cache.max_doc_size INT 0
 
 # Include information in the Via response indicating whether this was a cache
 # hit or not.
