@@ -1,4 +1,4 @@
-IPV6_SUPPORT = File.exist?("/proc/net/if_inet6")
+IPV6_SUPPORT = (File.exist?("/proc/net/if_inet6") && !File.read("/proc/net/if_inet6").empty?)
 
 class Minitest::Test
   private
