@@ -1,17 +1,14 @@
 version: 2
 jobs:
   build:
-    # Use the machine executor, so we can test local IPv6 behavior. We could
-    # switch back to the Docker executor if it gains IPv6 support in CircleCI
-    # 2.0 (or we could also split up the tests to run most in Docker and only
-    # IPv6 tests with the machine).
-    machine: true
     parallelism: 3
-    working_directory: ~/app
+    working_directory: /app
+    docker:
+      - image: ubuntu:16.04
     steps:
       - checkout
       # Install any system package dependencies.
-      - run: sudo env INSTALL_TEST_DEPENDENCIES=true ./build/scripts/install_build_dependencies
+      - run: env INSTALL_TEST_DEPENDENCIES=true ./build/scripts/install_build_dependencies
       - restore_cache:
           key: build-deps-{{ .Branch }}
       # Build all the API Umbrella software dependencies.
@@ -27,8 +24,8 @@ jobs:
             - cmake_install.cmake
       - type: shell
         command: |
-          sudo groupadd -r api-umbrella
-          sudo useradd -r -g api-umbrella -s /sbin/nologin -d /opt/api-umbrella -c "API Umbrella user" api-umbrella
+          groupadd -r api-umbrella
+          useradd -r -g api-umbrella -s /sbin/nologin -d /opt/api-umbrella -c "API Umbrella user" api-umbrella
           ./test/scripts/circle-ci
       - store_test_results:
           path: test/tmp/reports

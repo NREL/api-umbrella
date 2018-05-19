@@ -25,6 +25,11 @@ class Test::Proxy::Dns::TestDefaultServers < Minitest::Test
   end
 
   def test_static_ipv6
+    unless IPV6_SUPPORT
+      warn "Skipping test_static_ipv6 due to lack of IPv6 support."
+      return skip("WARNING: Skipping test_static_ipv6 due to lack of IPv6 support.")
+    end
+
     prepend_api_backends([
       {
         :frontend_host => "127.0.0.1",
