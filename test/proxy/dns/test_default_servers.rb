@@ -25,6 +25,8 @@ class Test::Proxy::Dns::TestDefaultServers < Minitest::Test
   end
 
   def test_static_ipv6
+    skip_unless_ipv6_support
+
     prepend_api_backends([
       {
         :frontend_host => "127.0.0.1",

@@ -8,7 +8,7 @@ class Test::Processes::TestNetworkBinds < Minitest::Test
     setup_server
   end
 
-  def test_quick_timeout_when_backends_down
+  def test_binds_http_to_public_interface_other_services_to_localhost
     pid_path = File.join($config["run_dir"], "perpboot.pid")
     output, status = run_shell("lsof -n -P -l -R -p $(pstree -p $(cat #{pid_path}) | grep -o '([0-9]\\+)' | grep -o '[0-9]\\+' | tr '\\012' ',') | grep LISTEN")
     assert_equal(0, status, output)
