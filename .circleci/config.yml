@@ -10,12 +10,12 @@ jobs:
       # Install any system package dependencies.
       - run: env INSTALL_TEST_DEPENDENCIES=true ./build/scripts/install_build_dependencies
       - restore_cache:
-          key: build-deps-{{ .Branch }}
+          key: cache-build-deps-{{ .Environment.CACHE_VERSION }}-{{ .Branch }}
       # Build all the API Umbrella software dependencies.
       - run: ./configure
       - run: make all test-deps test-bundle
       - save_cache:
-          key: build-deps-{{ .Branch }}
+          key: cache-build-deps-{{ .Environment.CACHE_VERSION }}-{{ .Branch }}
           paths:
             - build/work
             - CMakeCache.txt
