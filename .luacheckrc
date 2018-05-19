@@ -10,3 +10,16 @@ globals = {
 }
 
 max_line_length = false
+
+files["templates/etc/trafficserver"] = {
+  std = "luajit",
+  globals = {
+    "TS_LUA_REMAP_DID_REMAP",
+    "do_global_read_request",
+    "do_global_read_response",
+    "do_global_send_request",
+    "do_global_send_response",
+    "do_remap",
+    "ts",
+  },
+}

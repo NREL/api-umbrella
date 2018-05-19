@@ -1,8 +1,1 @@
-# Enable connection collapsing to prevent thundering herds to the same URL.
-# collapsed_forwarding.so --delay=50 --retries=1000
-# collapsed_connection.so
-
-# Perform advanced header rewriting.
-# header_rewrite.so {{etc_dir}}/trafficserver/header_rewrite.config
-
-tslua.so {{etc_dir}}/trafficserver/test.lua
+tslua.so {{etc_dir}}/trafficserver/global.lua
