@@ -5,6 +5,7 @@ local host_normalize = require "api-umbrella.utils.host_normalize"
 local load_backends = require "api-umbrella.proxy.load_backends"
 local mustache_unescape = require "api-umbrella.utils.mustache_unescape"
 local plutils = require "pl.utils"
+local random_token = require "api-umbrella.utils.random_token"
 local resolve_backend_dns = require "api-umbrella.proxy.jobs.resolve_backend_dns"
 local tablex = require "pl.tablex"
 local utils = require "api-umbrella.proxy.utils"
@@ -183,7 +184,7 @@ end
 
 local function parse_website_backend(website_backend)
   if not website_backend["_id"] then
-    website_backend["_id"] = ndk.set_var.set_secure_random_alphanum(32)
+    website_backend["_id"] = random_token(32)
   end
 
   if website_backend["frontend_host"] then
