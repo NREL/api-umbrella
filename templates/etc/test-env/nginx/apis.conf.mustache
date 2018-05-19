@@ -316,8 +316,6 @@ server {
 
       ngx.header["Cache-Control"] = ngx.var.http_x_cache_control_response
       ngx.header["X-Unique-Output"] = ngx.var.random
-      ngx.header["X-Request-Id"] = ngx.var.http_x_api_umbrella_request_id
-      ngx.header["X-Unique-Id"] = ngx.var.http_x_unique_id
       ngx.print("")
       ngx.flush(true)
 
