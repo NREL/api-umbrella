@@ -25,10 +25,7 @@ class Test::Proxy::Dns::TestDefaultServers < Minitest::Test
   end
 
   def test_static_ipv6
-    unless IPV6_SUPPORT
-      warn "Skipping test_static_ipv6 due to lack of IPv6 support."
-      return skip("WARNING: Skipping test_static_ipv6 due to lack of IPv6 support.")
-    end
+    skip_unless_ipv6_support
 
     prepend_api_backends([
       {
