@@ -24,7 +24,7 @@ if [ "${1}" = "start" ]; then
   fi
 
   exec \
-    runtool "${run_args[@]}" \
+    runtool ${run_args[@]+"${run_args[@]}"} \
     rsyslogd \
       -n \
       -f "{{etc_dir}}/rsyslog.conf" \

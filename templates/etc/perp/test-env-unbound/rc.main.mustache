@@ -16,7 +16,7 @@ if [ "${1}" = "start" ]; then
     run_args+=("-u" "$api_umbrella_user")
   fi
 
-  exec runtool "${run_args[@]}" unbound -c "{{etc_dir}}/test-env/unbound/unbound.conf"
+  exec runtool ${run_args[@]+"${run_args[@]}"} unbound -c "{{etc_dir}}/test-env/unbound/unbound.conf"
 fi
 
 exit 0

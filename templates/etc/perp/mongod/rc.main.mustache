@@ -23,7 +23,7 @@ if [ "${1}" = "start" ]; then
     chown $api_umbrella_user:$api_umbrella_group "${dirs[@]}"
   fi
 
-  exec runtool "${run_args[@]}" mongod --config "{{etc_dir}}/mongod.conf"
+  exec runtool ${run_args[@]+"${run_args[@]}"} mongod --config "{{etc_dir}}/mongod.conf"
 fi
 
 exit 0

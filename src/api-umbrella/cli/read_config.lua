@@ -4,6 +4,8 @@ local deep_defaults = require "api-umbrella.utils.deep_defaults"
 local deep_merge_overwrite_arrays = require "api-umbrella.utils.deep_merge_overwrite_arrays"
 local dir = require "pl.dir"
 local file = require "pl.file"
+local getgrgid = require("posix.grp").getgrgid
+local getpwuid = require("posix.pwd").getpwuid
 local host_normalize = require "api-umbrella.utils.host_normalize"
 local invert_table = require "api-umbrella.utils.invert_table"
 local lyaml = require "lyaml"
@@ -329,6 +331,28 @@ local function set_computed_config()
   config["nginx"]["_initial_proxy_read_timeout"] = config["nginx"]["proxy_read_timeout"] + 2
   config["nginx"]["_initial_proxy_send_timeout"] = config["nginx"]["proxy_send_timeout"] + 2
 
+  if not config["user"] then
+    local euid = unistd.geteuid()
+    if euid then
+      local user = getpwuid(euid)
+      if user then
+        config["_effective_user_id"] = user.pw_uid
+        config["_effective_user_name"] = user.pw_name
+      end
+    end
+  end
+
+  if not config["group"] then
+    local egid = unistd.getegid()
+    if egid then
+      local group = getgrgid(egid)
+      if group then
+        config["_effective_group_id"] = group.gr_gid
+        config["_effective_group_name"] = group.gr_name
+      end
+    end
+  end
+
   deep_merge_overwrite_arrays(config, {
     _embedded_root_dir = embedded_root_dir,
     _src_root_dir = src_root_dir,
@@ -417,7 +441,9 @@ local function set_computed_config()
 end
 
 local function set_process_permissions()
-  unistd.setpid("g", "api-umbrella")
+  if config["group"] then
+    unistd.setpid("g", config["group"])
+  end
   stat.umask(tonumber(config["umask"], 8))
 end
 
