@@ -368,7 +368,9 @@ local function set_computed_config()
 end
 
 local function set_process_permissions()
-  unistd.setpid("g", "api-umbrella")
+  if config["group"] then
+    unistd.setpid("g", config["group"])
+  end
   stat.umask(tonumber(config["umask"], 8))
 end
 
