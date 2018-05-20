@@ -84,7 +84,7 @@ local function permission_check()
     end
   end
 
-  if effective_uid == 0 then
+  if effective_uid == 0 and config["app_env"] ~= "test" then
     if not config["user"] or not config["group"] then
       print("Must define a user and group to run worker processes as when starting with with super-user privileges")
       os.exit(1)

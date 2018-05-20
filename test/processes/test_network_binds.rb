@@ -9,15 +9,23 @@ class Test::Processes::TestNetworkBinds < Minitest::Test
   end
 
   def test_binds_http_to_public_interface_other_services_to_localhost
-    pid_path = File.join($config["run_dir"], "perpboot.pid")
-    output, status = run_shell("lsof -n -P -l -R -p $(pstree -p $(cat #{pid_path}) | grep -o '([0-9]\\+)' | grep -o '[0-9]\\+' | tr '\\012' ',') | grep LISTEN")
-    assert_equal(0, status, output)
+    pid = File.read(File.join($config["run_dir"], "perpboot.pid")).strip
+    pstree_output, pstree_status = run_shell("pstree -p #{pid}")
+    assert_equal(0, pstree_status, pstree_output)
+    pids = pstree_output.scan(/\((\d+)\)/).flatten.sort.uniq
+    output, _status = run_shell("lsof -n -P -l -R -a -i TCP -s TCP:LISTEN -p #{pids.join(",")}")
+    # lsof may return an unsuccessful exit code (since there may not be
+    # anything to match for all the PIDs passed in), so just sanity check the
+    # output.
+    assert_match("COMMAND", output)
 
     listening = {
       :local => Set.new,
       :public => Set.new,
     }
     output.strip.split("\n").each do |line|
+      next if(line.start_with?("COMMAND"))
+
       ip_version = line.match(/(IPv4|IPv6)/)[1]
       assert(ip_version, line)
 
@@ -49,6 +57,14 @@ class Test::Processes::TestNetworkBinds < Minitest::Test
       "9444:IPv4",
       "9444:IPv6",
     ], listening[:public].sort)
+
+    # Ensure all other services are listening on localhost-only, and sanity
+    # check to ensure some of the expected services were present in the lsof
+    # output.
     assert_operator(listening[:local].length, :>, 0)
+    assert_includes(listening[:local], "#{$config.fetch("elasticsearch").fetch("embedded_server_config").fetch("http").fetch("port")}:IPv4")
+    assert_includes(listening[:local], "#{$config.fetch("mongodb").fetch("embedded_server_config").fetch("net").fetch("port")}:IPv4")
+    assert_includes(listening[:local], "#{$config.fetch("mora").fetch("port")}:IPv4")
+    assert_includes(listening[:local], "#{$config.fetch("trafficserver").fetch("port")}:IPv4")
   end
 end
