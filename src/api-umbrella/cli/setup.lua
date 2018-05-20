@@ -11,6 +11,9 @@ local stat = require "posix.sys.stat"
 local tablex = require "pl.tablex"
 local unistd = require "posix.unistd"
 
+local chmod = stat.chmod
+local chown = unistd.chown
+
 local config
 
 local function permission_check()
@@ -68,17 +71,7 @@ local function prepare()
     config["log_dir"],
     config["run_dir"],
     config["tmp_dir"],
-    path.join(config["db_dir"], "elasticsearch"),
-    path.join(config["etc_dir"], "elasticsearch_scripts"),
-    path.join(config["db_dir"], "mongodb"),
-    path.join(config["db_dir"], "rsyslog"),
-    path.join(config["etc_dir"], "trafficserver/snapshots"),
-    path.join(config["root_dir"], "var/trafficserver"),
   }
-
-  if config["app_env"] == "test" then
-    table.insert(dirs, path.join(config["run_dir"], "test-env-mongo-orchestration"))
-  end
 
   for _, directory in ipairs(dirs) do
     dir.makepath(directory)
@@ -121,6 +114,10 @@ local function ensure_geoip_db()
     local default_city_db_path = path.join(config["_embedded_root_dir"], "var/db/geoip/city-v6.dat")
     dir.makepath(path.dirname(city_db_path))
     file.copy(default_city_db_path, city_db_path)
+    chmod(city_db_path, tonumber("0640", 8))
+    if config["group"] then
+      chown(city_db_path, nil, config["group"])
+    end
   end
 end
 
@@ -160,7 +157,16 @@ local function write_templates()
 
         dir.makepath(path.dirname(install_path))
         file.write(install_path, content)
-        stat.chmod(install_path, stat.stat(template_path).st_mode)
+        if config["group"] then
+          chown(install_path, nil, config["group"])
+        end
+
+        local install_filename = path.basename(install_path)
+        if install_filename == "rc.log" or install_filename == "rc.main" or install_filename == "rc.perp" then
+          chmod(install_path, tonumber("0750", 8))
+        else
+          chmod(install_path, tonumber("0640", 8))
+        end
       end
     end
   end
@@ -186,18 +192,37 @@ local function write_static_site_key()
 end
 
 local function set_permissions()
-  local _, err
-  _, _, err = run_command("chmod 1777 " .. config["tmp_dir"])
-  if err then
-    print("chmod failed: ", err)
-    os.exit(1)
-  end
+  chmod(config["tmp_dir"], tonumber("1777", 8))
 
   if config["user"] and config["group"] then
-    _, _, err = run_command("chown -R " .. config["user"] .. ":" .. config["group"] .. " " .. path.join(config["etc_dir"], "trafficserver") .. " " .. path.join(config["root_dir"], "var"))
-    if err then
-      print(err)
-      os.exit(1)
+    local user = config["user"]
+    local group = config["group"]
+    chown(config["db_dir"], nil, group)
+    chown(config["log_dir"], nil, group)
+    chown(config["run_dir"], user, group)
+    chown(config["tmp_dir"], user, group)
+    chown(config["var_dir"], nil, group)
+    chown(config["etc_dir"], nil, group)
+    chown(path.join(config["db_dir"], "geoip"), nil, group)
+    chown(path.join(config["etc_dir"], "elasticsearch"), nil, group)
+    chown(path.join(config["etc_dir"], "nginx"), nil, group)
+    chown(path.join(config["etc_dir"], "perp"), nil, group)
+    chown(path.join(config["etc_dir"], "trafficserver"), nil, group)
+
+    if config["app_env"] == "test" then
+      chown(path.join(config["etc_dir"], "test-env"), nil, group)
+      chown(path.join(config["etc_dir"], "test-env/mongo-orchestration"), nil, group)
+      chown(path.join(config["etc_dir"], "test-env/nginx"), nil, group)
+      chown(path.join(config["etc_dir"], "test-env/openldap"), nil, group)
+      chown(path.join(config["etc_dir"], "test-env/unbound"), nil, group)
+    end
+  end
+
+  local service_dirs = dir.getdirectories(path.join(config["etc_dir"], "perp"))
+  for _, service_dir in ipairs(service_dirs) do
+    chmod(service_dir, tonumber("0750", 8))
+    if config["group"] then
+      chown(service_dir, nil, config["group"])
     end
   end
 end
@@ -292,17 +317,16 @@ local function activate_services()
 
     -- Set the sticky bit for any active services.
     if is_active then
-      local _, _, err = run_command("chmod +t " .. service_dir)
-      if err then
-        print(err)
-        os.exit(1)
+      chmod(service_dir, tonumber("1750", 8))
+
+      local log_dir = path.join(config["log_dir"], service_name)
+      dir.makepath(log_dir)
+      chmod(log_dir, tonumber("0750", 8))
+      if config["user"] and config["group"] then
+        chown(log_dir, config["user"], config["group"])
       end
     else
-      local _, _, err = run_command("chmod -t " .. service_dir)
-      if err then
-        print(err)
-        os.exit(1)
-      end
+      chmod(service_dir, tonumber("0750", 8))
     end
   end
 end
