@@ -21,12 +21,3 @@ services:
       - net.ipv6.conf.all.disable_ipv6=0
 volumes:
   build_cache:
-networks:
-  default:
-    driver: bridge
-    enable_ipv6: true
-    ipam:
-      driver: default
-      config:
-        - subnet: 172.16.238.0/24
-        - subnet: 2001:3984:3989::/64
