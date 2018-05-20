@@ -367,6 +367,7 @@ ban:
 ember_server:
   port: 14050
   live_reload_port: 14051
+umask: "0027"
 _test_config:
   default_null_override_hash:
   default_null_override_string:

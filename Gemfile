@@ -12,7 +12,9 @@ gem "minitest-sprint", "~> 1.2.0"
 gem "minitest-reporters", "~> 1.2.0"
 
 # For an "after_all" callback.
-gem "minitest-hooks", "~> 1.4.2"
+#
+# Use fork for better error handling: https://github.com/jeremyevans/minitest-hooks/pull/15
+gem "minitest-hooks", "~> 1.4.2", :git => "https://github.com/GUI/minitest-hooks.git", :branch => "reporter-result"
 
 # Test metadata for CI environment.
 gem "minitest-ci", "~> 3.4.0"

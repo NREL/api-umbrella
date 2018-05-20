@@ -18,7 +18,7 @@ module ApiUmbrellaTestHelpers
 
       start_time = Time.now.utc
       FileUtils.rm_rf(Dir.glob(File.join(TEST_RUN_ROOT, "*"), File::FNM_DOTMATCH) - [File.join(TEST_RUN_ROOT, "."), File.join(TEST_RUN_ROOT, "..")])
-      FileUtils.mkdir_p(File.join(TEST_RUN_API_UMBRELLA_ROOT, "var/log"))
+      FileUtils.mkdir_p(TEST_RUN_API_UMBRELLA_ROOT)
 
       original_env = ENV.to_hash
       begin
@@ -129,6 +129,10 @@ module ApiUmbrellaTestHelpers
     # class to ensure we have a chance to properly stop the child process on
     # things like SIGINTs.
     rescue Exception => e # rubocop:disable Lint/RescueException
+      puts "Error occurred while starting api-umbrella, stopping..."
+      puts e.message
+      puts e.backtrace.join("\n")
+
       self.stop
       raise e
     end

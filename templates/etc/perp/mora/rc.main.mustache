@@ -1,7 +1,10 @@
 #!/usr/bin/env bash
+set -e -u
 
 # Redirect stderr to stdout
 exec 2>&1
+
+umask "{{umask}}"
 
 if [ "${1}" = "start" ]; then
   echo "starting ${2}..."
