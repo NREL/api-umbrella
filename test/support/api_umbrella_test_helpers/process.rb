@@ -42,12 +42,6 @@ module ApiUmbrellaTestHelpers
         computed = {
           "root_dir" => TEST_RUN_API_UMBRELLA_ROOT,
         }
-        if(::Process.euid == 0)
-          # If tests are running as root (Docker environment), then add the
-          # user to run things as.
-          computed["user"] = "api-umbrella"
-          computed["group"] = "api-umbrella"
-        end
         File.write(CONFIG_COMPUTED_PATH, YAML.dump(computed))
         $config.deep_merge!(YAML.load_file(CONFIG_COMPUTED_PATH))
 

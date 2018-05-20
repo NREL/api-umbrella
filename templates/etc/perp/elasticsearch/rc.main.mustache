@@ -24,7 +24,7 @@ if [ "${1}" = "start" ]; then
     chown $api_umbrella_user:$api_umbrella_group "${dirs[@]}"
   fi
 
-  exec runtool "${run_args[@]}" elasticsearch
+  exec runtool ${run_args[@]+"${run_args[@]}"} elasticsearch
 fi
 
 exit 0

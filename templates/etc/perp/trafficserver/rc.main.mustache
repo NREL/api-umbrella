@@ -23,7 +23,7 @@ if [ "${1}" = "start" ]; then
     chown $api_umbrella_user:$api_umbrella_group "${dirs[@]}"
   fi
 
-  exec runtool "${run_args[@]}" traffic_cop --stdout
+  exec runtool ${run_args[@]+"${run_args[@]}"} traffic_cop --stdout
 fi
 
 exit 0

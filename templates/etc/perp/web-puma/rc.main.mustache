@@ -15,7 +15,7 @@ if [ "${1}" = "start" ]; then
     run_args+=("-u" "$api_umbrella_user")
   fi
 
-  exec runtool "${run_args[@]}" \
+  exec runtool ${run_args[@]+"${run_args[@]}"} \
     bundle exec puma \
       -q \
       --dir "{{_src_root_dir}}/src/api-umbrella/web-app" \

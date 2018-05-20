@@ -5,6 +5,14 @@ daemon off;
 {{#user}}
 user {{user}} {{group}};
 {{/user}}
+{{^user}}
+{{#_effective_user_name}}
+# Even if user switching isn't enabled, make sure nginx uses the current
+# effective user and group for launching the child workers (so nginx's default
+# usage of the "nobody" user isn't used).
+user {{_effective_user_name}} {{_effective_group_name}};
+{{/_effective_user_name}}
+{{/user}}
 
 pid {{run_dir}}/nginx.pid;
 
