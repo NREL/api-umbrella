@@ -15,7 +15,7 @@ if [ "${1}" = "start" ]; then
     run_args+=("-u" "$api_umbrella_user")
   fi
 
-  exec runtool "${run_args[@]}" mora -config "{{etc_dir}}/mora.properties"
+  exec runtool ${run_args[@]+"${run_args[@]}"} mora -config "{{etc_dir}}/mora.properties"
 fi
 
 exit 0

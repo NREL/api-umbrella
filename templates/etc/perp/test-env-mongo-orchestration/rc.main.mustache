@@ -26,7 +26,7 @@ if [ "${1}" = "start" ]; then
 
   exec \
     runtrap test-env-mongo-orchestration "${0}" \
-    runtool "${run_args[@]}" \
+    runtool ${run_args[@]+"${run_args[@]}"} \
     mongo-orchestration \
       --no-fork \
       --port 13089 \

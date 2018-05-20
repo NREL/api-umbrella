@@ -21,7 +21,7 @@ if [ "${1}" = "start" ]; then
   fi
 
   PATH="{{_dev_env_install_dir}}/sbin:{{_dev_env_install_dir}}/bin:$PATH"
-  exec env runtool "${run_args[@]}" \
+  exec env runtool ${run_args[@]+"${run_args[@]}"} \
     ./node_modules/.bin/ember server \
       --port "{{ember_server.port}}" \
       --live-reload-port "{{ember_server.live_reload_port}}"
