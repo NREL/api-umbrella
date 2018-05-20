@@ -21,6 +21,7 @@ class Test::Processes::TestNetworkBinds < Minitest::Test
 
     listening = {
       :local => Set.new,
+      :local_ports => Set.new,
       :public => Set.new,
     }
     output.strip.split("\n").each do |line|
@@ -35,6 +36,7 @@ class Test::Processes::TestNetworkBinds < Minitest::Test
       listen = "#{port}:#{ip_version}"
       if(line.include?("TCP 127.0.0.1:") || line.include?("TCP [::1]:"))
         listening[:local] << listen
+        listening[:local_ports] << port.to_i
       elsif(line.include?("TCP *:"))
         listening[:public] << listen
       else
@@ -62,9 +64,10 @@ class Test::Processes::TestNetworkBinds < Minitest::Test
     # check to ensure some of the expected services were present in the lsof
     # output.
     assert_operator(listening[:local].length, :>, 0)
-    assert_includes(listening[:local], "#{$config.fetch("elasticsearch").fetch("embedded_server_config").fetch("http").fetch("port")}:IPv4")
-    assert_includes(listening[:local], "#{$config.fetch("mongodb").fetch("embedded_server_config").fetch("net").fetch("port")}:IPv4")
-    assert_includes(listening[:local], "#{$config.fetch("mora").fetch("port")}:IPv4")
-    assert_includes(listening[:local], "#{$config.fetch("trafficserver").fetch("port")}:IPv4")
+    assert_operator(listening[:local_ports].length, :>, 0)
+    assert_includes(listening[:local_ports], $config.fetch("elasticsearch").fetch("embedded_server_config").fetch("http").fetch("port"))
+    assert_includes(listening[:local_ports], $config.fetch("mongodb").fetch("embedded_server_config").fetch("net").fetch("port"))
+    assert_includes(listening[:local_ports], $config.fetch("mora").fetch("port"))
+    assert_includes(listening[:local_ports], $config.fetch("trafficserver").fetch("port"))
   end
 end
