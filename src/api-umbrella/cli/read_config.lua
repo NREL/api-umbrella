@@ -10,10 +10,14 @@ local nillify_yaml_nulls = require "api-umbrella.utils.nillify_yaml_nulls"
 local path = require "pl.path"
 local plutils = require "pl.utils"
 local random_token = require "api-umbrella.utils.random_token"
+local stat = require "posix.sys.stat"
 local stringx = require "pl.stringx"
 local types = require "pl.types"
+local unistd = require "posix.unistd"
 local url = require "socket.url"
 
+local chmod = stat.chmod
+local chown = unistd.chown
 local is_empty = types.is_empty
 local split = plutils.split
 local strip = stringx.strip
@@ -153,20 +157,24 @@ local function set_computed_config()
     config["etc_dir"] = path.join(config["root_dir"], "etc")
   end
 
+  if not config["var_dir"] then
+    config["var_dir"] = path.join(config["root_dir"], "var")
+  end
+
   if not config["log_dir"] then
-    config["log_dir"] = path.join(config["root_dir"], "var/log")
+    config["log_dir"] = path.join(config["var_dir"], "log")
   end
 
   if not config["run_dir"] then
-    config["run_dir"] = path.join(config["root_dir"], "var/run")
+    config["run_dir"] = path.join(config["var_dir"], "run")
   end
 
   if not config["tmp_dir"] then
-    config["tmp_dir"] = path.join(config["root_dir"], "var/tmp")
+    config["tmp_dir"] = path.join(config["var_dir"], "tmp")
   end
 
   if not config["db_dir"] then
-    config["db_dir"] = path.join(config["root_dir"], "var/db")
+    config["db_dir"] = path.join(config["var_dir"], "db")
   end
 
   local trusted_proxies = config["router"]["trusted_proxies"] or {}
@@ -359,6 +367,11 @@ local function set_computed_config()
   end
 end
 
+local function set_process_permissions()
+  unistd.setpid("g", "api-umbrella")
+  stat.umask(tonumber(config["umask"], 8))
+end
+
 -- Handle setup of random secret tokens that should be be unique for API
 -- Umbrella installations, but should be persisted across restarts.
 --
@@ -401,6 +414,11 @@ local function set_cached_random_tokens()
       -- Persist the cached tokens.
       dir.makepath(config["run_dir"])
       file.write(cached_path, lyaml.dump({ cached }))
+      chmod(cached_path, tonumber("0640", 8))
+      if config["group"] then
+        chown(cached_path, nil, config["group"])
+      end
+
       deep_defaults(config, cached)
     end
   end
@@ -415,6 +433,10 @@ local function write_runtime_config()
   local runtime_config_path = path.join(config["run_dir"], "runtime_config.yml")
   dir.makepath(config["run_dir"])
   file.write(runtime_config_path, lyaml.dump({config}))
+  chmod(runtime_config_path, tonumber("0640", 8))
+  if config["group"] then
+    chown(runtime_config_path, nil, config["group"])
+  end
 end
 
 return function(options)
@@ -431,12 +453,16 @@ return function(options)
     read_default_config()
     read_system_config()
     set_computed_config()
+    set_process_permissions()
+
     set_cached_random_tokens()
 
     if options and options["write"] then
       write_runtime_config()
     end
   end
+
+  set_process_permissions()
 
   return config
 end

@@ -372,3 +372,4 @@ ban:
 ember_server:
   port: 14050
   live_reload_port: 14051
+umask: "0027"

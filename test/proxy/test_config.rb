@@ -25,7 +25,7 @@ class Test::Proxy::TestConfig < Minitest::Test
     test_config = YAML.load_file(File.join(API_UMBRELLA_SRC_ROOT, "config/test.yml"))
     assert_equal(expected_test_value, test_config["web"]["mailer"]["smtp_settings"])
 
-    runtime_config = YAML.load_file(File.join($config["root_dir"], "var/run/runtime_config.yml"))
+    runtime_config = YAML.load_file(File.join($config["run_dir"], "runtime_config.yml"))
     assert_equal(expected_test_value, runtime_config["web"]["mailer"]["smtp_settings"])
   end
 
@@ -39,7 +39,7 @@ class Test::Proxy::TestConfig < Minitest::Test
     test_config = YAML.load_file(File.join(API_UMBRELLA_SRC_ROOT, "config/test.yml"))
     assert_equal(expected_test_value, test_config["web"]["admin"]["auth_strategies"]["google"]["client_secret"])
 
-    runtime_config = YAML.load_file(File.join($config["root_dir"], "var/run/runtime_config.yml"))
+    runtime_config = YAML.load_file(File.join($config["run_dir"], "runtime_config.yml"))
     assert_equal(expected_test_value, runtime_config["web"]["admin"]["auth_strategies"]["google"]["client_secret"])
   end
 
@@ -58,7 +58,7 @@ class Test::Proxy::TestConfig < Minitest::Test
     test_config = YAML.load_file(File.join(API_UMBRELLA_SRC_ROOT, "config/test.yml"))
     assert_equal(expected_test_value, test_config["web"]["admin"]["auth_strategies"]["ldap"]["options"])
 
-    runtime_config = YAML.load_file(File.join($config["root_dir"], "var/run/runtime_config.yml"))
+    runtime_config = YAML.load_file(File.join($config["run_dir"], "runtime_config.yml"))
     assert_equal(expected_test_value, runtime_config["web"]["admin"]["auth_strategies"]["ldap"]["options"])
   end
 end
