@@ -279,6 +279,30 @@ module ApiUmbrellaTestHelpers
       @unique_test_id ||= self.location.gsub(/[^\w]+/, "-")
     end
 
+    def unique_test_hostname
+      unless @unique_test_hostname
+        # Replace all non alpha-numeric chars (namely underscores that might be
+        # in the ID) with dashes (since underscores aren't valid for
+        # hostnames).
+        hostname = unique_test_id.downcase.gsub(/[^a-z0-9]+/, "-")
+
+        # Truncate the hostname so the label will fit in unbound's 63 char
+        # limit.
+        hostname = hostname[-56..-1] || hostname
+
+        # Strip first char if it happens to be a dash.
+        hostname.gsub!(/^-/, "")
+
+        # Since we've truncated the test ID, it's possible it's no longer
+        # unique, so append some random chars (but still, fitting within the 63
+        # char limit).
+        hostname = "#{hostname}-#{SecureRandom.hex(3)}"
+
+        @unique_test_hostname = "#{hostname}.test"
+      end
+      @unique_test_hostname
+    end
+
     def next_unique_ip_addr
       @@incrementing_unique_ip_addr = @@incrementing_unique_ip_addr.succ
       @@incrementing_unique_ip_addr.to_s
