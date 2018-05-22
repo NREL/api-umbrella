@@ -2,6 +2,14 @@ LOCAL proxy.local.incoming_ip_to_bind STRING {{trafficserver.host}}
 CONFIG proxy.config.http.server_ports STRING {{trafficserver.port}}
 CONFIG proxy.config.process_manager.mgmt_port INT {{trafficserver.management_port}}
 
+# Don't keep backup config files whenever Traffic Server is reloaded, so the
+# files don't stray from our installed templates.
+CONFIG proxy.config.admin.number_config_bak INT 0
+
+# Disable traffic_cop's health checks, since it seems like these aren't favored
+# and will be removed in Traffic Server 8.
+CONFIG proxy.config.cop.active_health_checks INT 0
+
 # Use the special "#-1" value to keep running as the current user (perp will
 # handle switching the user).
 CONFIG proxy.config.admin.user_id STRING #-1
@@ -59,7 +67,7 @@ CONFIG proxy.config.http.cache.cache_responses_to_cookies INT 0
 #
 # This is tuned to try and wait up to 2 seconds for the API response before
 # making another request (this was the default in the old collapsed_connection
-plugin).
+# plugin).
 #
 # Note that the retry delay is doubled on the 3rd retry onwards. So retries 1-2
 # will delay 50ms each, retries 3-21 will delay 100ms each (50*2 + 100*19 =
@@ -118,7 +126,24 @@ CONFIG proxy.config.http.response_server_enabled INT 0
 # that each host gets cached separately.
 CONFIG proxy.config.url_remap.pristine_host_hdr INT 1
 
-CONFIG proxy.config.dns.nameservers STRING {{dns_resolver._nameservers_nginx}}
+# Set the DNS nameservers.
+CONFIG proxy.config.dns.resolv_conf STRING NULL
+CONFIG proxy.config.dns.nameservers STRING {{dns_resolver._nameservers_trafficserver}}
+
+{{#dns_resolver.max_stale}}
+# Allow old DNS results to be used while new ones are fetched in the background
+# (this also helps ensure things remain up, even if DNS goes down temporarily).
+CONFIG proxy.config.hostdb.serve_stale_for INT {{dns_resolver.max_stale}}
+{{/dns_resolver.max_stale}}
+
+{{#dns_resolver.negative_ttl}}
+# For hosts that don't exist, remember the invalid DNS responses for a bit to
+# prevent repeated DNS queries for non-existent hosts.
+CONFIG proxy.config.hostdb.fail.timeout INT {{dns_resolver.negative_ttl}}
+{{/dns_resolver.negative_ttl}}
+
+# Use more standard round-robin for DNS results (rather than sticky).
+CONFIG proxy.config.hostdb.strict_round_robin INT 1
 
 # Enable for debug logging.
 # CONFIG proxy.config.diags.debug.enabled INT 1
