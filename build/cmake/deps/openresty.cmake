@@ -80,7 +80,12 @@ ExternalProject_Add(
   BUILD_IN_SOURCE 1
   # Patch opm to allow it to pick up dynamic LUA_PATH and LUA_CPATH, since we
   # need different paths while performing staged installations.
-  PATCH_COMMAND patch -p1 < ${CMAKE_SOURCE_DIR}/build/patches/opm.patch
+  PATCH_COMMAND patch -p1 < ${CMAKE_SOURCE_DIR}/build/patches/openresty-opm.patch
+    # Similarly, patch openresty's configure process so it doesn't introduce a
+    # hard-coded path to nginx. This allows nginx to be picked up on the normal
+    # PATH semantics, so it can worked in staged environments at different
+    # locations.
+    COMMAND patch -p1 < ${CMAKE_SOURCE_DIR}/build/patches/openresty-cli.patch
   CONFIGURE_COMMAND ${OPENRESTY_CONFIGURE_CMD}
   # Wipe the .openssl directory inside the openssl dir, or else openresty
   # will fail to build on rebuilds: https://trac.nginx.org/nginx/ticket/583
