@@ -30,9 +30,6 @@ class OutdatedPackages
     "libgeoip" => {
       :git => "https://github.com/maxmind/geoip-api-c.git",
     },
-    "liblogging" => {
-      :git => "https://github.com/rsyslog/liblogging.git",
-    },
     "luarocks" => {
       :git => "https://github.com/keplerproject/luarocks.git",
     },
