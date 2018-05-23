@@ -222,7 +222,21 @@ server {
 
   location = /compressible-pre-gzip {
     gzip on;
-    echo -n "Hello Small World";
+    gzip_min_length 0;
+    gzip_types application/json;
+    content_by_lua_block {
+      local cjson = require "cjson";
+      local body = cjson.encode({
+        headers = ngx.req.get_headers(500),
+      })
+
+      -- Force nginx to gzip this response, even if the original input headers
+      -- wouldn't normally gzip.
+      ngx.req.set_header("Accept-Encoding", "gzip")
+
+      ngx.header["Content-Type"] = "application/json"
+      ngx.print(body)
+    }
   }
 
   location ~ ^/delay/([0-9]+)$ {
@@ -426,12 +440,26 @@ server {
 
   location /cacheable-pre-gzip/ {
     gzip on;
+    gzip_min_length 0;
+    gzip_types application/json;
     set_secure_random_alphanum $random 50;
-    more_set_headers "Cache-Control: max-age=60";
-    more_set_headers "Content-Type: text/plain";
-    more_set_headers "X-Unique-Output: $random";
-    echo $random;
-    echo_duplicate 1500 "a"; # 1500 bytes - long enough to allow gzip
+    content_by_lua_block {
+      local cjson = require "cjson";
+      local body = cjson.encode({
+        headers = ngx.req.get_headers(500),
+        random = ngx.var.random,
+        data = string.rep("a", 1500) -- 1500 bytes - long enough to allow gzip
+      })
+
+      -- Force nginx to gzip this response, even if the original input headers
+      -- wouldn't normally gzip.
+      ngx.req.set_header("Accept-Encoding", "gzip")
+
+      ngx.header["Content-Type"] = "application/json"
+      ngx.header["Cache-Control"] = "max-age=60"
+      ngx.header["X-Unique-Output"] = ngx.var.random
+      ngx.print(body)
+    }
   }
 
   location /cacheable-vary-accept-encoding/ {
@@ -446,13 +474,27 @@ server {
 
   location /cacheable-pre-gzip-multiple-vary/ {
     gzip on;
+    gzip_min_length 0;
+    gzip_types application/json;
     set_secure_random_alphanum $random 50;
-    more_set_headers "Cache-Control: max-age=60";
-    more_set_headers "Content-Type: text/plain";
-    more_set_headers "Vary: X-Foo,Accept-Encoding,Accept";
-    more_set_headers "X-Unique-Output: $random";
-    echo $random;
-    echo_duplicate 1500 "a"; # 1500 bytes - long enough to allow gzip
+    content_by_lua_block {
+      local cjson = require "cjson";
+      local body = cjson.encode({
+        headers = ngx.req.get_headers(500),
+        random = ngx.var.random,
+        data = string.rep("a", 1500) -- 1500 bytes - long enough to allow gzip
+      })
+
+      -- Force nginx to gzip this response, even if the original input headers
+      -- wouldn't normally gzip.
+      ngx.req.set_header("Accept-Encoding", "gzip")
+
+      ngx.header["Content-Type"] = "application/json"
+      ngx.header["Cache-Control"] = "max-age=60"
+      ngx.header["Vary"] = "X-Foo,Accept-Encoding,Accept"
+      ngx.header["X-Unique-Output"] = ngx.var.random
+      ngx.print(body)
+    }
   }
 
   location /cacheable-vary-accept-encoding-multiple/ {
