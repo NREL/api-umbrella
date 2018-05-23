@@ -36,7 +36,12 @@ class Test::Proxy::ResponseRewriting::TestRedirects < Minitest::Test
 
   def test_absolute_rewrites_backend_domain
     response = make_redirect_request("http://example.com/hello")
-    assert_equal("http://frontend.foo/hello?api_key=#{api_key}", response.headers["location"])
+    assert_equal("http://frontend.foo:9080/hello?api_key=#{api_key}", response.headers["location"])
+  end
+
+  def test_absolute_rewrites_backend_domain_https
+    response = make_redirect_request("https://example.com/hello")
+    assert_equal("https://frontend.foo:9081/hello?api_key=#{api_key}", response.headers["location"])
   end
 
   def test_absolute_requires_full_domain_match
@@ -46,7 +51,7 @@ class Test::Proxy::ResponseRewriting::TestRedirects < Minitest::Test
 
   def test_absolute_rewrites_frontend_prefix_path
     response = make_redirect_request("http://example.com/backend-prefix/")
-    assert_equal("http://frontend.foo/#{unique_test_class_id}/front/end/path/?api_key=#{api_key}", response.headers["location"])
+    assert_equal("http://frontend.foo:9080/#{unique_test_class_id}/front/end/path/?api_key=#{api_key}", response.headers["location"])
   end
 
   def test_relative_unknown_path_leaves_query_params
@@ -61,7 +66,7 @@ class Test::Proxy::ResponseRewriting::TestRedirects < Minitest::Test
 
   def test_absolute_rewrite_keeps_query_params
     response = make_redirect_request("http://example.com/?some=param&and=another")
-    assert_equal("http://frontend.foo/?some=param&and=another&api_key=#{api_key}", response.headers["location"])
+    assert_equal("http://frontend.foo:9080/?some=param&and=another&api_key=#{api_key}", response.headers["location"])
   end
 
   def test_leaves_empty_redirect
