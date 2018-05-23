@@ -6,8 +6,8 @@ set(LUAROCKS_VERSION 2.4.4)
 set(LUAROCKS_HASH 04e8b19d565e86b1d08f745adc4b1a56)
 set(NGX_DYUPS_VERSION a5e75737e04ff3e5040a80f5f739171e96c3359c)
 set(NGX_DYUPS_HASH e16860efcd0629f38f514469052d998a)
-set(OPENRESTY_VERSION 1.13.6.1)
-set(OPENRESTY_HASH 637f82d0b36c74aec1c01bd3b8e0289c)
+set(OPENRESTY_VERSION 1.13.6.2)
+set(OPENRESTY_HASH d95bc4bbe15e4b045a0593b4ecc0db38)
 set(OPENSSL_VERSION 1.0.2o)
 set(OPENSSL_HASH ec3f5c9714ba0fd45cb4e087301eb1336c317e0d20b575a125050470e8089e4d)
 set(PCRE_VERSION 8.42)
@@ -80,7 +80,12 @@ ExternalProject_Add(
   BUILD_IN_SOURCE 1
   # Patch opm to allow it to pick up dynamic LUA_PATH and LUA_CPATH, since we
   # need different paths while performing staged installations.
-  PATCH_COMMAND patch -p1 < ${CMAKE_SOURCE_DIR}/build/patches/opm.patch
+  PATCH_COMMAND patch -p1 < ${CMAKE_SOURCE_DIR}/build/patches/openresty-opm.patch
+    # Similarly, patch openresty's configure process so it doesn't introduce a
+    # hard-coded path to nginx. This allows nginx to be picked up on the normal
+    # PATH semantics, so it can worked in staged environments at different
+    # locations.
+    COMMAND patch -p1 < ${CMAKE_SOURCE_DIR}/build/patches/openresty-cli.patch
   CONFIGURE_COMMAND ${OPENRESTY_CONFIGURE_CMD}
   # Wipe the .openssl directory inside the openssl dir, or else openresty
   # will fail to build on rebuilds: https://trac.nginx.org/nginx/ticket/583
