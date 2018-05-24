@@ -230,9 +230,11 @@ server {
         headers = ngx.req.get_headers(500),
       })
 
-      -- Force nginx to gzip this response, even if the original input headers
-      -- wouldn't normally gzip.
-      ngx.req.set_header("Accept-Encoding", "gzip")
+      if ngx.var.arg_force == "true" then
+        -- Force nginx to gzip this response, even if the original input headers
+        -- wouldn't normally gzip.
+        ngx.req.set_header("Accept-Encoding", "gzip")
+      end
 
       ngx.header["Content-Type"] = "application/json"
       ngx.print(body)
@@ -451,9 +453,11 @@ server {
         data = string.rep("a", 1500) -- 1500 bytes - long enough to allow gzip
       })
 
-      -- Force nginx to gzip this response, even if the original input headers
-      -- wouldn't normally gzip.
-      ngx.req.set_header("Accept-Encoding", "gzip")
+      if ngx.var.arg_force == "true" then
+        -- Force nginx to gzip this response, even if the original input headers
+        -- wouldn't normally gzip.
+        ngx.req.set_header("Accept-Encoding", "gzip")
+      end
 
       ngx.header["Content-Type"] = "application/json"
       ngx.header["Cache-Control"] = "max-age=60"
