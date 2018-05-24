@@ -8,51 +8,6 @@ local startswith = stringx.startswith
 local url_build = url.build
 local url_parse = url.parse
 
-local function set_cache_header()
-  local cache = "MISS"
-  local via = ngx.header["Via"]
-  if via then
-    local matches, match_err = ngx.re.match(via, "ApacheTrafficServer \\[([^\\]]+)\\]", "jo")
-    if matches and matches[1] then
-      -- Parse the cache status out of the Via header into a simplified X-Cache
-      -- HIT/MISS value:
-      -- https://docs.trafficserver.apache.org/en/latest/admin/faqs.en.html?highlight=post#how-do-i-interpret-the-via-header-code
-      --
-      -- Note: The XDebug TrafficServer plugin could provide similar
-      -- functionality, but currently has some odd edge cases:
-      -- https://issues.apache.org/jira/browse/TS-3432
-      local trafficserver_code = matches[1]
-      local cache_lookup_code = string.sub(trafficserver_code, 2, 2)
-      if cache_lookup_code == "H" or cache_lookup_code == "R" then
-        cache = "HIT"
-      end
-    elseif match_err then
-      ngx.log(ngx.ERR, "regex error: ", match_err)
-    end
-  end
-
-  local existing_x_cache = ngx.header["X-Cache"]
-  if not existing_x_cache or cache == "HIT" then
-    ngx.header["X-Cache"] = cache
-  end
-end
-
-local function set_via_header()
-  local via = ngx.header["Via"]
-  if via then
-    -- Replace the server hostname or hex-encoded IP address in the Via header
-    -- TrafficServer appends with an alias of "api-umbrella". We have to return
-    -- some name here to be compliant with the Via header specification, but we
-    -- don't want to expose internal machine names or IPs.
-    local new_via, _, err = ngx.re.sub(via, "(http/[0-9\\.]+) [^ ]+ (\\(ApacheTrafficServer[^\\)]*\\))$", "$1 api-umbrella $2", "jo")
-    if new_via then
-      ngx.header["Via"] = new_via
-    elseif err then
-      ngx.log(ngx.ERR, "regex error: ", err)
-    end
-  end
-end
-
 local function set_default_headers(settings)
   if settings["_default_response_headers"] then
     local existing_headers = ngx.resp.get_headers()
@@ -149,9 +104,6 @@ local function rewrite_redirects()
 end
 
 return function(settings)
-  set_cache_header()
-  set_via_header()
-
   if settings then
     set_default_headers(settings)
     set_override_headers(settings)

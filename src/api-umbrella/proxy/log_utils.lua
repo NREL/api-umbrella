@@ -182,14 +182,13 @@ local function cache_city_geocode(premature, id, data)
   end
 end
 
-function _M.ignore_request(ngx_ctx, ngx_var)
-  -- Only log API requests (not web app or website backend requests).
+function _M.ignore_request(ngx_ctx)
+  -- Only log API requests (not website backend requests).
   if ngx_ctx.matched_api then
-    -- Don't log some of our internal API calls used to determine if API
-    -- Umbrella is fully started and ready (since logging of these requests
-    -- will likely fail anyway if things aren't ready).
-    local uri = ngx_ctx.original_uri or ngx_var.uri
-    if uri == "/api-umbrella/v1/health" or uri == "/api-umbrella/v1/state" then
+    local settings = ngx_ctx.settings
+
+    -- Don't log some of our internal API calls.
+    if settings and settings["disable_analytics"] then
       return true
     else
       return false

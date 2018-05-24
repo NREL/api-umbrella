@@ -148,8 +148,6 @@ router:
     ip_connections_size: 5m
     ip_connections_log_level: error
   web_app_host: "*"
-  web_app_backend_regex: "^/(admin|admins|web-assets)(/|$)"
-  web_app_backend_required_https_regex: "^.*"
   website_backend_required_https_regex_default: "^.*"
   redirect_not_found_to_https: true
 rsyslog:
@@ -333,24 +331,54 @@ internal_apis:
           disable_api_key: true
           rate_limit_mode: unlimited
           require_https: optional
-  - _id: api-umbrella-web-backend
-    name: API Umbrella - Web APIs
+          disable_analytics: true
+  - _id: api-umbrella-web-app-backend
+    name: API Umbrella - HTTP APIs
     frontend_host: "{{router.web_app_host}}"
     backend_host: 127.0.0.1
     backend_protocol: http
     balance_algorithm: least_conn
-    sort_order: 1
+    sort_order: 2
     servers:
       - host: "{{web.host}}"
         port: "{{web.port}}"
     url_matches:
       - frontend_prefix: "/api-umbrella/"
         backend_prefix: "/api-umbrella/"
+      - frontend_prefix: "/admin/"
+        backend_prefix: "/admin/"
+      - frontend_prefix: "/admin"
+        backend_prefix: "/admin"
+        exact_match: true
+      - frontend_prefix: "/admins/"
+        backend_prefix: "/admins/"
+      - frontend_prefix: "/admins"
+        backend_prefix: "/admins"
+        exact_match: true
     sub_settings:
-      - http_method: post
-        regex: "^/api-umbrella/v1/users"
-      - http_method: post
-        regex: "^/api-umbrella/v1/contact"
+      - http_method: any
+        regex: "^/admin/stats"
+        settings:
+          disable_api_key: true
+      - http_method: POST
+        regex: "^/admin/login"
+        settings:
+          disable_api_key: true
+          rate_limit_mode: custom
+          rate_limits:
+            - duration: 15000
+              accuracy: 1000
+              limit_by: ip
+              limit_to: 100
+              distributed: true
+              response_headers: true
+      - http_method: any
+        regex: "^/admin"
+        settings:
+          disable_api_key: true
+          rate_limit_mode: unlimited
+          redirect_https: true
+          disable_analytics: true
 internal_website_backends:
   - _id: api-umbrella-website-backend
     frontend_host: "{{router.web_app_host}}"

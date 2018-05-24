@@ -39,18 +39,19 @@ CONFIG proxy.config.http.transaction_no_activity_timeout_in INT {{trafficserver.
 CONFIG proxy.config.http.transaction_no_activity_timeout_out INT {{trafficserver._transaction_no_activity_timeout_out}}
 CONFIG proxy.config.http.connect_attempts_timeout INT {{trafficserver._connect_attempts_timeout}}
 
-# Retry the connection to the backend nginx API router server if it fails. This
-# may happen when nginx is being reloaded since TrafficServer is holding
-# keep-alive connections open to the backend
-# (proxy.config.http.keep_alive_enabled_out) and the reload process may lead to
-# TrafficServer trying to re-use a connection to a killed worker.
+# Don't retry requests by default. We want to avoid retrying connections if the
+# response times out, since if a backend is slow and struggling, we want to
+# avoid sending more traffic to it.
+CONFIG proxy.config.http.safe_requests_retryable INT 0
+
+# Allow retry of connections if the connection failed to establish at all and
+# no data was actually ever sent (since those might be temporary issues if the
+# underlying server is restarting).
 CONFIG proxy.config.http.connect_attempts_max_retries INT 3
 CONFIG proxy.config.http.connect_attempts_max_retries_dead_server INT 3
 
-# Don't consider the backend down, even if some requests timeout. Since we're
-# actually funneling all of our existing traffic back through a single nginx
-# backend, we don't want some bad API requests to mark the entire nginx backend
-# as being down.
+# Don't consider the backend down, even if some requests timeout. We don't want
+some bad API requests to mark the entire backend as being down.
 CONFIG proxy.config.http.down_server.cache_time INT 0
 
 # Don't append IP information to X-Forwarded-For or Client-IP headers, since
@@ -101,6 +102,11 @@ CONFIG proxy.config.cache.read_while_writer_retry.delay INT 50
 CONFIG proxy.config.http.background_fill_active_timeout INT 0
 CONFIG proxy.config.http.background_fill_completed_threshold FLOAT 0.0
 CONFIG proxy.config.cache.max_doc_size INT 0
+
+# Traffic Server uses this proxy_name in the Via response headers. By default,
+# this is a hex-encoded IP address, but returning that information may not be
+# desirable, so instead use a hard-coded name instead.
+CONFIG proxy.config.proxy_name STRING api-umbrella
 
 # Include information in the Via response indicating whether this was a cache
 # hit or not.
