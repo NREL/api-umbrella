@@ -50,14 +50,40 @@ class Test::Proxy::Caching::TestGzip < Minitest::Test
 
   def test_backend_gzips_itself
     # Validate that underlying API is pre-gzipped.
+    response = Typhoeus.get("http://127.0.0.1:9444/cacheable-pre-gzip/", http_options.deep_merge(:accept_encoding => "gzip"))
+    assert_response_code(200, response)
+    assert_equal("gzip", response.headers["content-encoding"])
+    data = MultiJson.load(response.body)
+    assert_kind_of(Hash, data["headers"])
+    assert_equal("gzip", data["headers"]["accept-encoding"])
+
     response = Typhoeus.get("http://127.0.0.1:9444/cacheable-pre-gzip/", http_options)
+    assert_response_code(200, response)
+    assert_nil(response.headers["content-encoding"])
+    data = MultiJson.load(response.body)
+    assert_kind_of(Hash, data["headers"])
+    assert_nil(data["headers"]["accept-encoding"])
+
+    assert_gzip("/api/cacheable-pre-gzip/")
+  end
+
+  def test_backend_force_gzips_itself
+    # Validate that underlying API is pre-gzipped.
+    response = Typhoeus.get("http://127.0.0.1:9444/cacheable-pre-gzip/?force=true", http_options.deep_merge(:accept_encoding => "gzip"))
+    assert_response_code(200, response)
+    assert_equal("gzip", response.headers["content-encoding"])
+    data = MultiJson.load(response.body)
+    assert_kind_of(Hash, data["headers"])
+    assert_equal("gzip", data["headers"]["accept-encoding"])
+
+    response = Typhoeus.get("http://127.0.0.1:9444/cacheable-pre-gzip/?force=true", http_options)
     assert_response_code(200, response)
     assert_equal("gzip", response.headers["content-encoding"])
     data = MultiJson.load(Zlib::GzipReader.new(StringIO.new(response.body)).read)
     assert_kind_of(Hash, data["headers"])
     assert_nil(data["headers"]["accept-encoding"])
 
-    assert_gzip("/api/cacheable-pre-gzip/")
+    assert_gzip("/api/cacheable-pre-gzip/?force=true")
   end
 
   def test_backend_does_not_gzip_no_vary
@@ -70,7 +96,7 @@ class Test::Proxy::Caching::TestGzip < Minitest::Test
 
   def test_backend_gzips_itself_multiple_vary
     # Validate that underlying API is pre-gzipped.
-    response = Typhoeus.get("http://127.0.0.1:9444/cacheable-pre-gzip/", http_options)
+    response = Typhoeus.get("http://127.0.0.1:9444/cacheable-pre-gzip-multiple-vary/", http_options)
     assert_response_code(200, response)
     assert_equal("gzip", response.headers["content-encoding"])
     data = MultiJson.load(Zlib::GzipReader.new(StringIO.new(response.body)).read)
@@ -78,6 +104,18 @@ class Test::Proxy::Caching::TestGzip < Minitest::Test
     assert_nil(data["headers"]["accept-encoding"])
 
     assert_gzip("/api/cacheable-pre-gzip-multiple-vary/")
+  end
+
+  def test_backend_force_gzips_itself_multiple_vary
+    # Validate that underlying API is pre-gzipped.
+    response = Typhoeus.get("http://127.0.0.1:9444/cacheable-pre-gzip-multiple-vary/?force=true", http_options)
+    assert_response_code(200, response)
+    assert_equal("gzip", response.headers["content-encoding"])
+    data = MultiJson.load(Zlib::GzipReader.new(StringIO.new(response.body)).read)
+    assert_kind_of(Hash, data["headers"])
+    assert_nil(data["headers"]["accept-encoding"])
+
+    assert_gzip("/api/cacheable-pre-gzip-multiple-vary/?force=true")
   end
 
   def test_backend_does_not_gzip_multiple_vary
