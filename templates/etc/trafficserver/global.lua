@@ -35,6 +35,7 @@ function do_global_send_request()
   ts.server_request.header["X-Api-Umbrella-Backend-Server-Scheme"] = nil
   ts.server_request.header["X-Api-Umbrella-Backend-Server-Host"] = nil
   ts.server_request.header["X-Api-Umbrella-Backend-Server-Port"] = nil
+  ts.server_request.header["X-Api-Umbrella-Allow-Authorization-Caching"] = nil
 
   return 0
 end
@@ -75,21 +76,6 @@ function do_global_send_response()
       ts.client_response.header["Cache-Control"] = cache_control
       ts.client_response.header["X-Api-Umbrella-Orig-Cache-Control"] = nil
     end
-  end
-
-  -- Add a simpler X-Cache header that's simply HIT or MISS based on the cache
-  -- lookup status.
-  local cache = "MISS"
-  local cache_lookup_status = ts.http.get_cache_lookup_status()
-  if cache_lookup_status == TS_LUA_CACHE_LOOKUP_HIT_STALE or cache_lookup_status == TS_LUA_CACHE_LOOKUP_HIT_FRESH then
-    cache = "HIT"
-  end
-
-  -- If the underlying API backend returned it's own X-Cache header, allow that
-  -- to take precedent, unless we have a cache hit at our layer.
-  local existing_cache = ts.client_response.header["X-Cache"]
-  if not existing_cache or cache == "HIT" then
-    ts.client_response.header["X-Cache"] = cache
   end
 
   return 0

@@ -8,6 +8,42 @@ local startswith = stringx.startswith
 local url_build = url.build
 local url_parse = url.parse
 
+-- Parse the "cache-lookup" status out of the Via header into a simplified
+-- X-Cache HIT/MISS value:
+-- https://docs.trafficserver.apache.org/en/7.1.x/appendices/faq.en.html?highlight=asked#how-do-i-interpret-the-via-header-code
+--
+-- Note: Ideally we could handle this at the TrafficServer lua layer with the
+-- simpler ts.http.get_cache_lookup_status(). However, that lookup status isn't
+-- always accurate, since certain scenarios trigger cache revalidation without
+-- updating the status code (like cache items not used due to authorization
+-- headers, or this similar issue using the same underling
+-- TSHttpTxnCacheLookupStatusGet:
+-- https://issues.apache.org/jira/browse/TS-3432). So instead, we'll continue
+-- to handle it here, using nginx's lua layer, instead of TrafficServer's lua
+-- layer, since nginx's compiled regexes are probably a bit better optimized.
+local function set_cache_header()
+  local cache = "MISS"
+  local via = ngx.header["Via"]
+  if via then
+    local matches, match_err = ngx.re.match(via, "ApacheTrafficServer \\[.(.)", "jo")
+    if matches and matches[1] then
+      local cache_lookup_code = matches[1]
+      if cache_lookup_code == "H" or cache_lookup_code == "R" then
+        cache = "HIT"
+      end
+    elseif match_err then
+      ngx.log(ngx.ERR, "regex error: ", match_err)
+    end
+  end
+
+  -- If the underlying API backend returned it's own X-Cache header, allow that
+  -- to take precedent, unless we have a cache hit at our layer.
+  local existing_x_cache = ngx.header["X-Cache"]
+  if not existing_x_cache or cache == "HIT" then
+    ngx.header["X-Cache"] = cache
+  end
+end
+
 local function set_default_headers(settings)
   if settings["_default_response_headers"] then
     local existing_headers = ngx.resp.get_headers()
@@ -104,6 +140,8 @@ local function rewrite_redirects()
 end
 
 return function(settings)
+  set_cache_header()
+
   if settings then
     set_default_headers(settings)
     set_override_headers(settings)
