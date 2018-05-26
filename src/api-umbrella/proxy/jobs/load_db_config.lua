@@ -3,36 +3,12 @@ local _M = {}
 local active_config = require "api-umbrella.proxy.models.active_config"
 local db_config = require "api-umbrella.proxy.models.db_config"
 local interval_lock = require "api-umbrella.utils.interval_lock"
-local load_backends = require "api-umbrella.proxy.load_backends"
-local lock = require "resty.lock"
-local utils = require "api-umbrella.proxy.utils"
 
 local ERR = ngx.ERR
-local get_packed = utils.get_packed
 local log = ngx.log
 local new_timer = ngx.timer.at
 
 local delay = 0.3  -- in seconds
-
-local function restore_active_config_backends_after_reload()
-  local restore_lock = lock:new("locks", { ["timeout"] = 10 })
-  local _, lock_err = restore_lock:lock("restore_active_config_backends:" .. WORKER_GROUP_ID)
-  if lock_err then
-    return
-  end
-
-  if not ngx.shared.active_config:get("upstreams_setup_complete:" .. WORKER_GROUP_ID) then
-    local existing_active_config = get_packed(ngx.shared.active_config, "packed_data")
-    if existing_active_config and existing_active_config["apis"] then
-      load_backends.setup_backends(existing_active_config["apis"])
-    end
-  end
-
-  local ok, unlock_err = restore_lock:unlock()
-  if not ok then
-    ngx.log(ngx.ERR, "failed to unlock: ", unlock_err)
-  end
-end
 
 local function do_check()
   -- If this worker process isn't part of the latest group, then don't perform
@@ -83,11 +59,6 @@ end
 local function setup(premature)
   if premature then
     return
-  end
-
-  local ok, err = pcall(restore_active_config_backends_after_reload)
-  if not ok then
-    ngx.log(ngx.ERR, "failed to run api load cycle: ", err)
   end
 
   interval_lock.repeat_with_mutex('load_db_config_check', delay, do_check)

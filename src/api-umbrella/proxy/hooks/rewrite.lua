@@ -3,13 +3,10 @@ local error_handler = require "api-umbrella.proxy.error_handler"
 local host_normalize = require "api-umbrella.utils.host_normalize"
 local redirect_matches_to_https = require "api-umbrella.utils.redirect_matches_to_https"
 local utils = require "api-umbrella.proxy.utils"
-local wait_for_setup = require "api-umbrella.proxy.wait_for_setup"
 local website_matcher = require "api-umbrella.proxy.middleware.website_matcher"
 
 local get_packed = utils.get_packed
 local ngx_var = ngx.var
-
-wait_for_setup()
 
 -- Cache various "ngx.var" lookups that are repeated throughout the stack,
 -- so they don't allocate duplicate memory during the request, and since

@@ -29,35 +29,26 @@ module ApiUmbrellaTestHelpers
     end
 
     def wait_for_response(path, options)
-      begin
-        Timeout.timeout(15) do
-          loop do
-            response = Typhoeus.get("http://127.0.0.1:9080#{path}", http_options)
-            if(response.code == options.fetch(:code))
-              if(options[:local_interface_ip])
-                assert_response_code(200, response)
-                data = MultiJson.load(response.body)
-                if(options[:local_interface_ip] == data["local_interface_ip"])
-                  break
-                end
-              else
+      Timeout.timeout(15) do
+        loop do
+          response = Typhoeus.get("http://127.0.0.1:9080#{path}", http_options)
+          if(response.code == options.fetch(:code))
+            if(options[:local_interface_ip])
+              assert_response_code(200, response)
+              data = MultiJson.load(response.body)
+              if(options[:local_interface_ip] == data["local_interface_ip"])
                 break
               end
+            else
+              break
             end
-
-            sleep 0.1
           end
-        end
-      rescue Timeout::Error
-        flunk("DNS change not detected")
-      end
 
-      # After we detect the change we want, wait an additional 500ms. This is
-      # to handle the fact that even though we've seen the desired state, it
-      # may take some additional time before this update has propagated to all
-      # nginx workers. This is due to how dyups works, so we must wait a bit
-      # longer than the configured dyups_read_msg_timeout time.
-      sleep 0.5
+          sleep 0.1
+        end
+      end
+    rescue Timeout::Error
+      flunk("DNS change not detected")
     end
   end
 end

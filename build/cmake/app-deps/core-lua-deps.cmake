@@ -18,8 +18,6 @@ set(LUAROCK_RESTY_UUID_VERSION 1.1-1)
 set(LUAROCK_RESTY_UUID_HASH d14ae99d6f18edd5c934e6050e974c5e)
 set(LUA_LUASOCKET_VERSION 652959890943c34d7180cae372339b91e62f0d7b)
 set(LUA_LUASOCKET_HASH 6b3e3bdf60267f5957c2ea44e563ed70)
-set(LUA_RESTY_DNS_CACHE_VERSION 32d9d461465edbec1cc798c18447c0ac7ee6e528)
-set(LUA_RESTY_DNS_CACHE_HASH 3a5414110c6ad4331fe82873e19bd1e8)
 set(LUA_RESTY_LOGGER_SOCKET_VERSION 15cc1c256e55b8e68ec9b220b6883c227a763d4e)
 set(LUA_RESTY_LOGGER_SOCKET_HASH efe14697a8c4be612c011f54fce06191)
 set(LUA_RESTY_SHCACHE_VERSION fb2e275c2cdca08eaa34a7b73375e41ac3eff200)
@@ -80,17 +78,6 @@ ExternalProject_Add(
 )
 
 ExternalProject_Add(
-  lua_resty_dns_cache
-  EXCLUDE_FROM_ALL 1
-  DEPENDS luarocks
-  URL https://github.com/hamishforbes/lua-resty-dns-cache/archive/${LUA_RESTY_DNS_CACHE_VERSION}.tar.gz
-  URL_HASH MD5=${LUA_RESTY_DNS_CACHE_HASH}
-  CONFIGURE_COMMAND ""
-  BUILD_COMMAND ""
-  INSTALL_COMMAND install -D -m 644 <SOURCE_DIR>/lib/resty/dns/cache.lua ${VENDOR_LUA_DIR}/resty/dns/cache.lua
-)
-
-ExternalProject_Add(
   lua_resty_logger_socket
   EXCLUDE_FROM_ALL 1
   DEPENDS luarocks
@@ -115,7 +102,6 @@ ExternalProject_Add(
 set(
   LUA_DEPS
   lua_luasocket_url
-  lua_resty_dns_cache
   lua_resty_logger_socket
   lua_resty_shcache
   luarock_argparse

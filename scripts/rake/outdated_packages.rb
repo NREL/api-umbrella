@@ -67,10 +67,6 @@ class OutdatedPackages
       :git => "https://github.com/diegonehab/luasocket.git",
       :git_ref => "master",
     },
-    "lua_resty_dns_cache" => {
-      :git => "https://github.com/hamishforbes/lua-resty-dns-cache.git",
-      :git_ref => "master",
-    },
     "lua_resty_logger_socket" => {
       :git => "https://github.com/cloudflare/lua-resty-logger-socket.git",
       :git_ref => "master",
@@ -91,10 +87,6 @@ class OutdatedPackages
     },
     "mora" => {
       :git => "https://github.com/emicklei/mora.git",
-      :git_ref => "master",
-    },
-    "ngx_dyups" => {
-      :git => "https://github.com/yzprofile/ngx_http_dyups_module.git",
       :git_ref => "master",
     },
     "nodejs" => {

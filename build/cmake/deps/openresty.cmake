@@ -4,27 +4,12 @@ include(${CMAKE_SOURCE_DIR}/build/cmake/deps/libgeoip.cmake)
 
 set(LUAROCKS_VERSION 2.4.4)
 set(LUAROCKS_HASH 04e8b19d565e86b1d08f745adc4b1a56)
-set(NGX_DYUPS_VERSION a5e75737e04ff3e5040a80f5f739171e96c3359c)
-set(NGX_DYUPS_HASH e16860efcd0629f38f514469052d998a)
 set(OPENRESTY_VERSION 1.13.6.2)
 set(OPENRESTY_HASH d95bc4bbe15e4b045a0593b4ecc0db38)
 set(OPENSSL_VERSION 1.0.2o)
 set(OPENSSL_HASH ec3f5c9714ba0fd45cb4e087301eb1336c317e0d20b575a125050470e8089e4d)
 set(PCRE_VERSION 8.42)
 set(PCRE_HASH 085b6aa253e0f91cae70b3cdbe8c1ac2)
-
-# ngx_dyups: Dynamic upstream handling for handling DNS changes
-ExternalProject_Add(
-  ngx_dyups
-  EXCLUDE_FROM_ALL 1
-  URL https://github.com/yzprofile/ngx_http_dyups_module/archive/${NGX_DYUPS_VERSION}.tar.gz
-  URL_HASH MD5=${NGX_DYUPS_HASH}
-  CONFIGURE_COMMAND ""
-  BUILD_COMMAND ""
-  INSTALL_COMMAND ""
-)
-ExternalProject_Get_Property(ngx_dyups SOURCE_DIR)
-set(NGX_DYUPS_SOURCE_DIR ${SOURCE_DIR})
 
 # Pull in newer version of PCRE (8.20+) for OpenResty to enable PCRE JIT.
 ExternalProject_Add(
@@ -69,12 +54,11 @@ list(APPEND OPENRESTY_CONFIGURE_CMD --with-http_gzip_static_module)
 list(APPEND OPENRESTY_CONFIGURE_CMD --with-http_realip_module)
 list(APPEND OPENRESTY_CONFIGURE_CMD --with-http_ssl_module)
 list(APPEND OPENRESTY_CONFIGURE_CMD --with-http_stub_status_module)
-list(APPEND OPENRESTY_CONFIGURE_CMD --add-module=${NGX_DYUPS_SOURCE_DIR})
 
 ExternalProject_Add(
   openresty
   EXCLUDE_FROM_ALL 1
-  DEPENDS libgeoip ngx_dyups openssl pcre
+  DEPENDS libgeoip openssl pcre
   URL https://openresty.org/download/openresty-${OPENRESTY_VERSION}.tar.gz
   URL_HASH MD5=${OPENRESTY_HASH}
   BUILD_IN_SOURCE 1

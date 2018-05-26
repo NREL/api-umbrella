@@ -56,13 +56,10 @@ http {
 
   lua_shared_dict active_config {{nginx.shared_dicts.active_config.size}};
   lua_shared_dict api_users {{nginx.shared_dicts.api_users.size}};
-  lua_shared_dict dns_cache {{nginx.shared_dicts.dns_cache.size}};
   lua_shared_dict geocode_city_cache {{nginx.shared_dicts.geocode_city_cache.size}};
   lua_shared_dict interval_locks {{nginx.shared_dicts.interval_locks.size}};
   lua_shared_dict locks {{nginx.shared_dicts.locks.size}};
-  lua_shared_dict resolved_hosts {{nginx.shared_dicts.resolved_hosts.size}};
   lua_shared_dict stats {{nginx.shared_dicts.stats.size}};
-  lua_shared_dict upstream_checksums {{nginx.shared_dicts.upstream_checksums.size}};
   {{#nginx.lua_ssl_trusted_certificate}}
   lua_ssl_trusted_certificate {{nginx.lua_ssl_trusted_certificate}};
   lua_ssl_verify_depth {{nginx.lua_ssl_verify_depth}};
@@ -204,15 +201,6 @@ http {
   upstream api_umbrella_trafficserver_backend {
     server {{trafficserver.host}}:{{trafficserver.port}};
     keepalive 10;
-  }
-
-  dyups_trylock on;
-  dyups_read_msg_timeout 300ms;
-  server {
-    listen {{nginx.dyups.host}}:{{nginx.dyups.port}};
-    location / {
-      dyups_interface;
-    }
   }
 
   server {
