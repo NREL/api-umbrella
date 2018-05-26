@@ -371,7 +371,7 @@ internal_apis:
             - duration: 15000
               accuracy: 1000
               limit_by: ip
-              limit_to: 100
+              limit: 100
               distributed: true
               response_headers: true
       - http_method: any
