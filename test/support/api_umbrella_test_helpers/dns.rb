@@ -4,7 +4,7 @@ module ApiUmbrellaTestHelpers
     # buffer to our timing calculations. This is to account for some fuzziness in
     # our timings between what's happening in nginx and our test requests being
     # made.
-    TTL_BUFFER_NEG = 1.6
+    TTL_BUFFER_NEG = 1.7
     TTL_BUFFER_POS = 2.1
 
     def teardown
