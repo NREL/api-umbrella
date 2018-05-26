@@ -3,56 +3,256 @@ require_relative "../../test_helper"
 class Test::Proxy::Routing::TestHttpsConfig < Minitest::Test
   include ApiUmbrellaTestHelpers::Setup
   include ApiUmbrellaTestHelpers::AdminAuth
-  include Minitest::Hooks
 
   def setup
     super
     setup_server
-    once_per_class_setup do
-      override_config_set({
-        "router" => {
-          "web_app_backend_required_https_regex" => "^/admin/web-app-https-test",
-          "website_backend_required_https_regex_default" => "^/website-https-test",
-          "redirect_not_found_to_https" => false,
-          "web_app_host" => "127.0.0.1",
-        },
-      }, "--router")
-    end
   end
 
-  def after_all
-    super
-    override_config_reset("--router")
-  end
-
-  def test_custom_web_app_regex
-    response = Typhoeus.get("http://127.0.0.1:9080/admin/", keyless_http_options)
+  def test_web_app_redirects_to_https_or_errors
+    # Check the non-API static web content.
+    response = Typhoeus.get("https://127.0.0.1:9081/admin/", keyless_http_options)
     assert_response_code(200, response)
     assert_match(%r{<script src="assets/api-umbrella-admin-ui-\w+\.js"}, response.body)
 
-    response = Typhoeus.get("http://127.0.0.1:9080/admin/web-app-https-test", keyless_http_options)
+    response = Typhoeus.get("http://127.0.0.1:9080/admin/", keyless_http_options)
     assert_response_code(301, response)
-    assert_equal("https://127.0.0.1:9081/admin/web-app-https-test", response.headers["Location"])
+    assert_equal("https://127.0.0.1:9081/admin/", response.headers["Location"])
+
+    # Check the API pieces of the web app.
+    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/apis.json", http_options.deep_merge(admin_token))
+    assert_response_code(200, response)
+
+    response = Typhoeus.get("http://127.0.0.1:9080/api-umbrella/v1/apis.json", http_options.deep_merge(admin_token))
+    assert_response_code(400, response)
+    assert_equal("application/json", response.headers["content-type"])
+    assert_match("HTTPS_REQUIRED", response.body)
+
+    # Check some of the APIs that have custom settings outside the normal v1
+    # URL path.
+    response = Typhoeus.get("https://127.0.0.1:9081/admin/stats/logs.json", http_options.deep_merge(admin_session).deep_merge({
+      :params => {
+        "start_at" => "2015-01-13",
+        "end_at" => "2015-01-18",
+        "interval" => "day",
+        "start" => "0",
+        "length" => "10",
+      },
+    }))
+    assert_response_code(200, response)
+
+    response = Typhoeus.get("http://127.0.0.1:9080/admin/stats/logs.json", http_options.deep_merge(admin_session).deep_merge({
+      :params => {
+        "start_at" => "2015-01-13",
+        "end_at" => "2015-01-18",
+        "interval" => "day",
+        "start" => "0",
+        "length" => "10",
+      },
+    }))
+    assert_response_code(400, response)
+    assert_equal("application/json", response.headers["content-type"])
+    assert_match("HTTPS_REQUIRED", response.body)
+
+    # Test another path that has specific sub-settings
+    response = Typhoeus.post("https://127.0.0.1:9081/admin/login", keyless_http_options.deep_merge(admin_session))
+    assert_response_code(302, response)
+    assert_equal("https://127.0.0.1:9081/admin/#/login", response.headers["Location"])
+
+    response = Typhoeus.post("http://127.0.0.1:9080/admin/login", keyless_http_options.deep_merge(admin_session))
+    assert_response_code(400, response)
+    assert_equal("application/json", response.headers["content-type"])
+    assert_match("HTTPS_REQUIRED", response.body)
+  end
+
+  def test_gatekeeper_apis_https_optional
+    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/state.json", http_options)
+    assert_response_code(200, response)
+
+    response = Typhoeus.get("http://127.0.0.1:9080/api-umbrella/v1/state.json", http_options)
+    assert_response_code(200, response)
+  end
+
+  def test_web_app_host_paths_on_different_host
+    http_opts = http_options.deep_merge(admin_token).deep_merge({
+      :headers => {
+        "Host" => unique_test_hostname,
+      },
+    })
+
+    # gatekeeper API backends
+    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/state.json", http_opts)
+    assert_response_code(200, response)
+
+    response = Typhoeus.get("http://127.0.0.1:9080/api-umbrella/v1/state.json", http_opts)
+    assert_response_code(200, response)
+
+    # web-app API backends
+    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/apis.json", http_opts)
+    assert_response_code(200, response)
+
+    response = Typhoeus.get("http://127.0.0.1:9080/api-umbrella/v1/apis.json", http_opts)
+    assert_response_code(400, response)
+    assert_equal("application/json", response.headers["content-type"])
+    assert_match("HTTPS_REQUIRED", response.body)
+
+    override_config({
+      "router" => {
+        "web_app_host" => "127.0.0.1",
+      },
+    }, "--router") do
+      # gatekeeper API backends
+      response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/state.json", http_opts)
+      assert_response_code(404, response)
+      assert_equal("application/json", response.headers["content-type"])
+      assert_match("NOT_FOUND", response.body)
+
+      response = Typhoeus.get("http://127.0.0.1:9080/api-umbrella/v1/state.json", http_opts)
+      assert_response_code(301, response)
+      assert_equal("https://#{unique_test_hostname}:9081/api-umbrella/v1/state.json", response.headers["Location"])
+
+      # web-app API backends
+      response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/apis.json", http_opts)
+      assert_response_code(404, response)
+      assert_equal("application/json", response.headers["content-type"])
+      assert_match("NOT_FOUND", response.body)
+
+      response = Typhoeus.get("http://127.0.0.1:9080/api-umbrella/v1/apis.json", http_opts)
+      assert_response_code(301, response)
+      assert_equal("https://#{unique_test_hostname}:9081/api-umbrella/v1/apis.json", response.headers["Location"])
+    end
   end
 
   def test_custom_website_backend_regex
     response = Typhoeus.get("http://127.0.0.1:9080/", keyless_http_options)
-    assert_response_code(200, response)
-    assert_match("Your API Site Name", response.body)
+    assert_response_code(301, response)
+    assert_equal("https://127.0.0.1:9081/", response.headers["Location"])
 
     response = Typhoeus.get("http://127.0.0.1:9080/website-https-test", keyless_http_options)
     assert_response_code(301, response)
     assert_equal("https://127.0.0.1:9081/website-https-test", response.headers["Location"])
+
+    override_config({
+      "router" => {
+        "website_backend_required_https_regex_default" => "^/website-https-test",
+      },
+    }, "--router") do
+      response = Typhoeus.get("http://127.0.0.1:9080/", keyless_http_options)
+      assert_response_code(200, response)
+      assert_match("Your API Site Name", response.body)
+
+      response = Typhoeus.get("http://127.0.0.1:9080/website-https-test", keyless_http_options)
+      assert_response_code(301, response)
+      assert_equal("https://127.0.0.1:9081/website-https-test", response.headers["Location"])
+    end
   end
 
-  def test_not_found_https_disabled
-    response = Typhoeus.get("http://127.0.0.1:9080/api-umbrella/v1/state.json", http_options.deep_merge(admin_token).deep_merge({
+  def test_redirect_not_found_to_https_disabled
+    http_opts = keyless_http_options.deep_merge({
       :headers => {
-        "Host" => "#{unique_test_id}-unknown.foo",
+        "Host" => unique_test_hostname,
       },
-    }))
+    })
+
+    response = Typhoeus.get("https://127.0.0.1:9081/#{unique_test_id}", http_opts)
     assert_response_code(404, response)
-    assert_equal("application/json", response.headers["content-type"])
-    assert_match("NOT_FOUND", response.body)
+    assert_equal("text/html", response.headers["content-type"])
+    assert_match("<center>openresty</center>", response.body)
+
+    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}", http_opts)
+    assert_response_code(301, response)
+    assert_equal("https://#{unique_test_hostname}:9081/#{unique_test_id}", response.headers["Location"])
+
+    # We want to test the behavior when the 404 doesn't come from the web app,
+    # so disable the web app matching all hosts.
+    override_config({
+      "router" => {
+        "web_app_host" => "127.0.0.1",
+      },
+    }, "--router") do
+      response = Typhoeus.get("https://127.0.0.1:9081/#{unique_test_id}", http_opts)
+      assert_response_code(404, response)
+      assert_equal("application/json", response.headers["content-type"])
+      assert_match("NOT_FOUND", response.body)
+
+      response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}", http_opts)
+      assert_response_code(301, response)
+      assert_equal("https://#{unique_test_hostname}:9081/#{unique_test_id}", response.headers["Location"])
+    end
+
+    override_config({
+      "router" => {
+        "web_app_host" => "127.0.0.1",
+        "redirect_not_found_to_https" => false,
+      },
+    }, "--router") do
+      response = Typhoeus.get("https://127.0.0.1:9081/#{unique_test_id}", http_opts)
+      assert_response_code(404, response)
+      assert_equal("application/json", response.headers["content-type"])
+      assert_match("NOT_FOUND", response.body)
+
+      response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}", http_opts)
+      assert_response_code(404, response)
+      assert_equal("application/json", response.headers["content-type"])
+      assert_match("NOT_FOUND", response.body)
+    end
+  end
+
+  # This tests the "redirect_https" setting for API backends, which isn't
+  # exposed in the web admin, since it's not normally useful for API backends.
+  # We mainly have it implemented for routing to the non-API portions of the
+  # web-app backend (so we can leverage our normal routing logic for routing to
+  # the stylesheets/javascript files too).
+  def test_api_backends_forced_to_redirect
+    prepend_api_backends([
+      {
+        :frontend_host => "127.0.0.1",
+        :backend_host => "127.0.0.1",
+        :servers => [{ :host => "127.0.0.1", :port => 9444 }],
+        :url_matches => [{ :frontend_prefix => "/#{unique_test_id}/redirect-default/", :backend_prefix => "/" }],
+      },
+      {
+        :frontend_host => "127.0.0.1",
+        :backend_host => "127.0.0.1",
+        :servers => [{ :host => "127.0.0.1", :port => 9444 }],
+        :url_matches => [{ :frontend_prefix => "/#{unique_test_id}/redirect-false/", :backend_prefix => "/" }],
+        :settings => {
+          :redirect_https => false,
+        },
+      },
+      {
+        :frontend_host => "127.0.0.1",
+        :backend_host => "127.0.0.1",
+        :servers => [{ :host => "127.0.0.1", :port => 9444 }],
+        :url_matches => [{ :frontend_prefix => "/#{unique_test_id}/redirect-true/", :backend_prefix => "/" }],
+        :settings => {
+          :redirect_https => true,
+        },
+      },
+    ]) do
+      response = Typhoeus.get("https://127.0.0.1:9081/#{unique_test_id}/redirect-default/hello", http_options)
+      assert_response_code(200, response)
+      assert_equal("Hello World", response.body)
+
+      response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/redirect-default/hello", http_options)
+      assert_response_code(200, response)
+      assert_equal("Hello World", response.body)
+
+      response = Typhoeus.get("https://127.0.0.1:9081/#{unique_test_id}/redirect-false/hello", http_options)
+      assert_response_code(200, response)
+      assert_equal("Hello World", response.body)
+
+      response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/redirect-false/hello", http_options)
+      assert_response_code(200, response)
+      assert_equal("Hello World", response.body)
+
+      response = Typhoeus.get("https://127.0.0.1:9081/#{unique_test_id}/redirect-true/hello", http_options)
+      assert_response_code(200, response)
+      assert_equal("Hello World", response.body)
+
+      response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/redirect-true/hello", http_options)
+      assert_response_code(301, response)
+      assert_equal("https://127.0.0.1:9081/#{unique_test_id}/redirect-true/hello", response.headers["Location"])
+    end
   end
 end

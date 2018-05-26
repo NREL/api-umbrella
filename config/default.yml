@@ -313,6 +313,8 @@ internal_apis:
         backend_prefix: "/api-umbrella/v1/health"
       - frontend_prefix: "/api-umbrella/v1/state"
         backend_prefix: "/api-umbrella/v1/state"
+    settings:
+      require_https: required_return_error
     sub_settings:
       - http_method: get
         regex: "^/api-umbrella/v1/(health|state)"
@@ -346,6 +348,8 @@ internal_apis:
         exact_match: true
       - frontend_prefix: "/web-assets/"
         backend_prefix: "/web-assets/"
+    settings:
+      require_https: required_return_error
     sub_settings:
       - http_method: any
         regex: "^/admin/stats"
