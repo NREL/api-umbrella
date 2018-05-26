@@ -355,6 +355,8 @@ internal_apis:
       - frontend_prefix: "/admins"
         backend_prefix: "/admins"
         exact_match: true
+      - frontend_prefix: "/web-assets/"
+        backend_prefix: "/web-assets/"
     sub_settings:
       - http_method: any
         regex: "^/admin/stats"
@@ -373,7 +375,7 @@ internal_apis:
               distributed: true
               response_headers: true
       - http_method: any
-        regex: "^/admin"
+        regex: "^/(admin|web-assets)"
         settings:
           disable_api_key: true
           rate_limit_mode: unlimited
