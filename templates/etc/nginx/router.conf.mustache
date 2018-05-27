@@ -362,7 +362,7 @@ http {
     {{^_development_env?}}
     location /web-assets/ {
       more_set_headers "Cache-Control: public, max-age=31536000, immutable";
-      alias {{_embedded_root_dir}}/apps/core/current/build/dist/web-app-assets/web-assets/;
+      alias {{_embedded_root_dir}}/apps/core/current/build/dist/web-app-public/web-assets/;
     }
     {{/_development_env?}}
 
