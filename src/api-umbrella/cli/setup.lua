@@ -291,13 +291,13 @@ local function activate_services()
 
       local service_log_dir = path.join(config["log_dir"], service_log_name)
       dir.makepath(service_log_dir)
-      local _, _, log_chmod_err = run_command("chmod 0755 " .. service_log_dir)
+      local _, _, log_chmod_err = run_command({ "chmod", "0755", service_log_dir })
       if log_chmod_err then
         print("chmod failed: ", log_chmod_err)
         os.exit(1)
       end
       if config["user"] and config["group"] then
-        local _, _, log_chown_err = run_command("chown " .. config["user"] .. ":" .. config["group"] .. " " .. service_log_dir)
+        local _, _, log_chown_err = run_command({ "chown", config["user"] .. ":" .. config["group"], service_log_dir })
         if log_chown_err then
           print("chown failed: ", log_chown_err)
           os.exit(1)
@@ -307,7 +307,7 @@ local function activate_services()
       -- Disable the svlogd script if we want all output to go to
       -- stdout/stderr.
       if config["log"]["destination"] == "console" then
-        local _, _, err = run_command("chmod -x " .. service_dir .. "/rc.log")
+        local _, _, err = run_command({ "chmod", "-x", service_dir .. "/rc.log" })
         if err then
           print("chmod failed: ", err)
           os.exit(1)
