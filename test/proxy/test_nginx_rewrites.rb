@@ -124,6 +124,7 @@ class Test::Proxy::TestNginxRewrites < Minitest::Test
             "^/#{unique_test_id}/api-example/rewrite_me$ https://example.com/ permanent",
             "^/#{unique_test_id}/website-example/rewrite_me$ https://2.example.com/ permanent",
             "^/admin/rewrite_me$ https://3.example.com/ permanent",
+            "^/admin/login/rewrite_me$ https://4.example.com/ permanent",
           ],
         },
       ],
@@ -148,13 +149,21 @@ class Test::Proxy::TestNginxRewrites < Minitest::Test
       assert_response_code(404, response)
       assert_match("Test 404 Not Found", response.body)
 
-      # Rewrites match before the admin tool.
+      # Rewrites match before the admin tool's static content.
       response = Typhoeus.get("https://127.0.0.1:9081/admin/rewrite_me", http_opts)
       assert_response_code(301, response)
       assert_equal("https://3.example.com/", response.headers["location"])
       response = Typhoeus.get("https://127.0.0.1:9081/admin/rewrite_me_just_kidding", http_opts)
       assert_response_code(404, response)
       assert_match("<center>openresty</center>", response.body)
+
+      # Rewrites match before the admin tool's dynamic app.
+      response = Typhoeus.get("https://127.0.0.1:9081/admin/login/rewrite_me", http_opts)
+      assert_response_code(301, response)
+      assert_equal("https://4.example.com/", response.headers["location"])
+      response = Typhoeus.get("https://127.0.0.1:9081/admin/login/rewrite_me_just_kidding", http_opts)
+      assert_response_code(404, response)
+      assert_match("<center>API Umbrella</center>", response.body)
     end
   end
 end
