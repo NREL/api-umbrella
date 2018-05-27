@@ -92,7 +92,7 @@ server {
     echo -n "Hello World";
   }
 
-  location = /redirect {
+  location /redirect {
     rewrite_by_lua_block {
       ngx.redirect(ngx.unescape_uri(ngx.var.arg_to or "/hello"))
     }
