@@ -11,7 +11,7 @@ return function(settings, user)
     return nil
   else
     if settings["redirect_https"] then
-      return ngx.redirect(httpsify_current_url(), ngx.HTTP_MOVED_PERMANENTLY)
+      return "redirect_https"
     end
 
     local mode = settings["require_https"]

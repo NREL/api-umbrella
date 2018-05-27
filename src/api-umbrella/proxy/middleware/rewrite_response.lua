@@ -62,16 +62,16 @@ local function set_override_headers(settings)
   end
 end
 
-local function rewrite_redirects(settings)
+local function rewrite_redirects()
   local location = ngx.header["Location"]
   if type(location) ~= "string" or location == "" then
     return
   end
 
-  -- If the redirect was forced within the gatekeeper layer (and the redirect
-  -- didn't actually come from the API backend), then no further rewriting is
-  -- necessary.
-  if settings and settings["redirect_https"] then
+  -- If the redirect was forced within the gatekeeper layer by an error handler
+  -- (and the redirect didn't actually come from the API backend), then no
+  -- further rewriting is necessary.
+  if ngx.ctx.gatekeeper_denied_code then
     return
   end
 
@@ -181,5 +181,5 @@ return function(settings)
     end
   end
 
-  rewrite_redirects(settings)
+  rewrite_redirects()
 end
