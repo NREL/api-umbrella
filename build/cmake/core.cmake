@@ -33,14 +33,16 @@ add_custom_command(
 add_custom_command(
   OUTPUT
     ${STAMP_DIR}/core-build-install-dist
-    ${CORE_BUILD_DIR}/releases/0/build/dist/web-app-assets
+    ${CORE_BUILD_DIR}/releases/0/build/dist/web-app-public
     ${CORE_BUILD_DIR}/releases/0/build/dist/admin-ui
   DEPENDS
     ${STAMP_DIR}/core-admin-ui-build
+    ${STAMP_DIR}/core-web-app-public
     ${STAMP_DIR}/core-web-app-precompile
     ${STAMP_DIR}/core-build-release-dir
-  COMMAND mkdir -p ${CORE_BUILD_DIR}/releases/0/build/dist/web-app-assets
-  COMMAND rsync -a --delete-after ${CORE_BUILD_DIR}/tmp/web-app-build/web-assets/ ${CORE_BUILD_DIR}/releases/0/build/dist/web-app-assets/web-assets/
+  COMMAND mkdir -p ${CORE_BUILD_DIR}/releases/0/build/dist/web-app-public
+  COMMAND rsync -a --delete-after ${CORE_BUILD_DIR}/tmp/web-app-build/public/ ${CORE_BUILD_DIR}/releases/0/build/dist/web-app-public/
+  COMMAND rsync -a --delete-after ${CORE_BUILD_DIR}/tmp/web-app-build/web-assets/ ${CORE_BUILD_DIR}/releases/0/build/dist/web-app-public/web-assets/
   COMMAND rsync -a --delete-after ${CORE_BUILD_DIR}/tmp/admin-ui-build/dist/ ${CORE_BUILD_DIR}/releases/0/build/dist/admin-ui/
   COMMAND touch ${STAMP_DIR}/core-build-install-dist
 )
