@@ -16,7 +16,7 @@ local function perp_status(config)
   end
 
   if pid then
-    local status = run_command("runlock -c " .. pid_path)
+    local status = run_command({ "runlock", "-c", pid_path })
     if status == 1 then
       running = true
     else
