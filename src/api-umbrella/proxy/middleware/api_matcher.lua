@@ -3,7 +3,6 @@ local stringx = require "pl.stringx"
 local utils = require "api-umbrella.proxy.utils"
 
 local append_array = utils.append_array
-local gsub = string.gsub
 local set_uri = utils.set_uri
 local startswith = stringx.startswith
 
@@ -57,8 +56,10 @@ return function(active_config)
 
   if api and url_match then
     -- Rewrite the URL prefix path.
-    local new_path = gsub(request_path, url_match["_frontend_prefix_matcher"], url_match["backend_prefix"], 1)
-    if new_path ~= request_path then
+    local new_path, _, new_path_err = ngx.re.sub(request_path, url_match["_frontend_prefix_regex"], url_match["backend_prefix"], "jo")
+    if new_path_err then
+      ngx.log(ngx.ERR, "regex error: ", new_path_err)
+    elseif new_path ~= request_path then
       set_uri(new_path)
     end
 

@@ -8,6 +8,7 @@ module ApiUmbrellaTestHelpers
 
     include ApiUmbrellaTestHelpers::CommonAsserts
 
+    @@incrementing_unique_number = 0
     @@incrementing_unique_ip_addr = IPAddr.new("127.0.0.1")
     @@current_override_config = {}
     mattr_reader :api_user
@@ -22,8 +23,11 @@ module ApiUmbrellaTestHelpers
     mattr_accessor(:config_mutex) { Mutex.new }
     mattr_accessor(:config_set_mutex) { Mutex.new }
     mattr_accessor(:config_publish_mutex) { Mutex.new }
+    mattr_accessor(:increment_mutex) { Mutex.new }
 
     included do
+      mattr_accessor :unique_test_class_id_value
+      mattr_accessor :unique_test_class_hostname_value
       mattr_accessor :class_setup_complete
       mattr_accessor(:class_setup_mutex) { Mutex.new }
     end
@@ -283,41 +287,59 @@ module ApiUmbrellaTestHelpers
       override_config_set({}, reload_flag)
     end
 
+    def to_unique_id(name)
+      name.gsub(/[^\w]+/, "-")
+    end
+
+    def to_unique_hostname(name)
+      # Replace all non alpha-numeric chars (namely underscores that might be
+      # in the ID) with dashes (since underscores aren't valid for hostnames).
+      hostname = name.downcase.gsub(/[^a-z0-9]+/, "-")
+
+      # Truncate the hostname so the label will fit in unbound's 63 char limit.
+      hostname = hostname[-56..-1] || hostname
+
+      # Strip first char if it happens to be a dash.
+      hostname.gsub!(/^-/, "")
+
+      # Since we've truncated the test ID, it's possible it's no longer unique,
+      # so append a unique number to the end (ensuring that it will fit within
+      # the 63 char limit).
+      unique_number = next_unique_number
+      assert_operator(unique_number, :<=, 999999)
+      hostname = "#{hostname}-#{unique_number.to_s.rjust(6, "0")}"
+
+      "#{hostname}.test"
+    end
+
     def unique_test_class_id
-      @unique_test_class_id ||= self.class.name.gsub(/[^\w]+/, "-")
+      self.unique_test_class_id_value ||= to_unique_id(self.class.name)
+    end
+
+    def unique_test_class_hostname
+      self.unique_test_class_hostname_value ||= to_unique_hostname(unique_test_class_id)
     end
 
     def unique_test_id
-      @unique_test_id ||= self.location.gsub(/[^\w]+/, "-")
+      @unique_test_id ||= to_unique_id(self.location)
     end
 
     def unique_test_hostname
-      unless @unique_test_hostname
-        # Replace all non alpha-numeric chars (namely underscores that might be
-        # in the ID) with dashes (since underscores aren't valid for
-        # hostnames).
-        hostname = unique_test_id.downcase.gsub(/[^a-z0-9]+/, "-")
+      @unique_test_hostname ||= to_unique_hostname(unique_test_id)
+    end
 
-        # Truncate the hostname so the label will fit in unbound's 63 char
-        # limit.
-        hostname = hostname[-56..-1] || hostname
-
-        # Strip first char if it happens to be a dash.
-        hostname.gsub!(/^-/, "")
-
-        # Since we've truncated the test ID, it's possible it's no longer
-        # unique, so append some random chars (but still, fitting within the 63
-        # char limit).
-        hostname = "#{hostname}-#{SecureRandom.hex(3)}"
-
-        @unique_test_hostname = "#{hostname}.test"
+    def next_unique_number
+      self.increment_mutex.synchronize do
+        @@incrementing_unique_number += 1
+        @@incrementing_unique_number
       end
-      @unique_test_hostname
     end
 
     def next_unique_ip_addr
-      @@incrementing_unique_ip_addr = @@incrementing_unique_ip_addr.succ
-      @@incrementing_unique_ip_addr.to_s
+      self.increment_mutex.synchronize do
+        @@incrementing_unique_ip_addr = @@incrementing_unique_ip_addr.succ
+        @@incrementing_unique_ip_addr.to_s
+      end
     end
 
     def unique_test_ip_addr

@@ -7,11 +7,11 @@ local plutils = require "pl.utils"
 local random_token = require "api-umbrella.utils.random_token"
 local tablex = require "pl.tablex"
 local utils = require "api-umbrella.proxy.utils"
+local startswith = require("pl.stringx").startswith
 
 local append_array = utils.append_array
 local cache_computed_settings = utils.cache_computed_settings
 local deepcopy = tablex.deepcopy
-local escape = plutils.escape
 local set_packed = utils.set_packed
 local size = tablex.size
 local split = plutils.split
@@ -53,8 +53,18 @@ local function cache_computed_api(api)
 
   if api["url_matches"] then
     for _, url_match in ipairs(api["url_matches"]) do
-      url_match["_frontend_prefix_matcher"] = "^" .. escape(url_match["frontend_prefix"])
-      url_match["_backend_prefix_matcher"] = "^" .. escape(url_match["backend_prefix"])
+      url_match["_frontend_prefix_regex"] = "^" .. escape_regex(url_match["frontend_prefix"])
+      url_match["_backend_prefix_regex"] = "^" .. escape_regex(url_match["backend_prefix"])
+
+      url_match["_frontend_prefix_contains_backend_prefix"] = false
+      if startswith(url_match["frontend_prefix"], url_match["backend_prefix"]) then
+        url_match["_frontend_prefix_contains_backend_prefix"] = true
+      end
+
+      url_match["_backend_prefix_contains_frontend_prefix"] = false
+      if startswith(url_match["backend_prefix"], url_match["frontend_prefix"]) then
+        url_match["_backend_prefix_contains_frontend_prefix"] = true
+      end
     end
   end
 

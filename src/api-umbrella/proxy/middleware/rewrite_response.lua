@@ -3,7 +3,6 @@ local url = require "socket.url"
 local utils = require "api-umbrella.proxy.utils"
 
 local append_args = utils.append_args
-local gsub = string.gsub
 local startswith = stringx.startswith
 local url_build = url.build
 local url_parse = url.parse
@@ -124,14 +123,30 @@ local function rewrite_redirects(settings)
     changed = true
   end
 
-  if host_matches or relative then
-    if matched_api and matched_api["url_matches"] then
-      for _, url_match in ipairs(matched_api["url_matches"]) do
-        if startswith(parsed["path"], url_match["backend_prefix"]) then
-          parsed["path"] = gsub(parsed["path"], url_match["_backend_prefix_matcher"], url_match["frontend_prefix"], 1)
-          changed = true
-          break
-        end
+  -- If the redirect being returned possibly contains paths for the underlying
+  -- backend URL, then rewrite the path.
+  if (host_matches or relative) and matched_api then
+    -- If the redirect path begins with the backend prefix, then consider it
+    -- for rewriting.
+    local url_match = ngx.ctx.matched_api_url_match
+    if url_match and startswith(parsed["path"], url_match["backend_prefix"]) then
+      -- As long as the patah matches the backend prefix, mark as changed, so
+      -- the api key is appended (regardless of whether we actually replaced
+      -- the path).
+      changed = true
+
+      -- Don't rewrite the path if the frontend prefix contains the backend
+      -- prefix and the redirect path already contains the frontend prefix.
+      --
+      -- This helps ensure that if the API backend is already returning
+      -- public/frontend URLs, we don't try to rewrite these again. -
+      local rewrite_path = true
+      if url_match["_frontend_prefix_contains_backend_prefix"] and startswith(parsed["path"], url_match["frontend_prefix"]) then
+        rewrite_path = false
+      end
+
+      if rewrite_path then
+        parsed["path"] = ngx.re.sub(parsed["path"], url_match["_backend_prefix_regex"], url_match["frontend_prefix"], "jo")
       end
     end
   end
