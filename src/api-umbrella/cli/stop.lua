@@ -9,7 +9,7 @@ local function stop_perp()
     return true
   end
 
-  local _, _, err = run_command("kill -s TERM " .. pid)
+  local _, _, err = run_command({ "kill", "-s", "TERM", pid })
   if err then
     return false, err
   end

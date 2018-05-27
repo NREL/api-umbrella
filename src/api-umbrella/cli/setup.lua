@@ -51,7 +51,7 @@ local function permission_check()
       os.exit(1)
     end
 
-    local status, output, err = run_command("getent passwd " .. config["user"])
+    local status, output, err = run_command({ "getent", "passwd", config["user"] })
     if status == 2 and output == "" then
       print("User '" .. (config["user"] or "") .. "' does not exist")
       os.exit(1)
@@ -67,7 +67,7 @@ local function permission_check()
       os.exit(1)
     end
 
-    local status, output, err = run_command("getent group " .. config["group"])
+    local status, output, err = run_command({ "getent", "group", config["group"] })
     if status == 2 and output == "" then
       print("Group '" .. (config["group"] or "") .. "' does not exist")
       os.exit(1)
@@ -123,7 +123,7 @@ local function generate_self_signed_cert()
 
     if not path.exists(ssl_key_path) or not path.exists(ssl_crt_path) then
       dir.makepath(ssl_dir)
-      local _, _, err = run_command("openssl req -new -newkey rsa:2048 -days 3650 -nodes -x509 -subj '/C=/ST=/L=/O=API Umbrella/CN=apiumbrella.example.com' -keyout " .. ssl_key_path .. " -out " ..  ssl_crt_path)
+      local _, _, err = run_command({ "openssl", "req", "-new", "-newkey", "rsa:2048", "-days", "3650", "-nodes", "-x509", "-subj", "/C=/ST=/L=/O=API Umbrella/CN=apiumbrella.example.com", "-keyout", ssl_key_path, "-out", ssl_crt_path })
       if err then
         print(err)
         os.exit(1)
