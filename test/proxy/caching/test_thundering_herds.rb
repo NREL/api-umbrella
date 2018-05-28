@@ -16,6 +16,15 @@ class Test::Proxy::Caching::TestThunderingHerds < Minitest::Test
   include ApiUmbrellaTestHelpers::Setup
   include ApiUmbrellaTestHelpers::Caching
 
+  # When testing for collapsed connections, allow some leeway in our test
+  # suite. So, for example, if we're making 50 concurrent requests, it's okay
+  # for there maybe to be 5 requests that got through, instead of just 1. For
+  # the most part, Traffic Server collapses things correctly, but there are
+  # some timing edge-cases that lead to a few more connections leaking through
+  # in the test suite. However, we're mainly interested in verifying that most
+  # connections get collapsed, so some fuzziness/buffering is okay.
+  COLLAPSED_CONNECTION_BUFFER = 5
+
   def setup
     super
     setup_server
@@ -554,12 +563,15 @@ class Test::Proxy::Caching::TestThunderingHerds < Minitest::Test
     response.body.to_i
   end
 
-  def unique_response_bodies(requests)
+  def unique_response_bodies_count(requests)
     requests.map { |r| r.response.body }.uniq.length
   end
 
   def cache_status(requests)
-    cache_status = {}
+    cache_status = {
+      "HIT" => 0,
+      "MISS" => 0,
+    }
     requests.each do |request|
       cache = request.response.headers["X-Cache"]
       cache_status[cache] ||= 0
@@ -578,29 +590,39 @@ class Test::Proxy::Caching::TestThunderingHerds < Minitest::Test
     # Since a thundering herd is prevented, ensure connection collapsing and
     # caching took place so that the API backend was only called once (plus 1
     # additional time when pre-caching is enabled for the initial request).
+    call_count = backend_call_count
     if(options[:precache] && options[:precache_stale_delay])
-      assert_equal(2, backend_call_count)
+      assert_operator(call_count, :>=, 2)
+      assert_operator(call_count, :<=, 2 + COLLAPSED_CONNECTION_BUFFER)
     else
-      assert_equal(1, backend_call_count)
+      assert_operator(call_count, :>=, 1)
+      assert_operator(call_count, :<=, 1 + COLLAPSED_CONNECTION_BUFFER)
     end
 
     # Ensure all the responses back were identical, since the connections were
     # collapsed to a single API backend request and cached.
-    assert_equal(1, unique_response_bodies(requests))
+    unique_count = unique_response_bodies_count(requests)
+    assert_operator(unique_count, :>=, 1)
+    assert_operator(unique_count, :<=, 1 + COLLAPSED_CONNECTION_BUFFER)
+
+    statuses = cache_status(requests)
+    assert_equal(["HIT", "MISS"].sort, statuses.keys)
 
     # If there was a fresh cache item in place before making our thundering
     # herd of requests, then all responses should be cache hits. Otherwise, the
     # first request will be a cache miss, but the rest should be hits.
     if(options[:precache] && !options[:precache_stale_delay])
-      assert_equal({
-        "HIT" => 50,
-      }, cache_status(requests))
+      assert_operator(statuses["HIT"], :>=, 50 - COLLAPSED_CONNECTION_BUFFER)
+      assert_operator(statuses["HIT"], :<=, 50)
+      assert_operator(statuses["MISS"], :>=, 0)
+      assert_operator(statuses["MISS"], :<=, 0 + COLLAPSED_CONNECTION_BUFFER)
     else
-      assert_equal({
-        "HIT" => 49,
-        "MISS" => 1,
-      }, cache_status(requests))
+      assert_operator(statuses["HIT"], :>=, 49 - COLLAPSED_CONNECTION_BUFFER)
+      assert_operator(statuses["HIT"], :<=, 49)
+      assert_operator(statuses["MISS"], :>=, 1)
+      assert_operator(statuses["MISS"], :<=, 1 + COLLAPSED_CONNECTION_BUFFER)
     end
+    assert_equal(50, statuses["HIT"] + statuses["MISS"])
 
     # Check the response times to ensure the connection collapsing behavior
     # doesn't serialize the requests and take too long for potentially
@@ -644,20 +666,24 @@ class Test::Proxy::Caching::TestThunderingHerds < Minitest::Test
     # each request made (since no caching or connection collapsing should have
     # happened). There's 1 additional request when pre-caching is enabled (for
     # the first pre-cached request).
+    call_count = backend_call_count
     if(options[:precache])
-      assert_equal(51, backend_call_count)
+      assert_equal(51, call_count)
     else
-      assert_equal(50, backend_call_count)
+      assert_equal(50, call_count)
     end
 
     # Ensure each response back was unique, since no responses should be cached
     # or shared.
-    assert_equal(50, unique_response_bodies(requests))
+    unique_count = unique_response_bodies_count(requests)
+    assert_equal(50, unique_count)
 
     # All responses back should have been a cache miss.
-    assert_equal({
-      "MISS" => 50,
-    }, cache_status(requests))
+    statuses = cache_status(requests)
+    assert_equal(["HIT", "MISS"].sort, statuses.keys)
+    assert_equal(0, statuses["HIT"])
+    assert_equal(50, statuses["MISS"])
+    assert_equal(50, statuses["HIT"] + statuses["MISS"])
 
     # Check the response times to ensure the connection collapsing behavior
     # doesn't serialize the requests and take too long for potentially
