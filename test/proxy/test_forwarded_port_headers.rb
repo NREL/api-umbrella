@@ -363,12 +363,12 @@ class Test::Proxy::TestForwardedPortHeaders < Minitest::Test
         case(type)
         when :admin_https
           assert_response_code(301, response)
-          assert_equal("http://127.0.0.1:9080/admin/login", response.headers["Location"])
+          assert_equal("http://127.0.0.1:9081/admin/login", response.headers["Location"])
         when :admin_http
           assert_response_code(200, response)
         when :admin_oauth2_https
           assert_response_code(301, response)
-          assert_equal("http://127.0.0.1:9080/admins/auth/google_oauth2", response.headers["Location"])
+          assert_equal("http://127.0.0.1:9081/admins/auth/google_oauth2", response.headers["Location"])
         when :admin_oauth2_http
           assert_response_code(302, response)
           assert_oauth2_redirect_uri("https://127.0.0.1:9080/admins/auth/google_oauth2/callback", response)
@@ -380,12 +380,12 @@ class Test::Proxy::TestForwardedPortHeaders < Minitest::Test
           assert_equal("http://frontend.foo:9080/hello?api_key=#{api_key}", response.headers["Location"])
         when :website_https
           assert_response_code(301, response)
-          assert_equal("https://127.0.0.1:9081/", response.headers["Location"])
+          assert_equal("http://127.0.0.1:9081/", response.headers["Location"])
         when :website_http
           assert_response_code(200, response)
         when :website_signup_https
           assert_response_code(301, response)
-          assert_equal("https://127.0.0.1:9081/signup/", response.headers["Location"])
+          assert_equal("http://127.0.0.1:9081/signup/", response.headers["Location"])
         when :website_signup_http
           assert_response_code(200, response)
         else
