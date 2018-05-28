@@ -127,6 +127,9 @@ static_site:
   host: 127.0.0.1
   port: 14013
 router:
+  api_backends:
+    keepalive_connections: 20
+    keepalive_idle_timeout: 120
   trusted_proxies: []
   global_rate_limits:
     ip_rate:

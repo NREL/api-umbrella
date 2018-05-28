@@ -51,7 +51,7 @@ CONFIG proxy.config.http.connect_attempts_max_retries INT 3
 CONFIG proxy.config.http.connect_attempts_max_retries_dead_server INT 3
 
 # Don't consider the backend down, even if some requests timeout. We don't want
-some bad API requests to mark the entire backend as being down.
+# some bad API requests to mark the entire backend as being down.
 CONFIG proxy.config.http.down_server.cache_time INT 0
 
 # Don't append IP information to X-Forwarded-For or Client-IP headers, since
@@ -150,6 +150,11 @@ CONFIG proxy.config.hostdb.fail.timeout INT {{dns_resolver.negative_ttl}}
 
 # Use more standard round-robin for DNS results (rather than sticky).
 CONFIG proxy.config.hostdb.strict_round_robin INT 1
+
+# Keepalive connections to backend origin servers. Retain some idle connections
+# open to the backend servers to improve performance.
+CONFIG proxy.config.http.keep_alive_no_activity_timeout_out INT {{router.api_backends.keepalive_idle_timeout}}
+CONFIG proxy.config.http.origin_min_keep_alive_connections INT {{router.api_backends.keepalive_connections}}
 
 # Enable for debug logging.
 # CONFIG proxy.config.diags.debug.enabled INT 1

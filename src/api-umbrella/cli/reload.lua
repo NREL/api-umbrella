@@ -30,8 +30,8 @@ local function reload_web_puma(perp_base)
   end
 end
 
-local function reload_trafficserver(perp_base)
-  local _, _, err = run_command({ "perpctl", "-b", perp_base, "hup", "trafficserver" })
+local function reload_trafficserver(config)
+  local _, _, err = run_command({ "env", "TS_ROOT=" .. config["root_dir"], "traffic_ctl", "config", "reload" })
   if err then
     print("Failed to reload trafficserver\n" .. err)
     os.exit(1)
@@ -82,7 +82,7 @@ return function(options)
   end
 
   if config["_service_router_enabled?"] and (is_empty(options) or options["router"]) then
-    reload_trafficserver(perp_base)
+    reload_trafficserver(config)
     reload_nginx(perp_base)
 
     if config["_service_nginx_reloader_enabled?"] then

@@ -277,7 +277,15 @@ module ApiUmbrellaTestHelpers
         # there's ways to force Traffic Server to pick these changes up without
         # a full restart, but it's hard to figure out the timing, so with this
         # mainly being a test issue, we'll force a full restart).
-        if((previous_override_config["dns_resolver"] && previous_override_config["dns_resolver"]["nameservers"]) || (@@current_override_config["dns_resolver"] && @@current_override_config["dns_resolver"]["nameservers"]))
+        if(previous_override_config.dig("dns_resolver", "nameservers") || @@current_override_config.dig("dns_resolver", "nameservers"))
+          ApiUmbrellaTestHelpers::Process.restart_trafficserver
+
+        # When changing the keepalive idle timeout, a normal reload will pick
+        # these changes up, but they don't kick in for a few seconds, which is
+        # hard to time correctly in the test suite. So similarly, do a full
+        # restart to make it easier to know for sure the new settings are in
+        # effect.
+        elsif(previous_override_config.dig("router", "api_backends", "keepalive_idle_timeout") || @@current_override_config.dig("router", "api_backends", "keepalive_idle_timeout"))
           ApiUmbrellaTestHelpers::Process.restart_trafficserver
         end
       end
