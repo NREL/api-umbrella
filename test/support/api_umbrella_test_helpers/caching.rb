@@ -6,6 +6,7 @@ module ApiUmbrellaTestHelpers
       http_opts = http_options.deep_merge(options).deep_merge({
         :params => {
           :unique_test_id => unique_test_id,
+          :unique_duplicate_test_id => SecureRandom.hex(10),
         },
       })
 

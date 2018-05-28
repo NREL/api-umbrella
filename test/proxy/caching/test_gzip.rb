@@ -18,13 +18,16 @@ class Test::Proxy::Caching::TestGzip < Minitest::Test
 
   def test_caches_ungzip_version
     assert_cacheable("/api/cacheable-compressible/", {
-      :accept_encoding => false,
+      :accept_encoding => nil,
     })
   end
 
   # Ideally we would return a cached response regardless of whether the first
-  # request was gzipped or not. But for now, we don't support this, and the
-  # gzip and non-gzipped versions must be requested and cached separately.
+  # request was gzipped or not. But for now, we don't support this in all
+  # situations, and the gzip and non-gzipped versions must be requested and
+  # cached separately (with some exceptions, depending on where the gzipping
+  # takes place). So while the behavior of the following first/second tests
+  # could change, this documents the current behavior.
   #
   # Varnish supports this more optimized behavior, but it does so by forcing
   # gzip to always be on, then only caching the gzipped version, and then
@@ -40,11 +43,78 @@ class Test::Proxy::Caching::TestGzip < Minitest::Test
   # It's possible we might want to revisit this if we decide saving the backend
   # bandwidth is more efficient than unzipping each request on the fly for each
   # non-gzip client.
-  def test_separates_gzip_and_unzip_version
-    refute_cacheable("/api/cacheable-compressible/", {
+
+  def test_backend_does_not_gzip_vary_accept_encoding_shares_cache_when_first_gzip_then_not
+    # The cache can be shared in this case, since despite Vary:
+    # Accept-Encoding, the response isn't actually gzipped (so no
+    # Content-Encoding).
+    assert_cacheable("/api/cacheable-vary-accept-encoding/", {
       :accept_encoding => "gzip",
     }, {
-      :accept_encoding => false,
+      :accept_encoding => nil,
+    })
+  end
+
+  def test_backend_does_not_gzip_vary_accept_encoding_separates_cache_when_first_not_then_gzip
+    refute_cacheable("/api/cacheable-vary-accept-encoding/", {
+      :accept_encoding => nil,
+    }, {
+      :accept_encoding => "gzip",
+    })
+  end
+
+  def test_backend_gzips_itself_separates_cache_when_first_gzip_then_not
+    refute_cacheable("/api/cacheable-pre-gzip/", {
+      :accept_encoding => "gzip",
+    }, {
+      :accept_encoding => nil,
+    })
+  end
+
+  def test_backend_gzips_itself_separates_cache_when_first_not_then_gzip
+    refute_cacheable("/api/cacheable-pre-gzip/", {
+      :accept_encoding => nil,
+    }, {
+      :accept_encoding => "gzip",
+    })
+  end
+
+  def test_backend_force_gzips_itself_separates_cache_when_first_gzip_then_not
+    refute_cacheable("/api/cacheable-pre-gzip/?force=true", {
+      :accept_encoding => "gzip",
+    }, {
+      :accept_encoding => nil,
+    })
+  end
+
+  def test_backend_force_gzips_itself_shares_cache_when_first_not_then_gzip
+    # The cache can be shared in this case, since gzipping is forced on the
+    # backend, so the second requesting a gzipped response actually matches the
+    # first response.
+    assert_cacheable("/api/cacheable-pre-gzip/?force=true", {
+      :accept_encoding => nil,
+    }, {
+      :accept_encoding => "gzip",
+    })
+  end
+
+  def test_backend_does_not_gzip_no_vary_shares_cache_when_first_gzip_then_not
+    # The cache can be shared in this case, since the gzipping isn't handled at
+    # the backend layer, so there's no vary rules.
+    assert_cacheable("/api/cacheable-compressible/", {
+      :accept_encoding => "gzip",
+    }, {
+      :accept_encoding => nil,
+    })
+  end
+
+  def test_backend_does_not_gzip_no_vary_shares_cache_when_first_not_then_gzip
+    # The cache can be shared in this case, since the gzipping isn't handled at
+    # the backend layer, so there's no vary rules.
+    assert_cacheable("/api/cacheable-compressible/", {
+      :accept_encoding => nil,
+    }, {
+      :accept_encoding => "gzip",
     })
   end
 
@@ -87,10 +157,20 @@ class Test::Proxy::Caching::TestGzip < Minitest::Test
   end
 
   def test_backend_does_not_gzip_no_vary
+    response = Typhoeus.get("http://127.0.0.1:9444/cacheable-compressible/", http_options.deep_merge(:accept_encoding => "gzip"))
+    assert_response_code(200, response)
+    assert_nil(response.headers["Vary"])
+    assert_nil(response.headers["Content-Encoding"])
+
     assert_gzip("/api/cacheable-compressible/")
   end
 
   def test_backend_does_not_gzip_vary_accept_encoding
+    response = Typhoeus.get("http://127.0.0.1:9444/cacheable-vary-accept-encoding/", http_options.deep_merge(:accept_encoding => "gzip"))
+    assert_response_code(200, response)
+    assert_equal("Accept-Encoding", response.headers["Vary"])
+    assert_nil(response.headers["Content-Encoding"])
+
     assert_gzip("/api/cacheable-vary-accept-encoding/")
   end
 
@@ -143,7 +223,7 @@ class Test::Proxy::Caching::TestGzip < Minitest::Test
     first, second = make_duplicate_requests(path, {
       :accept_encoding => "gzip",
     }, {
-      :accept_encoding => false,
+      :accept_encoding => nil,
     })
     assert_equal("gzip", first.headers["content-encoding"])
     refute(second.headers["content-encoding"])
@@ -151,7 +231,7 @@ class Test::Proxy::Caching::TestGzip < Minitest::Test
 
   def assert_first_request_not_gzipped_second_request_gzipped(path)
     first, second = make_duplicate_requests(path, {
-      :accept_encoding => false,
+      :accept_encoding => nil,
     }, {
       :accept_encoding => "gzip",
     })
@@ -161,7 +241,7 @@ class Test::Proxy::Caching::TestGzip < Minitest::Test
 
   def assert_first_request_not_gzipped_second_request_not_gzipped(path)
     first, second = make_duplicate_requests(path, {
-      :accept_encoding => false,
+      :accept_encoding => nil,
     })
     refute(first.headers["content-encoding"])
     refute(second.headers["content-encoding"])
