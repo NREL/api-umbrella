@@ -172,7 +172,7 @@ module ApiUmbrellaTestHelpers
       # Sleep to ensure that the traffiserver kill signal is received and it's
       # had a chance to die, before moving onto the health checks (so we don't
       # check the health before the server has actually been killed).
-      sleep 0.5
+      sleep 1
 
       # After killing and restarting trafficserver, wait for it to come back
       # online (since this full restart isn't a normal occurrence and will
