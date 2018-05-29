@@ -2,11 +2,9 @@ local cidr = require "libcidr-ffi"
 local cjson = require "cjson"
 local escape_regex = require "api-umbrella.utils.escape_regex"
 local host_normalize = require "api-umbrella.utils.host_normalize"
-local load_backends = require "api-umbrella.proxy.load_backends"
 local mustache_unescape = require "api-umbrella.utils.mustache_unescape"
 local plutils = require "pl.utils"
 local random_token = require "api-umbrella.utils.random_token"
-local resolve_backend_dns = require "api-umbrella.proxy.jobs.resolve_backend_dns"
 local tablex = require "pl.tablex"
 local utils = require "api-umbrella.proxy.utils"
 local startswith = require("pl.stringx").startswith
@@ -255,9 +253,6 @@ function _M.set(db_config)
   local website_backends = get_combined_website_backends(file_config, db_config)
 
   local active_config = build_active_config(apis, website_backends)
-  resolve_backend_dns.resolve(active_config["apis"])
-  load_backends.setup_backends(active_config["apis"])
-
   set_packed(ngx.shared.active_config, "packed_data", active_config)
   ngx.shared.active_config:set("db_version", db_config["version"])
   ngx.shared.active_config:set("file_version", file_config["version"])

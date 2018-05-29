@@ -1,7 +1,14 @@
 LOCAL proxy.local.incoming_ip_to_bind STRING {{trafficserver.host}}
 CONFIG proxy.config.http.server_ports STRING {{trafficserver.port}}
-CONFIG proxy.config.admin.autoconf_port INT {{trafficserver.autoconf_port}}
 CONFIG proxy.config.process_manager.mgmt_port INT {{trafficserver.management_port}}
+
+# Don't keep backup config files whenever Traffic Server is reloaded, so the
+# files don't stray from our installed templates.
+CONFIG proxy.config.admin.number_config_bak INT 0
+
+# Disable traffic_cop's health checks, since it seems like these aren't favored
+# and will be removed in Traffic Server 8.
+CONFIG proxy.config.cop.active_health_checks INT 0
 
 # Use the special "#-1" value to keep running as the current user (perp will
 # handle switching the user).
@@ -23,9 +30,6 @@ CONFIG proxy.config.body_factory.template_sets_dir STRING {{_embedded_root_dir}}
 # Log to the standard API Umbrella log directory location.
 CONFIG proxy.config.log.logfile_dir STRING {{log_dir}}/trafficserver
 
-# Use logs_xml.config for defining the logs.
-CONFIG proxy.config.log.squid_log_enabled INT 0
-
 # Rotate log files with logrotate to be consistent with all the other API
 # Umbrella components.
 CONFIG proxy.config.log.rolling_enabled INT 0
@@ -35,33 +39,74 @@ CONFIG proxy.config.http.transaction_no_activity_timeout_in INT {{trafficserver.
 CONFIG proxy.config.http.transaction_no_activity_timeout_out INT {{trafficserver._transaction_no_activity_timeout_out}}
 CONFIG proxy.config.http.connect_attempts_timeout INT {{trafficserver._connect_attempts_timeout}}
 
-# Retry the connection to the backend nginx API router server if it fails. This
-# may happen when nginx is being reloaded since TrafficServer is holding
-# keep-alive connections open to the backend
-# (proxy.config.http.keep_alive_enabled_out) and the reload process may lead to
-# TrafficServer trying to re-use a connection to a killed worker.
+# Don't retry requests by default. We want to avoid retrying connections if the
+# response times out, since if a backend is slow and struggling, we want to
+# avoid sending more traffic to it.
+CONFIG proxy.config.http.safe_requests_retryable INT 0
+
+# Allow retry of connections if the connection failed to establish at all and
+# no data was actually ever sent (since those might be temporary issues if the
+# underlying server is restarting).
 CONFIG proxy.config.http.connect_attempts_max_retries INT 3
 CONFIG proxy.config.http.connect_attempts_max_retries_dead_server INT 3
 
-# Don't consider the backend down, even if some requests timeout. Since we're
-# actually funneling all of our existing traffic back through a single nginx
-# backend, we don't want some bad API requests to mark the entire nginx backend
-# as being down.
+# Don't consider the backend down, even if some requests timeout. We don't want
+# some bad API requests to mark the entire backend as being down.
 CONFIG proxy.config.http.down_server.cache_time INT 0
 
 # Don't append IP information to X-Forwarded-For or Client-IP headers, since
 # we've already dealt with those at the first nginx proxy layer.
-CONFIG proxy.config.http.anonymize_insert_client_ip INT 0
+CONFIG proxy.config.http.insert_client_ip INT 0
 CONFIG proxy.config.http.insert_squid_x_forwarded_for INT 0
 
 # Don't perform caching when the request contains cookies.
 CONFIG proxy.config.http.cache.cache_responses_to_cookies INT 0
 
-# Disable read_while_writer, since it can delay processing for mis-matched HTTP
-# methods: https://issues.apache.org/jira/browse/TS-3431
-# Instead, we'll use the connection collapsing plugin, which actually seems
-# closer to the behavior we want.
-CONFIG proxy.config.cache.enable_read_while_writer INT 0
+# Use read_while_writer to improve connection collapsing and prevent thundering
+# herd scenarios for parallel requests to the same resource:
+# https://docs.trafficserver.apache.org/en/7.1.x/admin-guide/configuration/cache-basics.en.html?highlight=thundering#reducing-origin-server-requests-avoiding-the-thundering-herd
+#
+# This is tuned to try and wait up to 2 seconds for the API response before
+# making another request (this was the default in the old collapsed_connection
+# plugin).
+#
+# Note that the retry delay is doubled on the 3rd retry onwards. So retries 1-2
+# will delay 50ms each, retries 3-21 will delay 100ms each (50*2 + 100*19 =
+# 2000ms total wait).
+#
+# Note that read_while_writer helps for the most part, but there's still other
+# edge-cases where some connections aren't collapsed. However, this is okay,
+# since the current alternatives don't seem to be ideal for our uses, and
+# read-while-writer does what we need. But for future references:
+#
+# - open_read_retry: For uncacheable responses, requests become serialized, so
+#   this should only ever be turned on if you know the responses will be
+#   cacheable (which we do not).
+# - open_write_fail_action: Returning a stale copy could be appealing, but that
+#   doesn't currently work, so the only options are to return errors (which
+#   doesn't fit our use case). But if the stale handling gets implemented, this
+#   could be worth revisiting:
+#   https://issues.apache.org/jira/browse/TS-4774
+#   https://issues.apache.org/jira/browse/TS-4238
+#   https://issues.apache.org/jira/browse/TS-4237
+# - collapsed_forwarding experimental plugin: Might cause blocking (not
+#   entirely sure), but also seems to have some issues for our use-case:
+#   Returns 303s to user:
+#   https://lists.apache.org/thread.html/aa26070c52c907182bb104696bfd28d92147c0ba3082468487322b43@%3Cusers.trafficserver.apache.org%3E
+#   Requires enabling redirect following, which we don't want for other
+#   responses:
+#   https://lists.apache.org/thread.html/0eff5d9a53ef8fdf28be341f648c708bd651ad1208cddf71d532d78d@%3Cusers.trafficserver.apache.org%3E
+CONFIG proxy.config.cache.enable_read_while_writer INT 1
+CONFIG proxy.config.cache.read_while_writer.max_retries INT 21
+CONFIG proxy.config.cache.read_while_writer_retry.delay INT 50
+CONFIG proxy.config.http.background_fill_active_timeout INT 0
+CONFIG proxy.config.http.background_fill_completed_threshold FLOAT 0.0
+CONFIG proxy.config.cache.max_doc_size INT 0
+
+# Traffic Server uses this proxy_name in the Via response headers. By default,
+# this is a hex-encoded IP address, but returning that information may not be
+# desirable, so instead use a hard-coded name instead.
+CONFIG proxy.config.proxy_name STRING api-umbrella
 
 # Include information in the Via response indicating whether this was a cache
 # hit or not.
@@ -86,6 +131,34 @@ CONFIG proxy.config.http.response_server_enabled INT 0
 # Retain the Host header we send to trafficserver for cache key purposes so
 # that each host gets cached separately.
 CONFIG proxy.config.url_remap.pristine_host_hdr INT 1
+
+# Set the DNS nameservers.
+CONFIG proxy.config.dns.resolv_conf STRING NULL
+CONFIG proxy.config.dns.nameservers STRING {{dns_resolver._nameservers_trafficserver}}
+
+{{#dns_resolver.max_stale}}
+# Allow old DNS results to be used while new ones are fetched in the background
+# (this also helps ensure things remain up, even if DNS goes down temporarily).
+CONFIG proxy.config.hostdb.serve_stale_for INT {{dns_resolver.max_stale}}
+{{/dns_resolver.max_stale}}
+
+{{#dns_resolver.negative_ttl}}
+# For hosts that don't exist, remember the invalid DNS responses for a bit to
+# prevent repeated DNS queries for non-existent hosts.
+CONFIG proxy.config.hostdb.fail.timeout INT {{dns_resolver.negative_ttl}}
+{{/dns_resolver.negative_ttl}}
+
+# Use more standard round-robin for DNS results (rather than sticky).
+CONFIG proxy.config.hostdb.strict_round_robin INT 1
+
+# Keepalive connections to backend origin servers. Retain some idle connections
+# open to the backend servers to improve performance.
+CONFIG proxy.config.http.keep_alive_no_activity_timeout_out INT {{router.api_backends.keepalive_idle_timeout}}
+CONFIG proxy.config.http.origin_min_keep_alive_connections INT {{router.api_backends.keepalive_connections}}
+
+# Enable for debug logging.
+# CONFIG proxy.config.diags.debug.enabled INT 1
+# CONFIG proxy.config.diags.debug.tags STRING .*
 
 # Additional custom configuration
 {{#trafficserver.embedded_server_config.records}}

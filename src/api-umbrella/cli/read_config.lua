@@ -277,6 +277,7 @@ local function set_computed_config()
     table.insert(config["dns_resolver"]["_nameservers"], nameserver)
   end
   config["dns_resolver"]["_nameservers_nginx"] = table.concat(config["dns_resolver"]["_nameservers_nginx"], " ")
+  config["dns_resolver"]["_nameservers_trafficserver"] = config["dns_resolver"]["_nameservers_nginx"]
   config["dns_resolver"]["nameservers"] = nil
 
   config["dns_resolver"]["_etc_hosts"] = read_etc_hosts()

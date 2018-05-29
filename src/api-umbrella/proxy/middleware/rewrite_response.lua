@@ -7,21 +7,26 @@ local startswith = stringx.startswith
 local url_build = url.build
 local url_parse = url.parse
 
+-- Parse the "cache-lookup" status out of the Via header into a simplified
+-- X-Cache HIT/MISS value:
+-- https://docs.trafficserver.apache.org/en/7.1.x/appendices/faq.en.html?highlight=asked#how-do-i-interpret-the-via-header-code
+--
+-- Note: Ideally we could handle this at the TrafficServer lua layer with the
+-- simpler ts.http.get_cache_lookup_status(). However, that lookup status isn't
+-- always accurate, since certain scenarios trigger cache revalidation without
+-- updating the status code (like cache items not used due to authorization
+-- headers, or this similar issue using the same underling
+-- TSHttpTxnCacheLookupStatusGet:
+-- https://issues.apache.org/jira/browse/TS-3432). So instead, we'll continue
+-- to handle it here, using nginx's lua layer, instead of TrafficServer's lua
+-- layer, since nginx's compiled regexes are probably a bit better optimized.
 local function set_cache_header()
   local cache = "MISS"
   local via = ngx.header["Via"]
   if via then
-    local matches, match_err = ngx.re.match(via, "ApacheTrafficServer \\[([^\\]]+)\\]", "jo")
+    local matches, match_err = ngx.re.match(via, "ApacheTrafficServer \\[.(.)", "jo")
     if matches and matches[1] then
-      -- Parse the cache status out of the Via header into a simplified X-Cache
-      -- HIT/MISS value:
-      -- https://docs.trafficserver.apache.org/en/latest/admin/faqs.en.html?highlight=post#how-do-i-interpret-the-via-header-code
-      --
-      -- Note: The XDebug TrafficServer plugin could provide similar
-      -- functionality, but currently has some odd edge cases:
-      -- https://issues.apache.org/jira/browse/TS-3432
-      local trafficserver_code = matches[1]
-      local cache_lookup_code = string.sub(trafficserver_code, 2, 2)
+      local cache_lookup_code = matches[1]
       if cache_lookup_code == "H" or cache_lookup_code == "R" then
         cache = "HIT"
       end
@@ -30,25 +35,11 @@ local function set_cache_header()
     end
   end
 
+  -- If the underlying API backend returned it's own X-Cache header, allow that
+  -- to take precedent, unless we have a cache hit at our layer.
   local existing_x_cache = ngx.header["X-Cache"]
   if not existing_x_cache or cache == "HIT" then
     ngx.header["X-Cache"] = cache
-  end
-end
-
-local function set_via_header()
-  local via = ngx.header["Via"]
-  if via then
-    -- Replace the server hostname or hex-encoded IP address in the Via header
-    -- TrafficServer appends with an alias of "api-umbrella". We have to return
-    -- some name here to be compliant with the Via header specification, but we
-    -- don't want to expose internal machine names or IPs.
-    local new_via, _, err = ngx.re.sub(via, "(http/[0-9\\.]+) [^ ]+ (\\(ApacheTrafficServer[^\\)]*\\))$", "$1 api-umbrella $2", "jo")
-    if new_via then
-      ngx.header["Via"] = new_via
-    elseif err then
-      ngx.log(ngx.ERR, "regex error: ", err)
-    end
   end
 end
 
@@ -74,6 +65,13 @@ end
 local function rewrite_redirects()
   local location = ngx.header["Location"]
   if type(location) ~= "string" or location == "" then
+    return
+  end
+
+  -- If the redirect was forced within the gatekeeper layer by an error handler
+  -- (and the redirect didn't actually come from the API backend), then no
+  -- further rewriting is necessary.
+  if ngx.ctx.gatekeeper_denied_code then
     return
   end
 
@@ -165,7 +163,6 @@ end
 
 return function(settings)
   set_cache_header()
-  set_via_header()
 
   if settings then
     set_default_headers(settings)

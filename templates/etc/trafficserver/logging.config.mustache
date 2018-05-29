@@ -1,0 +1,8 @@
+extended_custom = format {
+  Format = '%<chi> - %<caun> [%<cqtn>] "%<cqtx>" %<pssc> %<pscl> %<{X-Api-Umbrella-Request-ID}cqh> sssc=%<sssc> sscl=%<sscl> cqbl=%<cqbl> pqbl=%<pqbl> cqhl=%<cqhl> pshl=%<pshl> pqhl=%<pqhl> sshl=%<sshl> ttms=%<ttms> stms=%<stms> phr=%<phr> cfsc=%<cfsc> pfsc=%<pfsc> crc=%<crc> chm=%<chm> cwr=%<cwr> cwtr=%<cwtr>'
+}
+
+log.ascii {
+  Format = extended_custom,
+  Filename = 'access.log'
+}

@@ -262,12 +262,32 @@ module ApiUmbrellaTestHelpers
           raise "`override_config_set` cannot be called with `parallelize_me!` in the same class. Since overriding config affects the global state, it cannot be used with parallel tests."
         end
 
+        previous_override_config = @@current_override_config.deep_dup
+
         config = config.deep_stringify_keys
         config["version"] = SecureRandom.uuid
         File.write(ApiUmbrellaTestHelpers::Process::CONFIG_OVERRIDES_PATH, YAML.dump(config))
         ApiUmbrellaTestHelpers::Process.reload(reload_flag)
         @@current_override_config = config
         ApiUmbrellaTestHelpers::Process.wait_for_config_version("file_config_version", config["version"], config)
+
+        # When changes to the DNS server are made, this is one area where a
+        # simple "reload" signal won't do the trick. Instead, we also need to
+        # fully restart Traffic Server to pick up these changes (technically
+        # there's ways to force Traffic Server to pick these changes up without
+        # a full restart, but it's hard to figure out the timing, so with this
+        # mainly being a test issue, we'll force a full restart).
+        if(previous_override_config.dig("dns_resolver", "nameservers") || @@current_override_config.dig("dns_resolver", "nameservers"))
+          ApiUmbrellaTestHelpers::Process.restart_trafficserver
+
+        # When changing the keepalive idle timeout, a normal reload will pick
+        # these changes up, but they don't kick in for a few seconds, which is
+        # hard to time correctly in the test suite. So similarly, do a full
+        # restart to make it easier to know for sure the new settings are in
+        # effect.
+        elsif(previous_override_config.dig("router", "api_backends", "keepalive_idle_timeout") || @@current_override_config.dig("router", "api_backends", "keepalive_idle_timeout"))
+          ApiUmbrellaTestHelpers::Process.restart_trafficserver
+        end
       end
     end
 

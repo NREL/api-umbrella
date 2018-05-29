@@ -39,6 +39,9 @@ if err then
   return error_handler(err, settings)
 end
 
+-- Store the settings for use by the header_filter.
+ngx.ctx.settings = settings
+
 -- If this API requires access over HTTPS, verify that it's happening.
 err, err_data = https_validator(settings, user)
 if err then
@@ -77,6 +80,3 @@ err = rewrite_request(user, api, settings)
 if err then
   return error_handler(err, settings)
 end
-
--- Store the settings for use by the header_filter.
-ngx.ctx.settings = settings

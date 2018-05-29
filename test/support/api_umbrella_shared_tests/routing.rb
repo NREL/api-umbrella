@@ -177,8 +177,9 @@ module ApiUmbrellaSharedTests
 
     def test_web_app_apis
       response = Typhoeus.get("http://127.0.0.1:9080/api-umbrella/v1/users.json", http_options.deep_merge(admin_token))
-      assert_response_code(200, response)
-      assert_equal("application/json; charset=utf-8", response.headers["content-type"])
+      assert_response_code(400, response)
+      assert_equal("application/json", response.headers["content-type"])
+      assert_match("HTTPS_REQUIRED", response.body)
 
       response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(admin_token))
       assert_response_code(200, response)
@@ -195,8 +196,9 @@ module ApiUmbrellaSharedTests
         assert_response_code(301, response)
         assert_equal("https://#{unique_test_id.downcase}-unknown.foo:9081/api-umbrella/v1/users.json", response.headers["Location"])
       else
-        assert_response_code(200, response)
-        assert_equal("application/json; charset=utf-8", response.headers["content-type"])
+        assert_response_code(400, response)
+        assert_equal("application/json", response.headers["content-type"])
+        assert_match("HTTPS_REQUIRED", response.body)
       end
 
       response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(admin_token).deep_merge({
