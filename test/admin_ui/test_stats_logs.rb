@@ -59,7 +59,6 @@ class Test::AdminUi::TestStatsLogs < Minitest::Capybara::Test
       "end_at" => "2015-01-18",
       "interval" => "day",
       "query" => default_query,
-      "beta_analytics" => "false",
     }, uri.query_values)
 
     visit "/admin/#/stats/logs?search=&start_at=2015-01-13&end_at=2015-01-18&interval=day"
@@ -74,7 +73,6 @@ class Test::AdminUi::TestStatsLogs < Minitest::Capybara::Test
       "end_at" => "2015-01-18",
       "interval" => "day",
       "query" => default_query,
-      "beta_analytics" => "false",
     }, uri.query_values)
 
     visit "/admin/#/stats/logs?search=&start_at=2015-01-12&end_at=2015-01-18&interval=day"
@@ -94,7 +92,6 @@ class Test::AdminUi::TestStatsLogs < Minitest::Capybara::Test
       "interval" => "day",
       "query" => JSON.generate({ "condition" => "AND", "rules" => [], "valid" => true }),
       "search" => "",
-      "beta_analytics" => "false",
     }, uri.query_values)
 
     visit "/admin/#/stats/logs?search=&start_at=2015-01-13&end_at=2015-01-18&interval=day"
@@ -114,7 +111,6 @@ class Test::AdminUi::TestStatsLogs < Minitest::Capybara::Test
       "end_at" => "2015-01-18",
       "interval" => "day",
       "query" => "",
-      "beta_analytics" => "false",
     }, uri.query_values)
   end
 
@@ -171,22 +167,6 @@ class Test::AdminUi::TestStatsLogs < Minitest::Capybara::Test
     refute_selector("button.active", :text => "Month")
     assert_selector("button.active", :text => "Minute")
     assert_link("Download CSV", :href => /interval=minute/)
-  end
-
-  def test_does_not_show_beta_analytics_toggle_by_default
-    admin_login
-    visit "/admin/#/stats/logs?search=&start_at=2015-01-12&end_at=2015-01-18&interval=day"
-    assert_text("view top users")
-    refute_text("Beta Analytics")
-  end
-
-  def test_shows_beta_analytics_toggle_when_enabled
-    override_config({ "analytics" => { "outputs" => ["kylin"] } }, nil) do
-      admin_login
-      visit "/admin/#/stats/logs?search=&start_at=2015-01-12&end_at=2015-01-18&interval=day"
-      assert_text("view top users")
-      assert_text("Beta Analytics")
-    end
   end
 
   def test_date_range_picker

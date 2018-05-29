@@ -1,8 +1,8 @@
 local cjson = require "cjson"
 local escape_uri_non_ascii = require "api-umbrella.utils.escape_uri_non_ascii"
 local iconv = require "iconv"
+local icu_date = require "icu-date"
 local logger = require "resty.logger.socket"
-local luatz = require "luatz"
 local mongo = require "api-umbrella.utils.mongo"
 local plutils = require "pl.utils"
 local sha256 = require "resty.sha256"
@@ -18,7 +18,14 @@ local syslog_facility = 16 -- local0
 local syslog_severity = 6 -- info
 local syslog_priority = (syslog_facility * 8) + syslog_severity
 local syslog_version = 1
-local timezone = luatz.get_tz(config["analytics"]["timezone"])
+
+local ZONE_OFFSET = icu_date.fields.ZONE_OFFSET
+local DST_OFFSET = icu_date.fields.DST_OFFSET
+local DAY_OF_WEEK = icu_date.fields.DAY_OF_WEEK
+-- Setup the date object in the analytics timezone, and set the first day of
+-- the week to Mondays for ISO week calculations.
+local date = icu_date.new({ zone_id = config["analytics"]["timezone"] })
+date:set_attribute(icu_date.attributes.FIRST_DAY_OF_WEEK, 2)
 
 local _M = {}
 
@@ -252,25 +259,23 @@ function _M.set_request_ip_geo_fields(data, ngx_var)
 end
 
 function _M.set_computed_timestamp_fields(data)
-  local utc_sec = data["timestamp_utc"] / 1000
-  local tz_offset = timezone:find_current(utc_sec).gmtoff
-  local tz_sec = utc_sec + tz_offset
-  local tz_time = os.date("!%Y-%m-%d %H:%M:00", tz_sec)
+  -- Generate a string of current timestamp in the analytics timezone.
+  --
+  -- Note that we use os.date instead of icu-date's "format" function, since in
+  -- some microbenchmarks, this approach is faster.
+  date:set_millis(data["timestamp_utc"])
+  local tz_offset = date:get(ZONE_OFFSET) + date:get(DST_OFFSET)
+  local tz_time = os.date("!%Y-%m-%d %H:%M:00", (date:get_millis() + tz_offset) / 1000)
 
   -- Determine the first day in the ISO week (the most recent Monday).
-  local tz_week = luatz.gmtime(tz_sec)
-  if tz_week.wday == 1 then
-    tz_week.day = tz_week.day - 6
-    tz_week:normalize()
-  elseif tz_week.wday > 2 then
-    tz_week.day = tz_week.day - tz_week.wday + 2
-    tz_week:normalize()
-  end
+  date:set(DAY_OF_WEEK, 2)
+  local week_tz_offset = date:get(ZONE_OFFSET) + date:get(DST_OFFSET)
+  local tz_week = os.date("!%Y-%m-%d", (date:get_millis() + week_tz_offset) / 1000)
 
-  data["timestamp_tz_offset"] = tz_offset * 1000
+  data["timestamp_tz_offset"] = tz_offset
   data["timestamp_tz_year"] = string.sub(tz_time, 1, 4) .. "-01-01" -- YYYY-01-01
   data["timestamp_tz_month"] = string.sub(tz_time, 1, 7) .. "-01" -- YYYY-MM-01
-  data["timestamp_tz_week"] = tz_week:strftime("%Y-%m-%d") -- YYYY-MM-DD of first day in ISO week.
+  data["timestamp_tz_week"] = tz_week -- YYYY-MM-DD of first day in ISO week.
   data["timestamp_tz_date"] = string.sub(tz_time, 1, 10) -- YYYY-MM-DD
   data["timestamp_tz_hour"] = string.sub(tz_time, 1, 13) .. ":00:00" -- YYYY-MM-DD HH:00:00
   data["timestamp_tz_minute"] = tz_time -- YYYY-MM-DD HH:MM:00

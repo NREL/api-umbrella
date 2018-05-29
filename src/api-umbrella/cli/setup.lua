@@ -1,9 +1,7 @@
-local array_includes = require "api-umbrella.utils.array_includes"
-local deep_merge_overwrite_arrays = require "api-umbrella.utils.deep_merge_overwrite_arrays"
 local dir = require "pl.dir"
 local file = require "pl.file"
+local invert_table = require "api-umbrella.utils.invert_table"
 local lustache = require "lustache"
-local lyaml = require "lyaml"
 local mustache_unescape = require "api-umbrella.utils.mustache_unescape"
 local path = require "pl.path"
 local plutils = require "pl.utils"
@@ -17,31 +15,6 @@ local chmod = stat.chmod
 local chown = unistd.chown
 
 local config
-local template_config
-
-local function set_template_config()
-  local runtime_config_path = path.join(config["run_dir"], "runtime_config.yml")
-
-  template_config = tablex.deepcopy(config)
-  deep_merge_overwrite_arrays(template_config, {
-    _api_umbrella_config_runtime_file = runtime_config_path,
-    ["_test_env?"] = (config["app_env"] == "test"),
-    ["_development_env?"] = (config["app_env"] == "development"),
-    _mongodb_yaml = lyaml.dump({deep_merge_overwrite_arrays({
-      storage = {
-        dbPath = path.join(config["db_dir"], "mongodb"),
-      },
-    }, config["mongodb"]["embedded_server_config"])}),
-    _elasticsearch_yaml = lyaml.dump({deep_merge_overwrite_arrays({
-      path = {
-        conf = path.join(config["etc_dir"], "elasticsearch"),
-        scripts = path.join(config["etc_dir"], "elasticsearch_scripts"),
-        data = path.join(config["db_dir"], "elasticsearch"),
-        logs = config["log_dir"],
-      },
-    }, config["elasticsearch"]["embedded_server_config"])})
-  })
-end
 
 local function permission_check()
   local effective_uid = unistd.geteuid()
@@ -123,7 +96,7 @@ local function generate_self_signed_cert()
 
     if not path.exists(ssl_key_path) or not path.exists(ssl_crt_path) then
       dir.makepath(ssl_dir)
-      local _, _, err = run_command({ "openssl", "req", "-new", "-newkey", "rsa:2048", "-days", "3650", "-nodes", "-x509", "-subj", "/C=/ST=/L=/O=API Umbrella/CN=apiumbrella.example.com", "-keyout", ssl_key_path, "-out", ssl_crt_path })
+      local _, _, err = run_command({ "openssl", "req", "-new", "-newkey", "rsa:2048", "-days", "3650", "-nodes", "-x509", "-subj", "/O=API Umbrella/CN=apiumbrella.example.com", "-keyout", ssl_key_path, "-out", ssl_crt_path })
       if err then
         print(err)
         os.exit(1)
@@ -179,7 +152,7 @@ local function write_templates()
 
         local _, extension = path.splitext(template_path)
         if extension == ".mustache" then
-          content = lustache:render(mustache_unescape(content), template_config)
+          content = lustache:render(mustache_unescape(content), config)
         end
 
         dir.makepath(path.dirname(install_path))
@@ -255,8 +228,39 @@ local function set_permissions()
 end
 
 local function activate_services()
-  local active_services = dir.getdirectories(path.join(config["_src_root_dir"], "templates/etc/perp"))
-  tablex.transform(path.basename, active_services)
+  local available_services = dir.getdirectories(path.join(config["_src_root_dir"], "templates/etc/perp"))
+  tablex.transform(path.basename, available_services)
+  available_services = invert_table(available_services)
+
+  local active_services = {}
+  if config["_service_general_db_enabled?"] then
+    active_services["mongod"] = 1
+  end
+  if config["_service_log_db_enabled?"] then
+    active_services["elasticsearch"] = 1
+  end
+  if config["_service_router_enabled?"] then
+    active_services["geoip-auto-updater"] = 1
+    active_services["mora"] = 1
+    active_services["nginx"] = 1
+    active_services["nginx-reloader"] = 1
+    active_services["rsyslog"] = 1
+    active_services["trafficserver"] = 1
+  end
+  if config["_service_web_enabled?"] then
+    active_services["web-delayed-job"] = 1
+    active_services["web-puma"] = 1
+  end
+  if config["app_env"] == "development" then
+    active_services["dev-env-ember-server"] = 1
+  end
+  if config["app_env"] == "test" then
+    active_services["test-env-mailhog"] = 1
+    active_services["test-env-mongo-orchestration"] = 1
+    active_services["test-env-nginx"] = 1
+    active_services["test-env-openldap"] = 1
+    active_services["test-env-unbound"] = 1
+  end
 
   -- Loop over the perp controlled services and set the sticky permission bit
   -- for any services that are supposed to be active (this sticky bit is how
@@ -267,70 +271,48 @@ local function activate_services()
 
     -- Disable any old services that might be installed, but are no longer
     -- present in templates/etc/perp.
-    local is_active = array_includes(active_services, service_name)
-
-    -- Disable services according to the broader service groups marked as
-    -- enabled in api-umbrella.yml's "services" list.
-    if is_active then
-      if not config["_service_general_db_enabled?"] then
-        if array_includes({ "mongod" }, service_name) then
-          is_active = false
-        end
-      end
-
-      if not config["_service_log_db_enabled?"] then
-        if array_includes({ "elasticsearch" }, service_name) then
-          is_active = false
-        end
-      end
-
-      if not config["_service_hadoop_db_enabled?"] then
-        if array_includes({ "flume", "kylin", "presto" }, service_name) then
-          is_active = false
-        end
-      end
-
-      if not config["_service_router_enabled?"] then
-        if array_includes({ "geoip-auto-updater", "mora", "nginx", "rsyslog", "trafficserver" }, service_name) then
-          is_active = false
-        end
-      end
-
-      if not config["_service_web_enabled?"] then
-        if array_includes({ "web-delayed-job", "web-puma" }, service_name) then
-          is_active = false
-        end
-      end
-
-      if not config["_service_nginx_reloader_enabled?"] then
-        if array_includes({ "nginx-reloader" }, service_name) then
-          is_active = false
-        end
-      end
-    end
-
-    -- Disable any dev-only services when not running in the dev environment.
-    if string.find(service_name, "dev-env", 1, true) == 1 then
-      if config["app_env"] == "development" then
-        is_active = true
-      else
-        is_active = false
-      end
-    end
-
-    -- Disable any test-only services when not running in the test environment.
-    if string.find(service_name, "test-env", 1, true) == 1 then
-      if config["app_env"] == "test" then
-        is_active = true
-      else
-        is_active = false
-      end
+    local is_active = false
+    if available_services[service_name] and active_services[service_name] then
+      is_active = true
     end
 
     -- Perp's hidden directories don't need the sticky bit.
     local is_hidden = (string.find(service_name, ".", 1, true) == 1)
     if is_hidden then
       is_active = false
+    end
+
+    -- Create the log directory for svlogd output for this service.
+    if is_active or service_name == ".boot" then
+      local service_log_name = service_name
+      if service_name == ".boot" then
+        service_log_name = "perpd"
+      end
+
+      local service_log_dir = path.join(config["log_dir"], service_log_name)
+      dir.makepath(service_log_dir)
+      local _, _, log_chmod_err = run_command({ "chmod", "0755", service_log_dir })
+      if log_chmod_err then
+        print("chmod failed: ", log_chmod_err)
+        os.exit(1)
+      end
+      if config["user"] and config["group"] then
+        local _, _, log_chown_err = run_command({ "chown", config["user"] .. ":" .. config["group"], service_log_dir })
+        if log_chown_err then
+          print("chown failed: ", log_chown_err)
+          os.exit(1)
+        end
+      end
+
+      -- Disable the svlogd script if we want all output to go to
+      -- stdout/stderr.
+      if config["log"]["destination"] == "console" then
+        local _, _, err = run_command({ "chmod", "-x", service_dir .. "/rc.log" })
+        if err then
+          print("chmod failed: ", err)
+          os.exit(1)
+        end
+      end
     end
 
     -- Set the sticky bit for any active services.
@@ -351,7 +333,6 @@ end
 
 return function()
   config = read_config({ write = true })
-  set_template_config()
   permission_check()
   prepare()
   generate_self_signed_cert()

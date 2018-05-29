@@ -21,9 +21,6 @@ export default Base.extend({
     region: {
       refreshModel: true,
     },
-    beta_analytics: {
-      refreshModel: true,
-    },
   },
 
   model() {

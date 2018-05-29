@@ -8,6 +8,5 @@ export default Base.extend({
     'query',
     'search',
     'prefix',
-    'beta_analytics',
   ],
 });

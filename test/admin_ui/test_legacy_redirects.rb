@@ -16,7 +16,7 @@ class Test::AdminUi::TestLegacyRedirects < Minitest::Capybara::Test
 
   def test_drilldown
     admin_login
-    visit "/admin/#/stats/drilldown/tz=America%2FDenver&search=&start_at=2015-01-15&end_at=2015-01-18&query=%7B%22condition%22%3A%22AND%22%2C%22rules%22%3A%5B%7B%22id%22%3A%22gatekeeper_denied_code%22%2C%22field%22%3A%22gatekeeper_denied_code%22%2C%22type%22%3A%22string%22%2C%22input%22%3A%22select%22%2C%22operator%22%3A%22is_null%22%2C%22value%22%3Anull%7D%2C%7B%22id%22%3A%22request_host%22%2C%22field%22%3A%22request_host%22%2C%22type%22%3A%22string%22%2C%22input%22%3A%22text%22%2C%22operator%22%3A%22begins_with%22%2C%22value%22%3A%22example.com%22%7D%5D%7D&interval=hour&beta_analytics=false&region=US"
+    visit "/admin/#/stats/drilldown/tz=America%2FDenver&search=&start_at=2015-01-15&end_at=2015-01-18&query=%7B%22condition%22%3A%22AND%22%2C%22rules%22%3A%5B%7B%22id%22%3A%22gatekeeper_denied_code%22%2C%22field%22%3A%22gatekeeper_denied_code%22%2C%22type%22%3A%22string%22%2C%22input%22%3A%22select%22%2C%22operator%22%3A%22is_null%22%2C%22value%22%3Anull%7D%2C%7B%22id%22%3A%22request_host%22%2C%22field%22%3A%22request_host%22%2C%22type%22%3A%22string%22%2C%22input%22%3A%22text%22%2C%22operator%22%3A%22begins_with%22%2C%22value%22%3A%22example.com%22%7D%5D%7D&interval=hour&region=US"
     assert_link("Download CSV", :href => /start_at=2015-01-15/)
 
     assert_current_admin_url("/stats/drilldown", {
@@ -29,7 +29,7 @@ class Test::AdminUi::TestLegacyRedirects < Minitest::Capybara::Test
 
   def test_logs
     admin_login
-    visit "/admin/#/stats/logs/tz=America%2FDenver&search=&start_at=2015-01-15&end_at=2015-01-18&query=%7B%22condition%22%3A%22AND%22%2C%22rules%22%3A%5B%7B%22id%22%3A%22gatekeeper_denied_code%22%2C%22field%22%3A%22gatekeeper_denied_code%22%2C%22type%22%3A%22string%22%2C%22input%22%3A%22select%22%2C%22operator%22%3A%22is_null%22%2C%22value%22%3Anull%7D%2C%7B%22id%22%3A%22request_host%22%2C%22field%22%3A%22request_host%22%2C%22type%22%3A%22string%22%2C%22input%22%3A%22text%22%2C%22operator%22%3A%22begins_with%22%2C%22value%22%3A%22example.com%22%7D%5D%7D&interval=hour&beta_analytics=false&region=US"
+    visit "/admin/#/stats/logs/tz=America%2FDenver&search=&start_at=2015-01-15&end_at=2015-01-18&query=%7B%22condition%22%3A%22AND%22%2C%22rules%22%3A%5B%7B%22id%22%3A%22gatekeeper_denied_code%22%2C%22field%22%3A%22gatekeeper_denied_code%22%2C%22type%22%3A%22string%22%2C%22input%22%3A%22select%22%2C%22operator%22%3A%22is_null%22%2C%22value%22%3Anull%7D%2C%7B%22id%22%3A%22request_host%22%2C%22field%22%3A%22request_host%22%2C%22type%22%3A%22string%22%2C%22input%22%3A%22text%22%2C%22operator%22%3A%22begins_with%22%2C%22value%22%3A%22example.com%22%7D%5D%7D&interval=hour&region=US"
     assert_link("Download CSV", :href => /start_at=2015-01-15/)
 
     assert_current_admin_url("/stats/logs", {
@@ -42,7 +42,7 @@ class Test::AdminUi::TestLegacyRedirects < Minitest::Capybara::Test
 
   def test_users
     admin_login
-    visit "/admin/#/stats/users/tz=America%2FDenver&search=&start_at=2015-01-15&end_at=2015-01-18&query=%7B%22condition%22%3A%22AND%22%2C%22rules%22%3A%5B%7B%22id%22%3A%22gatekeeper_denied_code%22%2C%22field%22%3A%22gatekeeper_denied_code%22%2C%22type%22%3A%22string%22%2C%22input%22%3A%22select%22%2C%22operator%22%3A%22is_null%22%2C%22value%22%3Anull%7D%2C%7B%22id%22%3A%22request_host%22%2C%22field%22%3A%22request_host%22%2C%22type%22%3A%22string%22%2C%22input%22%3A%22text%22%2C%22operator%22%3A%22begins_with%22%2C%22value%22%3A%22example.com%22%7D%5D%7D&interval=hour&beta_analytics=false&region=US"
+    visit "/admin/#/stats/users/tz=America%2FDenver&search=&start_at=2015-01-15&end_at=2015-01-18&query=%7B%22condition%22%3A%22AND%22%2C%22rules%22%3A%5B%7B%22id%22%3A%22gatekeeper_denied_code%22%2C%22field%22%3A%22gatekeeper_denied_code%22%2C%22type%22%3A%22string%22%2C%22input%22%3A%22select%22%2C%22operator%22%3A%22is_null%22%2C%22value%22%3Anull%7D%2C%7B%22id%22%3A%22request_host%22%2C%22field%22%3A%22request_host%22%2C%22type%22%3A%22string%22%2C%22input%22%3A%22text%22%2C%22operator%22%3A%22begins_with%22%2C%22value%22%3A%22example.com%22%7D%5D%7D&interval=hour&region=US"
     assert_link("Download CSV", :href => /start_at=2015-01-15/)
 
     assert_current_admin_url("/stats/users", {
@@ -54,7 +54,7 @@ class Test::AdminUi::TestLegacyRedirects < Minitest::Capybara::Test
 
   def test_map
     admin_login
-    visit "/admin/#/stats/map/tz=America%2FDenver&search=&start_at=2015-01-15&end_at=2015-01-18&query=%7B%22condition%22%3A%22AND%22%2C%22rules%22%3A%5B%7B%22id%22%3A%22gatekeeper_denied_code%22%2C%22field%22%3A%22gatekeeper_denied_code%22%2C%22type%22%3A%22string%22%2C%22input%22%3A%22select%22%2C%22operator%22%3A%22is_null%22%2C%22value%22%3Anull%7D%2C%7B%22id%22%3A%22request_host%22%2C%22field%22%3A%22request_host%22%2C%22type%22%3A%22string%22%2C%22input%22%3A%22text%22%2C%22operator%22%3A%22begins_with%22%2C%22value%22%3A%22example.com%22%7D%5D%7D&interval=hour&beta_analytics=false&region=US"
+    visit "/admin/#/stats/map/tz=America%2FDenver&search=&start_at=2015-01-15&end_at=2015-01-18&query=%7B%22condition%22%3A%22AND%22%2C%22rules%22%3A%5B%7B%22id%22%3A%22gatekeeper_denied_code%22%2C%22field%22%3A%22gatekeeper_denied_code%22%2C%22type%22%3A%22string%22%2C%22input%22%3A%22select%22%2C%22operator%22%3A%22is_null%22%2C%22value%22%3Anull%7D%2C%7B%22id%22%3A%22request_host%22%2C%22field%22%3A%22request_host%22%2C%22type%22%3A%22string%22%2C%22input%22%3A%22text%22%2C%22operator%22%3A%22begins_with%22%2C%22value%22%3A%22example.com%22%7D%5D%7D&interval=hour&region=US"
     assert_link("Download CSV", :href => /start_at=2015-01-15/)
 
     assert_current_admin_url("/stats/map", {

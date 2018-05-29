@@ -79,11 +79,6 @@ if [ "$configure" = "true" ]; then
   # Set file permissions
   chown -R $user:$group $prefix_dir/etc $prefix_dir/var
   chown -R $deploy_user:$deploy_group $embedded_dir/apps
-  if [ -d $embedded_dir/kylin ]; then
-    chown $user:$group $embedded_dir/kylin/tomcat/temp \
-      $embedded_dir/kylin/tomcat/webapps \
-      $embedded_dir/kylin/tomcat/logs
-  fi
 
   # Re-create symlinks that may have inadvertently been cleaned up by the API
   # Umbrella v0.8 and v0.9 after-remove scripts during upgrades (this should be

@@ -30,7 +30,7 @@ module ApplicationHelper
   end
 
   def display_login_form?
-    ApiUmbrellaConfig[:web][:admin][:auth_strategies][:_local_enabled?] || ApiUmbrellaConfig[:web][:admin][:auth_strategies][:_only_ldap_enabled?]
+    ApiUmbrellaConfig[:web][:admin][:auth_strategies][:_enabled][:local] || ApiUmbrellaConfig[:web][:admin][:auth_strategies][:_only_ldap_enabled?]
   end
 
   def ldap_title

@@ -1,5 +1,8 @@
-set $x_api_umbrella_request_id $txid;
-proxy_set_header X-Api-Umbrella-Request-ID $txid;
+set_by_lua_block $x_api_umbrella_request_id {
+  local txid = require "resty.txid"
+  return txid()
+}
+proxy_set_header X-Api-Umbrella-Request-ID $x_api_umbrella_request_id;
 
 # Normalize the Accept-Encoding header to increase cache hit rates.
 # We're not currently using TrafficServer, but this is based on what it does by

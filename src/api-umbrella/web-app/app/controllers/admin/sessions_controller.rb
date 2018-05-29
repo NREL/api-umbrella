@@ -17,9 +17,8 @@ class Admin::SessionsController < Devise::SessionsController
     if current_admin
       response.merge!({
         "analytics_timezone" => ApiUmbrellaConfig[:analytics][:timezone],
-        "enable_beta_analytics" => (ApiUmbrellaConfig[:analytics][:adapter] == "kylin" || (ApiUmbrellaConfig[:analytics][:outputs] && ApiUmbrellaConfig[:analytics][:outputs].include?("kylin"))),
         "username_is_email" => ApiUmbrellaConfig[:web][:admin][:username_is_email],
-        "local_auth_enabled" => ApiUmbrellaConfig[:web][:admin][:auth_strategies][:_local_enabled?],
+        "local_auth_enabled" => ApiUmbrellaConfig[:web][:admin][:auth_strategies][:_enabled][:local],
         "password_length_min" => ApiUmbrellaConfig[:web][:admin][:password_length_min],
         "api_umbrella_version" => API_UMBRELLA_VERSION,
         "admin" => current_admin.as_json.slice(
@@ -66,7 +65,7 @@ class Admin::SessionsController < Devise::SessionsController
   end
 
   def only_for_local_auth
-    unless(ApiUmbrellaConfig[:web][:admin][:auth_strategies][:_local_enabled?])
+    unless(ApiUmbrellaConfig[:web][:admin][:auth_strategies][:_enabled][:local])
       raise ActionController::RoutingError.new("Not Found")
     end
   end

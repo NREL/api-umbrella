@@ -18,8 +18,10 @@ chef/tmp
 .ruby-version
 CMakeCache.txt
 CMakeFiles
+Dockerfile*
 Makefile
 cmake_install.cmake
+docker-compose.yml
 install_manifest.txt
 install_manifest_core.txt
 install_manifest_hadoop-analytics.txt

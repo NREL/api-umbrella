@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+
+set -e -u -x
+
+mkdir -p /etc/api-umbrella
+{
+  echo "app_env: development"
+  echo "http_port: $HTTP_PORT"
+  echo "https_port: $HTTPS_PORT"
+} > /etc/api-umbrella/api-umbrella.yml
+
+mkdir -p /build/build/work/stage/opt/api-umbrella/var/log
+mkdir -p /build/CMakeFiles
+ln -snf /build/build/work/stage/opt/api-umbrella /opt/api-umbrella
+ln -snf /build/build/work/stage/opt/api-umbrella/var/log /var/log/api-umbrella
+ln -snf /build/build/work /app/build/work
+ln -snf /build/CMakeCache.txt /app/CMakeCache.txt
+ln -snf /build/CMakeFiles /app/CMakeFiles
+ln -snf /build/Makefile /app/Makefile
+ln -snf /build/cmake_install.cmake /app/cmake_install.cmake
+
+mkdir -p /build/test/tmp/run
+mkdir -p /app/test/tmp
+ln -snf /build/test/tmp/run /app/test/tmp/run
+
+mkdir -p /app/build/work/src/api-umbrella-core/tmp/admin-ui-build/node_modules
+ln -snf /app/build/work/src/api-umbrella-core/tmp/admin-ui-build/node_modules /app/src/api-umbrella/admin-ui/node_modules
+
+mkdir -p /app/build/work/.bundle
+ln -snf /app/build/work/.bundle /app/.bundle
+
+mkdir -p /app/build/work/src/web-app/.bundle
+ln -snf /app/build/work/src/web-app/.bundle /app/src/api-umbrella/web-app/.bundle
+
+chmod 1777 /app/src/api-umbrella/admin-ui/tmp
+
+exec "$@"

@@ -70,7 +70,6 @@ class Test::AdminUi::TestStatsUsers < Minitest::Capybara::Test
       "end_at" => "2015-01-18",
       "search" => "",
       "query" => default_query,
-      "beta_analytics" => "false",
     }, uri.query_values)
 
     # Wait for the ajax actions to fetch the graph and tables to both

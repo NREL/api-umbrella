@@ -7,6 +7,5 @@ export default Base.extend({
     'query',
     'search',
     'region',
-    'beta_analytics',
   ],
 });

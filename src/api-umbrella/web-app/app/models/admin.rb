@@ -97,7 +97,7 @@ class Admin
   end
 
   def self.needs_first_account?
-    ApiUmbrellaConfig[:web][:admin][:auth_strategies][:_local_enabled?] && self.unscoped.count == 0
+    ApiUmbrellaConfig[:web][:admin][:auth_strategies][:_enabled][:local] && self.unscoped.count == 0
   end
 
   def group_names
@@ -249,7 +249,7 @@ class Admin
 
   def send_invite_instructions
     token = nil
-    if(ApiUmbrellaConfig[:web][:admin][:auth_strategies][:_local_enabled?])
+    if(ApiUmbrellaConfig[:web][:admin][:auth_strategies][:_enabled][:local])
       token = set_invite_reset_password_token
     end
 

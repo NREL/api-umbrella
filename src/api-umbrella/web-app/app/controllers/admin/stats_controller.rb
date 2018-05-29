@@ -37,16 +37,8 @@ class Admin::StatsController < Admin::BaseController
   end
 
   def logs
-    # TODO: For the SQL fetching, set start_time to end_time to limit to last
-    # 24 hours. If we do end up limiting it to the last 24 hours by default,
-    # figure out a better way to document this and still allow downloading
-    # the full data set.
-    start_time = params[:start_at]
-    if(@analytics_adapter == "kylin")
-      start_time = Time.zone.parse(params[:end_at]) - 1.day
-    end
     @search = LogSearch.factory(@analytics_adapter, {
-      :start_time => start_time,
+      :start_time => params[:start_at],
       :end_time => params[:end_at],
       :interval => params[:interval],
     })

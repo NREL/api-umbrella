@@ -20,7 +20,6 @@ rm -rf \
   "$source_dir/build/work"/* \
   "$source_dir/cmake_install.cmake" \
   "$source_dir/install_manifest.txt" \
-  "$source_dir/src/api-umbrella/hadoop-analytics"/*/dependency-reduced-pom.xml \
   "$source_dir/src/api-umbrella/web-app/.bundle" \
   "$source_dir/src/api-umbrella/web-app/brakeman.html" \
   "$source_dir/src/api-umbrella/web-app/log"/* \

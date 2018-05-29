@@ -58,24 +58,6 @@ module ApiUmbrella
         config.deep_merge!(data)
       end
 
-      # Set the default host used for web application links (for mailers,
-      # contact URLs, etc).
-      #
-      # By default, pick this up from the `hosts` array where `default` has
-      # been set to true (this gets put on `_default_hostname` for easier
-      # access). But still allow the web host to be explicitly set via
-      # `web.default_host`.
-      if(config[:web][:default_host].blank?)
-        config[:web][:default_host] = config[:_default_hostname]
-
-        # Fallback to something that will at least generate valid URLs if
-        # there's no default, or the default is "*" (since in this context, a
-        # wildcard doesn't make sense for generating URLs).
-        if(config[:web][:default_host].blank? || config[:web][:default_host] == "*")
-          config[:web][:default_host] = "localhost"
-        end
-      end
-
       # rubocop:disable Naming/ConstantName
       ::ApiUmbrellaConfig = config
       # rubocop:enable Naming/ConstantName

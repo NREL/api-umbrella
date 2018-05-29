@@ -3,7 +3,7 @@ services:
   app:
     build:
       context: .
-      dockerfile: Dockerfile-dev
+      dockerfile: Dockerfile-dev-build
     volumes:
       - .:/app
       - build_cache:/build

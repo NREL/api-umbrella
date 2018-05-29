@@ -1,5 +1,8 @@
 DEBUG = false
 
+-- Pre-load modules.
+require "resty.txid"
+
 inspect = require "inspect"
 
 -- Generate a unique ID to represent this group of worker processes. This value

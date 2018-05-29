@@ -17,9 +17,6 @@ export default Base.extend({
     search: {
       refreshModel: true,
     },
-    beta_analytics: {
-      refreshModel: true,
-    },
   },
 
   model() {

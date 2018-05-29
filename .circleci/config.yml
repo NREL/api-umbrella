@@ -1,0 +1,37 @@
+version: 2
+jobs:
+  build:
+    parallelism: 3
+    working_directory: /app
+    docker:
+      - image: ubuntu:16.04
+    steps:
+      - checkout
+      # Install any system package dependencies.
+      - run: env INSTALL_TEST_DEPENDENCIES=true ./build/scripts/install_build_dependencies
+      - restore_cache:
+          # CircleCI's prefix based matching will mean the cache from the last
+          # cache for this branch will be restored.
+          key: cache-build-deps-{{ .Environment.CACHE_VERSION }}-{{ .Branch }}-{{ arch }}-
+      # Build all the API Umbrella software dependencies.
+      - run: ./configure
+      - run: make all test-deps test-bundle
+      - save_cache:
+          key: cache-build-deps-{{ .Environment.CACHE_VERSION }}-{{ .Branch }}-{{ arch }}-{{ epoch }}
+          paths:
+            - build/work
+            - CMakeCache.txt
+            - CMakeFiles
+            - Makefile
+            - cmake_install.cmake
+      - type: shell
+        command: |
+          groupadd -r api-umbrella
+          useradd -r -g api-umbrella -s /sbin/nologin -d /opt/api-umbrella -c "API Umbrella user" api-umbrella
+          ./test/scripts/circle-ci
+      - store_test_results:
+          path: test/tmp/reports
+      - store_artifacts:
+          path: test/tmp/run/api-umbrella-root/var/log
+      - store_artifacts:
+          path: test/tmp/capybara
