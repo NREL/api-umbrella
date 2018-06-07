@@ -6,20 +6,20 @@ gem "rails", "~> 4.2.10"
 gem "puma", "~> 3.11.4"
 
 # Error notification service (optional)
-gem "rollbar", "~> 2.15.5"
+gem "rollbar", "~> 2.16.2"
 
 # Abort requests that take too long
-gem "rack-timeout", "~> 0.4.2"
+gem "rack-timeout", "~> 0.5.1", :require => "rack/timeout/base"
 
 # For proxying HTTP requests to password-protected places for admins.
 gem "rack-proxy", "~> 0.6.4"
 
 # JSON handling
 gem "multi_json", "~> 1.13.1"
-gem "oj", "~> 3.6.0", :platforms => [:ruby]
+gem "oj", "~> 3.6.2", :platforms => [:ruby]
 
 # MongoDB
-gem "mongoid", "~> 5.2.1"
+gem "mongoid", "~> 5.4"
 
 # Soft-delete
 gem "mongoid-paranoia", "~> 2.0.0"
@@ -39,7 +39,7 @@ gem "mongoid_rails_migrations", "~> 1.1.0"
 gem "mongoid_store", :git => "https://github.com/GUI/mongoid_store.git"
 
 # Elasticsearch
-gem "elasticsearch", "~> 2.0.2"
+gem "elasticsearch", "~> 2.0"
 
 # OmniAuth-based authentication
 gem "devise", "~> 4.4.3"
@@ -80,7 +80,7 @@ gem "nokogiri", "~> 1.8.1"
 gem "http_accept_language", "~> 2.1.1"
 
 # Markdown
-gem "kramdown", "~> 1.16.2"
+gem "kramdown", "~> 1.17.0"
 
 # Lucene query parsing for translating into SQL.
 gem "lucene_query_parser", :git => "https://github.com/zerowidth/lucene_query_parser.git"
@@ -89,7 +89,7 @@ gem "lucene_query_parser", :git => "https://github.com/zerowidth/lucene_query_pa
 gem "request_store", "~> 1.4.1"
 
 # Share i18n data with the admin-ui client-side app.
-gem "i18n-js", "~> 3.0.5"
+gem "i18n-js", "~> 3.0.8"
 
 # Log to stdout instead of file
 #
@@ -98,7 +98,7 @@ gem "i18n-js", "~> 3.0.5"
 gem "rails_stdout_logging", :git => "https://github.com/heroku/rails_stdout_logging.git"
 
 # Login forms
-gem "simple_form", "~> 3.5.1"
+gem "simple_form", "~> 3.5"
 
 # Login stylesheets
 gem "sass-rails", "~> 5.0"
@@ -106,7 +106,7 @@ gem "bootstrap-sass", "~> 3.3.7"
 gem "font-awesome-rails", "~> 4.7.0"
 
 # Table-less models
-gem "active_attr", "~> 0.10.3"
+gem "active_attr", "~> 0.11.0"
 
 # Bundle gems for the local environment. Make sure to
 # put test-only gems in this group so their generators

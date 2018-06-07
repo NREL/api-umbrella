@@ -1,4 +1,3 @@
-
 require('json')
 
 class LogSearch::ElasticSearch < LogSearch::Base
