@@ -9,7 +9,7 @@ set(MORA_HASH b86cea913596370cd58fce89b23acd97)
 ExternalProject_Add(
   golang
   EXCLUDE_FROM_ALL 1
-  URL https://storage.googleapis.com/golang/go${GOLANG_VERSION}.linux-amd64.tar.gz
+  URL https://dl.google.com/go/go${GOLANG_VERSION}.linux-amd64.tar.gz
   URL_HASH SHA256=${GOLANG_HASH}
   CONFIGURE_COMMAND ""
   BUILD_COMMAND ""
