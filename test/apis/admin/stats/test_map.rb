@@ -142,8 +142,8 @@ class Test::Apis::Admin::Stats::TestMap < Minitest::Test
   end
 
   def test_csv_download
-    FactoryGirl.create_list(:log_item, 2, :request_at => Time.parse("2015-01-16T06:06:28.816Z").utc, :request_ip_country => "US", :request_ip_region => "CO", :request_ip_city => "Golden")
-    FactoryGirl.create_list(:log_item, 1, :request_at => Time.parse("2015-01-16T06:06:28.816Z").utc, :request_ip_country => "CA", :request_ip_region => "ON", :request_ip_city => "Toronto")
+    FactoryBot.create_list(:log_item, 2, :request_at => Time.parse("2015-01-16T06:06:28.816Z").utc, :request_ip_country => "US", :request_ip_region => "CO", :request_ip_city => "Golden")
+    FactoryBot.create_list(:log_item, 1, :request_at => Time.parse("2015-01-16T06:06:28.816Z").utc, :request_ip_country => "CA", :request_ip_region => "ON", :request_ip_city => "Toronto")
     LogItem.refresh_indices!
 
     response = Typhoeus.get("https://127.0.0.1:9081/admin/stats/map.csv", http_options.deep_merge(admin_session).deep_merge({

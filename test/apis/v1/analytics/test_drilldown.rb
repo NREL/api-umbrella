@@ -427,8 +427,8 @@ class Test::Apis::V1::Analytics::TestDrilldown < Minitest::Test
   end
 
   def test_csv_download
-    FactoryGirl.create_list(:log_item, 2, :request_hierarchy => ["0/127.0.0.1/", "1/127.0.0.1/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
-    FactoryGirl.create(:log_item, :request_hierarchy => ["0/example.com/", "1/example.com/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
+    FactoryBot.create_list(:log_item, 2, :request_hierarchy => ["0/127.0.0.1/", "1/127.0.0.1/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
+    FactoryBot.create(:log_item, :request_hierarchy => ["0/example.com/", "1/example.com/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
     LogItem.refresh_indices!
 
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/analytics/drilldown.csv", http_options.deep_merge(admin_session).deep_merge({
