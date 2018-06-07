@@ -143,7 +143,7 @@ local function strip_cookies(api)
       table.insert(strips, strip_regex)
     end
   end
-  if api["_id"] ~= "api-umbrella-web-backend" then
+  if api["_id"] ~= "api-umbrella-web-app-backend" then
     table.insert(strips, "^_api_umbrella_session$")
   end
   if #strips == 0 then return end

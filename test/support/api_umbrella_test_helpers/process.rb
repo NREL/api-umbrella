@@ -18,7 +18,7 @@ module ApiUmbrellaTestHelpers
 
       start_time = Time.now.utc
       FileUtils.rm_rf(Dir.glob(File.join(TEST_RUN_ROOT, "*"), File::FNM_DOTMATCH) - [File.join(TEST_RUN_ROOT, "."), File.join(TEST_RUN_ROOT, "..")])
-      FileUtils.mkdir_p(File.join(TEST_RUN_API_UMBRELLA_ROOT, "var/log"))
+      FileUtils.mkdir_p(TEST_RUN_API_UMBRELLA_ROOT)
 
       original_env = ENV.to_hash
       begin
@@ -42,12 +42,6 @@ module ApiUmbrellaTestHelpers
         computed = {
           "root_dir" => TEST_RUN_API_UMBRELLA_ROOT,
         }
-        if(::Process.euid == 0)
-          # If tests are running as root (Docker environment), then add the
-          # user to run things as.
-          computed["user"] = "api-umbrella"
-          computed["group"] = "api-umbrella"
-        end
         File.write(CONFIG_COMPUTED_PATH, YAML.dump(computed))
         $config.deep_merge!(YAML.load_file(CONFIG_COMPUTED_PATH))
 
@@ -129,6 +123,10 @@ module ApiUmbrellaTestHelpers
     # class to ensure we have a chance to properly stop the child process on
     # things like SIGINTs.
     rescue Exception => e # rubocop:disable Lint/RescueException
+      puts "Error occurred while starting api-umbrella, stopping..."
+      puts e.message
+      puts e.backtrace.join("\n")
+
       self.stop
       raise e
     end
@@ -161,6 +159,48 @@ module ApiUmbrellaTestHelpers
       reload.environment["API_UMBRELLA_CONFIG"] = CONFIG
       reload.start
       reload.wait
+    end
+
+    def self.restart_trafficserver
+      reload = ChildProcess.build(*[File.join(API_UMBRELLA_SRC_ROOT, "bin/api-umbrella-exec"), "perpctl", "-b", File.join($config["root_dir"], "etc/perp"), "-q", "term", "trafficserver"].flatten.compact)
+      reload.io.inherit!
+      reload.environment["API_UMBRELLA_EMBEDDED_ROOT"] = EMBEDDED_ROOT
+      reload.environment["API_UMBRELLA_CONFIG"] = CONFIG
+      reload.start
+      reload.wait
+
+      # Sleep to ensure that the traffiserver kill signal is received and it's
+      # had a chance to die, before moving onto the health checks (so we don't
+      # check the health before the server has actually been killed).
+      sleep 1
+
+      # After killing and restarting trafficserver, wait for it to come back
+      # online (since this full restart isn't a normal occurrence and will
+      # incur downtime).
+      #
+      # Note that we're currently doing this to reload DNS changes within
+      # Traffic Server. We could also call `traffic_ctl server restart` which
+      # just restarts the traffic_server process (and not the manager), which
+      # appears to work without any downtime. However, while DNS changes are
+      # picked up after that type of restart, it's hard to predict when those
+      # changes are fully live within trafficserver, so that's why we[re opting
+      # for this full restart to handle DNS changes in the test suite (in real
+      # live, DNS server changes shouldn't be likely, though, so this is mainly
+      # a test environment issue).
+      begin
+        Timeout.timeout(40) do
+          loop do
+            response = Typhoeus.get("http://127.0.0.1:9080/api-umbrella/v1/health?#{rand}")
+            if(response.code == 200)
+              break
+            end
+
+            sleep 0.1
+          end
+        end
+      rescue Timeout::Error
+        raise Timeout::Error, "API Umbrella configuration changes were not detected. Waiting for version #{version}. Last seen: #{state.inspect} #{health.inspect}"
+      end
     end
 
     def self.wait_for_config_version(field, version, config = {})

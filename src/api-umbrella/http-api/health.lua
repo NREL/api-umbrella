@@ -1,5 +1,6 @@
-local cjson = require "cjson"
+local elasticsearch_query = require("api-umbrella.utils.elasticsearch").query
 local http = require "resty.http"
+local json_encode = require "api-umbrella.utils.json_encode"
 
 local function status_response()
   local response = {
@@ -27,11 +28,11 @@ local function status_response()
   httpc:set_timeout(3000)
 
   -- Check the health of the ElasticSearch cluster
-  local res, err = httpc:request_uri(config["elasticsearch"]["hosts"][1] .. "/_cluster/health")
+  local res, err = elasticsearch_query("/_cluster/health")
   if err then
     ngx.log(ngx.ERR, "failed to fetch cluster health from elasticsearch: ", err)
-  elseif res.body then
-    local elasticsearch_health = cjson.decode(res.body)
+  elseif res.body_json then
+    local elasticsearch_health = res.body_json
     response["details"]["analytics_db"] = elasticsearch_health["status"]
 
     -- Check to see if the ElasticSearch index aliases have been setup.
@@ -41,8 +42,8 @@ local function status_response()
     res, err = elasticsearch_query("/" .. index .. "/_alias/" .. alias)
     if err then
       ngx.log(ngx.ERR, "failed to fetch elasticsearch alias details: ", err)
-    elseif res.body then
-      local elasticsearch_alias = cjson.decode(res.body)
+    elseif res.body_json then
+      local elasticsearch_alias = res.body_json
       if not elasticsearch_alias["error"] then
         response["details"]["analytics_db_setup"] = "green"
       end
@@ -89,7 +90,7 @@ else
   if wait_for_status ~= "green" and wait_for_status ~= "yellow" and wait_for_status ~= "red" then
     ngx.status = 422
     ngx.header["Content-Type"] = "application/json"
-    ngx.say(cjson.encode({
+    ngx.say(json_encode({
       error = "Invalid wait_for_status argument (" .. (tostring(wait_for_status) or "") .. ")",
     }))
     return ngx.exit(ngx.HTTP_OK)
@@ -100,7 +101,7 @@ else
   if not wait_timeout then
     ngx.status = 422
     ngx.header["Content-Type"] = "application/json"
-    ngx.say(cjson.encode({
+    ngx.say(json_encode({
       error = "Invalid wait_timeout argument (" .. (tostring(wait_timeout) or "") .. ")",
     }))
     return ngx.exit(ngx.HTTP_OK)
@@ -138,4 +139,4 @@ if response["status"] == "red" then
 end
 
 ngx.header["Content-Type"] = "application/json"
-ngx.say(cjson.encode(response))
+ngx.say(json_encode(response))

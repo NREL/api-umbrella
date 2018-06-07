@@ -1,28 +1,21 @@
 local _M = {}
 
-local cjson = require "cjson"
-local http = require "resty.http"
+local elasticsearch_query = require("api-umbrella.utils.elasticsearch").query
 local interval_lock = require "api-umbrella.utils.interval_lock"
 
 local delay = 3600  -- in seconds
 
-local elasticsearch_host = config["elasticsearch"]["hosts"][1]
-
 function _M.wait_for_elasticsearch()
-  local httpc = http.new()
   local elasticsearch_alive = false
   local wait_time = 0
   local sleep_time = 0.5
   local max_time = 60
   repeat
-    local res, err = httpc:request_uri(elasticsearch_host .. "/_cluster/health")
+    local res, err = elasticsearch_query("/_cluster/health")
     if err then
       ngx.log(ngx.NOTICE, "failed to fetch cluster health from elasticsearch (this is expected if elasticsearch is starting up at the same time): ", err)
-    elseif res.body then
-      local elasticsearch_health = cjson.decode(res.body)
-      if elasticsearch_health["status"] == "yellow" or elasticsearch_health["status"] == "green" then
-        elasticsearch_alive = true
-      end
+    elseif res.body_json and res.body_json["status"] == "yellow" or res.body_json["status"] == "green" then
+      elasticsearch_alive = true
     end
 
     if not elasticsearch_alive then
@@ -44,11 +37,10 @@ function _M.create_templates()
   if created then return end
 
   if elasticsearch_templates then
-    local httpc = http.new()
     for _, template in ipairs(elasticsearch_templates) do
-      local _, err = httpc:request_uri(elasticsearch_host .. "/_template/" .. template["id"], {
+      local _, err = elasticsearch_query("/_template/" .. template["id"], {
         method = "PUT",
-        body = cjson.encode(template["template"]),
+        body = template["template"],
       })
       if err then
         ngx.log(ngx.ERR, "failed to update elasticsearch template: ", err)
@@ -87,17 +79,16 @@ function _M.create_aliases()
     })
   end
 
-  local httpc = http.new()
   for _, alias in ipairs(aliases) do
     -- Only create aliases if they don't already exist.
-    local exists_res, exists_err = httpc:request_uri(elasticsearch_host .. "/_alias/" .. alias["alias"], {
+    local exists_res, exists_err = elasticsearch_query("/_alias/" .. alias["alias"], {
       method = "HEAD",
     })
     if exists_err then
       ngx.log(ngx.ERR, "failed to check elasticsearch index alias: ", exists_err)
     elseif exists_res.status == 404 then
       -- Make sure the index exists.
-      local _, create_err = httpc:request_uri(elasticsearch_host .. "/" .. alias["index"], {
+      local _, create_err = elasticsearch_query("/" .. alias["index"], {
         method = "PUT",
       })
       if create_err then
@@ -105,7 +96,7 @@ function _M.create_aliases()
       end
 
       -- Create the alias for the index.
-      local _, alias_err = httpc:request_uri(elasticsearch_host .. "/" .. alias["index"] .. "/_alias/" .. alias["alias"], {
+      local _, alias_err = elasticsearch_query("/" .. alias["index"] .. "/_alias/" .. alias["alias"], {
         method = "PUT",
       })
       if alias_err then

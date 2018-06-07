@@ -2,17 +2,16 @@ local cidr = require "libcidr-ffi"
 local cjson = require "cjson"
 local escape_regex = require "api-umbrella.utils.escape_regex"
 local host_normalize = require "api-umbrella.utils.host_normalize"
-local load_backends = require "api-umbrella.proxy.load_backends"
 local mustache_unescape = require "api-umbrella.utils.mustache_unescape"
 local plutils = require "pl.utils"
-local resolve_backend_dns = require "api-umbrella.proxy.jobs.resolve_backend_dns"
+local random_token = require "api-umbrella.utils.random_token"
 local tablex = require "pl.tablex"
 local utils = require "api-umbrella.proxy.utils"
+local startswith = require("pl.stringx").startswith
 
 local append_array = utils.append_array
 local cache_computed_settings = utils.cache_computed_settings
 local deepcopy = tablex.deepcopy
-local escape = plutils.escape
 local set_packed = utils.set_packed
 local size = tablex.size
 local split = plutils.split
@@ -54,8 +53,18 @@ local function cache_computed_api(api)
 
   if api["url_matches"] then
     for _, url_match in ipairs(api["url_matches"]) do
-      url_match["_frontend_prefix_matcher"] = "^" .. escape(url_match["frontend_prefix"])
-      url_match["_backend_prefix_matcher"] = "^" .. escape(url_match["backend_prefix"])
+      url_match["_frontend_prefix_regex"] = "^" .. escape_regex(url_match["frontend_prefix"])
+      url_match["_backend_prefix_regex"] = "^" .. escape_regex(url_match["backend_prefix"])
+
+      url_match["_frontend_prefix_contains_backend_prefix"] = false
+      if startswith(url_match["frontend_prefix"], url_match["backend_prefix"]) then
+        url_match["_frontend_prefix_contains_backend_prefix"] = true
+      end
+
+      url_match["_backend_prefix_contains_frontend_prefix"] = false
+      if startswith(url_match["backend_prefix"], url_match["frontend_prefix"]) then
+        url_match["_backend_prefix_contains_frontend_prefix"] = true
+      end
     end
   end
 
@@ -183,7 +192,7 @@ end
 
 local function parse_website_backend(website_backend)
   if not website_backend["_id"] then
-    website_backend["_id"] = ndk.set_var.set_secure_random_alphanum(32)
+    website_backend["_id"] = random_token(32)
   end
 
   if website_backend["frontend_host"] then
@@ -244,9 +253,6 @@ function _M.set(db_config)
   local website_backends = get_combined_website_backends(file_config, db_config)
 
   local active_config = build_active_config(apis, website_backends)
-  resolve_backend_dns.resolve(active_config["apis"])
-  load_backends.setup_backends(active_config["apis"])
-
   set_packed(ngx.shared.active_config, "packed_data", active_config)
   ngx.shared.active_config:set("db_version", db_config["version"])
   ngx.shared.active_config:set("file_version", file_config["version"])

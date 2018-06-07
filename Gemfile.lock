@@ -1,3 +1,10 @@
+GIT
+  remote: https://github.com/GUI/minitest-hooks.git
+  revision: 12102e46c304e5f6c43db2aab870e25a59e362ba
+  branch: reporter-result
+  specs:
+    minitest-hooks (1.4.2)
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -65,7 +72,6 @@ GEM
     minitest (5.11.3)
     minitest-ci (3.4.0)
       minitest (>= 5.0.6)
-    minitest-hooks (1.4.2)
     minitest-reporters (1.2.0)
       ansi
       builder
@@ -145,7 +151,7 @@ DEPENDENCIES
   lazyhash (~> 0.1.1)
   minitest (~> 5.11.3)
   minitest-ci (~> 3.4.0)
-  minitest-hooks (~> 1.4.2)
+  minitest-hooks (~> 1.4.2)!
   minitest-reporters (~> 1.2.0)
   minitest-sprint (~> 1.2.0)
   mongoid (~> 6.3.0)

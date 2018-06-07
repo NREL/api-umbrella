@@ -7,7 +7,7 @@ local types = require "pl.types"
 local is_empty = types.is_empty
 
 local function reload_perp(perp_base)
-  local _, _, err = run_command("perphup " .. perp_base)
+  local _, _, err = run_command({ "perphup", perp_base })
   if err then
     print("Failed to reload perp\n" .. err)
     os.exit(1)
@@ -15,7 +15,7 @@ local function reload_perp(perp_base)
 end
 
 local function reload_web_delayed_job(perp_base)
-  local _, _, err = run_command("perpctl -b " .. perp_base .. " int web-delayed-job")
+  local _, _, err = run_command({ "perpctl", "-b", perp_base, "int", "web-delayed-job" })
   if err then
     print("Failed to reload web-delayed-job\n" .. err)
     os.exit(1)
@@ -23,15 +23,15 @@ local function reload_web_delayed_job(perp_base)
 end
 
 local function reload_web_puma(perp_base)
-  local _, _, err = run_command("perpctl -b " .. perp_base .. " 2 web-puma")
+  local _, _, err = run_command({ "perpctl", "-b", perp_base, "2", "web-puma" })
   if err then
     print("Failed to reload web-puma\n" .. err)
     os.exit(1)
   end
 end
 
-local function reload_trafficserver(perp_base)
-  local _, _, err = run_command("perpctl -b " .. perp_base .. " hup trafficserver")
+local function reload_trafficserver(config)
+  local _, _, err = run_command({ "env", "TS_ROOT=" .. config["root_dir"], "traffic_ctl", "config", "reload" })
   if err then
     print("Failed to reload trafficserver\n" .. err)
     os.exit(1)
@@ -39,7 +39,7 @@ local function reload_trafficserver(perp_base)
 end
 
 local function reload_nginx(perp_base)
-  local _, _, err = run_command("perpctl -b " .. perp_base .. " hup nginx")
+  local _, _, err = run_command({ "perpctl", "-b", perp_base, "hup", "nginx" })
   if err then
     print("Failed to reload nginx\n" .. err)
     os.exit(1)
@@ -47,7 +47,7 @@ local function reload_nginx(perp_base)
 end
 
 local function reload_dev_env_ember_server(perp_base)
-  local _, _, err = run_command("perpctl -b " .. perp_base .. " term dev-env-ember-server")
+  local _, _, err = run_command({ "perpctl", "-b", perp_base, "term", "dev-env-ember-server" })
   if err then
     print("Failed to reload dev-env-ember-server\n" .. err)
     os.exit(1)
@@ -55,7 +55,7 @@ local function reload_dev_env_ember_server(perp_base)
 end
 
 local function reload_nginx_reloader(perp_base)
-  local _, _, err = run_command("perpctl -b " .. perp_base .. " term nginx-reloader")
+  local _, _, err = run_command({ "perpctl", "-b", perp_base, "term", "nginx-reloader" })
   if err then
     print("Failed to reload nginx-reloader\n" .. err)
     os.exit(1)
@@ -82,7 +82,7 @@ return function(options)
   end
 
   if config["_service_router_enabled?"] and (is_empty(options) or options["router"]) then
-    reload_trafficserver(perp_base)
+    reload_trafficserver(config)
     reload_nginx(perp_base)
 
     if config["_service_nginx_reloader_enabled?"] then

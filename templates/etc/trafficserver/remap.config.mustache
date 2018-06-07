@@ -1,2 +1,1 @@
-map /cache-inspector/ http://{cache}
-map / http://{{router.api_backends.host}}:{{router.api_backends.port}}
+map / http://dummy.example.com @plugin=tslua.so @pparam={{etc_dir}}/trafficserver/remap.lua

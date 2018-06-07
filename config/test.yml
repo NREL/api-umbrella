@@ -16,8 +16,6 @@ nginx:
   proxy_connect_timeout: 10
   proxy_read_timeout: 10
   proxy_send_timeout: 10
-  dyups:
-    port: 13005
 trafficserver:
   port: 13009
   management_port: 13008
@@ -62,8 +60,6 @@ web:
       port: 13102
   contact_form_email: default-test-contact-email@example.com
 router:
-  api_backends:
-    port: 13011
   trusted_proxies:
     - 192.168.12.0/23
     - 10.10.10.10

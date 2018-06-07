@@ -85,9 +85,6 @@ include(${CMAKE_SOURCE_DIR}/build/cmake/test.cmake OPTIONAL)
 # make distclean
 include(${CMAKE_SOURCE_DIR}/build/cmake/distclean.cmake OPTIONAL)
 
-# make clean-download-archives
-include(${CMAKE_SOURCE_DIR}/build/cmake/clean-download-archives.cmake OPTIONAL)
-
 # make install
 include(${CMAKE_SOURCE_DIR}/build/cmake/install.cmake OPTIONAL)
 

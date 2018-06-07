@@ -10,6 +10,10 @@ return function(settings, user)
     -- continue.
     return nil
   else
+    if settings["redirect_https"] then
+      return "redirect_https"
+    end
+
     local mode = settings["require_https"]
     if not mode or mode == "optional" then
       -- Continue if https isn't required.

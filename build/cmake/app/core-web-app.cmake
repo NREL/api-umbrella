@@ -14,6 +14,17 @@ add_custom_command(
   COMMAND touch ${STAMP_DIR}/core-web-app-bundle
 )
 
+file(GLOB_RECURSE web_app_public_files
+  ${CMAKE_SOURCE_DIR}/src/api-umbrella/web-app/public/*.html
+)
+add_custom_command(
+  OUTPUT ${STAMP_DIR}/core-web-app-public
+  DEPENDS ${web_app_public_files}
+  COMMAND mkdir -p ${CORE_BUILD_DIR}/tmp/web-app-public
+  COMMAND rsync -a --delete-after ${CMAKE_SOURCE_DIR}/src/api-umbrella/web-app/public/ ${CORE_BUILD_DIR}/tmp/web-app-public/
+  COMMAND touch ${STAMP_DIR}/core-web-app-public
+)
+
 file(GLOB_RECURSE web_asset_files
   ${CMAKE_SOURCE_DIR}/src/api-umbrella/web-app/app/assets/*.css
   ${CMAKE_SOURCE_DIR}/src/api-umbrella/web-app/app/assets/*.scss
@@ -34,6 +45,7 @@ add_custom_command(
   OUTPUT
     ${STAMP_DIR}/core-web-app-build
   DEPENDS
+    ${STAMP_DIR}/core-web-app-public
     ${STAMP_DIR}/core-web-app-precompile
   COMMAND touch ${STAMP_DIR}/core-web-app-build
 )
