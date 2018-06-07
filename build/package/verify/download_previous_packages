@@ -69,6 +69,14 @@ for dist in "${distros[@]}"; do
           filename=""
         fi
         ;;
+      ubuntu-18.04)
+        filename="api-umbrella_${version}~bionic_amd64.deb"
+        url_prefix="$bintray_url_root/api-umbrella-ubuntu/pool/main/a/api-umbrella"
+        if [ "$(compare_version "$version")" -lt "$(compare_version "0.15.0")" ]; then
+          # No Ubuntu 18.04 packages until v0.15
+          filename=""
+        fi
+        ;;
       debian-7)
         filename="api-umbrella_${version}~wheezy_amd64.deb"
         url_prefix="$bintray_url_root/api-umbrella-debian/pool/main/a/api-umbrella"

@@ -104,6 +104,11 @@ RSpec.shared_examples("package upgrade") do |package_version|
   # Skip testing upgrades if we don't have binary packages for certain distro
   # and version combinations.
   case(ENV["DIST"])
+  when "ubuntu-18.04"
+    # No Ubuntu 18.04 packages until v0.15
+    if(Gem::Version.new(package_version) < Gem::Version.new("0.15.0-1"))
+      next
+    end
   when "ubuntu-16.04"
     # No Ubuntu 16.04 packages until v0.12
     if(Gem::Version.new(package_version) < Gem::Version.new("0.12.0-1"))
@@ -315,7 +320,7 @@ describe "api-umbrella" do
       command_result = command("env HOME=#{home} /etc/init.d/api-umbrella status")
       expect(command_result.exit_status).to eql(0)
       case(ENV["DIST"])
-      when "debian-8", "ubuntu-16.04"
+      when "debian-8", "ubuntu-16.04", "ubuntu-18.04"
         expect(command_result.stdout).to include("Active: active (running)")
       else
         expect(command_result.stdout).to include("is running")
@@ -382,7 +387,7 @@ describe "api-umbrella" do
     when "centos-7"
       expect(command_result.stdout).to include("Starting api-umbrella (via systemctl)")
       expect(command_result.stdout).to include("FAILED")
-    when "debian-8", "ubuntu-16.04"
+    when "debian-8", "ubuntu-16.04", "ubuntu-18.04"
       expect(command_result.stdout).to include("Starting api-umbrella (via systemctl)")
       expect(command_result.stdout).to include("failed")
     else
@@ -394,7 +399,7 @@ describe "api-umbrella" do
     expect(command("sudo -u api-umbrella-deploy sudo -n api-umbrella status").stdout).to include("is running")
     command_result = command("sudo -u api-umbrella-deploy sudo -n /etc/init.d/api-umbrella status")
     case(ENV["DIST"])
-    when "debian-8", "ubuntu-16.04"
+    when "debian-8", "ubuntu-16.04", "ubuntu-18.04"
       expect(command_result.stdout).to include("Active: active (running)")
     else
       expect(command_result.stdout).to include("is running")
@@ -408,7 +413,7 @@ describe "api-umbrella" do
     when "centos-7"
       expect(command_result.stdout).to include("Starting api-umbrella (via systemctl)")
       expect(command_result.stdout).to include("OK")
-    when "debian-8", "ubuntu-16.04"
+    when "debian-8", "ubuntu-16.04", "ubuntu-18.04"
       expect(command_result.stdout).to include("Starting api-umbrella (via systemctl)")
       expect(command_result.stdout).to_not include("failed")
     else
@@ -464,7 +469,7 @@ describe "api-umbrella" do
     command_result = command("/etc/init.d/api-umbrella status")
     expect(command_result.exit_status).to eql(3)
     case(ENV["DIST"])
-    when "debian-8", "ubuntu-16.04"
+    when "debian-8", "ubuntu-16.04", "ubuntu-18.04"
       expect(command_result.stdout).to include("Active: inactive (dead)")
     else
       expect(command_result.stdout).to include("api-umbrella is stopped")
@@ -480,7 +485,7 @@ describe "api-umbrella" do
     when "centos-7"
       expect(command_result.stdout).to include("Stopping api-umbrella (via systemctl)")
       expect(command_result.stdout).to include("OK")
-    when "debian-8", "ubuntu-16.04"
+    when "debian-8", "ubuntu-16.04", "ubuntu-18.04"
       expect(command_result.stdout).to include("Stopping api-umbrella (via systemctl)")
       expect(command_result.stdout).to_not include("failed")
     else
@@ -495,7 +500,7 @@ describe "api-umbrella" do
       expect(command_result.exit_status).to eql(1)
       expect(command_result.stdout).to include("Reloading api-umbrella configuration (via systemctl)")
       expect(command_result.stdout).to include("FAILED")
-    when "debian-8", "ubuntu-16.04"
+    when "debian-8", "ubuntu-16.04", "ubuntu-18.04"
       expect(command_result.exit_status).to eql(1)
       expect(command_result.stdout).to include("Reloading api-umbrella configuration (via systemctl)")
       expect(command_result.stdout).to include("failed")
