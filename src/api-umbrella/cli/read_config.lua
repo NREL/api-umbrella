@@ -465,7 +465,7 @@ local function set_cached_random_tokens()
     local content = file.read(cached_path, true)
     local cached = {}
     if content then
-      cached = lyaml.load(content)
+      cached = lyaml.load(content) or {}
       deep_defaults(config, cached)
     end
 
