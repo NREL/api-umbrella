@@ -1,4 +1,3 @@
-local deep_merge_overwrite_arrays = require "api-umbrella.utils.deep_merge_overwrite_arrays"
 local dir = require "pl.dir"
 local file = require "pl.file"
 local invert_table = require "api-umbrella.utils.invert_table"

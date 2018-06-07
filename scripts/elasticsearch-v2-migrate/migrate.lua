@@ -1,7 +1,7 @@
 config = require "api-umbrella.proxy.models.file_config"
 require "api-umbrella.proxy.startup.init_user_agent_parser_data"
 
-local Date = require "pl.Date"
+-- local Date = require "pl.Date"
 local argparse = require "argparse"
 local cjson = require "cjson"
 local elasticsearch_setup = require "api-umbrella.proxy.jobs.elasticsearch_setup"
@@ -12,11 +12,11 @@ local log_utils = require "api-umbrella.proxy.log_utils"
 local luatz = require "luatz"
 local nillify_json_nulls = require "api-umbrella.utils.nillify_json_nulls"
 local plutils = require "pl.utils"
-local pretty = require "pl.pretty"
+-- local pretty = require "pl.pretty"
 local tablex = require "pl.tablex"
 
 local cjson_encode = cjson.encode
-local keys = tablex.keys
+-- local keys = tablex.keys
 local split = plutils.split
 
 local bulk_size = 1000
@@ -51,16 +51,16 @@ local function parse_args()
   parser:option("--end-date", "Migrate data ending on this date (YYYY-MM-DD format). Defaults to current date."):count("0-1")
   parser:flag("--debug", "Debug")
 
-  local args = parser:parse()
+  local parsed_args = parser:parse()
 
-  local input_uri, input_err = http:parse_uri(args["input"], false)
+  local input_uri, input_err = http:parse_uri(parsed_args["input"], false)
   if not input_uri then
     print("--input could not be parsed. Elasticsearch URL expected.")
     print(input_err)
     os.exit(1)
   end
 
-  local output_uri, output_err = http:parse_uri(args["output"], false)
+  local output_uri, _ = http:parse_uri(parsed_args["output"], false)
   if not output_uri then
     print("--output could not be parsed. Elasticsearch URL expected.")
     print(output_uri)
@@ -68,30 +68,30 @@ local function parse_args()
   end
 
   local _, input_host, input_port = unpack(input_uri)
-  args["input_host"] = input_host
-  args["input_port"] = input_port
+  parsed_args["input_host"] = input_host
+  parsed_args["input_port"] = input_port
 
   local _, output_host, output_port = unpack(output_uri)
-  args["output_host"] = output_host
-  args["output_port"] = output_port
+  parsed_args["output_host"] = output_host
+  parsed_args["output_port"] = output_port
 
-  if args["start_date"] then
-    args["_start_date"] = parse_date(args["start_date"])
-    if not args["_start_date"] then
+  if parsed_args["start_date"] then
+    parsed_args["_start_date"] = parse_date(parsed_args["start_date"])
+    if not parsed_args["_start_date"] then
       print("--start-date could not be parsed. YYYY-MM-DD format expected.")
       os.exit(1)
     end
   end
 
-  if args["end_date"] then
-    args["_end_date"] = parse_date(args["end_date"])
-    if not args["_end_date"] then
+  if parsed_args["end_date"] then
+    parsed_args["_end_date"] = parse_date(parsed_args["end_date"])
+    if not parsed_args["_end_date"] then
       print("--start-date could not be parsed. YYYY-MM-DD format expected.")
       os.exit(1)
     end
   end
 
-  return args
+  return parsed_args
 end
 
 local function elasticsearch_query(host, port, options)
@@ -101,7 +101,7 @@ local function elasticsearch_query(host, port, options)
   local res, err = httpc:request(options)
   if err then
     ngx.log(ngx.ERR, "elasticsearch query failed: " .. err)
-    return nil, body_err
+    return nil, err
   end
 
   local body, body_err = res:read_body()
@@ -119,11 +119,15 @@ local function elasticsearch_query(host, port, options)
   return response
 end
 
-local function v1_first_index_time(args)
+local function v1_first_index_time()
   local res, err = elasticsearch_query(args["input_host"], args["input_port"], {
     method = "GET",
     path = "/api-umbrella-logs-v1-*/_aliases",
   })
+  if err then
+    ngx.log(ngx.ERR, "unexpected error: " .. err)
+    return false
+  end
 
   --print(pretty.write(res))
   local months = {}
@@ -160,9 +164,13 @@ local function flush_bulk_commands()
     },
     body = table.concat(bulk_commands, "\n") .. "\n",
   })
+  if err then
+    ngx.log(ngx.ERR, "unexpected error: " .. err)
+    return false
+  end
 
   if type(res["items"]) ~= "table" then
-    ngx.log(ngx.ERR, "unexpected error: " .. (body or nil))
+    ngx.log(ngx.ERR, "unexpected error: " .. (res["items"] or nil))
     return false
   end
 
@@ -204,7 +212,7 @@ local function process_hit(hit, output_index)
   nillify_json_nulls(hit)
 
   --print(pretty.write(hit))
-  source = hit["_source"]
+  local source = hit["_source"]
   local data = {
     api_backend_id = source["api_backend_id"],
     api_backend_url_match_id = source["api_backend_url_match_id"],
@@ -414,7 +422,7 @@ end
 local function search()
   local start_date = args["_start_date"]
   if not start_date then
-    start_date = v1_first_index_time(args)
+    start_date = v1_first_index_time()
   end
 
   local end_date = args["_end_date"]
@@ -424,7 +432,7 @@ local function search()
 
   local date = start_date
   while date:timestamp() <= end_date:timestamp() do
-    next_day = date:clone()
+    local next_day = date:clone()
     next_day["day"] = next_day["day"] + 1
     next_day:normalise()
 
