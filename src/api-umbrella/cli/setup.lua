@@ -131,7 +131,7 @@ local function generate_self_signed_cert()
 
     if not path.exists(ssl_key_path) or not path.exists(ssl_crt_path) then
       dir.makepath(ssl_dir)
-      local _, _, err = run_command("openssl req -new -newkey rsa:2048 -days 3650 -nodes -x509 -subj '/C=/ST=/L=/O=API Umbrella/CN=apiumbrella.example.com' -keyout " .. ssl_key_path .. " -out " ..  ssl_crt_path)
+      local _, _, err = run_command("openssl req -new -newkey rsa:2048 -days 3650 -nodes -x509 -subj '/O=API Umbrella/CN=apiumbrella.example.com' -keyout " .. ssl_key_path .. " -out " ..  ssl_crt_path)
       if err then
         print(err)
         os.exit(1)

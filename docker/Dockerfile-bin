@@ -1,11 +1,13 @@
-FROM ubuntu:xenial
+FROM ubuntu:bionic
 
 # Copy binary file
 # It requires deb package to have been built using: make -C build/package -j4 docker_ubuntu1604 
-COPY api-umbrella_0.15.0-0.1.pre2~xenial_amd64.deb .
+COPY api-umbrella_0.15.0-0.1.pre2~bionic_amd64.deb .
 
 # Install API Umbrella
-RUN apt-get update; dpkg -i api-umbrella_0.15.0-0.1.pre2~xenial_amd64.deb; apt-get install -f -y
+RUN apt update && \
+    DEBIAN_FRONTEND=noninteractive apt install -y curl ./api-umbrella_0.15.0-0.1.pre2~bionic_amd64.deb && \
+    rm -rf /var/lib/apt/lists/*
 
 # Define mountable directories
 VOLUME ["/etc/api-umbrella", "/opt/api-umbrella/var/db", "/opt/api-umbrella/var/log"]
