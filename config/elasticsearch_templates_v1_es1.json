@@ -5,7 +5,7 @@
       "template": "api-umbrella-logs-v1-*",
       "settings": {
         "index": {
-          "number_of_shards": 1,
+          "number_of_shards": 3,
           "codec": "best_compression"
         },
         "analysis": {
@@ -27,21 +27,7 @@
           "_all": {
             "enabled": false
           },
-          "date_detection": false,
-          "numeric_detection": false,
-          "dynamic_templates": [
-            {
-              "string_template": {
-                "match": "*",
-                "match_mapping_type": "string",
-                "mapping": {
-                  "type": "string",
-                  "index": "analyzed",
-                  "analyzer": "keyword_lowercase"
-                }
-              }
-            }
-          ],
+          "dynamic": false,
           "properties": {
             "api_backend_id": {
               "type": "string",

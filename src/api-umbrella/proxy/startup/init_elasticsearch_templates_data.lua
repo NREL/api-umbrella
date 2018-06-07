@@ -1,6 +1,12 @@
 local cjson = require "cjson"
 
-local path = os.getenv("API_UMBRELLA_SRC_ROOT") .. "/config/elasticsearch_templates_v" .. config["elasticsearch"]["template_version"] .. "_es2x.json"
+local path = os.getenv("API_UMBRELLA_SRC_ROOT") .. "/config/elasticsearch_templates_v" .. config["elasticsearch"]["template_version"]
+if config["elasticsearch"]["api_version"] >= 5 then
+  path = path .. "_es5.json"
+else
+  path = path .. "_es1.json"
+end
+
 local f, err = io.open(path, "rb")
 if err then
   ngx.log(ngx.ERR, "failed to open file: ", err)

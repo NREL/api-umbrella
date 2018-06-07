@@ -101,6 +101,7 @@ class Test::Apis::Admin::Stats::TestLogs < Minitest::Test
 
   def test_query_builder_api_key_case_sensitive
     FactoryBot.create(:log_item, :request_at => Time.parse("2015-01-16T06:06:28.816Z").utc, :api_key => "AbCDeF", :request_user_agent => unique_test_id)
+    LogItem.refresh_indices!
 
     response = Typhoeus.get("https://127.0.0.1:9081/admin/stats/logs.json", http_options.deep_merge(admin_session).deep_merge({
       :params => {

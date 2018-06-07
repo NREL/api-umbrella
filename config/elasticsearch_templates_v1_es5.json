@@ -1,11 +1,11 @@
 [
   {
-    "id": "api-umbrella-log-v2-template",
+    "id": "api-umbrella-log-v1-template",
     "template": {
-      "template": "api-umbrella-logs-v2-*",
+      "template": "api-umbrella-logs-v1-*",
       "settings": {
         "index": {
-          "number_of_shards": 1,
+          "number_of_shards": 3,
           "codec": "best_compression"
         },
         "analysis": {
@@ -30,7 +30,7 @@
           "_all": {
             "enabled": false
           },
-          "dynamic": "strict",
+          "dynamic": false,
           "properties": {
             "api_backend_id": {
               "type": "keyword",
@@ -84,7 +84,8 @@
               "normalizer": "lowercase_normalizer"
             },
             "request_ip_city": {
-              "type": "keyword"
+              "type": "keyword",
+              "normalizer": "lowercase_normalizer"
             },
             "request_ip_country": {
               "type": "keyword",
@@ -117,31 +118,7 @@
             "request_size": {
               "type": "integer"
             },
-            "request_url_hierarchy_level0": {
-              "type": "keyword",
-              "normalizer": "lowercase_normalizer"
-            },
-            "request_url_hierarchy_level1": {
-              "type": "keyword",
-              "normalizer": "lowercase_normalizer"
-            },
-            "request_url_hierarchy_level2": {
-              "type": "keyword",
-              "normalizer": "lowercase_normalizer"
-            },
-            "request_url_hierarchy_level3": {
-              "type": "keyword",
-              "normalizer": "lowercase_normalizer"
-            },
-            "request_url_hierarchy_level4": {
-              "type": "keyword",
-              "normalizer": "lowercase_normalizer"
-            },
-            "request_url_hierarchy_level5": {
-              "type": "keyword",
-              "normalizer": "lowercase_normalizer"
-            },
-            "request_url_hierarchy_level6": {
+            "request_url": {
               "type": "keyword",
               "normalizer": "lowercase_normalizer"
             },

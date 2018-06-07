@@ -1,8 +1,8 @@
 [
   {
-    "id": "api-umbrella-log-v1-template",
+    "id": "api-umbrella-log-v2-template",
     "template": {
-      "template": "api-umbrella-logs-v1-*",
+      "template": "api-umbrella-logs-v2-*",
       "settings": {
         "index": {
           "number_of_shards": 1,
@@ -30,7 +30,7 @@
           "_all": {
             "enabled": false
           },
-          "dynamic": false,
+          "dynamic": "strict",
           "properties": {
             "api_backend_id": {
               "type": "keyword",
@@ -118,7 +118,31 @@
             "request_size": {
               "type": "integer"
             },
-            "request_url": {
+            "request_url_hierarchy_level0": {
+              "type": "keyword",
+              "normalizer": "lowercase_normalizer"
+            },
+            "request_url_hierarchy_level1": {
+              "type": "keyword",
+              "normalizer": "lowercase_normalizer"
+            },
+            "request_url_hierarchy_level2": {
+              "type": "keyword",
+              "normalizer": "lowercase_normalizer"
+            },
+            "request_url_hierarchy_level3": {
+              "type": "keyword",
+              "normalizer": "lowercase_normalizer"
+            },
+            "request_url_hierarchy_level4": {
+              "type": "keyword",
+              "normalizer": "lowercase_normalizer"
+            },
+            "request_url_hierarchy_level5": {
+              "type": "keyword",
+              "normalizer": "lowercase_normalizer"
+            },
+            "request_url_hierarchy_level6": {
               "type": "keyword",
               "normalizer": "lowercase_normalizer"
             },
