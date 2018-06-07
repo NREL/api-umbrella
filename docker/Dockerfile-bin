@@ -13,7 +13,7 @@ RUN apt update && \
 VOLUME ["/etc/api-umbrella", "/opt/api-umbrella/var/db", "/opt/api-umbrella/var/log"]
 
 # Expose HTTP and HTTPS ports
-EXPOSE 8888 8443
+EXPOSE 80 443
 
 # Run the API Umbrella service
 CMD ["api-umbrella", "run"]
