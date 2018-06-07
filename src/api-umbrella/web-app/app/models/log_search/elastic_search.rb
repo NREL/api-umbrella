@@ -372,23 +372,6 @@ class LogSearch::ElasticSearch < LogSearch::Base
     end
   end
 
-  def aggregate_by_region!
-    case(@region)
-    when "world"
-      aggregate_by_country!
-    when "US"
-      @country = @region
-      aggregate_by_country_regions!(@region)
-    when /^(US)-([A-Z]{2})$/
-      @country = Regexp.last_match[1]
-      @state = Regexp.last_match[2]
-      aggregate_by_us_state_cities!(@country, @state)
-    else
-      @country = @region
-      aggregate_by_country_cities!(@region)
-    end
-  end
-
   def aggregate_by_region_field!(field)
     @query[:aggregations][:regions] = {
       :terms => {
