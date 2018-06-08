@@ -18,7 +18,7 @@ class Api::V1::AnalyticsController < Api::V1::BaseController
     @search.query!(params[:query])
     @search.filter_by_date_range!
 
-    drilldown_size = if(request.format == "csv") then 0 else 500 end
+    drilldown_size = if(request.format == "csv") then nil else 500 end
     @search.aggregate_by_drilldown!(params[:prefix], drilldown_size)
 
     if(request.format != "csv")

@@ -33,7 +33,7 @@ class LogSearch::ElasticSearch < LogSearch::Base
 
     @query_options = {
       :size => 0,
-      :ignore_unavailable => "missing",
+      :ignore_unavailable => true,
       :allow_no_indices => true,
     }
 
@@ -101,7 +101,7 @@ class LogSearch::ElasticSearch < LogSearch::Base
 
   def search!(query_string)
     if(query_string.present?)
-      @query[:query][:bool][:query] = {
+      @query[:query][:bool][:filter][:bool][:must] << {
         :query_string => {
           :query => query_string,
         },
@@ -292,7 +292,8 @@ class LogSearch::ElasticSearch < LogSearch::Base
     }
   end
 
-  def aggregate_by_drilldown!(prefix, size = 1_000_000)
+  def aggregate_by_drilldown!(prefix, size = nil)
+    size ||= 1_000_000
     @query[:aggregations][:drilldown] = {
       :terms => {
         :field => "request_hierarchy",

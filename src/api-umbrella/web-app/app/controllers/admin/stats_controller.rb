@@ -63,8 +63,8 @@ class Admin::StatsController < Admin::BaseController
     end
 
     if(request.format == "csv")
-      @search.query_options[:search_type] = "scan"
       @search.query_options[:scroll] = "10m"
+      @search.query_options[:sort] = ["_doc"]
     end
 
     @result = @search.result

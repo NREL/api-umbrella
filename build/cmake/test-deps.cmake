@@ -1,3 +1,5 @@
+include(${CMAKE_SOURCE_DIR}/build/cmake/test-deps/elasticsearch5.cmake)
+include(${CMAKE_SOURCE_DIR}/build/cmake/test-deps/elasticsearch6.cmake)
 include(${CMAKE_SOURCE_DIR}/build/cmake/test-deps/luacheck.cmake)
 include(${CMAKE_SOURCE_DIR}/build/cmake/test-deps/mailhog.cmake)
 include(${CMAKE_SOURCE_DIR}/build/cmake/test-deps/mongo-orchestration.cmake)
@@ -7,6 +9,8 @@ include(${CMAKE_SOURCE_DIR}/build/cmake/test-deps/shellcheck.cmake)
 include(${CMAKE_SOURCE_DIR}/build/cmake/test-deps/unbound.cmake)
 
 add_custom_target(test-deps DEPENDS
+  elasticsearch5
+  elasticsearch6
   luacheck
   mailhog
   mongo-orchestration
