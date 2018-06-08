@@ -128,7 +128,7 @@ elif [ -f /etc/debian_version ]; then
     openjdk_version=8
   elif [[ "$ID" == "ubuntu" && "$VERSION_ID" == "18.04" ]]; then
     openjdk_version=8
-    echo "Europe/Madrid" > /etc/timezone
+    export DEBIAN_FRONTEND=noninteractive
   fi
 
   core_package_dependencies=(
