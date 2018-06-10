@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+
+ruby_version="2.4.4"
+ruby_hash="45a8de577471b90dc4838c5ef26aeb253a56002896189055a44dc680644243f1"
+
+set -e -u -x
+source ./tasks/helpers.sh
+
+task_working_dir
+download "https://cache.ruby-lang.org/pub/ruby/ruby-$ruby_version.tar.bz2" "sha256" "$ruby_hash"
+extract_download "ruby-$ruby_version.tar.bz2"
+
+cd "ruby-$ruby_version"
+./configure \
+  --prefix="$INSTALL_PREFIX_EMBEDDED" \
+  --enable-load-relative \
+  --disable-rpath \
+  --disable-install-doc
+make
+make install DESTDIR="$STAGE_DIR"

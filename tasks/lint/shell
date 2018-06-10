@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+set -e -u
+
+files=($(git grep -El "^#\!(/bin/sh|/bin/bash|/usr/bin/env sh|/usr/bin/env sh)" || true))
+if [ -n "${files:-}" ]; then
+  echo "Use '/usr/bin/env bash' shebang for following files:"
+  printf '  %s\n' "${files[@]}"
+  exit 1
+fi
+
+files=($(git grep -El "^#\!/usr/bin/env bash"))
+set -x
+build/work/test-env/bin/shellcheck "${files[@]}"

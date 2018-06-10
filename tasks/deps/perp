@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+perp_version="2.07"
+perp_hash="a2acc7425d556d9635a25addcee9edb5"
+
+set -e -u -x
+source ./tasks/helpers.sh
+
+task_working_dir
+download "http://b0llix.net/perp/distfiles/perp-$perp_version.tar.gz" "md5" "$perp_hash"
+extract_download "perp-$perp_version.tar.gz"
+
+cd "perp-$perp_version"
+make
+make strip
+make install DESTDIR="$STAGE_DIR"

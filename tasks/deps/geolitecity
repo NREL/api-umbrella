@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+set -e -u
+source ./tasks/helpers.sh
+
+# If the file exists and was created within the past day, then skip doing
+# anything else. This approach ensures that new files are downloaded, but only
+# once per day.
+if [[ $(find "$STAGE_EMBEDDED_DIR/var/db/geoip/city-v6.dat" -mmin -1440) ]]; then
+  exit 0
+fi
+
+set -x
+
+task_working_dir
+curl --location --retry 3 --fail --remote-name https://geolite.maxmind.com/download/geoip/database/GeoLiteCityv6-beta/GeoLiteCityv6.dat.gz
+gunzip -c GeoLiteCityv6.dat.gz > GeoLiteCityv6.dat
+install -D -m 644 ./GeoLiteCityv6.dat "$STAGE_EMBEDDED_DIR/var/db/geoip/city-v6.dat"

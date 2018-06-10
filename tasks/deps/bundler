@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+bundler_version="1.16.2"
+
+set -e -u -x
+source ./tasks/helpers.sh
+
+PATH=$STAGE_EMBEDDED_PATH gem install bundler --version $bundler_version --no-document --env-shebang --force

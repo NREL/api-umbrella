@@ -1,0 +1,389 @@
+version: "2"
+
+output: prefixed
+
+tasks:
+  deps:bundler:
+    deps:
+      - deps:rubygems
+    cmds:
+      - ./tasks/deps/bundler
+    sources:
+      - ./tasks/deps/bundler
+      - ./tasks/deps/ruby
+      - ./tasks/deps/rubygems
+      - ./tasks/helpers.sh
+    method: checksum
+
+  deps:elasticsearch:
+    cmds:
+      - ./tasks/deps/elasticsearch
+    sources:
+      - ./tasks/deps/elasticsearch
+      - ./tasks/helpers.sh
+    method: checksum
+
+  deps:geolitecity:
+    cmds:
+      - ./tasks/deps/geolitecity
+    sources:
+      - ./tasks/deps/geolitecity
+      - ./tasks/helpers.sh
+    method: none
+
+  deps:golang:
+    cmds:
+      - ./tasks/deps/golang
+    sources:
+      - ./tasks/deps/golang
+      - ./tasks/helpers.sh
+    method: checksum
+
+  deps:libcidr:
+    cmds:
+      - ./tasks/deps/libcidr
+    sources:
+      - ./tasks/deps/libcidr
+      - ./tasks/helpers.sh
+    method: checksum
+
+  deps:libestr:
+    cmds:
+      - ./tasks/deps/libestr
+    sources:
+      - ./tasks/deps/libestr
+      - ./tasks/helpers.sh
+    method: checksum
+
+  deps:libfastjson:
+    cmds:
+      - ./tasks/deps/libfastjson
+    sources:
+      - ./tasks/deps/libfastjson
+      - ./tasks/helpers.sh
+    method: checksum
+
+  deps:libgeoip:
+    cmds:
+      - ./tasks/deps/libgeoip
+    sources:
+      - ./tasks/deps/libgeoip
+      - ./tasks/helpers.sh
+    method: checksum
+
+  deps:luarocks:
+    deps:
+      - deps:openresty
+    cmds:
+      - ./tasks/deps/luarocks
+    sources:
+      - ./tasks/deps/luarocks
+      - ./tasks/deps/openresty
+      - ./tasks/helpers.sh
+    method: checksum
+
+  deps:mongodb:
+    cmds:
+      - ./tasks/deps/mongodb
+    sources:
+      - ./tasks/deps/mongodb
+      - ./tasks/helpers.sh
+    method: checksum
+
+  deps:mora:
+    deps:
+      - deps:golang
+    cmds:
+      - ./tasks/deps/mora
+    sources:
+      - ./tasks/deps/golang
+      - ./tasks/deps/mora
+      - ./tasks/helpers.sh
+    method: checksum
+
+  deps:openresty:
+    deps:
+      - deps:libgeoip
+    cmds:
+      - ./tasks/deps/openresty
+    sources:
+      - ./tasks/deps/openresty
+      - ./tasks/helpers.sh
+    method: checksum
+
+  deps:perp:
+    cmds:
+      - ./tasks/deps/perp
+    sources:
+      - ./tasks/deps/perp
+      - ./tasks/helpers.sh
+    method: checksum
+
+  deps:rsyslog:
+    deps:
+      - deps:libestr
+      - deps:libfastjson
+    cmds:
+      - ./tasks/deps/rsyslog
+    sources:
+      - ./tasks/deps/libestr
+      - ./tasks/deps/libfastjson
+      - ./tasks/deps/rsyslog
+      - ./tasks/helpers.sh
+    method: checksum
+
+  deps:ruby:
+    cmds:
+      - ./tasks/deps/ruby
+    sources:
+      - ./tasks/deps/ruby
+      - ./tasks/helpers.sh
+    method: checksum
+
+  deps:runit_svlogd:
+    cmds:
+      - ./tasks/deps/runit_svlogd
+    sources:
+      - ./tasks/deps/runit_svlogd
+      - ./tasks/helpers.sh
+    method: checksum
+
+  deps:rubygems:
+    deps:
+      - deps:ruby
+    cmds:
+      - ./tasks/deps/rubygems
+    sources:
+      - ./tasks/deps/ruby
+      - ./tasks/deps/rubygems
+      - ./tasks/helpers.sh
+    method: checksum
+
+  deps:trafficserver:
+    cmds:
+      - ./tasks/deps/trafficserver
+    sources:
+      - ./tasks/deps/trafficserver
+      - ./tasks/helpers.sh
+    method: checksum
+
+  deps:
+    cmds:
+      - task: deps:bundler
+      - task: deps:elasticsearch
+      - task: deps:geolitecity
+      - task: deps:libcidr
+      - task: deps:luarocks
+      - task: deps:mongodb
+      - task: deps:mora
+      - task: deps:openresty
+      - task: deps:perp
+      - task: deps:rsyslog
+      - task: deps:runit_svlogd
+      - task: deps:trafficserver
+
+  build-deps:nodejs:
+    cmds:
+      - ./tasks/build-deps/nodejs
+    sources:
+      - ./tasks/build-deps/nodejs
+      - ./tasks/helpers.sh
+    method: checksum
+
+  build-deps:yarn:
+    deps:
+      - build-deps:nodejs
+    cmds:
+      - ./tasks/build-deps/yarn
+    sources:
+      - ./tasks/build-deps/nodejs
+      - ./tasks/build-deps/yarn
+      - ./tasks/helpers.sh
+    method: checksum
+
+  build-deps:
+    cmds:
+      - task: build-deps:yarn
+
+  app-deps:lua:argparse:
+    deps:
+      - deps:luarocks
+    cmds:
+      - ./tasks/app-deps/lua/argparse
+    sources:
+      - ./tasks/app-deps/lua/argparse
+      - ./tasks/deps/luarocks
+      - ./tasks/deps/openresty
+      - ./tasks/helpers.sh
+    method: checksum
+
+  app-deps:lua:cmsgpack:
+    deps:
+      - deps:luarocks
+    cmds:
+      - ./tasks/app-deps/lua/cmsgpack
+    sources:
+      - ./tasks/app-deps/lua/cmsgpack
+      - ./tasks/deps/luarocks
+      - ./tasks/deps/openresty
+      - ./tasks/helpers.sh
+    method: checksum
+
+  app-deps:lua:iconv:
+    deps:
+      - deps:luarocks
+    cmds:
+      - ./tasks/app-deps/lua/iconv
+    sources:
+      - ./tasks/app-deps/lua/iconv
+      - ./tasks/deps/luarocks
+      - ./tasks/deps/openresty
+      - ./tasks/helpers.sh
+    method: checksum
+
+  app-deps:lua:inspect:
+    deps:
+      - deps:luarocks
+    cmds:
+      - ./tasks/app-deps/lua/inspect
+    sources:
+      - ./tasks/app-deps/lua/inspect
+      - ./tasks/deps/luarocks
+      - ./tasks/deps/openresty
+      - ./tasks/helpers.sh
+    method: checksum
+
+  app-deps:lua:luaposix:
+    deps:
+      - deps:luarocks
+    cmds:
+      - ./tasks/app-deps/lua/luaposix
+    sources:
+      - ./tasks/app-deps/lua/luaposix
+      - ./tasks/deps/luarocks
+      - ./tasks/deps/openresty
+      - ./tasks/helpers.sh
+    method: checksum
+
+  app-deps:lua:luasocket:
+    deps:
+      - deps:luarocks
+    cmds:
+      - ./tasks/app-deps/lua/luasocket
+    sources:
+      - ./tasks/app-deps/lua/luasocket
+      - ./tasks/deps/luarocks
+      - ./tasks/deps/openresty
+      - ./tasks/helpers.sh
+    method: checksum
+
+  app-deps:lua:lustache:
+    deps:
+      - deps:luarocks
+    cmds:
+      - ./tasks/app-deps/lua/lustache
+    sources:
+      - ./tasks/app-deps/lua/lustache
+      - ./tasks/deps/luarocks
+      - ./tasks/deps/openresty
+      - ./tasks/helpers.sh
+    method: checksum
+
+  app-deps:lua:lyaml:
+    deps:
+      - deps:luarocks
+    cmds:
+      - ./tasks/app-deps/lua/lyaml
+    sources:
+      - ./tasks/app-deps/lua/lyaml
+      - ./tasks/deps/luarocks
+      - ./tasks/deps/openresty
+      - ./tasks/helpers.sh
+    method: checksum
+
+  app-deps:lua:penlight:
+    deps:
+      - deps:luarocks
+    cmds:
+      - ./tasks/app-deps/lua/penlight
+    sources:
+      - ./tasks/app-deps/lua/penlight
+      - ./tasks/deps/luarocks
+      - ./tasks/deps/openresty
+      - ./tasks/helpers.sh
+    method: checksum
+
+  app-deps:lua:resty-logger-socket:
+    deps:
+      - deps:luarocks
+    cmds:
+      - ./tasks/app-deps/lua/resty-logger-socket
+    sources:
+      - ./tasks/app-deps/lua/resty-logger-socket
+      - ./tasks/deps/luarocks
+      - ./tasks/deps/openresty
+      - ./tasks/helpers.sh
+    method: checksum
+
+  app-deps:lua:resty-shcache:
+    deps:
+      - deps:luarocks
+    cmds:
+      - ./tasks/app-deps/lua/resty-shcache
+    sources:
+      - ./tasks/app-deps/lua/resty-shcache
+      - ./tasks/deps/luarocks
+      - ./tasks/deps/openresty
+      - ./tasks/helpers.sh
+    method: checksum
+
+  app-deps:lua:resty-uuid:
+    deps:
+      - deps:luarocks
+    cmds:
+      - ./tasks/app-deps/lua/resty-uuid
+    sources:
+      - ./tasks/app-deps/lua/resty-uuid
+      - ./tasks/deps/luarocks
+      - ./tasks/deps/openresty
+      - ./tasks/helpers.sh
+    method: checksum
+
+  app-deps:
+    cmds:
+      - task: app-deps:lua:argparse
+      - task: app-deps:lua:cmsgpack
+      - task: app-deps:lua:iconv
+      - task: app-deps:lua:inspect
+      - task: app-deps:lua:luaposix
+      - task: app-deps:lua:luasocket
+      - task: app-deps:lua:lustache
+      - task: app-deps:lua:lyaml
+      - task: app-deps:lua:penlight
+      - task: app-deps:lua:resty-logger-socket
+      - task: app-deps:lua:resty-shcache
+      - task: app-deps:lua:resty-uuid
+
+  lint:js:
+    dir: ./src/api-umbrella/admin-ui
+    cmds:
+      - yarn run lint:js
+
+  lint:lua:
+    cmds:
+      - build/work/test-env/vendor/bin/luacheck $(git ls-files | grep '\.lua$')
+
+  lint:ruby:
+    cmds:
+      - bundle exec rubocop $(git ls-files | grep -E '(Rakefile|\.(rb|rake))$')
+
+  lint:shell:
+    cmds:
+      - ./tasks/lint/shell
+
+  lint:
+    cmds:
+      - task: lint:js
+      - task: lint:lua
+      - task: lint:ruby
+      - task: lint:shell

@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+libestr_version="0.1.10"
+libestr_hash="bd655e126e750edd18544b88eb1568d200a424a0c23f665eb14bbece07ac703c"
+
+set -e -u -x
+source ./tasks/helpers.sh
+
+task_working_dir
+download "http://libestr.adiscon.com/files/download/libestr-$libestr_version.tar.gz" "sha256" "$libestr_hash"
+extract_download "libestr-$libestr_version.tar.gz"
+
+cd "libestr-$libestr_version"
+./configure --prefix="$INSTALL_PREFIX_EMBEDDED"
+make
+make install DESTDIR="$STAGE_DIR"

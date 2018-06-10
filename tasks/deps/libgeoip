@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+libgeoip_version="1.6.12"
+libgeoip_hash="77d496cc40daa1dbc2b97365807d64d7"
+
+set -e -u -x
+source ./tasks/helpers.sh
+
+task_working_dir
+download "https://github.com/maxmind/geoip-api-c/releases/download/v$libgeoip_version/GeoIP-$libgeoip_version.tar.gz" "md5" "$libgeoip_hash"
+extract_download "GeoIP-$libgeoip_version.tar.gz"
+
+cd "GeoIP-$libgeoip_version"
+./configure --prefix="$INSTALL_PREFIX_EMBEDDED"
+make
+make install DESTDIR="$STAGE_DIR"

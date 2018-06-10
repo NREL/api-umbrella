@@ -17,17 +17,11 @@
 # Ignore bundler config
 /.bundle
 
-# Ignore Circle CI items, so the GitHub pages publish task can work. 
+# Ignore Circle CI items, so the GitHub pages publish task can work.
 /.ruby-version
 
-# CMake
-/CMakeCache.txt
-/CMakeFiles
-/Makefile
-/cmake_install.cmake
-/install_manifest.txt
-/install_manifest_core.txt
-/install_manifest_hadoop-analytics.txt
+# Build task checksums
+/.task
 
 /build/work
 /build/package/work
