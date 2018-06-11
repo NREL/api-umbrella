@@ -2,8 +2,5 @@
 
 set -e -u -x
 
-(cd /build && env PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" make)
-
-chmod 1777 /app/src/api-umbrella/admin-ui/tmp
-
+make
 api-umbrella run

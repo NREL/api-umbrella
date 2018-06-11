@@ -28,3 +28,5 @@ make
 make install DESTDIR="$STAGE_DIR"
 chrpath -d "$STAGE_EMBEDDED_DIR/sbin/rsyslogd"
 find "$STAGE_EMBEDDED_DIR/lib/rsyslog/" -name "*.so" -exec chrpath -d {} \;
+
+stamp

@@ -16,3 +16,5 @@ task_working_dir
 curl --location --retry 3 --fail --remote-name https://geolite.maxmind.com/download/geoip/database/GeoLiteCityv6-beta/GeoLiteCityv6.dat.gz
 gunzip -c GeoLiteCityv6.dat.gz > GeoLiteCityv6.dat
 install -D -m 644 ./GeoLiteCityv6.dat "$STAGE_EMBEDDED_DIR/var/db/geoip/city-v6.dat"
+
+stamp

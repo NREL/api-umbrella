@@ -19,3 +19,5 @@ make install DESTDIR="$STAGE_DIR"
 chrpath -d "$STAGE_EMBEDDED_DIR/lib/libtsmgmt.so"
 find "$STAGE_EMBEDDED_DIR/libexec/trafficserver/" -name "*.so" -exec chrpath -d {} \;
 find "$STAGE_EMBEDDED_DIR/bin/" -name "traffic_*" -exec chrpath -d {} \;
+
+stamp

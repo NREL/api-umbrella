@@ -53,3 +53,5 @@ chrpath -d "$STAGE_EMBEDDED_DIR/openresty/nginx/sbin/nginx"
 )
 mkdir -p "$STAGE_EMBEDDED_DIR/sbin"
 (cd "$STAGE_EMBEDDED_DIR/sbin" && ln -snf ../openresty/nginx/sbin/nginx ./nginx)
+
+stamp

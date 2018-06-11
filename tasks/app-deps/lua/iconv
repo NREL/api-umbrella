@@ -6,3 +6,5 @@ set -e -u -x
 source ./tasks/helpers.sh
 
 luarocks_install "lua-iconv" "$lua_iconv_version"
+
+stamp

@@ -6,3 +6,5 @@ set -e -u -x
 source ./tasks/helpers.sh
 
 luarocks_install "argparse" "$lua_argparse_version"
+
+stamp

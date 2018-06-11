@@ -6,3 +6,5 @@ set -e -u -x
 source ./tasks/helpers.sh
 
 luarocks_install "lyaml" "$lua_lyaml_version"
+
+stamp

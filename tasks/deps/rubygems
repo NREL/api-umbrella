@@ -6,3 +6,5 @@ set -e -u -x
 source ./tasks/helpers.sh
 
 PATH=$STAGE_EMBEDDED_PATH gem update --system $rubygems_version --no-document --env-shebang
+
+stamp

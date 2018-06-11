@@ -15,3 +15,5 @@ cd "$DEV_INSTALL_PREFIX/bin" && ln -snf ../yarn/bin/yarn ./yarn
 
 # Remove the previous bin symlink that was necessary.
 rm -f "$DEV_INSTALL_PREFIX/bin/yarn.js"
+
+stamp

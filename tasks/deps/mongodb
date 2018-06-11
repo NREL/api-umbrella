@@ -21,3 +21,5 @@ rm -f "$STAGE_EMBEDDED_DIR/bin/bsondump" \
   "$STAGE_EMBEDDED_DIR/bin/mongooplog" \
   "$STAGE_EMBEDDED_DIR/bin/mongoperf" \
   "$STAGE_EMBEDDED_DIR/bin/mongos"
+
+stamp

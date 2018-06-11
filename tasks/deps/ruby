@@ -18,3 +18,5 @@ cd "ruby-$ruby_version"
   --disable-install-doc
 make
 make install DESTDIR="$STAGE_DIR"
+
+stamp

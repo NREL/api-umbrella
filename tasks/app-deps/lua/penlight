@@ -6,3 +6,5 @@ set -e -u -x
 source ./tasks/helpers.sh
 
 luarocks_install "penlight" "$lua_penlight_version"
+
+stamp

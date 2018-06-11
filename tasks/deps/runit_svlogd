@@ -13,3 +13,5 @@ extract_download "runit-$runit_version.tar.gz"
 cd "admin/runit-$runit_version/src"
 make svlogd
 install -D -m 755 svlogd "$STAGE_EMBEDDED_DIR/bin/svlogd"
+
+stamp

@@ -14,3 +14,5 @@ cd "GeoIP-$libgeoip_version"
 ./configure --prefix="$INSTALL_PREFIX_EMBEDDED"
 make
 make install DESTDIR="$STAGE_DIR"
+
+stamp

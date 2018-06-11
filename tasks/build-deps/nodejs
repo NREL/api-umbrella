@@ -11,3 +11,5 @@ download "https://nodejs.org/dist/v$nodejs_version/node-v$nodejs_version-linux-x
 extract_download "node-v$nodejs_version-linux-x64.tar.xz"
 
 rsync -a -v "node-v$nodejs_version-linux-x64/" "$DEV_INSTALL_PREFIX/"
+
+stamp

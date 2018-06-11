@@ -10,4 +10,6 @@ task_working_dir
 download "https://github.com/cloudflare/lua-resty-logger-socket/archive/$lua_resty_logger_socket_version.tar.gz" "md5" "$lua_resty_logger_socket_hash"
 extract_download "$lua_resty_logger_socket_version.tar.gz"
 
-install -D -m 644 "lua-resty-logger-socket-$lua_resty_logger_socket_version/lib/resty/logger/socket.lua" "$VENDOR_LUA_DIR/resty/logger/socket.lua"
+install -D -m 644 "lua-resty-logger-socket-$lua_resty_logger_socket_version/lib/resty/logger/socket.lua" "$APP_CORE_VENDOR_LUA_SHARE_DIR/resty/logger/socket.lua"
+
+stamp

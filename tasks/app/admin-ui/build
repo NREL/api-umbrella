@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+
+set -e -u -x
+source ./tasks/helpers.sh
+
+task_working_dir
+
+rsync -a -v \
+  --delete \
+  --delete-excluded \
+  --filter=":- $SOURCE_DIR/src/api-umbrella/admin-ui/.gitignore" \
+  "$SOURCE_DIR/src/api-umbrella/admin-ui/" \
+  ./
+
+node_modules_dir="$WORK_DIR/tasks/app-deps/admin-ui/yarn/_persist/node_modules"
+ln -s "$node_modules_dir" ./node_modules
+PATH="$DEV_INSTALL_PREFIX/bin:$DEFAULT_PATH" ./node_modules/.bin/ember build \
+  --environment=production \
+  --output-path=./dist
+
+stamp

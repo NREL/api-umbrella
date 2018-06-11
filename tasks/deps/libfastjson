@@ -15,3 +15,5 @@ sh autogen.sh
 ./configure --prefix="$INSTALL_PREFIX_EMBEDDED"
 make
 make install DESTDIR="$STAGE_DIR"
+
+stamp

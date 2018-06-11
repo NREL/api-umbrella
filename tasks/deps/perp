@@ -14,3 +14,5 @@ cd "perp-$perp_version"
 make
 make strip
 make install DESTDIR="$STAGE_DIR"
+
+stamp

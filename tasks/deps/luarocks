@@ -19,8 +19,5 @@ cd "luarocks-$luarocks_version"
 make build
 make install DESTDIR="$STAGE_DIR"
 (cd "$STAGE_EMBEDDED_DIR/bin" && ln -snf ../openresty/luajit/bin/luarocks ./luarocks)
-rm -rf \
-  "$VENDOR_DIR/share/lua" \
-  "$VENDOR_DIR/lib/luarocks" \
-  "$TEST_VENDOR_DIR/share/lua" \
-  "$TEST_VENDOR_DIR/lib/luarocks"
+
+stamp

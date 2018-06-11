@@ -14,16 +14,16 @@ jobs:
           # cache for this branch will be restored.
           key: cache-build-deps-{{ .Environment.CACHE_VERSION }}-{{ .Branch }}-{{ arch }}-
       # Build all the API Umbrella software dependencies.
-      - run: ./configure
       - run: make all test-deps test-bundle
+      # Remove the build working directories before storing the cache. This
+      # speeds up the caching process and removes unnecessary and large
+      # intermediate build files.
+      - run: rm -rf build/work/tasks
       - save_cache:
           key: cache-build-deps-{{ .Environment.CACHE_VERSION }}-{{ .Branch }}-{{ arch }}-{{ epoch }}
           paths:
+            - .task
             - build/work
-            - CMakeCache.txt
-            - CMakeFiles
-            - Makefile
-            - cmake_install.cmake
       - type: shell
         command: |
           groupadd -r api-umbrella
