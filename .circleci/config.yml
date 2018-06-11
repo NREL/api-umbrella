@@ -14,7 +14,7 @@ jobs:
           # cache for this branch will be restored.
           key: cache-build-deps-{{ .Environment.CACHE_VERSION }}-{{ .Branch }}-{{ arch }}-
       # Build all the API Umbrella software dependencies.
-      - run: make all test-deps test-bundle
+      - run: make all test-deps
       # Remove the build working directories before storing the cache. This
       # speeds up the caching process and removes unnecessary and large
       # intermediate build files.

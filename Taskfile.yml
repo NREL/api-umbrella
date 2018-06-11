@@ -544,7 +544,7 @@ tasks:
 
   app:web-app:precompile:
     deps:
-      - app:web-app:bundle
+      - app-deps:web-app:bundle
     cmds:
       - ./tasks/app/web-app/precompile
     sources:

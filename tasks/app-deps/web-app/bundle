@@ -21,6 +21,7 @@ bundle install
 
 # Make a copy of the gems in the release directory for production purposes, and
 # then remove all non-production gems.
+mkdir -p "$APP_CORE_VENDOR_BUNDLE_DIR"
 rsync -a --delete ./bundle/ "$APP_CORE_VENDOR_BUNDLE_DIR/"
 rsync -a -v --delete ./.bundle/ ./.bundle-prod/
 export BUNDLE_APP_CONFIG="$(pwd)/.bundle-prod"

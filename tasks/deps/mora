@@ -11,7 +11,7 @@ download "https://github.com/emicklei/mora/archive/$mora_version.tar.gz" "md5" "
 gopath="$(pwd)/gocode"
 mora_dir="$gopath/src/github.com/emicklei/mora"
 mkdir -p "$mora_dir"
-tar -xf "downloads/$mora_version.tar.gz" -C "$mora_dir" --strip-components 1
+tar -xf "_persist/downloads/$mora_version.tar.gz" -C "$mora_dir" --strip-components 1
 
 golang_source_dir="$WORK_DIR/tasks/deps/golang/go"
 (cd "$mora_dir" && PATH="$golang_source_dir/bin:$DEFAULT_PATH" GOPATH="$gopath" GOROOT="$golang_source_dir" go install)
