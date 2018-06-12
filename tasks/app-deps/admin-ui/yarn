@@ -17,4 +17,9 @@ cp "$SOURCE_DIR/src/api-umbrella/admin-ui/package.json" ./
 cp "$SOURCE_DIR/src/api-umbrella/admin-ui/yarn.lock" ./
 PATH="$DEV_PATH" yarn install --frozen-lockfile
 
+# Remove some unnecessary and large files that are shipped in a couple of the
+# Ember npm packages (I think usually by accident). This just helps slim down
+# the size of node_modules a bit.
+rm -rf ./node_modules/*/.node_modules.ember-try
+
 stamp
