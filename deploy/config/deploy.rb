@@ -10,7 +10,7 @@ set :application, "api-umbrella"
 # repo out directly on the server). This allows for the deployments to work
 # from custom forks without having to update the URL.
 set :scm, :rsync
-set :repo_url, "file://#{File.expand_path("../../../", __FILE__)}"
+set :repo_url, "file://#{File.expand_path('../..', __dir__)}"
 
 # Default branch is :master
 # ask :branch, `git rev-parse --abbrev-ref HEAD`.chomp

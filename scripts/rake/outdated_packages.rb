@@ -1,6 +1,7 @@
 require "json"
-require "open-uri"
+require "net/http"
 require "rainbow"
+require "uri"
 
 class OutdatedPackages
   REPOS = {
@@ -158,10 +159,10 @@ class OutdatedPackages
     "yarn" => {
       :git => "https://github.com/yarnpkg/yarn.git",
     },
-  }
+  }.freeze
 
   def luarocks_manifest
-    @luarocks_manifest ||= JSON.load(open("https://luarocks.org/manifest.json"))
+    @luarocks_manifest ||= JSON.parse(Net::HTTP.get_response(URI.parse("https://luarocks.org/manifest.json")).body)
   end
 
   def luarock_version_to_semver(version)
@@ -177,7 +178,7 @@ class OutdatedPackages
 
     # Remove prefixes containing the project name.
     tag.gsub!(/^#{name}[\-_]/i, "")
-    tag.gsub!(/^#{name.gsub("_", "-")}[\-_]/i, "")
+    tag.gsub!(/^#{name.tr("_", "-")}[\-_]/i, "")
 
     # Remove trailing "^{}" at end of git tags.
     tag.chomp!("^{}")
@@ -196,9 +197,9 @@ class OutdatedPackages
       tag.gsub!(/-\d{8}$/, "")
     when "openldap"
       tag.gsub!(/^rel_eng_/, "")
-      tag.gsub!(/_/, ".")
+      tag.tr!(/_/, ".")
     when "openssl", "ruby"
-      tag.gsub!(/_/, ".")
+      tag.tr!(/_/, ".")
     end
 
     tag
@@ -251,9 +252,9 @@ class OutdatedPackages
           puts "#{name}: Could not parse latest commit: git ls-remote #{options[:git]} #{options[:git_ref]}"
         end
 
-        versions[name][:current_version] = current_commit[0,7]
-        versions[name][:latest_version] = latest_commit[0,7]
-        versions[name][:wanted_version] = latest_commit[0,7]
+        versions[name][:current_version] = current_commit[0, 7]
+        versions[name][:latest_version] = latest_commit[0, 7]
+        versions[name][:wanted_version] = latest_commit[0, 7]
       elsif(options[:git])
         tags = `git ls-remote --tags #{options[:git]}`.lines
         tags.map! { |tag| tag_to_semver(name, tag.match(%r{refs/tags/(.+)$})[1]) }
@@ -264,7 +265,7 @@ class OutdatedPackages
         tags = luarocks_manifest["repository"][options[:luarock]].keys
         tags.map! { |tag| luarock_version_to_semver(tag) }
       elsif(options[:http])
-        content = open(options[:http]).read
+        content = Net::HTTP.get_response(URI.parse(options[:http])).body
         tags = content.scan(/#{name}-[\d\.]+.tar/)
         tags.map! { |f| tag_to_semver(name, File.basename(f, ".tar")) }
       end
@@ -299,7 +300,7 @@ class OutdatedPackages
                 versions[name][:wanted_version] = available_version
               end
             end
-          rescue ArgumentError => e
+          rescue ArgumentError
             unparsable_tags << tag
           end
         end
@@ -347,4 +348,3 @@ class OutdatedPackages
     end
   end
 end
-
