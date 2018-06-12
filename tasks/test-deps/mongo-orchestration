@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+mongo_orchestration_version="0.6.11"
+
+set -e -u -x
+source ./tasks/helpers.sh
+
+task_working_dir
+
+virtualenv ./venv
+./venv/bin/pip install --ignore-installed "mongo-orchestration==$mongo_orchestration_version"
+ln -snf "$(pwd)/venv/bin/mongo-orchestration" "$TEST_INSTALL_PREFIX/bin/mongo-orchestration"
+
+stamp

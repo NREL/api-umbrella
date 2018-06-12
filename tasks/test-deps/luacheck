@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+lua_luacheck_version="0.22.0-1"
+
+set -e -u -x
+source ./tasks/helpers.sh
+
+test_luarocks_install "luacheck" "$lua_luacheck_version"
+
+stamp

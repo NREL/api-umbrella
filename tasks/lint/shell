@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 
-set -e -u
+set -e -u -x
+source ./tasks/helpers.sh
+set +x
 
 mapfile -t files < <(git grep -El "^#!(/bin/sh|/bin/bash|/usr/bin/env sh|/usr/bin/env sh)" || true)
 if [ -n "${files:-}" ]; then
@@ -11,4 +13,4 @@ fi
 
 mapfile -t files < <(git grep -El "^#!/usr/bin/env bash")
 set -x
-build/work/test-env/bin/shellcheck "${files[@]}"
+"$TEST_INSTALL_PREFIX/bin/shellcheck" "${files[@]}"

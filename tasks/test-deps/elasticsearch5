@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+elasticsearch5_version="5.6.9"
+elasticsearch5_hash="9dae4794cad7b804bffe09d03c94ab25b3e9c586"
+
+set -e -u -x
+source ./tasks/helpers.sh
+
+task_working_dir
+download "https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-$elasticsearch5_version.tar.gz" "sha1" "$elasticsearch5_hash"
+extract_download "elasticsearch-$elasticsearch5_version.tar.gz"
+
+mkdir -p "$TEST_INSTALL_PREFIX"
+rsync -a -v --checksum --delete-after "elasticsearch-$elasticsearch5_version/" "$TEST_INSTALL_PREFIX/elasticsearch5/"
+chown -R nobody "$TEST_INSTALL_PREFIX/elasticsearch5"
+
+stamp

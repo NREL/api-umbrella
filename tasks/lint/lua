@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+set -e -u -x
+source ./tasks/helpers.sh
+set +x
+
+export LUA_PATH="$TEST_VENDOR_LUA_SHARE_DIR/?.lua;$TEST_VENDOR_LUA_SHARE_DIR/?/init.lua;;"
+export LUA_CPATH="$TEST_VENDOR_LUA_LIB_DIR/?.so;;"
+
+mapfile -t files < <(git ls-files | grep '\.lua$')
+set -x
+"$TEST_VENDOR_DIR/bin/luacheck" "${files[@]}"

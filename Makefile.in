@@ -5,7 +5,10 @@
 ROOT_DIR:=$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 WORK_DIR:=$(ROOT_DIR)/build/work
 
-.PHONY: default
+prefix = @prefix@
+export PREFIX=$(prefix)
+
+.PHONY: default task-passthrough
 default: all
 
 # Download and locally install the "task" tool.
@@ -14,6 +17,9 @@ $(ROOT_DIR)/tasks/bootstrap-$(TASK_VERSION): ;
 $(WORK_DIR)/stamp/bootstrap-$(TASK_VERSION): $(ROOT_DIR)/tasks/bootstrap-$(TASK_VERSION)
 	$(ROOT_DIR)/tasks/bootstrap-$(TASK_VERSION)
 
-# Match all commands sent to "make" and send them to "task" instead.
-%: $(WORK_DIR)/stamp/bootstrap-$(TASK_VERSION)
+task-passthrough: $(WORK_DIR)/stamp/bootstrap-$(TASK_VERSION)
 	$(WORK_DIR)/task $(MAKECMDGOALS)
+
+# Match all commands sent to "make" and send them to "task" instead.
+%: task-passthrough
+	@true

@@ -26,7 +26,7 @@ rsync -a \
 
 # Add build pieces from the other tasks into the release directory (eg,
 # compiled assets).
-mkdir -p $APP_CORE_RELEASE_DIR/build/dist
+mkdir -p "$APP_CORE_RELEASE_DIR/build/dist"
 rsync -a --delete-after \
   "$WORK_DIR/tasks/app/admin-ui/build/dist/" \
   "$APP_CORE_RELEASE_DIR/build/dist/admin-ui/"
@@ -44,13 +44,13 @@ rsync -a -v --delete-after \
 BUNDLE_APP_CONFIG="$APP_CORE_RELEASE_DIR/src/api-umbrella/web-app/.bundle" bundle config --local path "../../../vendor/bundle"
 
 # Add symlinks for the release.
-(cd $APP_CORE_DIR && ln -snf releases/0 ./current)
-(cd $APP_CORE_DIR/releases/0 && ln -snf ../../shared/vendor ./vendor)
+(cd "$APP_CORE_DIR" && ln -snf releases/0 ./current)
+(cd "$APP_CORE_DIR/releases/0" && ln -snf ../../shared/vendor ./vendor)
 
 # Add symlinks for bin files into the release.
-mkdir -p $STAGE_PREFIX_DIR/bin
+mkdir -p "$STAGE_PREFIX_DIR/bin"
 (
-  cd $STAGE_PREFIX_DIR/bin
+  cd "$STAGE_PREFIX_DIR/bin"
   ln -snf ../embedded/apps/core/current/bin/api-umbrella ./api-umbrella
   ln -snf ../embedded/apps/core/current/bin/api-umbrella-env ./api-umbrella-env
   ln -snf ../embedded/apps/core/current/bin/api-umbrella-exec ./api-umbrella-exec

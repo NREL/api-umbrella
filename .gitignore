@@ -23,6 +23,7 @@
 # Build task checksums
 /.task
 
+/Makefile
 /build/work
 /build/package/work
 /build/package/verify/.rnd

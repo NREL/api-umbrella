@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+unbound_version="1.7.1"
+unbound_hash="56e085ef582c5372a20207de179d0edb4e541e59f87be7d4ee1d00d12008628d"
+
+set -e -u -x
+source ./tasks/helpers.sh
+
+task_working_dir
+download "http://www.unbound.net/downloads/unbound-$unbound_version.tar.gz" "sha256" "$unbound_hash"
+extract_download "unbound-$unbound_version.tar.gz"
+
+cd "unbound-$unbound_version"
+./configure --prefix="$TEST_INSTALL_PREFIX"
+make
+make install
+
+stamp

@@ -13,7 +13,8 @@ cd _persist
 # Install all the gems for use in development/test.
 export PATH="$STAGE_EMBEDDED_PATH"
 export BUNDLE_GEMFILE="$SOURCE_DIR/src/api-umbrella/web-app/Gemfile"
-export BUNDLE_APP_CONFIG="$(pwd)/.bundle"
+BUNDLE_APP_CONFIG="$(pwd)/.bundle"
+export BUNDLE_APP_CONFIG
 bundle config --local build.nokogiri --use-system-libraries
 bundle config --local path "$(pwd)/bundle"
 bundle config --local clean true
@@ -24,7 +25,8 @@ bundle install
 mkdir -p "$APP_CORE_VENDOR_BUNDLE_DIR"
 rsync -a --delete ./bundle/ "$APP_CORE_VENDOR_BUNDLE_DIR/"
 rsync -a -v --delete ./.bundle/ ./.bundle-prod/
-export BUNDLE_APP_CONFIG="$(pwd)/.bundle-prod"
+BUNDLE_APP_CONFIG="$(pwd)/.bundle-prod"
+export BUNDLE_APP_CONFIG
 bundle config --local path "$APP_CORE_VENDOR_BUNDLE_DIR"
 bundle config --local without "development:test:assets"
 bundle config --local clean true

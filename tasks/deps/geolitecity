@@ -2,6 +2,7 @@
 
 set -e -u
 source ./tasks/helpers.sh
+set +x
 
 # If the file exists and was created within the past day, then skip doing
 # anything else. This approach ensures that new files are downloaded, but only

@@ -13,6 +13,11 @@ jobs:
           # CircleCI's prefix based matching will mean the cache from the last
           # cache for this branch will be restored.
           key: cache-build-deps-{{ .Environment.CACHE_VERSION }}-{{ .Branch }}-{{ arch }}-
+      # The bootstrap's "task" file will be cached on subsequent runs, but due
+      # to the reliance on timestamps, this fact might not get picked up in the
+      # CI environment. So if a stamp file exists for the initial bootstrap
+      # process, re-touch it to prevent re-downloads.
+      - run: touch -c build/work/stamp/bootstrap-*
       # Build all the API Umbrella software dependencies.
       - run: make all test-deps
       # Remove the build working directories before storing the cache. This

@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+
+set -e -u -x
+
+source_dir="$(dirname "$(dirname "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)")")"
+
+if [ ! -f "$source_dir/Taskfile.yml" ]; then
+  echo "Can't find root source directory"
+  exit 1
+fi
+
+rm -rf \
+  "$source_dir/.bundle" \
+  "$source_dir/build/work"/* \
+  "$source_dir/src/api-umbrella/admin-ui/node_modules" \
+  "$source_dir/src/api-umbrella/web-app/.bundle" \
+  "$source_dir/src/api-umbrella/web-app/tmp"/* \
+  "$source_dir/test/config/.overrides.yml" \
+  "$source_dir/test/tmp"/*

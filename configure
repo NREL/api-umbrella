@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+
+set -e -u
+
+prefix="/opt/api-umbrella"
+
+usage() {
+  cat <<EOS
+Usage: ./configure [OPTION]...
+
+Defaults for the options are specified in brackets.
+
+Configuration:
+  -h, --help              display this help and exit
+
+Installation directories:
+  --prefix=PREFIX         install architecture-independent files in PREFIX
+                          [$prefix]
+EOS
+  exit 0
+}
+
+while [ $# -gt 0 ]; do
+  key="$1"
+  case $key in
+    --prefix=*)
+      prefix="${key#*=}"
+      shift
+      ;;
+    --help|-h)
+      usage
+      shift
+      ;;
+    *)
+      echo "configure: error: unrecognized option: '$key'"
+      echo "Try './configure --help' for more information"
+      exit 1
+      ;;
+  esac
+done
+
+if [ -z "$prefix" ]; then
+  echo "configure: error: missing argument to --prefix"
+  exit 1
+fi
+
+echo "configure: creating Makefile"
+sed -e "s|@prefix@|$prefix|g" < Makefile.in > Makefile

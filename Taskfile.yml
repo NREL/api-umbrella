@@ -527,6 +527,21 @@ tasks:
       - ./build/work/stamp/app/admin-ui/build
     method: checksum
 
+  app:core:
+    deps:
+      - app:admin-ui:build
+      - app:web-app:precompile
+    cmds:
+      - ./tasks/app/core
+    sources:
+      - ./build/work/stamp/app/admin-ui/build
+      - ./build/work/stamp/app/web-app/precompile
+      - ./tasks/app/core
+      - ./tasks/helpers.sh
+    generates:
+      - ./build/work/stamp/app/core
+    method: checksum
+
   app:static-site:
     deps:
       - build-deps:nodejs
@@ -561,9 +576,8 @@ tasks:
 
   app:
     cmds:
-      - task: app:admin-ui:build
+      - task: app:core
       - task: app:static-site
-      - task: app:web-app:precompile
 
   all:
     cmds:
@@ -587,24 +601,133 @@ tasks:
       - ./build/work/stamp/test-deps/bundle
     method: checksum
 
+  test-deps:elasticsearch5:
+    cmds:
+      - ./tasks/test-deps/elasticsearch5
+    sources:
+      - ./tasks/test-deps/elasticsearch5
+      - ./tasks/helpers.sh
+    generates:
+      - ./build/work/stamp/test-deps/elasticsearch5
+    method: checksum
+
+  test-deps:elasticsearch6:
+    cmds:
+      - ./tasks/test-deps/elasticsearch6
+    sources:
+      - ./tasks/test-deps/elasticsearch6
+      - ./tasks/helpers.sh
+    generates:
+      - ./build/work/stamp/test-deps/elasticsearch6
+    method: checksum
+
+  test-deps:luacheck:
+    deps:
+      - deps:luarocks
+    cmds:
+      - ./tasks/test-deps/luacheck
+    sources:
+      - ./build/work/stamp/deps/luarocks
+      - ./tasks/test-deps/luacheck
+      - ./tasks/helpers.sh
+    generates:
+      - ./build/work/stamp/test-deps/luacheck
+    method: checksum
+
+  test-deps:mailhog:
+    cmds:
+      - ./tasks/test-deps/mailhog
+    sources:
+      - ./tasks/test-deps/mailhog
+      - ./tasks/helpers.sh
+    generates:
+      - ./build/work/stamp/test-deps/mailhog
+    method: checksum
+
+  test-deps:mongo-orchestration:
+    cmds:
+      - ./tasks/test-deps/mongo-orchestration
+    sources:
+      - ./tasks/test-deps/mongo-orchestration
+      - ./tasks/helpers.sh
+    generates:
+      - ./build/work/stamp/test-deps/mongo-orchestration
+    method: checksum
+
+  test-deps:openldap:
+    cmds:
+      - ./tasks/test-deps/openldap
+    sources:
+      - ./tasks/test-deps/openldap
+      - ./tasks/helpers.sh
+    generates:
+      - ./build/work/stamp/test-deps/openldap
+    method: checksum
+
+  test-deps:phantomjs:
+    cmds:
+      - ./tasks/test-deps/phantomjs
+    sources:
+      - ./tasks/test-deps/phantomjs
+      - ./tasks/helpers.sh
+    generates:
+      - ./build/work/stamp/test-deps/phantomjs
+    method: checksum
+
+  test-deps:shellcheck:
+    cmds:
+      - ./tasks/test-deps/shellcheck
+    sources:
+      - ./tasks/test-deps/shellcheck
+      - ./tasks/helpers.sh
+    generates:
+      - ./build/work/stamp/test-deps/shellcheck
+    method: checksum
+
+  test-deps:unbound:
+    cmds:
+      - ./tasks/test-deps/unbound
+    sources:
+      - ./tasks/test-deps/unbound
+      - ./tasks/helpers.sh
+    generates:
+      - ./build/work/stamp/test-deps/unbound
+    method: checksum
+
   test-deps:
     cmds:
       - task: test-deps:bundle
+      - task: test-deps:elasticsearch5
+      - task: test-deps:elasticsearch6
+      - task: test-deps:luacheck
+      - task: test-deps:mailhog
+      - task: test-deps:mongo-orchestration
+      - task: test-deps:openldap
+      - task: test-deps:phantomjs
+      - task: test-deps:shellcheck
+      - task: test-deps:unbound
 
   lint:js:
-    dir: ./src/api-umbrella/admin-ui
+    deps:
+      - app-deps:admin-ui:yarn
     cmds:
-      - yarn run lint:js
+      - ./tasks/lint/js
 
   lint:lua:
+    deps:
+      - test-deps:luacheck
     cmds:
-      - build/work/test-env/vendor/bin/luacheck $(git ls-files | grep '\.lua$')
+      - ./tasks/lint/lua
 
   lint:ruby:
+    deps:
+      - test-deps:bundle
     cmds:
-      - bundle exec rubocop $(git ls-files | grep -E '(Rakefile|\.(rb|rake))$')
+      - ./tasks/lint/ruby
 
   lint:shell:
+    deps:
+      - test-deps:shellcheck
     cmds:
       - ./tasks/lint/shell
 
@@ -614,6 +737,25 @@ tasks:
       - task: lint:lua
       - task: lint:ruby
       - task: lint:shell
+
+  test:
+    deps:
+      - all
+      - test-deps
+    cmds:
+      - ./tasks/test
+
+  distclean:
+    cmds:
+      - ./tasks/distclean
+
+  install:
+    cmds:
+      - ./tasks/install
+
+  package:
+    cmds:
+      - ./tasks/package
 
   default:
     cmds:
