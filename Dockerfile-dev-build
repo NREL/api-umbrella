@@ -1,8 +1,7 @@
 FROM ubuntu:16.04
 
 RUN mkdir /app
-RUN mkdir /build
-WORKDIR /build
+WORKDIR /app
 ENV DOCKER_DEV true
 ENV NOKOGIRI_USE_SYSTEM_LIBRARIES 1
 
@@ -10,37 +9,31 @@ COPY build/scripts/install_build_dependencies /app/build/scripts/install_build_d
 COPY build/package_dependencies.sh /app/build/package_dependencies.sh
 RUN env INSTALL_TEST_DEPENDENCIES=true /app/build/scripts/install_build_dependencies
 
-COPY build/scripts/download_cmake /app/build/scripts/download_cmake
-RUN /app/build/scripts/download_cmake
-
-COPY CMakeLists.txt /app/CMakeLists.txt
-COPY build/cmake/functions /app/build/cmake/functions
-COPY build/cmake/deps /app/build/cmake/deps
-COPY build/cmake/deps.cmake /app/build/cmake/deps.cmake
-COPY build/patches /app/build/patches
+COPY Makefile.in /app/Makefile.in
+COPY Taskfile.yml /app/Taskfile.yml
 COPY configure /app/configure
-RUN /app/configure && make deps
+COPY tasks/bootstrap-* /app/tasks/
+COPY tasks/helpers.sh /app/tasks/helpers.sh
+RUN ./configure
 
-COPY build/cmake/build-deps /app/build/cmake/build-deps
-COPY build/cmake/build-deps.cmake /app/build/cmake/build-deps.cmake
-RUN /app/configure && make build-deps
+COPY build/patches /app/build/patches
+COPY tasks/deps /app/tasks/deps
+RUN make deps
 
-COPY build/cmake/test-deps /app/build/cmake/test-deps
-COPY build/cmake/test-deps.cmake /app/build/cmake/test-deps.cmake
-RUN /app/configure && make test-deps
+COPY tasks/build-deps /app/tasks/build-deps
+RUN make build-deps
 
 COPY Gemfile /app/Gemfile
 COPY Gemfile.lock /app/Gemfile.lock
-COPY build/cmake/test-bundle.cmake /app/build/cmake/test-bundle.cmake
-RUN /app/configure && make test-bundle
+COPY tasks/test-deps /app/tasks/test-deps
+RUN make test-deps
 
-COPY build/cmake/app-deps /app/build/cmake/app-deps
-COPY build/cmake/app-deps.cmake /app/build/cmake/app-deps.cmake
-RUN /app/configure && make app-deps
+COPY tasks/app-deps /app/tasks/app-deps
+COPY tasks/app-deps.cmake /app/tasks/app-deps.cmake
+RUN make app-deps
 
 COPY . /app
-RUN /app/configure && make && \
-  rm -rf /build/build/work/src/api-umbrella-core/tmp/admin-ui-build/node_modules/*/.node_modules.ember-try
+RUN make
 
 RUN groupadd -r api-umbrella && \
   useradd -r -g api-umbrella -s /sbin/nologin -d /opt/api-umbrella -c "API Umbrella user" api-umbrella
