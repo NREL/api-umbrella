@@ -39,42 +39,46 @@ class OutdatedPackages
     "libgeoip" => {
       :git => "https://github.com/maxmind/geoip-api-c.git",
     },
-    "luarocks" => {
-      :git => "https://github.com/keplerproject/luarocks.git",
-    },
-    "luarock_argparse" => {
+    "lua_argparse" => {
       :luarock => "argparse",
     },
-    "luarock_cmsgpack" => {
+    "lua_cmsgpack" => {
       :luarock => "lua-cmsgpack",
     },
-    "luarock_iconv" => {
+    "lua_iconv" => {
       :luarock => "lua-iconv",
     },
-    "luarock_inspect" => {
+    "lua_icu_date" => {
+      :git => "https://github.com/GUI/lua-icu-date.git",
+      :git_ref => "master",
+    },
+    "lua_inspect" => {
       :luarock => "inspect",
     },
-    "luarock_luacheck" => {
+    "lua_libcidr_ffi" => {
+      :git => "https://github.com/GUI/lua-libcidr-ffi.git",
+    },
+    "lua_luacheck" => {
       :luarock => "luacheck",
     },
-    "luarock_luaposix" => {
+    "lua_luaposix" => {
       :luarock => "luaposix",
-    },
-    "luarock_lustache" => {
-      :luarock => "lustache",
-    },
-    "luarock_lyaml" => {
-      :luarock => "lyaml",
-    },
-    "luarock_penlight" => {
-      :luarock => "penlight",
-    },
-    "luarock_resty_uuid" => {
-      :luarock => "lua-resty-uuid",
     },
     "lua_luasocket" => {
       :git => "https://github.com/diegonehab/luasocket.git",
       :git_ref => "master",
+    },
+    "lua_lustache" => {
+      :luarock => "lustache",
+    },
+    "lua_lyaml" => {
+      :luarock => "lyaml",
+    },
+    "lua_penlight" => {
+      :luarock => "penlight",
+    },
+    "lua_resty_http" => {
+      :git => "https://github.com/pintsized/lua-resty-http.git",
     },
     "lua_resty_logger_socket" => {
       :git => "https://github.com/cloudflare/lua-resty-logger-socket.git",
@@ -83,6 +87,15 @@ class OutdatedPackages
     "lua_resty_shcache" => {
       :git => "https://github.com/cloudflare/lua-resty-shcache.git",
       :git_ref => "master",
+    },
+    "lua_resty_txid" => {
+      :git => "https://github.com/GUI/lua-resty-txid.git",
+    },
+    "lua_resty_uuid" => {
+      :luarock => "lua-resty-uuid",
+    },
+    "luarocks" => {
+      :git => "https://github.com/keplerproject/luarocks.git",
     },
     "mailhog" => {
       :git => "https://github.com/mailhog/MailHog.git",
@@ -112,19 +125,6 @@ class OutdatedPackages
       :git => "https://github.com/openssl/openssl.git",
       :string_version => true,
     },
-    "opm_icu_date" => {
-      :git => "https://github.com/GUI/lua-icu-date.git",
-      :git_ref => "master",
-    },
-    "opm_libcidr" => {
-      :git => "https://github.com/GUI/lua-libcidr-ffi.git",
-    },
-    "opm_resty_http" => {
-      :git => "https://github.com/pintsized/lua-resty-http.git",
-    },
-    "opm_resty_txid" => {
-      :git => "https://github.com/GUI/lua-resty-txid.git",
-    },
     "pcre" => {
       :http => "https://ftp.pcre.org/pub/pcre/",
     },
@@ -149,6 +149,9 @@ class OutdatedPackages
     },
     "shellcheck" => {
       :git => "https://github.com/koalaman/shellcheck.git",
+    },
+    "task" => {
+      :git => "https://github.com/go-task/task.git",
     },
     "trafficserver" => {
       :git => "https://github.com/apache/trafficserver.git",
@@ -197,9 +200,9 @@ class OutdatedPackages
       tag.gsub!(/-\d{8}$/, "")
     when "openldap"
       tag.gsub!(/^rel_eng_/, "")
-      tag.tr!(/_/, ".")
+      tag.tr!("_", ".")
     when "openssl", "ruby"
-      tag.tr!(/_/, ".")
+      tag.tr!("_", ".")
     end
 
     tag
@@ -208,9 +211,9 @@ class OutdatedPackages
   def initialize
     seen_names = []
     versions = {}
-    versions_content = `git grep -h "^set.*_VERSION" build/cmake`.strip
+    versions_content = `git grep -hE "^\\w+_version=" tasks`.strip
     versions_content.each_line do |line|
-      current_version_matches = line.match(/set\((.+?)_VERSION (.+?)\)/)
+      current_version_matches = line.match(/^(.+?)_version=['"]([^'"]+)/)
       if(!current_version_matches)
         next
       end
