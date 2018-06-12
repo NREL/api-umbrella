@@ -1,14 +1,7 @@
-# CMake
-CMakeCache.txt
-CMakeFiles
-Makefile
-cmake_install.cmake
-install_manifest.txt
-install_manifest_core.txt
-install_manifest_hadoop-analytics.txt
-
+.task
 build/work
 build/package/work
+build/package/verify/.rnd
 
 .vagrant
 workspace
@@ -16,18 +9,12 @@ chef/cookbooks
 chef/tmp
 .bundle
 .ruby-version
-CMakeCache.txt
-CMakeFiles
 Dockerfile*
 Makefile
-cmake_install.cmake
 docker-compose.yml
 install_manifest.txt
 install_manifest_core.txt
 install_manifest_hadoop-analytics.txt
-build/work
-build/package/work
-build/package/verify/.rnd
 deploy/.env
 deploy/log
 deploy/tmp
