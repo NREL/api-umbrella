@@ -19,6 +19,7 @@ jobs:
       # process, re-touch it to prevent re-downloads.
       - run: touch -c build/work/stamp/bootstrap-*
       # Build all the API Umbrella software dependencies.
+      - run: ./configure
       - run: make all test-deps
       # Remove the build working directories before storing the cache. This
       # speeds up the caching process and removes unnecessary and large
