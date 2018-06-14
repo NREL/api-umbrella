@@ -7,12 +7,12 @@ class Test::Apis::Admin::Stats::TestLogs < Minitest::Test
   def setup
     super
     setup_server
-    ElasticsearchHelper.clean_es_indices(["2014-11", "2015-01", "2015-03"])
+    LogItem.clean_indices!
   end
 
   def test_strips_api_keys_from_request_url_in_json
     FactoryBot.create(:log_item, :request_at => Time.parse("2015-01-16T06:06:28.816Z").utc, :request_url => "http://127.0.0.1/with_api_key/?foo=bar&api_key=my_secret_key", :request_path => "/with_api_key/", :request_url_query => "foo=bar&api_key=my_secret_key", :request_query => { "foo" => "bar", "api_key" => "my_secret_key" }, :request_user_agent => unique_test_id)
-    LogItem.gateway.refresh_index!
+    LogItem.refresh_indices!
 
     response = Typhoeus.get("https://127.0.0.1:9081/admin/stats/logs.json", http_options.deep_merge(admin_session).deep_merge({
       :params => {
@@ -30,13 +30,15 @@ class Test::Apis::Admin::Stats::TestLogs < Minitest::Test
     assert_equal(1, data["recordsTotal"], data)
     assert_equal("/with_api_key/?foo=bar", data["data"][0]["request_url"])
     assert_equal("foo=bar", data["data"][0]["request_url_query"])
-    assert_equal({ "foo" => "bar" }, data["data"][0]["request_query"])
+    if($config["elasticsearch"]["template_version"] < 2)
+      assert_equal({ "foo" => "bar" }, data["data"][0]["request_query"])
+    end
     refute_match("my_secret_key", body)
   end
 
   def test_strips_api_keys_from_request_url_in_csv
     FactoryBot.create(:log_item, :request_at => Time.parse("2015-01-16T06:06:28.816Z").utc, :request_url => "http://127.0.0.1/with_api_key/?api_key=my_secret_key&foo=bar", :request_path => "/with_api_key/", :request_url_query => "api_key=my_secret_key&foo=bar", :request_query => { "foo" => "bar", "api_key" => "my_secret_key" }, :request_user_agent => unique_test_id)
-    LogItem.gateway.refresh_index!
+    LogItem.refresh_indices!
 
     response = Typhoeus.get("https://127.0.0.1:9081/admin/stats/logs.csv", http_options.deep_merge(admin_session).deep_merge({
       :params => {
@@ -56,7 +58,7 @@ class Test::Apis::Admin::Stats::TestLogs < Minitest::Test
 
   def test_downloading_csv_that_uses_scan_and_scroll_elasticsearch_query
     FactoryBot.create_list(:log_item, 1005, :request_at => Time.parse("2015-01-16T06:06:28.816Z").utc, :request_user_agent => unique_test_id)
-    LogItem.gateway.refresh_index!
+    LogItem.refresh_indices!
 
     response = Typhoeus.get("https://127.0.0.1:9081/admin/stats/logs.csv", http_options.deep_merge(admin_session).deep_merge({
       :params => {
@@ -78,7 +80,7 @@ class Test::Apis::Admin::Stats::TestLogs < Minitest::Test
 
   def test_query_builder_case_insensitive_defaults
     FactoryBot.create(:log_item, :request_at => Time.parse("2015-01-16T06:06:28.816Z").utc, :request_user_agent => "MOZILLAAA-#{unique_test_id}")
-    LogItem.gateway.refresh_index!
+    LogItem.refresh_indices!
 
     response = Typhoeus.get("https://127.0.0.1:9081/admin/stats/logs.json", http_options.deep_merge(admin_session).deep_merge({
       :params => {
@@ -99,7 +101,7 @@ class Test::Apis::Admin::Stats::TestLogs < Minitest::Test
 
   def test_query_builder_api_key_case_sensitive
     FactoryBot.create(:log_item, :request_at => Time.parse("2015-01-16T06:06:28.816Z").utc, :api_key => "AbCDeF", :request_user_agent => unique_test_id)
-    LogItem.gateway.refresh_index!
+    LogItem.refresh_indices!
 
     response = Typhoeus.get("https://127.0.0.1:9081/admin/stats/logs.json", http_options.deep_merge(admin_session).deep_merge({
       :params => {
@@ -121,7 +123,7 @@ class Test::Apis::Admin::Stats::TestLogs < Minitest::Test
   def test_query_builder_nulls
     FactoryBot.create(:log_item, :request_at => Time.parse("2015-01-16T06:06:28.816Z").utc, :request_user_agent => "#{unique_test_id}-null")
     FactoryBot.create(:log_item, :request_at => Time.parse("2015-01-16T06:06:28.816Z").utc, :gatekeeper_denied_code => "api_key_missing", :request_user_agent => "#{unique_test_id}-not-null")
-    LogItem.gateway.refresh_index!
+    LogItem.refresh_indices!
 
     response = Typhoeus.get("https://127.0.0.1:9081/admin/stats/logs.json", http_options.deep_merge(admin_session).deep_merge({
       :params => {
@@ -142,7 +144,7 @@ class Test::Apis::Admin::Stats::TestLogs < Minitest::Test
 
   def test_query_builder_request_method
     FactoryBot.create(:log_item, :request_at => Time.parse("2015-01-16T06:06:28.816Z").utc, :request_method => "POST", :request_user_agent => unique_test_id)
-    LogItem.gateway.refresh_index!
+    LogItem.refresh_indices!
 
     response = Typhoeus.get("https://127.0.0.1:9081/admin/stats/logs.json", http_options.deep_merge(admin_session).deep_merge({
       :params => {

@@ -13,8 +13,8 @@ class LogSearch::ElasticSearch < LogSearch::Base
 
     @query = {
       :query => {
-        :filtered => {
-          :query => {
+        :bool => {
+          :must => {
             :match_all => {},
           },
           :filter => {
@@ -33,7 +33,7 @@ class LogSearch::ElasticSearch < LogSearch::Base
 
     @query_options = {
       :size => 0,
-      :ignore_unavailable => "missing",
+      :ignore_unavailable => true,
       :allow_no_indices => true,
     }
 
@@ -90,16 +90,18 @@ class LogSearch::ElasticSearch < LogSearch::Base
       filter[:bool][:should] << parse_query_builder(rule)
     end
 
-    @query[:query][:filtered][:filter][:bool][:must] << filter
+    @query[:query][:bool][:filter][:bool][:must] << filter
   end
 
   def search_type!(search_type)
-    @query_options[:search_type] = search_type
+    if(search_type == "count")
+      @query_options[:size] = 0
+    end
   end
 
   def search!(query_string)
     if(query_string.present?)
-      @query[:query][:filtered][:query] = {
+      @query[:query][:bool][:filter][:bool][:must] << {
         :query_string => {
           :query => query_string,
         },
@@ -114,7 +116,7 @@ class LogSearch::ElasticSearch < LogSearch::Base
 
     filter = parse_query_builder(query)
     if(filter.present?)
-      @query[:query][:filtered][:filter][:bool][:must] << filter
+      @query[:query][:bool][:filter][:bool][:must] << filter
     end
   end
 
@@ -206,7 +208,7 @@ class LogSearch::ElasticSearch < LogSearch::Base
         end
 
         if(rule["operator"] =~ /(^not|^is_null)/ && filter.present?)
-          filter = { :not => filter }
+          filter = { :bool => { :must_not => [filter] } }
         end
 
         filters << filter
@@ -238,7 +240,7 @@ class LogSearch::ElasticSearch < LogSearch::Base
   end
 
   def exclude_imported!
-    @query[:query][:filtered][:filter][:bool][:must_not] << {
+    @query[:query][:bool][:filter][:bool][:must_not] << {
       :exists => {
         :field => "imported",
       },
@@ -246,7 +248,7 @@ class LogSearch::ElasticSearch < LogSearch::Base
   end
 
   def filter_by_date_range!
-    @query[:query][:filtered][:filter][:bool][:must] << {
+    @query[:query][:bool][:filter][:bool][:must] << {
       :range => {
         :request_at => {
           :from => @start_time.iso8601,
@@ -257,7 +259,7 @@ class LogSearch::ElasticSearch < LogSearch::Base
   end
 
   def filter_by_request_path!(request_path)
-    @query[:query][:filtered][:filter][:bool][:must] << {
+    @query[:query][:bool][:filter][:bool][:must] << {
       :term => {
         :request_path => request_path,
       },
@@ -265,7 +267,7 @@ class LogSearch::ElasticSearch < LogSearch::Base
   end
 
   def filter_by_api_key!(api_key)
-    @query[:query][:filtered][:filter][:bool][:must] << {
+    @query[:query][:bool][:filter][:bool][:must] << {
       :term => {
         :api_key => api_key,
       },
@@ -273,7 +275,7 @@ class LogSearch::ElasticSearch < LogSearch::Base
   end
 
   def filter_by_user!(user_email)
-    @query[:query][:filtered][:filter][:bool][:must] << {
+    @query[:query][:bool][:filter][:bool][:must] << {
       :term => {
         :user => {
           :user_email => user_email,
@@ -283,14 +285,15 @@ class LogSearch::ElasticSearch < LogSearch::Base
   end
 
   def filter_by_user_ids!(user_ids)
-    @query[:query][:filtered][:filter][:bool][:must] << {
+    @query[:query][:bool][:filter][:bool][:must] << {
       :terms => {
         :user_id => user_ids,
       },
     }
   end
 
-  def aggregate_by_drilldown!(prefix, size = 0)
+  def aggregate_by_drilldown!(prefix, size = nil)
+    size ||= 1_000_000
     @query[:aggregations][:drilldown] = {
       :terms => {
         :field => "request_hierarchy",
@@ -301,7 +304,7 @@ class LogSearch::ElasticSearch < LogSearch::Base
   end
 
   def aggregate_by_drilldown_over_time!(prefix)
-    @query[:query][:filtered][:filter][:bool][:must] << {
+    @query[:query][:bool][:filter][:bool][:must] << {
       :prefix => {
         :request_hierarchy => prefix,
       },
@@ -370,23 +373,6 @@ class LogSearch::ElasticSearch < LogSearch::Base
     end
   end
 
-  def aggregate_by_region!
-    case(@region)
-    when "world"
-      aggregate_by_country!
-    when "US"
-      @country = @region
-      aggregate_by_country_regions!(@region)
-    when /^(US)-([A-Z]{2})$/
-      @country = Regexp.last_match[1]
-      @state = Regexp.last_match[2]
-      aggregate_by_us_state_cities!(@country, @state)
-    else
-      @country = @region
-      aggregate_by_country_cities!(@region)
-    end
-  end
-
   def aggregate_by_region_field!(field)
     @query[:aggregations][:regions] = {
       :terms => {
@@ -403,7 +389,7 @@ class LogSearch::ElasticSearch < LogSearch::Base
   end
 
   def aggregate_by_country_regions!(country)
-    @query[:query][:filtered][:filter][:bool][:must] << {
+    @query[:query][:bool][:filter][:bool][:must] << {
       :term => { :request_ip_country => country },
     }
 
@@ -411,10 +397,10 @@ class LogSearch::ElasticSearch < LogSearch::Base
   end
 
   def aggregate_by_us_state_cities!(country, state)
-    @query[:query][:filtered][:filter][:bool][:must] << {
+    @query[:query][:bool][:filter][:bool][:must] << {
       :term => { :request_ip_country => country },
     }
-    @query[:query][:filtered][:filter][:bool][:must] << {
+    @query[:query][:bool][:filter][:bool][:must] << {
       :term => { :request_ip_region => state },
     }
 
@@ -422,7 +408,7 @@ class LogSearch::ElasticSearch < LogSearch::Base
   end
 
   def aggregate_by_country_cities!(country)
-    @query[:query][:filtered][:filter][:bool][:must] << {
+    @query[:query][:bool][:filter][:bool][:must] << {
       :term => { :request_ip_country => country },
     }
 
@@ -474,7 +460,7 @@ class LogSearch::ElasticSearch < LogSearch::Base
     @query[:aggregations][:user_stats] = {
       :terms => {
         :field => :user_id,
-        :size => 0,
+        :size => 1_000_000,
       }.merge(options),
       :aggregations => {
         :last_request_at => {

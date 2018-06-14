@@ -5,6 +5,7 @@ module ApiUmbrellaTestHelpers
     EMBEDDED_ROOT = File.join(API_UMBRELLA_SRC_ROOT, "build/work/stage/opt/api-umbrella/embedded").freeze
     TEST_RUN_ROOT = File.join(API_UMBRELLA_SRC_ROOT, "test/tmp/run")
     TEST_RUN_API_UMBRELLA_ROOT = File.join(TEST_RUN_ROOT, "api-umbrella-root")
+    DEFAULT_CONFIG_PATH = File.join(API_UMBRELLA_SRC_ROOT, "config/default.yml").freeze
     CONFIG_PATH = File.join(API_UMBRELLA_SRC_ROOT, "config/test.yml").freeze
     CONFIG_COMPUTED_PATH = File.join(TEST_RUN_ROOT, "test_computed.yml").freeze
     CONFIG_OVERRIDES_PATH = File.join(TEST_RUN_ROOT, "test_overrides.yml").freeze
@@ -35,13 +36,33 @@ module ApiUmbrellaTestHelpers
         # layers of shells, which confuses what's the "original" environment.
         ENV.delete_if { |key, value| key =~ /\A(GEM_|BUNDLE_|BUNDLER_|RUBY)/ }
 
+        elasticsearch_test_api_version = nil
+        if ENV["ELASTICSEARCH_TEST_API_VERSION"]
+          elasticsearch_test_api_version = ENV["ELASTICSEARCH_TEST_API_VERSION"].to_i
+        end
+
         # Read the initial test config file.
-        $config = YAML.load_file(CONFIG_PATH)
+        $config = YAML.load_file(DEFAULT_CONFIG_PATH)
+        $config.deep_merge!(YAML.load_file(CONFIG_PATH))
 
         # Create an config file for computed overrides.
         computed = {
           "root_dir" => TEST_RUN_API_UMBRELLA_ROOT,
         }
+        if elasticsearch_test_api_version
+          computed.deep_merge!({
+            "elasticsearch" => {
+              "api_version" => elasticsearch_test_api_version,
+              "embedded_server_config" => {
+                "path" => {
+                  "data" => File.join(TEST_RUN_API_UMBRELLA_ROOT, "var/db/elasticsearch#{elasticsearch_test_api_version}"),
+                  "logs" => File.join(TEST_RUN_API_UMBRELLA_ROOT, "var/log/elasticsearch#{elasticsearch_test_api_version}"),
+                },
+              },
+            },
+            "services" => $config["services"] - ["log_db"],
+          })
+        end
         File.write(CONFIG_COMPUTED_PATH, YAML.dump(computed))
         $config.deep_merge!(YAML.load_file(CONFIG_COMPUTED_PATH))
 
@@ -58,6 +79,38 @@ module ApiUmbrellaTestHelpers
         build.wait
         if(build.crashed?)
           exit build.exit_code
+        end
+
+        # Optionally run a different version of Elasticsearch to the test suite
+        # can be tested against multiple versions of the database.
+        if elasticsearch_test_api_version
+          args = ["runtool"]
+          # If running the tests as root (Docker), start elasticsearch as
+          # "nobody" since elasticsearch 5+ won't start as root.
+          if(::Process.euid == 0)
+            args += ["-u", "nobody"]
+          end
+          args += ["elasticsearch"]
+
+          FileUtils.mkdir_p($config["elasticsearch"]["embedded_server_config"]["path"]["logs"])
+          FileUtils.mkdir_p($config["elasticsearch"]["embedded_server_config"]["path"]["data"])
+          if(::Process.euid == 0)
+            FileUtils.chown("nobody", nil, $config["elasticsearch"]["embedded_server_config"]["path"]["logs"])
+            FileUtils.chown("nobody", nil, $config["elasticsearch"]["embedded_server_config"]["path"]["data"])
+          end
+          log_file = File.open(File.join($config["elasticsearch"]["embedded_server_config"]["path"]["logs"], "current"), "w+")
+          log_file.sync = true
+
+          elasticsearch_config_path = File.join(API_UMBRELLA_SRC_ROOT, "build/work/test-env/elasticsearch#{elasticsearch_test_api_version}/config/elasticsearch.yml")
+          File.open(elasticsearch_config_path, "w") { |f| f.write(YAML.dump($config["elasticsearch"]["embedded_server_config"])) }
+
+          $elasticsearch_process = ChildProcess.build(*args)
+          $elasticsearch_process.io.stdout = $elasticsearch_process.io.stderr = log_file
+          $elasticsearch_process.environment["PATH"] = "#{File.join(API_UMBRELLA_SRC_ROOT, "build/work/test-env/elasticsearch#{elasticsearch_test_api_version}/bin")}:#{ENV["PATH"]}"
+          $elasticsearch_process.environment["ES_PATH_CONF"] = File.join(API_UMBRELLA_SRC_ROOT, "build/work/test-env/elasticsearch#{elasticsearch_test_api_version}/config")
+          $elasticsearch_process.environment["ES_JAVA_OPTS"] = "-Xms#{$config["elasticsearch"]["embedded_server_env"]["heap_size"]} -Xmx#{$config["elasticsearch"]["embedded_server_env"]["heap_size"]}"
+          $elasticsearch_process.leader = true
+          $elasticsearch_process.start
         end
 
         # Spin up API Umbrella and the embedded databases as a background
@@ -79,7 +132,7 @@ module ApiUmbrellaTestHelpers
         progress = Thread.new do
           print "Waiting for api-umbrella to start..."
           loop do
-            if($api_umbrella_process.crashed?)
+            if($api_umbrella_process.crashed? || ($elasticsearch_process && $elasticsearch_process.crashed?))
               health.stop
               break
             end
@@ -98,6 +151,8 @@ module ApiUmbrellaTestHelpers
         # If anything exited unsuccessfully, abort tests.
         if(health.crashed? || $api_umbrella_process.crashed?)
           raise "Did not start api-umbrella process for integration tests"
+        elsif($elasticsearch_process && $elasticsearch_process.crashed?)
+          raise "Did not start elasticsearch process for integration tests"
         end
 
         # Once API Umbrella is started, read the config from the runtime file.
@@ -132,6 +187,11 @@ module ApiUmbrellaTestHelpers
     end
 
     def self.stop
+      if($elasticsearch_process && $elasticsearch_process.alive?)
+        puts "Stopping elasticsearch..."
+        $elasticsearch_process.stop
+      end
+
       if($api_umbrella_process && $api_umbrella_process.alive?)
         puts "Stopping api-umbrella..."
 

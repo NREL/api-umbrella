@@ -63,8 +63,8 @@ class Admin::StatsController < Admin::BaseController
     end
 
     if(request.format == "csv")
-      @search.query_options[:search_type] = "scan"
       @search.query_options[:scroll] = "10m"
+      @search.query_options[:sort] = ["_doc"]
     end
 
     @result = @search.result
@@ -146,7 +146,7 @@ class Admin::StatsController < Admin::BaseController
     @search.aggregate_by_user_stats!(aggregation_options)
 
     @result = @search.result
-    buckets = @result.aggregations["user_stats"]["buckets"]
+    buckets = if(@result.aggregations && @result.aggregations["user_stats"]) then @result.aggregations["user_stats"]["buckets"] else [] end
     @total = buckets.length
 
     # If we were sorting by one of the facet fields, then the sorting has
@@ -195,7 +195,9 @@ class Admin::StatsController < Admin::BaseController
 
     respond_to do |format|
       format.json
-      format.csv
+      format.csv do
+        @filename = "api_users_#{Time.now.utc.strftime("%Y-%m-%d")}.csv"
+      end
     end
   end
 
@@ -216,7 +218,9 @@ class Admin::StatsController < Admin::BaseController
 
     respond_to do |format|
       format.json
-      format.csv
+      format.csv do
+        @filename = "api_map_#{Time.now.utc.strftime("%Y-%m-%d")}.csv"
+      end
     end
   end
 

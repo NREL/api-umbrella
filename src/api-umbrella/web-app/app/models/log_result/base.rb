@@ -19,11 +19,13 @@ class LogResult::Base
   end
 
   def hits_over_time
-    if(!@hits_over_time && aggregations["hits_over_time"])
+    unless @hits_over_time
       @hits_over_time = {}
 
-      aggregations["hits_over_time"]["buckets"].each do |bucket|
-        @hits_over_time[bucket["key"]] = bucket["doc_count"]
+      if(aggregations && aggregations["hits_over_time"])
+        aggregations["hits_over_time"]["buckets"].each do |bucket|
+          @hits_over_time[bucket["key"]] = bucket["doc_count"]
+        end
       end
     end
 
@@ -31,24 +33,26 @@ class LogResult::Base
   end
 
   def drilldown
-    if(!@drilldown && aggregations["drilldown"])
+    unless @drilldown
       @drilldown = []
 
-      aggregations["drilldown"]["buckets"].each do |bucket|
-        depth, path = bucket["key"].split("/", 2)
-        terminal = !path.end_with?("/")
+      if(aggregations && aggregations["drilldown"])
+        aggregations["drilldown"]["buckets"].each do |bucket|
+          depth, path = bucket["key"].split("/", 2)
+          terminal = !path.end_with?("/")
 
-        depth = depth.to_i
-        descendent_depth = depth + 1
-        descendent_prefix = File.join(descendent_depth.to_s, path)
+          depth = depth.to_i
+          descendent_depth = depth + 1
+          descendent_prefix = File.join(descendent_depth.to_s, path)
 
-        @drilldown << {
-          :depth => depth,
-          :path => path,
-          :terminal => terminal,
-          :descendent_prefix => descendent_prefix,
-          :hits => bucket["doc_count"],
-        }
+          @drilldown << {
+            :depth => depth,
+            :path => path,
+            :terminal => terminal,
+            :descendent_prefix => descendent_prefix,
+            :hits => bucket["doc_count"],
+          }
+        end
       end
     end
 
@@ -86,23 +90,25 @@ class LogResult::Base
     unless @cities
       @cities = {}
 
-      @regions = aggregations["regions"]["buckets"]
-      if(@search.query[:aggregations][:regions][:terms][:field] == "request_ip_city")
-        @city_names = @regions.map { |bucket| bucket["key"] }
-        @cities = {}
+      if(aggregations && aggregations["regions"])
+        @regions = aggregations["regions"]["buckets"]
+        if(@search.query[:aggregations][:regions][:terms][:field] == "request_ip_city")
+          @city_names = @regions.map { |bucket| bucket["key"] }
+          @cities = {}
 
-        if @city_names.any?
-          cities = LogCityLocation.where(:country => @search.country)
-          if @search.state
-            cities = cities.where(:region => @search.state)
-          end
-          cities = cities.where(:city.in => @city_names)
+          if @city_names.any?
+            cities = LogCityLocation.where(:country => @search.country)
+            if @search.state
+              cities = cities.where(:region => @search.state)
+            end
+            cities = cities.where(:city.in => @city_names)
 
-          cities.each do |city|
-            @cities[city.city] = {
-              "lat" => city.location["coordinates"][1],
-              "lon" => city.location["coordinates"][0],
-            }
+            cities.each do |city|
+              @cities[city.city] = {
+                "lat" => city.location["coordinates"][1],
+                "lon" => city.location["coordinates"][0],
+              }
+            end
           end
         end
       end

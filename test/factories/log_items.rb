@@ -11,8 +11,8 @@ FactoryBot.define do
     request_ip_region "CO"
     request_method "GET"
     request_path "/hello/"
-    request_query({ "foo" => "bar" })
     request_scheme "http"
+    request_query({ "foo" => "bar" })
     request_size 140
     request_url "http://127.0.0.1/hello/?foo=bar"
     request_url_query("foo=bar")

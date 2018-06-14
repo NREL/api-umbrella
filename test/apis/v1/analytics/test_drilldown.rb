@@ -7,13 +7,13 @@ class Test::Apis::V1::Analytics::TestDrilldown < Minitest::Test
   def setup
     super
     setup_server
-    ElasticsearchHelper.clean_es_indices(["2014-11", "2015-01", "2015-03"])
+    LogItem.clean_indices!
   end
 
   def test_level0_prefix
     FactoryBot.create_list(:log_item, 2, :request_hierarchy => ["0/127.0.0.1/", "1/127.0.0.1/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
     FactoryBot.create(:log_item, :request_hierarchy => ["0/example.com/", "1/example.com/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
-    LogItem.gateway.refresh_index!
+    LogItem.refresh_indices!
 
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/analytics/drilldown.json", http_options.deep_merge(admin_token).deep_merge({
       :params => {
@@ -51,7 +51,7 @@ class Test::Apis::V1::Analytics::TestDrilldown < Minitest::Test
   def test_level1_prefix
     FactoryBot.create_list(:log_item, 2, :request_hierarchy => ["0/127.0.0.1/", "1/127.0.0.1/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
     FactoryBot.create(:log_item, :request_hierarchy => ["0/example.com/", "1/example.com/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
-    LogItem.gateway.refresh_index!
+    LogItem.refresh_indices!
 
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/analytics/drilldown.json", http_options.deep_merge(admin_token).deep_merge({
       :params => {
@@ -91,7 +91,7 @@ class Test::Apis::V1::Analytics::TestDrilldown < Minitest::Test
     # based on prefix only.
     FactoryBot.create(:log_item, :request_hierarchy => ["0/0/", "1/0/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
     FactoryBot.create(:log_item, :request_hierarchy => ["foo/0/", "foo/0/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
-    LogItem.gateway.refresh_index!
+    LogItem.refresh_indices!
 
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/analytics/drilldown.json", http_options.deep_merge(admin_token).deep_merge({
       :params => {
@@ -134,7 +134,7 @@ class Test::Apis::V1::Analytics::TestDrilldown < Minitest::Test
     # ensures that we also test whether the terms aggregations are being
     # escaped (and not just the overall filter).
     FactoryBot.create(:log_item, :request_hierarchy => ["0/.com/", "0/xcom", "0/ycom", "1/.com/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
-    LogItem.gateway.refresh_index!
+    LogItem.refresh_indices!
 
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/analytics/drilldown.json", http_options.deep_merge(admin_token).deep_merge({
       :params => {
@@ -181,7 +181,7 @@ class Test::Apis::V1::Analytics::TestDrilldown < Minitest::Test
     FactoryBot.create_list(:log_item, 17, :request_hierarchy => ["0/127.0.0.11/", "1/127.0.0.11/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
     FactoryBot.create_list(:log_item, 18, :request_hierarchy => ["0/127.0.0.12/", "1/127.0.0.12/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
     FactoryBot.create_list(:log_item, 1, :request_hierarchy => ["0/127.0.0.13/", "1/127.0.0.13/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
-    LogItem.gateway.refresh_index!
+    LogItem.refresh_indices!
 
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/analytics/drilldown.json", http_options.deep_merge(admin_token).deep_merge({
       :params => {
@@ -248,7 +248,7 @@ class Test::Apis::V1::Analytics::TestDrilldown < Minitest::Test
       FactoryBot.create(:log_item, :request_at => Time.zone.parse("2015-01-18T23:59:59"))
       FactoryBot.create(:log_item, :request_at => Time.zone.parse("2015-01-19T00:00:00"))
     end
-    LogItem.gateway.refresh_index!
+    LogItem.refresh_indices!
 
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/analytics/drilldown.json", http_options.deep_merge(admin_token).deep_merge({
       :params => {
@@ -275,15 +275,13 @@ class Test::Apis::V1::Analytics::TestDrilldown < Minitest::Test
   end
 
   def test_bins_daily_results_daylight_saving_time_begin
-    LogItem.index_name = "api-umbrella-logs-write-2015-03"
     Time.use_zone("UTC") do
       FactoryBot.create(:log_item, :request_at => Time.zone.parse("2015-03-08T00:00:00"))
       FactoryBot.create(:log_item, :request_at => Time.zone.parse("2015-03-08T08:59:59"))
       FactoryBot.create(:log_item, :request_at => Time.zone.parse("2015-03-08T09:00:00"))
       FactoryBot.create(:log_item, :request_at => Time.zone.parse("2015-03-09T10:00:00"))
     end
-    LogItem.gateway.refresh_index!
-    LogItem.index_name = "api-umbrella-logs-write-2015-01"
+    LogItem.refresh_indices!
 
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/analytics/drilldown.json", http_options.deep_merge(admin_token).deep_merge({
       :params => {
@@ -314,13 +312,11 @@ class Test::Apis::V1::Analytics::TestDrilldown < Minitest::Test
   end
 
   def test_bins_hourly_results_daylight_saving_time_begin
-    LogItem.index_name = "api-umbrella-logs-write-2015-03"
     Time.use_zone("UTC") do
       FactoryBot.create(:log_item, :request_at => Time.zone.parse("2015-03-08T08:59:59"))
       FactoryBot.create(:log_item, :request_at => Time.zone.parse("2015-03-08T09:00:00"))
     end
-    LogItem.gateway.refresh_index!
-    LogItem.index_name = "api-umbrella-logs-write-2015-01"
+    LogItem.refresh_indices!
 
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/analytics/drilldown.json", http_options.deep_merge(admin_token).deep_merge({
       :params => {
@@ -355,15 +351,13 @@ class Test::Apis::V1::Analytics::TestDrilldown < Minitest::Test
   end
 
   def test_bins_daily_results_daylight_saving_time_end
-    LogItem.index_name = "api-umbrella-logs-write-2014-11"
     Time.use_zone("UTC") do
       FactoryBot.create(:log_item, :request_at => Time.zone.parse("2014-11-02T00:00:00"))
       FactoryBot.create(:log_item, :request_at => Time.zone.parse("2014-11-02T08:59:59"))
       FactoryBot.create(:log_item, :request_at => Time.zone.parse("2014-11-02T09:00:00"))
       FactoryBot.create(:log_item, :request_at => Time.zone.parse("2014-11-03T10:00:00"))
     end
-    LogItem.gateway.refresh_index!
-    LogItem.index_name = "api-umbrella-logs-write-2015-01"
+    LogItem.refresh_indices!
 
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/analytics/drilldown.json", http_options.deep_merge(admin_token).deep_merge({
       :params => {
@@ -394,13 +388,11 @@ class Test::Apis::V1::Analytics::TestDrilldown < Minitest::Test
   end
 
   def test_bins_hourly_results_daylight_saving_time_end
-    LogItem.index_name = "api-umbrella-logs-write-2014-11"
     Time.use_zone("UTC") do
       FactoryBot.create(:log_item, :request_at => Time.zone.parse("2014-11-02T08:59:59"))
       FactoryBot.create(:log_item, :request_at => Time.zone.parse("2014-11-02T09:00:00"))
     end
-    LogItem.gateway.refresh_index!
-    LogItem.index_name = "api-umbrella-logs-write-2015-01"
+    LogItem.refresh_indices!
 
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/analytics/drilldown.json", http_options.deep_merge(admin_token).deep_merge({
       :params => {
@@ -432,5 +424,65 @@ class Test::Apis::V1::Analytics::TestDrilldown < Minitest::Test
     assert_equal(1414922400000, data["hits_over_time"]["rows"][4]["c"][0]["v"])
     assert_equal("0", data["hits_over_time"]["rows"][4]["c"][1]["f"])
     assert_equal(0, data["hits_over_time"]["rows"][4]["c"][1]["v"])
+  end
+
+  def test_csv_download
+    FactoryBot.create_list(:log_item, 2, :request_hierarchy => ["0/127.0.0.1/", "1/127.0.0.1/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
+    FactoryBot.create(:log_item, :request_hierarchy => ["0/example.com/", "1/example.com/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
+    LogItem.refresh_indices!
+
+    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/analytics/drilldown.csv", http_options.deep_merge(admin_session).deep_merge({
+      :params => {
+        :search => "",
+        :start_at => "2015-01-13",
+        :end_at => "2015-01-18",
+        :interval => "day",
+        :prefix => "0/",
+      },
+    }))
+
+    assert_response_code(200, response)
+    assert_equal("text/csv", response.headers["Content-Type"])
+    assert_match("attachment; filename=\"api_drilldown_#{Time.now.utc.strftime("%Y-%m-%d")}.csv\"", response.headers["Content-Disposition"])
+
+    csv = CSV.parse(response.body)
+    assert_equal(3, csv.length, csv)
+    assert_equal(["Path", "Hits"], csv[0])
+    assert_equal(["127.0.0.1/", "2"], csv[1])
+    assert_equal(["example.com/", "1"], csv[2])
+  end
+
+  def test_no_results_non_existent_indices
+    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/analytics/drilldown.json", http_options.deep_merge(admin_token).deep_merge({
+      :params => {
+        :search => "",
+        :start_at => "2000-01-13",
+        :end_at => "2000-01-18",
+        :interval => "day",
+        :prefix => "0/",
+      },
+    }))
+
+    assert_response_code(200, response)
+    data = MultiJson.load(response.body)
+    assert_equal({
+      "breadcrumbs" => [
+        {
+          "crumb" => "All Hosts",
+          "prefix" => "0/",
+        },
+      ],
+      "hits_over_time" => {
+        "cols" => [
+          {
+            "id" => "date",
+            "label" => "Date",
+            "type" => "datetime",
+          },
+        ],
+        "rows" => [],
+      },
+      "results" => [],
+    }, data)
   end
 end

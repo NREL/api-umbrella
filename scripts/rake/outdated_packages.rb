@@ -13,7 +13,15 @@ class OutdatedPackages
     },
     "elasticsearch" => {
       :git => "https://github.com/elasticsearch/elasticsearch.git",
-      :constraint => "~> 2.4.3",
+      :constraint => "~> 2.4",
+    },
+    "elasticsearch5" => {
+      :git => "https://github.com/elasticsearch/elasticsearch.git",
+      :constraint => "~> 5.6",
+    },
+    "elasticsearch6" => {
+      :git => "https://github.com/elasticsearch/elasticsearch.git",
+      :constraint => "~> 6.2",
     },
     "golang" => {
       :git => "https://go.googlesource.com/go",
@@ -315,7 +323,8 @@ class OutdatedPackages
     print Rainbow("Latest".rjust(16)).underline
     puts ""
 
-    versions.each do |name, info|
+    versions.keys.sort.each do |name|
+      info = versions[name]
       name_column = name.ljust(32)
       if(info[:wanted_version].to_s != info[:current_version].to_s)
         print Rainbow(name_column).red

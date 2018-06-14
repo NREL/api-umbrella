@@ -8,7 +8,7 @@ class Test::Apis::Admin::Stats::TestLogsAdminPermissions < Minitest::Test
   def setup
     super
     setup_server
-    ElasticsearchHelper.clean_es_indices(["2015-01"])
+    LogItem.clean_indices!
   end
 
   def test_default_permissions
@@ -19,9 +19,9 @@ class Test::Apis::Admin::Stats::TestLogsAdminPermissions < Minitest::Test
   private
 
   def make_request(factory, admin)
-    ElasticsearchHelper.clean_es_indices(["2015-01"])
+    LogItem.clean_indices!
     FactoryBot.create(factory, :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
-    LogItem.gateway.refresh_index!
+    LogItem.refresh_indices!
 
     Typhoeus.get("https://127.0.0.1:9081/admin/stats/logs.json", http_options.deep_merge(admin_session(admin)).deep_merge({
       :params => {

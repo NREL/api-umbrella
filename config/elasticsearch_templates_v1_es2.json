@@ -5,7 +5,8 @@
       "template": "api-umbrella-logs-v1-*",
       "settings": {
         "index": {
-          "number_of_shards": 3
+          "number_of_shards": 3,
+          "codec": "best_compression"
         },
         "analysis": {
           "analyzer": {
@@ -15,6 +16,10 @@
               "filter": ["lowercase"]
             }
           }
+        },
+        "translog": {
+          "durability": "async",
+          "sync_interval": "10s"
         }
       },
       "mappings": {
@@ -22,21 +27,7 @@
           "_all": {
             "enabled": false
           },
-          "date_detection": false,
-          "numeric_detection": false,
-          "dynamic_templates": [
-            {
-              "string_template": {
-                "match": "*",
-                "match_mapping_type": "string",
-                "mapping": {
-                  "type": "string",
-                  "index": "analyzed",
-                  "analyzer": "keyword_lowercase"
-                }
-              }
-            }
-          ],
+          "dynamic": false,
           "properties": {
             "api_backend_id": {
               "type": "string",
@@ -50,21 +41,9 @@
               "type": "string",
               "index": "not_analyzed"
             },
-            "backend_response_time": {
-              "type": "integer"
-            },
             "gatekeeper_denied_code": {
               "type": "string",
               "analyzer": "keyword_lowercase"
-            },
-            "internal_gatekeeper_time": {
-              "type": "float"
-            },
-            "internal_response_time": {
-              "type": "float"
-            },
-            "proxy_overhead": {
-              "type": "integer"
             },
             "request_accept": {
               "type": "string",
@@ -108,10 +87,6 @@
             "request_ip_country": {
               "type": "string",
               "index": "not_analyzed"
-            },
-            "request_ip_location": {
-              "type": "geo_point",
-              "lat_lon": true
             },
             "request_ip_region": {
               "type": "string",
@@ -195,13 +170,13 @@
               "type": "string",
               "analyzer": "keyword_lowercase"
             },
-            "user_email": {
-              "type": "string",
-              "analyzer": "keyword_lowercase"
-            },
             "user_id": {
               "type": "string",
               "index": "not_analyzed"
+            },
+            "user_email": {
+              "type": "string",
+              "analyzer": "keyword_lowercase"
             },
             "user_registration_source": {
               "type": "string",

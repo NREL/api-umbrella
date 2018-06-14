@@ -111,12 +111,12 @@ GEM
       warden (~> 1.2.3)
     devise-i18n (1.6.2)
       devise (>= 4.4)
-    elasticsearch (2.0.2)
-      elasticsearch-api (= 2.0.2)
-      elasticsearch-transport (= 2.0.2)
-    elasticsearch-api (2.0.2)
+    elasticsearch (6.0.2)
+      elasticsearch-api (= 6.0.2)
+      elasticsearch-transport (= 6.0.2)
+    elasticsearch-api (6.0.2)
       multi_json
-    elasticsearch-transport (2.0.2)
+    elasticsearch-transport (6.0.2)
       faraday
       multi_json
     erubis (2.7.0)
@@ -317,7 +317,7 @@ DEPENDENCIES
   delayed_job_mongoid (~> 2.3.0)
   devise (~> 4.4.3)
   devise-i18n (~> 1.6.0)
-  elasticsearch (~> 2.0)
+  elasticsearch (~> 6.0.2)
   font-awesome-rails (~> 4.7.0)
   http_accept_language (~> 2.1.1)
   i18n-js (~> 3.0.8)

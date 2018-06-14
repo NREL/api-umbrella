@@ -32,8 +32,8 @@ gem "oj", "~> 3.6.2"
 
 # Database libraries
 gem "mongoid", "~> 7.0.1"
-gem "elasticsearch", "~> 2.0.2"
-gem "elasticsearch-persistence", "~> 0.1.9"
+gem "elasticsearch", "~> 6.0.2"
+gem "active_attr", "~> 0.11.0"
 
 # Factories for test database data
 gem "factory_bot", "~> 4.10.0"
