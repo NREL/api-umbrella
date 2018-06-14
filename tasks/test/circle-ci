@@ -1,13 +1,12 @@
 #!/usr/bin/env bash
 
 set -e -u -x
+source ./tasks/helpers.sh
+
 shopt -s globstar
 
-export PATH="build/work/stage/opt/api-umbrella/embedded/bin:$PATH"
-export BUNDLE_APP_CONFIG=build/work/.bundle
-
-ln -snf "$(pwd)/build/work/tasks/app-deps/admin-ui/yarn/_persist/node_modules" src/api-umbrella/admin-ui/node_modules
-ln -snf "$(pwd)/build/work/tasks/app-deps/web-app/bundle/_persist/.bundle" src/api-umbrella/web-app/.bundle
+ln -snf "$WORK_DIR/tasks/app-deps/admin-ui/yarn/_persist/node_modules" "$SOURCE_DIR/src/api-umbrella/admin-ui/node_modules"
+ln -snf "$WORK_DIR/tasks/app-deps/web-app/bundle/_persist/.bundle" "$SOURCE_DIR/src/api-umbrella/web-app/.bundle"
 
 # Due to some of our hard-coded assumptions about running things on specific
 # nodes, ensure that the CI is at least running on the number of nodes
@@ -27,13 +26,13 @@ fi
 # on this node as arguments. Pass those along to the rake task via the TESTS
 # environment variable.
 tests="$(circleci tests glob test/**/test_*.rb | circleci tests split --split-by=timings)"
-env TESTOPTS="--ci-dir=./test/tmp/reports" TESTS="${tests[*]}" N=12 bundle exec rake test
+env TESTOPTS="--ci-dir=./test/tmp/reports" TESTS="${tests[*]}" N=12 make test
 
 # Run a smaller suite of elasticsearch-related tests against other versions of
 # elasticsearch.
 elasticsearch_tests=(test/admin_ui/**/test_stats_*.rb test/admin_ui/**/test_stats_*.rb test/apis/admin/stats/**/test_*.rb test/apis/v0/test_analytics.rb test/apis/v1/analytics/**/test_*.rb test/proxy/logging/**/test_*.rb)
 if [ "$CIRCLE_NODE_INDEX" -eq "1" ]; then
-  env ELASTICSEARCH_TEST_API_VERSION=5 TESTS="${elasticsearch_tests[*]}" N=12 bundle exec rake test
+  env ELASTICSEARCH_TEST_API_VERSION=5 TESTS="${elasticsearch_tests[*]}" N=12 make test
 elif [ "$CIRCLE_NODE_INDEX" -eq "2" ]; then
-  env ELASTICSEARCH_TEST_API_VERSION=6 TESTS="${elasticsearch_tests[*]}" N=12 bundle exec rake test
+  env ELASTICSEARCH_TEST_API_VERSION=6 TESTS="${elasticsearch_tests[*]}" N=12 make test
 fi

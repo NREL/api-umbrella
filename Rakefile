@@ -21,4 +21,4 @@ ENV["PATH"] = [
 Dir.glob(File.join(API_UMBRELLA_SRC_ROOT, "scripts/rake/*.rake")).each { |r| import r }
 
 task(:default).clear
-task(:default => [:lint, :test])
+task(:default => [:test])

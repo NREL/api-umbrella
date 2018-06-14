@@ -37,11 +37,7 @@ jobs:
             - build/work/tasks/app-deps/web-app/bundle/_persist
             - build/work/tasks/test-deps/bundle/_persist
             - build/work/test-env
-      - type: shell
-        command: |
-          groupadd -r api-umbrella
-          useradd -r -g api-umbrella -s /sbin/nologin -d /opt/api-umbrella -c "API Umbrella user" api-umbrella
-          ./test/scripts/circle-ci
+      - run: make test:circle-ci
       - store_test_results:
           path: test/tmp/reports
       - store_artifacts:
