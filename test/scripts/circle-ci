@@ -6,8 +6,8 @@ shopt -s globstar
 export PATH="build/work/stage/opt/api-umbrella/embedded/bin:$PATH"
 export BUNDLE_APP_CONFIG=build/work/.bundle
 
-ln -snf "$(pwd)/build/work/src/api-umbrella-core/tmp/admin-ui-build/node_modules" src/api-umbrella/admin-ui/node_modules
-ln -snf "$(pwd)/build/work/src/web-app/.bundle" src/api-umbrella/web-app/.bundle
+ln -snf "$(pwd)/build/work/tasks/app-deps/admin-ui/yarn/_persist/node_modules" src/api-umbrella/admin-ui/node_modules
+ln -snf "$(pwd)/build/work/tasks/app-deps/web-app/bundle/_persist/.bundle" src/api-umbrella/web-app/.bundle
 
 # Due to some of our hard-coded assumptions about running things on specific
 # nodes, ensure that the CI is at least running on the number of nodes
