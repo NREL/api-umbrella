@@ -21,15 +21,22 @@ jobs:
       # Build all the API Umbrella software dependencies.
       - run: ./configure
       - run: make all test-deps
-      # Remove the build working directories before storing the cache. This
-      # speeds up the caching process and removes unnecessary and large
-      # intermediate build files.
-      - run: rm -rf build/work/tasks
+      # Cache the staged build data and task checksums of what's been
+      # completed. But explicitly don't cache most of the build/work/tasks/*
+      # data, since that contains a lot of the intermediate build files, which
+      # can  significantly increase the cache size.
       - save_cache:
           key: cache-build-deps-{{ .Environment.CACHE_VERSION }}-{{ .Branch }}-{{ arch }}-{{ epoch }}
           paths:
             - .task
-            - build/work
+            - build/work/dev-env
+            - build/work/stage
+            - build/work/stamp
+            - build/work/task
+            - build/work/tasks/app-deps/admin-ui/yarn/_persist
+            - build/work/tasks/app-deps/web-app/bundle/_persist
+            - build/work/tasks/test-deps/bundle/_persist
+            - build/work/test-env
       - type: shell
         command: |
           groupadd -r api-umbrella

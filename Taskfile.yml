@@ -1,3 +1,24 @@
+# Run build tasks, test tasks, and other generic tasks via the go-task tool:
+# https://github.com/go-task/task
+#
+# The primary reason we're using this over something more standard like Make is
+# that it provides a simple mechanism to skip tasks based on file checksums.
+# This lets us more easily cache and skip steps in the CI and Docker
+# development environment (since we only need to cache the build output and
+# checksum files, rather than also needing to cache all the intermediate build
+# files).
+#
+# A few general notes on the approach:
+#
+# - We mostly defer each task to a shell script to do the actual work.
+# - For the build process, we use "stamp" files as outputs and also use those
+#   within the dependency chain. We use these stamp files so that the
+#   checksumming approach properly invalidates the entire chain of dependencies
+#   when build files change (whereas just using "deps" in go-task doesn't fully
+#   work for multiple levels of dependencies). So, for example, if the libgeoip
+#   dependency changes, rebuilding it properly cascades and triggers a rebuild
+#   of openresty (1st level dependency) and luarocks (2nd level dependency).
+
 version: "2"
 
 output: prefixed
