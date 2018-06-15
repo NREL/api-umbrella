@@ -1,19 +1,18 @@
 #!/usr/bin/env bash
 
 set -e -u -x
+source ./tasks/helpers.sh
 
-source_dir="$(dirname "$(dirname "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)")")"
-
-if [ ! -f "$source_dir/Taskfile.yml" ]; then
+if [ ! -f "$SOURCE_DIR/Taskfile.yml" ]; then
   echo "Can't find root source directory"
   exit 1
 fi
 
 rm -rf \
-  "$source_dir/.bundle" \
-  "$source_dir/build/work"/* \
-  "$source_dir/src/api-umbrella/admin-ui/node_modules" \
-  "$source_dir/src/api-umbrella/web-app/.bundle" \
-  "$source_dir/src/api-umbrella/web-app/tmp"/* \
-  "$source_dir/test/config/.overrides.yml" \
-  "$source_dir/test/tmp"/*
+  "$SOURCE_DIR/.bundle" \
+  "$SOURCE_DIR/build/work"/* \
+  "$SOURCE_DIR/src/api-umbrella/admin-ui/node_modules" \
+  "$SOURCE_DIR/src/api-umbrella/web-app/.bundle" \
+  "$SOURCE_DIR/src/api-umbrella/web-app/tmp"/* \
+  "$SOURCE_DIR/test/config/.overrides.yml" \
+  "$SOURCE_DIR/test/tmp"/*

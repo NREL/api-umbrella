@@ -41,7 +41,7 @@ if [ "$PACKAGE" == "core" ]; then
     fpm_args+=("-d" "$dep")
   done
 
-  fpm_args+=("-C" "$WORK_DIR/package-dest-core")
+  fpm_args+=("-C" "$WORK_DESTDIR")
   fpm_args+=("--name" "api-umbrella")
   fpm_args+=("--config-files" "etc/api-umbrella/api-umbrella.yml")
   fpm_args+=("--after-install" "$source_dir/build/package/scripts/after-install")

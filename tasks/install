@@ -21,7 +21,7 @@ install -D -m 440 "$SOURCE_DIR/build/package/files/etc/sudoers.d/api-umbrella" "
 # If /etc/api-umbrella/api-umbrella.yml does exist, install the default version
 # to api-umbrella.yml.default (so it's available for reference, but we don't
 # overwrite any local changes).
-if [ -f /etc/api-umbrella/api-umbrella.yml ]; then
+if [ -f "$destdir/etc/api-umbrella/api-umbrella.yml" ]; then
   install -D -m 644 "$SOURCE_DIR/build/package/files/etc/api-umbrella/api-umbrella.yml" "$destdir/etc/api-umbrella/api-umbrella.yml.default"
 else
   install -D -m 644 "$SOURCE_DIR/build/package/files/etc/api-umbrella/api-umbrella.yml" "$destdir/etc/api-umbrella/api-umbrella.yml"
