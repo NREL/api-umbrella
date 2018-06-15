@@ -7,9 +7,9 @@ source ./tasks/helpers.sh
 
 task_working_dir
 
-virtualenv ./venv
-./venv/bin/pip install --ignore-installed "mongo-orchestration==$mongo_orchestration_version"
-rsync -av --delete ./venv/ "$TEST_INSTALL_PREFIX/mongo-orchestration/"
+rm -rf "$TEST_INSTALL_PREFIX/mongo-orchestration"
+virtualenv "$TEST_INSTALL_PREFIX/mongo-orchestration"
+"$TEST_INSTALL_PREFIX/mongo-orchestration/bin/pip" install --ignore-installed "mongo-orchestration==$mongo_orchestration_version"
 ln -snf "$TEST_INSTALL_PREFIX/mongo-orchestration/bin/mongo-orchestration" "$TEST_INSTALL_PREFIX/bin/mongo-orchestration"
 
 stamp
