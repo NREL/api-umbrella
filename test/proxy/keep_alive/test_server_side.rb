@@ -122,17 +122,40 @@ class Test::Proxy::KeepAlive::TestServerSide < Minitest::Test
     # bunch of idle connections open, since Traffic Server keeps these
     # connections around until the keepalive_idle_timeout is reached (which
     # we've lowered for testing purposes).
-    response = Typhoeus.get("http://127.0.0.1:9080#{path}", http_options)
+    response = Typhoeus.get("http://127.0.0.1:9444/connection-stats/", http_options)
     assert_response_code(200, response)
     data = MultiJson.load(response.body)
     assert_operator(data["connections_waiting"], :>, idle_connections + 2)
 
-    # Wait for the keepalive timeout to expire.
-    sleep @keepalive_idle_timeout + 2
+    # Wait for the keepalive timeout to expire, after which the number of idle
+    # connections should be lowered to just the persistent ones that are kept
+    # around.
+    begin
+      data = nil
+      # This should generally happen within "keepalive_idle_timeout" seconds,
+      # but add a considerable buffer to this, since we see some some sporadic
+      # issues where this sometimes takes longer in the test suite (but the
+      # exact timing of this behavior isn't really that important).
+      Timeout.timeout(@keepalive_idle_timeout + 10) do
+        loop do
+          response = Typhoeus.get("http://127.0.0.1:9444/connection-stats/", http_options)
+          if(response.code == 200)
+            data = MultiJson.load(response.body)
+            if(data["connections_waiting"] <= idle_connections + 2)
+              break
+            end
+          end
+
+          sleep 0.1
+        end
+      end
+    rescue Timeout::Error
+      flunk("nginx did not reduce the number of idle keepalive connections kept after the expected timeout period. Last connection stats: #{data.inspect}")
+    end
 
     # After the keepalive timeout expires, check the stats again to ensure the
     # expected number of idle connections are being kept around.
-    response = Typhoeus.get("http://127.0.0.1:9080#{path}", http_options)
+    response = Typhoeus.get("http://127.0.0.1:9444/connection-stats/", http_options)
     assert_response_code(200, response)
     data = MultiJson.load(response.body)
 
