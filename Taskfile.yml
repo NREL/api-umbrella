@@ -759,6 +759,10 @@ tasks:
       - task: lint:ruby
       - task: lint:shell
 
+  outdated:
+    cmds:
+      - ./tasks/outdated
+
   test:
     deps:
       - all
