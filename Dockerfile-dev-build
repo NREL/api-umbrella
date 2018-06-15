@@ -9,13 +9,13 @@ ENV NOKOGIRI_USE_SYSTEM_LIBRARIES 1
 
 COPY tasks/install-system-build-dependencies /app/tasks/install-system-build-dependencies
 COPY build/package_dependencies.sh /app/build/package_dependencies.sh
+COPY tasks/helpers.sh /app/tasks/helpers.sh
 RUN env INSTALL_TEST_DEPENDENCIES=true /app/tasks/install-system-build-dependencies
 
 COPY Makefile.in /app/Makefile.in
 COPY Taskfile.yml /app/Taskfile.yml
 COPY configure /app/configure
 COPY tasks/bootstrap-* /app/tasks/
-COPY tasks/helpers.sh /app/tasks/helpers.sh
 RUN ./configure
 
 COPY build/patches /app/build/patches
