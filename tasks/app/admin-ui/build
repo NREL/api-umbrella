@@ -5,6 +5,12 @@ source ./tasks/helpers.sh
 
 task_working_dir
 
+# Install into the task's special _persist directory so that these dependencies
+# for the tasks/app/core task are still present if core needs to be re-run, but
+# not this task.
+mkdir -p _persist
+cd _persist
+
 rsync -a -v \
   --delete \
   --delete-excluded \

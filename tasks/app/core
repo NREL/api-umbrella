@@ -28,13 +28,13 @@ rsync -a \
 # compiled assets).
 mkdir -p "$APP_CORE_RELEASE_DIR/build/dist"
 rsync -a --delete-after \
-  "$WORK_DIR/tasks/app/admin-ui/build/dist/" \
+  "$WORK_DIR/tasks/app/admin-ui/build/_persist/dist/" \
   "$APP_CORE_RELEASE_DIR/build/dist/admin-ui/"
 rsync -a --delete-after \
   "$SOURCE_DIR/src/api-umbrella/web-app/public/" \
   "$APP_CORE_RELEASE_DIR/build/dist/web-app-public/"
 rsync -a --delete-after \
-  "$WORK_DIR/tasks/app/web-app/precompile/public/web-assets/" \
+  "$WORK_DIR/tasks/app/web-app/precompile/_persist/public/web-assets/" \
   "$APP_CORE_RELEASE_DIR/build/dist/web-app-public/web-assets/"
 rsync -a -v --delete-after \
   "$WORK_DIR/tasks/app-deps/web-app/bundle/_persist/.bundle-prod/" \

@@ -37,6 +37,8 @@ jobs:
             - build/work/task
             - build/work/tasks/app-deps/admin-ui/yarn/_persist
             - build/work/tasks/app-deps/web-app/bundle/_persist
+            - build/work/tasks/app/admin-ui/build/_persist/dist
+            - build/work/tasks/app/web-app/precompile/_persist/public/web-assets
             - build/work/tasks/test-deps/bundle/_persist
             - build/work/test-env
       - run: make test:circle-ci
