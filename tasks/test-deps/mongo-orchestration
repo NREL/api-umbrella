@@ -9,6 +9,7 @@ task_working_dir
 
 virtualenv ./venv
 ./venv/bin/pip install --ignore-installed "mongo-orchestration==$mongo_orchestration_version"
-ln -snf "$(pwd)/venv/bin/mongo-orchestration" "$TEST_INSTALL_PREFIX/bin/mongo-orchestration"
+rsync -av --delete ./venv/ "$TEST_INSTALL_PREFIX/mongo-orchestration/"
+ln -snf "$TEST_INSTALL_PREFIX/mongo-orchestration/bin/mongo-orchestration" "$TEST_INSTALL_PREFIX/bin/mongo-orchestration"
 
 stamp
