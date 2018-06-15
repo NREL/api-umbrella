@@ -34,7 +34,7 @@ rsync -a --delete-after \
   "$SOURCE_DIR/src/api-umbrella/web-app/public/" \
   "$APP_CORE_RELEASE_DIR/build/dist/web-app-public/"
 rsync -a --delete-after \
-  "$WORK_DIR/tasks/app/web-app/precompile/public/" \
+  "$WORK_DIR/tasks/app/web-app/precompile/public/web-assets/" \
   "$APP_CORE_RELEASE_DIR/build/dist/web-app-public/web-assets/"
 rsync -a -v --delete-after \
   "$WORK_DIR/tasks/app-deps/web-app/bundle/_persist/.bundle-prod/" \
