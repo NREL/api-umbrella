@@ -5,6 +5,8 @@ jobs:
     working_directory: /app
     docker:
       - image: ubuntu:16.04
+    environment:
+      CACHE_VERSION: v1
     steps:
       - checkout
       # Install any system package dependencies.
@@ -12,7 +14,7 @@ jobs:
       - restore_cache:
           # CircleCI's prefix based matching will mean the cache from the last
           # cache for this branch will be restored.
-          key: cache-build-deps-v2-{{ .Branch }}-{{ arch }}-
+          key: cache-build-deps-{{ .Environment.CACHE_VERSION }}-{{ .Branch }}-{{ arch }}-
       # The bootstrap's "task" file will be cached on subsequent runs, but due
       # to the reliance on timestamps, this fact might not get picked up in the
       # CI environment. So if a stamp file exists for the initial bootstrap
