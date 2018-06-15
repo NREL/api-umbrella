@@ -22,7 +22,7 @@ cd "$clean_source_dir"
 git clean -d -f -x
 
 # Install any system dependencies for building.
-"$clean_source_dir/build/scripts/install_build_dependencies"
+"$clean_source_dir/tasks/install-system-build-dependencies"
 
 # shellcheck disable=SC1091
 if [ -f /etc/os-release ]; then

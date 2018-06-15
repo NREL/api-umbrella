@@ -10,7 +10,7 @@ jobs:
     steps:
       - checkout
       # Install any system package dependencies.
-      - run: env INSTALL_TEST_DEPENDENCIES=true ./build/scripts/install_build_dependencies
+      - run: env INSTALL_TEST_DEPENDENCIES=true ./tasks/install-system-build-dependencies
       - restore_cache:
           # CircleCI's prefix based matching will mean the cache from the last
           # cache for this branch will be restored.

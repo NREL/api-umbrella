@@ -1,11 +1,10 @@
 #!/usr/bin/env bash
 
 set -e -u -x
-
-source_dir="$(dirname "$(dirname "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)")")"
+source ./tasks/helpers.sh
 
 # shellcheck source=build/package_dependencies.sh
-source "$source_dir/build/package_dependencies.sh"
+source "$SOURCE_DIR/build/package_dependencies.sh"
 
 install_dependencies=("${all_build_dependencies[@]}")
 if [ "${INSTALL_TEST_DEPENDENCIES:-}" == "true" ]; then

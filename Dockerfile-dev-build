@@ -7,9 +7,9 @@ WORKDIR /app
 ENV DOCKER_DEV true
 ENV NOKOGIRI_USE_SYSTEM_LIBRARIES 1
 
-COPY build/scripts/install_build_dependencies /app/build/scripts/install_build_dependencies
+COPY tasks/install-system-build-dependencies /app/tasks/install-system-build-dependencies
 COPY build/package_dependencies.sh /app/build/package_dependencies.sh
-RUN env INSTALL_TEST_DEPENDENCIES=true /app/build/scripts/install_build_dependencies
+RUN env INSTALL_TEST_DEPENDENCIES=true /app/tasks/install-system-build-dependencies
 
 COPY Makefile.in /app/Makefile.in
 COPY Taskfile.yml /app/Taskfile.yml
@@ -46,7 +46,7 @@ FROM ubuntu:16.04
 
 COPY --from=build /app /app
 COPY --from=build /build /build
-RUN env INSTALL_TEST_DEPENDENCIES=true /app/build/scripts/install_build_dependencies
+RUN env INSTALL_TEST_DEPENDENCIES=true /app/tasks/install-system-build-dependencies
 WORKDIR /app
 
 RUN groupadd -r api-umbrella && \

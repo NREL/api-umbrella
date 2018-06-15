@@ -785,6 +785,10 @@ tasks:
     cmds:
       - ./tasks/package
 
+  install-system-build-dependencies:
+    cmds:
+      - ./tasks/install-system-build-dependencies
+
   default:
     cmds:
       - task: all
