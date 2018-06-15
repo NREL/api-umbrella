@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+golang_version="1.10.3"
+golang_hash="fa1b0e45d3b647c252f51f5e1204aba049cde4af177ef9f2181f43004f901035"
 mora_version="8127901857cf88d3f0902708b25ad930354973a3"
 mora_hash="b86cea913596370cd58fce89b23acd97"
 
@@ -7,13 +9,17 @@ set -e -u -x
 source ./tasks/helpers.sh
 
 task_working_dir
+
+download "https://dl.google.com/go/go$golang_version.linux-amd64.tar.gz" "sha256" "$golang_hash"
+extract_download "go$golang_version.linux-amd64.tar.gz"
+golang_source_dir="$(pwd)/go"
+
 download "https://github.com/emicklei/mora/archive/$mora_version.tar.gz" "md5" "$mora_hash"
 gopath="$(pwd)/gocode"
 mora_dir="$gopath/src/github.com/emicklei/mora"
 mkdir -p "$mora_dir"
 tar -xf "_persist/downloads/$mora_version.tar.gz" -C "$mora_dir" --strip-components 1
 
-golang_source_dir="$WORK_DIR/tasks/deps/golang/go"
 (cd "$mora_dir" && PATH="$golang_source_dir/bin:$DEFAULT_PATH" GOPATH="$gopath" GOROOT="$golang_source_dir" go install)
 install -D -m 755 "$gopath/bin/mora" "$STAGE_EMBEDDED_DIR/bin/mora"
 

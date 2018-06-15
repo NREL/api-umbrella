@@ -57,16 +57,6 @@ tasks:
       - ./build/work/stamp/deps/geolitecity
     method: none
 
-  deps:golang:
-    cmds:
-      - ./tasks/deps/golang
-    sources:
-      - ./tasks/deps/golang
-      - ./tasks/helpers.sh
-    generates:
-      - ./build/work/stamp/deps/golang
-    method: checksum
-
   deps:libcidr:
     cmds:
       - ./tasks/deps/libcidr
@@ -131,12 +121,9 @@ tasks:
     method: checksum
 
   deps:mora:
-    deps:
-      - deps:golang
     cmds:
       - ./tasks/deps/mora
     sources:
-      - ./build/work/stamp/deps/golang
       - ./tasks/deps/mora
       - ./tasks/helpers.sh
     generates:
