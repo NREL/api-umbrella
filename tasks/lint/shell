@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+set -e -u -x
+source ./tasks/helpers.sh
+set +x
+
+mapfile -t files < <(git grep -El "^#!(/bin/sh|/bin/bash|/usr/bin/env sh|/usr/bin/env sh)" || true)
+if [ -n "${files:-}" ]; then
+  echo "Use '/usr/bin/env bash' shebang for following files:"
+  printf '  %s\n' "${files[@]}"
+  exit 1
+fi
+
+mapfile -t files < <(git grep -El "^#!/usr/bin/env bash")
+set -x
+"$TEST_INSTALL_PREFIX/bin/shellcheck" "${files[@]}"

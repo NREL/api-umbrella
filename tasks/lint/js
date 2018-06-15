@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+set -e -u -x
+source ./tasks/helpers.sh
+
+set -x
+(
+  cd "$SOURCE_DIR/src/api-umbrella/admin-ui"
+  PATH="$DEV_PATH" yarn run lint:js
+)

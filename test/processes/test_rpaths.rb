@@ -38,7 +38,7 @@ class Test::Processes::TestRpaths < Minitest::Test
       "/embedded/openresty/nginx/sbin/nginx",
       "/embedded/libexec/trafficserver/ssl_cert_loader.so",
       # LuaRock
-      "/embedded/apps/core/shared/vendor/lib/lua/5.1/iconv.so",
+      "/embedded/apps/core/shared/vendor/lua/lib/lua/5.1/iconv.so",
       # Rubygem
       "/oj/oj.so",
     ].each do |expected_path_end|

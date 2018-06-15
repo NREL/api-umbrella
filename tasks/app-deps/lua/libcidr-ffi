@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+lua_libcidr_ffi_version="0.1.3"
+
+set -e -u -x
+source ./tasks/helpers.sh
+
+opm_install "GUI/lua-libcidr-ffi" "$lua_libcidr_ffi_version"
+
+stamp

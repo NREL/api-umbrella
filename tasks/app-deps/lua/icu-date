@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+lua_icu_date_version="857990ba72cf48f7ae20dfb861a783231b5a2e79"
+lua_icu_date_hash="580f4a650782556266cc341630d39f63"
+
+set -e -u -x
+source ./tasks/helpers.sh
+
+task_working_dir
+download "https://github.com/GUI/lua-icu-date/archive/$lua_icu_date_version.tar.gz" "md5" "$lua_icu_date_hash"
+extract_download "$lua_icu_date_version.tar.gz"
+
+cd "lua-icu-date-$lua_icu_date_version"
+"${LUAROCKS_CMD[@]}" --tree="$APP_CORE_VENDOR_LUA_DIR" make --local icu-date-git-1.rockspec
+
+stamp

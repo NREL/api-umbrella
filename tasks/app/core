@@ -1,0 +1,59 @@
+#!/usr/bin/env bash
+
+set -e -u -x
+source ./tasks/helpers.sh
+
+# Copy all the API Umbrella source into the release directory.
+mkdir -p "$APP_CORE_RELEASE_DIR"
+rsync -a \
+  --delete-after \
+  --delete-excluded \
+  --filter=":- $SOURCE_DIR/.gitignore" \
+  --include=/templates/etc/perp/.boot \
+  --exclude=.* \
+  --exclude=/templates/etc/test-env* \
+  --exclude=/templates/etc/perp/test-env* \
+  --exclude=/src/api-umbrella/web-app/spec \
+  --exclude=/src/api-umbrella/web-app/app/assets \
+  --include=/bin/*** \
+  --include=/config/*** \
+  --include=/LICENSE.txt \
+  --include=/templates/*** \
+  --include=/src/*** \
+  --exclude=* \
+  "$SOURCE_DIR/" \
+  "$APP_CORE_RELEASE_DIR/"
+
+# Add build pieces from the other tasks into the release directory (eg,
+# compiled assets).
+mkdir -p "$APP_CORE_RELEASE_DIR/build/dist"
+rsync -a --delete-after \
+  "$WORK_DIR/tasks/app/admin-ui/build/_persist/dist/" \
+  "$APP_CORE_RELEASE_DIR/build/dist/admin-ui/"
+rsync -a --delete-after \
+  "$SOURCE_DIR/src/api-umbrella/web-app/public/" \
+  "$APP_CORE_RELEASE_DIR/build/dist/web-app-public/"
+rsync -a --delete-after \
+  "$WORK_DIR/tasks/app/web-app/precompile/_persist/public/web-assets/" \
+  "$APP_CORE_RELEASE_DIR/build/dist/web-app-public/web-assets/"
+rsync -a -v --delete-after \
+  "$WORK_DIR/tasks/app-deps/web-app/bundle/_persist/.bundle-prod/" \
+  "$APP_CORE_RELEASE_DIR/src/api-umbrella/web-app/.bundle/"
+
+# Fix the bundle path so it's relative and works within the release directory.
+PATH="$STAGE_EMBEDDED_PATH" BUNDLE_APP_CONFIG="$APP_CORE_RELEASE_DIR/src/api-umbrella/web-app/.bundle" bundle config --local path "../../../vendor/bundle"
+
+# Add symlinks for the release.
+(cd "$APP_CORE_DIR" && ln -snf releases/0 ./current)
+(cd "$APP_CORE_DIR/releases/0" && ln -snf ../../shared/vendor ./vendor)
+
+# Add symlinks for bin files into the release.
+mkdir -p "$STAGE_PREFIX_DIR/bin"
+(
+  cd "$STAGE_PREFIX_DIR/bin"
+  ln -snf ../embedded/apps/core/current/bin/api-umbrella ./api-umbrella
+  ln -snf ../embedded/apps/core/current/bin/api-umbrella-env ./api-umbrella-env
+  ln -snf ../embedded/apps/core/current/bin/api-umbrella-exec ./api-umbrella-exec
+)
+
+stamp

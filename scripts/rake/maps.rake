@@ -1,4 +1,6 @@
 namespace :maps do
+  # rubocop:disable Style/GlobalVars
+
   task :download do
     [
       "http://www.naturalearthdata.com/http//www.naturalearthdata.com/download/50m/cultural/ne_50m_admin_1_states_provinces_lakes.zip",
@@ -89,10 +91,10 @@ namespace :maps do
     # individual country.
     countries = Oj.load(File.read(File.join($input_dir, "tmp/world-50m-combined.json")))
     countries["features"].each do |feature|
-      File.open(File.join($output_dir, "#{feature["properties"]["iso_a2"]}.json"), "w") do |f|
+      File.open(File.join($output_dir, "#{feature["properties"]["iso_a2"]}.json"), "w") do |file|
         country = countries.dup
         country["features"] = [country["features"].detect { |f| f["properties"]["iso_a2"] == feature["properties"]["iso_a2"] }]
-        f.write(Oj.dump(country))
+        file.write(Oj.dump(country))
       end
     end
   end
@@ -113,10 +115,10 @@ namespace :maps do
         feature["geometry"]["coordinates"].reject! { |c| c[0][0][0] < -177 }
       end
 
-      File.open(File.join($output_dir, "#{feature["properties"]["iso_3166_2"]}.json"), "w") do |f|
+      File.open(File.join($output_dir, "#{feature["properties"]["iso_3166_2"]}.json"), "w") do |file|
         state_data = data.dup
         state_data["features"] = [state_data["features"].detect { |f| f["properties"]["iso_3166_2"] == feature["properties"]["iso_3166_2"] }]
-        f.write(Oj.dump(state_data))
+        file.write(Oj.dump(state_data))
       end
     end
     File.open(output_path, "w") { |f| f.write(Oj.dump(data)) }
@@ -180,4 +182,6 @@ namespace :maps do
     Rake::Task["maps:us"].invoke
     Rake::Task["maps:simplify"].invoke
   end
+
+  # rubocop:enable Style/GlobalVars
 end

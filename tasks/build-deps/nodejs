@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+nodejs_version="8.11.2"
+nodejs_hash="213599127d24496cbf1cbb2a7c51060a3506d6b11132c59bb7f9f8a0edd210a7"
+
+set -e -u -x
+source ./tasks/helpers.sh
+
+task_working_dir
+download "https://nodejs.org/dist/v$nodejs_version/node-v$nodejs_version-linux-x64.tar.xz" "sha256" "$nodejs_hash"
+extract_download "node-v$nodejs_version-linux-x64.tar.xz"
+
+rsync -a -v "node-v$nodejs_version-linux-x64/" "$DEV_INSTALL_PREFIX/"
+
+stamp

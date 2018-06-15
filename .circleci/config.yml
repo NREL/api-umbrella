@@ -5,30 +5,43 @@ jobs:
     working_directory: /app
     docker:
       - image: ubuntu:16.04
+    environment:
+      CACHE_VERSION: v1
     steps:
       - checkout
       # Install any system package dependencies.
-      - run: env INSTALL_TEST_DEPENDENCIES=true ./build/scripts/install_build_dependencies
+      - run: env INSTALL_TEST_DEPENDENCIES=true ./tasks/install-system-build-dependencies
       - restore_cache:
           # CircleCI's prefix based matching will mean the cache from the last
           # cache for this branch will be restored.
           key: cache-build-deps-{{ .Environment.CACHE_VERSION }}-{{ .Branch }}-{{ arch }}-
+      # The bootstrap's "task" file will be cached on subsequent runs, but due
+      # to the reliance on timestamps, this fact might not get picked up in the
+      # CI environment. So if a stamp file exists for the initial bootstrap
+      # process, re-touch it to prevent re-downloads.
+      - run: touch -c build/work/stamp/bootstrap-*
       # Build all the API Umbrella software dependencies.
       - run: ./configure
-      - run: make all test-deps test-bundle
+      - run: make all test-deps
+      # Cache the staged build data and task checksums of what's been
+      # completed. But explicitly don't cache most of the build/work/tasks/*
+      # data, since that contains a lot of the intermediate build files, which
+      # can  significantly increase the cache size.
       - save_cache:
           key: cache-build-deps-{{ .Environment.CACHE_VERSION }}-{{ .Branch }}-{{ arch }}-{{ epoch }}
           paths:
-            - build/work
-            - CMakeCache.txt
-            - CMakeFiles
-            - Makefile
-            - cmake_install.cmake
-      - type: shell
-        command: |
-          groupadd -r api-umbrella
-          useradd -r -g api-umbrella -s /sbin/nologin -d /opt/api-umbrella -c "API Umbrella user" api-umbrella
-          ./test/scripts/circle-ci
+            - .task
+            - build/work/dev-env
+            - build/work/stage
+            - build/work/stamp
+            - build/work/task
+            - build/work/tasks/app-deps/admin-ui/yarn/_persist
+            - build/work/tasks/app-deps/web-app/bundle/_persist
+            - build/work/tasks/app/admin-ui/build/_persist/dist
+            - build/work/tasks/app/web-app/precompile/_persist/public/web-assets
+            - build/work/tasks/test-deps/bundle/_persist
+            - build/work/test-env
+      - run: make test:circle-ci
       - store_test_results:
           path: test/tmp/reports
       - store_artifacts:

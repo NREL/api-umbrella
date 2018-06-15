@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+
+openldap_version="2.4.46"
+openldap_hash="a9ae2273eb9bdd70090dafe0d018a3132606bef6"
+
+set -e -u -x
+source ./tasks/helpers.sh
+
+task_working_dir
+download "https://www.openldap.org/software/download/OpenLDAP/openldap-release/openldap-$openldap_version.tgz" "sha1" "$openldap_hash"
+extract_download "openldap-$openldap_version.tgz"
+
+cd "openldap-$openldap_version"
+./configure --prefix="$TEST_INSTALL_PREFIX" --disable-backends --enable-mdb
+make
+make depend
+make install
+
+stamp
