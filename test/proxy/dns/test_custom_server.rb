@@ -36,15 +36,15 @@ class Test::Proxy::Dns::TestCustomServer < Minitest::Test
     prepend_api_backends([
       {
         :frontend_host => "127.0.0.1",
-        :backend_host => "invalid-hostname-begins-resolving.ooga",
-        :servers => [{ :host => "invalid-hostname-begins-resolving.ooga", :port => 9444 }],
+        :backend_host => unique_test_hostname,
+        :servers => [{ :host => unique_test_hostname, :port => 9444 }],
         :url_matches => [{ :frontend_prefix => "/#{unique_test_id}/invalid-hostname-begins-resolving/", :backend_prefix => "/info/" }],
       },
     ]) do
       response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/invalid-hostname-begins-resolving/", http_options)
       assert_response_code(502, response)
 
-      set_dns_records(["invalid-hostname-begins-resolving.ooga 60 A 127.0.0.1"])
+      set_dns_records(["#{unique_test_hostname} 60 A 127.0.0.1"])
 
       wait_for_response("/#{unique_test_id}/invalid-hostname-begins-resolving/", {
         :code => 200,
@@ -58,19 +58,19 @@ class Test::Proxy::Dns::TestCustomServer < Minitest::Test
     prepend_api_backends([
       {
         :frontend_host => "127.0.0.1",
-        :backend_host => "refresh-after-ttl-expires.ooga",
-        :servers => [{ :host => "refresh-after-ttl-expires.ooga", :port => 9444 }],
+        :backend_host => unique_test_hostname,
+        :servers => [{ :host => unique_test_hostname, :port => 9444 }],
         :url_matches => [{ :frontend_prefix => "/#{unique_test_id}/refresh-after-ttl-expires/", :backend_prefix => "/info/" }],
       },
     ]) do
-      set_dns_records(["refresh-after-ttl-expires.ooga #{ttl} A 127.0.0.1"])
+      set_dns_records(["#{unique_test_hostname} #{ttl} A 127.0.0.1"])
       wait_for_response("/#{unique_test_id}/refresh-after-ttl-expires/", {
         :code => 200,
         :local_interface_ip => "127.0.0.1",
       })
-
-      set_dns_records(["refresh-after-ttl-expires.ooga #{ttl} A 127.0.0.2"])
       start_time = Time.now.utc
+
+      set_dns_records(["#{unique_test_hostname} #{ttl} A 127.0.0.2"])
       wait_for_response("/#{unique_test_id}/refresh-after-ttl-expires/", {
         :code => 200,
         :local_interface_ip => "127.0.0.2",
@@ -89,19 +89,19 @@ class Test::Proxy::Dns::TestCustomServer < Minitest::Test
     prepend_api_backends([
       {
         :frontend_host => "127.0.0.1",
-        :backend_host => "down-after-ttl-expires.ooga",
-        :servers => [{ :host => "down-after-ttl-expires.ooga", :port => 9444 }],
+        :backend_host => unique_test_hostname,
+        :servers => [{ :host => unique_test_hostname, :port => 9444 }],
         :url_matches => [{ :frontend_prefix => "/#{unique_test_id}/down-after-ttl-expires/", :backend_prefix => "/info/" }],
       },
     ]) do
-      set_dns_records(["down-after-ttl-expires.ooga #{ttl} A 127.0.0.1"])
+      set_dns_records(["#{unique_test_hostname} #{ttl} A 127.0.0.1"])
       wait_for_response("/#{unique_test_id}/down-after-ttl-expires/", {
         :code => 200,
         :local_interface_ip => "127.0.0.1",
       })
+      start_time = Time.now.utc
 
       set_dns_records([])
-      start_time = Time.now.utc
       wait_for_response("/#{unique_test_id}/down-after-ttl-expires/", {
         :code => 502,
       })
@@ -118,30 +118,30 @@ class Test::Proxy::Dns::TestCustomServer < Minitest::Test
     prepend_api_backends([
       {
         :frontend_host => "127.0.0.1",
-        :backend_host => "ongoing-changes.ooga",
-        :servers => [{ :host => "ongoing-changes.ooga", :port => 9444 }],
+        :backend_host => unique_test_hostname,
+        :servers => [{ :host => unique_test_hostname, :port => 9444 }],
         :url_matches => [{ :frontend_prefix => "/#{unique_test_id}/ongoing-changes/", :backend_prefix => "/info/" }],
       },
     ]) do
-      set_dns_records(["ongoing-changes.ooga 1 A 127.0.0.1"])
+      set_dns_records(["#{unique_test_hostname} 1 A 127.0.0.1"])
       wait_for_response("/#{unique_test_id}/ongoing-changes/", {
         :code => 200,
         :local_interface_ip => "127.0.0.1",
       })
 
-      set_dns_records(["ongoing-changes.ooga 1 A 127.0.0.2"])
+      set_dns_records(["#{unique_test_hostname} 1 A 127.0.0.2"])
       wait_for_response("/#{unique_test_id}/ongoing-changes/", {
         :code => 200,
         :local_interface_ip => "127.0.0.2",
       })
 
-      set_dns_records(["ongoing-changes.ooga 1 A 127.0.0.3"])
+      set_dns_records(["#{unique_test_hostname} 1 A 127.0.0.3"])
       wait_for_response("/#{unique_test_id}/ongoing-changes/", {
         :code => 200,
         :local_interface_ip => "127.0.0.3",
       })
 
-      set_dns_records(["ongoing-changes.ooga 1 A 127.0.0.4"])
+      set_dns_records(["#{unique_test_hostname} 1 A 127.0.0.4"])
       wait_for_response("/#{unique_test_id}/ongoing-changes/", {
         :code => 200,
         :local_interface_ip => "127.0.0.4",
@@ -153,12 +153,12 @@ class Test::Proxy::Dns::TestCustomServer < Minitest::Test
     prepend_api_backends([
       {
         :frontend_host => "127.0.0.1",
-        :backend_host => "multiple-ips.ooga",
-        :servers => [{ :host => "multiple-ips.ooga", :port => 9444 }],
+        :backend_host => unique_test_hostname,
+        :servers => [{ :host => unique_test_hostname, :port => 9444 }],
         :url_matches => [{ :frontend_prefix => "/#{unique_test_id}/multiple-ips/", :backend_prefix => "/info/" }],
       },
     ]) do
-      records = @local_interface_ips.map { |ip| "multiple-ips.ooga 60 A #{ip}" }
+      records = @local_interface_ips.map { |ip| "#{unique_test_hostname} 60 A #{ip}" }
       set_dns_records(records)
       wait_for_response("/#{unique_test_id}/multiple-ips/", {
         :code => 200,
@@ -190,12 +190,12 @@ class Test::Proxy::Dns::TestCustomServer < Minitest::Test
     prepend_api_backends([
       {
         :frontend_host => "127.0.0.1",
-        :backend_host => "no-drops-during-changes.ooga",
-        :servers => [{ :host => "no-drops-during-changes.ooga", :port => 9444 }],
+        :backend_host => unique_test_hostname,
+        :servers => [{ :host => unique_test_hostname, :port => 9444 }],
         :url_matches => [{ :frontend_prefix => "/#{unique_test_id}/no-drops-during-changes/", :backend_prefix => "/info/" }],
       },
     ]) do
-      set_dns_records(["no-drops-during-changes.ooga 1 A 127.0.0.1"])
+      set_dns_records(["#{unique_test_hostname} 1 A 127.0.0.1"])
       wait_for_response("/#{unique_test_id}/no-drops-during-changes/", {
         :code => 200,
         :local_interface_ip => "127.0.0.1",
@@ -214,7 +214,7 @@ class Test::Proxy::Dns::TestCustomServer < Minitest::Test
           # Make sure things work with both a short TTL and no TTL.
           random_ttl = [0, 1].sample
 
-          set_dns_records(["no-drops-during-changes.ooga #{random_ttl} A #{random_ip}"])
+          set_dns_records(["#{unique_test_hostname} #{random_ttl} A #{random_ip}"])
         end
       end
 
@@ -265,13 +265,13 @@ class Test::Proxy::Dns::TestCustomServer < Minitest::Test
   end
 
   def test_resolves_newly_published_apis
-    set_dns_records(["newly-published-backend.ooga 1 A 127.0.0.2"])
+    set_dns_records(["#{unique_test_hostname} 1 A 127.0.0.2"])
 
     prepend_api_backends([
       {
         :frontend_host => "127.0.0.1",
-        :backend_host => "newly-published-backend.ooga",
-        :servers => [{ :host => "newly-published-backend.ooga", :port => 9444 }],
+        :backend_host => unique_test_hostname,
+        :servers => [{ :host => unique_test_hostname, :port => 9444 }],
         :url_matches => [{ :frontend_prefix => "/#{unique_test_id}/newly-published-backend/", :backend_prefix => "/info/" }],
       },
     ]) do

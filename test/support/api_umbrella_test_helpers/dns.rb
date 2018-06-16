@@ -4,7 +4,7 @@ module ApiUmbrellaTestHelpers
     # buffer to our timing calculations. This is to account for some fuzziness in
     # our timings between what's happening in nginx and our test requests being
     # made.
-    TTL_BUFFER_NEG = 1.7
+    TTL_BUFFER_NEG = 1.8
     TTL_BUFFER_POS = 2.1
 
     def teardown
@@ -29,6 +29,8 @@ module ApiUmbrellaTestHelpers
     end
 
     def wait_for_response(path, options)
+      response = nil
+      data = nil
       Timeout.timeout(15) do
         loop do
           response = Typhoeus.get("http://127.0.0.1:9080#{path}", http_options)
@@ -48,7 +50,19 @@ module ApiUmbrellaTestHelpers
         end
       end
     rescue Timeout::Error
-      flunk("DNS change not detected")
+      message = <<~EOS
+        DNS change not detected:
+
+        Expected response code: #{options.fetch(:code)}
+        Actual response code: #{response.code if(response)}
+
+        Expected DNS resolve to: #{options[:local_interface_ip]}
+        Actual DNS resolve to: #{data["local_interface_ip"] if(data)}
+
+        Last response:
+        #{response_error_message(response)}
+      EOS
+      flunk(message)
     end
   end
 end

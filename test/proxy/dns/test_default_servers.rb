@@ -75,8 +75,8 @@ class Test::Proxy::Dns::TestDefaultServers < Minitest::Test
     prepend_api_backends([
       {
         :frontend_host => "127.0.0.1",
-        :backend_host => "invalid.ooga",
-        :servers => [{ :host => "invalid.ooga", :port => 90 }],
+        :backend_host => unique_test_hostname,
+        :servers => [{ :host => unique_test_hostname, :port => 90 }],
         :url_matches => [{ :frontend_prefix => "/#{unique_test_id}/invalid-hostname/", :backend_prefix => "/" }],
       },
     ]) do

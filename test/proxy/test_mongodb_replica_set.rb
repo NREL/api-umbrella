@@ -133,7 +133,7 @@ class Test::Proxy::TestMongodbReplicaSet < Minitest::Test
             :headers => { "X-Api-Key" => user.api_key },
           }))
           request.on_complete do |resp|
-            assert_equal(200, resp.code, resp.body)
+            assert_response_code(200, resp)
           end
           hydra.queue(request)
         end
