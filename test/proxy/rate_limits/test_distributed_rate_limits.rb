@@ -374,7 +374,7 @@ class Test::Proxy::RateLimits::TestDistributedRateLimits < Minitest::Test
 
   def set_distributed_count(count, options = {})
     time = options[:time] || Time.now.utc
-    bucket_start_time = ((time.to_f * 1000) / options.fetch(:accuracy)).floor * options.fetch(:accuracy)
+    bucket_start_time = (time.strftime("%s%L").to_i / options.fetch(:accuracy)).floor * options.fetch(:accuracy)
     host = options[:host] || "127.0.0.1"
     key = "apiKey:#{options.fetch(:duration)}:#{options.fetch(:api_key)}:#{host}:#{bucket_start_time}"
 

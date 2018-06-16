@@ -105,7 +105,7 @@ module ApiUmbrellaTestHelpers
         http_opts[:headers]["X-Forwarded-For"] = options[:ip]
       end
       if(options[:time])
-        http_opts[:headers]["X-Fake-Time"] = (options[:time].to_f * 1000).to_i
+        http_opts[:headers]["X-Fake-Time"] = options[:time].strftime("%s%L").to_i
       end
       if(options[:http_options])
         http_opts.deep_merge!(options[:http_options])
