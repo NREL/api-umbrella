@@ -52,7 +52,7 @@ class Test::Processes::TestRsyslog < Minitest::Test
 
   def memory_use
     pid = File.read(File.join($config["run_dir"], "rsyslogd.pid"))
-    output, status = run_shell("ps -o vsz=,rss= #{pid}")
+    output, status = run_shell("ps", "-o", "vsz=,rss=", pid)
     assert_equal(0, status, output)
 
     columns = output.strip.split(/\s+/)

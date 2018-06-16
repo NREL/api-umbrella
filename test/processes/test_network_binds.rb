@@ -10,10 +10,10 @@ class Test::Processes::TestNetworkBinds < Minitest::Test
 
   def test_binds_http_to_public_interface_other_services_to_localhost
     pid = File.read(File.join($config["run_dir"], "perpboot.pid")).strip
-    pstree_output, pstree_status = run_shell("pstree -p #{pid}")
+    pstree_output, pstree_status = run_shell("pstree", "-p", pid)
     assert_equal(0, pstree_status, pstree_output)
     pids = pstree_output.scan(/\((\d+)\)/).flatten.sort.uniq
-    output, _status = run_shell("lsof -n -P -l -R -a -i TCP -s TCP:LISTEN -p #{pids.join(",")}")
+    output, _status = run_shell("lsof", "-n", "-P", "-l", "-R", "-a", "-i", "TCP", "-s", "TCP:LISTEN", "-p", pids.join(","))
     # lsof may return an unsuccessful exit code (since there may not be
     # anything to match for all the PIDs passed in), so just sanity check the
     # output.
