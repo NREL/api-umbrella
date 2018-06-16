@@ -46,8 +46,8 @@ FROM ubuntu:16.04
 
 COPY --from=build /app /app
 COPY --from=build /build /build
-RUN env INSTALL_TEST_DEPENDENCIES=true /app/tasks/install-system-build-dependencies
 WORKDIR /app
+RUN env INSTALL_TEST_DEPENDENCIES=true /app/tasks/install-system-build-dependencies
 
 RUN groupadd -r api-umbrella && \
   useradd -r -g api-umbrella -s /sbin/nologin -d /opt/api-umbrella -c "API Umbrella user" api-umbrella
