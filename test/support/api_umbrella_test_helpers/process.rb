@@ -1,7 +1,12 @@
 require "ipaddr"
+require "singleton"
+require "support/api_umbrella_test_helpers/shell"
 
 module ApiUmbrellaTestHelpers
   class Process
+    include Singleton
+    include ApiUmbrellaTestHelpers::Shell
+
     EMBEDDED_ROOT = File.join(API_UMBRELLA_SRC_ROOT, "build/work/stage/opt/api-umbrella/embedded").freeze
     TEST_RUN_ROOT = File.join(API_UMBRELLA_SRC_ROOT, "test/tmp/run")
     TEST_RUN_API_UMBRELLA_ROOT = File.join(TEST_RUN_ROOT, "api-umbrella-root")
@@ -12,9 +17,9 @@ module ApiUmbrellaTestHelpers
     CONFIG = "#{CONFIG_PATH}:#{CONFIG_COMPUTED_PATH}:#{CONFIG_OVERRIDES_PATH}".freeze
     @@incrementing_unique_ip_addr = IPAddr.new("200.0.0.1")
 
-    def self.start
+    def start
       Minitest.after_run do
-        ApiUmbrellaTestHelpers::Process.stop
+        self.stop
       end
 
       start_time = Time.now.utc
@@ -186,7 +191,7 @@ module ApiUmbrellaTestHelpers
       raise e
     end
 
-    def self.stop
+    def stop
       if($elasticsearch_process && $elasticsearch_process.alive?)
         puts "Stopping elasticsearch..."
         $elasticsearch_process.stop
@@ -212,7 +217,7 @@ module ApiUmbrellaTestHelpers
       end
     end
 
-    def self.reload(flag)
+    def reload(flag)
       reload = ChildProcess.build(*[File.join(API_UMBRELLA_SRC_ROOT, "bin/api-umbrella"), "reload", flag].flatten.compact)
       reload.io.inherit!
       reload.environment["API_UMBRELLA_EMBEDDED_ROOT"] = EMBEDDED_ROOT
@@ -221,18 +226,55 @@ module ApiUmbrellaTestHelpers
       reload.wait
     end
 
-    def self.restart_trafficserver
-      reload = ChildProcess.build(*[File.join(API_UMBRELLA_SRC_ROOT, "bin/api-umbrella-exec"), "perpctl", "-b", File.join($config["root_dir"], "etc/perp"), "-q", "term", "trafficserver"].flatten.compact)
-      reload.io.inherit!
-      reload.environment["API_UMBRELLA_EMBEDDED_ROOT"] = EMBEDDED_ROOT
-      reload.environment["API_UMBRELLA_CONFIG"] = CONFIG
-      reload.start
-      reload.wait
+    def perp_signal(service_name, signal_name)
+      output, status = run_shell("perpctl", "-b", File.join($config["root_dir"], "etc/perp"), signal_name, service_name)
+      if(status != 0)
+        raise "perpctl failed (status: #{status}): #{output}"
+      end
+    end
 
-      # Sleep to ensure that the traffiserver kill signal is received and it's
-      # had a chance to die, before moving onto the health checks (so we don't
-      # check the health before the server has actually been killed).
-      sleep 1
+    def perp_pid(service_name)
+      output, _status = run_shell("perpstat", "-b", File.join($config["root_dir"], "etc/perp"), service_name)
+      matches = output.match(/^\s*main: up .*\(pid (\d+)\)\s*$/)
+      pid = nil
+      if matches
+        pid = matches[1]
+      end
+
+      pid
+    end
+
+    def perp_restart(service_name, signal_name = "term")
+      original_pid = perp_pid(service_name)
+      if !original_pid
+        raise "failed to find pid for #{service_name}"
+      end
+
+      perp_signal(service_name, signal_name)
+
+      # Sleep to ensure that the kill signal is received and it's had a chance
+      # to die and restart the new process (so we don't move on before the
+      # process has actually been killed).
+      restarted_pid = nil
+      begin
+        Timeout.timeout(10) do
+          loop do
+            restarted_pid = perp_pid(service_name)
+            if(restarted_pid && restarted_pid != original_pid)
+              break
+            end
+
+            sleep 0.1
+          end
+        end
+      rescue Timeout::Error
+        raise Timeout::Error, "Failed to restart #{service_name}. Waiting for PID to change. Original PID: #{original_pid}. Last PID: #{restarted_pid}"
+      end
+    end
+
+    def restart_trafficserver
+      perp_restart("trafficserver")
+      restarted_pid = perp_pid("trafficserver")
 
       # After killing and restarting trafficserver, wait for it to come back
       # online (since this full restart isn't a normal occurrence and will
@@ -250,7 +292,8 @@ module ApiUmbrellaTestHelpers
       begin
         Timeout.timeout(40) do
           loop do
-            response = Typhoeus.get("http://127.0.0.1:9080/api-umbrella/v1/health?#{rand}")
+            url = "http://127.0.0.1:9080/api-umbrella/v1/health?#{rand}"
+            response = Typhoeus.get(url)
             if(response.code == 200)
               break
             end
@@ -261,9 +304,16 @@ module ApiUmbrellaTestHelpers
       rescue Timeout::Error
         raise Timeout::Error, "API Umbrella configuration changes were not detected. Waiting for version #{version}. Last seen: #{state.inspect} #{health.inspect}"
       end
+
+      # Sanity check to ensure Trafficserver was only restarted once, and isn't
+      # flapping on and off.
+      current_pid = perp_pid("trafficserver")
+      if(restarted_pid != current_pid)
+        raise "Trafficserver was restarted multiple times, this is not expected (post-restart pid: #{restarted_pid}, current pid: #{current_pid})"
+      end
     end
 
-    def self.wait_for_config_version(field, version, config = {})
+    def wait_for_config_version(field, version, config = {})
       state = nil
       health = nil
       begin
@@ -288,7 +338,7 @@ module ApiUmbrellaTestHelpers
       end
     end
 
-    def self.fetch(url, config)
+    def fetch(url, config)
       http_opts = {}
 
       # If we're performing global rate limit tests, use a different IP address

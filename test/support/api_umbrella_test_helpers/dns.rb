@@ -24,8 +24,7 @@ module ApiUmbrellaTestHelpers
       content = records.map { |r| "local-data: '#{r}'" }.join("\n")
       File.open(unbound_config_path, "w") { |f| f.write(content) }
 
-      output, status = run_shell("perpctl", "-b", File.join($config["root_dir"], "etc/perp"), "hup", "test-env-unbound")
-      assert_equal(0, status, output)
+      api_umbrella_process.perp_signal("test-env-unbound", "hup")
     end
 
     def wait_for_response(path, options)

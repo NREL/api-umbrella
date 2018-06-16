@@ -7,7 +7,8 @@ CONFIG proxy.config.process_manager.mgmt_port INT {{trafficserver.management_por
 CONFIG proxy.config.admin.number_config_bak INT 0
 
 # Disable traffic_cop's health checks, since it seems like these aren't favored
-# and will be removed in Traffic Server 8.
+# and will be removed in Traffic Server 8:
+# https://www.mail-archive.com/dev@trafficserver.apache.org/msg13821.html
 CONFIG proxy.config.cop.active_health_checks INT 0
 
 # Use the special "#-1" value to keep running as the current user (perp will

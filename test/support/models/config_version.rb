@@ -29,6 +29,6 @@ class ConfigVersion
 
   def wait_until_live
     version = self.version.strftime("%s%L").to_i
-    ApiUmbrellaTestHelpers::Process.wait_for_config_version("db_config_version", version)
+    ApiUmbrellaTestHelpers::Process.instance.wait_for_config_version("db_config_version", version)
   end
 end

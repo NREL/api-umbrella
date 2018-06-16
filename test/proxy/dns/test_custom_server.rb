@@ -38,15 +38,15 @@ class Test::Proxy::Dns::TestCustomServer < Minitest::Test
         :frontend_host => "127.0.0.1",
         :backend_host => unique_test_hostname,
         :servers => [{ :host => unique_test_hostname, :port => 9444 }],
-        :url_matches => [{ :frontend_prefix => "/#{unique_test_id}/invalid-hostname-begins-resolving/", :backend_prefix => "/info/" }],
+        :url_matches => [{ :frontend_prefix => "/#{unique_test_id}/", :backend_prefix => "/info/" }],
       },
     ]) do
-      response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/invalid-hostname-begins-resolving/", http_options)
+      response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/", http_options)
       assert_response_code(502, response)
 
       set_dns_records(["#{unique_test_hostname} 60 A 127.0.0.1"])
 
-      wait_for_response("/#{unique_test_id}/invalid-hostname-begins-resolving/", {
+      wait_for_response("/#{unique_test_id}/", {
         :code => 200,
         :local_interface_ip => "127.0.0.1",
       })
@@ -60,18 +60,18 @@ class Test::Proxy::Dns::TestCustomServer < Minitest::Test
         :frontend_host => "127.0.0.1",
         :backend_host => unique_test_hostname,
         :servers => [{ :host => unique_test_hostname, :port => 9444 }],
-        :url_matches => [{ :frontend_prefix => "/#{unique_test_id}/refresh-after-ttl-expires/", :backend_prefix => "/info/" }],
+        :url_matches => [{ :frontend_prefix => "/#{unique_test_id}/", :backend_prefix => "/info/" }],
       },
     ]) do
       set_dns_records(["#{unique_test_hostname} #{ttl} A 127.0.0.1"])
-      wait_for_response("/#{unique_test_id}/refresh-after-ttl-expires/", {
+      wait_for_response("/#{unique_test_id}/", {
         :code => 200,
         :local_interface_ip => "127.0.0.1",
       })
       start_time = Time.now.utc
 
       set_dns_records(["#{unique_test_hostname} #{ttl} A 127.0.0.2"])
-      wait_for_response("/#{unique_test_id}/refresh-after-ttl-expires/", {
+      wait_for_response("/#{unique_test_id}/", {
         :code => 200,
         :local_interface_ip => "127.0.0.2",
       })
@@ -91,18 +91,18 @@ class Test::Proxy::Dns::TestCustomServer < Minitest::Test
         :frontend_host => "127.0.0.1",
         :backend_host => unique_test_hostname,
         :servers => [{ :host => unique_test_hostname, :port => 9444 }],
-        :url_matches => [{ :frontend_prefix => "/#{unique_test_id}/down-after-ttl-expires/", :backend_prefix => "/info/" }],
+        :url_matches => [{ :frontend_prefix => "/#{unique_test_id}/", :backend_prefix => "/info/" }],
       },
     ]) do
       set_dns_records(["#{unique_test_hostname} #{ttl} A 127.0.0.1"])
-      wait_for_response("/#{unique_test_id}/down-after-ttl-expires/", {
+      wait_for_response("/#{unique_test_id}/", {
         :code => 200,
         :local_interface_ip => "127.0.0.1",
       })
       start_time = Time.now.utc
 
       set_dns_records([])
-      wait_for_response("/#{unique_test_id}/down-after-ttl-expires/", {
+      wait_for_response("/#{unique_test_id}/", {
         :code => 502,
       })
       duration = Time.now.utc - start_time
@@ -120,29 +120,29 @@ class Test::Proxy::Dns::TestCustomServer < Minitest::Test
         :frontend_host => "127.0.0.1",
         :backend_host => unique_test_hostname,
         :servers => [{ :host => unique_test_hostname, :port => 9444 }],
-        :url_matches => [{ :frontend_prefix => "/#{unique_test_id}/ongoing-changes/", :backend_prefix => "/info/" }],
+        :url_matches => [{ :frontend_prefix => "/#{unique_test_id}/", :backend_prefix => "/info/" }],
       },
     ]) do
       set_dns_records(["#{unique_test_hostname} 1 A 127.0.0.1"])
-      wait_for_response("/#{unique_test_id}/ongoing-changes/", {
+      wait_for_response("/#{unique_test_id}/", {
         :code => 200,
         :local_interface_ip => "127.0.0.1",
       })
 
       set_dns_records(["#{unique_test_hostname} 1 A 127.0.0.2"])
-      wait_for_response("/#{unique_test_id}/ongoing-changes/", {
+      wait_for_response("/#{unique_test_id}/", {
         :code => 200,
         :local_interface_ip => "127.0.0.2",
       })
 
       set_dns_records(["#{unique_test_hostname} 1 A 127.0.0.3"])
-      wait_for_response("/#{unique_test_id}/ongoing-changes/", {
+      wait_for_response("/#{unique_test_id}/", {
         :code => 200,
         :local_interface_ip => "127.0.0.3",
       })
 
       set_dns_records(["#{unique_test_hostname} 1 A 127.0.0.4"])
-      wait_for_response("/#{unique_test_id}/ongoing-changes/", {
+      wait_for_response("/#{unique_test_id}/", {
         :code => 200,
         :local_interface_ip => "127.0.0.4",
       })
@@ -155,19 +155,19 @@ class Test::Proxy::Dns::TestCustomServer < Minitest::Test
         :frontend_host => "127.0.0.1",
         :backend_host => unique_test_hostname,
         :servers => [{ :host => unique_test_hostname, :port => 9444 }],
-        :url_matches => [{ :frontend_prefix => "/#{unique_test_id}/multiple-ips/", :backend_prefix => "/info/" }],
+        :url_matches => [{ :frontend_prefix => "/#{unique_test_id}/", :backend_prefix => "/info/" }],
       },
     ]) do
       records = @local_interface_ips.map { |ip| "#{unique_test_hostname} 60 A #{ip}" }
       set_dns_records(records)
-      wait_for_response("/#{unique_test_id}/multiple-ips/", {
+      wait_for_response("/#{unique_test_id}/", {
         :code => 200,
         :local_interface_ip => "127.0.0.1",
       })
 
       hydra = Typhoeus::Hydra.new(:max_concurrency => 10)
       requests = Array.new(250) do
-        request = Typhoeus::Request.new("http://127.0.0.1:9080/#{unique_test_id}/multiple-ips/", http_options)
+        request = Typhoeus::Request.new("http://127.0.0.1:9080/#{unique_test_id}/", http_options)
         hydra.queue(request)
         request
       end
@@ -192,11 +192,11 @@ class Test::Proxy::Dns::TestCustomServer < Minitest::Test
         :frontend_host => "127.0.0.1",
         :backend_host => unique_test_hostname,
         :servers => [{ :host => unique_test_hostname, :port => 9444 }],
-        :url_matches => [{ :frontend_prefix => "/#{unique_test_id}/no-drops-during-changes/", :backend_prefix => "/info/" }],
+        :url_matches => [{ :frontend_prefix => "/#{unique_test_id}/", :backend_prefix => "/info/" }],
       },
     ]) do
       set_dns_records(["#{unique_test_hostname} 1 A 127.0.0.1"])
-      wait_for_response("/#{unique_test_id}/no-drops-during-changes/", {
+      wait_for_response("/#{unique_test_id}/", {
         :code => 200,
         :local_interface_ip => "127.0.0.1",
       })
@@ -232,7 +232,7 @@ class Test::Proxy::Dns::TestCustomServer < Minitest::Test
         # duration is hit.
         on_complete = proc do
           if(Time.now.utc - start_time < test_duration)
-            request = Typhoeus::Request.new("http://127.0.0.1:9080/#{unique_test_id}/no-drops-during-changes/", http_options)
+            request = Typhoeus::Request.new("http://127.0.0.1:9080/#{unique_test_id}/", http_options)
             request.on_complete(&on_complete)
             requests << request
             hydra.queue(request)
@@ -272,10 +272,10 @@ class Test::Proxy::Dns::TestCustomServer < Minitest::Test
         :frontend_host => "127.0.0.1",
         :backend_host => unique_test_hostname,
         :servers => [{ :host => unique_test_hostname, :port => 9444 }],
-        :url_matches => [{ :frontend_prefix => "/#{unique_test_id}/newly-published-backend/", :backend_prefix => "/info/" }],
+        :url_matches => [{ :frontend_prefix => "/#{unique_test_id}/", :backend_prefix => "/info/" }],
       },
     ]) do
-      wait_for_response("/#{unique_test_id}/newly-published-backend/", {
+      wait_for_response("/#{unique_test_id}/", {
         :code => 200,
         :local_interface_ip => "127.0.0.2",
       })

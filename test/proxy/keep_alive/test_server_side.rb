@@ -71,8 +71,7 @@ class Test::Proxy::KeepAlive::TestServerSide < Minitest::Test
   def reset_api_backend_idle_connections
     # Restart the test nginx server to close any persistent keep-alive
     # connections API Umbrella is holding against it.
-    output, status = run_shell("perpctl", "-b", File.join($config["root_dir"], "etc/perp"), "term", "test-env-nginx")
-    assert_equal(0, status, output)
+    api_umbrella_process.perp_restart("test-env-nginx")
 
     # After restarting nginx, ensure we wait until there are no more idle
     # connections, so our checks for counts are isolated to each test.

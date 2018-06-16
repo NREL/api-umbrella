@@ -21,7 +21,7 @@ class Test::Processes::TestReloads < Minitest::Test
       original_child_pids = nginx_child_pids(parent_pid)
 
       # Send a reload signal to nginx.
-      Process.kill("HUP", parent_pid.to_i)
+      ::Process.kill("HUP", parent_pid.to_i)
 
       # After sending the reload signal, wait until only the new set of worker
       # processes is running. This prevents us from checking file descriptors
@@ -132,7 +132,7 @@ class Test::Processes::TestReloads < Minitest::Test
       reload_thread = Thread.new do
         loop do
           sleep rand(0.005..0.5)
-          ApiUmbrellaTestHelpers::Process.reload("--router")
+          api_umbrella_process.reload("--router")
         end
       end
 
@@ -204,10 +204,8 @@ class Test::Processes::TestReloads < Minitest::Test
   private
 
   def nginx_parent_pid
-    output, status = run_shell("perpstat", "-b", File.join($config["root_dir"], "etc/perp"), "nginx")
-    assert_equal(0, status, output)
-    parent_pid = output.match(/^\s*main:.*\(pid (\d+)\)\s*$/)[1]
-    assert(parent_pid, output)
+    parent_pid = api_umbrella_process.perp_pid("nginx")
+    assert(parent_pid)
 
     parent_pid
   end

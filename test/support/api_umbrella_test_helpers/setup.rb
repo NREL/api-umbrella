@@ -1,12 +1,14 @@
 require "English"
 require "ipaddr"
 require "support/api_umbrella_test_helpers/common_asserts"
+require "support/api_umbrella_test_helpers/shell"
 
 module ApiUmbrellaTestHelpers
   module Setup
     extend ActiveSupport::Concern
 
     include ApiUmbrellaTestHelpers::CommonAsserts
+    include ApiUmbrellaTestHelpers::Shell
 
     @@incrementing_unique_number = 0
     @@incrementing_unique_ip_addr = IPAddr.new("127.0.0.1")
@@ -15,6 +17,7 @@ module ApiUmbrellaTestHelpers
     mattr_reader :api_key
     mattr_reader :http_options
     mattr_reader :keyless_http_options
+    mattr_accessor :api_umbrella_process
     mattr_accessor :start_complete
     mattr_accessor :setup_complete
     mattr_accessor :setup_config_version_complete
@@ -46,7 +49,8 @@ module ApiUmbrellaTestHelpers
       self.setup_mutex.synchronize do
         unless self.start_complete
           # Start the API Umbrella process to test against.
-          ApiUmbrellaTestHelpers::Process.start
+          self.api_umbrella_process = ApiUmbrellaTestHelpers::Process.instance
+          self.api_umbrella_process.start
           self.start_complete = true
         end
       end
@@ -268,9 +272,9 @@ module ApiUmbrellaTestHelpers
         config = config.deep_stringify_keys
         config["version"] = SecureRandom.uuid
         File.write(ApiUmbrellaTestHelpers::Process::CONFIG_OVERRIDES_PATH, YAML.dump(config))
-        ApiUmbrellaTestHelpers::Process.reload(reload_flag)
+        self.api_umbrella_process.reload(reload_flag)
         @@current_override_config = config
-        ApiUmbrellaTestHelpers::Process.wait_for_config_version("file_config_version", config["version"], config)
+        self.api_umbrella_process.wait_for_config_version("file_config_version", config["version"], config)
 
         # When changes to the DNS server are made, this is one area where a
         # simple "reload" signal won't do the trick. Instead, we also need to
@@ -279,7 +283,7 @@ module ApiUmbrellaTestHelpers
         # a full restart, but it's hard to figure out the timing, so with this
         # mainly being a test issue, we'll force a full restart).
         if(previous_override_config.dig("dns_resolver", "nameservers") || @@current_override_config.dig("dns_resolver", "nameservers"))
-          ApiUmbrellaTestHelpers::Process.restart_trafficserver
+          self.api_umbrella_process.restart_trafficserver
 
         # When changing the keepalive idle timeout, a normal reload will pick
         # these changes up, but they don't kick in for a few seconds, which is
@@ -287,7 +291,7 @@ module ApiUmbrellaTestHelpers
         # restart to make it easier to know for sure the new settings are in
         # effect.
         elsif(previous_override_config.dig("router", "api_backends", "keepalive_idle_timeout") || @@current_override_config.dig("router", "api_backends", "keepalive_idle_timeout"))
-          ApiUmbrellaTestHelpers::Process.restart_trafficserver
+          self.api_umbrella_process.restart_trafficserver
         end
       end
     end
@@ -373,22 +377,6 @@ module ApiUmbrellaTestHelpers
           "X-Empty-Http-Header-Curl-Workaround#{@empty_http_header_counter}" => "ignore\r\n#{header}:",
         },
       }
-    end
-
-    # Run a shell command, and cpature its exit code and output (combined
-    # stdout and stderr).
-    #
-    # This is basically equivalent to Open3.capture2e, but we had randomly
-    # encountered "IOError: closed stream" errors in our CI test suite when
-    # using that. I'm not entirely sure why, but it's possibly related to
-    # thread-safety issues, since some of our tests run shell commands inside
-    # threads, and Open3 also has some internal threading. We could potentially
-    # revisit this and debug the threading issues, but this approach using
-    # backticks seems to have proven stable.
-    def run_shell(*args)
-      output = `#{Shellwords.join(args)} 2>&1`
-      status = $CHILD_STATUS.to_i
-      [output, status]
     end
   end
 end
