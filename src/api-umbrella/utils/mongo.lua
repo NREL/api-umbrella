@@ -70,9 +70,9 @@ local function perform_query(path, query_options, http_options)
 
   local response, err = try_query(path, http_options)
 
-  -- If we certain types of errors from Mora, this means our query occurred
-  -- during the middle of a server or replicaset change. In this case, retry
-  -- the request a few more times.
+  -- If we encounter certain types of errors from Mora, this means our query
+  -- occurred during the middle of a server or replicaset change. In this case,
+  -- retry the request a few more times.
   --
   -- This should be less likely in mora since
   -- https://github.com/emicklei/mora/pull/29, but it's still possible for this
@@ -90,8 +90,10 @@ local function perform_query(path, query_options, http_options)
       if err == "mongodb error: EOF"
         or err == "mongodb error: node is recovering"
         or err == "mongodb error: interrupted at shutdown"
+        or err == "mongodb error: operation was interrupted"
         or err == "mongodb error: Closed explicitly"
         or startswith(err, "mongodb error: read tcp")
+        or startswith(err, "mongodb error: write tcp")
         then
         -- Retry immediately, then sleep between further retries.
         retries = retries + 1

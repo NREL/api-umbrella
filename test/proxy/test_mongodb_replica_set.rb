@@ -57,6 +57,11 @@ class Test::Proxy::TestMongodbReplicaSet < Minitest::Test
     end
   end
 
+  def teardown
+    super
+    Mongoid::Clients.disconnect
+  end
+
   def after_all
     super
     override_config_reset("--router")
