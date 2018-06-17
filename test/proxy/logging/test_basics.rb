@@ -72,6 +72,7 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
       "user_id",
       "user_registration_source",
     ]
+
     if($config["elasticsearch"]["template_version"] >= 2)
       expected_fields += [
         "request_url_hierarchy_level0",
@@ -94,11 +95,15 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
       "request_ip_city",
       "request_ip_country",
       "request_ip_region",
-      "request_url_hierarchy_level5",
-      "request_url_hierarchy_level6",
       "response_content_encoding",
       "response_transfer_encoding",
     ]
+    if($config["elasticsearch"]["template_version"] >= 2)
+      expected_mapping_fields += [
+        "request_url_hierarchy_level5",
+        "request_url_hierarchy_level6",
+      ]
+    end
     assert_equal(expected_mapping_fields.sort, mapping[hit["_index"]]["mappings"][hit["_type"]]["properties"].keys.sort)
 
     assert_kind_of(String, record["api_backend_id"])
@@ -268,7 +273,7 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
       assert_equal({
         "type" => "date",
       }, property)
-    elsif($config["elasticsearch"]["api_version"] >= 2)
+    elsif($config["elasticsearch"]["api_version"] >= 2 && $config["elasticsearch"]["api_version"] < 5)
       assert_equal({
         "type" => "date",
         "format" => "strict_date_optional_time||epoch_millis",

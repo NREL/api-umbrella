@@ -4,10 +4,6 @@
       <a id="filter_toggle" {{action "toggleFilters"}}><i class="fa fa-caret-right"></i>{{t "Filter Results"}}</a>
     </div>
     <div class="col-sm-8 filter-times">
-      {{#if session.data.authenticated.enable_beta_analytics}}
-        <label class="checkbox" style="display: inline-block; font-size: 12px; margin: 0px 40px 0px 0px; color: #666; position: relative; top: 2px;">{{one-way-checkbox checked=beta_analytics update=(action (mut beta_analytics))}} Beta Analytics</label>
-      {{/if}}
-
       {{#if enableInterval}}
         {{#bs-button-group value=interval onChange=(action (mut interval)) type="radio" size="xs" id="interval_buttons" as |bg|}}
           {{#bg.button value="minute"}}{{t "Minute"}}{{/bg.button}}
@@ -129,14 +125,6 @@
                   <tr>
                     <td>request_ip_city</td>
                     <td class="example">Golden</td>
-                  </tr>
-                  <tr>
-                    <td>request_ip_location.lat</td>
-                    <td class="example">39.7555</td>
-                  </tr>
-                  <tr>
-                    <td>request_ip_location.lon</td>
-                    <td class="example">-105.2211</td>
                   </tr>
                   <tr>
                     <td>response_status</td>

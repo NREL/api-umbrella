@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+
+set -e -u -x
+source ./tasks/helpers.sh
+
+task_working_dir
+
+# Install into the task's special _persist directory so that these dependencies
+# for the tasks/app/core task are still present if core needs to be re-run, but
+# not this task.
+mkdir -p _persist
+cd _persist
+
+
+rsync -a -v \
+  --delete \
+  --delete-excluded \
+  --include=/assets/*** \
+  --include=/webpack.config.js \
+  --exclude=* \
+  "$SOURCE_DIR/src/api-umbrella/web-app/" \
+  ./
+
+node_modules_dir="$WORK_DIR/tasks/app-deps/web-app/yarn/_persist/node_modules"
+ln -s "$node_modules_dir" ./node_modules
+PATH="$DEV_INSTALL_PREFIX/bin:$DEFAULT_PATH" ./node_modules/.bin/webpack
+
+stamp

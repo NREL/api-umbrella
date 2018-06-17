@@ -35,24 +35,17 @@ nginx:
   ssl_ecdh_curve: secp384r1
   lua_ssl_trusted_certificate:
   lua_ssl_verify_depth: 1
-  dyups:
-    host: 127.0.0.1
-    port: 14005
   shared_dicts:
     active_config:
       size: 3m
     api_users:
       size: 3m
-    dns_cache:
-      size: 300k
     geocode_city_cache:
       size: 100k
     interval_locks:
       size: 20k
     locks:
       size: 20k
-    resolved_hosts:
-      size: 100k
     stats:
       size: 20m
     upstream_checksums:
@@ -67,7 +60,6 @@ gatekeeper:
 trafficserver:
   host: 127.0.0.1
   port: 14009
-  autoconf_port: 14007
   management_port: 14008
   storage:
     size: 256M
@@ -135,9 +127,8 @@ static_site:
   port: 14013
 router:
   api_backends:
-    host: 127.0.0.1
-    port: 14011
-    keepalive_connections: 10
+    keepalive_connections: 20
+    keepalive_idle_timeout: 120
   trusted_proxies: []
   global_rate_limits:
     ip_rate:
@@ -215,30 +206,6 @@ analytics:
   adapter: elasticsearch
   timezone: UTC
   log_request_url_query_params_separately: false
-kylin:
-  protocol: http
-  host: 127.0.0.1
-  port: 7070
-presto:
-  protocol: http
-  host: 127.0.0.1
-  port: 14015
-  embedded_server_config:
-    http_port: 14015
-    max_memory: 2GB
-    max_memory_per_node: 1GB
-    discovery_uri: http://127.0.0.1:14015
-    query_max_run_time: 60s
-    hive:
-      metastore_uri: thrift://127.0.0.1:9083
-flume:
-  host: 127.0.0.1
-  port: 14016
-  embedded_server_config:
-    java_opts:
-kafka:
-  brokers: []
-  topic: api_umbrella_logs
 strip_cookies:
   - ^__utm.*$
   - ^_ga$
@@ -355,6 +322,8 @@ internal_apis:
         backend_prefix: "/api-umbrella/v1/health"
       - frontend_prefix: "/api-umbrella/v1/state"
         backend_prefix: "/api-umbrella/v1/state"
+    settings:
+      require_https: required_return_error
     sub_settings:
       - http_method: get
         regex: "^/api-umbrella/v1/(health|state)"
@@ -386,6 +355,10 @@ internal_apis:
       - frontend_prefix: "/admins"
         backend_prefix: "/admins"
         exact_match: true
+      - frontend_prefix: "/web-assets/"
+        backend_prefix: "/web-assets/"
+    settings:
+      require_https: required_return_error
     sub_settings:
       - http_method: any
         regex: "^/admin/stats"
@@ -404,7 +377,7 @@ internal_apis:
               distributed: true
               response_headers: true
       - http_method: any
-        regex: "^/admin"
+        regex: "^/(admin|web-assets)"
         settings:
           disable_api_key: true
           rate_limit_mode: unlimited
@@ -426,6 +399,7 @@ ban:
 ember_server:
   port: 14050
   live_reload_port: 14051
+umask: "0027"
 _test_config:
   default_null_override_hash:
   default_null_override_string:

@@ -3,26 +3,30 @@ local url = require "socket.url"
 local utils = require "api-umbrella.proxy.utils"
 
 local append_args = utils.append_args
-local gsub = string.gsub
 local startswith = stringx.startswith
 local url_build = url.build
 local url_parse = url.parse
 
+-- Parse the "cache-lookup" status out of the Via header into a simplified
+-- X-Cache HIT/MISS value:
+-- https://docs.trafficserver.apache.org/en/7.1.x/appendices/faq.en.html?highlight=asked#how-do-i-interpret-the-via-header-code
+--
+-- Note: Ideally we could handle this at the TrafficServer lua layer with the
+-- simpler ts.http.get_cache_lookup_status(). However, that lookup status isn't
+-- always accurate, since certain scenarios trigger cache revalidation without
+-- updating the status code (like cache items not used due to authorization
+-- headers, or this similar issue using the same underling
+-- TSHttpTxnCacheLookupStatusGet:
+-- https://issues.apache.org/jira/browse/TS-3432). So instead, we'll continue
+-- to handle it here, using nginx's lua layer, instead of TrafficServer's lua
+-- layer, since nginx's compiled regexes are probably a bit better optimized.
 local function set_cache_header()
   local cache = "MISS"
   local via = ngx.header["Via"]
   if via then
-    local matches, match_err = ngx.re.match(via, "ApacheTrafficServer \\[([^\\]]+)\\]", "jo")
+    local matches, match_err = ngx.re.match(via, "ApacheTrafficServer \\[.(.)", "jo")
     if matches and matches[1] then
-      -- Parse the cache status out of the Via header into a simplified X-Cache
-      -- HIT/MISS value:
-      -- https://docs.trafficserver.apache.org/en/latest/admin/faqs.en.html?highlight=post#how-do-i-interpret-the-via-header-code
-      --
-      -- Note: The XDebug TrafficServer plugin could provide similar
-      -- functionality, but currently has some odd edge cases:
-      -- https://issues.apache.org/jira/browse/TS-3432
-      local trafficserver_code = matches[1]
-      local cache_lookup_code = string.sub(trafficserver_code, 2, 2)
+      local cache_lookup_code = matches[1]
       if cache_lookup_code == "H" or cache_lookup_code == "R" then
         cache = "HIT"
       end
@@ -31,25 +35,11 @@ local function set_cache_header()
     end
   end
 
+  -- If the underlying API backend returned it's own X-Cache header, allow that
+  -- to take precedent, unless we have a cache hit at our layer.
   local existing_x_cache = ngx.header["X-Cache"]
   if not existing_x_cache or cache == "HIT" then
     ngx.header["X-Cache"] = cache
-  end
-end
-
-local function set_via_header()
-  local via = ngx.header["Via"]
-  if via then
-    -- Replace the server hostname or hex-encoded IP address in the Via header
-    -- TrafficServer appends with an alias of "api-umbrella". We have to return
-    -- some name here to be compliant with the Via header specification, but we
-    -- don't want to expose internal machine names or IPs.
-    local new_via, _, err = ngx.re.sub(via, "(http/[0-9\\.]+) [^ ]+ (\\(ApacheTrafficServer[^\\)]*\\))$", "$1 api-umbrella $2", "jo")
-    if new_via then
-      ngx.header["Via"] = new_via
-    elseif err then
-      ngx.log(ngx.ERR, "regex error: ", err)
-    end
   end
 end
 
@@ -78,6 +68,13 @@ local function rewrite_redirects()
     return
   end
 
+  -- If the redirect was forced within the gatekeeper layer by an error handler
+  -- (and the redirect didn't actually come from the API backend), then no
+  -- further rewriting is necessary.
+  if ngx.ctx.gatekeeper_denied_code then
+    return
+  end
+
   local parsed, parse_err = url_parse(location)
   if not parsed or parse_err then
     ngx.log(ngx.ERR, "error parsing Location header: ", location, " error: ", parse_err)
@@ -89,7 +86,7 @@ local function rewrite_redirects()
   local relative = (not parsed["host"])
   local changed = false
 
-  if host_matches and not relative then
+  if host_matches then
     -- For wildcard hosts, keep the same host as on the incoming request. For
     -- all others, use the frontend host declared on the API.
     local host
@@ -126,14 +123,30 @@ local function rewrite_redirects()
     changed = true
   end
 
-  if host_matches or relative then
-    if matched_api and matched_api["url_matches"] then
-      for _, url_match in ipairs(matched_api["url_matches"]) do
-        if startswith(parsed["path"], url_match["backend_prefix"]) then
-          parsed["path"] = gsub(parsed["path"], url_match["_backend_prefix_matcher"], url_match["frontend_prefix"], 1)
-          changed = true
-          break
-        end
+  -- If the redirect being returned possibly contains paths for the underlying
+  -- backend URL, then rewrite the path.
+  if (host_matches or relative) and matched_api then
+    -- If the redirect path begins with the backend prefix, then consider it
+    -- for rewriting.
+    local url_match = ngx.ctx.matched_api_url_match
+    if url_match and startswith(parsed["path"], url_match["backend_prefix"]) then
+      -- As long as the patah matches the backend prefix, mark as changed, so
+      -- the api key is appended (regardless of whether we actually replaced
+      -- the path).
+      changed = true
+
+      -- Don't rewrite the path if the frontend prefix contains the backend
+      -- prefix and the redirect path already contains the frontend prefix.
+      --
+      -- This helps ensure that if the API backend is already returning
+      -- public/frontend URLs, we don't try to rewrite these again. -
+      local rewrite_path = true
+      if url_match["_frontend_prefix_contains_backend_prefix"] and startswith(parsed["path"], url_match["frontend_prefix"]) then
+        rewrite_path = false
+      end
+
+      if rewrite_path then
+        parsed["path"] = ngx.re.sub(parsed["path"], url_match["_backend_prefix_regex"], url_match["frontend_prefix"], "jo")
       end
     end
   end
@@ -150,7 +163,6 @@ end
 
 return function(settings)
   set_cache_header()
-  set_via_header()
 
   if settings then
     set_default_headers(settings)

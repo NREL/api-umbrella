@@ -71,7 +71,7 @@
     "loader.js": "^4.2.3",
     "lodash": "~4.17.5",
     "lodash-es": "~4.17.5",
-    "marked": "~0.3.19",
+    "marked": "~0.4.0",
     "moment-timezone": "^0.5.14",
     "pnotify": "~3.2.1",
     "po2json": "~0.4.5",

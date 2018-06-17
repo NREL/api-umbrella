@@ -20,8 +20,6 @@ proxy_next_upstream error;
 # Don't buffer proxied requests to allow for streaming APIs.
 proxy_buffering off;
 
-include ./frontend_proxy_header_defaults.conf;
-
 location @banned_pit {
   echo_sleep {{ban.response.delay}};
   echo "{{ban.response.message}}";

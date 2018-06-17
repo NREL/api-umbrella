@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+lua_resty_http_version="0.12"
+
+set -e -u -x
+source ./tasks/helpers.sh
+
+opm_install "pintsized/lua-resty-http" "$lua_resty_http_version"
+
+stamp

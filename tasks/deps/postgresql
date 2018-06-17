@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+
+postgresql_version="9.6.6"
+postgresql_hash="399cdffcb872f785ba67e25d275463d74521566318cfef8fe219050d063c8154"
+
+set -e -u -x
+source ./tasks/helpers.sh
+
+task_working_dir
+
+download "https://ftp.postgresql.org/pub/source/v$postgresql_version/postgresql-$postgresql_version.tar.bz2" "sha256" "$postgresql_hash"
+extract_download "postgresql-$postgresql_version.tar.bz2"
+
+cd "postgresql-$postgresql_version"
+./configure \
+  --prefix="$INSTALL_PREFIX_EMBEDDED" \
+  --disable-rpath \
+  --with-system-tzdata=/usr/share/zoneinfo
+make
+(cd contrib/pgcrypto && make)
+make install DESTDIR="$STAGE_DIR"
+(cd contrib/pgcrypto && make install DESTDIR="$STAGE_DIR")
+
+stamp

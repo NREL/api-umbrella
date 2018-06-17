@@ -1,7 +1,15 @@
 local cjson = require "cjson"
 local xpcall_error_handler = require "api-umbrella.utils.xpcall_error_handler"
 
-local path = os.getenv("API_UMBRELLA_SRC_ROOT") .. "/config/elasticsearch_templates_v" .. config["elasticsearch"]["template_version"] .. ".json"
+local path = os.getenv("API_UMBRELLA_SRC_ROOT") .. "/config/elasticsearch_templates_v" .. config["elasticsearch"]["template_version"]
+if config["elasticsearch"]["api_version"] >= 5 then
+  path = path .. "_es5.json"
+elseif config["elasticsearch"]["api_version"] >= 2 then
+  path = path .. "_es2.json"
+else
+  error("Unsupported version of elasticsearch: " .. (config["elasticsearch"]["api_version"] or ""))
+end
+
 local f, err = io.open(path, "rb")
 if err then
   ngx.log(ngx.ERR, "failed to open file: ", err)

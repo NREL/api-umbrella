@@ -6,6 +6,5 @@ export default Base.extend({
     'end_at',
     'query',
     'search',
-    'beta_analytics',
   ],
 });

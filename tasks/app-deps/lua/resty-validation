@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+lua_resty_validation_version="2.7"
+
+set -e -u -x
+source ./tasks/helpers.sh
+
+opm_install "bungle/lua-resty-validation" "$lua_resty_validation_version"
+
+stamp

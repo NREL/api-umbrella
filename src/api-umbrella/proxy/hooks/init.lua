@@ -1,5 +1,8 @@
 DEBUG = false
 
+-- Pre-load modules.
+require "resty.txid"
+
 inspect = require "inspect"
 
 -- Generate a unique ID to represent this group of worker processes. This value
@@ -27,7 +30,6 @@ config = require "api-umbrella.proxy.models.file_config"
 require "api-umbrella.proxy.startup.init_elasticsearch_templates_data"
 require "api-umbrella.proxy.startup.init_user_agent_parser_data"
 
-ngx.shared.upstream_checksums:flush_all()
 ngx.shared.stats:delete("distributed_last_fetched_at")
 ngx.shared.api_users:delete("last_fetched_at")
 ngx.shared.active_config:set("elasticsearch_templates_created", false)

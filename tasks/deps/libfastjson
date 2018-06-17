@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+
+libfastjson_version="0.99.8"
+libfastjson_hash="730713ad1d851def7ac8898f751bbfdd"
+
+set -e -u -x
+source ./tasks/helpers.sh
+
+task_working_dir
+download "https://github.com/rsyslog/libfastjson/archive/v$libfastjson_version.tar.gz" "md5" "$libfastjson_hash"
+extract_download "v$libfastjson_version.tar.gz"
+
+cd "libfastjson-$libfastjson_version"
+sh autogen.sh
+./configure --prefix="$INSTALL_PREFIX_EMBEDDED"
+make
+make install DESTDIR="$STAGE_DIR"
+
+stamp

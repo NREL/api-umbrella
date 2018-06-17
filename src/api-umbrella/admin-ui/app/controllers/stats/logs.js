@@ -8,6 +8,5 @@ export default Base.extend({
     'interval',
     'query',
     'search',
-    'beta_analytics',
   ],
 });

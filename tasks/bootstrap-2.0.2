@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+task_version="2.0.2"
+task_hash="32fa0ca07d566c0384e513e5d6d108556866aac14d1e62dabf095833472e3651"
+
+set -e -u -x
+source ./tasks/helpers.sh
+
+task_working_dir
+download "https://github.com/go-task/task/releases/download/v$task_version/task_linux_amd64.tar.gz" "sha256" "$task_hash"
+extract_download "task_linux_amd64.tar.gz"
+cp ./task "$WORK_DIR/task"
+
+stamp

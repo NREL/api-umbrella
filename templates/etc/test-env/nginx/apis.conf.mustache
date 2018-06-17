@@ -11,7 +11,9 @@ server {
 
   gzip off;
 
-  access_by_lua 'ngx.shared.test_data:set("backend_called", true)';
+  access_by_lua_block {
+    ngx.shared.test_data:set("backend_called", true)
+  }
 
   rewrite ^/backend-prefix/(.+)$ /$1 last;
 
@@ -31,7 +33,7 @@ server {
   }
 
   location = /echo_delayed_chunked {
-    content_by_lua '
+    content_by_lua_block {
       local input = ngx.unescape_uri(ngx.var.arg_input)
       for index = 1, #input do
         local char = input:sub(index, index)
@@ -39,7 +41,7 @@ server {
         ngx.flush()
         ngx.sleep(math.random(5, 15) / 1000)
       end
-    ';
+    }
   }
 
   location = /restricted {
@@ -66,7 +68,7 @@ server {
   }
 
   location /auth/ {
-    access_by_lua '
+    access_by_lua_block {
       local username = ngx.var.remote_user
       local password = ngx.var.remote_passwd
       if username == "somebody" and password == "secret" then
@@ -79,7 +81,7 @@ server {
         ngx.print("Unauthorized")
         ngx.exit(ngx.HTTP_OK)
       end
-    ';
+    }
     echo -n $remote_user;
   }
 
@@ -90,13 +92,15 @@ server {
     echo -n "Hello World";
   }
 
-  location = /redirect {
-    rewrite_by_lua 'ngx.redirect(ngx.unescape_uri(ngx.var.arg_to or "/hello"))';
+  location /redirect {
+    rewrite_by_lua_block {
+      ngx.redirect(ngx.unescape_uri(ngx.var.arg_to or "/hello"))
+    }
   }
 
   location /info/ {
     more_set_headers "X-Received-Method: $request_method";
-    content_by_lua '
+    content_by_lua_block {
       local cjson = require "cjson";
       local raw_url = ngx.var.scheme .. "://" .. ngx.var.host .. ngx.var.request_uri
       ngx.header["Content-Type"] = "application/json"
@@ -119,7 +123,7 @@ server {
         basic_auth_password = ngx.var.remote_passwd,
         request_length = tonumber(ngx.var.request_length),
       }))
-    ';
+    }
   }
 
   location /connection-stats/ {
@@ -139,7 +143,7 @@ server {
   }
 
   location = /upload {
-    content_by_lua '
+    content_by_lua_block {
       local cjson = require "cjson";
       local upload = require "resty.upload";
 
@@ -159,7 +163,7 @@ server {
       ngx.print(cjson.encode({
         upload_size = upload_size,
       }))
-    ';
+    }
   }
 
   location = /chunked {
@@ -178,29 +182,29 @@ server {
 
   location ~ ^/compressible/([0-9]+)$ {
     set $size $1;
-    content_by_lua '
+    content_by_lua_block {
       ngx.header["Content-Type"] = ngx.unescape_uri(ngx.var.arg_content_type or "text/plain");
       ngx.header["Content-Length"] = ngx.var.size
       ngx.print(string.rep("a", tonumber(ngx.var.size)))
-    ';
+    }
   }
 
   location ~ ^/compressible-chunked/([0-9]+)/([0-9]+)$ {
     set $chunks $1;
     set $size $2;
-    content_by_lua '
+    content_by_lua_block {
       local size = tonumber(ngx.var.size)
       ngx.header["Content-Type"] = ngx.unescape_uri(ngx.var.arg_content_type or "text/plain");
       ngx.sleep(0.05)
       for index = 1, tonumber(ngx.var.chunks) do
         ngx.print(string.rep("a", size))
       end
-    ';
+    }
   }
 
   location ~ ^/compressible-delayed-chunked/([0-9]+)$ {
     set $size $1;
-    content_by_lua '
+    content_by_lua_block {
       local size = tonumber(ngx.var.size)
       ngx.header["Content-Type"] = ngx.unescape_uri(ngx.var.arg_content_type or "text/plain");
 
@@ -213,34 +217,50 @@ server {
       ngx.sleep(0.5)
 
       ngx.print(string.rep("a", size))
-    ';
+    }
   }
 
   location = /compressible-pre-gzip {
     gzip on;
-    echo -n "Hello Small World";
+    gzip_min_length 0;
+    gzip_types application/json;
+    content_by_lua_block {
+      local cjson = require "cjson";
+      local body = cjson.encode({
+        headers = ngx.req.get_headers(500),
+      })
+
+      if ngx.var.arg_force == "true" then
+        -- Force nginx to gzip this response, even if the original input headers
+        -- wouldn't normally gzip.
+        ngx.req.set_header("Accept-Encoding", "gzip")
+      end
+
+      ngx.header["Content-Type"] = "application/json"
+      ngx.print(body)
+    }
   }
 
   location ~ ^/delay/([0-9]+)$ {
     set $delay $1;
-    content_by_lua '
+    content_by_lua_block {
       ngx.sleep(tonumber(ngx.var.delay) / 1000)
       ngx.print("done")
-    ';
+    }
   }
 
   location ~ ^/delay-sec/([0-9.]+)$ {
     set $delay $1;
-    content_by_lua '
+    content_by_lua_block {
       ngx.sleep(tonumber(ngx.var.delay))
       ngx.print("done")
-    ';
+    }
   }
 
   location ~ ^/delays/([0-9]+)/([0-9]+)$ {
     set $delay1 $1;
     set $delay2 $2;
-    content_by_lua '
+    content_by_lua_block {
       local delay1 = tonumber(ngx.var.delay1) / 1000
       local delay2 = tonumber(ngx.var.delay2) / 1000
 
@@ -251,13 +271,13 @@ server {
       ngx.sleep(delay2 - delay1)
       ngx.print("done")
       ngx.flush()
-    ';
+    }
   }
 
   location ~ ^/delays-sec/([0-9]+)/([0-9]+)$ {
     set $delay1 $1;
     set $delay2 $2;
-    content_by_lua '
+    content_by_lua_block {
       local delay1 = tonumber(ngx.var.delay1)
       local delay2 = tonumber(ngx.var.delay2)
 
@@ -268,24 +288,24 @@ server {
       ngx.sleep(delay2 - delay1)
       ngx.print("done")
       ngx.flush()
-    ';
+    }
   }
 
   location = /timeout {
-    access_by_lua '
+    access_by_lua_block {
       local key = "backend_call_count:" .. string.lower(ngx.var.request_method) .. "-timeout"
       return ngx.shared.test_data:incr(key, 1) or ngx.shared.test_data:set(key, 1)
-    ';
+    }
 
     echo_sleep 20;
     echo -n "done";
   }
 
   location = /between-varnish-timeout {
-    access_by_lua '
+    access_by_lua_block {
       local key = "backend_call_count:post-between-varnish-timeout"
       return ngx.shared.test_data:incr(key, 1) or ngx.shared.test_data:set(key, 1)
-    ';
+    }
 
     echo_sleep 12.5;
     echo -n "done";
@@ -299,71 +319,28 @@ server {
 
   location ~ ^/cacheable-thundering-herd/(.+)$ {
     set $unique_id $1;
-    access_by_lua '
-      local key = "backend_call_count:" .. ngx.var.unique_id
-      return ngx.shared.test_data:incr(key, 1) or ngx.shared.test_data:set(key, 1)
-    ';
-
-    echo_sleep 1;
     set_secure_random_alphanum $random 50;
-    more_set_headers "Cache-Control: max-age=60";
-    more_set_headers "X-Unique-Output: $random";
-    echo $random;
-  }
-
-  location ~ ^/cacheable-thundering-herd-public/(.+)$ {
-    set $unique_id $1;
-    access_by_lua '
+    content_by_lua_block {
       local key = "backend_call_count:" .. ngx.var.unique_id
-      return ngx.shared.test_data:incr(key, 1) or ngx.shared.test_data:set(key, 1)
-    ';
+      local ok = ngx.shared.test_data:incr(key, 1) or ngx.shared.test_data:set(key, 1)
 
-    echo_sleep 1;
-    set_secure_random_alphanum $random 50;
-    more_set_headers "Cache-Control: public, max-age=60";
-    more_set_headers "X-Unique-Output: $random";
-    echo $random;
-  }
+      local delay = tonumber(ngx.var.http_x_delay)
 
-  location ~ ^/cacheable-thundering-herd-private/(.+)$ {
-    set $unique_id $1;
-    access_by_lua '
-      local key = "backend_call_count:" .. ngx.var.unique_id
-      return ngx.shared.test_data:incr(key, 1) or ngx.shared.test_data:set(key, 1)
-    ';
+      if ngx.var.http_x_delay_before == "headers" then
+        ngx.sleep(delay)
+      end
 
-    echo_sleep 1;
-    set_secure_random_alphanum $random 50;
-    more_set_headers "Cache-Control: private, max-age=60";
-    more_set_headers "X-Unique-Output: $random";
-    echo $random;
-  }
+      ngx.header["Cache-Control"] = ngx.var.http_x_cache_control_response
+      ngx.header["X-Unique-Output"] = ngx.var.random
+      ngx.print("")
+      ngx.flush(true)
 
-  location ~ ^/cacheable-but-no-explicit-cache-thundering-herd/(.+)$ {
-    set $unique_id $1;
-    access_by_lua '
-      local key = "backend_call_count:" .. ngx.var.unique_id
-      return ngx.shared.test_data:incr(key, 1) or ngx.shared.test_data:set(key, 1)
-    ';
+      if ngx.var.http_x_delay_before == "body" then
+        ngx.sleep(delay)
+      end
 
-    echo_sleep 1;
-    set_secure_random_alphanum $random 50;
-    more_set_headers "X-Unique-Output: $random";
-    echo $random;
-  }
-
-  location ~ ^/cacheable-but-cache-forbidden-thundering-herd/(.+)$ {
-    set $unique_id $1;
-    access_by_lua '
-      local key = "backend_call_count:" .. ngx.var.unique_id
-      return ngx.shared.test_data:incr(key, 1) or ngx.shared.test_data:set(key, 1)
-    ';
-
-    echo_sleep 1;
-    set_secure_random_alphanum $random 50;
-    more_set_headers "Cache-Control: max-age=0, private, must-revalidate";
-    more_set_headers "X-Unique-Output: $random";
-    echo $random;
+      ngx.print(ngx.var.random)
+    }
   }
 
   location /cacheable-cache-control-max-age/ {
@@ -465,12 +442,28 @@ server {
 
   location /cacheable-pre-gzip/ {
     gzip on;
+    gzip_min_length 0;
+    gzip_types application/json;
     set_secure_random_alphanum $random 50;
-    more_set_headers "Cache-Control: max-age=60";
-    more_set_headers "Content-Type: text/plain";
-    more_set_headers "X-Unique-Output: $random";
-    echo $random;
-    echo_duplicate 1500 "a"; # 1500 bytes - long enough to allow gzip
+    content_by_lua_block {
+      local cjson = require "cjson";
+      local body = cjson.encode({
+        headers = ngx.req.get_headers(500),
+        random = ngx.var.random,
+        data = string.rep("a", 1500) -- 1500 bytes - long enough to allow gzip
+      })
+
+      if ngx.var.arg_force == "true" then
+        -- Force nginx to gzip this response, even if the original input headers
+        -- wouldn't normally gzip.
+        ngx.req.set_header("Accept-Encoding", "gzip")
+      end
+
+      ngx.header["Content-Type"] = "application/json"
+      ngx.header["Cache-Control"] = "max-age=60"
+      ngx.header["X-Unique-Output"] = ngx.var.random
+      ngx.print(body)
+    }
   }
 
   location /cacheable-vary-accept-encoding/ {
@@ -485,13 +478,27 @@ server {
 
   location /cacheable-pre-gzip-multiple-vary/ {
     gzip on;
+    gzip_min_length 0;
+    gzip_types application/json;
     set_secure_random_alphanum $random 50;
-    more_set_headers "Cache-Control: max-age=60";
-    more_set_headers "Content-Type: text/plain";
-    more_set_headers "Vary: X-Foo,Accept-Encoding,Accept";
-    more_set_headers "X-Unique-Output: $random";
-    echo $random;
-    echo_duplicate 1500 "a"; # 1500 bytes - long enough to allow gzip
+    content_by_lua_block {
+      local cjson = require "cjson";
+      local body = cjson.encode({
+        headers = ngx.req.get_headers(500),
+        random = ngx.var.random,
+        data = string.rep("a", 1500) -- 1500 bytes - long enough to allow gzip
+      })
+
+      -- Force nginx to gzip this response, even if the original input headers
+      -- wouldn't normally gzip.
+      ngx.req.set_header("Accept-Encoding", "gzip")
+
+      ngx.header["Content-Type"] = "application/json"
+      ngx.header["Cache-Control"] = "max-age=60"
+      ngx.header["Vary"] = "X-Foo,Accept-Encoding,Accept"
+      ngx.header["X-Unique-Output"] = ngx.var.random
+      ngx.print(body)
+    }
   }
 
   location /cacheable-vary-accept-encoding-multiple/ {
@@ -657,15 +664,21 @@ server {
   set $x_api_umbrella_request_id $http_x_api_umbrella_request_id;
 
   location = /reset_backend_called {
-    content_by_lua 'ngx.shared.test_data:set("backend_called", false)';
+    content_by_lua_block {
+      ngx.shared.test_data:set("backend_called", false)
+    }
   }
 
   location = /backend_called {
-    content_by_lua 'ngx.print(ngx.shared.test_data:get("backend_called"))';
+    content_by_lua_block {
+      ngx.print(ngx.shared.test_data:get("backend_called"))
+    }
   }
 
   location = /backend_call_count {
-    content_by_lua 'ngx.print(ngx.shared.test_data:get("backend_call_count:" .. ngx.var.arg_id) or 0)';
+    content_by_lua_block {
+      ngx.print(ngx.shared.test_data:get("backend_call_count:" .. ngx.var.arg_id) or 0)
+    }
   }
 }
 

@@ -35,14 +35,11 @@ if [ -f /etc/redhat-release ]; then
     socat \
     sudo
 elif [ -f /etc/debian_version ]; then
-  apt-get -y install \
+  DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends install \
     net-tools \
     ruby \
     socat \
     sudo
-  if [ "$DIST" == "ubuntu-12.04" ] || [ "$DIST" == "debian-7" ]; then
-    apt-get -y install rubygems
-  fi
 fi
 gem install bundler --no-rdoc --no-ri
 

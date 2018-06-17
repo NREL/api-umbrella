@@ -5,7 +5,7 @@ local interval_lock = require "api-umbrella.utils.interval_lock"
 
 local delay = 3600  -- in seconds
 
-local function wait_for_elasticsearch()
+function _M.wait_for_elasticsearch()
   local elasticsearch_alive = false
   local wait_time = 0
   local sleep_time = 0.5
@@ -31,7 +31,7 @@ local function wait_for_elasticsearch()
   end
 end
 
-local function create_templates()
+function _M.create_templates()
   -- Template creation only needs to be run once on startup or reload.
   local created = ngx.shared.active_config:get("elasticsearch_templates_created")
   if created then return end
@@ -51,7 +51,7 @@ local function create_templates()
   ngx.shared.active_config:set("elasticsearch_templates_created", true)
 end
 
-local function create_aliases()
+function _M.create_aliases()
   local today = os.date("!%Y-%m", ngx.time())
   local tomorrow = os.date("!%Y-%m", ngx.time() + 86400)
 
@@ -107,10 +107,10 @@ local function create_aliases()
 end
 
 local function setup()
-  local _, err = wait_for_elasticsearch()
+  local _, err = _M.wait_for_elasticsearch()
   if not err then
-    create_templates()
-    create_aliases()
+    _M.create_templates()
+    _M.create_aliases()
   else
     ngx.log(ngx.ERR, "timed out waiting for eleasticsearch before setup, rerunning...")
     ngx.sleep(5)

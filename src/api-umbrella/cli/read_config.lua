@@ -4,6 +4,8 @@ local deep_defaults = require "api-umbrella.utils.deep_defaults"
 local deep_merge_overwrite_arrays = require "api-umbrella.utils.deep_merge_overwrite_arrays"
 local dir = require "pl.dir"
 local file = require "pl.file"
+local getgrgid = require("posix.grp").getgrgid
+local getpwuid = require("posix.pwd").getpwuid
 local host_normalize = require "api-umbrella.utils.host_normalize"
 local invert_table = require "api-umbrella.utils.invert_table"
 local lyaml = require "lyaml"
@@ -11,10 +13,14 @@ local nillify_yaml_nulls = require "api-umbrella.utils.nillify_yaml_nulls"
 local path = require "pl.path"
 local plutils = require "pl.utils"
 local random_token = require "api-umbrella.utils.random_token"
+local stat = require "posix.sys.stat"
 local stringx = require "pl.stringx"
 local types = require "pl.types"
+local unistd = require "posix.unistd"
 local url = require "socket.url"
 
+local chmod = stat.chmod
+local chown = unistd.chown
 local is_empty = types.is_empty
 local split = plutils.split
 local strip = stringx.strip
@@ -154,20 +160,24 @@ local function set_computed_config()
     config["etc_dir"] = path.join(config["root_dir"], "etc")
   end
 
+  if not config["var_dir"] then
+    config["var_dir"] = path.join(config["root_dir"], "var")
+  end
+
   if not config["log_dir"] then
-    config["log_dir"] = path.join(config["root_dir"], "var/log")
+    config["log_dir"] = path.join(config["var_dir"], "log")
   end
 
   if not config["run_dir"] then
-    config["run_dir"] = path.join(config["root_dir"], "var/run")
+    config["run_dir"] = path.join(config["var_dir"], "run")
   end
 
   if not config["tmp_dir"] then
-    config["tmp_dir"] = path.join(config["root_dir"], "var/tmp")
+    config["tmp_dir"] = path.join(config["var_dir"], "tmp")
   end
 
   if not config["db_dir"] then
-    config["db_dir"] = path.join(config["root_dir"], "var/db")
+    config["db_dir"] = path.join(config["var_dir"], "db")
   end
 
   local trusted_proxies = config["router"]["trusted_proxies"] or {}
@@ -267,6 +277,7 @@ local function set_computed_config()
     table.insert(config["dns_resolver"]["_nameservers"], nameserver)
   end
   config["dns_resolver"]["_nameservers_nginx"] = table.concat(config["dns_resolver"]["_nameservers_nginx"], " ")
+  config["dns_resolver"]["_nameservers_trafficserver"] = config["dns_resolver"]["_nameservers_nginx"]
   config["dns_resolver"]["nameservers"] = nil
 
   config["dns_resolver"]["_etc_hosts"] = read_etc_hosts()
@@ -296,12 +307,6 @@ local function set_computed_config()
     config["analytics"]["outputs"] = { config["analytics"]["adapter"] }
   end
 
-  config["kafka"]["_rsyslog_broker"] = {}
-  for _, broker in ipairs(config["kafka"]["brokers"]) do
-    table.insert(config["kafka"]["_rsyslog_broker"], '"' .. broker["host"] .. ":" .. broker["port"] .. '"')
-  end
-  config["kafka"]["_rsyslog_broker"] = table.concat(config["kafka"]["_rsyslog_broker"], ",")
-
   -- Setup the request/response timeouts for the different pieces of the stack.
   -- Since we traverse multiple proxies, we want to make sure the timeouts of
   -- the different proxies are kept in sync.
@@ -327,6 +332,28 @@ local function set_computed_config()
   config["nginx"]["_initial_proxy_read_timeout"] = config["nginx"]["proxy_read_timeout"] + 2
   config["nginx"]["_initial_proxy_send_timeout"] = config["nginx"]["proxy_send_timeout"] + 2
 
+  if not config["user"] then
+    local euid = unistd.geteuid()
+    if euid then
+      local user = getpwuid(euid)
+      if user then
+        config["_effective_user_id"] = user.pw_uid
+        config["_effective_user_name"] = user.pw_name
+      end
+    end
+  end
+
+  if not config["group"] then
+    local egid = unistd.getegid()
+    if egid then
+      local group = getgrgid(egid)
+      if group then
+        config["_effective_group_id"] = group.gr_gid
+        config["_effective_group_name"] = group.gr_name
+      end
+    end
+  end
+
   deep_merge_overwrite_arrays(config, {
     _embedded_root_dir = embedded_root_dir,
     _src_root_dir = src_root_dir,
@@ -337,7 +364,6 @@ local function set_computed_config()
     ["_development_env?"] = (config["app_env"] == "development"),
     analytics = {
       ["_output_elasticsearch?"] = array_includes(config["analytics"]["outputs"], "elasticsearch"),
-      ["_output_kylin?"] = array_includes(config["analytics"]["outputs"], "kylin"),
     },
     mongodb = {
       _database = plutils.split(array_last(plutils.split(config["mongodb"]["url"], "/", true)), "?", true)[1],
@@ -362,7 +388,6 @@ local function set_computed_config()
     ["_service_general_db_enabled?"] = array_includes(config["services"], "general_db"),
     ["_service_log_db_enabled?"] = array_includes(config["services"], "log_db"),
     ["_service_elasticsearch_aws_signing_proxy_enabled?"] = array_includes(config["services"], "elasticsearch_aws_signing_proxy"),
-    ["_service_hadoop_db_enabled?"] = array_includes(config["services"], "hadoop_db"),
     ["_service_router_enabled?"] = array_includes(config["services"], "router"),
     ["_service_web_enabled?"] = array_includes(config["services"], "web"),
     router = {
@@ -412,6 +437,13 @@ local function set_computed_config()
   end
 end
 
+local function set_process_permissions()
+  if config["group"] then
+    unistd.setpid("g", config["group"])
+  end
+  stat.umask(tonumber(config["umask"], 8))
+end
+
 -- Handle setup of random secret tokens that should be be unique for API
 -- Umbrella installations, but should be persisted across restarts.
 --
@@ -429,16 +461,15 @@ local function set_cached_random_tokens()
     local content = file.read(cached_path, true)
     local cached = {}
     if content then
-      cached = lyaml.load(content)
+      cached = lyaml.load(content) or {}
       deep_defaults(config, cached)
     end
 
     -- If the tokens haven't already been written to the cache, generate them.
     if not config["secret_key"] or not config["static_site"]["api_key"] then
       if not config["secret_key"] then
-        cached["secret_key"] = random_token(128)
         deep_defaults(cached, {
-          secret_key = random_token(128),
+          secret_key = random_token(64),
         })
       end
 
@@ -453,6 +484,11 @@ local function set_cached_random_tokens()
       -- Persist the cached tokens.
       dir.makepath(config["run_dir"])
       file.write(cached_path, lyaml.dump({ cached }))
+      chmod(cached_path, tonumber("0640", 8))
+      if config["group"] then
+        chown(cached_path, nil, config["group"])
+      end
+
       deep_defaults(config, cached)
     end
   end
@@ -467,6 +503,10 @@ local function write_runtime_config()
   local runtime_config_path = path.join(config["run_dir"], "runtime_config.yml")
   dir.makepath(config["run_dir"])
   file.write(runtime_config_path, lyaml.dump({config}))
+  chmod(runtime_config_path, tonumber("0640", 8))
+  if config["group"] then
+    chown(runtime_config_path, nil, config["group"])
+  end
 end
 
 return function(options)
@@ -483,12 +523,16 @@ return function(options)
     read_default_config()
     read_system_config()
     set_computed_config()
+    set_process_permissions()
+
     set_cached_random_tokens()
 
     if options and options["write"] then
       write_runtime_config()
     end
   end
+
+  set_process_permissions()
 
   return config
 end

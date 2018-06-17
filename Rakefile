@@ -15,11 +15,10 @@ ENV["PATH"] = [
   "#{API_UMBRELLA_SRC_ROOT}/build/work/test-env/sbin",
   "#{API_UMBRELLA_SRC_ROOT}/build/work/dev-env/bin",
   "#{API_UMBRELLA_SRC_ROOT}/build/work/dev-env/sbin",
-  "#{API_UMBRELLA_SRC_ROOT}/build/work/cmake/bin",
   ENV["PATH"],
 ].join(":")
 
 Dir.glob(File.join(API_UMBRELLA_SRC_ROOT, "scripts/rake/*.rake")).each { |r| import r }
 
 task(:default).clear
-task(:default => [:lint, :test])
+task(:default => [:test])

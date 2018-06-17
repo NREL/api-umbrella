@@ -24,9 +24,6 @@ export default Base.extend({
     prefix: {
       refreshModel: true,
     },
-    beta_analytics: {
-      refreshModel: true,
-    },
   },
 
   model() {

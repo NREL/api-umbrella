@@ -8,7 +8,7 @@ if [ -f /etc/redhat-release ]; then
   yum -y install git rsync
 elif [ -f /etc/debian_version ]; then
   apt-get update
-  apt-get -y install git rsync
+  DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends install git rsync
 fi
 
 # Create a clean copy of the source directory.
@@ -22,7 +22,7 @@ cd "$clean_source_dir"
 git clean -d -f -x
 
 # Install any system dependencies for building.
-"$clean_source_dir/build/scripts/install_build_dependencies"
+"$clean_source_dir/tasks/install-system-build-dependencies"
 
 # shellcheck disable=SC1091
 if [ -f /etc/os-release ]; then

@@ -1,0 +1,57 @@
+#!/usr/bin/env bash
+
+openresty_version="1.13.6.2"
+openresty_hash="d95bc4bbe15e4b045a0593b4ecc0db38"
+openssl_version="1.0.2o"
+openssl_hash="ec3f5c9714ba0fd45cb4e087301eb1336c317e0d20b575a125050470e8089e4d"
+pcre_version="8.42"
+pcre_hash="085b6aa253e0f91cae70b3cdbe8c1ac2"
+
+set -e -u -x
+source ./tasks/helpers.sh
+
+task_working_dir
+
+download "https://ftp.pcre.org/pub/pcre/pcre-$pcre_version.tar.bz2" "md5" "$pcre_hash"
+extract_download "pcre-$pcre_version.tar.bz2"
+
+download "https://www.openssl.org/source/openssl-$openssl_version.tar.gz" "sha256" "$openssl_hash"
+extract_download "openssl-$openssl_version.tar.gz"
+
+download "https://openresty.org/download/openresty-$openresty_version.tar.gz" "md5" "$openresty_hash"
+extract_download "openresty-$openresty_version.tar.gz"
+
+cd "openresty-$openresty_version"
+patch -p1 < "$SOURCE_DIR/build/patches/openresty-opm.patch"
+patch -p1 < "$SOURCE_DIR/build/patches/openresty-cli.patch"
+
+./configure \
+  --prefix="$INSTALL_PREFIX_EMBEDDED/openresty" \
+  --with-cc-opt="-I$STAGE_EMBEDDED_DIR/include" \
+  --with-ld-opt="-L$STAGE_EMBEDDED_DIR/lib" \
+  --error-log-path=stderr \
+  --with-ipv6 \
+  --with-openssl="../openssl-$openssl_version" \
+  --with-pcre="../pcre-$pcre_version" \
+  --with-pcre-opt=-g \
+  --with-pcre-conf-opt=--enable-unicode-properties \
+  --with-pcre-jit \
+  --with-http_geoip_module \
+  --with-http_gunzip_module \
+  --with-http_gzip_static_module \
+  --with-http_realip_module \
+  --with-http_ssl_module \
+  --with-http_stub_status_module
+make
+make install DESTDIR="$STAGE_DIR"
+chrpath -d "$STAGE_EMBEDDED_DIR/openresty/nginx/sbin/nginx"
+(
+  cd "$STAGE_EMBEDDED_DIR/bin"
+  ln -snf ../openresty/bin/opm ./opm
+  ln -snf ../openresty/bin/resty ./resty
+  ln -snf ../openresty/luajit/bin/luajit ./luajit
+)
+mkdir -p "$STAGE_EMBEDDED_DIR/sbin"
+(cd "$STAGE_EMBEDDED_DIR/sbin" && ln -snf ../openresty/nginx/sbin/nginx ./nginx)
+
+stamp

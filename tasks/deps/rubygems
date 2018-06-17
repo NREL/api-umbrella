@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+rubygems_version="2.7.7"
+
+set -e -u -x
+source ./tasks/helpers.sh
+
+PATH=$STAGE_EMBEDDED_PATH gem update --system $rubygems_version --no-document --env-shebang
+
+stamp

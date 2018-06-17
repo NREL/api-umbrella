@@ -17,7 +17,8 @@ namespace :outdated do
       require "childprocess"
       Bundler.with_original_env do
         process = ChildProcess.build("bundle", "outdated")
-        process.cwd = API_UMBRELLA_SRC_ROOT
+        process.environment["BUNDLE_GEMFILE"] = File.join(API_UMBRELLA_SRC_ROOT, "Gemfile")
+        process.environment["BUNDLE_APP_CONFIG"] = File.join(API_UMBRELLA_SRC_ROOT, "tasks/app-deps/web-app/bundle/_persist/.bundle")
         process.io.inherit!
         process.start
         process.wait

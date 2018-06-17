@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+shellcheck_version="0.5.0"
+shellcheck_hash="475e14bf2705ad4a16d405fa64b94c2eb151a914d5a165ce13e8f9344e6145893f685a650cd32d45a7ab236dedf55f76b31db82e2ef76ad6175a87dd89109790"
+
+set -e -u -x
+source ./tasks/helpers.sh
+
+task_working_dir
+download "https://storage.googleapis.com/shellcheck/shellcheck-v$shellcheck_version.linux.x86_64.tar.xz" "sha512" "$shellcheck_hash"
+extract_download "shellcheck-v$shellcheck_version.linux.x86_64.tar.xz"
+
+install -D -m 755 "shellcheck-v$shellcheck_version/shellcheck" "$TEST_INSTALL_PREFIX/bin/shellcheck"
+
+stamp

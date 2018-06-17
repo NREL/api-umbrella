@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+
+rsyslog_version="8.35.0"
+rsyslog_hash="d216a7f7c88341d5964657e61a33193c13d884c988822fced9fce3ab0b1f1082"
+
+set -e -u -x
+source ./tasks/helpers.sh
+
+task_working_dir
+download "http://www.rsyslog.com/download/files/download/rsyslog/rsyslog-$rsyslog_version.tar.gz" "sha256" "$rsyslog_hash"
+extract_download "rsyslog-$rsyslog_version.tar.gz"
+
+cd "rsyslog-$rsyslog_version"
+LIBESTR_CFLAGS="-I$STAGE_EMBEDDED_DIR/include" \
+LIBESTR_LIBS="-L$STAGE_EMBEDDED_DIR/lib -lestr" \
+LIBFASTJSON_CFLAGS="-I$STAGE_EMBEDDED_DIR/include/libfastjson" \
+LIBFASTJSON_LIBS="-L$STAGE_EMBEDDED_DIR/lib -lfastjson" \
+./configure \
+  --prefix="$INSTALL_PREFIX_EMBEDDED" \
+  --disable-liblogging-stdlog \
+  --disable-libgcrypt \
+  --enable-imptcp \
+  --enable-impstats \
+  --enable-mmjsonparse \
+  --enable-mmutf8fix \
+  --enable-elasticsearch
+make
+make install DESTDIR="$STAGE_DIR"
+chrpath -d "$STAGE_EMBEDDED_DIR/sbin/rsyslogd"
+find "$STAGE_EMBEDDED_DIR/lib/rsyslog/" -name "*.so" -exec chrpath -d {} \;
+
+stamp

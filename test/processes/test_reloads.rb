@@ -21,7 +21,7 @@ class Test::Processes::TestReloads < Minitest::Test
       original_child_pids = nginx_child_pids(parent_pid)
 
       # Send a reload signal to nginx.
-      Process.kill("HUP", parent_pid.to_i)
+      ::Process.kill("HUP", parent_pid.to_i)
 
       # After sending the reload signal, wait until only the new set of worker
       # processes is running. This prevents us from checking file descriptors
@@ -58,7 +58,7 @@ class Test::Processes::TestReloads < Minitest::Test
       hydra.run
 
       # Now check for open file descriptors.
-      output, status = run_shell("lsof -n -P -l -R -c nginx")
+      output, status = run_shell("lsof", "-n", "-P", "-l", "-R", "-c", "nginx")
       assert_equal(0, status, output)
       descriptor_count = 0
       urandom_descriptor_count = 0
@@ -89,11 +89,15 @@ class Test::Processes::TestReloads < Minitest::Test
     assert_equal(15, descriptor_counts.length)
     assert_equal(15, urandom_descriptor_counts.length)
 
-    # Test to ensure ngx_txid isn't leaving open file descriptors around on
-    # reloads test for this patch: https://github.com/streadway/ngx_txid/pull/6
-    # Allow for some small fluctuations in the /dev/urandom sockets, since
-    # other nginx modules might also be using them.
-    assert_operator(urandom_descriptor_counts.min, :>, 0)
+    # Test to ensure nginx modules aren't leaking urandom descriptors. Allow
+    # for some small fluctuations in the /dev/urandom sockets, since nginx
+    # modules might be using them.
+    #
+    # This stems from this leak with ngx_tixd:
+    # https://github.com/streadway/ngx_txid/pull/6 We're no longer using
+    # ngx_txid (using lua-resty-txid instead), so urandom descriptors shouldn't
+    # actually be present, but we'll keep this test in place to ensure similar
+    # leaks don't crop up again.
     range = urandom_descriptor_counts.max - urandom_descriptor_counts.min
     assert_operator(range, :<=, $config["nginx"]["workers"] * 4)
 
@@ -128,7 +132,7 @@ class Test::Processes::TestReloads < Minitest::Test
       reload_thread = Thread.new do
         loop do
           sleep rand(0.005..0.5)
-          ApiUmbrellaTestHelpers::Process.reload("--router")
+          api_umbrella_process.reload("--router")
         end
       end
 
@@ -200,10 +204,8 @@ class Test::Processes::TestReloads < Minitest::Test
   private
 
   def nginx_parent_pid
-    output, status = run_shell("perpstat -b #{File.join($config["root_dir"], "etc/perp")} nginx")
-    assert_equal(0, status, output)
-    parent_pid = output.match(/^\s*main:.*\(pid (\d+)\)\s*$/)[1]
-    assert(parent_pid, output)
+    parent_pid = api_umbrella_process.perp_pid("nginx")
+    assert(parent_pid)
 
     parent_pid
   end
@@ -215,7 +217,7 @@ class Test::Processes::TestReloads < Minitest::Test
     begin
       Timeout.timeout(70) do
         loop do
-          output, status = run_shell("pgrep -P #{parent_pid}")
+          output, status = run_shell("pgrep", "-P", parent_pid)
           assert_equal(0, status, output)
           pids = output.strip.split("\n")
           break if(pids.length == expected_num_workers)

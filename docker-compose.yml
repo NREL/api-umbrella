@@ -1,4 +1,4 @@
-version: "2"
+version: "2.1"
 services:
   app:
     build:
@@ -18,5 +18,7 @@ services:
     ports:
       - "8200:8200"
       - "8201:8201"
+    sysctls:
+      - net.ipv6.conf.all.disable_ipv6=0
 volumes:
   build_cache:

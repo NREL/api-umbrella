@@ -1,10 +1,11 @@
 module ApiUmbrellaTestHelpers
   module CommonAsserts
-    def assert_response_code(expected_code, response)
+    private
+
+    def response_error_message(response)
       message = nil
-      if(expected_code != response.code)
+      if response
         message = <<~EOS
-          Response code did not match
           return_code: #{response.return_code}
           return_message: #{response.return_message}
           total_time: #{response.total_time}
@@ -16,7 +17,20 @@ module ApiUmbrellaTestHelpers
           redirect_time: #{response.redirect_time}
           effective_url: #{response.effective_url}
           primary_ip: #{response.primary_ip}
+          response_headers: #{response.headers.inspect}
           response_body: #{response.body}
+        EOS
+      end
+
+      message
+    end
+
+    def assert_response_code(expected_code, response)
+      message = nil
+      if(expected_code != response.code)
+        message = <<~EOS
+          Response code did not match
+          #{response_error_message(response)}
         EOS
       end
       assert_equal(expected_code, response.code, message)

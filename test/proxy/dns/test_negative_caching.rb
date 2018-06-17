@@ -26,33 +26,71 @@ class Test::Proxy::Dns::TestNegativeCaching < Minitest::Test
     override_config_reset("--router")
   end
 
-  def test_failed_host_down_after_ttl_expires
+  def test_caches_failed_lookups_before_retrying
+    assert_negative_ttl(NEGATIVE_TTL)
+  end
+
+  def test_negative_ttl_can_be_configured
+    negative_ttl = 3
+
+    # Ensure this negative TTL is different enough than the default that we can
+    # distinguish the results in tests.
+    assert_operator(negative_ttl, :<=, (NEGATIVE_TTL - TTL_BUFFER_POS).floor)
+
+    override_config({
+      "dns_resolver" => {
+        "nameservers" => ["[127.0.0.1]:#{$config["unbound"]["port"]}"],
+        "max_stale" => 0,
+        "negative_ttl" => negative_ttl,
+      },
+    }, "--router") do
+      assert_negative_ttl(negative_ttl)
+    end
+  end
+
+  private
+
+  def assert_negative_ttl(negative_ttl)
     prepend_api_backends([
       {
         :frontend_host => "127.0.0.1",
-        :backend_host => "negative-caching-invalid-hostname-begins-resolving.ooga",
-        :servers => [{ :host => "negative-caching-invalid-hostname-begins-resolving.ooga", :port => 9444 }],
-        :url_matches => [{ :frontend_prefix => "/#{unique_test_id}/negative-caching-invalid-hostname-begins-resolving/", :backend_prefix => "/info/" }],
+        :backend_host => unique_test_hostname,
+        :servers => [{ :host => unique_test_hostname, :port => 9444 }],
+        :url_matches => [{ :frontend_prefix => "/#{unique_test_id}/", :backend_prefix => "/info/" }],
       },
     ]) do
-      # The negative TTL caching really begins as soon as the initial
-      # configuration is put into place by runServer (since that's when the
-      # hostname is first seen and the unresolvable status is cached). So start
-      # our timer here.
-      start_time = Time.now.utc
-
-      wait_for_response("/#{unique_test_id}/negative-caching-invalid-hostname-begins-resolving/", {
+      # Make an initial request, which we expect to not succeed, since the
+      # hostname is bad.
+      wait_for_response("/#{unique_test_id}/", {
         :code => 502,
       })
 
-      set_dns_records(["negative-caching-invalid-hostname-begins-resolving.ooga 60 A 127.0.0.1"])
-      wait_for_response("/#{unique_test_id}/negative-caching-invalid-hostname-begins-resolving/", {
+      # The negative TTL caching begins after TrafficServer sees the first
+      # request and tries to resolve it. So start our timer after the first
+      # request.
+      start_time = Time.now.utc
+
+      # Add the DNS record for the previously invalid domain.
+      set_dns_records(["#{unique_test_hostname} 60 A 127.0.0.1"])
+
+      # Ensure that negative caching is in place and the hostname is still not
+      # resolving (despite the DNS being installed now).
+      wait_for_response("/#{unique_test_id}/", {
+        :code => 502,
+      })
+
+      # Wait for the successful response to resolve once the negative TTL has
+      # expired.
+      wait_for_response("/#{unique_test_id}/", {
         :code => 200,
         :local_interface_ip => "127.0.0.1",
       })
+
+      # Sanity check the results to ensure the results fit within the expected
+      # negative TTL values.
       duration = Time.now.utc - start_time
-      min_duration = NEGATIVE_TTL - TTL_BUFFER_NEG
-      max_duration = NEGATIVE_TTL + TTL_BUFFER_POS
+      min_duration = negative_ttl - TTL_BUFFER_NEG
+      max_duration = negative_ttl + TTL_BUFFER_POS
       assert_operator(min_duration, :>, 0)
       assert_operator(duration, :>=, min_duration)
       assert_operator(duration, :<, max_duration)

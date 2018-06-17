@@ -1,0 +1,70 @@
+#!/usr/bin/env bash
+
+set -e -u -x
+source ./tasks/helpers.sh
+
+destdir="${DESTDIR:-}"
+install_prefix="$PREFIX"
+
+# Define a timestamped release name for our app installations. Base this on the
+# last git commit timestamp so installs are consistent for each git commit.
+release_timestamp=$(date -d "$(git log --max-count=1 --date=iso --format=%cd)" -u "+%Y%m%d%H%M%S")
+
+mkdir -p "$destdir$install_prefix"
+rsync -a -v "$STAGE_PREFIX_DIR/" "$destdir$install_prefix/"
+install -D -m 755 "$SOURCE_DIR/build/package/files/etc/init.d/api-umbrella" "$destdir/etc/init.d/api-umbrella"
+install -D -m 644 "$SOURCE_DIR/build/package/files/etc/logrotate.d/api-umbrella" "$destdir/etc/logrotate.d/api-umbrella"
+install -D -m 440 "$SOURCE_DIR/build/package/files/etc/sudoers.d/api-umbrella" "$destdir/etc/sudoers.d/api-umbrella"
+
+# If /etc/api-umbrella/api-umbrella.yml doesn't exist, install it.
+#
+# If /etc/api-umbrella/api-umbrella.yml does exist, install the default version
+# to api-umbrella.yml.default (so it's available for reference, but we don't
+# overwrite any local changes).
+if [ -f "$destdir/etc/api-umbrella/api-umbrella.yml" ]; then
+  install -D -m 644 "$SOURCE_DIR/build/package/files/etc/api-umbrella/api-umbrella.yml" "$destdir/etc/api-umbrella/api-umbrella.yml.default"
+else
+  install -D -m 644 "$SOURCE_DIR/build/package/files/etc/api-umbrella/api-umbrella.yml" "$destdir/etc/api-umbrella/api-umbrella.yml"
+fi
+
+(
+  cd "$destdir$install_prefix/embedded/apps/core"
+  rm -rf "releases/$release_timestamp"
+  mv releases/0 "releases/$release_timestamp"
+  ln -snf "releases/$release_timestamp" ./current
+)
+
+(
+  cd "$destdir$install_prefix/embedded/apps/static-site"
+  rm -rf "releases/$release_timestamp"
+  mv releases/0 "releases/$release_timestamp"
+  ln -snf "releases/$release_timestamp" ./current
+)
+
+mkdir -p \
+  "$destdir/usr/bin" \
+  "$destdir/var/log" \
+  "$destdir$install_prefix/etc" \
+  "$destdir$install_prefix/var/db" \
+  "$destdir$install_prefix/var/log" \
+  "$destdir$install_prefix/var/run" \
+  "$destdir$install_prefix/var/tmp"
+
+(
+  cd "$destdir/usr/bin"
+  ln -snf "../..$install_prefix/bin/api-umbrella" ./api-umbrella
+)
+
+(
+  cd "$destdir/var/log"
+  ln -snf "../..$install_prefix/var/log" ./api-umbrella
+)
+
+sed -i "s#$STAGE_DIR##g" \
+  "$destdir$install_prefix/embedded/openresty/luajit/bin/luarocks-5.1" \
+  "$destdir$install_prefix/embedded/openresty/luajit/bin/luarocks-admin-5.1" \
+  "$destdir$install_prefix/embedded/openresty/luajit/share/lua/5.1/luarocks/site_config.lua"
+
+chmod 1777 "$destdir$install_prefix/var/tmp"
+
+"$SOURCE_DIR/build/package/scripts/after-install" 1

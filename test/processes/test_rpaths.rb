@@ -37,14 +37,14 @@ class Test::Processes::TestRpaths < Minitest::Test
       "/embedded/openresty/nginx/sbin/nginx",
       "/embedded/libexec/trafficserver/ssl_cert_loader.so",
       # LuaRock
-      "/embedded/apps/core/shared/vendor/lib/lua/5.1/iconv.so",
+      "/embedded/apps/core/shared/vendor/lua/lib/lua/5.1/iconv.so",
     ].each do |expected_path_end|
       assert(bins.find { |path| path.end_with?(expected_path_end) }, "Expected #{bins.inspect} to include #{expected_path_end.inspect}")
     end
 
     # Ensure each binary file has no rpath or runpath setting.
     bins.each do |path|
-      output, _status = run_shell("chrpath -l #{path}")
+      output, _status = run_shell("chrpath", "-l", path)
       assert_match("no rpath or runpath tag found", output)
     end
   end

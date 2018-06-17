@@ -1,4 +1,4 @@
-FROM nrel/api-umbrella-dev-env:lapis-postgres
+FROM nrel/api-umbrella-dev-env:latest
 
-RUN cd /build && make
 WORKDIR /app
+RUN ./configure && make

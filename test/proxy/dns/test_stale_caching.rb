@@ -28,13 +28,13 @@ class Test::Proxy::Dns::TestStaleCaching < Minitest::Test
 
   def test_failed_host_down_after_ttl_expires
     ttl = 4
-    set_dns_records(["stale-caching-down-after-ttl-expires.ooga #{ttl} A 127.0.0.1"])
+    set_dns_records(["#{unique_test_hostname} #{ttl} A 127.0.0.1"])
 
     prepend_api_backends([
       {
         :frontend_host => "127.0.0.1",
-        :backend_host => "stale-caching-down-after-ttl-expires.ooga",
-        :servers => [{ :host => "stale-caching-down-after-ttl-expires.ooga", :port => 9444 }],
+        :backend_host => unique_test_hostname,
+        :servers => [{ :host => unique_test_hostname, :port => 9444 }],
         :url_matches => [{ :frontend_prefix => "/#{unique_test_id}/stale-caching-down-after-ttl-expires/", :backend_prefix => "/info/" }],
       },
     ]) do

@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+lua_resty_mail_version="1.0.0"
+
+set -e -u -x
+source ./tasks/helpers.sh
+
+opm_install "GUI/lua-resty-mail" "$lua_resty_mail_version"
+
+stamp

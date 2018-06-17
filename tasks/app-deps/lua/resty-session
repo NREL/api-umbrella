@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+lua_resty_session_version="2.19"
+
+set -e -u -x
+source ./tasks/helpers.sh
+
+opm_install "bungle/lua-resty-session" "$lua_resty_session_version"
+
+stamp

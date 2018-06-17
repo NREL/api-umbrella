@@ -31,7 +31,7 @@ On each server you wish to deploy to, you must setup SSH keys so that you can de
 
 ### Install Build Dependencies
 
-On each server you wish to deploy to, you must install the system packages needed for building dependencies (for example, make, gcc, etc). This can be automated through the `build/scripts/install_build_dependencies` shell script:
+On each server you wish to deploy to, you must install the system packages needed for building dependencies (for example, make, gcc, etc). This can be automated through the `tasks/install-system-build-dependencies` shell script:
 
 - On each server:
 
@@ -39,7 +39,7 @@ On each server you wish to deploy to, you must install the system packages neede
   $ curl -OLJ https://github.com/NREL/api-umbrella/archive/master.tar.gz
   $ tar -xvf api-umbrella-master.tar.gz
   $ cd api-umbrella-master
-  $ sudo ./build/scripts/install_build_dependencies
+  $ sudo ./tasks/install-system-build-dependencies
   ```
 
 ## Deploying

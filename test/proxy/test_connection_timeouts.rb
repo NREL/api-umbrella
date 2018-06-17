@@ -94,8 +94,8 @@ class Test::Proxy::TestConnectionTimeouts < Minitest::Test
     post_thread.join
     total_time = Time.now.utc - start_time
 
-    assert_equal(200, get_thread[:response].code)
-    assert_equal(200, post_thread[:response].code)
+    assert_response_code(200, get_thread[:response])
+    assert_response_code(200, post_thread[:response])
 
     # Sanity check to ensure the 2 requests were made in parallel and
     # overlapped.

@@ -33,74 +33,77 @@ if [ "$configure" = "true" ]; then
   group=api-umbrella
   deploy_user=api-umbrella-deploy
   deploy_group=api-umbrella-deploy
-  prefix_dir=/opt/api-umbrella
+  destdir="${DESTDIR:-}"
+  prefix_dir="$destdir${PREFIX:-/opt/api-umbrella}"
   embedded_dir=$prefix_dir/embedded
 
-  # Create the main user & group.
-  if ! getent group $group > /dev/null; then
-    groupadd -r $group
+  if [ -n "$destdir" ]; then
+    mkdir -p "$destdir/usr/bin"
+    mkdir -p "$destdir/var/log"
   fi
-  if ! getent passwd $user > /dev/null; then
-    useradd -r -g $group -s /sbin/nologin \
-      -d $prefix_dir -c "API Umbrella user" $user
+
+  # Create the main user & group.
+  if ! getent group "$group" > /dev/null; then
+    groupadd -r "$group"
+  fi
+  if ! getent passwd "$user" > /dev/null; then
+    useradd -r -g "$group" -s /sbin/nologin \
+      -d "$prefix_dir" -c "API Umbrella user" "$user"
   fi
 
   # Create the deploy user & group.
-  if ! getent group $deploy_group > /dev/null; then
-    groupadd -r $deploy_group
+  if ! getent group "$deploy_group" > /dev/null; then
+    groupadd -r "$deploy_group"
   fi
-  if ! getent passwd $deploy_user > /dev/null; then
-    useradd -r -g $deploy_group -s /bin/bash \
-      -d /home/$deploy_user -c "API Umbrella deployment user" $deploy_user
+  if ! getent passwd "$deploy_user" > /dev/null; then
+    useradd -r -g "$deploy_group" -s /bin/bash \
+      -d "$destdir/home/$deploy_user" -c "API Umbrella deployment user" "$deploy_user"
   fi
 
   # Add the deploy user to the app group, so the deploy user can read config
   # files.
-  if ! groups $deploy_user | grep -q -E "\\s$group(\\s|$)"; then
-    usermod -a -G $group $deploy_user
+  if ! groups "$deploy_user" | grep -q -E "\\s$group(\\s|$)"; then
+    usermod -a -G "$group" "$deploy_user"
   fi
 
   # Fix previously created deploy user that couldn't actually login.
-  if getent passwd $deploy_user | grep -q "/sbin/nologin"; then
-    usermod -d /home/$deploy_user -s /bin/bash $deploy_user
+  if getent passwd "$deploy_user" | grep -q "/sbin/nologin"; then
+    usermod -d "$destdir/home/$deploy_user" -s /bin/bash "$deploy_user"
   fi
 
   # Create an empty .ssh/authorized_keys file with proper permissions if it
   # doesn't already exist.
-  if [ ! -f /home/$deploy_user/.ssh/authorized_keys ]; then
-    mkdir -p /home/$deploy_user/.ssh
-    touch /home/$deploy_user/.ssh/authorized_keys
-    chown -R $deploy_user:$deploy_group /home/$deploy_user
-    chmod 700 /home/$deploy_user
-    chmod 700 /home/$deploy_user/.ssh
-    chmod 600 /home/$deploy_user/.ssh/authorized_keys
+  if [ ! -f "$destdir/home/$deploy_user/.ssh/authorized_keys" ]; then
+    mkdir -p "$destdir/home/$deploy_user/.ssh"
+    touch "$destdir/home/$deploy_user/.ssh/authorized_keys"
+    chown -R "$deploy_user:$deploy_group" "$destdir/home/$deploy_user"
+    chmod 700 "$destdir/home/$deploy_user"
+    chmod 700 "$destdir/home/$deploy_user/.ssh"
+    chmod 600 "$destdir/home/$deploy_user/.ssh/authorized_keys"
   fi
 
   # Set file permissions
-  chown -R $user:$group $prefix_dir/etc $prefix_dir/var
-  chown -R $deploy_user:$deploy_group $embedded_dir/apps
-  if [ -d $embedded_dir/kylin ]; then
-    chown $user:$group $embedded_dir/kylin/tomcat/temp \
-      $embedded_dir/kylin/tomcat/webapps \
-      $embedded_dir/kylin/tomcat/logs
-  fi
+  chown -R "$user:$group" "$prefix_dir/etc" "$prefix_dir/var"
+  chown -R "$deploy_user:$deploy_group" "$embedded_dir/apps"
 
   # Re-create symlinks that may have inadvertently been cleaned up by the API
   # Umbrella v0.8 and v0.9 after-remove scripts during upgrades (this should be
   # fixed by the v0.10 after-remove script, so at some point, we can probably
   # remove this logic).
-  if [ ! -f /usr/bin/api-umbrella ]; then
-    cd /usr/bin && ln -snf ../..$prefix_dir/bin/api-umbrella ./api-umbrella
+  if [ ! -f "$destdir/usr/bin/api-umbrella" ]; then
+    cd "$destdir/usr/bin" && ln -snf "../..$prefix_dir/bin/api-umbrella" ./api-umbrella
   fi
-  if [ ! -f /var/log/api-umbrella ]; then
-    cd /var/log && ln -snf ../..$prefix_dir/var/log ./api-umbrella
+  if [ ! -f "$destdir/var/log/api-umbrella" ]; then
+    cd "$destdir/var/log" && ln -snf "../..$prefix_dir/var/log" ./api-umbrella
   fi
 
-  # Install service, but don't activate.
-  if command -v chkconfig > /dev/null 2>&1; then
-    chkconfig --add api-umbrella
-  elif command -v update-rc.d > /dev/null 2>&1; then
-    update-rc.d api-umbrella defaults 85 15 > /dev/null
+  if [ -z "$destdir" ]; then
+    # Install service, but don't activate.
+    if command -v chkconfig > /dev/null 2>&1; then
+      chkconfig --add api-umbrella
+    elif command -v update-rc.d > /dev/null 2>&1; then
+      update-rc.d api-umbrella defaults 85 15 > /dev/null
+    fi
   fi
 fi
 

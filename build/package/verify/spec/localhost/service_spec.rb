@@ -252,7 +252,7 @@ describe "api-umbrella" do
     ].each do |service|
       # Make sure all the expected processes are reported as running and aren't
       # flapping up and down.
-      expect(command_result.stdout).to match(%r{^\[\+ \+\+\+ \+\+\+\] +#{service} +uptime: \d+s/\d+s +pids: \d+/\d+$})
+      expect(output).to match(%r{^\[\+ \+\+\+ \+\+\+\] +#{service} +uptime: \d+s/\d+s +pids: \d+/\d+$})
     end
   end
 

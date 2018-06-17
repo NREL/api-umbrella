@@ -125,6 +125,9 @@ local function render_template(template, data, format, strip_whitespace)
 end
 
 return function(denied_code, settings, extra_data)
+  -- Store the gatekeeper rejection code for logging.
+  ngx.ctx.gatekeeper_denied_code = denied_code
+
   -- Redirect "not_found" errors to HTTPS.
   --
   -- Since these errors aren't subject to an API Backend's HTTPS requirements
@@ -139,8 +142,9 @@ return function(denied_code, settings, extra_data)
     end
   end
 
-  -- Store the gatekeeper rejection code for logging.
-  ngx.ctx.gatekeeper_denied_code = denied_code
+  if denied_code == "redirect_https" then
+    return ngx.redirect(httpsify_current_url(), ngx.HTTP_MOVED_PERMANENTLY)
+  end
 
   if not settings then
     settings = config["apiSettings"]

@@ -1,0 +1,858 @@
+# Run build tasks, test tasks, and other generic tasks via the go-task tool:
+# https://github.com/go-task/task
+#
+# The primary reason we're using this over something more standard like Make is
+# that it provides a simple mechanism to skip tasks based on file checksums.
+# This lets us more easily cache and skip steps in the CI and Docker
+# development environment (since we only need to cache the build output and
+# checksum files, rather than also needing to cache all the intermediate build
+# files).
+#
+# A few general notes on the approach:
+#
+# - We mostly defer each task to a shell script to do the actual work.
+# - For the build process, we use "stamp" files as outputs and also use those
+#   within the dependency chain. We use these stamp files so that the
+#   checksumming approach properly invalidates the entire chain of dependencies
+#   when build files change (whereas just using "deps" in go-task doesn't fully
+#   work for multiple levels of dependencies). So, for example, if the libgeoip
+#   dependency changes, rebuilding it properly cascades and triggers a rebuild
+#   of openresty (1st level dependency) and luarocks (2nd level dependency).
+
+version: "2"
+
+output: prefixed
+
+tasks:
+  deps:bundler:
+    deps:
+      - deps:rubygems
+    cmds:
+      - ./tasks/deps/bundler
+    sources:
+      - ./build/work/stamp/deps/rubygems
+      - ./tasks/deps/bundler
+      - ./tasks/helpers.sh
+    generates:
+      - ./build/work/stamp/deps/bundler
+    method: checksum
+
+  deps:elasticsearch:
+    cmds:
+      - ./tasks/deps/elasticsearch
+    sources:
+      - ./tasks/deps/elasticsearch
+      - ./tasks/helpers.sh
+    generates:
+      - ./build/work/stamp/deps/elasticsearch
+    method: checksum
+
+  deps:geolitecity:
+    cmds:
+      - ./tasks/deps/geolitecity
+    sources:
+      - ./tasks/deps/geolitecity
+      - ./tasks/helpers.sh
+    generates:
+      - ./build/work/stamp/deps/geolitecity
+    method: none
+
+  deps:libcidr:
+    cmds:
+      - ./tasks/deps/libcidr
+    sources:
+      - ./tasks/deps/libcidr
+      - ./tasks/helpers.sh
+    generates:
+      - ./build/work/stamp/deps/libcidr
+    method: checksum
+
+  deps:libestr:
+    cmds:
+      - ./tasks/deps/libestr
+    sources:
+      - ./tasks/deps/libestr
+      - ./tasks/helpers.sh
+    generates:
+      - ./build/work/stamp/deps/libestr
+    method: checksum
+
+  deps:libfastjson:
+    cmds:
+      - ./tasks/deps/libfastjson
+    sources:
+      - ./tasks/deps/libfastjson
+      - ./tasks/helpers.sh
+    generates:
+      - ./build/work/stamp/deps/libfastjson
+    method: checksum
+
+  deps:libgeoip:
+    cmds:
+      - ./tasks/deps/libgeoip
+    sources:
+      - ./tasks/deps/libgeoip
+      - ./tasks/helpers.sh
+    generates:
+      - ./build/work/stamp/deps/libgeoip
+    method: checksum
+
+  deps:luarocks:
+    deps:
+      - deps:openresty
+    cmds:
+      - ./tasks/deps/luarocks
+    sources:
+      - ./build/work/stamp/deps/openresty
+      - ./tasks/deps/luarocks
+      - ./tasks/helpers.sh
+    generates:
+      - ./build/work/stamp/deps/luarocks
+    method: checksum
+
+  deps:openresty:
+    deps:
+      - deps:libgeoip
+    cmds:
+      - ./tasks/deps/openresty
+    sources:
+      - ./build/work/stamp/deps/libgeoip
+      - ./tasks/deps/openresty
+      - ./tasks/helpers.sh
+    generates:
+      - ./build/work/stamp/deps/openresty
+    method: checksum
+
+  deps:perp:
+    cmds:
+      - ./tasks/deps/perp
+    sources:
+      - ./tasks/deps/perp
+      - ./tasks/helpers.sh
+    generates:
+      - ./build/work/stamp/deps/perp
+    method: checksum
+
+  deps:postgresql:
+    cmds:
+      - ./tasks/deps/postgresql
+    sources:
+      - ./tasks/deps/postgresql
+      - ./tasks/helpers.sh
+    generates:
+      - ./build/work/stamp/deps/postgresql
+    method: checksum
+
+  deps:rsyslog:
+    deps:
+      - deps:libestr
+      - deps:libfastjson
+    cmds:
+      - ./tasks/deps/rsyslog
+    sources:
+      - ./build/work/stamp/deps/libestr
+      - ./build/work/stamp/deps/libfastjson
+      - ./tasks/deps/rsyslog
+      - ./tasks/helpers.sh
+    generates:
+      - ./build/work/stamp/deps/rsyslog
+    method: checksum
+
+  deps:ruby:
+    cmds:
+      - ./tasks/deps/ruby
+    sources:
+      - ./tasks/deps/ruby
+      - ./tasks/helpers.sh
+    generates:
+      - ./build/work/stamp/deps/ruby
+    method: checksum
+
+  deps:rubygems:
+    deps:
+      - deps:ruby
+    cmds:
+      - ./tasks/deps/rubygems
+    sources:
+      - ./build/work/stamp/deps/ruby
+      - ./tasks/deps/rubygems
+      - ./tasks/helpers.sh
+    generates:
+      - ./build/work/stamp/deps/rubygems
+    method: checksum
+
+  deps:runit_svlogd:
+    cmds:
+      - ./tasks/deps/runit_svlogd
+    sources:
+      - ./tasks/deps/runit_svlogd
+      - ./tasks/helpers.sh
+    generates:
+      - ./build/work/stamp/deps/runit_svlogd
+    method: checksum
+
+  deps:trafficserver:
+    cmds:
+      - ./tasks/deps/trafficserver
+    sources:
+      - ./tasks/deps/trafficserver
+      - ./tasks/helpers.sh
+    generates:
+      - ./build/work/stamp/deps/trafficserver
+    method: checksum
+
+  deps:
+    cmds:
+      - task: deps:bundler
+      - task: deps:elasticsearch
+      - task: deps:geolitecity
+      - task: deps:libcidr
+      - task: deps:luarocks
+      - task: deps:openresty
+      - task: deps:perp
+      - task: deps:postgresql
+      - task: deps:rsyslog
+      - task: deps:runit_svlogd
+      - task: deps:trafficserver
+
+  build-deps:nodejs:
+    cmds:
+      - ./tasks/build-deps/nodejs
+    sources:
+      - ./tasks/build-deps/nodejs
+      - ./tasks/helpers.sh
+    generates:
+      - ./build/work/stamp/build-deps/nodejs
+    method: checksum
+
+  build-deps:yarn:
+    deps:
+      - build-deps:nodejs
+    cmds:
+      - ./tasks/build-deps/yarn
+    sources:
+      - ./build/work/stamp/build-deps/nodejs
+      - ./tasks/build-deps/yarn
+      - ./tasks/helpers.sh
+    generates:
+      - ./build/work/stamp/build-deps/yarn
+    method: checksum
+
+  build-deps:
+    cmds:
+      - task: build-deps:yarn
+
+  app-deps:admin-ui:yarn:
+    deps:
+      - build-deps:yarn
+    cmds:
+      - ./tasks/app-deps/admin-ui/yarn
+    sources:
+      - ./build/work/stamp/build-deps/yarn
+      - ./src/api-umbrella/admin-ui/package.json
+      - ./src/api-umbrella/admin-ui/yarn.lock
+      - ./tasks/app-deps/admin-ui/yarn
+      - ./tasks/helpers.sh
+    generates:
+      - ./build/work/stamp/app-deps/admin-ui/yarn
+    method: checksum
+
+  app-deps:lua:argparse:
+    deps:
+      - deps:luarocks
+    cmds:
+      - ./tasks/app-deps/lua/argparse
+    sources:
+      - ./build/work/stamp/deps/luarocks
+      - ./tasks/app-deps/lua/argparse
+      - ./tasks/helpers.sh
+    generates:
+      - ./build/work/stamp/app-deps/lua/argparse
+    method: checksum
+
+  app-deps:lua:bcrypt:
+    deps:
+      - deps:luarocks
+    cmds:
+      - ./tasks/app-deps/lua/bcrypt
+    sources:
+      - ./build/work/stamp/deps/luarocks
+      - ./tasks/app-deps/lua/bcrypt
+      - ./tasks/helpers.sh
+    generates:
+      - ./build/work/stamp/app-deps/lua/bcrypt
+    method: checksum
+
+  app-deps:lua:cmsgpack:
+    deps:
+      - deps:luarocks
+    cmds:
+      - ./tasks/app-deps/lua/cmsgpack
+    sources:
+      - ./build/work/stamp/deps/luarocks
+      - ./tasks/app-deps/lua/cmsgpack
+      - ./tasks/helpers.sh
+    generates:
+      - ./build/work/stamp/app-deps/lua/cmsgpack
+    method: checksum
+
+  app-deps:lua:iconv:
+    deps:
+      - deps:luarocks
+    cmds:
+      - ./tasks/app-deps/lua/iconv
+    sources:
+      - ./build/work/stamp/deps/luarocks
+      - ./tasks/app-deps/lua/iconv
+      - ./tasks/helpers.sh
+    generates:
+      - ./build/work/stamp/app-deps/lua/iconv
+    method: checksum
+
+  app-deps:lua:icu-date:
+    deps:
+      - deps:luarocks
+    cmds:
+      - ./tasks/app-deps/lua/icu-date
+    sources:
+      - ./build/work/stamp/deps/luarocks
+      - ./tasks/app-deps/lua/icu-date
+      - ./tasks/helpers.sh
+    generates:
+      - ./build/work/stamp/app-deps/lua/icu-date
+    method: checksum
+
+  app-deps:lua:inspect:
+    deps:
+      - deps:luarocks
+    cmds:
+      - ./tasks/app-deps/lua/inspect
+    sources:
+      - ./build/work/stamp/deps/luarocks
+      - ./tasks/app-deps/lua/inspect
+      - ./tasks/helpers.sh
+    generates:
+      - ./build/work/stamp/app-deps/lua/inspect
+    method: checksum
+
+  app-deps:lua:lapis:
+    deps:
+      - deps:luarocks
+    cmds:
+      - ./tasks/app-deps/lua/lapis
+    sources:
+      - ./build/work/stamp/deps/luarocks
+      - ./tasks/app-deps/lua/lapis
+      - ./tasks/helpers.sh
+    generates:
+      - ./build/work/stamp/app-deps/lua/lapis
+    method: checksum
+
+  app-deps:lua:libcidr-ffi:
+    deps:
+      - deps:libcidr
+      - deps:luarocks
+    cmds:
+      - ./tasks/app-deps/lua/libcidr-ffi
+    sources:
+      - ./build/work/stamp/deps/libcidr
+      - ./build/work/stamp/deps/luarocks
+      - ./tasks/app-deps/lua/libcidr-ffi
+      - ./tasks/helpers.sh
+    generates:
+      - ./build/work/stamp/app-deps/lua/libcidr-ffi
+    method: checksum
+
+  app-deps:lua:lualdap:
+    deps:
+      - deps:luarocks
+    cmds:
+      - ./tasks/app-deps/lua/lualdap
+    sources:
+      - ./build/work/stamp/deps/luarocks
+      - ./tasks/app-deps/lua/lualdap
+      - ./tasks/helpers.sh
+    generates:
+      - ./build/work/stamp/app-deps/lua/lualdap
+    method: checksum
+
+  app-deps:lua:luaposix:
+    deps:
+      - deps:luarocks
+    cmds:
+      - ./tasks/app-deps/lua/luaposix
+    sources:
+      - ./build/work/stamp/deps/luarocks
+      - ./tasks/app-deps/lua/luaposix
+      - ./tasks/helpers.sh
+    generates:
+      - ./build/work/stamp/app-deps/lua/luaposix
+    method: checksum
+
+  app-deps:lua:luasocket:
+    deps:
+      - deps:luarocks
+    cmds:
+      - ./tasks/app-deps/lua/luasocket
+    sources:
+      - ./build/work/stamp/deps/luarocks
+      - ./tasks/app-deps/lua/luasocket
+      - ./tasks/helpers.sh
+    generates:
+      - ./build/work/stamp/app-deps/lua/luasocket
+    method: checksum
+
+  app-deps:lua:lustache:
+    deps:
+      - deps:luarocks
+    cmds:
+      - ./tasks/app-deps/lua/lustache
+    sources:
+      - ./build/work/stamp/deps/luarocks
+      - ./tasks/app-deps/lua/lustache
+      - ./tasks/helpers.sh
+    generates:
+      - ./build/work/stamp/app-deps/lua/lustache
+    method: checksum
+
+  app-deps:lua:lyaml:
+    deps:
+      - deps:luarocks
+    cmds:
+      - ./tasks/app-deps/lua/lyaml
+    sources:
+      - ./build/work/stamp/deps/luarocks
+      - ./tasks/app-deps/lua/lyaml
+      - ./tasks/helpers.sh
+    generates:
+      - ./build/work/stamp/app-deps/lua/lyaml
+    method: checksum
+
+  app-deps:lua:penlight:
+    deps:
+      - deps:luarocks
+    cmds:
+      - ./tasks/app-deps/lua/penlight
+    sources:
+      - ./build/work/stamp/deps/luarocks
+      - ./tasks/app-deps/lua/penlight
+      - ./tasks/helpers.sh
+    generates:
+      - ./build/work/stamp/app-deps/lua/penlight
+    method: checksum
+
+  app-deps:lua:resty-http:
+    deps:
+      - deps:luarocks
+    cmds:
+      - ./tasks/app-deps/lua/resty-http
+    sources:
+      - ./build/work/stamp/deps/luarocks
+      - ./tasks/app-deps/lua/resty-http
+      - ./tasks/helpers.sh
+    generates:
+      - ./build/work/stamp/app-deps/lua/resty-http
+    method: checksum
+
+  app-deps:lua:resty-logger-socket:
+    deps:
+      - deps:luarocks
+    cmds:
+      - ./tasks/app-deps/lua/resty-logger-socket
+    sources:
+      - ./build/work/stamp/deps/luarocks
+      - ./tasks/app-deps/lua/resty-logger-socket
+      - ./tasks/helpers.sh
+    generates:
+      - ./build/work/stamp/app-deps/lua/resty-logger-socket
+    method: checksum
+
+  app-deps:lua:resty-mail:
+    deps:
+      - deps:luarocks
+    cmds:
+      - ./tasks/app-deps/lua/resty-mail
+    sources:
+      - ./build/work/stamp/deps/luarocks
+      - ./tasks/app-deps/lua/resty-mail
+      - ./tasks/helpers.sh
+    generates:
+      - ./build/work/stamp/app-deps/lua/resty-mail
+    method: checksum
+
+  app-deps:lua:resty-nettle:
+    deps:
+      - deps:luarocks
+    cmds:
+      - ./tasks/app-deps/lua/resty-nettle
+    sources:
+      - ./build/work/stamp/deps/luarocks
+      - ./tasks/app-deps/lua/resty-nettle
+      - ./tasks/helpers.sh
+    generates:
+      - ./build/work/stamp/app-deps/lua/resty-nettle
+    method: checksum
+
+  app-deps:lua:resty-session:
+    deps:
+      - deps:luarocks
+    cmds:
+      - ./tasks/app-deps/lua/resty-session
+    sources:
+      - ./build/work/stamp/deps/luarocks
+      - ./tasks/app-deps/lua/resty-session
+      - ./tasks/helpers.sh
+    generates:
+      - ./build/work/stamp/app-deps/lua/resty-session
+    method: checksum
+
+  app-deps:lua:resty-shcache:
+    deps:
+      - deps:luarocks
+    cmds:
+      - ./tasks/app-deps/lua/resty-shcache
+    sources:
+      - ./build/work/stamp/deps/luarocks
+      - ./tasks/app-deps/lua/resty-shcache
+      - ./tasks/helpers.sh
+    generates:
+      - ./build/work/stamp/app-deps/lua/resty-shcache
+    method: checksum
+
+  app-deps:lua:resty-txid:
+    deps:
+      - deps:luarocks
+    cmds:
+      - ./tasks/app-deps/lua/resty-txid
+    sources:
+      - ./build/work/stamp/deps/luarocks
+      - ./tasks/app-deps/lua/resty-txid
+      - ./tasks/helpers.sh
+    generates:
+      - ./build/work/stamp/app-deps/lua/resty-txid
+    method: checksum
+
+  app-deps:lua:resty-uuid:
+    deps:
+      - deps:luarocks
+    cmds:
+      - ./tasks/app-deps/lua/resty-uuid
+    sources:
+      - ./build/work/stamp/deps/luarocks
+      - ./tasks/app-deps/lua/resty-uuid
+      - ./tasks/helpers.sh
+    generates:
+      - ./build/work/stamp/app-deps/lua/resty-uuid
+    method: checksum
+
+  app-deps:lua:resty-validation:
+    deps:
+      - deps:luarocks
+    cmds:
+      - ./tasks/app-deps/lua/resty-validation
+    sources:
+      - ./build/work/stamp/deps/luarocks
+      - ./tasks/app-deps/lua/resty-validation
+      - ./tasks/helpers.sh
+    generates:
+      - ./build/work/stamp/app-deps/lua/resty-validation
+    method: checksum
+
+  app-deps:web-app:yarn:
+    deps:
+      - build-deps:yarn
+    cmds:
+      - ./tasks/app-deps/web-app/yarn
+    sources:
+      - ./build/work/stamp/build-deps/yarn
+      - ./src/api-umbrella/web-app/package.json
+      - ./src/api-umbrella/web-app/yarn.lock
+      - ./tasks/app-deps/web-app/yarn
+      - ./tasks/helpers.sh
+    generates:
+      - ./build/work/stamp/app-deps/web-app/yarn
+    method: checksum
+
+  app-deps:
+    cmds:
+      - task: app-deps:admin-ui:yarn
+      - task: app-deps:lua:argparse
+      - task: app-deps:lua:bcrypt
+      - task: app-deps:lua:cmsgpack
+      - task: app-deps:lua:iconv
+      - task: app-deps:lua:icu-date
+      - task: app-deps:lua:inspect
+      - task: app-deps:lua:lapis
+      - task: app-deps:lua:libcidr-ffi
+      - task: app-deps:lua:lualdap
+      - task: app-deps:lua:luaposix
+      - task: app-deps:lua:luasocket
+      - task: app-deps:lua:lustache
+      - task: app-deps:lua:lyaml
+      - task: app-deps:lua:penlight
+      - task: app-deps:lua:resty-http
+      - task: app-deps:lua:resty-logger-socket
+      - task: app-deps:lua:resty-mail
+      - task: app-deps:lua:resty-nettle
+      - task: app-deps:lua:resty-session
+      - task: app-deps:lua:resty-shcache
+      - task: app-deps:lua:resty-txid
+      - task: app-deps:lua:resty-uuid
+      - task: app-deps:lua:resty-validation
+      - task: app-deps:web-app:yarn
+
+  app:admin-ui:build:
+    deps:
+      - app-deps:admin-ui:yarn
+    cmds:
+      - ./tasks/app/admin-ui/build
+    sources:
+      - ./build/work/stamp/app-deps/admin-ui/yarn
+      - ./src/api-umbrella/admin-ui/app/**/*.hbs
+      - ./src/api-umbrella/admin-ui/app/**/*.html
+      - ./src/api-umbrella/admin-ui/app/**/*.js
+      - ./src/api-umbrella/admin-ui/app/**/*.scss
+      - ./src/api-umbrella/admin-ui/config/**/*.js
+      - ./src/api-umbrella/admin-ui/ember-cli-build.js
+      - ./src/api-umbrella/admin-ui/lib/**/*.js
+      - ./tasks/app/admin-ui/build
+      - ./tasks/helpers.sh
+    generates:
+      - ./build/work/stamp/app/admin-ui/build
+    method: checksum
+
+  app:core:
+    deps:
+      - app:admin-ui:build
+      - app:web-app:precompile
+    cmds:
+      - ./tasks/app/core
+    sources:
+      - ./build/work/stamp/app/admin-ui/build
+      - ./build/work/stamp/app/web-app/precompile
+      - ./tasks/app/core
+      - ./tasks/helpers.sh
+    generates:
+      - ./build/work/stamp/app/core
+    method: checksum
+
+  app:static-site:
+    deps:
+      - build-deps:nodejs
+      - deps:bundler
+    cmds:
+      - ./tasks/app/static-site
+    sources:
+      - ./build/work/stamp/build-deps/nodejs
+      - ./build/work/stamp/deps/bundler
+      - ./tasks/app/static-site
+      - ./tasks/helpers.sh
+    generates:
+      - ./build/work/stamp/app/static-site
+    method: checksum
+
+  app:web-app:precompile:
+    deps:
+      - app-deps:web-app:yarn
+    cmds:
+      - ./tasks/app/web-app/precompile
+    sources:
+      - ./build/work/stamp/app-deps/web-app/yarn
+      - ./src/api-umbrella/web-app/assets/**/*.scss
+      - ./src/api-umbrella/web-app/webpack.config.js
+      - ./tasks/app/web-app/precompile
+      - ./tasks/helpers.sh
+    generates:
+      - ./build/work/stamp/app/web-app/precompile
+    method: checksum
+
+  app:
+    cmds:
+      - task: app:core
+      - task: app:static-site
+
+  all:
+    cmds:
+      - task: app
+      - task: app-deps
+      - task: build-deps
+      - task: deps
+
+  test-deps:bundle:
+    deps:
+      - deps:bundler
+    cmds:
+      - ./tasks/test-deps/bundle
+    sources:
+      - ./build/work/stamp/deps/bundler
+      - ./Gemfile
+      - ./Gemfile.lock
+      - ./tasks/test-deps/bundle
+      - ./tasks/helpers.sh
+    generates:
+      - ./build/work/stamp/test-deps/bundle
+    method: checksum
+
+  test-deps:elasticsearch5:
+    cmds:
+      - ./tasks/test-deps/elasticsearch5
+    sources:
+      - ./tasks/test-deps/elasticsearch5
+      - ./tasks/helpers.sh
+    generates:
+      - ./build/work/stamp/test-deps/elasticsearch5
+    method: checksum
+
+  test-deps:elasticsearch6:
+    cmds:
+      - ./tasks/test-deps/elasticsearch6
+    sources:
+      - ./tasks/test-deps/elasticsearch6
+      - ./tasks/helpers.sh
+    generates:
+      - ./build/work/stamp/test-deps/elasticsearch6
+    method: checksum
+
+  test-deps:luacheck:
+    deps:
+      - deps:luarocks
+    cmds:
+      - ./tasks/test-deps/luacheck
+    sources:
+      - ./build/work/stamp/deps/luarocks
+      - ./tasks/test-deps/luacheck
+      - ./tasks/helpers.sh
+    generates:
+      - ./build/work/stamp/test-deps/luacheck
+    method: checksum
+
+  test-deps:mailhog:
+    cmds:
+      - ./tasks/test-deps/mailhog
+    sources:
+      - ./tasks/test-deps/mailhog
+      - ./tasks/helpers.sh
+    generates:
+      - ./build/work/stamp/test-deps/mailhog
+    method: checksum
+
+  test-deps:openldap:
+    cmds:
+      - ./tasks/test-deps/openldap
+    sources:
+      - ./tasks/test-deps/openldap
+      - ./tasks/helpers.sh
+    generates:
+      - ./build/work/stamp/test-deps/openldap
+    method: checksum
+
+  test-deps:phantomjs:
+    cmds:
+      - ./tasks/test-deps/phantomjs
+    sources:
+      - ./tasks/test-deps/phantomjs
+      - ./tasks/helpers.sh
+    generates:
+      - ./build/work/stamp/test-deps/phantomjs
+    method: checksum
+
+  test-deps:shellcheck:
+    cmds:
+      - ./tasks/test-deps/shellcheck
+    sources:
+      - ./tasks/test-deps/shellcheck
+      - ./tasks/helpers.sh
+    generates:
+      - ./build/work/stamp/test-deps/shellcheck
+    method: checksum
+
+  test-deps:unbound:
+    cmds:
+      - ./tasks/test-deps/unbound
+    sources:
+      - ./tasks/test-deps/unbound
+      - ./tasks/helpers.sh
+    generates:
+      - ./build/work/stamp/test-deps/unbound
+    method: checksum
+
+  test-deps:
+    cmds:
+      - task: test-deps:bundle
+      - task: test-deps:elasticsearch5
+      - task: test-deps:elasticsearch6
+      - task: test-deps:luacheck
+      - task: test-deps:mailhog
+      - task: test-deps:openldap
+      - task: test-deps:phantomjs
+      - task: test-deps:shellcheck
+      - task: test-deps:unbound
+
+  lint:js:
+    deps:
+      - app-deps:admin-ui:yarn
+    cmds:
+      - ./tasks/lint/js
+
+  lint:lua:
+    deps:
+      - test-deps:luacheck
+    cmds:
+      - ./tasks/lint/lua
+
+  lint:ruby:
+    deps:
+      - test-deps:bundle
+    cmds:
+      - ./tasks/lint/ruby
+
+  lint:shell:
+    deps:
+      - test-deps:shellcheck
+    cmds:
+      - ./tasks/lint/shell
+
+  lint:
+    cmds:
+      - task: lint:js
+      - task: lint:lua
+      - task: lint:ruby
+      - task: lint:shell
+
+  outdated:
+    cmds:
+      - ./tasks/outdated
+
+  test:
+    deps:
+      - all
+      - test-deps
+    cmds:
+      - ./tasks/test/default
+
+  test:circle-ci:
+    deps:
+      - all
+      - test-deps
+    cmds:
+      - ./tasks/test/circle-ci
+
+  distclean:
+    cmds:
+      - ./tasks/distclean
+
+  install:
+    cmds:
+      - ./tasks/install
+
+  package:
+    cmds:
+      - ./tasks/package
+
+  install-system-build-dependencies:
+    cmds:
+      - ./tasks/install-system-build-dependencies
+
+  default:
+    cmds:
+      - task: all

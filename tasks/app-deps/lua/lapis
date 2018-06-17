@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+lua_lapis_version="1.6.0-1"
+
+set -e -u -x
+source ./tasks/helpers.sh
+
+luarocks_install "lapis" "$lua_lapis_version"
+
+stamp

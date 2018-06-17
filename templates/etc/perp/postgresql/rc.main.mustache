@@ -1,22 +1,32 @@
 #!/usr/bin/env bash
+set -e -u
 
 # Redirect stderr to stdout
 exec 2>&1
 
+umask "{{umask}}"
+
 if [ "${1}" = "start" ]; then
   echo "starting ${2}..."
   api_umbrella_user="{{user}}"
+  api_umbrella_group="{{group}}"
 
   run_args=("-e" "rc.env")
   if [ -n "$api_umbrella_user" ]; then
     run_args+=("-u" "$api_umbrella_user")
   fi
 
-  if [ ! -d "{{db_dir}}/postgresql" ]; then
+  dirs=("{{db_dir}}/postgresql" "{{run_dir}}/postgresql_startup")
+  mkdir -p "${dirs[@]}"
+  chmod 750 "${dirs[@]}"
+  if [ -n "$api_umbrella_user" ]; then
+    chown $api_umbrella_user:$api_umbrella_group "${dirs[@]}"
+  fi
+
+  if [ ! -f "{{db_dir}}/postgresql/PG_VERSION" ]; then
     runtool "${run_args[@]}" initdb -D "{{db_dir}}/postgresql"
   fi
 
-  runtool "${run_args[@]}" mkdir -p "{{run_dir}}/postgresql_startup"
   runtool "${run_args[@]}" pg_ctl -D "{{db_dir}}/postgresql" -o "-c 'listen_addresses=' -c 'unix_socket_directories={{run_dir}}/postgresql_startup' -c 'unix_socket_permissions=0700'" -w start
   export PGHOST="{{run_dir}}/postgresql_startup"
   export PGDATABASE="postgres"

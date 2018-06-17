@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+lua_lualdap_version="1.2.3-1"
+
+set -e -u -x
+source ./tasks/helpers.sh
+
+luarocks_install "lualdap" "$lua_lualdap_version"
+
+stamp

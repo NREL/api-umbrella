@@ -8,7 +8,7 @@ class Test::Apis::Admin::Stats::TestMapAdminPermissions < Minitest::Test
   def setup
     super
     setup_server
-    ElasticsearchHelper.clean_es_indices(["2014-11", "2015-01", "2015-03"])
+    LogItem.clean_indices!
   end
 
   def test_default_permissions

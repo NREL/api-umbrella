@@ -29,19 +29,19 @@ class Test::Proxy::Caching::TestBasics < Minitest::Test
     assert_cacheable("/api/cacheable-dynamic/test.cgi?#{unique_test_id}&foo=bar&test=test&id=")
   end
 
-  def test_separates_caches_for_identical_backend_paths_with_different_hosts
+  def test_separates_cache_for_different_backend_host
     prepend_api_backends([
       {
         :frontend_host => "127.0.0.1",
         :backend_host => "foo.example",
         :servers => [{ :host => "127.0.0.1", :port => 9444 }],
-        :url_matches => [{ :frontend_prefix => "/#{unique_test_id}/cacheable-backend-host/prefix/foo/", :backend_prefix => "/cacheable-backend-host/" }],
+        :url_matches => [{ :frontend_prefix => "/#{unique_test_id}/cacheable-backend-host/prefix/foo/", :backend_prefix => "/cacheable-backend-host/#{unique_test_id}/" }],
       },
       {
         :frontend_host => "127.0.0.1",
         :backend_host => "bar.example",
         :servers => [{ :host => "127.0.0.1", :port => 9444 }],
-        :url_matches => [{ :frontend_prefix => "/#{unique_test_id}/cacheable-backend-host/prefix/bar/", :backend_prefix => "/cacheable-backend-host/" }],
+        :url_matches => [{ :frontend_prefix => "/#{unique_test_id}/cacheable-backend-host/prefix/bar/", :backend_prefix => "/cacheable-backend-host/#{unique_test_id}/" }],
       },
     ]) do
       assert_cacheable("/#{unique_test_id}/cacheable-backend-host/prefix/foo/")
@@ -49,19 +49,59 @@ class Test::Proxy::Caching::TestBasics < Minitest::Test
     end
   end
 
-  def test_separates_caches_for_identical_backend_paths_with_different_ports
+  def test_separates_cache_for_different_backend_host_port
+    prepend_api_backends([
+      {
+        :frontend_host => "127.0.0.1",
+        :backend_host => "foo.example:1111",
+        :servers => [{ :host => "127.0.0.1", :port => 9444 }],
+        :url_matches => [{ :frontend_prefix => "/#{unique_test_id}/cacheable-backend-host/prefix/foo/", :backend_prefix => "/cacheable-backend-host/#{unique_test_id}/" }],
+      },
+      {
+        :frontend_host => "127.0.0.1",
+        :backend_host => "foo.example:2222",
+        :servers => [{ :host => "127.0.0.1", :port => 9444 }],
+        :url_matches => [{ :frontend_prefix => "/#{unique_test_id}/cacheable-backend-host/prefix/bar/", :backend_prefix => "/cacheable-backend-host/#{unique_test_id}/" }],
+      },
+    ]) do
+      assert_cacheable("/#{unique_test_id}/cacheable-backend-host/prefix/foo/")
+      assert_cacheable("/#{unique_test_id}/cacheable-backend-host/prefix/bar/")
+    end
+  end
+
+  def test_separates_cache_for_different_backend_server_host
     prepend_api_backends([
       {
         :frontend_host => "127.0.0.1",
         :backend_host => "foo.example",
         :servers => [{ :host => "127.0.0.1", :port => 9444 }],
-        :url_matches => [{ :frontend_prefix => "/#{unique_test_id}/cacheable-backend-port/prefix/foo/", :backend_prefix => "/cacheable-backend-port/" }],
+        :url_matches => [{ :frontend_prefix => "/#{unique_test_id}/cacheable-backend-port/prefix/foo/", :backend_prefix => "/cacheable-backend-host/#{unique_test_id}/" }],
       },
       {
         :frontend_host => "127.0.0.1",
-        :backend_host => "bar.example",
+        :backend_host => "foo.example",
+        :servers => [{ :host => "127.0.0.2", :port => 9444 }],
+        :url_matches => [{ :frontend_prefix => "/#{unique_test_id}/cacheable-backend-port/prefix/bar/", :backend_prefix => "/cacheable-backend-host/#{unique_test_id}/" }],
+      },
+    ]) do
+      assert_cacheable("/#{unique_test_id}/cacheable-backend-port/prefix/foo/")
+      assert_cacheable("/#{unique_test_id}/cacheable-backend-port/prefix/bar/")
+    end
+  end
+
+  def test_separates_cache_for_different_backend_server_port
+    prepend_api_backends([
+      {
+        :frontend_host => "127.0.0.1",
+        :backend_host => "foo.example",
+        :servers => [{ :host => "127.0.0.1", :port => 9444 }],
+        :url_matches => [{ :frontend_prefix => "/#{unique_test_id}/cacheable-backend-port/prefix/foo/", :backend_prefix => "/cacheable-backend-port/#{unique_test_id}/" }],
+      },
+      {
+        :frontend_host => "127.0.0.1",
+        :backend_host => "foo.example",
         :servers => [{ :host => "127.0.0.1", :port => 9441 }],
-        :url_matches => [{ :frontend_prefix => "/#{unique_test_id}/cacheable-backend-port/prefix/bar/", :backend_prefix => "/cacheable-backend-port/" }],
+        :url_matches => [{ :frontend_prefix => "/#{unique_test_id}/cacheable-backend-port/prefix/bar/", :backend_prefix => "/cacheable-backend-port/#{unique_test_id}/" }],
       },
     ]) do
       assert_cacheable("/#{unique_test_id}/cacheable-backend-port/prefix/foo/")

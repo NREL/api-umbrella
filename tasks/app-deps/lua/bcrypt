@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+lua_bcrypt_version="2.1-4"
+
+set -e -u -x
+source ./tasks/helpers.sh
+
+luarocks_install "bcrypt" "$lua_bcrypt_version"
+
+stamp
