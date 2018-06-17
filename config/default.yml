@@ -192,6 +192,8 @@ elasticsearch:
   aws_signing_proxy:
     host: 127.0.0.1
     port: 14017
+    workers: 1
+    error_log_level: notice
 analytics:
   adapter: elasticsearch
   timezone: UTC
