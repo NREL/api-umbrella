@@ -22,17 +22,17 @@ module ApiUmbrellaTestHelpers
     mattr_accessor :setup_complete
     mattr_accessor :setup_config_version_complete
     mattr_accessor :setup_api_user_complete
-    mattr_accessor(:setup_mutex) { Mutex.new }
-    mattr_accessor(:config_mutex) { Mutex.new }
-    mattr_accessor(:config_set_mutex) { Mutex.new }
-    mattr_accessor(:config_publish_mutex) { Mutex.new }
-    mattr_accessor(:increment_mutex) { Mutex.new }
+    mattr_accessor(:setup_lock) { Monitor.new }
+    mattr_accessor(:config_lock) { Monitor.new }
+    mattr_accessor(:config_set_lock) { Monitor.new }
+    mattr_accessor(:config_publish_lock) { Monitor.new }
+    mattr_accessor(:increment_lock) { Monitor.new }
 
     included do
       mattr_accessor :unique_test_class_id_value
       mattr_accessor :unique_test_class_hostname_value
       mattr_accessor :class_setup_complete
-      mattr_accessor(:class_setup_mutex) { Mutex.new }
+      mattr_accessor(:class_setup_lock) { Monitor.new }
     end
 
     # Start the API Umbrella server process before any tests run.
@@ -46,7 +46,7 @@ module ApiUmbrellaTestHelpers
     # startup time in the overall test times (just not any individual test
     # times).
     def run
-      self.setup_mutex.synchronize do
+      self.setup_lock.synchronize do
         unless self.start_complete
           # Start the API Umbrella process to test against.
           self.api_umbrella_process = ApiUmbrellaTestHelpers::Process.instance
@@ -61,7 +61,7 @@ module ApiUmbrellaTestHelpers
     private
 
     def setup_server
-      self.setup_mutex.synchronize do
+      self.setup_lock.synchronize do
         unless self.setup_complete
           Mongoid.load_configuration({
             :clients => {
@@ -160,7 +160,7 @@ module ApiUmbrellaTestHelpers
     # ConfigVersion record will be re-created for other tests that depend on
     # it.
     def default_config_version_needed
-      ApiUmbrellaTestHelpers::Setup.setup_mutex.synchronize do
+      ApiUmbrellaTestHelpers::Setup.setup_lock.synchronize do
         ApiUmbrellaTestHelpers::Setup.setup_config_version_complete = false
       end
     end
@@ -169,14 +169,14 @@ module ApiUmbrellaTestHelpers
     # they need to call this method after finishing so the default ApiUser
     # record will be re-created for other tests that depend on it.
     def default_api_user_needed
-      ApiUmbrellaTestHelpers::Setup.setup_mutex.synchronize do
+      ApiUmbrellaTestHelpers::Setup.setup_lock.synchronize do
         ApiUmbrellaTestHelpers::Setup.setup_api_user_complete = false
       end
     end
 
     def once_per_class_setup
       unless self.class_setup_complete
-        self.class_setup_mutex.synchronize do
+        self.class_setup_lock.synchronize do
           unless self.class_setup_complete
             yield
             self.class_setup_complete = true
@@ -231,7 +231,7 @@ module ApiUmbrellaTestHelpers
     end
 
     def publish_backends(type, records)
-      self.config_publish_mutex.synchronize do
+      self.config_publish_lock.synchronize do
         config = ConfigVersion.active_config || {}
         config[type] = records + (config[type] || [])
         ConfigVersion.publish!(config).wait_until_live
@@ -239,7 +239,7 @@ module ApiUmbrellaTestHelpers
     end
 
     def unpublish_backends(type, records)
-      self.config_publish_mutex.synchronize do
+      self.config_publish_lock.synchronize do
         record_ids = records.map { |record| record["_id"] }
         config = ConfigVersion.active_config || {}
         config[type].reject! { |record| record_ids.include?(record["_id"]) }
@@ -248,7 +248,7 @@ module ApiUmbrellaTestHelpers
     end
 
     def override_config(config, reload_flag)
-      self.config_mutex.synchronize do
+      self.config_lock.synchronize do
         original_config = @@current_override_config
         original_config["version"] ||= SecureRandom.uuid
 
@@ -262,7 +262,7 @@ module ApiUmbrellaTestHelpers
     end
 
     def override_config_set(config, reload_flag)
-      self.config_set_mutex.synchronize do
+      self.config_set_lock.synchronize do
         if(self.class.test_order == :parallel)
           raise "`override_config_set` cannot be called with `parallelize_me!` in the same class. Since overriding config affects the global state, it cannot be used with parallel tests."
         end
@@ -342,14 +342,14 @@ module ApiUmbrellaTestHelpers
     end
 
     def next_unique_number
-      self.increment_mutex.synchronize do
+      self.increment_lock.synchronize do
         @@incrementing_unique_number += 1
         @@incrementing_unique_number
       end
     end
 
     def next_unique_ip_addr
-      self.increment_mutex.synchronize do
+      self.increment_lock.synchronize do
         @@incrementing_unique_ip_addr = @@incrementing_unique_ip_addr.succ
         @@incrementing_unique_ip_addr.to_s
       end

@@ -57,7 +57,7 @@ class Test::Apis::Admin::Stats::TestLogs < Minitest::Test
   end
 
   def test_downloading_csv_that_uses_scan_and_scroll_elasticsearch_query
-    FactoryBot.create_list(:log_item, 1005, :request_at => Time.parse("2015-01-16T06:06:28.816Z").utc, :request_user_agent => unique_test_id)
+    FactoryBot.create_list(:log_item, 1505, :request_at => Time.parse("2015-01-16T06:06:28.816Z").utc, :request_user_agent => unique_test_id)
     LogItem.refresh_indices!
 
     response = Typhoeus.get("https://127.0.0.1:9081/admin/stats/logs.csv", http_options.deep_merge(admin_session).deep_merge({
@@ -75,7 +75,7 @@ class Test::Apis::Admin::Stats::TestLogs < Minitest::Test
 
     lines = response.body.split("\n")
     assert_equal("Time,Method,Host,URL,User,IP Address,Country,State,City,Status,Reason Denied,Response Time,Content Type,Accept Encoding,User Agent", lines[0])
-    assert_equal(1006, lines.length, lines)
+    assert_equal(1506, lines.length, lines)
   end
 
   def test_query_builder_case_insensitive_defaults

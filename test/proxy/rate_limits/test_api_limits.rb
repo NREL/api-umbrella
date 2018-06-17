@@ -200,7 +200,7 @@ class Test::Proxy::RateLimits::TestApiLimits < Minitest::Test
     response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/lower/info/", http_opts)
     assert_equal("3", response.headers["x-ratelimit-limit"])
 
-    self.config_publish_mutex.synchronize do
+    self.config_publish_lock.synchronize do
       begin
         original_config = ConfigVersion.active_config
         config = original_config.deep_dup
