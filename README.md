@@ -1,4 +1,4 @@
-[![CircleCI](https://circleci.com/gh/NREL/api-umbrella.svg?style=svg)](https://circleci.com/gh/NREL/api-umbrella) [![Known Vulnerabilities](https://snyk.io/test/github/NREL/api-umbrella/badge.svg)](https://snyk.io/test/github/NREL/api-umbrella)
+[![CircleCI](https://circleci.com/gh/NREL/api-umbrella.svg?style=svg)](https://circleci.com/gh/NREL/api-umbrella)
 
 # API Umbrella
 
