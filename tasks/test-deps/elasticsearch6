@@ -12,6 +12,5 @@ extract_download "elasticsearch-$elasticsearch6_version.tar.gz"
 
 mkdir -p "$TEST_INSTALL_PREFIX"
 rsync -a -v --checksum --delete-after "elasticsearch-$elasticsearch6_version/" "$TEST_INSTALL_PREFIX/elasticsearch6/"
-chown -R nobody "$TEST_INSTALL_PREFIX/elasticsearch6"
 
 stamp

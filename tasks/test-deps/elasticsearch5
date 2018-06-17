@@ -12,6 +12,5 @@ extract_download "elasticsearch-$elasticsearch5_version.tar.gz"
 
 mkdir -p "$TEST_INSTALL_PREFIX"
 rsync -a -v --checksum --delete-after "elasticsearch-$elasticsearch5_version/" "$TEST_INSTALL_PREFIX/elasticsearch5/"
-chown -R nobody "$TEST_INSTALL_PREFIX/elasticsearch5"
 
 stamp

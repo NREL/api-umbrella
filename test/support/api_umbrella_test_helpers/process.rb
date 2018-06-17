@@ -54,6 +54,12 @@ module ApiUmbrellaTestHelpers
         computed = {
           "root_dir" => TEST_RUN_API_UMBRELLA_ROOT,
         }
+        if(::Process.euid == 0)
+          # If tests are running as root (Docker environment), then add the
+          # user to run things as.
+          computed["user"] = "api-umbrella"
+          computed["group"] = "api-umbrella"
+        end
         if elasticsearch_test_api_version
           computed.deep_merge!({
             "elasticsearch" => {
@@ -90,18 +96,18 @@ module ApiUmbrellaTestHelpers
         # can be tested against multiple versions of the database.
         if elasticsearch_test_api_version
           args = ["runtool"]
-          # If running the tests as root (Docker), start elasticsearch as
-          # "nobody" since elasticsearch 5+ won't start as root.
-          if(::Process.euid == 0)
-            args += ["-u", "nobody"]
+          if($config["user"])
+            args += ["-u", $config["user"]]
           end
           args += ["elasticsearch"]
 
           FileUtils.mkdir_p($config["elasticsearch"]["embedded_server_config"]["path"]["logs"])
           FileUtils.mkdir_p($config["elasticsearch"]["embedded_server_config"]["path"]["data"])
+          FileUtils.mkdir_p(File.join(API_UMBRELLA_SRC_ROOT, "build/work/test-env/elasticsearch#{elasticsearch_test_api_version}/config/scripts"))
           if(::Process.euid == 0)
-            FileUtils.chown("nobody", nil, $config["elasticsearch"]["embedded_server_config"]["path"]["logs"])
-            FileUtils.chown("nobody", nil, $config["elasticsearch"]["embedded_server_config"]["path"]["data"])
+            FileUtils.chown($config["user"], nil, $config["elasticsearch"]["embedded_server_config"]["path"]["logs"])
+            FileUtils.chown($config["user"], nil, $config["elasticsearch"]["embedded_server_config"]["path"]["data"])
+            FileUtils.chmod_R("o+r", File.join(API_UMBRELLA_SRC_ROOT, "build/work/test-env/elasticsearch#{elasticsearch_test_api_version}/config"))
           end
           log_file = File.open(File.join($config["elasticsearch"]["embedded_server_config"]["path"]["logs"], "current"), "w+")
           log_file.sync = true
@@ -362,6 +368,34 @@ module ApiUmbrellaTestHelpers
       end
 
       data
+    end
+
+    def all_processes
+      pid = File.read(File.join($config["run_dir"], "perpboot.pid")).strip
+      output, status = run_shell("pstree", "-p", pid)
+      if(status != 0)
+        raise "pstree failed (status: #{status}): #{output}"
+      end
+
+      pids = output.scan(/\((\d+)\)/).flatten.sort.uniq
+      if(pids.empty?)
+        raise "pstree failed to detect PIDs: #{output}"
+      end
+
+      output, status = run_shell("ps", "-o", "uname=", "-p", pids.join(","))
+      if(status != 0)
+        raise "ps failed (status: #{status}): #{output}"
+      end
+
+      owners = output.split("\n").sort.uniq
+      if(owners.empty?)
+        raise "pstree failed to detect owners: #{output}"
+      end
+
+      {
+        :pids => pids,
+        :owners => owners,
+      }
     end
   end
 end

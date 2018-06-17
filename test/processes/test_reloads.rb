@@ -2,6 +2,7 @@ require_relative "../test_helper"
 
 class Test::Processes::TestReloads < Minitest::Test
   include ApiUmbrellaTestHelpers::Setup
+  include ApiUmbrellaTestHelpers::Lsof
 
   def setup
     super
@@ -58,25 +59,19 @@ class Test::Processes::TestReloads < Minitest::Test
       hydra.run
 
       # Now check for open file descriptors.
-      output, status = run_shell("lsof", "-n", "-P", "-l", "-R", "-c", "nginx")
-      assert_equal(0, status, output)
+      files = lsof("-c", "nginx")
+
       descriptor_count = 0
       urandom_descriptor_count = 0
-      lines = output.split("\n")
-      lines.each_with_index do |line, line_index|
-        columns = line.split(/\s+/)
-        col_pid = columns[1]
-        col_parent_pid = columns[2]
-        col_type = columns[5]
-
+      files.each do |file|
         # Only count lines from the lsof output that belong to this nginx's PID
         # and aren't network sockets (we exclude those when checking for leaks,
         # since it's expected that there's much more variation in those
         # depending on the requests made by tests, keepalive connections, etc).
-        if((line_index == 0 || col_pid == parent_pid || col_parent_pid == parent_pid) && !["IPv4", "IPv6", "unix", "sock"].include?(col_type))
+        if((file.fetch(:pid) == parent_pid || file.fetch(:ppid) == parent_pid) && !["IPv4", "IPv6", "unix", "sock"].include?(file[:type]))
           descriptor_count += 1
 
-          if(line.include?("urandom"))
+          if(file.fetch(:file).include?("urandom"))
             urandom_descriptor_count += 1
           end
         end
