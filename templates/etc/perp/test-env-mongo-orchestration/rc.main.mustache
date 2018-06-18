@@ -17,7 +17,7 @@ if [ "${1}" = "start" ]; then
     run_args+=("-u" "$api_umbrella_user")
   fi
 
-  dirs=("{{run_dir}}/test-env-mongo-orchestration")
+  dirs=("{{db_dir}}/test-env-mongo-orchestration" "{{run_dir}}/test-env-mongo-orchestration")
   mkdir -p "${dirs[@]}"
   chmod 750 "${dirs[@]}"
   if [ -n "$api_umbrella_user" ]; then
