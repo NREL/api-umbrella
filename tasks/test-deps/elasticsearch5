@@ -12,5 +12,7 @@ extract_download "elasticsearch-$elasticsearch5_version.tar.gz"
 
 mkdir -p "$TEST_INSTALL_PREFIX"
 rsync -a -v --checksum --delete-after "elasticsearch-$elasticsearch5_version/" "$TEST_INSTALL_PREFIX/elasticsearch5/"
+"$TEST_INSTALL_PREFIX/elasticsearch5/bin/elasticsearch-keystore" create
+chmod 660 "$TEST_INSTALL_PREFIX/elasticsearch5/config/elasticsearch.keystore"
 
 stamp
