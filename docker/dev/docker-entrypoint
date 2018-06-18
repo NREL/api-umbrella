@@ -9,6 +9,9 @@ mkdir -p /etc/api-umbrella
   echo "https_port: $HTTPS_PORT"
 } > /etc/api-umbrella/api-umbrella.yml
 
+mkdir -p /build/.task
+ln -snf /build/.task /app/.task
+
 mkdir -p /build/build/work/stage/opt/api-umbrella/var/log
 ln -snf /build/build/work/stage/opt/api-umbrella /opt/api-umbrella
 ln -snf /build/build/work/stage/opt/api-umbrella/var/log /var/log/api-umbrella

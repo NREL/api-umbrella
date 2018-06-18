@@ -2,6 +2,7 @@ require_relative "../test_helper"
 
 class Test::Processes::TestNetworkBinds < Minitest::Test
   include ApiUmbrellaTestHelpers::Setup
+  include ApiUmbrellaTestHelpers::Lsof
 
   def setup
     super
@@ -9,35 +10,27 @@ class Test::Processes::TestNetworkBinds < Minitest::Test
   end
 
   def test_binds_http_to_public_interface_other_services_to_localhost
-    pid = File.read(File.join($config["run_dir"], "perpboot.pid")).strip
-    pstree_output, pstree_status = run_shell("pstree", "-p", pid)
-    assert_equal(0, pstree_status, pstree_output)
-    pids = pstree_output.scan(/\((\d+)\)/).flatten.sort.uniq
-    output, _status = run_shell("lsof", "-n", "-P", "-l", "-R", "-a", "-i", "TCP", "-s", "TCP:LISTEN", "-p", pids.join(","))
-    # lsof may return an unsuccessful exit code (since there may not be
-    # anything to match for all the PIDs passed in), so just sanity check the
-    # output.
-    assert_match("COMMAND", output)
+    files = lsof("-i", "TCP", "-s", "TCP:LISTEN")
 
     listening = {
       :local => Set.new,
       :local_ports => Set.new,
       :public => Set.new,
     }
-    output.strip.split("\n").each do |line|
-      next if(line.start_with?("COMMAND"))
+    files.each do |file|
+      assert_equal("TCP", file.fetch(:protocol))
 
-      ip_version = line.match(/(IPv4|IPv6)/)[1]
-      assert(ip_version, line)
+      ip_version = file.fetch(:type)
+      assert_includes(["IPv4", "IPv6"], ip_version)
 
-      port = line.match(/:(\d+) \(LISTEN\)/)[1]
-      assert(port, line)
+      port = file.fetch(:file).match(/:(\d+)/)[1]
+      assert(port, file)
 
       listen = "#{port}:#{ip_version}"
-      if(line.include?("TCP 127.0.0.1:") || line.include?("TCP [::1]:"))
+      if(file.fetch(:file).start_with?("127.0.0.1:", "[::1]:"))
         listening[:local] << listen
         listening[:local_ports] << port.to_i
-      elsif(line.include?("TCP *:"))
+      elsif(file.fetch(:file).start_with?("*:"))
         listening[:public] << listen
       else
         flunk("Unknown listening (not localhost or public): #{line.inspect}")
@@ -58,7 +51,7 @@ class Test::Processes::TestNetworkBinds < Minitest::Test
       # 127.0.0.3, etc.
       "9444:IPv4",
       "9444:IPv6",
-    ], listening[:public].sort)
+    ].sort, listening[:public].sort)
 
     # Ensure all other services are listening on localhost-only, and sanity
     # check to ensure some of the expected services were present in the lsof

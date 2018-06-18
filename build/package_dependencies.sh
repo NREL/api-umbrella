@@ -133,6 +133,9 @@ if [ -f /etc/redhat-release ]; then
 
     # OpenLDAP
     groff
+
+    # For running lsof tests in Docker as root
+    sudo
   )
 elif [ -f /etc/debian_version ]; then
   libcurl_version=3
@@ -279,6 +282,9 @@ elif [ -f /etc/debian_version ]; then
 
     # OpenLDAP
     groff-base
+
+    # For running lsof tests in Docker as root
+    sudo
   )
 
   if [[ "$ID" != "ubuntu" || "$VERSION_ID" != "14.04" ]]; then

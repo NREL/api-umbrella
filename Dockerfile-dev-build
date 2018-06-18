@@ -1,6 +1,7 @@
 FROM ubuntu:16.04 AS build
 
 RUN mkdir -p /app/build /build/build/work
+RUN ln -snf /build/.task /app/.task
 RUN ln -snf /build/build/work /app/build/work
 WORKDIR /app
 

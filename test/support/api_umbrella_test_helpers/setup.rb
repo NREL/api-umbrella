@@ -28,7 +28,7 @@ module ApiUmbrellaTestHelpers
     mattr_accessor(:config_lock) { Monitor.new }
     mattr_accessor(:config_set_lock) { Monitor.new }
     mattr_accessor(:config_publish_lock) { Monitor.new }
-    mattr_accessor(:increment_lock) { Mutex.new }
+    mattr_accessor(:increment_lock) { Monitor.new }
 
     included do
       mattr_accessor :unique_test_class_id_value
