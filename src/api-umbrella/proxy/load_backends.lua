@@ -45,7 +45,23 @@ local function generate_upstream_config(api)
             nginx_ip = ip
           end
 
-          table.insert(servers, "server " .. nginx_ip .. ":" .. server["port"] .. ";")
+          -- Insert 5 copies of the server, and set max_fails=0. In combination
+          -- with the global "proxy_next_upstream error" setting, this allows
+          -- for the API backend requests to retry up to 5 times if a
+          -- connection was never actually established.
+          --
+          -- This is a bit of a hack, but this helps deal with upstream
+          -- keepalive connections that might get closed (either by the API
+          -- backend or some other firewall or NAT in between).
+           -
+          -- max_fails=0 is important so that single servers don't get
+          -- completely removed from rotation (for fail_timeout) if a single
+          -- request fails. By repeating the same server IP multiple times,
+          -- this also gives proxy_next_upstream a chance to failover and retry
+          -- the same server.
+          for i = 1, 5 do
+            table.insert(servers, "server " .. nginx_ip .. ":" .. server["port"] .. " max_fails=0;")
+          end
         end
       end
     end
