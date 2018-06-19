@@ -37,7 +37,8 @@ http {
     'ca=$connections_active cr=$connections_reading cw=$connections_writing '
     'ct=$connections_waiting cq=$connection_requests bs=$bytes_sent '
     'rl=$request_length rt=$request_time uct=$upstream_connect_time '
-    'uht=$upstream_header_time urt=$upstream_response_time';
+    'uht=$upstream_header_time urt=$upstream_response_time '
+    'ua="$upstream_addr" us="$upstream_status"';
   access_log {{log_dir}}/nginx/{{nginx.access_log_filename}} combined_extended {{nginx.access_log_options}};
 
   client_body_temp_path {{tmp_dir}}/nginx-client_body_temp;
@@ -204,7 +205,7 @@ http {
   }
 
   server {
-    listen {{api_server.host}}:{{api_server.port}};
+    listen {{api_server.host}}:{{api_server.port}} so_keepalive=on;
     set $x_api_umbrella_request_id $http_x_api_umbrella_request_id;
 
     location /api-umbrella/v1/health {
@@ -219,12 +220,12 @@ http {
   {{#hosts}}
   server {
     {{#listen.addresses}}
-      listen {{.}}:{{http_port}}{{#default}} default_server{{/default}};
+      listen {{.}}:{{http_port}}{{#default}} default_server so_keepalive=on{{/default}};
     {{/listen.addresses}}
     server_name {{_nginx_server_name}};
 
     {{#listen.addresses}}
-      listen {{.}}:{{https_port}} ssl{{#default}} default_server{{/default}};
+      listen {{.}}:{{https_port}} ssl{{#default}} default_server so_keepalive=on{{/default}};
     {{/listen.addresses}}
     {{#ssl_cert}}
     ssl_certificate {{ssl_cert}};
@@ -266,7 +267,7 @@ http {
   include ./web-app.conf;
 
   server {
-    listen {{static_site.host}}:{{static_site.port}};
+    listen {{static_site.host}}:{{static_site.port}} so_keepalive=on;
     server_name _;
 
     root {{static_site.build_dir}};

@@ -52,7 +52,7 @@ http {
   init_by_lua_file '{{_src_root_dir}}/src/api-umbrella/elasticsearch-aws-signing-proxy/init.lua';
 
   server {
-    listen {{elasticsearch.aws_signing_proxy.host}}:{{elasticsearch.aws_signing_proxy.port}};
+    listen {{elasticsearch.aws_signing_proxy.host}}:{{elasticsearch.aws_signing_proxy.port}} so_keepalive=on;
 
     {{#_development_env?}}
       lua_code_cache off;
