@@ -44,16 +44,9 @@ CONFIG proxy.config.http.transaction_no_activity_timeout_in INT {{trafficserver.
 CONFIG proxy.config.http.transaction_no_activity_timeout_out INT {{trafficserver._transaction_no_activity_timeout_out}}
 CONFIG proxy.config.http.connect_attempts_timeout INT {{trafficserver._connect_attempts_timeout}}
 
-# Don't retry requests by default. We want to avoid retrying connections if the
-# response times out, since if a backend is slow and struggling, we want to
-# avoid sending more traffic to it.
-CONFIG proxy.config.http.safe_requests_retryable INT 0
-
-# Allow retry of connections if the connection failed to establish at all and
-# no data was actually ever sent (since those might be temporary issues if the
-# underlying server is restarting).
+# Retry connections if the connection was never established (eg, if the API
+# backend was temporarily down or a keepalive connection was killed).
 CONFIG proxy.config.http.connect_attempts_max_retries INT 3
-CONFIG proxy.config.http.connect_attempts_max_retries_dead_server INT 3
 
 # Don't consider the backend down, even if some requests timeout. We don't want
 # some bad API requests to mark the entire backend as being down.
@@ -155,6 +148,11 @@ CONFIG proxy.config.hostdb.fail.timeout INT {{dns_resolver.negative_ttl}}
 
 # Use more standard round-robin for DNS results (rather than sticky).
 CONFIG proxy.config.hostdb.strict_round_robin INT 1
+
+# Enable so_keepalive on the incoming and outgoing sockets to better detect
+# keepalive hangups.
+CONFIG proxy.config.net.sock_option_flag_in INT 7
+CONFIG proxy.config.net.sock_option_flag_out INT 3
 
 # Keepalive connections to backend origin servers. Retain some idle connections
 # open to the backend servers to improve performance.
