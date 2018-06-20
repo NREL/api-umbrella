@@ -39,7 +39,7 @@ RUN make package
 
 FROM ubuntu:16.04
 
-COPY --from=build /build/build/package/work/build/core /tmp/package
+COPY --from=build /app/build/package/work/build/core /tmp/package
 RUN apt-get update && \
   apt-get -y install gdebi-core && \
   gdebi --non-interactive /tmp/package/*.deb && \
