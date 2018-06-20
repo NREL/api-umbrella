@@ -52,6 +52,14 @@ CONFIG proxy.config.http.connect_attempts_max_retries INT 3
 # some bad API requests to mark the entire backend as being down.
 CONFIG proxy.config.http.down_server.cache_time INT 0
 
+# Don't retry failed requests if the connection was established and any data
+# was sent (but requests that never connected will still be retried).
+#
+# We want to avoid retrying failed connections, since it might indicate that
+# the backend is simply slow and struggling, in which case we want to avoid
+# sending more traffic to it.
+CONFIG proxy.config.http.safe_requests_retryable INT 0
+
 # Don't append IP information to X-Forwarded-For or Client-IP headers, since
 # we've already dealt with those at the first nginx proxy layer.
 CONFIG proxy.config.http.insert_client_ip INT 0
