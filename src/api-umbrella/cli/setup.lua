@@ -330,16 +330,6 @@ local function activate_services()
           os.exit(1)
         end
       end
-
-      -- Disable the svlogd script if we want all output to go to
-      -- stdout/stderr.
-      if config["log"]["destination"] == "console" then
-        local _, _, err = run_command({ "chmod", "-x", service_dir .. "/rc.log" })
-        if err then
-          print("chmod failed: ", err)
-          os.exit(1)
-        end
-      end
     end
 
     -- Set the sticky bit for any active services.

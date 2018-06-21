@@ -20,9 +20,10 @@ local function start_perp(config, options)
     "-P", path.join(config["run_dir"], "perpboot.pid"),
   }
 
-  -- perpboot won't work if we try to log to the console (since it expects the
-  -- perp/.boot/rc.log to always be executable). So revert to the lower-level
-  -- perpd startup if we want to log everything to stdout/stderr.
+  -- If we want everything to stdout/stderr, then execute the lower-level perpd
+  -- directly, so perpboot's own rc.log setup doesn't swallow all the logs
+  -- (perpboot also requires rc.log to be setup, so we can't simply disable
+  -- it).
   if config["log"]["destination"] == "console" then
     table.insert(args, "perpd")
   else

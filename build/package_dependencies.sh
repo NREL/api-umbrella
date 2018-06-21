@@ -64,6 +64,9 @@ if [ -f /etc/redhat-release ]; then
     # nokogiri
     libxml2-devel
     libxslt-devel
+
+    # ts for prefixed console output
+    moreutils
   )
   core_build_dependencies=(
     autoconf
@@ -185,6 +188,9 @@ elif [ -f /etc/debian_version ]; then
     # nokogiri
     libxml2-dev
     libxslt-dev
+
+    # ts for prefixed console output
+    moreutils
   )
   core_build_dependencies=(
     autoconf
