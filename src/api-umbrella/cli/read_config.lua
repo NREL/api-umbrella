@@ -280,6 +280,10 @@ local function set_computed_config()
   config["dns_resolver"]["_nameservers_trafficserver"] = config["dns_resolver"]["_nameservers_nginx"]
   config["dns_resolver"]["nameservers"] = nil
 
+  if not config["dns_resolver"]["allow_ipv6"] then
+    config["dns_resolver"]["_nameservers_nginx"] = config["dns_resolver"]["_nameservers_nginx"] .. " ipv6=off"
+  end
+
   config["dns_resolver"]["_etc_hosts"] = read_etc_hosts()
 
   config["elasticsearch"]["_servers"] = {}

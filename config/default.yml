@@ -163,6 +163,11 @@ dns_resolver:
   max_stale: 86400
   timeout: 2000
   retries: 3
+  # This default could be revisited, but historically we didn't resolve AAAA
+  # records for API backends, so for compatibility keep this disabled by
+  # default. Enabling may also break certain hosting environments that still
+  # aren't IPv6 compatible.
+  allow_ipv6: false
 mongodb:
   url: "mongodb://127.0.0.1:14001/api_umbrella"
   read_preference: primaryPreferred

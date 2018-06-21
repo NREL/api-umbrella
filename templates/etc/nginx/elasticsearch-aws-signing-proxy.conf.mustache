@@ -38,8 +38,7 @@ http {
   lua_shared_dict locks {{nginx.shared_dicts.locks.size}};
 
   {{#dns_resolver._nameservers_nginx}}
-    # FIXME: Make ipv6 configurable.
-    resolver {{dns_resolver._nameservers_nginx}} ipv6=off;
+    resolver {{dns_resolver._nameservers_nginx}};
     resolver_timeout 12s;
   {{/dns_resolver._nameservers_nginx}}
 

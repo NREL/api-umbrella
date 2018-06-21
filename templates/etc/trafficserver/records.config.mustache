@@ -142,6 +142,13 @@ CONFIG proxy.config.url_remap.pristine_host_hdr INT 1
 CONFIG proxy.config.dns.resolv_conf STRING NULL
 CONFIG proxy.config.dns.nameservers STRING {{dns_resolver._nameservers_trafficserver}}
 
+{{#dns_resolver.allow_ipv6}}
+CONFIG proxy.config.hostdb.ip_resolve STRING client;ipv4;ipv6
+{{/dns_resolver.allow_ipv6}}
+{{^dns_resolver.allow_ipv6}}
+CONFIG proxy.config.hostdb.ip_resolve STRING ipv4;none
+{{/dns_resolver.allow_ipv6}}
+
 {{#dns_resolver.max_stale}}
 # Allow old DNS results to be used while new ones are fetched in the background
 # (this also helps ensure things remain up, even if DNS goes down temporarily).
