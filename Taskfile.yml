@@ -414,6 +414,19 @@ tasks:
       - ./build/work/stamp/app-deps/lua/penlight
     method: checksum
 
+  app-deps:lua:resty-auto-ssl:
+    deps:
+      - deps:luarocks
+    cmds:
+      - ./tasks/app-deps/lua/resty-auto-ssl
+    sources:
+      - ./build/work/stamp/deps/luarocks
+      - ./tasks/app-deps/lua/resty-auto-ssl
+      - ./tasks/helpers.sh
+    generates:
+      - ./build/work/stamp/app-deps/lua/resty-auto-ssl
+    method: checksum
+
   app-deps:lua:resty-http:
     deps:
       - deps:luarocks
@@ -508,6 +521,7 @@ tasks:
       - task: app-deps:lua:lustache
       - task: app-deps:lua:lyaml
       - task: app-deps:lua:penlight
+      - task: app-deps:lua:resty-auto-ssl
       - task: app-deps:lua:resty-http
       - task: app-deps:lua:resty-logger-socket
       - task: app-deps:lua:resty-shcache

@@ -31,6 +31,8 @@ esac
 if [ "$configure" = "true" ]; then
   user=api-umbrella
   group=api-umbrella
+  auto_ssl_user=api-umbrella-auto-ssl
+  auto_ssl_group=api-umbrella-auto-ssl
   deploy_user=api-umbrella-deploy
   deploy_group=api-umbrella-deploy
   destdir="${DESTDIR:-}"
@@ -51,6 +53,15 @@ if [ "$configure" = "true" ]; then
       -d "$prefix_dir" -c "API Umbrella user" "$user"
   fi
 
+  # Create the auto-ssl user & group.
+  if ! getent group "$auto_ssl_group" > /dev/null; then
+    groupadd -r "$auto_ssl_group"
+  fi
+  if ! getent passwd "$auto_ssl_user" > /dev/null; then
+    useradd -r -g "$auto_ssl_group" -s /bin/nologin \
+      -d "$prefix_dir" -c "API Umbrella auto-ssl user" "$auto_ssl_user"
+  fi
+
   # Create the deploy user & group.
   if ! getent group "$deploy_group" > /dev/null; then
     groupadd -r "$deploy_group"
@@ -60,8 +71,11 @@ if [ "$configure" = "true" ]; then
       -d "$destdir/home/$deploy_user" -c "API Umbrella deployment user" "$deploy_user"
   fi
 
-  # Add the deploy user to the app group, so the deploy user can read config
-  # files.
+  # Add the auto-ssl and deploy users to the app group, so these users can read
+  # config files.
+  if ! groups "$auto_ssl_user" | grep -q -E "\\s$group(\\s|$)"; then
+    usermod -a -G "$group" "$auto_ssl_user"
+  fi
   if ! groups "$deploy_user" | grep -q -E "\\s$group(\\s|$)"; then
     usermod -a -G "$group" "$deploy_user"
   fi

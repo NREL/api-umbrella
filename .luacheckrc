@@ -11,6 +11,12 @@ globals = {
 
 max_line_length = false
 
+files["src/api-umbrella/auto-ssl"] = {
+  globals = {
+    "auto_ssl",
+  },
+}
+
 files["templates/etc/trafficserver"] = {
   std = "luajit",
   globals = {

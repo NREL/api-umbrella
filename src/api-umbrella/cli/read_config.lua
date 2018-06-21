@@ -389,6 +389,7 @@ local function set_computed_config()
     ["_service_log_db_enabled?"] = array_includes(config["services"], "log_db"),
     ["_service_elasticsearch_aws_signing_proxy_enabled?"] = array_includes(config["services"], "elasticsearch_aws_signing_proxy"),
     ["_service_router_enabled?"] = array_includes(config["services"], "router"),
+    ["_service_auto_ssl_enabled?"] = array_includes(config["services"], "auto_ssl"),
     ["_service_web_enabled?"] = array_includes(config["services"], "web"),
     ["_service_nginx_reloader_enabled?"] = (array_includes(config["services"], "router") and config["nginx"]["_reloader_frequency"]),
     router = {
