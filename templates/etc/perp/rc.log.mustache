@@ -45,7 +45,7 @@ if [ "${1}" = "start" ]; then
     # different services when the logging it all combined. (Ideally we could
     # use svlogd's prefix for this for better tooling consistency, but it can't
     # re-output to stdout).
-    exec runtool ${run_args[@]+"${run_args[@]}"} env TZ=UTC gawk "{ print strftime(\"%Y-%m-%dT%H:%M:%SZ [$service] \")\$0 }"
+    exec runtool ${run_args[@]+"${run_args[@]}"} env TZ=UTC gawk "{ print strftime(\"%Y-%m-%dT%H:%M:%SZ [$service] \")\$0; fflush() }"
   else
     exec runtool ${run_args[@]+"${run_args[@]}"} svlogd "${log_args[@]}"
   fi
