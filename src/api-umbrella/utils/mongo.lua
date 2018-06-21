@@ -188,4 +188,15 @@ function _M.create(collection, data)
   return perform_query(collection, nil, http_options)
 end
 
+function _M.delete(collection, id)
+  local http_options = {
+    method = "DELETE",
+    headers = {
+      ["Content-Type"] = "application/json",
+    },
+  }
+
+  return perform_query(collection .. "/" .. id, nil, http_options)
+end
+
 return _M
