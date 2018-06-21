@@ -39,12 +39,13 @@ if [ "${1}" = "start" ]; then
   fi
 
   if [ "$destination" = "console" ]; then
-    # If outputting directly to stdout, use "ts" to prefix the timestamp and
-    # the name of the service to each line. Otherwise, it's hard to keep track
-    # of the different services when the logging it all combined. (Ideally we
-    # could use svlogd's prefix for this for better tooling consistency, but it
-    # can't re-output to stdout).
-    exec runtool ${run_args[@]+"${run_args[@]}"} env TZ=UTC ts "%Y-%m-%dT%H:%M:%S [$service]"
+    # If outputting directly to stdout, use "gawk" to prefix the timestamp and
+    # the name of the service to each line (the GNU version of awk is needed to
+    # ensure strftime support). Otherwise, it's hard to keep track of the
+    # different services when the logging it all combined. (Ideally we could
+    # use svlogd's prefix for this for better tooling consistency, but it can't
+    # re-output to stdout).
+    exec runtool ${run_args[@]+"${run_args[@]}"} env TZ=UTC gawk "{ print strftime(\"%Y-%m-%dT%H:%M:%SZ [$service] \")\$0 }"
   else
     exec runtool ${run_args[@]+"${run_args[@]}"} svlogd "${log_args[@]}"
   fi

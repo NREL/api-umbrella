@@ -65,8 +65,8 @@ if [ -f /etc/redhat-release ]; then
     libxml2-devel
     libxslt-devel
 
-    # ts for prefixed console output
-    moreutils
+    # For prefixed console output (gnu version for strftime support).
+    gawk
   )
   core_build_dependencies=(
     autoconf
@@ -189,8 +189,8 @@ elif [ -f /etc/debian_version ]; then
     libxml2-dev
     libxslt-dev
 
-    # ts for prefixed console output
-    moreutils
+    # For prefixed console output (gnu version for strftime support).
+    gawk
   )
   core_build_dependencies=(
     autoconf
