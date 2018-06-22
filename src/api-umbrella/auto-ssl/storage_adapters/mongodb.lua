@@ -34,7 +34,7 @@ function _M.setup()
     return false, err
   end
 
-  ENCRYPTION_SECRET = file:read("*all")
+  ENCRYPTION_SECRET = ngx.re.sub(file:read("*all"), "%s*$", "")
   file:close()
 end
 
