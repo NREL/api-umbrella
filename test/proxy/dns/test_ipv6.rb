@@ -1,6 +1,6 @@
 require_relative "../../test_helper"
 
-class Test::Proxy::Dns::TestCustomServer < Minitest::Test
+class Test::Proxy::Dns::TestIpv6 < Minitest::Test
   include ApiUmbrellaTestHelpers::Setup
   include ApiUmbrellaTestHelpers::Dns
 
