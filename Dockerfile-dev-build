@@ -21,25 +21,26 @@ RUN ./configure
 
 COPY build/patches /app/build/patches
 COPY tasks/deps /app/tasks/deps
-RUN make deps
+COPY tasks/clean/dev /app/tasks/clean/dev
+RUN make deps && make clean:dev
 
 COPY tasks/build-deps /app/tasks/build-deps
-RUN make build-deps
+RUN make build-deps && make clean:dev
 
 COPY Gemfile /app/Gemfile
 COPY Gemfile.lock /app/Gemfile.lock
 COPY tasks/test-deps /app/tasks/test-deps
-RUN make test-deps
+RUN make test-deps && make clean:dev
 
 COPY src/api-umbrella/admin-ui/package.json /app/src/api-umbrella/admin-ui/package.json
 COPY src/api-umbrella/admin-ui/yarn.lock /app/src/api-umbrella/admin-ui/yarn.lock
 COPY src/api-umbrella/web-app/Gemfile /app/src/api-umbrella/web-app/Gemfile
 COPY src/api-umbrella/web-app/Gemfile.lock /app/src/api-umbrella/web-app/Gemfile.lock
 COPY tasks/app-deps /app/tasks/app-deps
-RUN make app-deps
+RUN make app-deps && make clean:dev
 
 COPY . /app
-RUN make
+RUN make && make clean:dev
 
 RUN rm -rf build/work/tasks
 

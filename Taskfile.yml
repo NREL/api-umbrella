@@ -778,6 +778,10 @@ tasks:
     cmds:
       - ./tasks/test/circle-ci
 
+  clean:dev:
+    cmds:
+      - ./tasks/clean/dev
+
   distclean:
     cmds:
       - ./tasks/distclean

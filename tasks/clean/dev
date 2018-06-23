@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+set -e -u -x
+source ./tasks/helpers.sh
+
+find "$SOURCE_DIR/build/work/" -type d -path "*/_persist/downloads" -prune -print -exec rm -rf {} \;

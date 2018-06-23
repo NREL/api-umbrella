@@ -50,6 +50,25 @@ OPM_CMD=(env "LUA_PATH=$LUA_PREFIX/openresty/lualib/?.lua;$LUA_PREFIX/openresty/
 # For example, ./tasks/deps/openresty's subpath would be "deps/openresty"
 TASK_SUBPATH="${BASH_SOURCE[1]#*tasks/}"
 
+# Cleanup any files not in the special "_persist" directory before and after
+# running tasks. This ensures clean builds if a task is being executed (since
+# we assume the task script is only being executed if the checksum has
+# changed), and also prevents intermediate build files from hanging around and
+# taking up lots of space.
+#
+# The "_persist" directory is used for items that need to be shared across
+# tasks, or for things like downloads, just to speed-up development rebuilds a
+# bit.
+clean_task_working_dir() {
+  set +x
+  dir="$WORK_DIR/tasks/$TASK_SUBPATH"
+  set -x
+
+  if [[ -d "$dir" && "${DEBUG_TASK_SKIP_CLEAN:-}" != "true" ]]; then
+    find "$dir" -mindepth 1 -maxdepth 1 -not -name "_persist" -print -exec rm -rf {} \;
+  fi
+}
+
 # Creating a working directory for the currently running task under
 # ./build/work/tasks/*
 #
@@ -64,12 +83,9 @@ task_working_dir() {
   mkdir -p "$dir"
   cd "$dir" || exit 1
 
-  # Cleanup any files not in the special "_persist" directory before running
-  # the rest of the task. This ensures clean builds if a task is being executed
-  # (since we assume the task script is only being executed if the checksum has
-  # changed). The persist directory is used for some items, like downloads,
-  # just to speed-up development rebuilds a bit.
-  find "$dir" -mindepth 1 -maxdepth 1 -not -name "_persist" -print -exec rm -rf {} \;
+  # Clean the working directory before running the task to ensure a clean
+  # build.
+  clean_task_working_dir
 }
 
 # Generate a stamp file indicating a task has successfully run. This should be
@@ -82,6 +98,10 @@ task_working_dir() {
 # successful run so that any dependencies of the current task also get
 # triggered (in a cascading fashion).
 stamp() {
+  # Clean the working directory after successfully running the task to free up
+  # disk space (since we don't need the intermediate build files).
+  clean_task_working_dir
+
   set +x
   stamp_path="$WORK_DIR/stamp/$TASK_SUBPATH"
   stamp_dir=$(dirname "$stamp_path")

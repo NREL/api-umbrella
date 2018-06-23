@@ -22,5 +22,6 @@ export RAILS_ENV=production
 export RAILS_SECRET_TOKEN=temp
 export RAILS_ASSETS_PRECOMPILE=true
 bundle exec rake -f "$SOURCE_DIR/src/api-umbrella/web-app/Rakefile" assets:clobber assets:precompile
+rm -rf "$RAILS_TMP_PATH"
 
 stamp

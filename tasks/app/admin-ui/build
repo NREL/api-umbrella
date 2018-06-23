@@ -5,12 +5,11 @@ source ./tasks/helpers.sh
 
 task_working_dir
 
-# Install into the task's special _persist directory so that these dependencies
-# for the tasks/app/core task are still present if core needs to be re-run, but
-# not this task.
-mkdir -p _persist
-cd _persist
-
+# Copy the admin-ui app locally so that we can build locally (outside of the
+# source directory) without affecting the "node_modules" setup in the source
+# directory.
+mkdir -p app
+cd app
 rsync -a -v \
   --delete \
   --delete-excluded \
@@ -20,8 +19,13 @@ rsync -a -v \
 
 node_modules_dir="$WORK_DIR/tasks/app-deps/admin-ui/yarn/_persist/node_modules"
 ln -s "$node_modules_dir" ./node_modules
+
+# Install the "dist" result into the task's special _persist directory so that
+# these dependencies for the tasks/app/core task are still present if core
+# needs to be re-run, but not this task.
+mkdir -p ../_persist
 PATH="$DEV_INSTALL_PREFIX/bin:$DEFAULT_PATH" ./node_modules/.bin/ember build \
   --environment=production \
-  --output-path=./dist
+  --output-path=../_persist/dist
 
 stamp
