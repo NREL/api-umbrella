@@ -12,7 +12,7 @@ extract_download "unbound-$unbound_version.tar.gz"
 
 cd "unbound-$unbound_version"
 ./configure --prefix="$TEST_INSTALL_PREFIX"
-make
+make -j"$NPROC"
 make install
 
 stamp

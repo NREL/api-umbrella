@@ -24,7 +24,7 @@ LIBFASTJSON_LIBS="-L$STAGE_EMBEDDED_DIR/lib -lfastjson" \
   --enable-mmjsonparse \
   --enable-mmutf8fix \
   --enable-elasticsearch
-make
+make -j"$NPROC"
 make install DESTDIR="$STAGE_DIR"
 chrpath -d "$STAGE_EMBEDDED_DIR/sbin/rsyslogd"
 find "$STAGE_EMBEDDED_DIR/lib/rsyslog/" -name "*.so" -exec chrpath -d {} \;

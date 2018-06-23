@@ -11,7 +11,7 @@ download "https://www.over-yonder.net/~fullermd/projects/libcidr/libcidr-$libcid
 extract_download "libcidr-$libcidr_version.tar.xz"
 
 cd "libcidr-$libcidr_version"
-make PREFIX="$INSTALL_PREFIX_EMBEDDED"
+make -j"$NPROC" PREFIX="$INSTALL_PREFIX_EMBEDDED"
 make install NO_DOCS=1 NO_EXAMPLES=1 PREFIX="$INSTALL_PREFIX_EMBEDDED" DESTDIR="$STAGE_DIR"
 
 stamp

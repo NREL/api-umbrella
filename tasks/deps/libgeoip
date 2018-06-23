@@ -12,7 +12,7 @@ extract_download "GeoIP-$libgeoip_version.tar.gz"
 
 cd "GeoIP-$libgeoip_version"
 ./configure --prefix="$INSTALL_PREFIX_EMBEDDED"
-make
+make -j"$NPROC"
 make install DESTDIR="$STAGE_DIR"
 find "$STAGE_EMBEDDED_DIR/bin/" -name "geoiplookup*" -exec chrpath -d {} \;
 

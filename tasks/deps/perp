@@ -14,7 +14,7 @@ cd "perp-$perp_version"
 sed -i -e "s%BINDIR.*%BINDIR = $INSTALL_PREFIX_EMBEDDED/bin%" conf.mk
 sed -i -e "s%SBINDIR.*%SBINDIR = $INSTALL_PREFIX_EMBEDDED/sbin%" conf.mk
 sed -i -e "s%MANDIR.*%MANDIR = $INSTALL_PREFIX_EMBEDDED/share/man%" conf.mk
-make
+make -j"$NPROC"
 make strip
 make install DESTDIR="$STAGE_DIR"
 

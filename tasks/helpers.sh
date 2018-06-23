@@ -50,6 +50,9 @@ OPM_CMD=(env "LUA_PATH=$LUA_PREFIX/openresty/lualib/?.lua;$LUA_PREFIX/openresty/
 # For example, ./tasks/deps/openresty's subpath would be "deps/openresty"
 TASK_SUBPATH="${BASH_SOURCE[1]#*tasks/}"
 
+# Number of processors for parallel builds.
+NPROC=$(grep -c ^processor /proc/cpuinfo)
+
 # Cleanup any files not in the special "_persist" directory before and after
 # running tasks. This ensures clean builds if a task is being executed (since
 # we assume the task script is only being executed if the checksum has

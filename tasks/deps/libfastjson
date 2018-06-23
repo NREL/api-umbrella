@@ -13,7 +13,7 @@ extract_download "v$libfastjson_version.tar.gz"
 cd "libfastjson-$libfastjson_version"
 sh autogen.sh
 ./configure --prefix="$INSTALL_PREFIX_EMBEDDED"
-make
+make -j"$NPROC"
 make install DESTDIR="$STAGE_DIR"
 
 stamp
