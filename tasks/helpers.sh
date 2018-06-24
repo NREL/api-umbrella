@@ -53,6 +53,13 @@ TASK_SUBPATH="${BASH_SOURCE[1]#*tasks/}"
 # Number of processors for parallel builds.
 NPROC=$(grep -c ^processor /proc/cpuinfo)
 
+# Limit parallel builds, since we've seen some odd build failures for very high
+# numbers (Trafficserver consistently fails in the CI environment with 32
+# processors).
+if [[ "$NPROC" -gt 4 ]]; then
+  NPROC=4
+fi
+
 # Cleanup any files not in the special "_persist" directory before and after
 # running tasks. This ensures clean builds if a task is being executed (since
 # we assume the task script is only being executed if the checksum has
