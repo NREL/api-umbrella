@@ -10,7 +10,7 @@ class Test::Proxy::Dns::TestIpv6 < Minitest::Test
   end
 
   def test_defaults_to_no_ipv6
-    override_config_set({
+    override_config({
       "dns_resolver" => {
         "nameservers" => ["[127.0.0.1]:#{$config["unbound"]["port"]}"],
         "max_stale" => 0,
@@ -34,7 +34,7 @@ class Test::Proxy::Dns::TestIpv6 < Minitest::Test
   end
 
   def test_allow_ipv6_enabled
-    override_config_set({
+    override_config({
       "dns_resolver" => {
         "nameservers" => ["[127.0.0.1]:#{$config["unbound"]["port"]}"],
         "max_stale" => 0,

@@ -146,7 +146,9 @@ CONFIG proxy.config.dns.nameservers STRING {{dns_resolver._nameservers_trafficse
 CONFIG proxy.config.hostdb.ip_resolve STRING client;ipv4;ipv6
 {{/dns_resolver.allow_ipv6}}
 {{^dns_resolver.allow_ipv6}}
-CONFIG proxy.config.hostdb.ip_resolve STRING ipv4;none
+# Note that the "only" value is used, although this does what "none" is
+# documented to: https://github.com/apache/trafficserver/issues/3880
+CONFIG proxy.config.hostdb.ip_resolve STRING ipv4;only
 {{/dns_resolver.allow_ipv6}}
 
 {{#dns_resolver.max_stale}}
