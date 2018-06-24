@@ -34,6 +34,8 @@ class Test::Proxy::Dns::TestIpv6 < Minitest::Test
   end
 
   def test_allow_ipv6_enabled
+    skip_unless_ipv6_support
+
     override_config({
       "dns_resolver" => {
         "nameservers" => ["[127.0.0.1]:#{$config["unbound"]["port"]}"],
