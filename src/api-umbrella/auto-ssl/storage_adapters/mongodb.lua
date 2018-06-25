@@ -1,5 +1,5 @@
 local aes = require "resty.aes"
-local inspect = require "inspect"
+local config = require "api-umbrella.proxy.models.file_config"
 local mongo = require "api-umbrella.utils.mongo"
 local path = require "pl.path"
 local resty_random = require "resty.random"
@@ -54,7 +54,7 @@ function _M.get(_, key)
       local aes_instance = assert(aes:new(ENCRYPTION_SECRET, nil, aes.cipher(256, "cbc"), { iv = res["encryption_iv"] }))
       res = aes_instance:decrypt(ngx.decode_base64(res["encrypted_value"]))
       if not res then
-        ngx.log(ngx.ERR, "auto-ssl: decryption failed: ", inspect(err))
+        ngx.log(ngx.ERR, "auto-ssl: decryption failed: ", (tostring(err) or ""))
         err = "decryption failed"
       end
     else

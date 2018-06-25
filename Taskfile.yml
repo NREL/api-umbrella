@@ -643,17 +643,30 @@ tasks:
       - ./build/work/stamp/test-deps/elasticsearch6
     method: checksum
 
-  test-deps:luacheck:
+  test-deps:lua:luacheck:
     deps:
       - deps:luarocks
     cmds:
-      - ./tasks/test-deps/luacheck
+      - ./tasks/test-deps/lua/luacheck
     sources:
       - ./build/work/stamp/deps/luarocks
-      - ./tasks/test-deps/luacheck
+      - ./tasks/test-deps/lua/luacheck
       - ./tasks/helpers.sh
     generates:
-      - ./build/work/stamp/test-deps/luacheck
+      - ./build/work/stamp/test-deps/lua/luacheck
+    method: checksum
+
+  test-deps:lua:penlight:
+    deps:
+      - deps:luarocks
+    cmds:
+      - ./tasks/test-deps/lua/penlight
+    sources:
+      - ./build/work/stamp/deps/luarocks
+      - ./tasks/test-deps/lua/penlight
+      - ./tasks/helpers.sh
+    generates:
+      - ./build/work/stamp/test-deps/lua/penlight
     method: checksum
 
   test-deps:mailhog:
@@ -721,7 +734,8 @@ tasks:
       - task: test-deps:bundle
       - task: test-deps:elasticsearch5
       - task: test-deps:elasticsearch6
-      - task: test-deps:luacheck
+      - task: test-deps:lua:luacheck
+      - task: test-deps:lua:penlight
       - task: test-deps:mailhog
       - task: test-deps:mongo-orchestration
       - task: test-deps:openldap
@@ -737,9 +751,15 @@ tasks:
 
   lint:lua:
     deps:
-      - test-deps:luacheck
+      - test-deps:lua:luacheck
     cmds:
       - ./tasks/lint/lua
+
+  lint:resty:
+    deps:
+      - test-deps:lua:penlight
+    cmds:
+      - ./tasks/lint/resty/run
 
   lint:ruby:
     deps:
@@ -757,6 +777,7 @@ tasks:
     cmds:
       - task: lint:js
       - task: lint:lua
+      - task: lint:resty
       - task: lint:ruby
       - task: lint:shell
 

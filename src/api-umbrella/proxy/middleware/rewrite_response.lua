@@ -1,3 +1,4 @@
+local config = require "api-umbrella.proxy.models.file_config"
 local stringx = require "pl.stringx"
 local url = require "socket.url"
 local utils = require "api-umbrella.proxy.utils"

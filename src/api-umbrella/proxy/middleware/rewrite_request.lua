@@ -1,4 +1,4 @@
-local inspect = require "inspect"
+local config = require "api-umbrella.proxy.models.file_config"
 local lustache = require "lustache"
 local plutils = require "pl.utils"
 local stringx = require "pl.stringx"
@@ -115,7 +115,7 @@ local function set_headers(settings)
         if ok then
           value = output
         else
-          ngx.log(ngx.ERR, "Mustache rendering error while rendering error template: " .. inspect(output))
+          ngx.log(ngx.ERR, "Mustache rendering error while rendering error template: " .. (tostring(output) or ""))
         end
       else
         value = header["value"]
@@ -236,7 +236,7 @@ local function url_rewrites(api)
             if ok then
               new_uri = output
             else
-              ngx.log(ngx.ERR, "Mustache rendering error while rendering error template: " .. inspect(output))
+              ngx.log(ngx.ERR, "Mustache rendering error while rendering error template: " .. (tostring(output) or ""))
             end
 
             if rewrite["_backend_replacement_args"] then
@@ -248,7 +248,7 @@ local function url_rewrites(api)
               if ok then
                 new_uri = new_uri .. "?" .. output
               else
-                ngx.log(ngx.ERR, "Mustache rendering error while rendering error template: " .. inspect(output))
+                ngx.log(ngx.ERR, "Mustache rendering error while rendering error template: " .. (tostring(output) or ""))
               end
             end
           end

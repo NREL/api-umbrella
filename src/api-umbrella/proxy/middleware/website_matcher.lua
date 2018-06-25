@@ -1,3 +1,4 @@
+local config = require "api-umbrella.proxy.models.file_config"
 local matches_hostname = require "api-umbrella.utils.matches_hostname"
 
 return function(active_config)

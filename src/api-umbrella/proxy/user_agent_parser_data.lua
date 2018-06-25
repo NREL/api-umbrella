@@ -1,5 +1,7 @@
 local cjson = require "cjson"
 
+local user_agent_parser_data
+
 local path = os.getenv("API_UMBRELLA_SRC_ROOT") .. "/config/user_agent_data.json"
 local f, err = io.open(path, "rb")
 if err then
@@ -17,3 +19,5 @@ else
 
   f:close()
 end
+
+return user_agent_parser_data

@@ -1,6 +1,7 @@
 local _M = {}
 
 local array_last = require "api-umbrella.utils.array_last"
+local config = require "api-umbrella.proxy.models.file_config"
 local distributed_rate_limit_queue = require "api-umbrella.proxy.distributed_rate_limit_queue"
 local mongo = require "api-umbrella.utils.mongo"
 local plutils = require "pl.utils"

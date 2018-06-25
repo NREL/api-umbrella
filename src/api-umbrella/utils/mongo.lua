@@ -1,4 +1,5 @@
 local cjson = require "cjson"
+local config = require "api-umbrella.proxy.models.file_config"
 local http = require "resty.http"
 local stringx = require "pl.stringx"
 local types = require "pl.types"

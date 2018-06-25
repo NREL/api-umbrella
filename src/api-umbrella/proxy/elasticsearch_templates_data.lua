@@ -1,4 +1,7 @@
 local cjson = require "cjson"
+local config = require "api-umbrella.proxy.models.file_config"
+
+local elasticsearch_templates
 
 local path = os.getenv("API_UMBRELLA_SRC_ROOT") .. "/config/elasticsearch_templates_v" .. config["elasticsearch"]["template_version"]
 if config["elasticsearch"]["api_version"] >= 5 then
@@ -41,3 +44,5 @@ else
 
   f:close()
 end
+
+return elasticsearch_templates

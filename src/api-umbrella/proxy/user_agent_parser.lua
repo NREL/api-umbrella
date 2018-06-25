@@ -1,6 +1,7 @@
 local lrucache = require "resty.lrucache.pureffi"
+local data = require "api-umbrella.proxy.user_agent_parser_data"
 
-local data = user_agent_parser_data
+-- local data = user_agent_parser_data
 local cache = lrucache.new(500)
 
 return function(user_agent)
