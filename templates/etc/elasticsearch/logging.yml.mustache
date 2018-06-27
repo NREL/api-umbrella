@@ -34,14 +34,14 @@ appender:
 
   index_search_slow_log_file:
     type: file
-    file: ${path.logs}/elasticsearch/index-search-slowlog.log
+    file: ${path.logs}/index-search-slowlog.log
     layout:
       type: pattern
       conversionPattern: "[%d{ISO8601}][%-5p][%-25c] %m%n"
 
   index_indexing_slow_log_file:
     type: file
-    file: ${path.logs}/elasticsearch/index-indexing-slowlog.log
+    file: ${path.logs}/index-indexing-slowlog.log
     layout:
       type: pattern
       conversionPattern: "[%d{ISO8601}][%-5p][%-25c] %m%n"
