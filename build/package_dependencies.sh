@@ -203,6 +203,7 @@ elif [ -f /etc/debian_version ]; then
     unzip
     uuid-dev
     xz-utils
+    nodejs
   )
   hadoop_analytics_build_dependencies=(
     "openjdk-$openjdk_version-jdk"
