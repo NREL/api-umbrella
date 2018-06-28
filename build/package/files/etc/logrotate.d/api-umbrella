@@ -42,7 +42,7 @@
 
 # Rotate any remaining logs that can't be reopened, so we have to use the
 # "copytruncate" strategy.
-/opt/api-umbrella/var/log/elasticsearch/*.log /opt/api-umbrella/var/log/trafficserver/*.blog /opt/api-umbrella/var/log/trafficserver/*.log /opt/api-umbrella/var/log/trafficserver/*.out {
+/opt/api-umbrella/var/log/trafficserver/*.blog /opt/api-umbrella/var/log/trafficserver/*.log /opt/api-umbrella/var/log/trafficserver/*.out {
   daily
   rotate 90
   missingok
