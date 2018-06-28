@@ -1,6 +1,10 @@
 local user_store = require "api-umbrella.proxy.user_store"
 local types = require "pl.types"
+local stringx = require "pl.stringx"
+local plutils = require "pl.utils"
 
+local startswith = stringx.startswith
+local split = plutils.split
 local get_user = user_store.get
 local is_empty = types.is_empty
 
@@ -19,15 +23,12 @@ local function resolve_api_key()
     if method == "header" and ngx.ctx.http_x_api_key then
       key.key_value = ngx.ctx.http_x_api_key
       key.key_type = "api_key"
-    elseif ngx.ctx.http_x_auth_token then
-      key.key_value = ngx.ctx.http_x_auth_token
+    elseif method == "fiware-oauth2" and ngx.ctx.http_authorization and startswith(ngx.ctx.http_authorization, "Bearer ") then
+      key.key_value = split(ngx.ctx.http_authorization)[2]
       key.key_type = "token"
     elseif method == "getParam" and ngx.ctx.arg_api_key then
       key.key_value = ngx.ctx.arg_api_key
       key.key_type = "api_key"
-    elseif ngx.ctx.arg_token then
-      key.key_value = ngx.ctx.arg_token
-      key.key_type = "token"
     elseif method == "basicAuthUsername" and ngx.ctx.remote_user then
       key.key_value = ngx.ctx.remote_user
       key.key_type = "api_key"
@@ -63,7 +64,7 @@ return function(settings)
   end
 
   -- Check if the user is trying to use an access token when external IDP is not allowed
-  if api_key["key_type"] == "token" and (not settings or not settings["ext_auth_allowed"]) then
+  if api_key["key_type"] == "token" and (not settings or (not settings["disable_api_key"] and not settings["ext_auth_allowed"])) then
     return nil, "token_not_supported"
   end
 

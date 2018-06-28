@@ -25,7 +25,7 @@ else
 end
 ngx.ctx.host_normalized = host_normalize(ngx.ctx.host)
 ngx.ctx.http_x_api_key = ngx_var.http_x_api_key
-ngx.ctx.http_x_auth_token = ngx_var.http_x_auth_token
+ngx.ctx.http_authorization = ngx_var.http_authorization
 ngx.ctx.port = ngx_var.real_port
 ngx.ctx.protocol = ngx_var.real_scheme
 ngx.ctx.remote_addr = ngx_var.remote_addr

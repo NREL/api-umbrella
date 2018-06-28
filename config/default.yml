@@ -55,6 +55,7 @@ nginx:
   _reloader_frequency: 14400 # 4 hours
 gatekeeper:
   api_key_methods:
+    - fiware-oauth2
     - header
     - getParam
     - basicAuthUsername
