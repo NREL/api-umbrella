@@ -140,8 +140,8 @@ function _M.get(api_key)
     external_lookup = lookup_user,
     external_lookup_arg = api_key,
   }, {
-    positive_ttl = 0,
-    negative_ttl = 0,
+    positive_ttl = config["gatekeeper"]["positive_ttl"],
+    negative_ttl = config["gatekeeper"]["negative_ttl"],
   })
 
   if err then

@@ -60,6 +60,8 @@ gatekeeper:
     - getParam
     - basicAuthUsername
   api_key_cache: true
+  positive_ttl: 120
+  negative_ttl: 60
   idp_providers:
     - fiware-oauth2
     - github-oauth2
