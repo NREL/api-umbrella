@@ -21,8 +21,6 @@
 
 version: "2"
 
-output: prefixed
-
 tasks:
   deps:bundler:
     deps:

@@ -48,7 +48,7 @@ gem "rails_compatible_cookies_utils", "~> 0.1.0"
 gem "addressable", "~> 2.5.2"
 
 # Browser/JavaScript integration tests
-gem "capybara", "~> 3.2.1"
+gem "capybara", "~> 3.3.1"
 
 # Webkit-based driver for capybara
 gem "poltergeist", "~> 1.18.1"
