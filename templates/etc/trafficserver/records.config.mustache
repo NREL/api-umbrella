@@ -35,9 +35,41 @@ CONFIG proxy.config.body_factory.template_sets_dir STRING {{_embedded_root_dir}}
 # Log to the standard API Umbrella log directory location.
 CONFIG proxy.config.log.logfile_dir STRING {{log_dir}}/trafficserver
 
+# Log all diagnostic output to stderr (instead of also shipping it to the
+# system-wide syslog).
+CONFIG proxy.config.diags.output.diag STRING E
+CONFIG proxy.config.diags.output.debug STRING E
+CONFIG proxy.config.diags.output.status STRING E
+CONFIG proxy.config.diags.output.note STRING E
+CONFIG proxy.config.diags.output.warning STRING E
+CONFIG proxy.config.diags.output.error STRING E
+CONFIG proxy.config.diags.output.fatal STRING E
+CONFIG proxy.config.diags.output.alert STRING E
+CONFIG proxy.config.diags.output.emergency STRING E
+
+{{^log._destination_console?}}
 # Rotate log files with logrotate to be consistent with all the other API
 # Umbrella components.
 CONFIG proxy.config.log.rolling_enabled INT 0
+CONFIG proxy.config.diags.rolling_enabled INT 0
+CONFIG proxy.config.output.rolling_enabled INT 0
+{{/log._destination_console?}}
+{{#log._destination_console?}}
+# If outputting to stdout, Trafficserver logs are some we can't easily output
+# to stdout. So in this case, still output to log files, but enable
+# Trafficserver's log rotation so these don't grow very big. We'll then use
+# rsyslog to tail these files and output to stdout for us.
+CONFIG proxy.config.log.auto_delete_rolled_files INT 1
+CONFIG proxy.config.log.max_space_mb_for_logs INT 200
+CONFIG proxy.config.log.max_space_mb_headroom INT 20
+
+CONFIG proxy.config.log.rolling_enabled INT 2
+CONFIG proxy.config.log.rolling_size_mb INT 10
+CONFIG proxy.config.diags.logfile.rolling_enabled INT 2
+CONFIG proxy.config.diags.logfile.rolling_size_mb INT 10
+CONFIG proxy.config.output.logfile.rolling_enabled INT 2
+CONFIG proxy.config.output.logfile.rolling_size_mb INT 10
+{{/log._destination_console?}}
 
 # Increase timeouts to match the timeouts in other pieces of the stack.
 CONFIG proxy.config.http.transaction_no_activity_timeout_in INT {{trafficserver._transaction_no_activity_timeout_in}}

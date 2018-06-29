@@ -369,6 +369,9 @@ local function set_computed_config()
     analytics = {
       ["_output_elasticsearch?"] = array_includes(config["analytics"]["outputs"], "elasticsearch"),
     },
+    log = {
+      ["_destination_console?"] = (config["log"]["destination"] == "console"),
+    },
     mongodb = {
       _database = plutils.split(array_last(plutils.split(config["mongodb"]["url"], "/", true)), "?", true)[1],
       embedded_server_config = {
