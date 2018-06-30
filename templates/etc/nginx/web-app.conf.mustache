@@ -5,7 +5,7 @@
   server {
     listen {{web.host}}:{{web.port}} so_keepalive=on;
 
-    # set $x_api_umbrella_request_id $http_x_api_umbrella_request_id;
+    set $x_api_umbrella_request_id $http_x_api_umbrella_request_id;
     root {{web.dir}}/public;
 
     # Security headers
