@@ -70,6 +70,7 @@ local function cache_computed_api(api)
   end
 
   if api["servers"] then
+    api["_servers_count"] = #api["servers"]
     for _, server in ipairs(api["servers"]) do
       if server["host"] then
         if cidr.from_str(server["host"]) then
