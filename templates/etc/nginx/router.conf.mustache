@@ -20,7 +20,7 @@ events {
   worker_connections {{nginx.worker_connections}};
 }
 
-error_log stderr;
+error_log stderr {{nginx.error_log_level}};
 
 env API_UMBRELLA_SRC_ROOT;
 env API_UMBRELLA_RUNTIME_CONFIG;
