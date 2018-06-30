@@ -1,9 +1,7 @@
 DEBUG = false
 
 -- Pre-load modules.
-require "resty.txid"
-
-inspect = require "inspect"
+require "api-umbrella.proxy.hooks.init_preload_modules"
 
 -- Generate a unique ID to represent this group of worker processes. This value
 -- will be the same amongst all the subsequently inited workers, but the value
@@ -24,11 +22,6 @@ if incr_err == "not found" then
 elseif incr_err then
   ngx.log(ngx.ERR, "worker_group_id incr err: ", incr_err)
 end
-
-config = require "api-umbrella.proxy.models.file_config"
-
-require "api-umbrella.proxy.startup.init_elasticsearch_templates_data"
-require "api-umbrella.proxy.startup.init_user_agent_parser_data"
 
 ngx.shared.stats:delete("distributed_last_fetched_at")
 ngx.shared.api_users:delete("last_fetched_at")

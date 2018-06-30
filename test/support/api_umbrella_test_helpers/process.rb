@@ -101,24 +101,25 @@ module ApiUmbrellaTestHelpers
           end
           args += ["elasticsearch"]
 
+          elasticsearch_config_dir = File.join(API_UMBRELLA_SRC_ROOT, "build/work/test-env/elasticsearch#{elasticsearch_test_api_version}/config")
           FileUtils.mkdir_p($config["elasticsearch"]["embedded_server_config"]["path"]["logs"])
           FileUtils.mkdir_p($config["elasticsearch"]["embedded_server_config"]["path"]["data"])
-          FileUtils.mkdir_p(File.join(API_UMBRELLA_SRC_ROOT, "build/work/test-env/elasticsearch#{elasticsearch_test_api_version}/config/scripts"))
+          FileUtils.mkdir_p(File.join(elasticsearch_config_dir, "scripts"))
           if(::Process.euid == 0)
             FileUtils.chown($config["user"], nil, $config["elasticsearch"]["embedded_server_config"]["path"]["logs"])
             FileUtils.chown($config["user"], nil, $config["elasticsearch"]["embedded_server_config"]["path"]["data"])
-            FileUtils.chmod_R("o+r", File.join(API_UMBRELLA_SRC_ROOT, "build/work/test-env/elasticsearch#{elasticsearch_test_api_version}/config"))
+            FileUtils.chmod_R("o+r", elasticsearch_config_dir)
           end
           log_file = File.open(File.join($config["elasticsearch"]["embedded_server_config"]["path"]["logs"], "current"), "w+")
           log_file.sync = true
 
-          elasticsearch_config_path = File.join(API_UMBRELLA_SRC_ROOT, "build/work/test-env/elasticsearch#{elasticsearch_test_api_version}/config/elasticsearch.yml")
+          elasticsearch_config_path = File.join(elasticsearch_config_dir, "elasticsearch.yml")
           File.open(elasticsearch_config_path, "w") { |f| f.write(YAML.dump($config["elasticsearch"]["embedded_server_config"])) }
 
           $elasticsearch_process = ChildProcess.build(*args)
           $elasticsearch_process.io.stdout = $elasticsearch_process.io.stderr = log_file
           $elasticsearch_process.environment["PATH"] = "#{File.join(API_UMBRELLA_SRC_ROOT, "build/work/test-env/elasticsearch#{elasticsearch_test_api_version}/bin")}:#{ENV["PATH"]}"
-          $elasticsearch_process.environment["ES_PATH_CONF"] = File.join(API_UMBRELLA_SRC_ROOT, "build/work/test-env/elasticsearch#{elasticsearch_test_api_version}/config")
+          $elasticsearch_process.environment["ES_PATH_CONF"] = elasticsearch_config_dir
           $elasticsearch_process.environment["ES_JAVA_OPTS"] = "-Xms#{$config["elasticsearch"]["embedded_server_env"]["heap_size"]} -Xmx#{$config["elasticsearch"]["embedded_server_env"]["heap_size"]}"
           $elasticsearch_process.leader = true
           $elasticsearch_process.start

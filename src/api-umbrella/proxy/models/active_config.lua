@@ -1,4 +1,5 @@
 local cidr = require "libcidr-ffi"
+local config = require "api-umbrella.proxy.models.file_config"
 local escape_regex = require "api-umbrella.utils.escape_regex"
 local host_normalize = require "api-umbrella.utils.host_normalize"
 local int64 = require "api-umbrella.utils.int64"
@@ -6,6 +7,7 @@ local json_encode = require "api-umbrella.utils.json_encode"
 local mustache_unescape = require "api-umbrella.utils.mustache_unescape"
 local plutils = require "pl.utils"
 local random_token = require "api-umbrella.utils.random_token"
+local startswith = require("pl.stringx").startswith
 local tablex = require "pl.tablex"
 local utils = require "api-umbrella.proxy.utils"
 local startswith = require("pl.stringx").startswith

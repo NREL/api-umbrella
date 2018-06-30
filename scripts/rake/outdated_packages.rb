@@ -83,6 +83,9 @@ class OutdatedPackages
     "lua_penlight" => {
       :luarock => "penlight",
     },
+    "lua_resty_auto_ssl" => {
+      :luarock => "lua-resty-auto-ssl",
+    },
     "lua_resty_http" => {
       :git => "https://github.com/pintsized/lua-resty-http.git",
     },

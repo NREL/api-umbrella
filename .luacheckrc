@@ -6,13 +6,15 @@ globals = {
   "LOCALE_DATA",
   "LOGIN_CSS_FILENAME",
   "WORKER_GROUP_ID",
-  "config",
-  "elasticsearch_templates",
-  "inspect",
-  "user_agent_parser_data",
 }
 
 max_line_length = false
+
+files["src/api-umbrella/auto-ssl"] = {
+  globals = {
+    "auto_ssl",
+  },
+}
 
 files["templates/etc/trafficserver"] = {
   std = "luajit",

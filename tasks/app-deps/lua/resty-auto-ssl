@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+lua_resty_auto_ssl_version="0.12.0-1"
+
+set -e -u -x
+source ./tasks/helpers.sh
+
+luarocks_install "lua-resty-auto-ssl" "$lua_resty_auto_ssl_version"
+
+stamp

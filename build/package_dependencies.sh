@@ -65,6 +65,9 @@ if [ -f /etc/redhat-release ]; then
     # lua-icu-date
     libicu-devel
 
+    # For prefixed console output (gnu version for strftime support).
+    gawk
+
     # lua-resty-nettle
     nettle
 
@@ -211,6 +214,9 @@ elif [ -f /etc/debian_version ]; then
 
     # lua-icu-date
     libicu-dev
+
+    # For prefixed console output (gnu version for strftime support).
+    gawk
 
     # lua-resty-nettle
     "libnettle$libnettle_version"

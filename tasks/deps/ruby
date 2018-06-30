@@ -16,7 +16,7 @@ cd "ruby-$ruby_version"
   --enable-load-relative \
   --disable-rpath \
   --disable-install-doc
-make
+make -j"$NPROC"
 make install DESTDIR="$STAGE_DIR"
 
 stamp

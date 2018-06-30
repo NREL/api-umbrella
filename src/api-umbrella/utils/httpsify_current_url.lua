@@ -1,3 +1,5 @@
+local config = require "api-umbrella.proxy.models.file_config"
+
 return function()
   local https_url = {
     config["override_public_https_proto"] or "https",

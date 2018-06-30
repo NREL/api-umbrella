@@ -21,8 +21,6 @@
 
 version: "2"
 
-output: prefixed
-
 tasks:
   deps:bundler:
     deps:
@@ -441,6 +439,19 @@ tasks:
       - ./build/work/stamp/app-deps/lua/penlight
     method: checksum
 
+  app-deps:lua:resty-auto-ssl:
+    deps:
+      - deps:luarocks
+    cmds:
+      - ./tasks/app-deps/lua/resty-auto-ssl
+    sources:
+      - ./build/work/stamp/deps/luarocks
+      - ./tasks/app-deps/lua/resty-auto-ssl
+      - ./tasks/helpers.sh
+    generates:
+      - ./build/work/stamp/app-deps/lua/resty-auto-ssl
+    method: checksum
+
   app-deps:lua:resty-http:
     deps:
       - deps:luarocks
@@ -590,6 +601,7 @@ tasks:
       - task: app-deps:lua:lustache
       - task: app-deps:lua:lyaml
       - task: app-deps:lua:penlight
+      - task: app-deps:lua:resty-auto-ssl
       - task: app-deps:lua:resty-http
       - task: app-deps:lua:resty-logger-socket
       - task: app-deps:lua:resty-mail
@@ -713,17 +725,30 @@ tasks:
       - ./build/work/stamp/test-deps/elasticsearch6
     method: checksum
 
-  test-deps:luacheck:
+  test-deps:lua:luacheck:
     deps:
       - deps:luarocks
     cmds:
-      - ./tasks/test-deps/luacheck
+      - ./tasks/test-deps/lua/luacheck
     sources:
       - ./build/work/stamp/deps/luarocks
-      - ./tasks/test-deps/luacheck
+      - ./tasks/test-deps/lua/luacheck
       - ./tasks/helpers.sh
     generates:
-      - ./build/work/stamp/test-deps/luacheck
+      - ./build/work/stamp/test-deps/lua/luacheck
+    method: checksum
+
+  test-deps:lua:penlight:
+    deps:
+      - deps:luarocks
+    cmds:
+      - ./tasks/test-deps/lua/penlight
+    sources:
+      - ./build/work/stamp/deps/luarocks
+      - ./tasks/test-deps/lua/penlight
+      - ./tasks/helpers.sh
+    generates:
+      - ./build/work/stamp/test-deps/lua/penlight
     method: checksum
 
   test-deps:mailhog:
@@ -781,7 +806,8 @@ tasks:
       - task: test-deps:bundle
       - task: test-deps:elasticsearch5
       - task: test-deps:elasticsearch6
-      - task: test-deps:luacheck
+      - task: test-deps:lua:luacheck
+      - task: test-deps:lua:penlight
       - task: test-deps:mailhog
       - task: test-deps:openldap
       - task: test-deps:phantomjs
@@ -796,9 +822,15 @@ tasks:
 
   lint:lua:
     deps:
-      - test-deps:luacheck
+      - test-deps:lua:luacheck
     cmds:
       - ./tasks/lint/lua
+
+  lint:resty:
+    deps:
+      - test-deps:lua:penlight
+    cmds:
+      - ./tasks/lint/resty/run
 
   lint:ruby:
     deps:
@@ -816,6 +848,7 @@ tasks:
     cmds:
       - task: lint:js
       - task: lint:lua
+      - task: lint:resty
       - task: lint:ruby
       - task: lint:shell
 
@@ -836,6 +869,10 @@ tasks:
       - test-deps
     cmds:
       - ./tasks/test/circle-ci
+
+  clean:dev:
+    cmds:
+      - ./tasks/clean/dev
 
   distclean:
     cmds:

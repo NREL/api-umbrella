@@ -1,3 +1,4 @@
+local config = require "api-umbrella.proxy.models.file_config"
 local escape_uri_non_ascii = require "api-umbrella.utils.escape_uri_non_ascii"
 local iconv = require "iconv"
 local icu_date = require "icu-date"

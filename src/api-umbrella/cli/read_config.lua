@@ -280,6 +280,10 @@ local function set_computed_config()
   config["dns_resolver"]["_nameservers_trafficserver"] = config["dns_resolver"]["_nameservers_nginx"]
   config["dns_resolver"]["nameservers"] = nil
 
+  if not config["dns_resolver"]["allow_ipv6"] then
+    config["dns_resolver"]["_nameservers_nginx"] = config["dns_resolver"]["_nameservers_nginx"] .. " ipv6=off"
+  end
+
   config["dns_resolver"]["_etc_hosts"] = read_etc_hosts()
 
   config["elasticsearch"]["_servers"] = {}
@@ -365,6 +369,9 @@ local function set_computed_config()
     analytics = {
       ["_output_elasticsearch?"] = array_includes(config["analytics"]["outputs"], "elasticsearch"),
     },
+    log = {
+      ["_destination_console?"] = (config["log"]["destination"] == "console"),
+    },
     mongodb = {
       _database = plutils.split(array_last(plutils.split(config["mongodb"]["url"], "/", true)), "?", true)[1],
       embedded_server_config = {
@@ -389,6 +396,7 @@ local function set_computed_config()
     ["_service_log_db_enabled?"] = array_includes(config["services"], "log_db"),
     ["_service_elasticsearch_aws_signing_proxy_enabled?"] = array_includes(config["services"], "elasticsearch_aws_signing_proxy"),
     ["_service_router_enabled?"] = array_includes(config["services"], "router"),
+    ["_service_auto_ssl_enabled?"] = array_includes(config["services"], "auto_ssl"),
     ["_service_web_enabled?"] = array_includes(config["services"], "web"),
     router = {
       trusted_proxies = trusted_proxies,

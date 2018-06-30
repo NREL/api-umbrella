@@ -23,10 +23,9 @@ jobs:
       # Build all the API Umbrella software dependencies.
       - run: ./configure
       - run: make all test-deps
+      - run: make clean:dev
       # Cache the staged build data and task checksums of what's been
-      # completed. But explicitly don't cache most of the build/work/tasks/*
-      # data, since that contains a lot of the intermediate build files, which
-      # can  significantly increase the cache size.
+      # completed.
       - save_cache:
           key: cache-build-deps-{{ .Environment.CACHE_VERSION }}-{{ .Branch }}-{{ arch }}-{{ epoch }}
           paths:
@@ -35,11 +34,7 @@ jobs:
             - build/work/stage
             - build/work/stamp
             - build/work/task
-            - build/work/tasks/app-deps/admin-ui/yarn/_persist
-            - build/work/tasks/app-deps/web-app/bundle/_persist
-            - build/work/tasks/app/admin-ui/build/_persist/dist
-            - build/work/tasks/app/web-app/precompile/_persist/public/web-assets
-            - build/work/tasks/test-deps/bundle/_persist
+            - build/work/tasks
             - build/work/test-env
       - run: groupadd -r api-umbrella && useradd -r -g api-umbrella -s /sbin/nologin -d /opt/api-umbrella -c "API Umbrella user" api-umbrella
       - run: make test:circle-ci

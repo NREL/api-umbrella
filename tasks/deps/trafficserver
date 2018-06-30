@@ -14,7 +14,7 @@ cd "trafficserver-$trafficserver_version"
 SPHINXBUILD=false ./configure \
   --prefix="$INSTALL_PREFIX_EMBEDDED" \
   --enable-experimental-plugins
-make
+make -j"$NPROC"
 make install DESTDIR="$STAGE_DIR"
 chrpath -d "$STAGE_EMBEDDED_DIR/lib/libtsmgmt.so"
 find "$STAGE_EMBEDDED_DIR/libexec/trafficserver/" -name "*.so" -exec chrpath -d {} \;

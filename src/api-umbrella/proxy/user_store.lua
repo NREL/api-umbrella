@@ -1,4 +1,5 @@
 local cmsgpack = require "cmsgpack"
+local config = require "api-umbrella.proxy.models.file_config"
 local hmac = require "api-umbrella.utils.hmac"
 local invert_table = require "api-umbrella.utils.invert_table"
 local lrucache = require "resty.lrucache.pureffi"

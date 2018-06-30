@@ -38,8 +38,7 @@ http {
   lua_shared_dict locks {{nginx.shared_dicts.locks.size}};
 
   {{#dns_resolver._nameservers_nginx}}
-    # FIXME: Make ipv6 configurable.
-    resolver {{dns_resolver._nameservers_nginx}} ipv6=off;
+    resolver {{dns_resolver._nameservers_nginx}};
     resolver_timeout 12s;
   {{/dns_resolver._nameservers_nginx}}
 
@@ -52,7 +51,7 @@ http {
   init_by_lua_file '{{_src_root_dir}}/src/api-umbrella/elasticsearch-aws-signing-proxy/init.lua';
 
   server {
-    listen {{elasticsearch.aws_signing_proxy.host}}:{{elasticsearch.aws_signing_proxy.port}};
+    listen {{elasticsearch.aws_signing_proxy.host}}:{{elasticsearch.aws_signing_proxy.port}} so_keepalive=on;
 
     {{#_development_env?}}
       lua_code_cache off;

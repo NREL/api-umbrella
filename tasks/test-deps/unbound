@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-unbound_version="1.7.2"
-unbound_hash="a85fc7bb34711992cf128b2012638ebb8dc1fe15818baa381f6489240845eaa0"
+unbound_version="1.7.3"
+unbound_hash="c11de115d928a6b48b2165e0214402a7a7da313cd479203a7ce7a8b62cba602d"
 
 set -e -u -x
 source ./tasks/helpers.sh
@@ -12,7 +12,7 @@ extract_download "unbound-$unbound_version.tar.gz"
 
 cd "unbound-$unbound_version"
 ./configure --prefix="$TEST_INSTALL_PREFIX"
-make
+make -j"$NPROC"
 make install
 
 stamp

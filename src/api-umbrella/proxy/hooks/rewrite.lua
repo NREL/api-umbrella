@@ -1,4 +1,5 @@
 local api_matcher = require "api-umbrella.proxy.middleware.api_matcher"
+local config = require "api-umbrella.proxy.models.file_config"
 local error_handler = require "api-umbrella.proxy.error_handler"
 local host_normalize = require "api-umbrella.utils.host_normalize"
 local redirect_matches_to_https = require "api-umbrella.utils.redirect_matches_to_https"

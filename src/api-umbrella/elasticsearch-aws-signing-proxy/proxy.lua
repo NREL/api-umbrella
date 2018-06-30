@@ -1,3 +1,5 @@
+local config = require "api-umbrella.proxy.models.file_config"
+
 local username = config["elasticsearch"]["aws_signing_proxy"]["username"]
 if not username then
   ngx.say("elasticsearch.aws_signing_proxy.username must be configured in /etc/api-umbrella/api-umbrella.yml")

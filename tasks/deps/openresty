@@ -42,7 +42,7 @@ patch -p1 < "$SOURCE_DIR/build/patches/openresty-cli.patch"
   --with-http_realip_module \
   --with-http_ssl_module \
   --with-http_stub_status_module
-make
+make -j"$NPROC"
 make install DESTDIR="$STAGE_DIR"
 chrpath -d "$STAGE_EMBEDDED_DIR/openresty/nginx/sbin/nginx"
 (

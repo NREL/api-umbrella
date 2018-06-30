@@ -12,7 +12,7 @@ extract_download "openldap-$openldap_version.tgz"
 
 cd "openldap-$openldap_version"
 ./configure --prefix="$TEST_INSTALL_PREFIX" --disable-backends --enable-mdb
-make
+make -j"$NPROC"
 make depend
 make install
 

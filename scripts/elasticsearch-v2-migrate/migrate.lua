@@ -1,5 +1,4 @@
-config = require "api-umbrella.proxy.models.file_config"
-require "api-umbrella.proxy.startup.init_user_agent_parser_data"
+local config = require "api-umbrella.proxy.models.file_config"
 
 -- local Date = require "pl.Date"
 local argparse = require "argparse"

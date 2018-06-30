@@ -49,7 +49,7 @@ http {
   init_by_lua_file '{{_src_root_dir}}/src/api-umbrella/web-app/hooks/init.lua';
 
   server {
-    listen {{web.host}}:{{web.port}};
+    listen {{web.host}}:{{web.port}} so_keepalive=on;
 
     {{#_development_env?}}
       lua_code_cache off;

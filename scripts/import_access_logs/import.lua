@@ -1,7 +1,5 @@
-config = require "api-umbrella.proxy.models.file_config"
-require "api-umbrella.proxy.startup.init_user_agent_parser_data"
+local config = require "api-umbrella.proxy.models.file_config"
 
-inspect = require "inspect"
 local cjson = require "cjson"
 local elasticsearch_encode_json = require "api-umbrella.utils.elasticsearch_encode_json"
 local http = require "resty.http"

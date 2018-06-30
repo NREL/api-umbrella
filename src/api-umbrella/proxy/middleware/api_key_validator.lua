@@ -1,5 +1,6 @@
-local user_store = require "api-umbrella.proxy.user_store"
+local config = require "api-umbrella.proxy.models.file_config"
 local types = require "pl.types"
+local user_store = require "api-umbrella.proxy.user_store"
 
 local get_user = user_store.get
 local is_empty = types.is_empty

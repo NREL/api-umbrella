@@ -78,6 +78,21 @@ local function prepare()
   end
 end
 
+local function generate_cert(subject, key_filename, crt_filename)
+  local ssl_dir = path.join(config["etc_dir"], "ssl");
+  local ssl_key_path = path.join(ssl_dir, key_filename);
+  local ssl_crt_path = path.join(ssl_dir, crt_filename);
+
+  if not path.exists(ssl_key_path) or not path.exists(ssl_crt_path) then
+    dir.makepath(ssl_dir)
+    local _, _, err = run_command({ "openssl", "req", "-new", "-newkey", "rsa:2048", "-days", "3650", "-nodes", "-x509", "-subj", subject, "-keyout", ssl_key_path, "-out", ssl_crt_path })
+    if err then
+      print(err)
+      os.exit(1)
+    end
+  end
+end
+
 local function generate_self_signed_cert()
   local cert_required = false
   if config["hosts"] then
@@ -90,20 +105,26 @@ local function generate_self_signed_cert()
   end
 
   if cert_required then
-    local ssl_dir = path.join(config["etc_dir"], "ssl");
-    local ssl_key_path = path.join(ssl_dir, "self_signed.key");
-    local ssl_crt_path = path.join(ssl_dir, "self_signed.crt");
+    generate_cert("/O=API Umbrella/CN=apiumbrella.example.com", "self_signed.key", "self_signed.crt")
+  end
+end
 
-    if not path.exists(ssl_key_path) or not path.exists(ssl_crt_path) then
-      dir.makepath(ssl_dir)
-      local _, _, err = run_command({ "openssl", "req", "-new", "-newkey", "rsa:2048", "-days", "3650", "-nodes", "-x509", "-subj", "/O=API Umbrella/CN=apiumbrella.example.com", "-keyout", ssl_key_path, "-out", ssl_crt_path })
-      if err then
-        print(err)
-        os.exit(1)
+local function generate_auto_ssl_fallback_cert()
+  local cert_required = false
+  if config["hosts"] then
+    for _, host in ipairs(config["hosts"]) do
+      if not host["ssl_cert"] then
+        cert_required = true
+        break
       end
     end
   end
+
+  if cert_required then
+    generate_cert("/CN=sni-support-required-for-valid-ssl", "auto_ssl_fallback.key", "auto_ssl_fallback.crt")
+  end
 end
+
 
 local function ensure_geoip_db()
   -- If the city db path doesn't exist, copy it from the package installation
@@ -249,6 +270,9 @@ local function activate_services()
     active_services["rsyslog"] = 1
     active_services["trafficserver"] = 1
   end
+  if config["_service_auto_ssl_enabled?"] then
+    active_services["nginx-auto-ssl"] = 1
+  end
   if config["_service_web_enabled?"] then
     active_services["nginx-web-app"] = 1
   end
@@ -303,16 +327,6 @@ local function activate_services()
           os.exit(1)
         end
       end
-
-      -- Disable the svlogd script if we want all output to go to
-      -- stdout/stderr.
-      if config["log"]["destination"] == "console" then
-        local _, _, err = run_command({ "chmod", "-x", service_dir .. "/rc.log" })
-        if err then
-          print("chmod failed: ", err)
-          os.exit(1)
-        end
-      end
     end
 
     -- Set the sticky bit for any active services.
@@ -336,6 +350,7 @@ return function()
   permission_check()
   prepare()
   generate_self_signed_cert()
+  generate_auto_ssl_fallback_cert()
   ensure_geoip_db()
   write_templates()
   write_static_site_key()

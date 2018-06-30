@@ -11,7 +11,7 @@ download "http://smarden.org/runit/runit-$runit_version.tar.gz" "md5" "$runit_ha
 extract_download "runit-$runit_version.tar.gz"
 
 cd "admin/runit-$runit_version/src"
-make svlogd
+make svlogd -j"$NPROC"
 install -D -m 755 svlogd "$STAGE_EMBEDDED_DIR/bin/svlogd"
 
 stamp

@@ -12,7 +12,7 @@ extract_download "libestr-$libestr_version.tar.gz"
 
 cd "libestr-$libestr_version"
 ./configure --prefix="$INSTALL_PREFIX_EMBEDDED"
-make
+make -j"$NPROC"
 make install DESTDIR="$STAGE_DIR"
 
 stamp

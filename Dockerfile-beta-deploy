@@ -1,44 +1,52 @@
-FROM ubuntu:16.04 as build
+FROM ubuntu:16.04 AS build
 
-RUN mkdir /app
-RUN mkdir /build
-WORKDIR /build
+RUN mkdir -p /app/build /build/.task /build/build/work
+RUN ln -snf /build/.task /app/.task
+RUN ln -snf /build/build/work /app/build/work
+WORKDIR /app
 
-COPY build/scripts/install_build_dependencies /app/build/scripts/install_build_dependencies
+ENV DOCKER_DEV true
+ENV NOKOGIRI_USE_SYSTEM_LIBRARIES 1
+
+COPY tasks/install-system-build-dependencies /app/tasks/install-system-build-dependencies
 COPY build/package_dependencies.sh /app/build/package_dependencies.sh
-RUN /app/build/scripts/install_build_dependencies
+COPY tasks/helpers.sh /app/tasks/helpers.sh
+RUN /app/tasks/install-system-build-dependencies
 
-COPY build/scripts/download_cmake /app/build/scripts/download_cmake
-RUN /app/build/scripts/download_cmake
-
-COPY CMakeLists.txt /app/CMakeLists.txt
-COPY build/cmake/functions /app/build/cmake/functions
-COPY build/cmake/deps /app/build/cmake/deps
-COPY build/cmake/deps.cmake /app/build/cmake/deps.cmake
-COPY build/patches /app/build/patches
+COPY Makefile.in /app/Makefile.in
+COPY Taskfile.yml /app/Taskfile.yml
 COPY configure /app/configure
-RUN /app/configure && make deps
+COPY tasks/bootstrap-* /app/tasks/
+RUN ./configure
 
-COPY build/cmake/build-deps /app/build/cmake/build-deps
-COPY build/cmake/build-deps.cmake /app/build/cmake/build-deps.cmake
-RUN /app/configure && make build-deps
+COPY build/patches /app/build/patches
+COPY tasks/deps /app/tasks/deps
+COPY tasks/clean/dev /app/tasks/clean/dev
+RUN make deps && make clean:dev
 
-COPY build/cmake/app-deps /app/build/cmake/app-deps
-COPY build/cmake/app-deps.cmake /app/build/cmake/app-deps.cmake
-RUN /app/configure && make app-deps
+COPY tasks/build-deps /app/tasks/build-deps
+RUN make build-deps && make clean:dev
+
+COPY src/api-umbrella/admin-ui/package.json /app/src/api-umbrella/admin-ui/package.json
+COPY src/api-umbrella/admin-ui/yarn.lock /app/src/api-umbrella/admin-ui/yarn.lock
+COPY src/api-umbrella/web-app/Gemfile /app/src/api-umbrella/web-app/Gemfile
+COPY src/api-umbrella/web-app/Gemfile.lock /app/src/api-umbrella/web-app/Gemfile.lock
+COPY tasks/app-deps /app/tasks/app-deps
+RUN make app-deps && make clean:dev
 
 COPY . /app
-RUN /app/configure && make
-RUN make package
+RUN make && make clean:dev
+RUN make install DESTDIR="/build/install-destdir"
 
 FROM ubuntu:16.04
 
-COPY --from=build /build/build/package/work/build/core /tmp/package
-RUN apt-get update && \
-  apt-get -y install gdebi-core && \
-  gdebi --non-interactive /tmp/package/*.deb && \
-  apt-get -y --purge remove gdebi-core && \
-  apt-get -y --purge autoremove && \
-  rm -rf /tmp/package /var/lib/apt/lists/*
+COPY --from=build /build/install-destdir /
+COPY --from=build /app/build/package_dependencies.sh /tmp/install/package_dependencies.sh
+COPY --from=build /app/build/package/scripts/after-install /tmp/install/after-install
+RUN set -x && \
+  apt-get update && \
+  bash -c 'source /tmp/install/package_dependencies.sh && DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends install "${core_package_dependencies[@]}"' && \
+  /tmp/install/after-install 1 && \
+  rm -rf /tmp/install /var/lib/apt/lists/*
 
 CMD ["api-umbrella", "run"]

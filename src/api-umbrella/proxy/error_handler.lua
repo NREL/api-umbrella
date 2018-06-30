@@ -1,3 +1,4 @@
+local config = require "api-umbrella.proxy.models.file_config"
 local deep_merge_overwrite_arrays = require "api-umbrella.utils.deep_merge_overwrite_arrays"
 local http_headers = require "api-umbrella.utils.http_headers"
 local httpsify_current_url = require "api-umbrella.utils.httpsify_current_url"

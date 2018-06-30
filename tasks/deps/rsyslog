@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-rsyslog_version="8.35.0"
-rsyslog_hash="d216a7f7c88341d5964657e61a33193c13d884c988822fced9fce3ab0b1f1082"
+rsyslog_version="8.36.0"
+rsyslog_hash="8a4b5beb92c6b308c3d14de2364c2788f62ef5d37ca0448144619edfe508ee70"
 
 set -e -u -x
 source ./tasks/helpers.sh
@@ -23,8 +23,10 @@ LIBFASTJSON_LIBS="-L$STAGE_EMBEDDED_DIR/lib -lfastjson" \
   --enable-impstats \
   --enable-mmjsonparse \
   --enable-mmutf8fix \
-  --enable-elasticsearch
-make
+  --enable-elasticsearch \
+  --enable-imfile \
+  --enable-omstdout
+make -j"$NPROC"
 make install DESTDIR="$STAGE_DIR"
 chrpath -d "$STAGE_EMBEDDED_DIR/sbin/rsyslogd"
 find "$STAGE_EMBEDDED_DIR/lib/rsyslog/" -name "*.so" -exec chrpath -d {} \;

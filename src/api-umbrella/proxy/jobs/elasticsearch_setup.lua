@@ -1,6 +1,8 @@
 local _M = {}
 
+local config = require "api-umbrella.proxy.models.file_config"
 local elasticsearch_query = require("api-umbrella.utils.elasticsearch").query
+local elasticsearch_templates = require "api-umbrella.proxy.elasticsearch_templates_data"
 local interval_lock = require "api-umbrella.utils.interval_lock"
 
 local delay = 3600  -- in seconds

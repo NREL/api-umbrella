@@ -1,3 +1,4 @@
+local config = require "api-umbrella.proxy.models.file_config"
 local deep_merge_overwrite_arrays = require "api-umbrella.utils.deep_merge_overwrite_arrays"
 local seq = require "pl.seq"
 local tablex = require "pl.tablex"
