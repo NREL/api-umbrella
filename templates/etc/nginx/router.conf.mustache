@@ -206,6 +206,7 @@ http {
 
   server {
     listen {{api_server.host}}:{{api_server.port}} so_keepalive=on;
+
     set $x_api_umbrella_request_id $http_x_api_umbrella_request_id;
 
     location /api-umbrella/v1/health {
@@ -267,8 +268,8 @@ http {
 
   server {
     listen {{static_site.host}}:{{static_site.port}} so_keepalive=on;
-    server_name _;
 
+    set $x_api_umbrella_request_id $http_x_api_umbrella_request_id;
     root {{static_site.build_dir}};
 
     # Security headers
