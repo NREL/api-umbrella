@@ -202,14 +202,23 @@ local function set_computed_config()
     end
   end
 
-  -- Add a default fallback host that will match any hostname, but doesn't
-  -- include any host-specific settings in nginx (like rewrites). This host can
-  -- still then be used to match APIs for unknown hosts.
-  table.insert(config["hosts"], {
-    hostname = "*",
-    _nginx_server_name = "_",
-    default = (not default_host_exists),
-  })
+  -- If a default host hasn't been explicitly defined, then add a default
+  -- fallback host that will match any hostname (but doesn't include any
+  -- host-specific settings in nginx, like rewrites). A default host is
+  -- necessary so nginx handles all hostnames, allowing APIs to be matched for
+  -- hosts that are only defined in the API backend configuration.
+  if not default_host_exists then
+    table.insert(config["hosts"], {
+      hostname = "*",
+      -- Use a slightly different nginx server name to avoid any conflicts with
+      -- explicitly defined wildcard hosts (but aren't the default, which
+      -- doesn't seem particularly likely). There's nothing actually special
+      -- about "_" in nginx, it's just a hostname that won't match anything
+      -- real.
+      _nginx_server_name = "__",
+      default = true,
+    })
+  end
 
   local default_hostname
   if config["hosts"] then

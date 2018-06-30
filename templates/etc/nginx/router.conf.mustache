@@ -221,12 +221,10 @@ http {
   server {
     {{#listen.addresses}}
       listen {{.}}:{{http_port}}{{#default}} default_server so_keepalive=on{{/default}};
+      listen {{.}}:{{https_port}} ssl{{#default}} default_server so_keepalive=on{{/default}};
     {{/listen.addresses}}
     server_name {{_nginx_server_name}};
 
-    {{#listen.addresses}}
-      listen {{.}}:{{https_port}} ssl{{#default}} default_server so_keepalive=on{{/default}};
-    {{/listen.addresses}}
     {{#ssl_cert}}
     ssl_certificate {{ssl_cert}};
     ssl_certificate_key {{ssl_cert_key}};
