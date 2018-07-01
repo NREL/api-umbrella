@@ -20,7 +20,7 @@ events {
   worker_connections {{nginx.worker_connections}};
 }
 
-error_log stderr notice;
+error_log stderr {{nginx.error_log_level}};
 
 env API_UMBRELLA_SRC_ROOT;
 env API_UMBRELLA_RUNTIME_CONFIG;
@@ -206,6 +206,7 @@ http {
 
   server {
     listen {{api_server.host}}:{{api_server.port}} so_keepalive=on;
+
     set $x_api_umbrella_request_id $http_x_api_umbrella_request_id;
 
     location /api-umbrella/v1/health {
@@ -221,12 +222,10 @@ http {
   server {
     {{#listen.addresses}}
       listen {{.}}:{{http_port}}{{#default}} default_server so_keepalive=on{{/default}};
+      listen {{.}}:{{https_port}} ssl{{#default}} default_server so_keepalive=on{{/default}};
     {{/listen.addresses}}
     server_name {{_nginx_server_name}};
 
-    {{#listen.addresses}}
-      listen {{.}}:{{https_port}} ssl{{#default}} default_server so_keepalive=on{{/default}};
-    {{/listen.addresses}}
     {{#ssl_cert}}
     ssl_certificate {{ssl_cert}};
     ssl_certificate_key {{ssl_cert_key}};
@@ -267,8 +266,8 @@ http {
 
   server {
     listen {{static_site.host}}:{{static_site.port}} so_keepalive=on;
-    server_name _;
 
+    set $x_api_umbrella_request_id $http_x_api_umbrella_request_id;
     root {{static_site.build_dir}};
 
     # Security headers

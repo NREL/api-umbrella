@@ -1,5 +1,6 @@
 local config = require "api-umbrella.proxy.models.file_config"
 local matches_hostname = require "api-umbrella.utils.matches_hostname"
+local random_num = require "api-umbrella.utils.random_num"
 local stringx = require "pl.stringx"
 local utils = require "api-umbrella.proxy.utils"
 
@@ -87,27 +88,16 @@ return function(active_config)
     -- request gets proxied to.
     ngx.req.set_header("X-Api-Umbrella-Backend-Server-Scheme", api["backend_protocol"] or "http")
 
-    -- Set the host on the request that we forward onto the caching server to
-    -- the API backend ID. In combination with TrafficServer's
-    -- proxy.config.url_remap.pristine_host_hdr option, this ensures that each
-    -- API backend's cache remains separate (even if the URL paths are the
-    -- same).
-    --
-    -- The real host that gets forwarded onto the backend is eventually
-    -- replaced with the proper host stored in the X-Api-Umbrella-Backend-Host
-    -- header. But we use the backend ID here for generating the cache key,
-    -- rather than the real host so that separate backends on the same host but
-    -- using different ports also remain in separate cache buckets.
-    --
-    -- TrafficServer 6.1+'s cachekey plugin might be a slightly more elegant
-    -- way to base the cache key on the arbitrary X-Api-Umbrella-Backend-Id
-    -- header once we upgrade to TrafficServer 6. However, since we're
-    -- replacing the host afterwards anyway, using this fake temporary host to
-    -- affect the cache key should be fine.
-    for _, server in ipairs(api["servers"]) do
-      ngx.req.set_header("X-Api-Umbrella-Backend-Server-Host", server["host"])
-      ngx.req.set_header("X-Api-Umbrella-Backend-Server-Port", server["port"])
+    local server_index
+    if api["_servers_count"] == 1 then
+      server_index = 1
+    else
+      server_index = random_num(1, api["_servers_count"])
     end
+
+    local server = api["servers"][server_index]
+    ngx.req.set_header("X-Api-Umbrella-Backend-Server-Host", server["host"])
+    ngx.req.set_header("X-Api-Umbrella-Backend-Server-Port", server["port"])
 
     return api, url_match
   else

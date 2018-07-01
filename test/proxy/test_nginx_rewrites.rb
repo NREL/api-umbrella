@@ -9,6 +9,7 @@ class Test::Proxy::TestNginxRewrites < Minitest::Test
   end
 
   def test_basic_rewrites
+    log_tail = LogTail.new("nginx/current")
     override_config({
       "hosts" => [
         {
@@ -24,6 +25,8 @@ class Test::Proxy::TestNginxRewrites < Minitest::Test
         },
       ],
     }, "--router") do
+      refute_nginx_duplicate_server_name_warnings(log_tail)
+
       # Basic rewrite
       response = Typhoeus.get("https://127.0.0.1:9081/#{unique_test_id}/hello/rewrite?foo=bar", http_options)
       assert_response_code(301, response)
@@ -37,6 +40,7 @@ class Test::Proxy::TestNginxRewrites < Minitest::Test
   end
 
   def test_default_host
+    log_tail = LogTail.new("nginx/current")
     override_config({
       "hosts" => [
         {
@@ -51,6 +55,8 @@ class Test::Proxy::TestNginxRewrites < Minitest::Test
         },
       ],
     }, "--router") do
+      refute_nginx_duplicate_server_name_warnings(log_tail)
+
       # Known host without rewrites
       response = Typhoeus.get("https://127.0.0.1:9081/#{unique_test_id}/hello/rewrite?foo=bar", http_options.deep_merge({
         :headers => { "Host" => "default.foo" },
@@ -74,6 +80,7 @@ class Test::Proxy::TestNginxRewrites < Minitest::Test
   end
 
   def test_no_default_host
+    log_tail = LogTail.new("nginx/current")
     override_config({
       "hosts" => [
         {
@@ -84,6 +91,8 @@ class Test::Proxy::TestNginxRewrites < Minitest::Test
         },
       ],
     }, "--router") do
+      refute_nginx_duplicate_server_name_warnings(log_tail)
+
       # Known host without rewrites
       response = Typhoeus.get("https://127.0.0.1:9081/#{unique_test_id}/hello/rewrite?foo=bar", http_options.deep_merge({
         :headers => { "Host" => "default.foo" },
@@ -99,7 +108,138 @@ class Test::Proxy::TestNginxRewrites < Minitest::Test
     end
   end
 
+  # When nginx has no default_server defined, then the first server defined
+  # becomes the default one. So test to see how this ordering also interacts
+  # with a wildcard host.
+  def test_no_default_host_wildcard_first
+    log_tail = LogTail.new("nginx/current")
+    override_config({
+      "hosts" => [
+        {
+          "hostname" => "*",
+          "rewrites" => [
+            "^/#{unique_test_id}/hello/rewrite https://example.com/something/ permanent",
+          ],
+        },
+        {
+          "hostname" => "known.foo",
+        },
+      ],
+    }, "--router") do
+      refute_nginx_duplicate_server_name_warnings(log_tail)
+
+      # Known host without rewrites
+      response = Typhoeus.get("https://127.0.0.1:9081/#{unique_test_id}/hello/rewrite?foo=bar", http_options.deep_merge({
+        :headers => { "Host" => "known.foo" },
+      }))
+      assert_response_code(404, response)
+
+      # Unknown host
+      response = Typhoeus.get("https://127.0.0.1:9081/#{unique_test_id}/hello/rewrite?foo=bar", http_options.deep_merge({
+        :headers => { "Host" => "unknown.foo" },
+      }))
+      assert_response_code(404, response)
+    end
+  end
+
+  def test_no_default_host_wildcard_last
+    log_tail = LogTail.new("nginx/current")
+    override_config({
+      "hosts" => [
+        {
+          "hostname" => "known.foo",
+        },
+        {
+          "hostname" => "*",
+          "rewrites" => [
+            "^/#{unique_test_id}/hello/rewrite https://example.com/something/ permanent",
+          ],
+        },
+      ],
+    }, "--router") do
+      refute_nginx_duplicate_server_name_warnings(log_tail)
+
+      # Known host without rewrites
+      response = Typhoeus.get("https://127.0.0.1:9081/#{unique_test_id}/hello/rewrite?foo=bar", http_options.deep_merge({
+        :headers => { "Host" => "known.foo" },
+      }))
+      assert_response_code(404, response)
+
+      # Unknown host
+      response = Typhoeus.get("https://127.0.0.1:9081/#{unique_test_id}/hello/rewrite?foo=bar", http_options.deep_merge({
+        :headers => { "Host" => "unknown.foo" },
+      }))
+      assert_response_code(404, response)
+    end
+  end
+
+  def test_wildcard_is_default
+    log_tail = LogTail.new("nginx/current")
+    override_config({
+      "hosts" => [
+        {
+          "hostname" => "*",
+          "default" => true,
+          "rewrites" => [
+            "^/#{unique_test_id}/hello/rewrite https://example.com/something/ permanent",
+          ],
+        },
+        {
+          "hostname" => "known.foo",
+        },
+      ],
+    }, "--router") do
+      refute_nginx_duplicate_server_name_warnings(log_tail)
+
+      # Known host without rewrites
+      response = Typhoeus.get("https://127.0.0.1:9081/#{unique_test_id}/hello/rewrite?foo=bar", http_options.deep_merge({
+        :headers => { "Host" => "known.foo" },
+      }))
+      assert_response_code(404, response)
+
+      # Unknown host
+      response = Typhoeus.get("https://127.0.0.1:9081/#{unique_test_id}/hello/rewrite?foo=bar", http_options.deep_merge({
+        :headers => { "Host" => "unknown.foo" },
+      }))
+      assert_response_code(301, response)
+      assert_equal("https://example.com/something/?foo=bar", response.headers["location"])
+    end
+  end
+
+  def test_wildcard_is_not_default
+    log_tail = LogTail.new("nginx/current")
+    override_config({
+      "hosts" => [
+        {
+          "hostname" => "*",
+          "rewrites" => [
+            "^/#{unique_test_id}/hello/rewrite https://example.com/something/ permanent",
+          ],
+        },
+        {
+          "hostname" => "known.foo",
+          "default" => true,
+        },
+      ],
+    }, "--router") do
+      refute_nginx_duplicate_server_name_warnings(log_tail)
+
+      # Known host without rewrites
+      response = Typhoeus.get("https://127.0.0.1:9081/#{unique_test_id}/hello/rewrite?foo=bar", http_options.deep_merge({
+        :headers => { "Host" => "known.foo" },
+      }))
+      assert_response_code(404, response)
+
+      # Unknown host
+      response = Typhoeus.get("https://127.0.0.1:9081/#{unique_test_id}/hello/rewrite?foo=bar", http_options.deep_merge({
+        :headers => { "Host" => "unknown.foo" },
+      }))
+      assert_response_code(404, response)
+    end
+  end
+
   def test_precedence
+    log_tail = LogTail.new("nginx/current")
     override_config({
       "apis" => [
         {
@@ -129,6 +269,8 @@ class Test::Proxy::TestNginxRewrites < Minitest::Test
         },
       ],
     }, "--router") do
+      refute_nginx_duplicate_server_name_warnings(log_tail)
+
       http_opts = http_options.deep_merge({
         :headers => { "Host" => "with-apis-and-website.foo" },
       })
@@ -165,5 +307,14 @@ class Test::Proxy::TestNginxRewrites < Minitest::Test
       assert_response_code(404, response)
       assert_match("<center>API Umbrella</center>", response.body)
     end
+  end
+
+  private
+
+  def refute_nginx_duplicate_server_name_warnings(log_tail)
+    log_output = log_tail.read
+    assert_match(/\[notice\].*: reconfiguring/, log_output)
+    refute_match("conflicting server name", log_output)
+    refute_match("warn", log_output)
   end
 end
