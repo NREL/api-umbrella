@@ -1,5 +1,3 @@
-DEBUG = false
-
 -- Pre-load modules.
 require "api-umbrella.proxy.hooks.init_preload_modules"
 
@@ -8,8 +6,8 @@ require "api-umbrella.proxy.hooks.init_preload_modules"
 -- will differ for each new group of worker processes that get started when
 -- nginx is reloaded (SIGHUP).
 --
--- This is used to prevent race conditions in the dyups module so that we can
--- properly know when upstreams are setup after nginx is reloaded.
+-- This is used to deal with race conditions during reloads between the nginx
+-- workers shutting down and the new workers starting up.
 local incr_err
 WORKER_GROUP_ID, incr_err = ngx.shared.active_config:incr("worker_group_id", 1)
 if incr_err == "not found" then

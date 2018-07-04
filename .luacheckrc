@@ -1,7 +1,6 @@
 std = "ngx_lua"
 
 globals = {
-  "DEBUG",
   "WORKER_GROUP_ID",
 }
 
