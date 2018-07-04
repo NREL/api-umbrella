@@ -1,5 +1,4 @@
-local cjson = require "cjson"
-local json_null = cjson.null
+local json_null = require("cjson").null
 
 -- cjson reads JSON null values as a special cjson.null object. In our case,
 -- we just want to get rid of null values, so recursively walk the JSON config

@@ -2,7 +2,9 @@
 --
 -- In benchmarks, appears faster than moses.isArray implementation.
 return function(obj)
-  if type(obj) ~= "table" then return false end
+  if type(obj) ~= "table" then
+    return false
+  end
 
   local count = 1
   for key, _ in pairs(obj) do
@@ -12,10 +14,10 @@ return function(obj)
     count = count + 1
   end
 
-  -- If it's an empty table, we really have no way to determine if it's an
-  -- array or not. Default to saying it's not an array.
+  -- If it's an empty table, we don't have any way to determine if it's an
+  -- array or not. But since it could be, return true.
   if count == 1 then
-    return false
+    return true
   end
 
   return true

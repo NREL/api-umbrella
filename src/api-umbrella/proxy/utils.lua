@@ -1,7 +1,7 @@
 local _M = {}
 
-local cjson = require "cjson"
 local cmsgpack = require "cmsgpack"
+local json_null = require("cjson").null
 local plutils = require "pl.utils"
 local stringx = require "pl.stringx"
 local tablex = require "pl.tablex"
@@ -10,7 +10,6 @@ local types = require "pl.types"
 local escape = plutils.escape
 local gsub = ngx.re.gsub
 local is_empty = types.is_empty
-local json_null = cjson.null
 local pack = cmsgpack.pack
 local split = plutils.split
 local strip = stringx.strip
@@ -302,10 +301,6 @@ function _M.set_uri(new_path, new_args)
       ngx_ctx.request_uri = ngx_ctx.uri
     end
   end
-end
-
-function _M.round(value)
-  return math.floor(value + 0.5)
 end
 
 return _M

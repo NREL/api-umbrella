@@ -1,9 +1,9 @@
 local _M = {}
 
-local cjson = require "cjson"
 local cmsgpack = require "cmsgpack"
 local config = require "api-umbrella.proxy.models.file_config"
 local invert_table = require "api-umbrella.utils.invert_table"
+local json_null = require("cjson").null
 local lrucache = require "resty.lrucache.pureffi"
 local mongo = require "api-umbrella.utils.mongo"
 local shcache = require "shcache"
@@ -52,7 +52,7 @@ local function lookup_user(api_key)
       user["created_at"] = user["created_at"]["$date"]
     end
 
-    if user["settings"] and user["settings"] ~= cjson.null then
+    if user["settings"] and user["settings"] ~= json_null then
       user["settings"] = utils.pick_where_present(user["settings"], {
         "allowed_ips",
         "allowed_referers",

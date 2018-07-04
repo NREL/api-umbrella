@@ -1,8 +1,9 @@
 local config = require "api-umbrella.proxy.models.file_config"
 
-local cjson = require "cjson"
 local elasticsearch_encode_json = require "api-umbrella.utils.elasticsearch_encode_json"
 local http = require "resty.http"
+local json_decode = require("cjson").decode
+local json_encode = require "api-umbrella.utils.json_encode"
 local log_utils = require "api-umbrella.proxy.log_utils"
 local luatz = require "luatz"
 local user_agent_parser = require "api-umbrella.proxy.user_agent_parser"
@@ -145,7 +146,7 @@ local function flush_bulk_commands()
     ngx.log(ngx.ERR, keepalive_err)
   end
 
-  local response = cjson.decode(body)
+  local response = json_decode(body)
   if type(response["items"]) ~= "table" then
     ngx.log(ngx.ERR, "unexpected error: " .. (body or nil))
     return false
@@ -317,7 +318,7 @@ local function log_request(line_matches)
   -- print(inspect(es_data))
 
   local index_name = "api-umbrella-logs-v1-" .. os.date("!%Y-%m", data["timestamp_utc"] / 1000)
-  table.insert(bulk_commands, cjson.encode({
+  table.insert(bulk_commands, json_encode({
     create = {
       _index = index_name,
       _type = "log",

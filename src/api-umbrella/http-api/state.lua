@@ -1,4 +1,4 @@
-local cjson = require "cjson"
+local json_encode = require "api-umbrella.utils.json_encode"
 
 local response = {
   file_config_version = ngx.shared.active_config:get("file_version"),
@@ -10,4 +10,4 @@ local response = {
 }
 
 ngx.header["Content-Type"] = "application/json"
-ngx.say(cjson.encode(response))
+ngx.say(json_encode(response))

@@ -1,6 +1,7 @@
-local cjson = require "cjson"
 local config = require "api-umbrella.proxy.models.file_config"
 local http = require "resty.http"
+local json_decode = require("cjson").decode
+local json_encode = require "api-umbrella.utils.json_encode"
 local stringx = require "pl.stringx"
 local types = require "pl.types"
 
@@ -40,7 +41,7 @@ local function try_query(path, http_options)
     return nil, err
   end
 
-  local response = cjson.decode(body)
+  local response = json_decode(body)
   if not response["success"] then
     local mongodb_err = "mongodb error"
     if response["error"] and response["error"]["name"] then
@@ -60,7 +61,7 @@ local function perform_query(path, query_options, http_options)
   query_options["extended_json"] = "true"
 
   if type(query_options["query"]) == "table" then
-    query_options["query"] = cjson.encode(query_options["query"])
+    query_options["query"] = json_encode(query_options["query"])
   end
 
   if not http_options then
@@ -171,7 +172,7 @@ function _M.update(collection, id, data)
     headers = {
       ["Content-Type"] = "application/json",
     },
-    body = cjson.encode(data),
+    body = json_encode(data),
   }
 
   return perform_query(collection .. "/" .. id, nil, http_options)
@@ -183,7 +184,7 @@ function _M.create(collection, data)
     headers = {
       ["Content-Type"] = "application/json",
     },
-    body = cjson.encode(data),
+    body = json_encode(data),
   }
 
   return perform_query(collection, nil, http_options)

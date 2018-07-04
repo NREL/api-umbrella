@@ -1,18 +1,16 @@
-local cjson = require "cjson"
 local config = require "api-umbrella.proxy.models.file_config"
 local escape_uri_non_ascii = require "api-umbrella.utils.escape_uri_non_ascii"
 local iconv = require "iconv"
 local icu_date = require "icu-date"
+local json_encode = require "api-umbrella.utils.json_encode"
 local logger = require "resty.logger.socket"
 local mongo = require "api-umbrella.utils.mongo"
 local plutils = require "pl.utils"
+local round = require "api-umbrella.utils.round"
 local sha256 = require "resty.sha256"
 local str = require "resty.string"
 local user_agent_parser = require "api-umbrella.proxy.user_agent_parser"
-local utils = require "api-umbrella.proxy.utils"
 
-local cjson_encode = cjson.encode
-local round = utils.round
 local split = plutils.split
 
 local syslog_facility = 16 -- local0
@@ -405,7 +403,7 @@ function _M.build_syslog_message(data)
     .. " -" -- msgid
     .. " -" -- structured-data
     .. " @cee:" -- CEE-enhanced logging for rsyslog to parse JSON
-    .. cjson_encode({ raw = data }) -- JSON data
+    .. json_encode({ raw = data }) -- JSON data
     .. "\n"
 
   return syslog_message
