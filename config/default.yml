@@ -50,7 +50,6 @@ nginx:
       size: 20m
     upstream_checksums:
       size: 200k
-  _reloader_frequency: 14400 # 4 hours
 gatekeeper:
   api_key_methods:
     - header

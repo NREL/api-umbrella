@@ -267,7 +267,6 @@ local function activate_services()
     active_services["geoip-auto-updater"] = 1
     active_services["mora"] = 1
     active_services["nginx"] = 1
-    active_services["nginx-reloader"] = 1
     active_services["rsyslog"] = 1
     active_services["trafficserver"] = 1
   end
