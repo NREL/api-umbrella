@@ -2,11 +2,12 @@ local config = require "api-umbrella.proxy.models.file_config"
 
 -- local Date = require "pl.Date"
 local argparse = require "argparse"
-local cjson = require "cjson"
 local elasticsearch_setup = require "api-umbrella.proxy.jobs.elasticsearch_setup"
 local escape_uri_non_ascii = require "api-umbrella.utils.escape_uri_non_ascii"
 local http = require "resty.http"
 local inspect = require "inspect"
+local json_decode = require("cjson").decode
+local json_encode = require "api-umbrella.utils.json_encode"
 local log_utils = require "api-umbrella.proxy.log_utils"
 local luatz = require "luatz"
 local nillify_json_nulls = require "api-umbrella.utils.nillify_json_nulls"
@@ -14,7 +15,6 @@ local plutils = require "pl.utils"
 -- local pretty = require "pl.pretty"
 local tablex = require "pl.tablex"
 
-local cjson_encode = cjson.encode
 -- local keys = tablex.keys
 local split = plutils.split
 
@@ -114,7 +114,7 @@ local function elasticsearch_query(host, port, options)
     ngx.log(ngx.ERR, keepalive_err)
   end
 
-  local response = cjson.decode(body)
+  local response = json_decode(body)
   return response
 end
 
@@ -332,14 +332,14 @@ local function process_hit(hit, output_index)
     end
   end
 
-  table.insert(bulk_commands, cjson_encode({
+  table.insert(bulk_commands, json_encode({
     create = {
       _index = output_index,
       _type = "log",
       _id = hit["_id"],
     }
   }))
-  table.insert(bulk_commands, cjson_encode(new_source))
+  table.insert(bulk_commands, json_encode(new_source))
 
   if not last_bulk_commands_timestamp then
     last_bulk_commands_timestamp = data["timestamp_utc"]
@@ -376,7 +376,7 @@ local function search_day(date_start, date_end)
         headers = {
           ["Content-Type"] = "application/json",
         },
-        body = cjson_encode({
+        body = json_encode({
           sort = "request_at",
           size = bulk_size,
           query = {

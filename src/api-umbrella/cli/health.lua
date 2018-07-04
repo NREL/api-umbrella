@@ -1,5 +1,5 @@
-local cjson = require "cjson"
 local http = require "resty.http"
+local json_decode = require("cjson").decode
 local read_config = require "api-umbrella.cli.read_config"
 local unistd = require "posix.unistd"
 
@@ -20,7 +20,7 @@ local function health(options, config)
     local err = "nginx error"
     return status, exit_code, err
   else
-    local data = cjson.decode(res.body)
+    local data = json_decode(res.body)
     if data["status"] then
       status = data["status"]
 
