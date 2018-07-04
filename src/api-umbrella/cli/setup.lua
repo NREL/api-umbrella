@@ -266,7 +266,6 @@ local function activate_services()
   if config["_service_router_enabled?"] then
     active_services["geoip-auto-updater"] = 1
     active_services["nginx"] = 1
-    active_services["nginx-reloader"] = 1
     active_services["rsyslog"] = 1
     active_services["trafficserver"] = 1
   end

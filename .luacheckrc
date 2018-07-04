@@ -2,7 +2,6 @@ std = "ngx_lua"
 
 globals = {
   "API_UMBRELLA_VERSION",
-  "DEBUG",
   "LOCALE_DATA",
   "LOGIN_CSS_FILENAME",
   "WORKER_GROUP_ID",
