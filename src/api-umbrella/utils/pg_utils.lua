@@ -1,3 +1,4 @@
+local config = require "api-umbrella.proxy.models.file_config"
 local int64 = require "api-umbrella.utils.int64"
 local pgmoon = require "pgmoon"
 

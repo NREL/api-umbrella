@@ -31,7 +31,7 @@ local function reload_nginx(perp_base)
 end
 
 local function reload_nginx_web_app(perp_base)
-  local _, _, err = run_command("perpctl -b " .. perp_base .. " hup nginx-web-app")
+  local _, _, err = run_command({ "perpctl", "-b", perp_base, "hup", "nginx-web-app" })
   if err then
     print("Failed to reload nginx\n" .. err)
     os.exit(1)

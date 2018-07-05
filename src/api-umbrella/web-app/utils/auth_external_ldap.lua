@@ -1,3 +1,4 @@
+local config = require "api-umbrella.proxy.models.file_config"
 local is_empty = require("pl.types").is_empty
 local json_decode = require("cjson").decode
 local lualdap = require "lualdap"

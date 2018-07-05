@@ -2,6 +2,7 @@ local Admin = require "api-umbrella.web-app.models.admin"
 local admin_reset_password_mailer = require "api-umbrella.web-app.mailers.admin_reset_password"
 local build_url = require "api-umbrella.utils.build_url"
 local capture_errors = require("lapis.application").capture_errors
+local config = require "api-umbrella.proxy.models.file_config"
 local csrf = require "api-umbrella.web-app.utils.csrf"
 local db_null = require("lapis.db").NULL
 local flash = require "api-umbrella.web-app.utils.flash"
@@ -12,7 +13,7 @@ local t = require("api-umbrella.web-app.utils.gettext").gettext
 local _M = {}
 
 function _M.new()
-  return { render = "admin.passwords.new" }
+  return { render = require("api-umbrella.web-app.views.admin.passwords.new") }
 end
 
 function _M.create(self)
@@ -38,8 +39,9 @@ function _M.create(self)
   return self:write({ redirect_to = build_url("/admin/login") })
 end
 
-function _M.edit()
-  return { render = "admin.passwords.edit" }
+function _M.edit(self)
+  self.config = config
+  return { render = require("api-umbrella.web-app.views.admin.passwords.edit") }
 end
 
 function _M.update(self)
@@ -110,14 +112,14 @@ return function(app)
     app:get("/admins/password/new(.:format)", _M.new)
     app:post("/admins/password(.:format)", csrf.validate_token_filter(capture_errors({
       on_error = function()
-        return { render = "admin.passwords.new" }
+        return { render = require("api-umbrella.web-app.views.admin.passwords.new") }
       end,
       _M.create,
     })))
     app:get("/admins/password/edit(.:format)", _M.edit)
     app:post("/admins/password/update(.:format)", csrf.validate_token_filter(capture_errors({
       on_error = function()
-        return { render = "admin.passwords.edit" }
+        return { render = require("api-umbrella.web-app.views.admin.passwords.edit") }
       end,
       _M.update,
     })))

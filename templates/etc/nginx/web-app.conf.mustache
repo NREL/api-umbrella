@@ -86,15 +86,16 @@ http {
       {{/_development_env?}}
     }
 
-    location /admin/auth-assets/ {
+    location /web-assets/ {
       more_set_headers "Cache-Control: public, max-age=31536000, immutable";
-      alias {{_embedded_root_dir}}/apps/core/current/build/dist/admin-auth-assets/;
+      alias {{_embedded_root_dir}}/apps/core/current/build/dist/web-assets/;
     }
 
     location / {
       default_type text/html;
       content_by_lua_block {
-        require("lapis").serve("api-umbrella.web-app.app")
+        local app = require "api-umbrella.web-app.app"
+        require("lapis").serve(app)
       }
     }
   }

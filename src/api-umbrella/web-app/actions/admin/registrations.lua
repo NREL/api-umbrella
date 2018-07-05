@@ -1,6 +1,7 @@
 local Admin = require "api-umbrella.web-app.models.admin"
 local build_url = require "api-umbrella.utils.build_url"
 local capture_errors = require("lapis.application").capture_errors
+local config = require "api-umbrella.proxy.models.file_config"
 local csrf = require "api-umbrella.web-app.utils.csrf"
 local flash = require "api-umbrella.web-app.utils.flash"
 local login_admin = require "api-umbrella.web-app.utils.login_admin"
@@ -12,8 +13,9 @@ local _M = {}
 
 function _M.new(self)
   self.admin_params = {}
+  self.config = config
   self.username_label = username_label()
-  return { render = "admin.registrations.new" }
+  return { render = require("api-umbrella.web-app.views.admin.registrations.new") }
 end
 
 function _M.create(self)
@@ -67,7 +69,7 @@ return function(app)
       end,
       POST = csrf.validate_token_filter(capture_errors({
         on_error = function()
-          return { render = "admin.registrations.new" }
+          return { render = require("api-umbrella.web-app.views.admin.registrations.new") }
         end,
         _M.create,
       })),

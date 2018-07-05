@@ -603,7 +603,7 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
 
   def test_does_not_log_web_app_asset_requests
     FactoryBot.create(:admin)
-    response = Typhoeus.get("https://127.0.0.1:9081/admin/auth-assets/test.css", log_http_options)
+    response = Typhoeus.get("https://127.0.0.1:9081/web-assets/test.css", log_http_options)
     assert_response_code(404, response)
     refute_log(response)
   end

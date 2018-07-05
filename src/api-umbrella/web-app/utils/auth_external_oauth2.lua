@@ -1,4 +1,5 @@
 local build_url = require "api-umbrella.utils.build_url"
+local config = require "api-umbrella.proxy.models.file_config"
 local deep_merge_overwrite_arrays = require "api-umbrella.utils.deep_merge_overwrite_arrays"
 local http = require "resty.http"
 local is_empty = require("pl.types").is_empty

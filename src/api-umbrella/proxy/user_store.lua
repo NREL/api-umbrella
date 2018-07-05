@@ -2,7 +2,6 @@ local cmsgpack = require "cmsgpack"
 local config = require "api-umbrella.proxy.models.file_config"
 local hmac = require "api-umbrella.utils.hmac"
 local invert_table = require "api-umbrella.utils.invert_table"
-local json_null = require("cjson").null
 local lrucache = require "resty.lrucache.pureffi"
 local nillify_json_nulls = require "api-umbrella.utils.nillify_json_nulls"
 local pg_utils = require "api-umbrella.utils.pg_utils"

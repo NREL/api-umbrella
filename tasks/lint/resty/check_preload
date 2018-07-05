@@ -100,7 +100,8 @@ local function check(src_dir, preload_file)
   return ok
 end
 
-local ok = check("src/api-umbrella/proxy", "src/api-umbrella/proxy/hooks/init_preload_modules.lua")
-if not ok then
+local proxy_ok = check("src/api-umbrella/proxy", "src/api-umbrella/proxy/hooks/init_preload_modules.lua")
+local web_app_ok = check("src/api-umbrella/web-app", "src/api-umbrella/web-app/hooks/init_preload_modules.lua")
+if not proxy_ok or not web_app_ok then
   os.exit(1)
 end

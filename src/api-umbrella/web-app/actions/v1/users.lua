@@ -3,6 +3,7 @@ local api_user_admin_notification_mailer = require "api-umbrella.web-app.mailers
 local api_user_policy = require "api-umbrella.web-app.policies.api_user_policy"
 local api_user_welcome_mailer = require "api-umbrella.web-app.mailers.api_user_welcome"
 local capture_errors_json_full = require("api-umbrella.web-app.utils.capture_errors").json_full
+local config = require "api-umbrella.proxy.models.file_config"
 local datatables = require "api-umbrella.web-app.utils.datatables"
 local db = require "lapis.db"
 local dbify_json_nulls = require "api-umbrella.web-app.utils.dbify_json_nulls"

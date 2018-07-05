@@ -1,8 +1,8 @@
 <h1><%= t("Admin Sign In") %></h1>
 
 <div class="login-container">
-  <% render("views.admin.sessions._no_admin_alert") %>
-  <% render("views.admin.sessions._login_form") %>
-  <% render("views.admin.sessions._external_provider_buttons") %>
-  <% render("views.admin.sessions._no_auth_alert") %>
+  <% render("api-umbrella.web-app.views.admin.sessions._no_admin_alert") %>
+  <% render("api-umbrella.web-app.views.admin.sessions._login_form") %>
+  <% render("api-umbrella.web-app.views.admin.sessions._external_provider_buttons") %>
+  <% render("api-umbrella.web-app.views.admin.sessions._no_auth_alert") %>
 </div>

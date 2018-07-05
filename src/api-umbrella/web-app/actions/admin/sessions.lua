@@ -2,6 +2,7 @@ local Admin = require "api-umbrella.web-app.models.admin"
 local ApiUser = require "api-umbrella.web-app.models.api_user"
 local array_includes = require "api-umbrella.utils.array_includes"
 local build_url = require "api-umbrella.utils.build_url"
+local config = require "api-umbrella.proxy.models.file_config"
 local csrf = require "api-umbrella.web-app.utils.csrf"
 local flash = require "api-umbrella.web-app.utils.flash"
 local is_empty = require("pl.types").is_empty
@@ -96,8 +97,9 @@ end
 
 function _M.new(self)
   self.admin_params = {}
+  self.config = config
   define_view_helpers(self)
-  return { render = "admin.sessions.new" }
+  return { render = require("api-umbrella.web-app.views.admin.sessions.new") }
 end
 
 function _M.create(self)
@@ -124,7 +126,7 @@ function _M.create(self)
     else
       flash.now(self, "warning", t("Invalid username or password."))
     end
-    return { render = "admin.sessions.new" }
+    return { render = require("api-umbrella.web-app.views.admin.sessions.new") }
   end
 end
 

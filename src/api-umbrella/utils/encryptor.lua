@@ -7,9 +7,10 @@
 -- encryption key. When this key changes, previously encrypted data will need
 -- to be re-encrypted.
 
-local resty_sha256 = require "resty.sha256"
 local aes = require "resty.nettle.aes"
+local config = require "api-umbrella.proxy.models.file_config"
 local random_token = require "api-umbrella.utils.random_token"
+local resty_sha256 = require "resty.sha256"
 
 local auth_tag_length = 16
 local decode_base64 = ngx.decode_base64

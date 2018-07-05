@@ -1,6 +1,5 @@
-require "api-umbrella.web-app.utils.db_escape_patches"
-
 local Admin = require "api-umbrella.web-app.models.admin"
+local config = require "api-umbrella.proxy.models.file_config"
 local csrf = require "api-umbrella.web-app.utils.csrf"
 local db = require "lapis.db"
 local error_messages_by_field = require "api-umbrella.web-app.utils.error_messages_by_field"
@@ -21,13 +20,9 @@ local table_keys = require("pl.tablex").keys
 
 local supported_languages = table_keys(LOCALE_DATA)
 
-local app = lapis.Application()
-app:enable("etlua")
-app.layout = require "views.layout"
-
 -- Custom error handler so we only show the default lapis debug details in
 -- development, and a generic error page in production.
-app.handle_error = function(self, err, trace)
+local function handle_error(self, err, trace)
   ngx.log(ngx.ERR, "Unexpected error: " .. (err or "") .. "\n" .. (trace or ""))
 
   if lapis_config.show_errors then
@@ -36,7 +31,7 @@ app.handle_error = function(self, err, trace)
     self.res.headers["Content-Type"] = "text/html"
     return {
       status = 500,
-      render = "500",
+      render = require("api-umbrella.web-app.views.500"),
       layout = false,
     }
   end
@@ -46,16 +41,16 @@ end
 -- as an HTTP header in the test enivironment. This lets us verify that no
 -- backtraces are output, even in the test environment (so we can have tests
 -- around what will happen with error handling in production).
-app.render_error_request = function(self, r, err, trace)
+local function render_error_request(self, r, err, trace)
   r:write(self.handle_error(r, err, trace))
   return self:render_request(r)
 end
 
-app.handle_404 = function(self)
+local function handle_404(self)
   self.res.headers["Content-Type"] = "text/html"
   return self:write({
     status = 404,
-    render = "404",
+    render = require("api-umbrella.web-app.views.404"),
     layout = false,
   })
 end
@@ -145,7 +140,7 @@ local function current_admin_from_session(self)
   return current_admin
 end
 
-app:before_filter(function(self)
+local function before_filter(self)
   -- For the test environment setup a middleware that looks for the
   -- "test_delay_server_responses" cookie on requests, and if it's set, sleeps
   -- for that amount of time before returning responses.
@@ -222,7 +217,15 @@ app:before_filter(function(self)
   ngx.ctx.current_admin = current_admin
 
   flash.setup(self)
-end)
+end
+
+local app = lapis.Application()
+app:enable("etlua")
+app.layout = require "api-umbrella.web-app.views.layout"
+app.handle_error = handle_error
+app.render_error_request = render_error_request
+app.handle_404 = handle_404
+app:before_filter(before_filter)
 
 require("api-umbrella.web-app.actions.admin.auth_external")(app)
 require("api-umbrella.web-app.actions.admin.passwords")(app)

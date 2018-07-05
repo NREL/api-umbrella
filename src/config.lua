@@ -1,3 +1,4 @@
+local config = require "api-umbrella.proxy.models.file_config"
 local lapis_config = require("lapis.config")
 local util = require("lapis.cmd.util")
 

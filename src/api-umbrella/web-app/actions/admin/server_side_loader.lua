@@ -1,4 +1,5 @@
 local common_validations = require "api-umbrella.web-app.utils.common_validations"
+local config = require "api-umbrella.proxy.models.file_config"
 local json_encode = require "api-umbrella.utils.json_encode"
 
 local _M = {}
@@ -20,7 +21,7 @@ function _M.loader(self)
     }
   end
 
-  local config = {
+  local web_config = {
     web = {
       admin = {
         username_is_email = config["web"]["admin"]["username_is_email"],
@@ -30,7 +31,7 @@ function _M.loader(self)
 
   self.res.headers["Content-Type"] = "application/javascript"
   self.res.content = [[
-    window.apiUmbrellaConfig = ]] .. json_encode(config) .. [[;
+    window.apiUmbrellaConfig = ]] .. json_encode(web_config) .. [[;
     window.localeData = ]] .. json_encode(data) .. [[;
     window.CommonValidations = {
       host_format: new RegExp(]] .. json_encode(common_validations.host_format) .. [[),

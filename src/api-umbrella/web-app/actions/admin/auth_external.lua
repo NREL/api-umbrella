@@ -1,6 +1,7 @@
 local Admin = require "api-umbrella.web-app.models.admin"
 local build_url = require "api-umbrella.utils.build_url"
 local cas = require "api-umbrella.web-app.utils.auth_external_cas"
+local config = require "api-umbrella.proxy.models.file_config"
 local flash = require "api-umbrella.web-app.utils.flash"
 local is_empty = require("pl.types").is_empty
 local ldap = require "api-umbrella.web-app.utils.auth_external_ldap"
@@ -56,7 +57,7 @@ function _M.developer_login(self)
 
   self.admin_params = {}
   self.username_label = username_label()
-  return { render = "admin.auth_external.developer_login" }
+  return { render = require("api-umbrella.web-app.views.admin.auth_external.developer_login") }
 end
 
 function _M.developer_callback(self)
@@ -91,7 +92,7 @@ function _M.developer_callback(self)
   else
     self.admin_params = admin_params
     self.username_label = username_label()
-    return { render = "admin.auth_external.developer_login" }
+    return { render = require("api-umbrella.web-app.views.admin.auth_external.developer_login") }
   end
 end
 
@@ -194,13 +195,14 @@ end
 
 function _M.ldap_login(self)
   self.admin_params = {}
+  self.config = config
   self.username_label = username_label()
 
   if config["app_env"] == "test" and ngx.var.cookie_test_mock_userinfo then
     return _M.ldap_callback(self)
   end
 
-  return { render = "admin.auth_external.ldap_login" }
+  return { render = require("api-umbrella.web-app.views.admin.auth_external.ldap_login") }
 end
 
 function _M.ldap_callback(self)
@@ -217,7 +219,7 @@ function _M.ldap_callback(self)
     self.admin_params = admin_params
     self.username_label = username_label()
     flash.now(self, "danger", string.format(t([[Could not authenticate you because "%s"]]), t("Invalid credentials")))
-    return { render = "admin.auth_external.ldap_login" }
+    return { render = require("api-umbrella.web-app.views.admin.auth_external.ldap_login") }
   end
 end
 

@@ -4,11 +4,11 @@
     <meta charset="utf-8">
     <title>API Umbrella Admin</title>
     <meta content="width=device-width,initial-scale=1" name="viewport">
-    <link rel="stylesheet" media="screen" href="/admin/auth-assets/<%= LOGIN_CSS_FILENAME %>" />
+    <link rel="stylesheet" media="screen" href="/web-assets/<%= LOGIN_CSS_FILENAME %>" />
   </head>
   <body>
     <div class="login">
-      <% render("views.layout.flash") %>
+      <% render("api-umbrella.web-app.views.layout.flash") %>
       <% content_for("inner") %>
     </div>
   </body>

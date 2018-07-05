@@ -636,16 +636,32 @@ tasks:
   app:core:
     deps:
       - app:admin-ui:build
+      - app:locale
       - app:web-app:precompile
     cmds:
       - ./tasks/app/core
     sources:
       - ./build/work/stamp/app/admin-ui/build
+      - ./build/work/stamp/app/locale
       - ./build/work/stamp/app/web-app/precompile
       - ./tasks/app/core
       - ./tasks/helpers.sh
     generates:
       - ./build/work/stamp/app/core
+    method: checksum
+
+  app:locale:
+    deps:
+      - app-deps:admin-ui:yarn
+    cmds:
+      - ./tasks/app/locale
+    sources:
+      - ./build/work/stamp/app-deps/admin-ui/yarn
+      - ./locale/*.po
+      - ./tasks/app/locale
+      - ./tasks/helpers.sh
+    generates:
+      - ./build/work/stamp/app/locale
     method: checksum
 
   app:static-site:

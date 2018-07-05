@@ -1,3 +1,4 @@
+local config = require "api-umbrella.proxy.models.file_config"
 local mail = require "resty.mail"
 
 return function()

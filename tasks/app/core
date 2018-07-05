@@ -31,11 +31,11 @@ rsync -a --delete-after \
   "$WORK_DIR/tasks/app/admin-ui/build/_persist/dist/" \
   "$APP_CORE_RELEASE_DIR/build/dist/admin-ui/"
 rsync -a --delete-after \
-  "$SOURCE_DIR/src/api-umbrella/web-app/public/" \
-  "$APP_CORE_RELEASE_DIR/build/dist/web-app-public/"
+  "$WORK_DIR/tasks/app/locale/_persist/json/" \
+  "$APP_CORE_RELEASE_DIR/build/dist/locale/"
 rsync -a --delete-after \
   "$WORK_DIR/tasks/app/web-app/precompile/_persist/assets/dist/" \
-  "$APP_CORE_RELEASE_DIR/build/dist/web-app-public/web-assets/"
+  "$APP_CORE_RELEASE_DIR/build/dist/web-assets/"
 
 # Add symlinks for the release.
 (cd "$APP_CORE_DIR" && ln -snf releases/0 ./current)

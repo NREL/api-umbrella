@@ -16,8 +16,8 @@ cd "postgresql-$postgresql_version"
   --prefix="$INSTALL_PREFIX_EMBEDDED" \
   --disable-rpath \
   --with-system-tzdata=/usr/share/zoneinfo
-make
-(cd contrib/pgcrypto && make)
+make -j"$NPROC"
+(cd contrib/pgcrypto && make -j"$NPROC")
 make install DESTDIR="$STAGE_DIR"
 (cd contrib/pgcrypto && make install DESTDIR="$STAGE_DIR")
 

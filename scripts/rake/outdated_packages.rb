@@ -213,7 +213,6 @@ class OutdatedPackages
       tag.tr!("_", ".")
     when "openssl"
       tag.tr!("_", ".")
-      tag.gsub!(/_/, ".")
     when "postgresql"
       tag.gsub!(/^rel/, "")
       tag.tr!("_", ".")

@@ -125,7 +125,7 @@ class Test::AdminUi::Login::TestLocalProvider < Minitest::Capybara::Test
     # but capybara seems to read it as absolute. That's fine, but noting it in
     # case Capybara's future behavior changes).
     stylesheet = find("link[rel=stylesheet]", :visible => :hidden)
-    assert_match(%r{\Ahttps://127\.0\.0\.1:9081/admin/auth-assets/login-\w{20}\.css\z}, stylesheet[:href])
+    assert_match(%r{\Ahttps://127\.0\.0\.1:9081/web-assets/login-\w{20}\.css\z}, stylesheet[:href])
 
     # Verify that the asset URL can be fetched and returns data.
     response = Typhoeus.get(stylesheet[:href], keyless_http_options)

@@ -5,7 +5,7 @@
 <div class="login-container">
   <form novalidate="novalidate" class="simple_form new_admin" id="new_admin" action="/admins" accept-charset="UTF-8" method="post">
     <input type="hidden" name="csrf_token" value="<%= generate_csrf_token() %>" />
-    <% render("views.layout.errors") %>
+    <% render("api-umbrella.web-app.views.layout.errors") %>
 
     <div class="form-inputs">
       <div class="form-group string required admin_username<%= field_errors_class("username") %>">

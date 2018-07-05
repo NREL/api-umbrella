@@ -1,3 +1,4 @@
+local config = require "api-umbrella.proxy.models.file_config"
 local t = require("api-umbrella.web-app.utils.gettext").gettext
 
 return function()

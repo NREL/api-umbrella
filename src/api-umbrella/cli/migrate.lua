@@ -1,5 +1,5 @@
 local read_config = require "api-umbrella.cli.read_config"
-config = read_config()
+local config = read_config()
 
 if config["app_env"] == "development" then
   config["postgresql"]["username"] = "api-umbrella"

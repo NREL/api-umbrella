@@ -1,6 +1,11 @@
-inspect = require "inspect"
-config = require "api-umbrella.proxy.models.file_config"
+require "config"
+require "lapis.features.etlua"
+require "api-umbrella.web-app.utils.db_escape_patches"
 
+-- Pre-load modules.
+require "api-umbrella.web-app.hooks.init_preload_modules"
+
+local config = require "api-umbrella.proxy.models.file_config"
 local dir_getfiles = require("pl.dir").getfiles
 local file_read = require("pl.file").read
 local json_decode = require("cjson").decode
@@ -9,7 +14,7 @@ local path = require "pl.path"
 local get_api_umbrella_version = require "api-umbrella.utils.get_api_umbrella_version"
 API_UMBRELLA_VERSION = get_api_umbrella_version()
 
-local login_css_paths = dir_getfiles(path.join(config["_embedded_root_dir"], "apps/core/current/build/dist/admin-auth-assets"), "login-*.css")
+local login_css_paths = dir_getfiles(path.join(config["_embedded_root_dir"], "apps/core/current/build/dist/web-assets"), "login-*.css")
 if login_css_paths and #login_css_paths == 1 then
   LOGIN_CSS_FILENAME = path.basename(login_css_paths[1])
 else

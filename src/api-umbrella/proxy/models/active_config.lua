@@ -10,7 +10,6 @@ local random_token = require "api-umbrella.utils.random_token"
 local startswith = require("pl.stringx").startswith
 local tablex = require "pl.tablex"
 local utils = require "api-umbrella.proxy.utils"
-local startswith = require("pl.stringx").startswith
 local xpcall_error_handler = require "api-umbrella.utils.xpcall_error_handler"
 
 local append_array = utils.append_array

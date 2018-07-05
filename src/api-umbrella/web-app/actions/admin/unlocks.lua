@@ -1,3 +1,4 @@
+local config = require "api-umbrella.proxy.models.file_config"
 local csrf = require "api-umbrella.web-app.utils.csrf"
 
 local _M = {}

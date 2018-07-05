@@ -1,4 +1,5 @@
 local AnalyticsSearchElasticsearch = require "api-umbrella.web-app.models.analytics_search_elasticsearch"
+local config = require "api-umbrella.proxy.models.file_config"
 local icu_date = require "icu-date"
 
 local date = icu_date.new({

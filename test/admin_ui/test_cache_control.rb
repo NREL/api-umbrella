@@ -58,13 +58,13 @@ class Test::AdminUi::TestCacheControl < Minitest::Test
 
     # Parse the HTML page and find the CSS assets.
     doc = Nokogiri::HTML(response.body)
-    stylesheets = doc.xpath("//head//link[starts-with(@href, '/admin/auth-assets/')]")
+    stylesheets = doc.xpath("//head//link[starts-with(@href, '/web-assets/')]")
     assert_equal(1, stylesheets.length)
 
     # Ensure that all the linked assets use fingerprinted filenames (for cache
     # busting), and return long cache-control headers.
     stylesheets.each do |stylesheet|
-      assert_match(%r{\A/admin/auth-assets/[\w-]+-\w{20}\.css\z}, stylesheet[:href])
+      assert_match(%r{\A/web-assets/[\w-]+-\w{20}\.css\z}, stylesheet[:href])
 
       response = Typhoeus.get("https://127.0.0.1:9081#{stylesheet[:href]}", keyless_http_options)
       assert_response_code(200, response)

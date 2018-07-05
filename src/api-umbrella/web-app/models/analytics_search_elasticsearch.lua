@@ -1,4 +1,5 @@
 local cjson = require "cjson"
+local config = require "api-umbrella.proxy.models.file_config"
 local elasticsearch_query = require("api-umbrella.utils.elasticsearch").query
 local escape_regex = require "api-umbrella.utils.escape_regex"
 local icu_date = require "icu-date"
@@ -134,7 +135,7 @@ local function parse_query_builder(query)
           },
         }
       else
-        error("unknown filter operator: " .. inspect(operator) .. "  (rule: " .. inspect(rule) .. ")")
+        error("unknown filter operator: " .. (operator or "") .. "  (field: " .. (field or "") .. "; value: " .. (value or "") .. ")")
       end
 
       if operator == "is_null" or startswith(operator, "not_") then

@@ -4,7 +4,7 @@
   <form novalidate="novalidate" class="simple_form new_admin" id="new_admin" action="/admins/password/update" accept-charset="UTF-8" method="post">
     <input type="hidden" name="_method" value="put">
     <input type="hidden" name="csrf_token" value="<%= generate_csrf_token() %>" />
-    <% render("views.layout.errors") %>
+    <% render("api-umbrella.web-app.views.layout.errors") %>
 
     <div class="form-inputs">
       <input type="hidden" name="reset_password_token" value="<%= params["reset_password_token"] %>" />
