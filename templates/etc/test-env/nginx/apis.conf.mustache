@@ -251,6 +251,15 @@ server {
 
   location ~ ^/delay-sec/([0-9.]+)$ {
     set $delay $1;
+
+    access_by_lua_block {
+      local counter_id = ngx.var.arg_backend_counter_id
+      if counter_id then
+        local key = "backend_call_count:" .. counter_id
+        return ngx.shared.test_data:incr(key, 1) or ngx.shared.test_data:set(key, 1)
+      end
+    }
+
     content_by_lua_block {
       ngx.sleep(tonumber(ngx.var.delay))
       ngx.print("done")
@@ -289,26 +298,6 @@ server {
       ngx.print("done")
       ngx.flush()
     }
-  }
-
-  location = /timeout {
-    access_by_lua_block {
-      local key = "backend_call_count:" .. string.lower(ngx.var.request_method) .. "-timeout"
-      return ngx.shared.test_data:incr(key, 1) or ngx.shared.test_data:set(key, 1)
-    }
-
-    echo_sleep 20;
-    echo -n "done";
-  }
-
-  location = /between-varnish-timeout {
-    access_by_lua_block {
-      local key = "backend_call_count:post-between-varnish-timeout"
-      return ngx.shared.test_data:incr(key, 1) or ngx.shared.test_data:set(key, 1)
-    }
-
-    echo_sleep 12.5;
-    echo -n "done";
   }
 
   location /cacheable-but-not/ {

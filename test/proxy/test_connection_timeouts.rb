@@ -111,7 +111,7 @@ class Test::Proxy::TestConnectionTimeouts < Minitest::Test
     assert_response_code(200, response)
     assert_equal("0", response.body)
 
-    response = Typhoeus.get("http://127.0.0.1:9080/api/timeout", http_options)
+    response = Typhoeus.get("http://127.0.0.1:9080/api/delay-sec/20?backend_counter_id=get-timeout", http_options)
     assert_response_code(504, response)
 
     # Ensure that the backend has only been called once.
@@ -132,54 +132,72 @@ class Test::Proxy::TestConnectionTimeouts < Minitest::Test
   # since duplicating POST requests could be harmful (multiple creates,
   # updates, etc).
   def test_no_request_retry_post
-    response = Typhoeus.get("http://127.0.0.1:9442/backend_call_count?id=post-timeout")
+    response = Typhoeus.get("http://127.0.0.1:9442/backend_call_count?id=#{unique_test_id}")
     assert_response_code(200, response)
     assert_equal("0", response.body)
 
-    response = Typhoeus.post("http://127.0.0.1:9080/api/timeout", http_options)
+    response = Typhoeus.post("http://127.0.0.1:9080/api/delay-sec/20?backend_counter_id=#{unique_test_id}", http_options)
     assert_response_code(504, response)
 
     # Ensure that the backend has only been called once.
-    response = Typhoeus.get("http://127.0.0.1:9442/backend_call_count?id=post-timeout")
+    response = Typhoeus.get("http://127.0.0.1:9442/backend_call_count?id=#{unique_test_id}")
     assert_response_code(200, response)
     assert_equal("1", response.body)
 
     # Wait 5 seconds for any possible retry attempts that might be pending, and
     # then ensure the backend has still only been called once.
     sleep 5
-    response = Typhoeus.get("http://127.0.0.1:9442/backend_call_count?id=post-timeout")
+    response = Typhoeus.get("http://127.0.0.1:9442/backend_call_count?id=#{unique_test_id}")
     assert_response_code(200, response)
     assert_equal("1", response.body)
   end
 
-  # Since we have to workaround Varnish's double request issue by setting it's
-  # timeout longer than nginx's, just ensure everything still works when
-  # something times according to nginx's timeout, but not varnish's longer
-  # timeout.
-  def test_no_request_retry_when_timeout_between_varnish_and_nginx_timeout
-    response = Typhoeus.get("http://127.0.0.1:9442/backend_call_count?id=post-between-varnish-timeout")
+  # Since we have slightly different timeouts at the different layers (nginx vs
+  # Trafficserver), ensure there's no retries or other odd behavior when the
+  # response times are right around the timeout length.
+  def test_no_request_retry_when_timeout_between_layer_timeouts
+    response = Typhoeus.get("http://127.0.0.1:9442/backend_call_count?id=#{unique_test_id}")
     assert_response_code(200, response)
     assert_equal("0", response.body)
 
-    response = Typhoeus.get("http://127.0.0.1:9080/api/between-varnish-timeout", http_options)
-    assert_response_code(504, response)
+    hydra = Typhoeus::Hydra.new
+    requests = Array.new(6) do |i|
+      delay = $config["nginx"]["proxy_connect_timeout"] + 0.5 + i
+      request = Typhoeus::Request.new("http://127.0.0.1:9080/api/delay-sec/#{delay}?backend_counter_id=#{unique_test_id}", http_options)
+      hydra.queue(request)
+      request
+    end
+    hydra.run
 
-    # Ensure that the backend has only been called once.
-    response = Typhoeus.get("http://127.0.0.1:9442/backend_call_count?id=post-between-varnish-timeout")
+    assert_equal(6, requests.length)
+    requests.each_with_index do |request, i|
+      # Due to some of the timeout buffers we have in place, the initial
+      # response timeout is actually +2 seconds (this is so we can better
+      # stagger the various timeouts between layers), so the first couple
+      # response will not actually timeout.
+      if i < 2
+        assert_response_code(200, request.response)
+      else
+        assert_response_code(504, request.response)
+      end
+    end
+
+    # Ensure that the backend has only been called once for each test.
+    response = Typhoeus.get("http://127.0.0.1:9442/backend_call_count?id=#{unique_test_id}")
     assert_response_code(200, response)
-    assert_equal("1", response.body)
+    assert_equal("6", response.body)
 
     # Wait 5 seconds for any possible retry attempts that might be pending, and
     # then ensure the backend has still only been called once.
     sleep 5
-    response = Typhoeus.get("http://127.0.0.1:9442/backend_call_count?id=post-between-varnish-timeout")
+    response = Typhoeus.get("http://127.0.0.1:9442/backend_call_count?id=#{unique_test_id}")
     assert_response_code(200, response)
-    assert_equal("1", response.body)
+    assert_equal("6", response.body)
   end
 
-  # This is to check the behavior of nginx's max_fails=0 in our gatekeeper
-  # backend setup, to ensure a bunch of backend timeouts don't accidentally
-  # remove all the gatekeepers from load balancing rotation.
+  # This is to check the behavior of Trafficserver's
+  # "proxy.config.http.down_server.cache_time" configuration, to ensure a bunch
+  # of backend timeouts don't remove all the servers from rotation.
   def test_backend_remains_in_rotation_after_timeouts
     timeout_hydra = Typhoeus::Hydra.new
     timeout_requests = Array.new(50) do

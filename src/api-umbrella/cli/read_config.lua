@@ -327,23 +327,51 @@ local function set_computed_config()
   -- We will actually stagger the timeouts slightly at each proxy layer to
   -- prevent race conditions. Since the flow of the requests looks like:
   --
-  -- [incoming request] => [initial nginx proxy] => [trafficserver] => [api routing nginx proxy] => [api backends]
+  -- [incoming request] => [initial nginx proxy] => [trafficserver] => [api backends]
   --
-  -- Our real timeouts defined in the config file will be enforced at the "api
-  -- routing nginx proxy" layer. We increase our timeouts on the proxies
-  -- further out to prevent race conditions if all the pieces of the stack
-  -- timeout at the exact same time. This results in a timeout error regardless
-  -- of which stack returns the timeout error, but by staggering them, it makes
-  -- it more predictable and easier to test against if we always know the api
-  -- router is what should trigger the initial timeout. This also prevents the
-  -- proxies further back in the stack from thinking the client unexpectedly
-  -- hung up on the request.
-  config["trafficserver"]["_connect_attempts_timeout"] = config["nginx"]["proxy_read_timeout"] + 1
-  config["trafficserver"]["_transaction_no_activity_timeout_out"] = config["nginx"]["proxy_read_timeout"] + 1
-  config["trafficserver"]["_transaction_no_activity_timeout_in"] = config["nginx"]["proxy_read_timeout"] + 1
-  config["nginx"]["_initial_proxy_connect_timeout"] = config["nginx"]["proxy_connect_timeout"] + 2
+  -- Notes:
+  --
+  -- * Trafficserver's "connect_attempts_timeout" isn't really a connection
+  --   timeout, but instead is a timeout for when the first byte back is
+  --   received: https://issues.apache.org/jira/browse/TS-242
+  --
+  --   If Trafficserver implements a real connection timeout, this can be
+  --   revisited, but in the meantime, this means that the connect timeouts
+  --   need to really reflect our read timeout (how soon we expect the
+  --   beginnings of a response back from the API backend), in addition to any
+  --   time spent connecting (which should normally be quick).
+  --
+  --   We also want Trafficserver's connect timeout to be higher than the
+  --   initial nginx layer's timeouts. This setup allows for us for us to
+  --   enable Trafficserver's retry capabilities (connect_attempts_max_retries)
+  --   so that we can retry requests that quickly fail (eg, due to dropped
+  --   keepalive connections), without retrying slow connections. Since slow
+  --   connections will be killed by the initial nginx layer's shorter timeout
+  --   first, that should prevent Trafficserver from retrying a second time if
+  --   the backend is actually taking a long time to respond (since we don't
+  --   want to overwhelm a server if it's struggling).
+  -- * The read timeout, or the timeout between bytes being received from a
+  --   backend, is handled with the Trafficserver activity timeouts. We add a
+  --   buffer to this timeout at the nginx layer to allow for Trafficserver to
+  --   handle the real timeout value (so Trafficserver doesn't think the client
+  --   has hung up the connection too early).
+  --
+  --   Note that both "in" and "out" timeouts need to be adjusted based on the
+  --   read timeout (the "in" timeout shouldn't necessarily reflect the
+  --   "proxy_send_timeout"--I think Trafficserver's
+  --   "accept_no_activity_timeout" is closer to nginx's concept of
+  --   "proxy_send_timeout").
+  -- * The send timeout, or the timeout between bytes being received from the
+  --   client request, is handled at the nginx layer. Since this is the initial
+  --   layer receiving the requests, it makes most sense to handle this timeout
+  --   at this first layer.
+  config["trafficserver"]["_connect_attempts_timeout"] = config["nginx"]["proxy_connect_timeout"] + config["nginx"]["proxy_read_timeout"] + 2
+  config["trafficserver"]["_post_connect_attempts_timeout "] = config["trafficserver"]["_connect_attempts_timeout"]
+  config["trafficserver"]["_transaction_no_activity_timeout_out"] = config["nginx"]["proxy_read_timeout"]
+  config["trafficserver"]["_transaction_no_activity_timeout_in"] = config["nginx"]["proxy_read_timeout"]
+  config["nginx"]["_initial_proxy_connect_timeout"] = config["nginx"]["proxy_connect_timeout"]
   config["nginx"]["_initial_proxy_read_timeout"] = config["nginx"]["proxy_read_timeout"] + 2
-  config["nginx"]["_initial_proxy_send_timeout"] = config["nginx"]["proxy_send_timeout"] + 2
+  config["nginx"]["_initial_proxy_send_timeout"] = config["nginx"]["proxy_send_timeout"]
 
   if not config["user"] then
     local euid = unistd.geteuid()

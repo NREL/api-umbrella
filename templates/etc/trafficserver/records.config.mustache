@@ -1,3 +1,5 @@
+# vi: set ft=config :
+
 LOCAL proxy.local.incoming_ip_to_bind STRING {{trafficserver.host}}
 CONFIG proxy.config.http.server_ports STRING {{trafficserver.port}}
 CONFIG proxy.config.process_manager.mgmt_port INT {{trafficserver.management_port}}
@@ -72,25 +74,31 @@ CONFIG proxy.config.output.logfile.rolling_size_mb INT 10
 {{/log._destination_console?}}
 
 # Increase timeouts to match the timeouts in other pieces of the stack.
+CONFIG proxy.config.http.connect_attempts_timeout INT {{trafficserver._connect_attempts_timeout}}
+CONFIG proxy.config.http.post_connect_attempts_timeout INT {{trafficserver._post_connect_attempts_timeout}}
 CONFIG proxy.config.http.transaction_no_activity_timeout_in INT {{trafficserver._transaction_no_activity_timeout_in}}
 CONFIG proxy.config.http.transaction_no_activity_timeout_out INT {{trafficserver._transaction_no_activity_timeout_out}}
-CONFIG proxy.config.http.connect_attempts_timeout INT {{trafficserver._connect_attempts_timeout}}
 
 # Retry connections if the connection was never established (eg, if the API
 # backend was temporarily down or a keepalive connection was killed).
+#
+# Note that this would normally retry in the event the API backend is slow to
+# respond, since the connection timeout is actually for when the first byte
+# back is received (https://issues.apache.org/jira/browse/TS-242). But we don't
+# usually want to retry in the case the backend is slow to respond, since that
+# might indicate the backend is already struggling or the specific request is
+# slow/problematic. So we configure nginx's timeout in front to be shorter than
+# our "connect_attempts_timeout" timeout here, which should ensure that
+# long-running connections get closed earlier and connect_attempts_timeout is
+# never hit. So this should ensure that this retry only kicks if there were
+# brief connectivity issues (where the connect failed quickly).
 CONFIG proxy.config.http.connect_attempts_max_retries INT 3
+CONFIG proxy.config.http.connect_attempts_max_retries_dead_server INT 1
+CONFIG proxy.config.http.safe_requests_retryable INT 1
 
 # Don't consider the backend down, even if some requests timeout. We don't want
 # some bad API requests to mark the entire backend as being down.
 CONFIG proxy.config.http.down_server.cache_time INT 0
-
-# Don't retry failed requests if the connection was established and any data
-# was sent (but requests that never connected will still be retried).
-#
-# We want to avoid retrying failed connections, since it might indicate that
-# the backend is simply slow and struggling, in which case we want to avoid
-# sending more traffic to it.
-CONFIG proxy.config.http.safe_requests_retryable INT 0
 
 # Don't append IP information to X-Forwarded-For or Client-IP headers, since
 # we've already dealt with those at the first nginx proxy layer.
