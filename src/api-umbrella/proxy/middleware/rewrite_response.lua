@@ -83,15 +83,22 @@ local function rewrite_redirects()
   end
 
   local matched_api = ngx.ctx.matched_api
-  local host_matches = (matched_api and parsed["host"] == matched_api["_backend_host_normalized"])
   local relative = (not parsed["host"])
   local changed = false
+  local host_matches = false
+  if not relative then
+    if matched_api and parsed["host"] == matched_api["_backend_host_normalized"] then
+      host_matches = true
+    elseif parsed["host"] == ngx.ctx.proxy_server_host or parsed["host"] == ngx.ctx.host_normalized then
+      host_matches = true
+    end
+  end
 
   if host_matches then
     -- For wildcard hosts, keep the same host as on the incoming request. For
     -- all others, use the frontend host declared on the API.
     local host
-    if matched_api["frontend_host"] == "*" then
+    if not matched_api or matched_api["frontend_host"] == "*" then
       host = ngx.ctx.host_normalized
     else
       host = matched_api["_frontend_host_normalized"]

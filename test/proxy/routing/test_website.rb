@@ -48,7 +48,7 @@ class Test::Proxy::Routing::TestWebsite < Minitest::Test
 
     response = Typhoeus.get("https://127.0.0.1:9081/signup", http_opts)
     assert_response_code(301, response)
-    assert_equal("https://127.0.0.1:9081/signup/", response.headers["location"])
+    assert_equal("http://127.0.0.1:9080/signup/", response.headers["location"])
   end
 
   def test_signup_missing_trailing_slash_wildcard_host
@@ -64,6 +64,6 @@ class Test::Proxy::Routing::TestWebsite < Minitest::Test
 
     response = Typhoeus.get("https://127.0.0.1:9081/signup", http_opts)
     assert_response_code(301, response)
-    assert_equal("https://unknown.foo:9081/signup/", response.headers["location"])
+    assert_equal("http://unknown.foo:9080/signup/", response.headers["location"])
   end
 end

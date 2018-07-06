@@ -39,17 +39,17 @@ web:
   admin:
     auth_strategies:
       facebook:
-        client_id: test_fake
-        client_secret: test_fake
+        client_id: test_fake_id
+        client_secret: test_fake_secret
       github:
-        client_id: test_fake
-        client_secret: test_fake
+        client_id: test_fake_id
+        client_secret: test_fake_secret
       gitlab:
-        client_id: test_fake
-        client_secret: test_fake
+        client_id: test_fake_id
+        client_secret: test_fake_secret
       google:
-        client_id: test_fake
-        client_secret: test_fake
+        client_id: test_fake_id
+        client_secret: test_fake_secret
       ldap:
         options:
           host: 127.0.0.1

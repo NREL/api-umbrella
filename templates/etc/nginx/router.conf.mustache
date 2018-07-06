@@ -87,59 +87,6 @@ http {
     {{/ban.user_agents}}
   }
 
-  # Conditional proxy headers. Don't set these x-forwarded headers if they've
-  # already been set (by the SSL terminator).
-  map "$server_port:$http_x_forwarded_proto" $real_scheme {
-    {{#override_public_http_proto}}
-      "~^{{http_port}}:.*" {{override_public_http_proto}};
-    {{/override_public_http_proto}}
-    {{^override_public_http_proto}}
-      "{{http_port}}:" $scheme;
-    {{/override_public_http_proto}}
-
-    {{#override_public_https_proto}}
-      "~^{{https_port}}:.*" {{override_public_https_proto}};
-    {{/override_public_https_proto}}
-    {{^override_public_https_proto}}
-      "{{https_port}}:" $scheme;
-    {{/override_public_https_proto}}
-
-    default $http_x_forwarded_proto;
-  }
-
-  map "$server_port:$http_x_forwarded_port" $real_port {
-    {{#override_public_http_port}}
-      "~^{{http_port}}:.*" {{override_public_http_port}};
-    {{/override_public_http_port}}
-    {{^override_public_http_port}}
-      "{{http_port}}:" $server_port;
-    {{/override_public_http_port}}
-
-    {{#override_public_https_port}}
-      "~^{{https_port}}:.*" {{override_public_https_port}};
-    {{/override_public_https_port}}
-    {{^override_public_https_port}}
-      "{{https_port}}:" $server_port;
-    {{/override_public_https_port}}
-
-    default $http_x_forwarded_port;
-  }
-
-  # Setup a variable for appending to the host header when the port is
-  # non-default (non 80 or 443) and needs to be appended to host headers.
-  map "$real_scheme:$real_port" $non_default_port_suffix {
-    "http:80" "";
-    "https:443" "";
-    default ":$real_port";
-  }
-
-  # Append the port to the proxy host header if the port is non-default (not 80
-  # or 443) and it's not already present.
-  map $host $proxy_host_header {
-    "~:" $host;
-    default "$host$non_default_port_suffix";
-  }
-
   init_by_lua_file '{{_src_root_dir}}/src/api-umbrella/proxy/hooks/init.lua';
   init_worker_by_lua_file '{{_src_root_dir}}/src/api-umbrella/proxy/hooks/init_worker.lua';
 
