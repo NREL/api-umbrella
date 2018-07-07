@@ -35,7 +35,7 @@ class Test::Proxy::Routing::TestAdmin < Minitest::Test
 
     response = Typhoeus.get("https://127.0.0.1:9081/admin?#{unique_test_id}", http_opts)
     assert_response_code(301, response)
-    assert_equal("/admin/?#{unique_test_id}", response.headers["location"])
+    assert_equal("http://127.0.0.1:9080/admin/?#{unique_test_id}", response.headers["location"])
   end
 
   def test_missing_trailing_slash_wildcard_host
@@ -51,7 +51,7 @@ class Test::Proxy::Routing::TestAdmin < Minitest::Test
 
     response = Typhoeus.get("https://127.0.0.1:9081/admin?#{unique_test_id}", http_opts)
     assert_response_code(301, response)
-    assert_equal("/admin/?#{unique_test_id}", response.headers["location"])
+    assert_equal("http://unknown.foo:9080/admin/?#{unique_test_id}", response.headers["location"])
   end
 
   def test_gives_precedence_to_admin_over_api_prefixes

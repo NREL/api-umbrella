@@ -82,11 +82,6 @@ return function(active_config)
       end
     end
 
-    ngx.var.proxy_host_header = host
-
-    -- Set the nginx headers that will determine which nginx upstream this
-    -- request gets proxied to.
-    ngx.req.set_header("X-Api-Umbrella-Backend-Server-Scheme", api["backend_protocol"] or "http")
 
     local server_index
     if api["_servers_count"] == 1 then
@@ -94,10 +89,12 @@ return function(active_config)
     else
       server_index = random_num(1, api["_servers_count"])
     end
-
     local server = api["servers"][server_index]
-    ngx.req.set_header("X-Api-Umbrella-Backend-Server-Host", server["host"])
-    ngx.req.set_header("X-Api-Umbrella-Backend-Server-Port", server["port"])
+
+    ngx.ctx.proxy_host = host
+    ngx.ctx.proxy_server_scheme = api["backend_protocol"] or "http"
+    ngx.ctx.proxy_server_host = server["host"]
+    ngx.ctx.proxy_server_port = server["port"]
 
     return api, url_match
   else

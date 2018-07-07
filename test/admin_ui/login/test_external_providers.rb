@@ -92,6 +92,38 @@ class Test::AdminUi::Login::TestExternalProviders < Minitest::Capybara::Test
     assert_no_password_fields_on_admin_forms
   end
 
+  def test_external_auth_redirect_wildcard_host
+    response = Typhoeus.get("https://127.0.0.1:9081/admins/auth/google_oauth2", keyless_http_options.deep_merge({
+      :headers => {
+        "Host" => "foobar.example.com",
+      },
+    }))
+    assert_response_code(302, response)
+    uri = Addressable::URI.parse(response.headers["Location"])
+    assert_equal("https", uri.scheme)
+    assert_equal("accounts.google.com", uri.host)
+    assert_equal("/o/oauth2/auth", uri.path)
+    assert_equal([
+      "access_type",
+      "client_id",
+      "prompt",
+      "redirect_uri",
+      "response_type",
+      "scope",
+      "state",
+    ].sort, uri.query_values.keys.sort)
+    assert_equal("offline", uri.query_values.fetch("access_type"))
+    assert_equal("test_fake_id", uri.query_values.fetch("client_id"))
+    assert_equal("select_account", uri.query_values.fetch("prompt"))
+    # Ensure the host used to access the site is part of the redirect URI (and
+    # this doesn't get lost with some internal hostname, like 127.0.0.1 being
+    # used instead).
+    assert_equal("https://foobar.example.com:9081/admins/auth/google_oauth2/callback", uri.query_values.fetch("redirect_uri"))
+    assert_equal("code", uri.query_values.fetch("response_type"))
+    assert_equal("https://www.googleapis.com/auth/userinfo.email", uri.query_values.fetch("scope"))
+    assert_kind_of(String, uri.query_values.fetch("state"))
+  end
+
   [
     {
       :provider => :facebook,

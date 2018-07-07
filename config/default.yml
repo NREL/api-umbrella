@@ -325,7 +325,7 @@ internal_apis:
   - id: api-umbrella-gatekeeper-backend
     name: API Umbrella - Gatekeeper APIs
     frontend_host: "{{router.web_app_host}}"
-    backend_host: 127.0.0.1
+    backend_host: ~
     backend_protocol: http
     balance_algorithm: least_conn
     sort_order: 1
@@ -350,7 +350,7 @@ internal_apis:
   - id: api-umbrella-web-app-backend
     name: API Umbrella - HTTP APIs
     frontend_host: "{{router.web_app_host}}"
-    backend_host: 127.0.0.1
+    backend_host: ~
     backend_protocol: http
     balance_algorithm: least_conn
     sort_order: 2
