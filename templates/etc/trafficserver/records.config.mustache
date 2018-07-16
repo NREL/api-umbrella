@@ -92,9 +92,18 @@ CONFIG proxy.config.http.transaction_no_activity_timeout_out INT {{trafficserver
 # long-running connections get closed earlier and connect_attempts_timeout is
 # never hit. So this should ensure that this retry only kicks if there were
 # brief connectivity issues (where the connect failed quickly).
-CONFIG proxy.config.http.connect_attempts_max_retries INT 3
-CONFIG proxy.config.http.connect_attempts_max_retries_dead_server INT 1
+CONFIG proxy.config.http.connect_attempts_max_retries INT 5
+CONFIG proxy.config.http.connect_attempts_max_retries_dead_server INT 3
 CONFIG proxy.config.http.safe_requests_retryable INT 1
+
+# Don't use keepalive connections for POST requests, since those can't safely be retried.
+#
+# While with proper keepalive tuning, these can mostly work, there may still be
+# edge cases where a dead keepalive connection is used. Since we may not be in
+# total control of the reliability of the network or underlying API backend
+# connections, disable these to be safer. Since POSTs are likely less frequent,
+# we'll take the performance penalty on these requests to be safer.
+CONFIG proxy.config.http.keep_alive_post_out INT 0
 
 # Don't consider the backend down, even if some requests timeout. We don't want
 # some bad API requests to mark the entire backend as being down.
