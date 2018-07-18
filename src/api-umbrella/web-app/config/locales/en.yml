@@ -133,6 +133,15 @@ en:
           inherit: Inherit (default - required)
           required: Required - API keys are mandatory
           disabled: Disabled - API keys are optional
+        required_headers: Required Headers
+        required_headers_tooltip_markdown: |-
+          Define a set of headers that must be provided in order to consider that the request match the given API.
+
+          For example for defining a FIWARE tenant:
+
+          ```
+          Fiware-Service: MyService
+          ```
         api_key_verification_level: API Key Verification Requirements
         api_key_verification_level_options:
           inherit: Inherit (default - none)
@@ -433,6 +442,7 @@ en:
   devise:
     sessions:
       new:
+        sign_in: Sign in
         admin_sign_in: Admin Sign In
     passwords:
       password_length_hint: "%{min} characters minimum"
@@ -441,3 +451,6 @@ en:
         change_your_password: Change Your Password
         new_password: New Password
         confirm_new_password: Confirm New Password
+    shared:
+      links:
+        sign_in: Sign in

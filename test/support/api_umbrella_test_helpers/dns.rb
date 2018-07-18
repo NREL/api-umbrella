@@ -18,7 +18,7 @@ module ApiUmbrellaTestHelpers
 
     private
 
-    def set_dns_records(records) # rubocop:disable Style/AccessorMethodName
+    def set_dns_records(records) # rubocop:disable Naming/AccessorMethodName
       @custom_dns_records_set_during_this_test = true
       unbound_config_path = File.join($config["root_dir"], "etc/test-env/unbound/active_test.conf")
       content = records.map { |r| "local-data: '#{r}'" }.join("\n")

@@ -1,7 +1,7 @@
-import Ember from 'ember';
+import Component from '@ember/component';
 import Save from 'api-umbrella-admin-ui/mixins/save';
 
-export default Ember.Component.extend(Save, {
+export default Component.extend(Save, {
   actions: {
     submit() {
       this.saveRecord({

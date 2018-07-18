@@ -12,7 +12,7 @@ class Test::Apis::V1::Config::TestPendingChangesIdentical < Minitest::Test
     WebsiteBackend.delete_all
     ConfigVersion.delete_all
 
-    @api = FactoryGirl.create(:api)
+    @api = FactoryBot.create(:api)
     ConfigVersion.publish!(ConfigVersion.pending_config)
   end
 

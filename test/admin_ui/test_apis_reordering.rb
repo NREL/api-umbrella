@@ -10,10 +10,10 @@ class Test::AdminUi::TestApisReordering < Minitest::Capybara::Test
     setup_server
 
     Api.delete_all
-    FactoryGirl.create(:api, :name => "API A", :sort_order => 3)
-    FactoryGirl.create(:api, :name => "API B", :sort_order => 1)
-    FactoryGirl.create(:api, :name => "API C", :sort_order => 2)
-    FactoryGirl.create(:api, :name => "API testing-filter", :sort_order => 4)
+    FactoryBot.create(:api, :name => "API A", :sort_order => 3)
+    FactoryBot.create(:api, :name => "API B", :sort_order => 1)
+    FactoryBot.create(:api, :name => "API C", :sort_order => 2)
+    FactoryBot.create(:api, :name => "API testing-filter", :sort_order => 4)
   end
 
   def test_toggle_drag_handles

@@ -272,7 +272,7 @@ module ApiUmbrellaSharedTests
           assert_match("Test Website 404 Not Found", response.body)
         else
           assert_equal("text/html", response.headers["content-type"])
-          assert_match("nginx", response.body)
+          assert_match("<center>openresty</center>", response.body)
         end
       end
     end
@@ -393,7 +393,7 @@ module ApiUmbrellaSharedTests
     end
 
     def test_admin_web_app
-      FactoryGirl.create(:admin)
+      FactoryBot.create(:admin)
 
       response = Typhoeus.get("http://127.0.0.1:9080/admin/login", keyless_http_options)
       assert_response_code(301, response)
@@ -405,7 +405,7 @@ module ApiUmbrellaSharedTests
     end
 
     def test_admin_web_app_wildcard_host
-      FactoryGirl.create(:admin)
+      FactoryBot.create(:admin)
 
       response = Typhoeus.get("http://127.0.0.1:9080/admin/login", keyless_http_options.deep_merge({
         :headers => {

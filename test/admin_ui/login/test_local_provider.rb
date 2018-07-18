@@ -10,7 +10,7 @@ class Test::AdminUi::Login::TestLocalProvider < Minitest::Capybara::Test
     super
     setup_server
     Admin.delete_all
-    @admin = FactoryGirl.create(:admin)
+    @admin = FactoryBot.create(:admin)
   end
 
   def test_allows_first_time_admin_creation
@@ -64,7 +64,7 @@ class Test::AdminUi::Login::TestLocalProvider < Minitest::Capybara::Test
   end
 
   def test_login_empty_password_for_admin_without_password
-    admin = FactoryGirl.create(:admin, :encrypted_password => nil)
+    admin = FactoryBot.create(:admin, :encrypted_password => nil)
     assert_nil(admin.encrypted_password)
 
     visit "/admin/login"
@@ -205,7 +205,7 @@ class Test::AdminUi::Login::TestLocalProvider < Minitest::Capybara::Test
     assert_equal("Foo", @admin.notes)
 
     # Stays signed in after changing password
-    admin = FactoryGirl.create(:admin, :notes => "After password change")
+    admin = FactoryBot.create(:admin, :notes => "After password change")
     visit "/admin/#/admins/#{admin.id}/edit"
     assert_field("Notes", :with => "After password change")
   end

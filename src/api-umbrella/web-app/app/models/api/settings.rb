@@ -22,12 +22,16 @@ class Api::Settings
   field :pass_api_key_query_param, :type => Boolean
   field :error_templates, :type => Hash
   field :error_data, :type => Hash
+  field :ext_auth_allowed, :type => Boolean
+  field :idp_app_id, :type => String
 
   # Relations
   embeds_many :headers, :class_name => "Api::Header"
   embeds_many :rate_limits, :class_name => "Api::RateLimit"
   embeds_many :default_response_headers, :class_name => "Api::Header"
   embeds_many :override_response_headers, :class_name => "Api::Header"
+  embeds_many :required_headers, :class_name => "Api::Header"
+
   embedded_in :api
   embedded_in :sub_settings
   embedded_in :api_user
@@ -48,9 +52,10 @@ class Api::Settings
     :inclusion => { :in => %w(all api_key_only), :allow_blank => true }
   validate :validate_error_data_yaml_strings
   validate :validate_error_data
+  validate :validate_ext_app_id
 
   # Nested attributes
-  accepts_nested_attributes_for :headers, :rate_limits, :default_response_headers, :override_response_headers, :allow_destroy => true
+  accepts_nested_attributes_for :headers, :rate_limits, :default_response_headers, :override_response_headers, :required_headers, :allow_destroy => true
 
   def headers_string
     read_headers_string(:headers)
@@ -74,6 +79,14 @@ class Api::Settings
 
   def override_response_headers_string=(string)
     write_headers_string(:override_response_headers, string)
+  end
+
+  def required_headers_string
+    read_headers_string(:required_headers)
+  end
+
+  def required_headers_string=(string)
+    write_headers_string(:required_headers, string)
   end
 
   def error_templates=(templates)
@@ -187,6 +200,14 @@ class Api::Settings
 
     self.send(:"#{field}=", header_objects)
     @headers_strings.delete(field.to_sym) if(@headers_strings)
+  end
+
+  def validate_ext_app_id
+    if(self.ext_auth_allowed)
+      unless(self.idp_app_id.present?)
+        self.errors.add("error_data", "if external auth is allowed, external IDP app id must be provided")
+      end
+    end
   end
 
   def validate_error_data_yaml_strings

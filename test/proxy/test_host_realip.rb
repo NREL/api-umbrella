@@ -82,7 +82,7 @@ class Test::Proxy::Logging::TestHostRealip < Minitest::Test
   def test_rate_limit_uses_realip
     http_opts = keyless_http_options.deep_merge({
       :headers => {
-        "X-Api-Key" => FactoryGirl.create(:api_user).api_key,
+        "X-Api-Key" => FactoryBot.create(:api_user).api_key,
       },
     })
 

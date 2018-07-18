@@ -1,8 +1,9 @@
-import Ember from 'ember';
+import Component from '@ember/component';
 import I18n from 'npm:i18n-js';
+import { computed } from '@ember/object';
 
-export default Ember.Component.extend({
-  messages: Ember.computed('model.clientErrors', 'model.serverErrors', function() {
+export default Component.extend({
+  messages: computed('model.{clientErrors,serverErrors}', function() {
     let errors = [];
     let modelI18nRoot = 'mongoid.attributes.' + this.get('model.constructor.modelName').replace('-', '_');
 
@@ -79,7 +80,7 @@ export default Ember.Component.extend({
     return messages;
   }),
 
-  hasErrors: Ember.computed('messages', function() {
+  hasErrors: computed('messages', function() {
     return (this.get('messages').length > 0);
   }),
 });

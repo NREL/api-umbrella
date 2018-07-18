@@ -1,6 +1,7 @@
-import Ember from 'ember';
+import $ from 'jquery';
+import Component from '@ember/component';
 
-export default Ember.Component.extend({
+export default Component.extend({
   actions: {
     toggleConfigDiff(id) {
       $('[data-diff-id=' + id + ']').toggle();

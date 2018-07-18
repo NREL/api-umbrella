@@ -35,7 +35,7 @@ class Test::AdminUi::Login::TestFirstTimeSetup < Minitest::Capybara::Test
   end
 
   def test_redirects_to_login_if_admin_exists
-    FactoryGirl.create(:admin)
+    FactoryBot.create(:admin)
     assert_equal(1, Admin.count)
     visit "/admin/"
 
@@ -45,7 +45,7 @@ class Test::AdminUi::Login::TestFirstTimeSetup < Minitest::Capybara::Test
   end
 
   def test_redirects_away_from_signup_if_admin_exists
-    FactoryGirl.create(:admin)
+    FactoryBot.create(:admin)
     assert_equal(1, Admin.count)
     visit "/admins/signup"
 
@@ -67,7 +67,7 @@ class Test::AdminUi::Login::TestFirstTimeSetup < Minitest::Capybara::Test
 
     # Insert an admin before hitting submit to ensure the submit endpoint can't
     # be hit directly.
-    FactoryGirl.create(:admin)
+    FactoryBot.create(:admin)
     assert_equal(1, Admin.count)
 
     click_button "Sign up"
@@ -84,7 +84,7 @@ class Test::AdminUi::Login::TestFirstTimeSetup < Minitest::Capybara::Test
   end
 
   def test_forbids_admin_creation_if_admin_exists
-    FactoryGirl.create(:admin)
+    FactoryBot.create(:admin)
     assert_first_time_admin_creation_forbidden
   end
 end

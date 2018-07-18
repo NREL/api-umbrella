@@ -1,5 +1,5 @@
-/* eslint-env node */
-/* global require, module */
+'use strict';
+
 let EmberApp = require('ember-cli/lib/broccoli/ember-app');
 
 module.exports = function(defaults) {
@@ -33,46 +33,45 @@ module.exports = function(defaults) {
   // Prepend Ace before Ember, or else the "define" method from Ember's
   // loader.js conflicts with Ace after these changes in Ace v1.2.4:
   // https://github.com/ajaxorg/ace/pull/2914
-  app.import('bower_components/ace-builds/src-noconflict/mode-json.js', { prepend: true });
-  app.import('bower_components/ace-builds/src-noconflict/mode-xml.js', { prepend: true });
-  app.import('bower_components/ace-builds/src-noconflict/mode-yaml.js', { prepend: true });
-  app.import('bower_components/ace-builds/src-noconflict/ace.js', { prepend: true });
+  app.import('node_modules/ace-builds/src-noconflict/mode-json.js', { prepend: true });
+  app.import('node_modules/ace-builds/src-noconflict/mode-xml.js', { prepend: true });
+  app.import('node_modules/ace-builds/src-noconflict/mode-yaml.js', { prepend: true });
+  app.import('node_modules/ace-builds/src-noconflict/ace.js', { prepend: true });
 
-  app.import('bower_components/bootbox/bootbox.js');
-  app.import('bower_components/bootstrap-sass/assets/javascripts/bootstrap.js');
-  app.import('bower_components/bootstrap-sass/assets/fonts/bootstrap/glyphicons-halflings-regular.eot', { destDir: 'fonts/bootstrap' });
-  app.import('bower_components/bootstrap-sass/assets/fonts/bootstrap/glyphicons-halflings-regular.svg', { destDir: 'fonts/bootstrap' });
-  app.import('bower_components/bootstrap-sass/assets/fonts/bootstrap/glyphicons-halflings-regular.ttf', { destDir: 'fonts/bootstrap' });
-  app.import('bower_components/bootstrap-sass/assets/fonts/bootstrap/glyphicons-halflings-regular.woff', { destDir: 'fonts/bootstrap' });
-  app.import('bower_components/bootstrap-sass/assets/fonts/bootstrap/glyphicons-halflings-regular.woff2', { destDir: 'fonts/bootstrap' });
-  app.import('bower_components/datatables/media/css/dataTables.bootstrap.css');
-  app.import('bower_components/datatables/media/js/jquery.dataTables.js');
-  app.import('bower_components/datatables/media/js/dataTables.bootstrap.js');
-  app.import('bower_components/font-awesome/fonts/fontawesome-webfont.eot', { destDir: 'fonts' });
-  app.import('bower_components/font-awesome/fonts/fontawesome-webfont.svg', { destDir: 'fonts' });
-  app.import('bower_components/font-awesome/fonts/fontawesome-webfont.ttf', { destDir: 'fonts' });
-  app.import('bower_components/font-awesome/fonts/fontawesome-webfont.woff', { destDir: 'fonts' });
-  app.import('bower_components/font-awesome/fonts/fontawesome-webfont.woff2', { destDir: 'fonts' });
-  app.import('bower_components/inflection/lib/inflection.js');
-  app.import('bower_components/jQuery-QueryBuilder/dist/js/query-builder.standalone.js');
-  app.import('bower_components/jQuery-QueryBuilder/dist/js/query-builder.standalone.js');
-  app.import('bower_components/jquery-bbq-deparam/jquery-deparam.js');
-  app.import('bower_components/jquery.scrollTo/jquery.scrollTo.js');
-  app.import('bower_components/jsdiff/diff.js');
-  app.import('bower_components/lodash/dist/lodash.js');
-  app.import('bower_components/marked/lib/marked.js');
-  app.import('bower_components/qtip2/jquery.qtip.css');
-  app.import('bower_components/qtip2/jquery.qtip.js');
-  app.import('bower_components/selectize/dist/css/selectize.default.css');
-  app.import('bower_components/selectize/dist/js/standalone/selectize.js');
-  app.import('bower_components/jquery-ui/ui/version.js');
-  app.import('bower_components/jquery-ui/ui/data.js');
-  app.import('bower_components/jquery-ui/ui/ie.js');
-  app.import('bower_components/jquery-ui/ui/scroll-parent.js');
-  app.import('bower_components/jquery-ui/ui/widget.js');
-  app.import('bower_components/jquery-ui/ui/widgets/mouse.js');
-  app.import('bower_components/jquery-ui/ui/widgets/sortable.js');
-  app.import('bower_components/tbasse-jquery-truncate/jquery.truncate.js');
+  app.import('node_modules/bootbox/bootbox.js');
+  app.import('node_modules/bootstrap-sass/assets/javascripts/bootstrap.js');
+  app.import('node_modules/bootstrap-sass/assets/fonts/bootstrap/glyphicons-halflings-regular.eot', { destDir: 'fonts/bootstrap' });
+  app.import('node_modules/bootstrap-sass/assets/fonts/bootstrap/glyphicons-halflings-regular.svg', { destDir: 'fonts/bootstrap' });
+  app.import('node_modules/bootstrap-sass/assets/fonts/bootstrap/glyphicons-halflings-regular.ttf', { destDir: 'fonts/bootstrap' });
+  app.import('node_modules/bootstrap-sass/assets/fonts/bootstrap/glyphicons-halflings-regular.woff', { destDir: 'fonts/bootstrap' });
+  app.import('node_modules/bootstrap-sass/assets/fonts/bootstrap/glyphicons-halflings-regular.woff2', { destDir: 'fonts/bootstrap' });
+  app.import('node_modules/datatables.net-bs/css/dataTables.bootstrap.css');
+  app.import('node_modules/datatables.net/js/jquery.dataTables.js');
+  app.import('node_modules/datatables.net-bs/js/dataTables.bootstrap.js');
+  app.import('node_modules/font-awesome/fonts/fontawesome-webfont.eot', { destDir: 'fonts' });
+  app.import('node_modules/font-awesome/fonts/fontawesome-webfont.svg', { destDir: 'fonts' });
+  app.import('node_modules/font-awesome/fonts/fontawesome-webfont.ttf', { destDir: 'fonts' });
+  app.import('node_modules/font-awesome/fonts/fontawesome-webfont.woff', { destDir: 'fonts' });
+  app.import('node_modules/font-awesome/fonts/fontawesome-webfont.woff2', { destDir: 'fonts' });
+  app.import('node_modules/inflection/lib/inflection.js');
+  app.import('node_modules/jQuery-QueryBuilder/dist/js/query-builder.standalone.js');
+  app.import('node_modules/jQuery-QueryBuilder/dist/js/query-builder.standalone.js');
+  app.import('node_modules/jquery.scrollto/jquery.scrollTo.js');
+  app.import('node_modules/diff/dist/diff.js');
+  app.import('node_modules/lodash/lodash.js');
+  app.import('node_modules/marked/lib/marked.js');
+  app.import('node_modules/qtip2/dist/jquery.qtip.css');
+  app.import('node_modules/qtip2/dist/jquery.qtip.js');
+  app.import('node_modules/selectize/dist/css/selectize.default.css');
+  app.import('node_modules/selectize/dist/js/standalone/selectize.js');
+  app.import('node_modules/jquery-ui/ui/version.js');
+  app.import('node_modules/jquery-ui/ui/data.js');
+  app.import('node_modules/jquery-ui/ui/ie.js');
+  app.import('node_modules/jquery-ui/ui/scroll-parent.js');
+  app.import('node_modules/jquery-ui/ui/widget.js');
+  app.import('node_modules/jquery-ui/ui/widgets/mouse.js');
+  app.import('node_modules/jquery-ui/ui/widgets/sortable.js');
+  // app.import('node_modules/tbasse-jquery-truncate/jquery.truncate.js');
 
   return app.toTree();
 };

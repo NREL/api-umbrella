@@ -55,10 +55,21 @@ nginx:
   _reloader_frequency: 14400 # 4 hours
 gatekeeper:
   api_key_methods:
+    - fiware-oauth2
     - header
     - getParam
     - basicAuthUsername
   api_key_cache: true
+  positive_ttl: 120
+  negative_ttl: 60
+  idp_providers:
+    - fiware-oauth2
+    - github-oauth2
+    - facebook-oauth2
+    - google-oauth2
+  default_idp:
+    backend_name: fiware-oauth2
+    host: http://idm.docker:8000
 trafficserver:
   host: 127.0.0.1
   port: 14009
@@ -109,6 +120,8 @@ web:
         client_secret:
       ldap:
         options: {}
+      max.gov:
+        require_mfa: true
   mailer:
     smtp_settings:
 static_site:
@@ -283,12 +296,12 @@ apiSettings:
       message: The requested URL was not found on this server.
     api_key_missing:
       status_code: 403
-      code: API_KEY_MISSING
-      message: No api_key was supplied. Get one at {{signup_url}}
+      code: API_KEY_OR_TOKEN_MISSING
+      message: No api_key or token was supplied. Get one at {{signup_url}}
     api_key_invalid:
       status_code: 403
-      code: API_KEY_INVALID
-      message: An invalid api_key was supplied. Get one at {{signup_url}}
+      code: API_KEY_OR_TOKEN_INVALID
+      message: An invalid api_key or token was supplied. Get one at {{signup_url}}
     api_key_disabled:
       status_code: 403
       code: API_KEY_DISABLED
@@ -299,8 +312,12 @@ apiSettings:
       message: The api_key supplied has not been verified yet. Please check your e-mail to verify the API key. Contact us at {{contact_url}} for assistance
     api_key_unauthorized:
       status_code: 403
-      code: API_KEY_UNAUTHORIZED
-      message: The api_key supplied is not authorized to access the given service. Contact us at {{contact_url}} for assistance
+      code: API_KEY_OR_TOKEN_UNAUTHORIZED
+      message: The api_key or token supplied is not authorized to access the given service. Contact us at {{contact_url}} for assistance
+    token_not_supported:
+      status_code: 403
+      code: TOKEN_NOT_SUPPORTED
+      message: The accessed API do not support authorization based on a token issued by an external identity provider, use your API key instead
     over_rate_limit:
       status_code: 429
       code: OVER_RATE_LIMIT

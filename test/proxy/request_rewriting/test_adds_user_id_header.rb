@@ -18,7 +18,7 @@ class Test::Proxy::RequestRewriting::TestAddsUserIdHeader < Minitest::Test
   end
 
   def test_passes_mongo_object_ids_as_hex_strings
-    user = FactoryGirl.create(:api_user, :id => BSON::ObjectId.new)
+    user = FactoryBot.create(:api_user, :id => BSON::ObjectId.new)
     response = Typhoeus.get("http://127.0.0.1:9080/api/info/", http_options.deep_merge({
       :headers => {
         "X-Api-Key" => user.api_key,

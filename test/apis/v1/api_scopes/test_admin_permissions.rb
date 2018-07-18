@@ -17,8 +17,8 @@ class Test::Apis::V1::ApiScopes::TestAdminPermissions < Minitest::Test
   end
 
   def test_forbids_updating_permitted_scopes_with_unpermitted_values
-    record = FactoryGirl.create(:google_api_scope)
-    admin = FactoryGirl.create(:google_admin)
+    record = FactoryBot.create(:google_api_scope)
+    admin = FactoryBot.create(:google_admin)
 
     attributes = record.serializable_hash
     response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/api_scopes/#{record.id}.json", http_options.deep_merge(admin_token(admin)).deep_merge({
@@ -41,8 +41,8 @@ class Test::Apis::V1::ApiScopes::TestAdminPermissions < Minitest::Test
   end
 
   def test_forbids_updating_unpermitted_scopes_with_permitted_values
-    record = FactoryGirl.create(:yahoo_api_scope)
-    admin = FactoryGirl.create(:google_admin)
+    record = FactoryBot.create(:yahoo_api_scope)
+    admin = FactoryBot.create(:google_admin)
 
     attributes = record.serializable_hash
     response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/api_scopes/#{record.id}.json", http_options.deep_merge(admin_token(admin)).deep_merge({
@@ -83,7 +83,7 @@ class Test::Apis::V1::ApiScopes::TestAdminPermissions < Minitest::Test
   end
 
   def assert_admin_permitted_index(factory, admin)
-    record = ApiScope.find_or_create_by_instance!(FactoryGirl.build(factory))
+    record = ApiScope.find_or_create_by_instance!(FactoryBot.build(factory))
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/api_scopes.json", http_options.deep_merge(admin_token(admin)))
 
     assert_response_code(200, response)
@@ -93,7 +93,7 @@ class Test::Apis::V1::ApiScopes::TestAdminPermissions < Minitest::Test
   end
 
   def assert_admin_forbidden_index(factory, admin)
-    record = ApiScope.find_or_create_by_instance!(FactoryGirl.build(factory))
+    record = ApiScope.find_or_create_by_instance!(FactoryBot.build(factory))
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/api_scopes.json", http_options.deep_merge(admin_token(admin)))
 
     assert_response_code(200, response)
@@ -103,7 +103,7 @@ class Test::Apis::V1::ApiScopes::TestAdminPermissions < Minitest::Test
   end
 
   def assert_admin_permitted_show(factory, admin)
-    record = ApiScope.find_or_create_by_instance!(FactoryGirl.build(factory))
+    record = ApiScope.find_or_create_by_instance!(FactoryBot.build(factory))
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/api_scopes/#{record.id}.json", http_options.deep_merge(admin_token(admin)))
 
     assert_response_code(200, response)
@@ -112,7 +112,7 @@ class Test::Apis::V1::ApiScopes::TestAdminPermissions < Minitest::Test
   end
 
   def assert_admin_forbidden_show(factory, admin)
-    record = ApiScope.find_or_create_by_instance!(FactoryGirl.build(factory))
+    record = ApiScope.find_or_create_by_instance!(FactoryBot.build(factory))
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/api_scopes/#{record.id}.json", http_options.deep_merge(admin_token(admin)))
 
     assert_response_code(403, response)
@@ -121,7 +121,7 @@ class Test::Apis::V1::ApiScopes::TestAdminPermissions < Minitest::Test
   end
 
   def assert_admin_permitted_create(factory, admin)
-    attributes = FactoryGirl.attributes_for(factory).deep_stringify_keys
+    attributes = FactoryBot.attributes_for(factory).deep_stringify_keys
     initial_count = active_count
     response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/api_scopes.json", http_options.deep_merge(admin_token(admin)).deep_merge({
       :headers => { "Content-Type" => "application/json" },
@@ -155,7 +155,7 @@ class Test::Apis::V1::ApiScopes::TestAdminPermissions < Minitest::Test
   end
 
   def assert_admin_forbidden_create(factory, admin)
-    attributes = FactoryGirl.attributes_for(factory).deep_stringify_keys
+    attributes = FactoryBot.attributes_for(factory).deep_stringify_keys
     initial_count = active_count
     response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/api_scopes.json", http_options.deep_merge(admin_token(admin)).deep_merge({
       :headers => { "Content-Type" => "application/json" },
@@ -169,7 +169,7 @@ class Test::Apis::V1::ApiScopes::TestAdminPermissions < Minitest::Test
   end
 
   def assert_admin_permitted_update(factory, admin)
-    record = ApiScope.find_or_create_by_instance!(FactoryGirl.build(factory))
+    record = ApiScope.find_or_create_by_instance!(FactoryBot.build(factory))
 
     attributes = record.serializable_hash
     attributes["name"] += rand(999_999).to_s
@@ -185,7 +185,7 @@ class Test::Apis::V1::ApiScopes::TestAdminPermissions < Minitest::Test
   end
 
   def assert_admin_forbidden_update(factory, admin)
-    record = ApiScope.find_or_create_by_instance!(FactoryGirl.build(factory))
+    record = ApiScope.find_or_create_by_instance!(FactoryBot.build(factory))
 
     attributes = record.serializable_hash
     attributes["name"] += rand(999_999).to_s
@@ -204,7 +204,7 @@ class Test::Apis::V1::ApiScopes::TestAdminPermissions < Minitest::Test
   end
 
   def assert_admin_permitted_destroy(factory, admin)
-    record = ApiScope.find_or_create_by_instance!(FactoryGirl.build(factory))
+    record = ApiScope.find_or_create_by_instance!(FactoryBot.build(factory))
     initial_count = active_count
     response = Typhoeus.delete("https://127.0.0.1:9081/api-umbrella/v1/api_scopes/#{record.id}.json", http_options.deep_merge(admin_token(admin)))
     assert_response_code(204, response)
@@ -212,7 +212,7 @@ class Test::Apis::V1::ApiScopes::TestAdminPermissions < Minitest::Test
   end
 
   def assert_admin_forbidden_destroy(factory, admin)
-    record = ApiScope.find_or_create_by_instance!(FactoryGirl.build(factory))
+    record = ApiScope.find_or_create_by_instance!(FactoryBot.build(factory))
     initial_count = active_count
     response = Typhoeus.delete("https://127.0.0.1:9081/api-umbrella/v1/api_scopes/#{record.id}.json", http_options.deep_merge(admin_token(admin)))
     assert_response_code(403, response)

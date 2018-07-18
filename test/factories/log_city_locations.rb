@@ -1,4 +1,4 @@
-FactoryGirl.define do
+FactoryBot.define do
   factory :log_city_location do
     country "United States"
     region "CO"

@@ -1,5 +1,6 @@
 local _M = {}
 
+local admin_utils = require "api-umbrella.utils.admin"
 local cmsgpack = require "cmsgpack"
 local cjson = require "cjson"
 local invert_table = require "api-umbrella.utils.invert_table"
@@ -8,20 +9,62 @@ local mongo = require "api-umbrella.utils.mongo"
 local shcache = require "shcache"
 local types = require "pl.types"
 local utils = require "api-umbrella.proxy.utils"
+local idp = require "api-umbrella.utils.idp"
 
 local cache_computed_settings = utils.cache_computed_settings
 local is_empty = types.is_empty
 
 local function lookup_user(api_key)
-  local raw_user, err = mongo.first("api_users", {
-    query = {
-      api_key = api_key,
-    },
-  })
+  local raw_user
+  local ext_user
+  local db_err
+  local idp_err
 
-  if err then
-    ngx.log(ngx.ERR, "failed to fetch user from mongodb: ", err)
-  elseif raw_user then
+  -- Checking the field of api_key ["key_type"], if the key_type is api_key
+  -- the api_key value is checked in the database and retrieve the user information
+  -- else if the key_type is token, the token is checked using the corresponding IdP
+  -- registred in the api-backend and the user information is retrieved
+
+  if not api_key["key_type"] or api_key["key_type"] == "api_key" then
+    raw_user, db_err = mongo.first("api_users", {
+      query = {
+        api_key = api_key["key_value"],
+      },
+    })
+  elseif api_key["key_type"] == "token" and api_key["idp"]then
+    ext_user, idp_err = idp.first(api_key)
+  end
+
+  -- Check if there are errors reading database or external user
+  if idp_err then
+    ngx.log(ngx.ERR, "failed to autenticate , status code:", idp_err)
+  elseif db_err then
+    ngx.log(ngx.ERR, "failed to fetch user from mongodb", db_err)
+  end
+
+  -- If the external user has been provided, use email information to locate an internal user
+  if not raw_user and ext_user then
+    raw_user, db_err = mongo.first("api_users", {
+      query = {
+        email = ext_user["email"]
+      },
+    })
+
+    if not raw_user then
+      local err;
+
+      ngx.log(ngx.ERR, "failed to fetch user from mongodb, creating user", db_err)
+      -- The external user is correct, but it does not exists locally
+      -- Create new user, using external idp info
+      raw_user, err = admin_utils.create_user(ext_user)
+
+      if err then
+        ngx.log(ngx.ERR, "New user could not be created", db_err)
+      end
+    end
+  end
+
+  if raw_user then
     local user = utils.pick_where_present(raw_user, {
       "created_at",
       "disabled_at",
@@ -32,10 +75,9 @@ local function lookup_user(api_key)
       "settings",
       "throttle_by_ip",
     })
-
     -- Ensure IDs get stored as strings, even if Mongo ObjectIds are in use.
     if raw_user["_id"] and raw_user["_id"]["$oid"] then
-      user["id"] = raw_user["_id"]["$oid"]
+        user["id"] = raw_user["_id"]["$oid"]
     else
       user["id"] = raw_user["_id"]
     end
@@ -43,7 +85,11 @@ local function lookup_user(api_key)
     -- Invert the array of roles into a hashy table for more optimized
     -- lookups (so we can just check if the key exists, rather than
     -- looping over each value).
-    if user["roles"] then
+    -- Moreover, in case that the user information have been retrieved using a token validation,
+    -- the roles associated with the token are stored in user ["roles"]
+    if api_key["idp"] and api_key["key_type"] == "token" and api_key["idp"]["backend_name"] == "fiware-oauth2" and ext_user.roles then
+      user["roles"] = invert_table(ext_user.roles)
+    elseif user["roles"] then
       user["roles"] = invert_table(user["roles"])
     end
 
@@ -79,7 +125,7 @@ function _M.get(api_key)
     return lookup_user(api_key)
   end
 
-  local user = local_cache:get(api_key)
+  local user = local_cache:get(api_key["key_value"])
   if user then
     if user == EMPTY_DATA then
       return nil
@@ -94,8 +140,8 @@ function _M.get(api_key)
     external_lookup = lookup_user,
     external_lookup_arg = api_key,
   }, {
-    positive_ttl = 0,
-    negative_ttl = 0,
+    positive_ttl = config["gatekeeper"]["positive_ttl"],
+    negative_ttl = config["gatekeeper"]["negative_ttl"],
   })
 
   if err then
@@ -103,11 +149,11 @@ function _M.get(api_key)
     return nil
   end
 
-  user = shared_cache:load(api_key)
+  user = shared_cache:load(api_key["key_value"])
   if user then
-    local_cache:set(api_key, user, 2)
+    local_cache:set(api_key["key_value"], user, 2)
   else
-    local_cache:set(api_key, EMPTY_DATA, 2)
+    local_cache:set(api_key["key_value"], EMPTY_DATA, 2)
   end
 
   return user

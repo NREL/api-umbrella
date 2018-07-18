@@ -1,12 +1,14 @@
-import Ember from 'ember';
 import BufferedProxy from 'ember-buffered-proxy/proxy';
+import Component from '@ember/component';
 import UrlMatch from 'api-umbrella-admin-ui/models/api/url-match';
+import { computed } from '@ember/object';
+import { getOwner } from '@ember/application';
 
-export default Ember.Component.extend({
+export default Component.extend({
   openModal: false,
   exampleSuffix: 'example.json?param=value',
 
-  modalTitle: Ember.computed('model', function() {
+  modalTitle: computed('model', function() {
     if(this.get('model.isNew')) {
       return 'Add Matching URL Prefix';
     } else {
@@ -14,18 +16,18 @@ export default Ember.Component.extend({
     }
   }),
 
-  bufferedModel: Ember.computed('model', function() {
-    let owner = Ember.getOwner(this).ownerInjection();
+  bufferedModel: computed('model', function() {
+    let owner = getOwner(this).ownerInjection();
     return BufferedProxy.extend(UrlMatch.validationClass).create(owner, { content: this.get('model') });
   }),
 
-  exampleIncomingUrl: Ember.computed('bufferedModel.frontendPrefix', function() {
+  exampleIncomingUrl: computed('bufferedModel.frontendPrefix', function() {
     let root = this.get('apiExampleIncomingUrlRoot') || '';
     let prefix = this.get('bufferedModel.frontendPrefix') || '';
     return root + prefix + this.get('exampleSuffix');
   }),
 
-  exampleOutgoingUrl: Ember.computed('bufferedModel.frontendPrefix', 'bufferedModel.backendPrefix', function() {
+  exampleOutgoingUrl: computed('bufferedModel.{frontendPrefix,backendPrefix}', function() {
     let root = this.get('apiExampleOutgoingUrlRoot') || '';
     let prefix = this.get('bufferedModel.backendPrefix') || this.get('bufferedModel.frontendPrefix') || '';
     return root + prefix + this.get('exampleSuffix');
@@ -43,6 +45,7 @@ export default Ember.Component.extend({
 
     closed() {
       this.get('bufferedModel').discardChanges();
+      this.set('openModal', false);
     },
   },
 });

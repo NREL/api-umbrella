@@ -27,7 +27,7 @@ set(NGX_TXID_SOURCE_DIR ${SOURCE_DIR})
 # Pull in newer version of PCRE (8.20+) for OpenResty to enable PCRE JIT.
 ExternalProject_Add(
   pcre
-  URL http://ftp.cs.stanford.edu/pub/exim/pcre/pcre-${PCRE_VERSION}.tar.bz2
+  URL https://ftp.pcre.org/pub/pcre/pcre-${PCRE_VERSION}.tar.bz2
   URL_HASH MD5=${PCRE_HASH}
   CONFIGURE_COMMAND ""
   BUILD_COMMAND ""
@@ -39,7 +39,7 @@ set(PCRE_SOURCE_DIR ${SOURCE_DIR})
 # OpenResty's ssl_certificate_by_lua functionality requires OpenSSL 1.0.2e+
 ExternalProject_Add(
   openssl
-  URL https://www.openssl.org/source/old/1.0.2/openssl-${OPENSSL_VERSION}.tar.gz
+  URL https://www.openssl.org/source/openssl-${OPENSSL_VERSION}.tar.gz
   URL_HASH SHA256=${OPENSSL_HASH}
   CONFIGURE_COMMAND ""
   BUILD_COMMAND ""
@@ -68,6 +68,7 @@ list(APPEND OPENRESTY_CONFIGURE_CMD --with-http_gunzip_module)
 list(APPEND OPENRESTY_CONFIGURE_CMD --with-http_gzip_static_module)
 list(APPEND OPENRESTY_CONFIGURE_CMD --with-http_realip_module)
 list(APPEND OPENRESTY_CONFIGURE_CMD --with-http_ssl_module)
+list(APPEND OPENRESTY_CONFIGURE_CMD --with-http_v2_module)
 list(APPEND OPENRESTY_CONFIGURE_CMD --with-http_stub_status_module)
 list(APPEND OPENRESTY_CONFIGURE_CMD --add-module=${NGX_DYUPS_SOURCE_DIR})
 list(APPEND OPENRESTY_CONFIGURE_CMD --add-module=${NGX_TXID_SOURCE_DIR})

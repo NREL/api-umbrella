@@ -11,8 +11,8 @@ class Test::Apis::V1::Admins::TestUpdateEmbeddedArrayFields < Minitest::Test
   end
 
   def test_adds
-    admin_group1 = FactoryGirl.create(:admin_group)
-    admin = FactoryGirl.create(:admin)
+    admin_group1 = FactoryBot.create(:admin_group)
+    admin = FactoryBot.create(:admin)
     assert_equal([], admin.group_ids)
 
     attributes = admin.serializable_hash
@@ -28,9 +28,9 @@ class Test::Apis::V1::Admins::TestUpdateEmbeddedArrayFields < Minitest::Test
   end
 
   def test_updates
-    admin_group1 = FactoryGirl.create(:admin_group)
-    admin_group2 = FactoryGirl.create(:admin_group)
-    admin = FactoryGirl.create(:admin, {
+    admin_group1 = FactoryBot.create(:admin_group)
+    admin_group2 = FactoryBot.create(:admin_group)
+    admin = FactoryBot.create(:admin, {
       :group_ids => [admin_group1.id],
     })
     assert_equal([admin_group1.id], admin.group_ids)
@@ -48,9 +48,9 @@ class Test::Apis::V1::Admins::TestUpdateEmbeddedArrayFields < Minitest::Test
   end
 
   def test_removes_single_value
-    admin_group1 = FactoryGirl.create(:admin_group)
-    admin_group2 = FactoryGirl.create(:admin_group)
-    admin = FactoryGirl.create(:admin, {
+    admin_group1 = FactoryBot.create(:admin_group)
+    admin_group2 = FactoryBot.create(:admin_group)
+    admin = FactoryBot.create(:admin, {
       :group_ids => [admin_group1.id, admin_group2.id],
     })
     assert_equal([admin_group1.id, admin_group2.id], admin.group_ids)
@@ -77,8 +77,8 @@ class Test::Apis::V1::Admins::TestUpdateEmbeddedArrayFields < Minitest::Test
       end
 
     define_method("test_removes_#{empty_method_name}") do
-      admin_group1 = FactoryGirl.create(:admin_group)
-      admin = FactoryGirl.create(:admin, {
+      admin_group1 = FactoryBot.create(:admin_group)
+      admin = FactoryBot.create(:admin, {
         :group_ids => [admin_group1.id],
       })
       assert_equal([admin_group1.id], admin.group_ids)
@@ -97,8 +97,8 @@ class Test::Apis::V1::Admins::TestUpdateEmbeddedArrayFields < Minitest::Test
   end
 
   def test_keeps_not_present_keys
-    admin_group1 = FactoryGirl.create(:admin_group)
-    admin = FactoryGirl.create(:admin, {
+    admin_group1 = FactoryBot.create(:admin_group)
+    admin = FactoryBot.create(:admin, {
       :group_ids => [admin_group1.id],
     })
     refute_equal("Updated", admin.name)

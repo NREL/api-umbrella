@@ -7,6 +7,17 @@ mkdir -p /etc/api-umbrella
   echo "app_env: development"
   echo "http_port: $HTTP_PORT"
   echo "https_port: $HTTPS_PORT"
+  echo "gatekeeper:"
+  echo "  api_key_cache: false"
+  echo "  default_idp:"
+  echo "    backend_name: fiware-oauth2"
+  echo "    host: http://idm.docker:8000"
+  echo "apiSettings:"
+  echo "  error_data:"
+  echo "    token_not_supported:"
+  echo "      status_code: 403"
+  echo "      code: TOKEN_NOT_SUPPORTED"
+  echo "      message: The accessed API do not support authorization based on a token issued by an external identity provider, use your API key instead"
 } > /etc/api-umbrella/api-umbrella.yml
 
 ln -snf /build/build/work/stage/opt/api-umbrella /opt/api-umbrella

@@ -13,8 +13,8 @@ class Test::Apis::V1::AdminGroups::TestIndex < Minitest::Test
   include ApiUmbrellaSharedTests::DataTablesApi
 
   def test_admin_usernames_in_group
-    group = FactoryGirl.create(:admin_group)
-    admin_in_group = FactoryGirl.create(:limited_admin, :groups => [
+    group = FactoryBot.create(:admin_group)
+    admin_in_group = FactoryBot.create(:limited_admin, :groups => [
       group,
     ])
 
@@ -27,11 +27,11 @@ class Test::Apis::V1::AdminGroups::TestIndex < Minitest::Test
   end
 
   def test_admin_usernames_in_group_sorted_alpha
-    group = FactoryGirl.create(:admin_group)
-    admin_in_group1 = FactoryGirl.create(:limited_admin, :username => "b", :groups => [
+    group = FactoryBot.create(:admin_group)
+    admin_in_group1 = FactoryBot.create(:limited_admin, :username => "b", :groups => [
       group,
     ])
-    admin_in_group2 = FactoryGirl.create(:limited_admin, :username => "a", :groups => [
+    admin_in_group2 = FactoryBot.create(:limited_admin, :username => "a", :groups => [
       group,
     ])
 
@@ -44,7 +44,7 @@ class Test::Apis::V1::AdminGroups::TestIndex < Minitest::Test
   end
 
   def test_admin_usernames_empty
-    FactoryGirl.create(:admin_group)
+    FactoryBot.create(:admin_group)
 
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/admin_groups.json", http_options.deep_merge(admin_token))
 
@@ -55,7 +55,7 @@ class Test::Apis::V1::AdminGroups::TestIndex < Minitest::Test
   end
 
   def test_response_fields
-    record = FactoryGirl.create(data_tables_factory_name, {
+    record = FactoryBot.create(data_tables_factory_name, {
       :created_at => Time.utc(2017, 1, 1),
       :created_by => SecureRandom.uuid,
       :name => "Example",
@@ -63,7 +63,7 @@ class Test::Apis::V1::AdminGroups::TestIndex < Minitest::Test
       :updated_at => Time.utc(2017, 1, 2),
       :updated_by => SecureRandom.uuid,
     })
-    admin = FactoryGirl.create(:admin, :groups => [record])
+    admin = FactoryBot.create(:admin, :groups => [record])
 
     response = Typhoeus.get(data_tables_api_url, http_options.deep_merge(admin_token).deep_merge({
       :params => {
@@ -96,7 +96,7 @@ class Test::Apis::V1::AdminGroups::TestIndex < Minitest::Test
   end
 
   def test_empty_response_fields
-    record = FactoryGirl.create(data_tables_factory_name)
+    record = FactoryBot.create(data_tables_factory_name)
 
     response = Typhoeus.get(data_tables_api_url, http_options.deep_merge(admin_token).deep_merge({
       :params => {

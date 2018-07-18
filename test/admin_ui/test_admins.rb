@@ -19,7 +19,7 @@ class Test::AdminUi::TestAdmins < Minitest::Capybara::Test
   end
 
   def test_superuser_checkbox_as_limited_admin
-    admin_login(FactoryGirl.create(:limited_admin))
+    admin_login(FactoryBot.create(:limited_admin))
     visit "/admin/#/admins/new"
 
     assert_text("Email")
@@ -29,11 +29,11 @@ class Test::AdminUi::TestAdmins < Minitest::Capybara::Test
   def test_adds_groups_when_checked
     admin_login
 
-    @group1 = FactoryGirl.create(:admin_group)
-    @group2 = FactoryGirl.create(:admin_group)
-    @group3 = FactoryGirl.create(:admin_group)
+    @group1 = FactoryBot.create(:admin_group)
+    @group2 = FactoryBot.create(:admin_group)
+    @group3 = FactoryBot.create(:admin_group)
 
-    admin = FactoryGirl.create(:admin)
+    admin = FactoryBot.create(:admin)
     assert_equal([], admin.group_ids)
 
     visit "/admin/#/admins/#{admin.id}/edit"
@@ -52,11 +52,11 @@ class Test::AdminUi::TestAdmins < Minitest::Capybara::Test
   def test_removes_groups_when_checked
     admin_login
 
-    @group1 = FactoryGirl.create(:admin_group)
-    @group2 = FactoryGirl.create(:admin_group)
-    @group3 = FactoryGirl.create(:admin_group)
+    @group1 = FactoryBot.create(:admin_group)
+    @group2 = FactoryBot.create(:admin_group)
+    @group3 = FactoryBot.create(:admin_group)
 
-    admin = FactoryGirl.create(:admin, :groups => [@group1, @group2])
+    admin = FactoryBot.create(:admin, :groups => [@group1, @group2])
     assert_equal([@group1.id, @group2.id].sort, admin.group_ids.sort)
 
     visit "/admin/#/admins/#{admin.id}/edit"

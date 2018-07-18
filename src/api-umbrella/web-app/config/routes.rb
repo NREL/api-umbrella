@@ -47,6 +47,8 @@ Rails.application.routes.draw do
         resources :analytics do
           collection do
             get "drilldown"
+            get "logs"
+            post "logs"
           end
         end
 
@@ -88,8 +90,6 @@ Rails.application.routes.draw do
     resources :stats, :only => [:index] do
       collection do
         get "search"
-        get "logs"
-        post "logs"
         get "users"
         get "map"
       end
@@ -128,7 +128,7 @@ Rails.application.routes.draw do
       locale_data[I18n.default_locale.to_s] ||= I18n::JS.translations[I18n.default_locale.to_sym]
       JsLocaleHelper.markdown!(locale_data)
 
-      script = <<~eos
+      script = <<~EOS
         I18n = window.I18n || {};
         I18n.defaultLocale = #{I18n.default_locale.to_json};
         I18n.locale = #{locale.to_json};
@@ -139,7 +139,7 @@ Rails.application.routes.draw do
           host_format_with_wildcard: new RegExp(#{CommonValidations.to_js(CommonValidations::HOST_FORMAT_WITH_WILDCARD).to_json}),
           url_prefix_format: new RegExp(#{CommonValidations.to_js(CommonValidations::URL_PREFIX_FORMAT).to_json})
         };
-      eos
+      EOS
 
       Thread.current[cache_key] = script
     end

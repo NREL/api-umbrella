@@ -49,7 +49,7 @@ if [ -f /etc/redhat-release ]; then
     initscripts
 
     # For kill used in stop/reopen-logs commands.
-    $util_linux_package
+    "$util_linux_package"
 
     # For pstree used in reopen-logs command.
     psmisc
@@ -113,7 +113,7 @@ if [ -f /etc/redhat-release ]; then
     urw-fonts
 
     # For pkill/pgrep used for process tests.
-    $procps_package
+    "$procps_package"
 
     # OpenLDAP
     groff
@@ -126,13 +126,16 @@ elif [ -f /etc/debian_version ]; then
     libffi_version=5
   elif [[ "$ID" == "ubuntu" && "$VERSION_ID" == "16.04" ]]; then
     openjdk_version=8
+  elif [[ "$ID" == "ubuntu" && "$VERSION_ID" == "18.04" ]]; then
+    openjdk_version=8
+    export DEBIAN_FRONTEND=noninteractive
   fi
 
   core_package_dependencies=(
     # General
     bash
     libc6
-    libffi$libffi_version
+    "libffi$libffi_version"
     libncurses5
     libpcre3
     libuuid1
@@ -151,10 +154,10 @@ elif [ -f /etc/debian_version ]; then
     tcl
 
     # ElasticSearch
-    openjdk-$openjdk_version-jre-headless
+    "openjdk-$openjdk_version-jre-headless"
 
     # rsyslog omelasticsearch
-    libcurl3
+    libcurl4
 
     # init.d script helpers
     sysvinit-utils
@@ -170,7 +173,7 @@ elif [ -f /etc/debian_version ]; then
     perl
   )
   hadoop_analytics_package_dependencies=(
-    openjdk-$openjdk_version-jre-headless
+    "openjdk-$openjdk_version-jre-headless"
   )
   core_build_dependencies=(
     autoconf
@@ -200,9 +203,10 @@ elif [ -f /etc/debian_version ]; then
     unzip
     uuid-dev
     xz-utils
+    nodejs
   )
   hadoop_analytics_build_dependencies=(
-    openjdk-$openjdk_version-jdk
+    "openjdk-$openjdk_version-jdk"
   )
   test_build_dependencies=(
     # Binary and readelf tests
@@ -230,7 +234,7 @@ elif [ -f /etc/debian_version ]; then
     groff-base
   )
 
-  if [[ "$ID" == "debian" && "$VERSION_ID" == "8" ]] || [[ "$ID" == "ubuntu" && "$VERSION_ID" == "16.04" ]]; then
+  if [[ "$ID" == "debian" && "$VERSION_ID" == "8" ]] || [[ "$ID" == "ubuntu" && "$VERSION_ID" == "16.04" ]] || [[ "$ID" == "ubuntu" && "$VERSION_ID" == "18.04" ]] ; then
     core_build_dependencies+=("libtool-bin")
   fi
 else

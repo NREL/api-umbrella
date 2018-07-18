@@ -11,9 +11,9 @@ class Test::Apis::V1::AdminGroups::TestUpdateEmbeddedArrayFields < Minitest::Tes
   end
 
   def test_adds
-    api_scope1 = FactoryGirl.create(:api_scope)
-    api_scope2 = FactoryGirl.create(:api_scope)
-    admin_group = FactoryGirl.create(:admin_group, {
+    api_scope1 = FactoryBot.create(:api_scope)
+    api_scope2 = FactoryBot.create(:api_scope)
+    admin_group = FactoryBot.create(:admin_group, {
       :api_scope_ids => [api_scope1.id],
       :permission_ids => ["analytics"],
     })
@@ -35,9 +35,9 @@ class Test::Apis::V1::AdminGroups::TestUpdateEmbeddedArrayFields < Minitest::Tes
   end
 
   def test_updates
-    api_scope1 = FactoryGirl.create(:api_scope)
-    api_scope2 = FactoryGirl.create(:api_scope)
-    admin_group = FactoryGirl.create(:admin_group, {
+    api_scope1 = FactoryBot.create(:api_scope)
+    api_scope2 = FactoryBot.create(:api_scope)
+    admin_group = FactoryBot.create(:admin_group, {
       :api_scope_ids => [api_scope1.id],
       :permission_ids => ["analytics"],
     })
@@ -59,9 +59,9 @@ class Test::Apis::V1::AdminGroups::TestUpdateEmbeddedArrayFields < Minitest::Tes
   end
 
   def test_removes_single_value
-    api_scope1 = FactoryGirl.create(:api_scope)
-    api_scope2 = FactoryGirl.create(:api_scope)
-    admin_group = FactoryGirl.create(:admin_group, {
+    api_scope1 = FactoryBot.create(:api_scope)
+    api_scope2 = FactoryBot.create(:api_scope)
+    admin_group = FactoryBot.create(:admin_group, {
       :api_scope_ids => [api_scope1.id, api_scope2.id],
       :permission_ids => ["analytics", "user_view"],
     })
@@ -92,8 +92,8 @@ class Test::Apis::V1::AdminGroups::TestUpdateEmbeddedArrayFields < Minitest::Tes
       end
 
     define_method("test_removes_#{empty_method_name}") do
-      api_scope1 = FactoryGirl.create(:api_scope)
-      admin_group = FactoryGirl.create(:admin_group, {
+      api_scope1 = FactoryBot.create(:api_scope)
+      admin_group = FactoryBot.create(:admin_group, {
         :api_scope_ids => [api_scope1.id],
         :permission_ids => ["analytics"],
       })
@@ -123,8 +123,8 @@ class Test::Apis::V1::AdminGroups::TestUpdateEmbeddedArrayFields < Minitest::Tes
   end
 
   def test_keeps_not_present_keys
-    api_scope1 = FactoryGirl.create(:api_scope)
-    admin_group = FactoryGirl.create(:admin_group, {
+    api_scope1 = FactoryBot.create(:api_scope)
+    admin_group = FactoryBot.create(:admin_group, {
       :api_scope_ids => [api_scope1.id],
       :permission_ids => ["analytics"],
     })

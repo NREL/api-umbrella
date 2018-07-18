@@ -1,3 +1,5 @@
+import $ from 'jquery';
+
 export function initialize(appInstance) {
   // Defaults for DataTables.
   _.merge($.fn.DataTable.defaults, {

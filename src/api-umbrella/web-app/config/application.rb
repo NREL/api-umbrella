@@ -1,4 +1,4 @@
-require File.expand_path('../boot', __FILE__)
+require File.expand_path('boot', __dir__)
 
 require "action_controller/railtie"
 require "action_view/railtie"
@@ -29,7 +29,7 @@ module ApiUmbrella
       # in the test environment, since we don't want development environment
       # config to be used in test (assuming you're testing from the same
       # machine you're developing on).
-      if(config_files.blank? && Rails.env != "test" && !ENV["RAILS_ASSETS_PRECOMPILE"])
+      if(config_files.blank? && !Rails.env.test? && !ENV["RAILS_ASSETS_PRECOMPILE"])
         default_runtime_config_file = "/opt/api-umbrella/var/run/runtime_config.yml"
         if(File.exist?(default_runtime_config_file) && File.readable?(default_runtime_config_file))
           config_files << default_runtime_config_file
@@ -40,13 +40,13 @@ module ApiUmbrella
       # default runtime config file, then fall back to the default.yml file at
       # the top-level of the api-umbrella repo.
       if(config_files.blank?)
-        config_files << File.expand_path("../../../../../config/default.yml", __FILE__)
+        config_files << File.expand_path('../../../../config/default.yml', __dir__)
 
-        if(Rails.env == "test")
+        if(Rails.env.test?)
           if(ENV["API_UMBRELLA_CONFIG"].present?)
             config_files += ENV["API_UMBRELLA_CONFIG"].split(":")
           else
-            config_files << File.expand_path("../../../../../test/config/test.yml", __FILE__)
+            config_files << File.expand_path('../../../../test/config/test.yml', __dir__)
           end
         end
       end
@@ -76,9 +76,9 @@ module ApiUmbrella
         end
       end
 
-      # rubocop:disable Style/ConstantName
+      # rubocop:disable Naming/ConstantName
       ::ApiUmbrellaConfig = config
-      # rubocop:enable Style/ConstantName
+      # rubocop:enable Naming/ConstantName
 
       require "js_locale_helper"
     end
@@ -137,7 +137,7 @@ module ApiUmbrella
     #
     # However, in development, ignore this, since we don't want precompiled
     # assets from a build to be picked up and used.
-    if(ENV["RAILS_PUBLIC_PATH"].present? && Rails.env != "development")
+    if(ENV["RAILS_PUBLIC_PATH"].present? && !Rails.env.development?)
       config.paths["public"] = ENV["RAILS_PUBLIC_PATH"]
     end
 

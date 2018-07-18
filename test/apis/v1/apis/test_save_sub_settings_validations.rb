@@ -14,7 +14,7 @@ class Test::Apis::V1::Apis::TestSaveSubSettingsValidations < Minitest::Test
   def test_accepts_valid_rewrite
     assert_valid({
       :sub_settings => [
-        FactoryGirl.attributes_for(:api_sub_setting),
+        FactoryBot.attributes_for(:api_sub_setting),
       ],
     })
   end
@@ -22,7 +22,7 @@ class Test::Apis::V1::Apis::TestSaveSubSettingsValidations < Minitest::Test
   def test_rejects_null_http_method
     assert_invalid({
       :sub_settings => [
-        FactoryGirl.attributes_for(:api_sub_setting, :http_method => nil),
+        FactoryBot.attributes_for(:api_sub_setting, :http_method => nil),
       ],
     }, ["sub_settings[0].http_method"])
   end
@@ -30,7 +30,7 @@ class Test::Apis::V1::Apis::TestSaveSubSettingsValidations < Minitest::Test
   def test_rejects_blank_http_method
     assert_invalid({
       :sub_settings => [
-        FactoryGirl.attributes_for(:api_sub_setting, :http_method => ""),
+        FactoryBot.attributes_for(:api_sub_setting, :http_method => ""),
       ],
     }, ["sub_settings[0].http_method"])
   end
@@ -38,7 +38,7 @@ class Test::Apis::V1::Apis::TestSaveSubSettingsValidations < Minitest::Test
   def test_rejects_invalid_http_method
     assert_invalid({
       :sub_settings => [
-        FactoryGirl.attributes_for(:api_sub_setting, :http_method => "zzz"),
+        FactoryBot.attributes_for(:api_sub_setting, :http_method => "zzz"),
       ],
     }, ["sub_settings[0].http_method"])
   end
@@ -46,7 +46,7 @@ class Test::Apis::V1::Apis::TestSaveSubSettingsValidations < Minitest::Test
   def test_rejects_null_regex
     assert_invalid({
       :sub_settings => [
-        FactoryGirl.attributes_for(:api_sub_setting, :regex => nil),
+        FactoryBot.attributes_for(:api_sub_setting, :regex => nil),
       ],
     }, ["sub_settings[0].regex"])
   end
@@ -54,7 +54,7 @@ class Test::Apis::V1::Apis::TestSaveSubSettingsValidations < Minitest::Test
   def test_rejects_blank_regex
     assert_invalid({
       :sub_settings => [
-        FactoryGirl.attributes_for(:api_sub_setting, :regex => ""),
+        FactoryBot.attributes_for(:api_sub_setting, :regex => ""),
       ],
     }, ["sub_settings[0].regex"])
   end

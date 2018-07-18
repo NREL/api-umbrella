@@ -92,6 +92,11 @@ class LogSearch::Sql < LogSearch::Base
   end
 
   def result
+    if @none
+      @result = LogResult.factory(self, {})
+      return @result
+    end
+
     if(@query_results.empty? || @queries[:default])
       execute_query(:default, @queries[:default] || {})
     end
@@ -886,13 +891,11 @@ class LogSearch::Sql < LogSearch::Base
     buckets = []
     while(time <= @end_time)
       time_bucket = time_buckets[time.to_i]
-      unless time_bucket
-        time_bucket = {
-          "key" => time.to_i * 1000,
-          "key_as_string" => time.utc.iso8601,
-          "doc_count" => 0,
-        }
-      end
+      time_bucket ||= {
+        "key" => time.to_i * 1000,
+        "key_as_string" => time.utc.iso8601,
+        "doc_count" => 0,
+      }
 
       buckets << time_bucket
 
@@ -917,7 +920,7 @@ class LogSearch::Sql < LogSearch::Base
   # If the current timezone is US Eastern, this allows for parsing something
   # like "2016-03-21" into "2016-03-21 04:00:00 UTC"
   def strptime_in_zone(string, format)
-    t = DateTime.strptime(string, format)
+    t = Time.strptime(string, format)
     Time.zone.local(t.year, t.month, t.mday, t.hour, t.min, t.sec)
   end
 end

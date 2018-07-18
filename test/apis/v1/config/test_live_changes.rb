@@ -24,7 +24,7 @@ class Test::Apis::V1::Config::TestLiveChanges < Minitest::Test
     assert_response_code(404, response)
 
     # Create a new API backend (but don't publish yet).
-    api_attributes = FactoryGirl.attributes_for(:api, {
+    api_attributes = FactoryBot.attributes_for(:api, {
       :frontend_host => "127.0.0.1",
       :backend_host => "127.0.0.1",
       :servers => [{ :host => "127.0.0.1", :port => 9444 }],

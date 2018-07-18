@@ -10,7 +10,7 @@ class Test::Apis::V1::Contact::TestPermissions < Minitest::Test
   end
 
   def test_forbids_api_key_without_role
-    user = FactoryGirl.create(:api_user, {
+    user = FactoryBot.create(:api_user, {
       :roles => ["xapi-umbrella-contact-form", "api-umbrella-contact-formx"],
     })
 
@@ -19,7 +19,7 @@ class Test::Apis::V1::Contact::TestPermissions < Minitest::Test
   end
 
   def test_allows_api_key_with_role
-    user = FactoryGirl.create(:api_user, {
+    user = FactoryBot.create(:api_user, {
       :roles => ["api-umbrella-contact-form"],
     })
 

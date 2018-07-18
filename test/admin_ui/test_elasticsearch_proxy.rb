@@ -11,7 +11,7 @@ class Test::AdminUi::TestElasticsearchProxy < Minitest::Capybara::Test
   end
 
   def test_redirect_to_login_for_unauthenticated_requests
-    FactoryGirl.create(:admin)
+    FactoryBot.create(:admin)
 
     visit "/admin/elasticsearch"
     assert_text("You need to sign in")
@@ -25,7 +25,7 @@ class Test::AdminUi::TestElasticsearchProxy < Minitest::Capybara::Test
   end
 
   def test_forbidden_for_unauthorized_admins
-    admin_login(FactoryGirl.create(:limited_admin))
+    admin_login(FactoryBot.create(:limited_admin))
 
     visit "/admin/elasticsearch"
     assert_equal(403, page.status_code)

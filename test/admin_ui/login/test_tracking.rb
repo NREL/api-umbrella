@@ -12,7 +12,7 @@ class Test::AdminUi::Login::TestTracking < Minitest::Capybara::Test
   end
 
   def test_populates_tracking_fields_on_first_login
-    admin = FactoryGirl.create(:admin)
+    admin = FactoryBot.create(:admin)
     assert_nil(admin.current_sign_in_at)
     assert_nil(admin.last_sign_in_at)
     assert_nil(admin.current_sign_in_ip)
@@ -38,7 +38,7 @@ class Test::AdminUi::Login::TestTracking < Minitest::Capybara::Test
   end
 
   def test_shifts_current_values_to_last_values_on_subsequent_logins
-    admin = FactoryGirl.create(:admin, {
+    admin = FactoryBot.create(:admin, {
       :current_sign_in_at => Time.iso8601("2017-01-01T01:27:00Z"),
       :last_sign_in_at => Time.iso8601("2017-01-02T01:27:00Z"),
       :current_sign_in_ip => "127.0.0.100",

@@ -15,7 +15,7 @@ ExternalProject_Add(
     COMMAND chrpath -d ${STAGE_EMBEDDED_DIR}/lib/libtsmgmt.so
     COMMAND find ${STAGE_EMBEDDED_DIR}/libexec/trafficserver/ -name *.so -exec chrpath -d {} $<SEMICOLON>
     COMMAND find ${STAGE_EMBEDDED_DIR}/bin/ -name traffic_* -exec chrpath -d {} $<SEMICOLON>
-    COMMAND chrpath -d ${STAGE_EMBEDDED_DIR}/bin/tstop
+    COMMAND chrpath -d ${STAGE_EMBEDDED_DIR}/bin/traffic_top
     # Trim our own distribution by removing some larger files we don't need for
     # API Umbrella.
     COMMAND rm -f ${STAGE_EMBEDDED_DIR}/bin/traffic_sac

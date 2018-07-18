@@ -74,7 +74,7 @@ class Test::Proxy::RateLimits::TestUserLimits < Minitest::Test
   end
 
   def test_live_changes_within_2_seconds
-    user = FactoryGirl.create(:api_user, :settings => {
+    user = FactoryBot.create(:api_user, :settings => {
       :rate_limits => [
         {
           :duration => 60 * 60 * 1000, # 1 hour

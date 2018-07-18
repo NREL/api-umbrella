@@ -74,7 +74,7 @@ class Test::AdminUi::Login::TestExternalProviders < Minitest::Capybara::Test
   end
 
   def test_local_login_endpoint_disabled
-    admin = FactoryGirl.create(:admin)
+    admin = FactoryBot.create(:admin)
     response = Typhoeus.post("https://127.0.0.1:9081/admin/login", keyless_http_options.deep_merge(csrf_session).deep_merge({
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => {
@@ -123,6 +123,11 @@ class Test::AdminUi::Login::TestExternalProviders < Minitest::Capybara::Test
       :provider => :cas,
       :login_button_text => "Sign in with MAX.gov",
       :username_path => "uid",
+      :extra => {
+        "extra" => {
+          "MaxSecurityLevel" => "standard, securePlus2",
+        },
+      },
     },
   ].each do |options|
     define_method("test_#{options.fetch(:provider)}_valid_admin") do
@@ -147,7 +152,7 @@ class Test::AdminUi::Login::TestExternalProviders < Minitest::Capybara::Test
   private
 
   def assert_login_valid_admin(options)
-    admin = FactoryGirl.create(:admin, :username => "valid@example.com")
+    admin = FactoryBot.create(:admin, :username => "valid@example.com")
     omniauth_data = omniauth_base_data(options)
     LazyHash.add(omniauth_data, options.fetch(:username_path), admin.username)
 
@@ -157,7 +162,7 @@ class Test::AdminUi::Login::TestExternalProviders < Minitest::Capybara::Test
   end
 
   def assert_login_case_insensitive_username_admin(options)
-    admin = FactoryGirl.create(:admin, :username => "hello@example.com")
+    admin = FactoryBot.create(:admin, :username => "hello@example.com")
     omniauth_data = omniauth_base_data(options)
     LazyHash.add(omniauth_data, options.fetch(:username_path), "Hello@ExamplE.Com")
 
@@ -176,7 +181,7 @@ class Test::AdminUi::Login::TestExternalProviders < Minitest::Capybara::Test
   end
 
   def assert_login_unverified_email_login(options)
-    admin = FactoryGirl.create(:admin, :username => "unverified@example.com")
+    admin = FactoryBot.create(:admin, :username => "unverified@example.com")
     omniauth_data = omniauth_base_data(options)
     LazyHash.add(omniauth_data, options.fetch(:username_path), admin.username)
     LazyHash.add(omniauth_data, options.fetch(:verified_path), false)
@@ -204,6 +209,10 @@ class Test::AdminUi::Login::TestExternalProviders < Minitest::Capybara::Test
     omniauth_base_data["provider"] = options.fetch(:provider).to_s
     if(options[:verified_path])
       LazyHash.add(omniauth_base_data, options.fetch(:verified_path), true)
+    end
+
+    if(options[:extra])
+      omniauth_base_data.deep_merge!(options[:extra])
     end
 
     omniauth_base_data

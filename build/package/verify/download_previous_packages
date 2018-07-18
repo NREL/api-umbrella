@@ -32,7 +32,7 @@ distros=(
 )
 
 if [ -n "${DIST:-}" ]; then
-  distros=($DIST)
+  distros=("$DIST")
 fi
 
 bintray_url_root="https://bintray.com/artifact/download/nrel"
@@ -66,6 +66,14 @@ for dist in "${distros[@]}"; do
         url_prefix="$bintray_url_root/api-umbrella-ubuntu/pool/main/a/api-umbrella"
         if [ "$(compare_version "$version")" -lt "$(compare_version "0.12.0")" ]; then
           # No Ubuntu 16.04 packages until v0.12
+          filename=""
+        fi
+        ;;
+      ubuntu-18.04)
+        filename="api-umbrella_${version}~bionic_amd64.deb"
+        url_prefix="$bintray_url_root/api-umbrella-ubuntu/pool/main/a/api-umbrella"
+        if [ "$(compare_version "$version")" -lt "$(compare_version "0.15.0")" ]; then
+          # No Ubuntu 18.04 packages until v0.15
           filename=""
         fi
         ;;

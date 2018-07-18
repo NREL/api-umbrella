@@ -1,6 +1,9 @@
-import Ember from 'ember';
+import $ from 'jquery';
+import EmberObject from '@ember/object';
+import Evented from '@ember/object/evented';
+import { Promise } from 'rsvp';
 
-let Drilldown = Ember.Object.extend(Ember.Evented, {
+let Drilldown = EmberObject.extend(Evented, {
   results: null,
 });
 
@@ -8,7 +11,7 @@ Drilldown.reopenClass({
   urlRoot: '/api-umbrella/v1/analytics/drilldown.json',
 
   find(params) {
-    return new Ember.RSVP.Promise(function(resolve, reject) {
+    return new Promise(function(resolve, reject) {
       return $.ajax({
         url: this.urlRoot,
         data: params,

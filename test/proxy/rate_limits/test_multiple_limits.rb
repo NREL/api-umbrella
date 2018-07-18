@@ -43,14 +43,14 @@ class Test::Proxy::RateLimits::TestMultipleLimits < Minitest::Test
   end
 
   def test_rejects_requests_when_exceeded_in_duration
-    api_key = FactoryGirl.create(:api_user).api_key
+    api_key = FactoryBot.create(:api_user).api_key
     assert_under_rate_limit("/api/hello", 3, :time => Time.iso8601("2013-01-01T01:27:43Z"), :api_key => api_key)
     assert_over_rate_limit("/api/hello", 7, :time => Time.iso8601("2013-01-01T01:27:43Z"), :api_key => api_key)
     assert_under_rate_limit("/api/hello", 1, :time => Time.iso8601("2013-01-01T01:27:53Z"), :api_key => api_key)
   end
 
   def test_counts_down_response_header_limits_but_never_negative
-    api_key = FactoryGirl.create(:api_user).api_key
+    api_key = FactoryBot.create(:api_user).api_key
     remainings = Array.new(5) do |index|
       response = Typhoeus.get("http://127.0.0.1:9080/api/hello", http_options.deep_merge({
         :headers => {

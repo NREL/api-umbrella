@@ -16,14 +16,14 @@ class Test::Apis::V1::Users::TestRolePermissions < Minitest::Test
   end
 
   def test_permits_superuser_assign_any_role
-    FactoryGirl.create(:google_api)
-    FactoryGirl.create(:yahoo_api)
+    FactoryBot.create(:google_api)
+    FactoryBot.create(:yahoo_api)
     existing_roles = ApiUserRole.all
     assert_includes(existing_roles, "google-write")
     assert_includes(existing_roles, "yahoo-write")
     refute_includes(existing_roles, "new-write#{unique_test_id}")
 
-    admin = FactoryGirl.create(:admin)
+    admin = FactoryBot.create(:admin)
     attr_overrides = {
       "roles" => ["google-write", "yahoo-write", "new-write#{unique_test_id}"],
     }
@@ -32,7 +32,7 @@ class Test::Apis::V1::Users::TestRolePermissions < Minitest::Test
   end
 
   def test_permits_limited_admin_assign_unused_role
-    admin = FactoryGirl.create(:limited_admin, :groups => [FactoryGirl.create(:google_admin_group, :user_view_and_manage_permission)])
+    admin = FactoryBot.create(:limited_admin, :groups => [FactoryBot.create(:google_admin_group, :user_view_and_manage_permission)])
     attr_overrides = {
       "roles" => ["new-role#{unique_test_id}#{rand(999_999)}"],
     }
@@ -41,11 +41,11 @@ class Test::Apis::V1::Users::TestRolePermissions < Minitest::Test
   end
 
   def test_permits_limited_admin_assign_role_within_scope
-    FactoryGirl.create(:google_api)
+    FactoryBot.create(:google_api)
     existing_roles = ApiUserRole.all
     assert_includes(existing_roles, "google-write")
 
-    admin = FactoryGirl.create(:limited_admin, :groups => [FactoryGirl.create(:google_admin_group, :user_view_and_manage_permission)])
+    admin = FactoryBot.create(:limited_admin, :groups => [FactoryBot.create(:google_admin_group, :user_view_and_manage_permission)])
     attr_overrides = {
       "roles" => ["google-write"],
     }
@@ -54,11 +54,11 @@ class Test::Apis::V1::Users::TestRolePermissions < Minitest::Test
   end
 
   def test_forbids_limited_admin_assign_role_outside_scope
-    FactoryGirl.create(:yahoo_api)
+    FactoryBot.create(:yahoo_api)
     existing_roles = ApiUserRole.all
     assert_includes(existing_roles, "yahoo-write")
 
-    admin = FactoryGirl.create(:limited_admin, :groups => [FactoryGirl.create(:google_admin_group, :user_view_and_manage_permission)])
+    admin = FactoryBot.create(:limited_admin, :groups => [FactoryBot.create(:google_admin_group, :user_view_and_manage_permission)])
     attr_overrides = {
       "roles" => ["yahoo-write"],
     }
@@ -67,11 +67,11 @@ class Test::Apis::V1::Users::TestRolePermissions < Minitest::Test
   end
 
   def test_forbids_limited_admin_assign_role_partial_access
-    FactoryGirl.create(:google_extra_url_match_api)
+    FactoryBot.create(:google_extra_url_match_api)
     existing_roles = ApiUserRole.all
     assert_includes(existing_roles, "google-extra-write")
 
-    admin = FactoryGirl.create(:limited_admin, :groups => [FactoryGirl.create(:google_admin_group, :user_view_and_manage_permission)])
+    admin = FactoryBot.create(:limited_admin, :groups => [FactoryBot.create(:google_admin_group, :user_view_and_manage_permission)])
     attr_overrides = {
       "roles" => ["google-extra-write"],
     }
@@ -80,7 +80,7 @@ class Test::Apis::V1::Users::TestRolePermissions < Minitest::Test
   end
 
   def test_permits_limited_admin_assign_key_creator_role
-    admin = FactoryGirl.create(:limited_admin, :groups => [FactoryGirl.create(:google_admin_group, :user_view_and_manage_permission)])
+    admin = FactoryBot.create(:limited_admin, :groups => [FactoryBot.create(:google_admin_group, :user_view_and_manage_permission)])
     attr_overrides = {
       "roles" => ["api-umbrella-key-creator"],
     }
@@ -89,7 +89,7 @@ class Test::Apis::V1::Users::TestRolePermissions < Minitest::Test
   end
 
   def test_forbids_limited_admin_create_new_api_umbrella_roles
-    admin = FactoryGirl.create(:limited_admin, :groups => [FactoryGirl.create(:google_admin_group, :user_view_and_manage_permission)])
+    admin = FactoryBot.create(:limited_admin, :groups => [FactoryBot.create(:google_admin_group, :user_view_and_manage_permission)])
     attr_overrides = {
       "roles" => ["api-umbrella#{unique_test_id}#{rand(999_999)}"],
     }
@@ -98,7 +98,7 @@ class Test::Apis::V1::Users::TestRolePermissions < Minitest::Test
   end
 
   def test_permits_superuser_create_new_api_umbrella_roles
-    admin = FactoryGirl.create(:admin)
+    admin = FactoryBot.create(:admin)
     attr_overrides = {
       "roles" => ["api-umbrella#{unique_test_id}#{rand(999_999)}"],
     }
@@ -107,16 +107,16 @@ class Test::Apis::V1::Users::TestRolePermissions < Minitest::Test
   end
 
   def test_forbids_updating_permitted_users_with_unpermitted_values
-    FactoryGirl.create(:google_api)
-    FactoryGirl.create(:yahoo_api)
+    FactoryBot.create(:google_api)
+    FactoryBot.create(:yahoo_api)
     existing_roles = ApiUserRole.all
     assert_includes(existing_roles, "google-write")
     assert_includes(existing_roles, "yahoo-write")
 
-    record = FactoryGirl.create(:api_user, {
+    record = FactoryBot.create(:api_user, {
       :roles => ["google-write"],
     })
-    admin = FactoryGirl.create(:google_admin)
+    admin = FactoryBot.create(:google_admin)
 
     attributes = record.serializable_hash
     response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/users/#{record.id}.json", http_options.deep_merge(admin_token(admin)).deep_merge({
@@ -140,16 +140,16 @@ class Test::Apis::V1::Users::TestRolePermissions < Minitest::Test
   end
 
   def test_forbids_updating_unpermitted_users_with_permitted_values
-    FactoryGirl.create(:google_api)
-    FactoryGirl.create(:yahoo_api)
+    FactoryBot.create(:google_api)
+    FactoryBot.create(:yahoo_api)
     existing_roles = ApiUserRole.all
     assert_includes(existing_roles, "google-write")
     assert_includes(existing_roles, "yahoo-write")
 
-    record = FactoryGirl.create(:api_user, {
+    record = FactoryBot.create(:api_user, {
       :roles => ["yahoo-write"],
     })
-    admin = FactoryGirl.create(:google_admin)
+    admin = FactoryBot.create(:google_admin)
 
     attributes = record.serializable_hash
     response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/users/#{record.id}.json", http_options.deep_merge(admin_token(admin)).deep_merge({
@@ -175,7 +175,7 @@ class Test::Apis::V1::Users::TestRolePermissions < Minitest::Test
   private
 
   def assert_admin_permitted_create(factory, admin, attr_overrides = {})
-    attributes = FactoryGirl.attributes_for(factory).deep_stringify_keys.deep_merge(attr_overrides)
+    attributes = FactoryBot.attributes_for(factory).deep_stringify_keys.deep_merge(attr_overrides)
     initial_count = active_count
     response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(admin_token(admin)).deep_merge({
       :headers => { "Content-Type" => "application/json" },
@@ -194,7 +194,7 @@ class Test::Apis::V1::Users::TestRolePermissions < Minitest::Test
   end
 
   def assert_admin_forbidden_create(factory, admin, attr_overrides = {})
-    attributes = FactoryGirl.attributes_for(factory).deep_stringify_keys.deep_merge(attr_overrides)
+    attributes = FactoryBot.attributes_for(factory).deep_stringify_keys.deep_merge(attr_overrides)
     initial_count = active_count
     response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(admin_token(admin)).deep_merge({
       :headers => { "Content-Type" => "application/json" },
@@ -208,7 +208,7 @@ class Test::Apis::V1::Users::TestRolePermissions < Minitest::Test
   end
 
   def assert_admin_permitted_update(factory, admin, attr_overrides = {})
-    record = FactoryGirl.create(factory)
+    record = FactoryBot.create(factory)
 
     attributes = record.serializable_hash.deep_merge(attr_overrides)
     attributes["first_name"] += rand(999_999).to_s
@@ -227,7 +227,7 @@ class Test::Apis::V1::Users::TestRolePermissions < Minitest::Test
   end
 
   def assert_admin_forbidden_update(factory, admin, attr_overrides = {})
-    record = FactoryGirl.create(factory)
+    record = FactoryBot.create(factory)
 
     attributes = record.serializable_hash.deep_merge(attr_overrides)
     attributes["first_name"] += rand(999_999).to_s

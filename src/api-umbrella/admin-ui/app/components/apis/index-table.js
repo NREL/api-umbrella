@@ -1,8 +1,11 @@
-import Ember from 'ember';
+import $ from 'jquery';
+import Component from '@ember/component';
 import DataTablesHelpers from 'api-umbrella-admin-ui/utils/data-tables-helpers';
+import { inject } from '@ember/service';
+import { observer } from '@ember/object';
 
-export default Ember.Component.extend({
-  busy: Ember.inject.service('busy'),
+export default Component.extend({
+  busy: inject('busy'),
   reorderActive: false,
 
   didInsertElement() {
@@ -102,7 +105,7 @@ export default Ember.Component.extend({
     });
   },
 
-  handleReorderChange: function() {
+  handleReorderChange: observer('reorderActive', function() {
     if(this.get('reorderActive')) {
       this.$().find('table').addClass('reorder-active');
       this.get('table')
@@ -123,7 +126,7 @@ export default Ember.Component.extend({
         $buttonText.text($buttonText.data('originalText'));
       }
     }
-  }.observes('reorderActive'),
+  }),
 
   saveReorder(id, moveAfterId) {
     this.get('busy').show();
@@ -132,9 +135,11 @@ export default Ember.Component.extend({
       method: 'PUT',
       data: { move_after_id: moveAfterId },
     }).done(() => {
+      // eslint-disable-next-line ember/jquery-ember-run
       this.get('table').draw();
     }).fail((xhr) => {
-      Ember.Logger.error('Unexpected error: ' + xhr.status + ' ' + xhr.statusText + ' (' + xhr.readyState + '): ' + xhr.responseText);
+      // eslint-disable-next-line no-console
+      console.error('Unexpected error: ' + xhr.status + ' ' + xhr.statusText + ' (' + xhr.readyState + '): ' + xhr.responseText);
       bootbox.alert('An unexpected error occurred. Please try again.');
       this.get('table').draw();
     });

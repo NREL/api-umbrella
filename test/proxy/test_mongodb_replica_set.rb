@@ -90,7 +90,7 @@ class Test::Proxy::TestMongodbReplicaSet < Minitest::Test
     # return forbidden (rather than being cached and valid for a couple sends).
     # We want to ensure key caching is disabled to ensure database connectivity
     # works across replica set elections (and things aren't just being cached).
-    user = FactoryGirl.create(:api_user)
+    user = FactoryBot.create(:api_user)
     response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/hello?#{rand}", keyless_http_options.deep_merge({
       :headers => { "X-Api-Key" => user.api_key },
     }))
@@ -113,7 +113,7 @@ class Test::Proxy::TestMongodbReplicaSet < Minitest::Test
     # shuts down. We're more interested with testing the read-only
     # functionality of the proxy when the primary changes (eg, that the proxy
     # can continue querying for valid API keys).
-    @users = Concurrent::Array.new(FactoryGirl.create_list(:api_user, 100, {
+    @users = Concurrent::Array.new(FactoryBot.create_list(:api_user, 100, {
       :settings => {
         :rate_limit_mode => "unlimited",
       },

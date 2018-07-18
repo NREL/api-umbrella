@@ -44,6 +44,23 @@ class LogSearch::ElasticSearch < LogSearch::Base
   end
 
   def result
+    if @none
+      raw_result = {
+        "hits" => {
+          "total" => 0,
+          "hits" => [],
+        },
+        "aggregations" => {},
+      }
+      @query[:aggregations].each_key do |aggregation_name|
+        raw_result["aggregations"][aggregation_name.to_s] ||= {}
+        raw_result["aggregations"][aggregation_name.to_s]["buckets"] = []
+        raw_result["aggregations"][aggregation_name.to_s]["doc_count"] = 0
+      end
+      @result = LogResult.factory(self, raw_result)
+      return @result
+    end
+
     query_options = @query_options.merge({
       :index => indexes.join(","),
       :body => @query,

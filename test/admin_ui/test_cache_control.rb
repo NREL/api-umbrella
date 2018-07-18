@@ -49,7 +49,7 @@ class Test::AdminUi::TestCacheControl < Minitest::Test
 
   def test_admin_login
     # Check the server-side page.
-    FactoryGirl.create(:admin)
+    FactoryBot.create(:admin)
     response = Typhoeus.get("https://127.0.0.1:9081/admin/login", keyless_http_options)
     assert_response_code(200, response)
     assert_equal("text/html; charset=utf-8", response.headers["Content-Type"])

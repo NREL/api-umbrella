@@ -11,14 +11,14 @@ class Test::Apis::V1::Apis::TestUpdateEmbeddedArrayFields < Minitest::Test
   end
 
   def test_adds_servers
-    api = FactoryGirl.create(:api, {
-      :servers => [FactoryGirl.attributes_for(:api_server, :host => "127.0.0.20")],
+    api = FactoryBot.create(:api, {
+      :servers => [FactoryBot.attributes_for(:api_server, :host => "127.0.0.20")],
     })
     assert_equal(1, api.servers.length)
     assert_equal("127.0.0.20", api.servers[0].host)
 
     attributes = api.serializable_hash
-    attributes["servers"] << FactoryGirl.attributes_for(:api_server, :host => "127.0.0.21")
+    attributes["servers"] << FactoryBot.attributes_for(:api_server, :host => "127.0.0.21")
     response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/apis/#{api.id}.json", http_options.deep_merge(admin_token).deep_merge({
       :headers => { "Content-Type" => "application/json" },
       :body => MultiJson.dump(:api => attributes),
@@ -32,14 +32,14 @@ class Test::Apis::V1::Apis::TestUpdateEmbeddedArrayFields < Minitest::Test
   end
 
   def test_adds_url_matches
-    api = FactoryGirl.create(:api, {
-      :url_matches => [FactoryGirl.attributes_for(:api_url_match, :frontend_prefix => "/1")],
+    api = FactoryBot.create(:api, {
+      :url_matches => [FactoryBot.attributes_for(:api_url_match, :frontend_prefix => "/1")],
     })
     assert_equal(1, api.url_matches.length)
     assert_equal("/1", api.url_matches[0].frontend_prefix)
 
     attributes = api.serializable_hash
-    attributes["url_matches"] << FactoryGirl.attributes_for(:api_url_match, :frontend_prefix => "/2")
+    attributes["url_matches"] << FactoryBot.attributes_for(:api_url_match, :frontend_prefix => "/2")
     response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/apis/#{api.id}.json", http_options.deep_merge(admin_token).deep_merge({
       :headers => { "Content-Type" => "application/json" },
       :body => MultiJson.dump(:api => attributes),
@@ -53,25 +53,25 @@ class Test::Apis::V1::Apis::TestUpdateEmbeddedArrayFields < Minitest::Test
   end
 
   def test_adds_settings
-    api = FactoryGirl.create(:api)
+    api = FactoryBot.create(:api)
     assert_nil(api.settings)
 
     attributes = api.serializable_hash
     attributes["settings"] ||= {}
     attributes["settings"]["required_roles"] = ["test-role1", "test-role2"]
     attributes["settings"]["default_response_headers"] = [
-      FactoryGirl.attributes_for(:api_header, :key => "X-Default1"),
+      FactoryBot.attributes_for(:api_header, :key => "X-Default1"),
     ]
     attributes["settings"]["override_response_headers"] = [
-      FactoryGirl.attributes_for(:api_header, :key => "X-Override1"),
+      FactoryBot.attributes_for(:api_header, :key => "X-Override1"),
     ]
     attributes["settings"]["headers"] = [
-      FactoryGirl.attributes_for(:api_header, :key => "X-Header1"),
+      FactoryBot.attributes_for(:api_header, :key => "X-Header1"),
     ]
     attributes["settings"]["rate_limit_mode"] = "custom"
     attributes["settings"]["rate_limits"] = [
-      FactoryGirl.attributes_for(:api_rate_limit, :duration => 1000),
-      FactoryGirl.attributes_for(:api_rate_limit, :duration => 2000),
+      FactoryBot.attributes_for(:api_rate_limit, :duration => 1000),
+      FactoryBot.attributes_for(:api_rate_limit, :duration => 2000),
     ]
     response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/apis/#{api.id}.json", http_options.deep_merge(admin_token).deep_merge({
       :headers => { "Content-Type" => "application/json" },
@@ -93,26 +93,26 @@ class Test::Apis::V1::Apis::TestUpdateEmbeddedArrayFields < Minitest::Test
   end
 
   def test_adds_sub_settings
-    api = FactoryGirl.create(:api)
+    api = FactoryBot.create(:api)
     assert_equal([], api.sub_settings)
 
     attributes = api.serializable_hash
-    attributes["sub_settings"] = [FactoryGirl.attributes_for(:api_sub_setting)]
+    attributes["sub_settings"] = [FactoryBot.attributes_for(:api_sub_setting)]
     attributes["sub_settings"][0]["settings"] ||= {}
     attributes["sub_settings"][0]["settings"]["required_roles"] = ["test-role1", "test-role2"]
     attributes["sub_settings"][0]["settings"]["default_response_headers"] = [
-      FactoryGirl.attributes_for(:api_header, :key => "X-SubDefault1"),
+      FactoryBot.attributes_for(:api_header, :key => "X-SubDefault1"),
     ]
     attributes["sub_settings"][0]["settings"]["override_response_headers"] = [
-      FactoryGirl.attributes_for(:api_header, :key => "X-SubOverride1"),
+      FactoryBot.attributes_for(:api_header, :key => "X-SubOverride1"),
     ]
     attributes["sub_settings"][0]["settings"]["headers"] = [
-      FactoryGirl.attributes_for(:api_header, :key => "X-SubHeader1"),
+      FactoryBot.attributes_for(:api_header, :key => "X-SubHeader1"),
     ]
     attributes["sub_settings"][0]["settings"]["rate_limit_mode"] = "custom"
     attributes["sub_settings"][0]["settings"]["rate_limits"] = [
-      FactoryGirl.attributes_for(:api_rate_limit, :duration => 10000),
-      FactoryGirl.attributes_for(:api_rate_limit, :duration => 20000),
+      FactoryBot.attributes_for(:api_rate_limit, :duration => 10000),
+      FactoryBot.attributes_for(:api_rate_limit, :duration => 20000),
     ]
     response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/apis/#{api.id}.json", http_options.deep_merge(admin_token).deep_merge({
       :headers => { "Content-Type" => "application/json" },
@@ -135,12 +135,12 @@ class Test::Apis::V1::Apis::TestUpdateEmbeddedArrayFields < Minitest::Test
   end
 
   def test_adds_rewrites
-    api = FactoryGirl.create(:api)
+    api = FactoryBot.create(:api)
     assert_equal([], api.rewrites)
 
     attributes = api.serializable_hash
     attributes["rewrites"] = [
-      FactoryGirl.attributes_for(:api_rewrite, :backend_replacement => "/1"),
+      FactoryBot.attributes_for(:api_rewrite, :backend_replacement => "/1"),
     ]
     response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/apis/#{api.id}.json", http_options.deep_merge(admin_token).deep_merge({
       :headers => { "Content-Type" => "application/json" },
@@ -154,8 +154,8 @@ class Test::Apis::V1::Apis::TestUpdateEmbeddedArrayFields < Minitest::Test
   end
 
   def test_updates_servers
-    api = FactoryGirl.create(:api, {
-      :servers => [FactoryGirl.attributes_for(:api_server, :host => "127.0.0.20")],
+    api = FactoryBot.create(:api, {
+      :servers => [FactoryBot.attributes_for(:api_server, :host => "127.0.0.20")],
     })
     assert_equal(1, api.servers.length)
     assert_equal("127.0.0.20", api.servers[0].host)
@@ -174,8 +174,8 @@ class Test::Apis::V1::Apis::TestUpdateEmbeddedArrayFields < Minitest::Test
   end
 
   def test_updates_url_matches
-    api = FactoryGirl.create(:api, {
-      :url_matches => [FactoryGirl.attributes_for(:api_url_match, :frontend_prefix => "/1")],
+    api = FactoryBot.create(:api, {
+      :url_matches => [FactoryBot.attributes_for(:api_url_match, :frontend_prefix => "/1")],
     })
     assert_equal(1, api.url_matches.length)
     assert_equal("/1", api.url_matches[0].frontend_prefix)
@@ -194,22 +194,22 @@ class Test::Apis::V1::Apis::TestUpdateEmbeddedArrayFields < Minitest::Test
   end
 
   def test_updates_settings
-    api = FactoryGirl.create(:api, {
-      :settings => FactoryGirl.build(:api_setting, {
+    api = FactoryBot.create(:api, {
+      :settings => FactoryBot.build(:api_setting, {
         :required_roles => ["test-role1"],
         :default_response_headers => [
-          FactoryGirl.attributes_for(:api_header, :key => "X-Default1"),
+          FactoryBot.attributes_for(:api_header, :key => "X-Default1"),
         ],
         :override_response_headers => [
-          FactoryGirl.attributes_for(:api_header, :key => "X-Override1"),
+          FactoryBot.attributes_for(:api_header, :key => "X-Override1"),
         ],
         :headers => [
-          FactoryGirl.attributes_for(:api_header, :key => "X-Header1"),
+          FactoryBot.attributes_for(:api_header, :key => "X-Header1"),
         ],
         :rate_limit_mode => "custom",
         :rate_limits => [
-          FactoryGirl.attributes_for(:api_rate_limit, :duration => 1000),
-          FactoryGirl.attributes_for(:api_rate_limit, :duration => 2000),
+          FactoryBot.attributes_for(:api_rate_limit, :duration => 1000),
+          FactoryBot.attributes_for(:api_rate_limit, :duration => 2000),
         ],
       }),
     })
@@ -253,24 +253,24 @@ class Test::Apis::V1::Apis::TestUpdateEmbeddedArrayFields < Minitest::Test
   end
 
   def test_updates_sub_settings
-    api = FactoryGirl.create(:api, {
+    api = FactoryBot.create(:api, {
       :sub_settings => [
-        FactoryGirl.attributes_for(:api_sub_setting, {
-          :settings => FactoryGirl.build(:api_setting, {
+        FactoryBot.attributes_for(:api_sub_setting, {
+          :settings => FactoryBot.build(:api_setting, {
             :required_roles => ["test-role1"],
             :default_response_headers => [
-              FactoryGirl.attributes_for(:api_header, :key => "X-SubDefault1"),
+              FactoryBot.attributes_for(:api_header, :key => "X-SubDefault1"),
             ],
             :override_response_headers => [
-              FactoryGirl.attributes_for(:api_header, :key => "X-SubOverride1"),
+              FactoryBot.attributes_for(:api_header, :key => "X-SubOverride1"),
             ],
             :headers => [
-              FactoryGirl.attributes_for(:api_header, :key => "X-SubHeader1"),
+              FactoryBot.attributes_for(:api_header, :key => "X-SubHeader1"),
             ],
             :rate_limit_mode => "custom",
             :rate_limits => [
-              FactoryGirl.attributes_for(:api_rate_limit, :duration => 1000),
-              FactoryGirl.attributes_for(:api_rate_limit, :duration => 2000),
+              FactoryBot.attributes_for(:api_rate_limit, :duration => 1000),
+              FactoryBot.attributes_for(:api_rate_limit, :duration => 2000),
             ],
           }),
         }),
@@ -316,8 +316,8 @@ class Test::Apis::V1::Apis::TestUpdateEmbeddedArrayFields < Minitest::Test
   end
 
   def test_updates_rewrites
-    api = FactoryGirl.create(:api, {
-      :rewrites => [FactoryGirl.attributes_for(:api_rewrite, :backend_replacement => "/1")],
+    api = FactoryBot.create(:api, {
+      :rewrites => [FactoryBot.attributes_for(:api_rewrite, :backend_replacement => "/1")],
     })
     assert_equal(1, api.rewrites.length)
     assert_equal("/1", api.rewrites[0].backend_replacement)
@@ -336,10 +336,10 @@ class Test::Apis::V1::Apis::TestUpdateEmbeddedArrayFields < Minitest::Test
   end
 
   def test_removes_single_value_servers
-    api = FactoryGirl.create(:api, {
+    api = FactoryBot.create(:api, {
       :servers => [
-        FactoryGirl.attributes_for(:api_server, :host => "127.0.0.20"),
-        FactoryGirl.attributes_for(:api_server, :host => "127.0.0.21"),
+        FactoryBot.attributes_for(:api_server, :host => "127.0.0.20"),
+        FactoryBot.attributes_for(:api_server, :host => "127.0.0.21"),
       ],
     })
     assert_equal(2, api.servers.length)
@@ -360,10 +360,10 @@ class Test::Apis::V1::Apis::TestUpdateEmbeddedArrayFields < Minitest::Test
   end
 
   def test_removes_single_value_url_matches
-    api = FactoryGirl.create(:api, {
+    api = FactoryBot.create(:api, {
       :url_matches => [
-        FactoryGirl.attributes_for(:api_url_match, :frontend_prefix => "/1"),
-        FactoryGirl.attributes_for(:api_url_match, :frontend_prefix => "/2"),
+        FactoryBot.attributes_for(:api_url_match, :frontend_prefix => "/1"),
+        FactoryBot.attributes_for(:api_url_match, :frontend_prefix => "/2"),
       ],
     })
     assert_equal(2, api.url_matches.length)
@@ -384,25 +384,25 @@ class Test::Apis::V1::Apis::TestUpdateEmbeddedArrayFields < Minitest::Test
   end
 
   def test_removes_single_value_settings
-    api = FactoryGirl.create(:api, {
-      :settings => FactoryGirl.build(:api_setting, {
+    api = FactoryBot.create(:api, {
+      :settings => FactoryBot.build(:api_setting, {
         :required_roles => ["test-role1", "test-role2"],
         :default_response_headers => [
-          FactoryGirl.attributes_for(:api_header, :key => "X-Default1"),
-          FactoryGirl.attributes_for(:api_header, :key => "X-Default2"),
+          FactoryBot.attributes_for(:api_header, :key => "X-Default1"),
+          FactoryBot.attributes_for(:api_header, :key => "X-Default2"),
         ],
         :override_response_headers => [
-          FactoryGirl.attributes_for(:api_header, :key => "X-Override1"),
-          FactoryGirl.attributes_for(:api_header, :key => "X-Override2"),
+          FactoryBot.attributes_for(:api_header, :key => "X-Override1"),
+          FactoryBot.attributes_for(:api_header, :key => "X-Override2"),
         ],
         :headers => [
-          FactoryGirl.attributes_for(:api_header, :key => "X-Header1"),
-          FactoryGirl.attributes_for(:api_header, :key => "X-Header2"),
+          FactoryBot.attributes_for(:api_header, :key => "X-Header1"),
+          FactoryBot.attributes_for(:api_header, :key => "X-Header2"),
         ],
         :rate_limit_mode => "custom",
         :rate_limits => [
-          FactoryGirl.attributes_for(:api_rate_limit, :duration => 1000),
-          FactoryGirl.attributes_for(:api_rate_limit, :duration => 2000),
+          FactoryBot.attributes_for(:api_rate_limit, :duration => 1000),
+          FactoryBot.attributes_for(:api_rate_limit, :duration => 2000),
         ],
       }),
     })
@@ -446,28 +446,28 @@ class Test::Apis::V1::Apis::TestUpdateEmbeddedArrayFields < Minitest::Test
   end
 
   def test_removes_single_value_sub_settings
-    api = FactoryGirl.create(:api, {
+    api = FactoryBot.create(:api, {
       :sub_settings => [
-        FactoryGirl.attributes_for(:api_sub_setting),
-        FactoryGirl.attributes_for(:api_sub_setting, {
-          :settings => FactoryGirl.build(:api_setting, {
+        FactoryBot.attributes_for(:api_sub_setting),
+        FactoryBot.attributes_for(:api_sub_setting, {
+          :settings => FactoryBot.build(:api_setting, {
             :required_roles => ["test-role1", "test-role2"],
             :default_response_headers => [
-              FactoryGirl.attributes_for(:api_header, :key => "X-SubDefault1"),
-              FactoryGirl.attributes_for(:api_header, :key => "X-SubDefault2"),
+              FactoryBot.attributes_for(:api_header, :key => "X-SubDefault1"),
+              FactoryBot.attributes_for(:api_header, :key => "X-SubDefault2"),
             ],
             :override_response_headers => [
-              FactoryGirl.attributes_for(:api_header, :key => "X-SubOverride1"),
-              FactoryGirl.attributes_for(:api_header, :key => "X-SubOverride2"),
+              FactoryBot.attributes_for(:api_header, :key => "X-SubOverride1"),
+              FactoryBot.attributes_for(:api_header, :key => "X-SubOverride2"),
             ],
             :headers => [
-              FactoryGirl.attributes_for(:api_header, :key => "X-SubHeader1"),
-              FactoryGirl.attributes_for(:api_header, :key => "X-SubHeader2"),
+              FactoryBot.attributes_for(:api_header, :key => "X-SubHeader1"),
+              FactoryBot.attributes_for(:api_header, :key => "X-SubHeader2"),
             ],
             :rate_limit_mode => "custom",
             :rate_limits => [
-              FactoryGirl.attributes_for(:api_rate_limit, :duration => 1000),
-              FactoryGirl.attributes_for(:api_rate_limit, :duration => 2000),
+              FactoryBot.attributes_for(:api_rate_limit, :duration => 1000),
+              FactoryBot.attributes_for(:api_rate_limit, :duration => 2000),
             ],
           }),
         }),
@@ -518,10 +518,10 @@ class Test::Apis::V1::Apis::TestUpdateEmbeddedArrayFields < Minitest::Test
   end
 
   def test_removes_single_value_rewrites
-    api = FactoryGirl.create(:api, {
+    api = FactoryBot.create(:api, {
       :rewrites => [
-        FactoryGirl.attributes_for(:api_rewrite, :backend_replacement => "/1"),
-        FactoryGirl.attributes_for(:api_rewrite, :backend_replacement => "/2"),
+        FactoryBot.attributes_for(:api_rewrite, :backend_replacement => "/1"),
+        FactoryBot.attributes_for(:api_rewrite, :backend_replacement => "/2"),
       ],
     })
     assert_equal(2, api.rewrites.length)
@@ -551,8 +551,8 @@ class Test::Apis::V1::Apis::TestUpdateEmbeddedArrayFields < Minitest::Test
       end
 
     define_method("test_removes_#{empty_method_name}_servers") do
-      api = FactoryGirl.create(:api, {
-        :servers => [FactoryGirl.attributes_for(:api_server, :host => "127.0.0.20")],
+      api = FactoryBot.create(:api, {
+        :servers => [FactoryBot.attributes_for(:api_server, :host => "127.0.0.20")],
       })
       assert_equal(1, api.servers.length)
       assert_equal("127.0.0.20", api.servers[0].host)
@@ -577,8 +577,8 @@ class Test::Apis::V1::Apis::TestUpdateEmbeddedArrayFields < Minitest::Test
     end
 
     define_method("test_removes_#{empty_method_name}_url_matches") do
-      api = FactoryGirl.create(:api, {
-        :url_matches => [FactoryGirl.attributes_for(:api_url_match, :frontend_prefix => "/1")],
+      api = FactoryBot.create(:api, {
+        :url_matches => [FactoryBot.attributes_for(:api_url_match, :frontend_prefix => "/1")],
       })
       assert_equal(1, api.url_matches.length)
       assert_equal("/1", api.url_matches[0].frontend_prefix)
@@ -603,22 +603,22 @@ class Test::Apis::V1::Apis::TestUpdateEmbeddedArrayFields < Minitest::Test
     end
 
     define_method("test_removes_#{empty_method_name}_settings") do
-      api = FactoryGirl.create(:api, {
-        :settings => FactoryGirl.build(:api_setting, {
+      api = FactoryBot.create(:api, {
+        :settings => FactoryBot.build(:api_setting, {
           :required_roles => ["test-role1"],
           :default_response_headers => [
-            FactoryGirl.attributes_for(:api_header, :key => "X-Default1"),
+            FactoryBot.attributes_for(:api_header, :key => "X-Default1"),
           ],
           :override_response_headers => [
-            FactoryGirl.attributes_for(:api_header, :key => "X-Override1"),
+            FactoryBot.attributes_for(:api_header, :key => "X-Override1"),
           ],
           :headers => [
-            FactoryGirl.attributes_for(:api_header, :key => "X-Header1"),
+            FactoryBot.attributes_for(:api_header, :key => "X-Header1"),
           ],
           :rate_limit_mode => "custom",
           :rate_limits => [
-            FactoryGirl.attributes_for(:api_rate_limit, :duration => 1000),
-            FactoryGirl.attributes_for(:api_rate_limit, :duration => 2000),
+            FactoryBot.attributes_for(:api_rate_limit, :duration => 1000),
+            FactoryBot.attributes_for(:api_rate_limit, :duration => 2000),
           ],
         }),
       })
@@ -659,8 +659,8 @@ class Test::Apis::V1::Apis::TestUpdateEmbeddedArrayFields < Minitest::Test
     end
 
     define_method("test_removes_#{empty_method_name}_sub_settings") do
-      api = FactoryGirl.create(:api, {
-        :sub_settings => [FactoryGirl.attributes_for(:api_sub_setting)],
+      api = FactoryBot.create(:api, {
+        :sub_settings => [FactoryBot.attributes_for(:api_sub_setting)],
       })
       assert_equal(1, api.sub_settings.length)
 
@@ -677,24 +677,24 @@ class Test::Apis::V1::Apis::TestUpdateEmbeddedArrayFields < Minitest::Test
     end
 
     define_method("test_removes_#{empty_method_name}_sub_settings_embedded_settings") do
-      api = FactoryGirl.create(:api, {
+      api = FactoryBot.create(:api, {
         :sub_settings => [
-          FactoryGirl.attributes_for(:api_sub_setting, {
-            :settings => FactoryGirl.build(:api_setting, {
+          FactoryBot.attributes_for(:api_sub_setting, {
+            :settings => FactoryBot.build(:api_setting, {
               :required_roles => ["test-role1"],
               :default_response_headers => [
-                FactoryGirl.attributes_for(:api_header, :key => "X-SubDefault1"),
+                FactoryBot.attributes_for(:api_header, :key => "X-SubDefault1"),
               ],
               :override_response_headers => [
-                FactoryGirl.attributes_for(:api_header, :key => "X-SubOverride1"),
+                FactoryBot.attributes_for(:api_header, :key => "X-SubOverride1"),
               ],
               :headers => [
-                FactoryGirl.attributes_for(:api_header, :key => "X-SubHeader1"),
+                FactoryBot.attributes_for(:api_header, :key => "X-SubHeader1"),
               ],
               :rate_limit_mode => "custom",
               :rate_limits => [
-                FactoryGirl.attributes_for(:api_rate_limit, :duration => 1000),
-                FactoryGirl.attributes_for(:api_rate_limit, :duration => 2000),
+                FactoryBot.attributes_for(:api_rate_limit, :duration => 1000),
+                FactoryBot.attributes_for(:api_rate_limit, :duration => 2000),
               ],
             }),
           }),
@@ -738,8 +738,8 @@ class Test::Apis::V1::Apis::TestUpdateEmbeddedArrayFields < Minitest::Test
     end
 
     define_method("test_removes_#{empty_method_name}_rewrites") do
-      api = FactoryGirl.create(:api, {
-        :rewrites => [FactoryGirl.attributes_for(:api_rewrite, :backend_replacement => "/1")],
+      api = FactoryBot.create(:api, {
+        :rewrites => [FactoryBot.attributes_for(:api_rewrite, :backend_replacement => "/1")],
       })
       assert_equal(1, api.rewrites.length)
       assert_equal("/1", api.rewrites[0].backend_replacement)
@@ -758,8 +758,8 @@ class Test::Apis::V1::Apis::TestUpdateEmbeddedArrayFields < Minitest::Test
   end
 
   def test_keeps_not_present_keys_servers
-    api = FactoryGirl.create(:api, {
-      :servers => [FactoryGirl.attributes_for(:api_server, :host => "127.0.0.20")],
+    api = FactoryBot.create(:api, {
+      :servers => [FactoryBot.attributes_for(:api_server, :host => "127.0.0.20")],
     })
     refute_equal("Updated", api.name)
     assert_equal(1, api.servers.length)
@@ -781,8 +781,8 @@ class Test::Apis::V1::Apis::TestUpdateEmbeddedArrayFields < Minitest::Test
   end
 
   def test_keeps_not_present_keys_url_matches
-    api = FactoryGirl.create(:api, {
-      :url_matches => [FactoryGirl.attributes_for(:api_url_match, :frontend_prefix => "/1")],
+    api = FactoryBot.create(:api, {
+      :url_matches => [FactoryBot.attributes_for(:api_url_match, :frontend_prefix => "/1")],
     })
     refute_equal("Updated", api.name)
     assert_equal(1, api.url_matches.length)
@@ -804,22 +804,22 @@ class Test::Apis::V1::Apis::TestUpdateEmbeddedArrayFields < Minitest::Test
   end
 
   def test_keeps_not_present_keys_settings
-    api = FactoryGirl.create(:api, {
-      :settings => FactoryGirl.build(:api_setting, {
+    api = FactoryBot.create(:api, {
+      :settings => FactoryBot.build(:api_setting, {
         :required_roles => ["test-role1"],
         :default_response_headers => [
-          FactoryGirl.attributes_for(:api_header, :key => "X-Default1"),
+          FactoryBot.attributes_for(:api_header, :key => "X-Default1"),
         ],
         :override_response_headers => [
-          FactoryGirl.attributes_for(:api_header, :key => "X-Override1"),
+          FactoryBot.attributes_for(:api_header, :key => "X-Override1"),
         ],
         :headers => [
-          FactoryGirl.attributes_for(:api_header, :key => "X-Header1"),
+          FactoryBot.attributes_for(:api_header, :key => "X-Header1"),
         ],
         :rate_limit_mode => "custom",
         :rate_limits => [
-          FactoryGirl.attributes_for(:api_rate_limit, :duration => 1000),
-          FactoryGirl.attributes_for(:api_rate_limit, :duration => 2000),
+          FactoryBot.attributes_for(:api_rate_limit, :duration => 1000),
+          FactoryBot.attributes_for(:api_rate_limit, :duration => 2000),
         ],
       }),
     })
@@ -863,8 +863,8 @@ class Test::Apis::V1::Apis::TestUpdateEmbeddedArrayFields < Minitest::Test
   end
 
   def test_keeps_not_present_keys_sub_settings
-    api = FactoryGirl.create(:api, {
-      :sub_settings => [FactoryGirl.attributes_for(:api_sub_setting)],
+    api = FactoryBot.create(:api, {
+      :sub_settings => [FactoryBot.attributes_for(:api_sub_setting)],
     })
     refute_equal("Updated", api.name)
     assert_equal(1, api.sub_settings.length)
@@ -884,24 +884,24 @@ class Test::Apis::V1::Apis::TestUpdateEmbeddedArrayFields < Minitest::Test
   end
 
   def test_keeps_not_present_keys_settings_embedded_settings
-    api = FactoryGirl.create(:api, {
+    api = FactoryBot.create(:api, {
       :sub_settings => [
-        FactoryGirl.attributes_for(:api_sub_setting, {
-          :settings => FactoryGirl.build(:api_setting, {
+        FactoryBot.attributes_for(:api_sub_setting, {
+          :settings => FactoryBot.build(:api_setting, {
             :required_roles => ["test-role1"],
             :default_response_headers => [
-              FactoryGirl.attributes_for(:api_header, :key => "X-SubDefault1"),
+              FactoryBot.attributes_for(:api_header, :key => "X-SubDefault1"),
             ],
             :override_response_headers => [
-              FactoryGirl.attributes_for(:api_header, :key => "X-SubOverride1"),
+              FactoryBot.attributes_for(:api_header, :key => "X-SubOverride1"),
             ],
             :headers => [
-              FactoryGirl.attributes_for(:api_header, :key => "X-SubHeader1"),
+              FactoryBot.attributes_for(:api_header, :key => "X-SubHeader1"),
             ],
             :rate_limit_mode => "custom",
             :rate_limits => [
-              FactoryGirl.attributes_for(:api_rate_limit, :duration => 1000),
-              FactoryGirl.attributes_for(:api_rate_limit, :duration => 2000),
+              FactoryBot.attributes_for(:api_rate_limit, :duration => 1000),
+              FactoryBot.attributes_for(:api_rate_limit, :duration => 2000),
             ],
           }),
         }),
@@ -948,8 +948,8 @@ class Test::Apis::V1::Apis::TestUpdateEmbeddedArrayFields < Minitest::Test
   end
 
   def test_keeps_not_present_keys_rewrites
-    api = FactoryGirl.create(:api, {
-      :rewrites => [FactoryGirl.attributes_for(:api_rewrite, :backend_replacement => "/1")],
+    api = FactoryBot.create(:api, {
+      :rewrites => [FactoryBot.attributes_for(:api_rewrite, :backend_replacement => "/1")],
     })
     refute_equal("Updated", api.name)
     assert_equal(1, api.rewrites.length)

@@ -236,8 +236,8 @@ http {
     listen [::]:{{http_port}}{{#default}} default_server{{/default}};
     server_name {{_nginx_server_name}};
 
-    listen {{https_port}} ssl{{#default}} default_server{{/default}};
-    listen [::]:{{https_port}} ssl{{#default}} default_server{{/default}};
+    listen {{https_port}} ssl http2{{#default}} default_server{{/default}};
+    listen [::]:{{https_port}} ssl http2{{#default}} default_server{{/default}};
     {{#ssl_cert}}
     ssl_certificate {{ssl_cert}};
     ssl_certificate_key {{ssl_cert_key}};

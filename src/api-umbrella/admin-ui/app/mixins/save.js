@@ -1,8 +1,10 @@
-import Ember from 'ember';
+import $ from 'jquery';
+import Mixin from '@ember/object/mixin'
 import PNotify from 'npm:pnotify';
+import { inject } from '@ember/service';
 
-export default Ember.Mixin.create({
-  routing: Ember.inject.service('-routing'),
+export default Mixin.create({
+  router: inject(),
 
   scrollToErrors() {
     $('#save_button').button('reset');
@@ -17,7 +19,7 @@ export default Ember.Mixin.create({
       text: (_.isFunction(options.message)) ? options.message(this.get('model')) : options.message,
     });
 
-    this.get('routing').transitionTo(options.transitionToRoute);
+    this.get('router').transitionTo(options.transitionToRoute);
   },
 
   saveRecord(options) {
@@ -65,7 +67,7 @@ export default Ember.Mixin.create({
             text: (_.isFunction(options.message)) ? options.message(this.get('model')) : options.message,
           });
 
-          this.get('routing').transitionTo(options.transitionToRoute);
+          this.get('router').transitionTo(options.transitionToRoute);
         }.bind(this), function(response) {
           bootbox.alert('Unexpected error deleting record: ' + response.responseText);
         });

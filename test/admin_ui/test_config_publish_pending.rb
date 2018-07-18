@@ -20,13 +20,13 @@ class Test::AdminUi::TestConfigPublishPending < Minitest::Capybara::Test
   end
 
   def test_pending_changes_grouped_into_categories
-    FactoryGirl.create(:api)
-    deleted_api = FactoryGirl.create(:api)
-    modified_api = FactoryGirl.create(:api, :name => "Before")
+    FactoryBot.create(:api)
+    deleted_api = FactoryBot.create(:api)
+    modified_api = FactoryBot.create(:api, :name => "Before")
     ConfigVersion.publish!(ConfigVersion.pending_config)
-    deleted_api.update_attributes(:deleted_at => Time.now.utc)
-    modified_api.update_attributes(:name => "After")
-    FactoryGirl.create(:api)
+    deleted_api.update(:deleted_at => Time.now.utc)
+    modified_api.update(:name => "After")
+    FactoryBot.create(:api)
 
     admin_login
     visit "/admin/#/config/publish"
@@ -37,7 +37,7 @@ class Test::AdminUi::TestConfigPublishPending < Minitest::Capybara::Test
 
   def test_hides_categories_without_changes
     ConfigVersion.publish!(ConfigVersion.pending_config)
-    FactoryGirl.create(:api)
+    FactoryBot.create(:api)
 
     admin_login
     visit "/admin/#/config/publish"
@@ -47,7 +47,7 @@ class Test::AdminUi::TestConfigPublishPending < Minitest::Capybara::Test
   end
 
   def test_message_when_no_changes_to_publish
-    FactoryGirl.create(:api)
+    FactoryBot.create(:api)
     ConfigVersion.publish!(ConfigVersion.pending_config)
 
     admin_login
@@ -56,9 +56,9 @@ class Test::AdminUi::TestConfigPublishPending < Minitest::Capybara::Test
   end
 
   def test_diff_of_config_changes
-    api = FactoryGirl.create(:api, :name => "Before")
+    api = FactoryBot.create(:api, :name => "Before")
     ConfigVersion.publish!(ConfigVersion.pending_config)
-    api.update_attributes(:name => "After")
+    api.update(:name => "After")
 
     admin_login
     visit "/admin/#/config/publish"
@@ -70,7 +70,7 @@ class Test::AdminUi::TestConfigPublishPending < Minitest::Capybara::Test
   end
 
   def test_auto_selection_for_single_change
-    FactoryGirl.create(:api)
+    FactoryBot.create(:api)
 
     admin_login
     visit "/admin/#/config/publish"
@@ -79,8 +79,8 @@ class Test::AdminUi::TestConfigPublishPending < Minitest::Capybara::Test
   end
 
   def test_no_auto_selection_for_multiple_changes
-    FactoryGirl.create(:api)
-    FactoryGirl.create(:api)
+    FactoryBot.create(:api)
+    FactoryBot.create(:api)
 
     admin_login
     visit "/admin/#/config/publish"
@@ -89,7 +89,7 @@ class Test::AdminUi::TestConfigPublishPending < Minitest::Capybara::Test
   end
 
   def test_refreshes_changes_on_load
-    FactoryGirl.create(:api)
+    FactoryBot.create(:api)
     ConfigVersion.publish!(ConfigVersion.pending_config)
 
     admin_login
@@ -100,15 +100,15 @@ class Test::AdminUi::TestConfigPublishPending < Minitest::Capybara::Test
     find("nav a", :text => /API Backends/).click
     assert_text("Add API Backend")
 
-    FactoryGirl.create(:api)
+    FactoryBot.create(:api)
     find("nav a", :text => /Configuration/).click
     find("nav a", :text => /Publish Changes/).click
     assert_text("1 New API Backends")
   end
 
   def test_check_or_uncheck_all_link
-    FactoryGirl.create(:api)
-    FactoryGirl.create(:api)
+    FactoryBot.create(:api)
+    FactoryBot.create(:api)
 
     admin_login
     visit "/admin/#/config/publish"
@@ -138,8 +138,8 @@ class Test::AdminUi::TestConfigPublishPending < Minitest::Capybara::Test
   end
 
   def test_disables_publish_button_when_no_changes_checked
-    FactoryGirl.create(:api)
-    FactoryGirl.create(:api)
+    FactoryBot.create(:api)
+    FactoryBot.create(:api)
 
     admin_login
     visit "/admin/#/config/publish"
@@ -162,7 +162,7 @@ class Test::AdminUi::TestConfigPublishPending < Minitest::Capybara::Test
   end
 
   def test_enables_publish_button_on_load_if
-    FactoryGirl.create(:api)
+    FactoryBot.create(:api)
 
     admin_login
     visit "/admin/#/config/publish"

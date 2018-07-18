@@ -30,7 +30,7 @@ class Test::AdminUi::TestApiScopes < Minitest::Capybara::Test
   end
 
   def test_update
-    api_scope = FactoryGirl.create(:api_scope, :name => "Example", :path_prefix => "/example")
+    api_scope = FactoryBot.create(:api_scope, :name => "Example", :path_prefix => "/example")
 
     admin_login
     visit("/admin/#/api_scopes/#{api_scope.id}/edit")

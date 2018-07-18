@@ -1,4 +1,4 @@
-FactoryGirl.define do
+FactoryBot.define do
   factory :api_scope do
     sequence(:name) { |n| "Example #{n}" }
     host "localhost"

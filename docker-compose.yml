@@ -1,4 +1,4 @@
-version: "2"
+version: "3"
 services:
   app:
     build:
@@ -12,10 +12,19 @@ services:
       # performance.
       - /app/src/api-umbrella/admin-ui/tmp:rw,size=128m,mode=1777
     environment:
-      HTTP_PORT: 8100
-      HTTPS_PORT: 8101
+      HTTP_PORT: 8888
+      HTTPS_PORT: 8443
     ports:
-      - "8100:8100"
-      - "8101:8101"
+      - "8888:8888"
+      - "8443:8443"
+    networks:
+      main:
+        aliases:
+          - umbrella.docker
+
+networks: 
+  main:
+    external: true
+
 volumes:
   build_cache:

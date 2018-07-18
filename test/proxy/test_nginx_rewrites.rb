@@ -154,7 +154,7 @@ class Test::Proxy::TestNginxRewrites < Minitest::Test
       assert_equal("https://3.example.com/", response.headers["location"])
       response = Typhoeus.get("https://127.0.0.1:9081/admin/rewrite_me_just_kidding", http_opts)
       assert_response_code(404, response)
-      assert_match("nginx", response.body)
+      assert_match("<center>openresty</center>", response.body)
     end
   end
 end
