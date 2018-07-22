@@ -68,7 +68,7 @@ class Test::Processes::TestReloads < Minitest::Test
         # and aren't network sockets (we exclude those when checking for leaks,
         # since it's expected that there's much more variation in those
         # depending on the requests made by tests, keepalive connections, etc).
-        if((file.fetch(:pid) == parent_pid || file.fetch(:ppid) == parent_pid) && !["IPv4", "IPv6", "unix", "sock"].include?(file[:type]))
+        if([file.fetch(:pid), file.fetch(:ppid)].include?(parent_pid) && !["IPv4", "IPv6", "unix", "sock"].include?(file[:type]))
           descriptor_count += 1
 
           if(file.fetch(:file).include?("urandom"))

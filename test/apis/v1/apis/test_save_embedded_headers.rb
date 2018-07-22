@@ -251,7 +251,7 @@ class Test::Apis::V1::Apis::TestSaveEmbeddedHeaders < Minitest::Test
       assert_response_code(201, response)
       data = MultiJson.load(response.body)
       api = Api.find(data["api"]["id"])
-    elsif(action == :update || action == :update_clears_existing_headers)
+    elsif([:update, :update_clears_existing_headers].include?(action))
       response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/apis/#{attributes["id"]}.json", http_options.deep_merge(admin_token).deep_merge({
         :headers => { "Content-Type" => "application/json" },
         :body => MultiJson.dump(:api => attributes),
