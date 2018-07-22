@@ -3,7 +3,7 @@ source "https://rubygems.org"
 gem "rails", "~> 4.2.10"
 
 # Rails app server
-gem "puma", "~> 3.11.4"
+gem "puma", "~> 3.12.0"
 
 # Error notification service (optional)
 gem "rollbar", "~> 2.16.2"
