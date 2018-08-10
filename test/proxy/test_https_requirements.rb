@@ -89,13 +89,13 @@ class Test::Proxy::TestHttpsRequirements < Minitest::Test
     assert_http_error("/#{unique_test_class_id}/required_return_error/hello")
   end
 
-  def transition_return_error_user_created_before_transition_time
+  def test_transition_return_error_user_created_before_transition_time
     user = FactoryBot.create(:api_user, :created_at => Time.iso8601("2013-01-01T01:26:59Z"))
     assert_https_allowed("/#{unique_test_class_id}/transition_return_error/hello", user.api_key)
     assert_http_allowed("/#{unique_test_class_id}/transition_return_error/hello", user.api_key)
   end
 
-  def transition_return_error_user_created_after_transition_time
+  def test_transition_return_error_user_created_after_transition_time
     user = FactoryBot.create(:api_user, :created_at => Time.iso8601("2013-01-01T01:27:00Z"))
     assert_https_allowed("/#{unique_test_class_id}/transition_return_error/hello", user.api_key)
     assert_http_error("/#{unique_test_class_id}/transition_return_error/hello", user.api_key)
