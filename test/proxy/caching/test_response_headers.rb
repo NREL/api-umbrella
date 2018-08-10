@@ -44,6 +44,28 @@ class Test::Proxy::Caching::TestResponseHeaders < Minitest::Test
     assert_equal("HIT", response.headers["x-cache"])
   end
 
+  def test_x_cache_redirect_temporary
+    url = "http://127.0.0.1:9080/api/redirect/?unique_test_id=#{unique_test_id}"
+    response = Typhoeus.get(url, http_options)
+    assert_response_code(302, response)
+    assert_equal("MISS", response.headers["x-cache"])
+
+    response = Typhoeus.get(url, http_options)
+    assert_response_code(302, response)
+    assert_equal("MISS", response.headers["x-cache"])
+  end
+
+  def test_x_cache_redirect_permanent
+    url = "http://127.0.0.1:9080/api/redirect-301/?unique_test_id=#{unique_test_id}"
+    response = Typhoeus.get(url, http_options)
+    assert_response_code(301, response)
+    assert_equal("MISS", response.headers["x-cache"])
+
+    response = Typhoeus.get(url, http_options)
+    assert_response_code(301, response)
+    assert_equal("HIT", response.headers["x-cache"])
+  end
+
   def test_age_increases
     response = Typhoeus.get("http://127.0.0.1:9080/api/cacheable-cache-control-max-age/?unique_test_id=#{unique_test_id}", http_options)
     assert_response_code(200, response)
