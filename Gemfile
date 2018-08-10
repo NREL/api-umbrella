@@ -33,7 +33,7 @@ gem "oj", "~> 3.6.2"
 # Database libraries
 gem "mongoid", "~> 7.0.1"
 gem "elasticsearch", "~> 6.1.0"
-gem "active_attr", "~> 0.11.0"
+gem "active_attr", "~> 0.12.0"
 
 # Factories for test database data
 gem "factory_bot", "~> 4.10.0"
@@ -48,7 +48,7 @@ gem "rails_compatible_cookies_utils", "~> 0.1.0"
 gem "addressable", "~> 2.5.2"
 
 # Browser/JavaScript integration tests
-gem "capybara", "~> 3.4.1"
+gem "capybara", "~> 3.5.1"
 
 # Webkit-based driver for capybara
 gem "poltergeist", "~> 1.18.1"

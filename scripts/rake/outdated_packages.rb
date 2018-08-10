@@ -160,7 +160,7 @@ class OutdatedPackages
       :git => "https://github.com/apache/trafficserver.git",
     },
     "unbound" => {
-      :http => "https://www.unbound.net/download.html",
+      :http => "https://nlnetlabs.nl/projects/unbound/download/",
     },
     "yarn" => {
       :git => "https://github.com/yarnpkg/yarn.git",
