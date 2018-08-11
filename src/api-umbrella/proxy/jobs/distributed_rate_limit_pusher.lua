@@ -84,7 +84,12 @@ local function do_check()
   end
 
   if success then
-    ngx.shared.stats:set("distributed_last_pushed_at", current_save_time)
+    local set_ok, set_err, set_forcible = ngx.shared.stats:set("distributed_last_pushed_at", current_save_time)
+    if not set_ok then
+      ngx.log(ngx.ERR, "failed to set 'distributed_last_pushed_at' in 'stats' shared dict: ", set_err)
+    elseif set_forcible then
+      ngx.log(ngx.WARN, "forcibly set 'distributed_last_pushed_at' in 'stats' shared dict (shared dict may be too small)")
+    end
   end
 end
 

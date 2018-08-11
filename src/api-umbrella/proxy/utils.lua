@@ -1,6 +1,5 @@
 local _M = {}
 
-local cmsgpack = require "cmsgpack"
 local json_null = require("cjson").null
 local plutils = require "pl.utils"
 local stringx = require "pl.stringx"
@@ -10,11 +9,9 @@ local types = require "pl.types"
 local escape = plutils.escape
 local gsub = ngx.re.gsub
 local is_empty = types.is_empty
-local pack = cmsgpack.pack
 local split = plutils.split
 local strip = stringx.strip
 local table_keys = tablex.keys
-local unpack = cmsgpack.unpack
 
 -- Append an array to the end of the destination array.
 --
@@ -46,17 +43,6 @@ function _M.base_url()
   end
 
   return base
-end
-
-function _M.get_packed(dict, key)
-  local packed = dict:get(key)
-  if packed then
-    return unpack(packed)
-  end
-end
-
-function _M.set_packed(dict, key, value)
-  return dict:set(key, pack(value))
 end
 
 function _M.pick_where_present(dict, keys)

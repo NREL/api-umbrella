@@ -2,11 +2,11 @@ local api_matcher = require "api-umbrella.proxy.middleware.api_matcher"
 local config = require "api-umbrella.proxy.models.file_config"
 local error_handler = require "api-umbrella.proxy.error_handler"
 local host_normalize = require "api-umbrella.utils.host_normalize"
+local packed_shared_dict = require "api-umbrella.utils.packed_shared_dict"
 local redirect_matches_to_https = require "api-umbrella.utils.redirect_matches_to_https"
-local utils = require "api-umbrella.proxy.utils"
 local website_matcher = require "api-umbrella.proxy.middleware.website_matcher"
 
-local get_packed = utils.get_packed
+local get_packed = packed_shared_dict.get_packed
 local ngx_var = ngx.var
 
 -- Determine the protocol/scheme and port this connection represents, based on

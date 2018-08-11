@@ -2,12 +2,12 @@ local _M = {}
 
 local interval_lock = require "api-umbrella.utils.interval_lock"
 local mongo = require "api-umbrella.utils.mongo"
+local packed_shared_dict = require "api-umbrella.utils.packed_shared_dict"
 local types = require "pl.types"
-local utils = require "api-umbrella.proxy.utils"
 
-local get_packed = utils.get_packed
+local get_packed = packed_shared_dict.get_packed
 local is_empty = types.is_empty
-local set_packed = utils.set_packed
+local set_packed = packed_shared_dict.set_packed
 
 local delay = 0.25  -- in seconds
 
@@ -39,7 +39,12 @@ local function do_check()
       for index, result in ipairs(results) do
         if skip == 0 and index == 1 then
           if result["ts"] and result["ts"]["$timestamp"] then
-            set_packed(ngx.shared.stats, "distributed_last_fetched_timestamp", result["ts"]["$timestamp"])
+            local set_ok, set_err, set_forcible = set_packed(ngx.shared.stats, "distributed_last_fetched_timestamp", result["ts"]["$timestamp"])
+            if not set_ok then
+              ngx.log(ngx.ERR, "failed to set 'distributed_last_fetched_timestamp' in 'stats' shared dict: ", set_err)
+            elseif set_forcible then
+              ngx.log(ngx.WARN, "forcibly set 'distributed_last_fetched_timestamp' in 'stats' shared dict (shared dict may be too small)")
+            end
           end
         end
 
@@ -54,16 +59,18 @@ local function do_check()
               ttl = 3600
             end
 
-            local _, set_err = ngx.shared.stats:set(key, distributed_count, ttl)
-            if set_err then
-              ngx.log(ngx.ERR, "failed to set rate limit key", set_err)
+            local set_ok, set_err, set_forcible = ngx.shared.stats:set(key, distributed_count, ttl)
+            if not set_ok then
+              ngx.log(ngx.ERR, "failed to set rate limit key in 'stats' shared dict: ", set_err)
+            elseif set_forcible then
+              ngx.log(ngx.WARN, "forcibly set rate limit key in 'stats' shared dict (shared dict may be too small)")
             end
           end
         elseif distributed_count > local_count then
           local incr = distributed_count - local_count
           local _, incr_err = ngx.shared.stats:incr(key, incr)
           if incr_err then
-            ngx.log(ngx.ERR, "failed to increment rate limit key", incr_err)
+            ngx.log(ngx.ERR, "failed to increment rate limit key: ", incr_err)
           end
         end
       end
@@ -73,7 +80,12 @@ local function do_check()
   until is_empty(results)
 
   if success then
-    ngx.shared.stats:set("distributed_last_pulled_at", current_fetch_time)
+    local set_ok, set_err, set_forcible = ngx.shared.stats:set("distributed_last_pulled_at", current_fetch_time)
+    if not set_ok then
+      ngx.log(ngx.ERR, "failed to set 'distributed_last_pulled_at' in 'stats' shared dict: ", set_err)
+    elseif set_forcible then
+      ngx.log(ngx.WARN, "forcibly set 'distributed_last_pulled_at' in 'stats' shared dict (shared dict may be too small)")
+    end
   end
 end
 

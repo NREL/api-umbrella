@@ -52,7 +52,10 @@ local function do_check()
   end
 
   if last_fetched_at then
-    ngx.shared.active_config:set("db_config_last_fetched_at", last_fetched_at)
+    local set_ok, set_err = ngx.shared.active_config:safe_set("db_config_last_fetched_at", last_fetched_at)
+    if not set_ok then
+      ngx.log(ngx.ERR, "failed to set 'db_config_last_fetched_at' in 'active_config' shared dict: ", set_err)
+    end
   end
 end
 

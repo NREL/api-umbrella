@@ -218,7 +218,12 @@ function _M.cache_new_city_geocode(data)
   -- Only cache the first city location per startup to prevent lots of indexing
   -- churn re-indexing the same city.
   if not ngx.shared.geocode_city_cache:get(id) then
-    ngx.shared.geocode_city_cache:set(id, true)
+    local set_ok, set_err, set_forcible = ngx.shared.geocode_city_cache:set(id, true)
+    if not set_ok then
+      ngx.log(ngx.ERR, "failed to set city in 'geocode_city_cache' shared dict: ", set_err)
+    elseif set_forcible then
+      ngx.log(ngx.WARN, "forcibly set city in 'geocode_city_cache' shared dict (shared dict may be too small)")
+    end
 
     -- Perform the actual cache call in a timer because the http library isn't
     -- supported directly in the log_by_lua context.
