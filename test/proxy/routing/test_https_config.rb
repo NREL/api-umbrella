@@ -198,6 +198,67 @@ class Test::Proxy::Routing::TestHttpsConfig < Minitest::Test
     end
   end
 
+  def test_custom_api_backend_regex
+    # Test behavior when root / path is default website backend.
+    response = Typhoeus.get("http://127.0.0.1:9080/", keyless_http_options)
+    assert_response_code(301, response)
+    assert_equal("https://127.0.0.1:9081/", response.headers["Location"])
+
+    response = Typhoeus.get("http://127.0.0.1:9080/hello", keyless_http_options)
+    assert_response_code(301, response)
+    assert_equal("https://127.0.0.1:9081/hello", response.headers["Location"])
+
+    response = Typhoeus.get("https://127.0.0.1:9081/", keyless_http_options)
+    assert_response_code(200, response)
+    assert_match("Your API Site Name", response.body)
+
+    override_config({
+      "router" => {
+        "api_backend_required_https_regex_default" => "^/?$",
+      },
+    }, "--router") do
+      prepend_api_backends([
+        {
+          :frontend_host => "127.0.0.1",
+          :backend_host => "127.0.0.1",
+          :servers => [{ :host => "127.0.0.1", :port => 9444 }],
+          :url_matches => [{ :frontend_prefix => "/", :backend_prefix => "/" }],
+        },
+      ]) do
+        # Verify root is now routing to API backend.
+        response = Typhoeus.get("https://127.0.0.1:9081/", keyless_http_options)
+        assert_response_code(403, response)
+        assert_match("API_KEY_MISSING", response.body)
+
+        # Check for redirect on root path based on
+        # api_backend_required_https_regex_default.
+        response = Typhoeus.get("http://127.0.0.1:9080/", keyless_http_options)
+        assert_response_code(301, response)
+        assert_equal("https://127.0.0.1:9081/", response.headers["Location"])
+
+        response = Typhoeus.get("http://127.0.0.1:9080", keyless_http_options)
+        assert_response_code(301, response)
+        assert_equal("https://127.0.0.1:9081/", response.headers["Location"])
+
+        # Check that redirect regex is based on path only, not including query
+        # params (but params are included in regex).
+        response = Typhoeus.get("http://127.0.0.1:9080/?foo=bar", keyless_http_options)
+        assert_response_code(301, response)
+        assert_equal("https://127.0.0.1:9081/?foo=bar", response.headers["Location"])
+
+        # Verify that redirect regex is only applied to to root, and ignored
+        # for sub paths.
+        response = Typhoeus.get("http://127.0.0.1:9080/hello", keyless_http_options)
+        assert_response_code(403, response)
+        assert_match("API_KEY_MISSING", response.body)
+
+        response = Typhoeus.get("http://127.0.0.1:9080/hello", http_options)
+        assert_response_code(200, response)
+        assert_equal("Hello World", response.body)
+      end
+    end
+  end
+
   # This tests the "redirect_https" setting for API backends, which isn't
   # exposed in the web admin, since it's not normally useful for API backends.
   # We mainly have it implemented for routing to the non-API portions of the

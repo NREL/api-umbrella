@@ -83,6 +83,8 @@ local function route()
 end
 
 local function route_to_api(api, url_match)
+  redirect_matches_to_https(config["router"]["api_backend_required_https_regex_default"])
+
   ngx.ctx.matched_api = api
   ngx.ctx.matched_api_url_match = url_match
 
