@@ -40,7 +40,7 @@ Rails.application.routes.draw do
             put "move_after"
           end
         end
-        resources :users, :except => [:destroy]
+        resources :users
         resources :website_backends
         resource :contact, :only => [:create]
 

@@ -92,6 +92,16 @@ class Api::V1::UsersController < Api::V1::BaseController
     end
   end
 
+  def destroy do
+    @api_user = ApiUser.find(params[:id])
+    @api_user.enabled = false
+    if(@api_user.save)
+      head :no_content
+    else
+      format.json { render(:json => errors_response(@api_user), :status => :unprocessable_entity) }
+    end
+  end
+
   private
 
   def assign_attributes!
