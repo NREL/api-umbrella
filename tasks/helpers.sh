@@ -77,7 +77,7 @@ clean_task_working_dir() {
   if [[ -d "$dir" && "${DEBUG_TASK_SKIP_CLEAN:-}" != "true" ]]; then
     # Go to the task parent directory, since cleaning may end up deleting
     # sub-paths where the shell is currently cd-ed into.
-    cd "$dir"
+    cd "$dir" || exit 1
 
     find "$dir" -mindepth 1 -maxdepth 1 -not -name "_persist" -print -exec rm -rf {} \;
   fi
