@@ -52,4 +52,9 @@ class ApiUserPolicy < ApplicationPolicy
       update?
     end
   end
+
+  def destroy?
+    update?
+  end
+
 end
