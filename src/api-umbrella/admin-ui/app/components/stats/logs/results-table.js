@@ -15,7 +15,7 @@ export default Component.extend({
         // exceed URL length limits in IE (and apparently Capybara too).
         type: 'POST',
         data: function(data) {
-          return _.extend({}, data, this.get('backendQueryParamValues'));
+          return _.extend({}, data, this.backendQueryParamValues);
         }.bind(this),
       },
       drawCallback: _.bind(function() {
@@ -74,7 +74,7 @@ export default Component.extend({
           defaultContent: '-',
           render: function(email, type, data) {
             if(type === 'display' && email && email !== '-') {
-              let params = _.clone(this.get('presentQueryParamValues'));
+              let params = _.clone(this.presentQueryParamValues);
               params.search = _.compact([params.search, 'user_id:"' + data.user_id + '"']).join(' AND ');
               let link = '#/stats/logs?' + $.param(params);
 
@@ -183,6 +183,6 @@ export default Component.extend({
   }),
 
   downloadUrl: computed('backendQueryParamValues', function() {
-    return '/admin/stats/logs.csv?' + $.param(this.get('backendQueryParamValues'));
+    return '/admin/stats/logs.csv?' + $.param(this.backendQueryParamValues);
   }),
 });

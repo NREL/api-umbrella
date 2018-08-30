@@ -31,6 +31,6 @@ export default Mixin.create({
   // https://github.com/emberjs/data/issues/4564
   // https://github.com/emberjs/data/issues/4595
   clearStoreCache() {
-    this.get('store').unloadAll();
+    this.store.unloadAll();
   },
 });

@@ -4,18 +4,18 @@ import BaseField from './base-field';
 export default BaseField.extend({
   init() {
     this._super();
-    this.set('aceId', this.get('elementId') + '_ace');
-    this.set('aceTextInputId', this.get('elementId') + '_ace_text_input');
-    this.addObserver('model.' + this.get('fieldName'), this, this.valueDidChange);
+    this.set('aceId', this.elementId + '_ace');
+    this.set('aceTextInputId', this.elementId + '_ace_text_input');
+    this.addObserver('model.' + this.fieldName, this, this.valueDidChange);
   },
 
   didInsertElement() {
     this._super();
 
-    let aceId = this.get('aceId');
+    let aceId = this.aceId;
     let $element = this.$().find('textarea');
     $element.hide();
-    $element.before('<div id="' + aceId + '" data-form-property="' + this.get('fieldName') + '" class="span12"></div>');
+    $element.before('<div id="' + aceId + '" data-form-property="' + this.fieldName + '" class="span12"></div>');
 
     this.editor = ace.edit(aceId);
 
@@ -32,10 +32,10 @@ export default BaseField.extend({
     session.setValue($element.val());
 
     let $textElement = $(editor.textInput.getElement());
-    $textElement.attr('id', this.get('aceTextInputId'));
+    $textElement.attr('id', this.aceTextInputId);
     $textElement.attr('data-raw-input-id', $element.attr('id'));
 
-    let contentId = this.get('elementId') + '_ace_content';
+    let contentId = this.elementId + '_ace_content';
     let $content = $(editor.container).find('.ace_content');
     $content.attr('id', contentId);
     $textElement.attr('data-ace-content-id', contentId);
@@ -49,7 +49,7 @@ export default BaseField.extend({
   valueDidChange() {
     if(this.editor) {
       let session = this.editor.getSession();
-      let value = this.get('model.' + this.get('fieldName'));
+      let value = this.get('model.' + this.fieldName);
       if(value !== session.getValue()) {
         session.setValue(value);
       }

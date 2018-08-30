@@ -9,7 +9,7 @@ export default Component.extend({
     this.$().find('table').DataTable({
       searching: false,
       order: [[1, 'desc']],
-      data: this.get('regions'),
+      data: this.regions,
       columns: [
         {
           data: 'name',
@@ -18,8 +18,8 @@ export default Component.extend({
           render: _.bind(function(name, type, data) {
             if(type === 'display' && name && name !== '-') {
               let link;
-              let params = _.clone(this.get('presentQueryParamValues'));
-              if(this.get('regionField') === 'request_ip_city') {
+              let params = _.clone(this.presentQueryParamValues);
+              if(this.regionField === 'request_ip_city') {
                 delete params.region;
                 params.search = 'request_ip_city:"' + data.id + '"';
                 link = '#/stats/logs?' + $.param(params);
@@ -53,11 +53,11 @@ export default Component.extend({
   refreshData: observer('regions', function() {
     let table = this.$().find('table').dataTable().api();
     table.clear();
-    table.rows.add(this.get('regions'));
+    table.rows.add(this.regions);
     table.draw();
   }),
 
   downloadUrl: computed('backendQueryParamValues', function() {
-    return '/admin/stats/map.csv?' + $.param(this.get('backendQueryParamValues'));
+    return '/admin/stats/map.csv?' + $.param(this.backendQueryParamValues);
   }),
 });

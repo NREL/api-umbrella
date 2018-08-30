@@ -8,8 +8,8 @@ export default Base.extend(Confirmation, UncachedModel, {
   fetchModels(record) {
     return hash({
       record: record,
-      apiScopeOptions: this.get('store').findAll('api-scope', { reload: true }),
-      permissionOptions: this.get('store').findAll('admin-permission', { reload: true }),
+      apiScopeOptions: this.store.findAll('api-scope', { reload: true }),
+      permissionOptions: this.store.findAll('admin-permission', { reload: true }),
     });
   },
 });

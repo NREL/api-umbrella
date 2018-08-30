@@ -6,10 +6,10 @@ import moment from 'npm:moment-timezone';
 export default Route.extend(AuthenticatedRouteMixin, {
   setupController(controller, model) {
     controller.set('model', model);
-    controller.set('dateRanges', this.get('dateRanges'));
-    controller.set('presentQueryParamValues', this.get('presentQueryParamValues') || {});
-    controller.set('allQueryParamValues', this.get('allQueryParamValues') || {});
-    controller.set('backendQueryParamValues', this.get('backendQueryParamValues') || {});
+    controller.set('dateRanges', this.dateRanges);
+    controller.set('presentQueryParamValues', this.presentQueryParamValues || {});
+    controller.set('allQueryParamValues', this.allQueryParamValues || {});
+    controller.set('backendQueryParamValues', this.backendQueryParamValues || {});
 
     $('ul.nav li').removeClass('active');
     $('ul.nav li.nav-analytics').addClass('active');

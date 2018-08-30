@@ -24,9 +24,9 @@ export default Component.extend({
   },
 
   handleRegionClick(event) {
-    let queryParams = _.clone(this.get('presentQueryParamValues'));
+    let queryParams = _.clone(this.presentQueryParamValues);
     queryParams.region = event.batch[0].name;
-    this.get('router').transitionTo('stats.map', { queryParams });
+    this.router.transitionTo('stats.map', { queryParams });
   },
 
   handleCityClick(event) {
@@ -34,7 +34,7 @@ export default Component.extend({
       let currentRegion = this.get('allQueryParamValues.region').split('-');
       let currentCountry = currentRegion[0];
       currentRegion = currentRegion[1];
-      let queryParams = _.clone(this.get('presentQueryParamValues'));
+      let queryParams = _.clone(this.presentQueryParamValues);
       queryParams.query = JSON.stringify({
         condition: 'AND',
         rules: [
@@ -73,7 +73,7 @@ export default Component.extend({
         ],
       });
 
-      this.get('router').transitionTo('stats.logs', { queryParams });
+      this.router.transitionTo('stats.logs', { queryParams });
     }
   },
 
@@ -113,8 +113,8 @@ export default Component.extend({
     let data = [];
     let maxValue = 2;
     let maxValueDisplay = '2';
-    let hits = this.get('regions');
-    let regionField = this.get('regionField');
+    let hits = this.regions;
+    let regionField = this.regionField;
     for(let i = 0; i < hits.length; i++) {
       let value, valueDisplay;
       if(regionField === 'request_ip_city') {
@@ -158,25 +158,25 @@ export default Component.extend({
 
   draw() {
     let currentRegion = this.get('allQueryParamValues.region');
-    if(!this.chart || this.get('loadedDataRegion') !== currentRegion || this.get('loadedMapRegion') !== currentRegion) {
+    if(!this.chart || this.loadedDataRegion !== currentRegion || this.loadedMapRegion !== currentRegion) {
       return;
     }
 
     let geo;
     let series = {};
-    if(this.get('regionField') === 'request_ip_city') {
+    if(this.regionField === 'request_ip_city') {
       geo = {
         map: 'region',
         silent: true,
       };
 
-      let maxValue = this.get('chartDataMaxValue');
+      let maxValue = this.chartDataMaxValue;
       series = [
         {
           name: 'Hits Scatter',
           type: 'scatter',
           coordinateSystem: 'geo',
-          data: this.get('chartData'),
+          data: this.chartData,
           symbolSize: (val) => {
             return Math.max(Math.round((val[2] / maxValue) * 30), 6);
           },
@@ -189,7 +189,7 @@ export default Component.extend({
           type: 'map',
           map: 'region',
           selectedMode: 'single',
-          data: this.get('chartData'),
+          data: this.chartData,
         },
       ];
     }
@@ -225,10 +225,10 @@ export default Component.extend({
       visualMap: {
         type: 'continuous',
         min: 1,
-        max: this.get('chartDataMaxValue'),
+        max: this.chartDataMaxValue,
         orient: 'horizontal',
         text: [
-          this.get('chartDataMaxValueDisplay'),
+          this.chartDataMaxValueDisplay,
           '1',
         ],
       },

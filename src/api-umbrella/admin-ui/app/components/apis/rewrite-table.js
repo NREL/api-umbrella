@@ -13,7 +13,7 @@ export default Component.extend(Sortable, {
 
   actions: {
     add() {
-      this.set('rewriteModel', this.get('store').createRecord('api/rewrite'));
+      this.set('rewriteModel', this.store.createRecord('api/rewrite'));
       this.set('openModal', true);
     },
 

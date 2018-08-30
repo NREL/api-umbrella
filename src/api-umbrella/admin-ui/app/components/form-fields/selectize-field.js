@@ -11,17 +11,17 @@ export default BaseField.extend({
 
     this.defaultOptions =  [];
 
-    this.set('selectizeTextInputId', this.get('elementId') + '-selectize_text_input');
-    this.addObserver('model.' + this.get('fieldName'), this, this.valueDidChange);
+    this.set('selectizeTextInputId', this.elementId + '-selectize_text_input');
+    this.addObserver('model.' + this.fieldName, this, this.valueDidChange);
   },
 
   didInsertElement() {
     this._super();
 
-    this.$input = this.$().find('#' + this.get('inputId')).selectize({
+    this.$input = this.$().find('#' + this.inputId).selectize({
       plugins: ['restore_on_backspace', 'remove_button'],
       delimiter: ',',
-      options: this.get('defaultOptions'),
+      options: this.defaultOptions,
       valueField: 'id',
       labelField: 'label',
       searchField: 'label',
@@ -33,25 +33,25 @@ export default BaseField.extend({
     });
 
     this.selectize = this.$input[0].selectize;
-    this.selectize.$control_input.attr('id', this.get('selectizeTextInputId'));
-    this.selectize.$control_input.attr('data-raw-input-id', this.get('inputId'));
+    this.selectize.$control_input.attr('id', this.selectizeTextInputId);
+    this.selectize.$control_input.attr('data-raw-input-id', this.inputId);
 
-    let controlId = this.get('elementId') + '-selectize_control';
+    let controlId = this.elementId + '-selectize_control';
     this.selectize.$control.attr('id', controlId);
     this.selectize.$control_input.attr('data-selectize-control-id', controlId);
   },
 
   // eslint-disable-next-line ember/no-on-calls-in-components
   defaultOptionsDidChange: on('init', observer('options.@each', function() {
-    this.set('defaultOptions', this.get('options').map(_.bind(function(item) {
+    this.set('defaultOptions', this.options.map(_.bind(function(item) {
       return {
-        id: item.get(this.get('optionValuePath')),
-        label: item.get(this.get('optionLabelPath')),
+        id: item.get(this.optionValuePath),
+        label: item.get(this.optionLabelPath),
       };
     }, this)));
 
     if(this.selectize) {
-      this.get('defaultOptions').forEach(_.bind(function(option) {
+      this.defaultOptions.forEach(_.bind(function(option) {
         this.selectize.addOption(option);
       }, this));
 
@@ -63,7 +63,7 @@ export default BaseField.extend({
   // externally.
   valueDidChange() {
     if(this.selectize) {
-      let valueString = this.get('model.' + this.get('fieldName'));
+      let valueString = this.get('model.' + this.fieldName);
       if(valueString !== this.selectize.getValue()) {
         let values = valueString;
         if(values) {

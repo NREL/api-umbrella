@@ -15,7 +15,7 @@ export default Component.extend({
   didInsertElement() {
     let rangeOptions = {};
     let rangeKeys = {};
-    _.forEach(this.get('dateRanges'), function(range, key) {
+    _.forEach(this.dateRanges, function(range, key) {
       rangeOptions[range.label] = [
         range.start_at,
         range.end_at,
@@ -254,7 +254,7 @@ export default Component.extend({
       ],
     });
 
-    let query = this.get('query');
+    let query = this.query;
     let rules;
     if(query) {
       rules = JSON.parse(query);
@@ -267,14 +267,14 @@ export default Component.extend({
 
       this.send('toggleFilters');
       this.send('toggleFilterType', 'builder');
-    } else if(this.get('search')) {
+    } else if(this.search) {
       this.send('toggleFilters');
       this.send('toggleFilterType', 'advanced');
     }
   },
 
   updateQueryBuilderRules: observer('query', function() {
-    let query = this.get('query');
+    let query = this.query;
     let rules;
     if(query) {
       rules = JSON.parse(query);
@@ -321,9 +321,9 @@ export default Component.extend({
     // predefined range. To workaround this issue (so any dates picked when
     // "Custom Range" is open are treated the same), we check to see if the
     // "Custom Range" calendars are visible or not.
-    let rangeOptions = this.get('rangeOptions');
-    if(rangeOptions[picker.chosenLabel] && !this.get('calendarShown')) {
-      let rangeKeys = this.get('rangeKeys');
+    let rangeOptions = this.rangeOptions;
+    if(rangeOptions[picker.chosenLabel] && !this.calendarShown) {
+      let rangeKeys = this.rangeKeys;
       this.setProperties({
         start_at: '',
         end_at: '',

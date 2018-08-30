@@ -7,7 +7,7 @@ export default Component.extend({
 
   actions: {
     add() {
-      this.set('serverModel', this.get('store').createRecord('api/server'));
+      this.set('serverModel', this.store.createRecord('api/server'));
       this.set('openModal', true);
     },
 

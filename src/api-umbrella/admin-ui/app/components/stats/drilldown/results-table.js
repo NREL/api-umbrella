@@ -12,7 +12,7 @@ export default Component.extend({
     this.$().find('table').DataTable({
       searching: false,
       order: [[1, 'desc']],
-      data: this.get('results'),
+      data: this.results,
       columns: [
         {
           data: 'path',
@@ -23,7 +23,7 @@ export default Component.extend({
               if(data.terminal) {
                 return '<i class="fa fa-file-o fa-space-right"></i>' + _.escape(name);
               } else {
-                let params = _.clone(this.get('presentQueryParamValues'));
+                let params = _.clone(this.presentQueryParamValues);
                 params.prefix = data.descendent_prefix;
                 let link = '#/stats/drilldown?' + $.param(params);
 
@@ -53,11 +53,11 @@ export default Component.extend({
   refreshData: observer('results', function() {
     let table = this.$().find('table').dataTable().api();
     table.clear();
-    table.rows.add(this.get('results'));
+    table.rows.add(this.results);
     table.draw();
   }),
 
   downloadUrl: computed('backendQueryParamValues', function() {
-    return '/api-umbrella/v1/analytics/drilldown.csv?api_key=' + this.get('session.data.authenticated.api_key') + '&' + $.param(this.get('backendQueryParamValues'));
+    return '/api-umbrella/v1/analytics/drilldown.csv?api_key=' + this.get('session.data.authenticated.api_key') + '&' + $.param(this.backendQueryParamValues);
   }),
 });

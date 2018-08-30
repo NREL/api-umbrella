@@ -81,6 +81,6 @@ export default Component.extend({
   }),
 
   hasErrors: computed('messages', function() {
-    return (this.get('messages').length > 0);
+    return this.messages.length > 0;
   }),
 });

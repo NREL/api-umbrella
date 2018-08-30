@@ -23,7 +23,7 @@ export default Component.extend({
     let data = []
     let labels = [];
 
-    let hits = this.get('hitsOverTime');
+    let hits = this.hitsOverTime;
     for(let i = 0; i < hits.length; i++) {
       data.push(hits[i].c[1].v);
       labels.push(hits[i].c[0].f);
@@ -38,13 +38,13 @@ export default Component.extend({
   })),
 
   draw() {
-    if(!this.chart || !this.get('chartData')) {
+    if(!this.chart || !this.chartData) {
       return;
     }
 
     let showAllSymbol = false;
     let lineWidth = 2;
-    if(this.get('chartData').length < 100) {
+    if(this.chartData.length < 100) {
       showAllSymbol = true;
       lineWidth = 4;
     }
@@ -87,7 +87,7 @@ export default Component.extend({
       xAxis: {
         type: 'category',
         boundaryGap: false,
-        data: this.get('chartLabels'),
+        data: this.chartLabels,
       },
       series: [
         {
@@ -104,7 +104,7 @@ export default Component.extend({
               width: lineWidth,
             },
           },
-          data: this.get('chartData'),
+          data: this.chartData,
         },
       ],
       title: {

@@ -16,10 +16,10 @@ export default Mixin.create({
     new PNotify({
       type: 'success',
       title: 'Saved',
-      text: (_.isFunction(options.message)) ? options.message(this.get('model')) : options.message,
+      text: (_.isFunction(options.message)) ? options.message(this.model) : options.message,
     });
 
-    this.get('router').transitionTo(options.transitionToRoute);
+    this.router.transitionTo(options.transitionToRoute);
   },
 
   saveRecord(options) {
@@ -31,12 +31,12 @@ export default Mixin.create({
       'model.serverErrors': [],
     });
 
-    this.get('model').validate().then(function() {
+    this.model.validate().then(function() {
       if(this.get('model.validations.isValid') === false) {
         this.set('model.clientErrors', this.get('model.validations.errors'));
         this.scrollToErrors();
       } else {
-        this.get('model').save().then(function() {
+        this.model.save().then(function() {
           if(options.afterSave) {
             options.afterSave(this.afterSaveComplete.bind(this, options, button));
           } else {
@@ -60,14 +60,14 @@ export default Mixin.create({
   destroyRecord(options) {
     bootbox.confirm(options.prompt, function(result) {
       if(result) {
-        this.get('model').destroyRecord().then(function() {
+        this.model.destroyRecord().then(function() {
           new PNotify({
             type: 'success',
             title: 'Deleted',
-            text: (_.isFunction(options.message)) ? options.message(this.get('model')) : options.message,
+            text: (_.isFunction(options.message)) ? options.message(this.model) : options.message,
           });
 
-          this.get('router').transitionTo(options.transitionToRoute);
+          this.router.transitionTo(options.transitionToRoute);
         }.bind(this), function(response) {
           bootbox.alert('Unexpected error deleting record: ' + response.responseText);
         });

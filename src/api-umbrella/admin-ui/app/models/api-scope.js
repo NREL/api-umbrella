@@ -32,7 +32,7 @@ export default DS.Model.extend(Validations, {
   updater: DS.attr(),
 
   displayName: computed('name', 'host', 'pathPrefix', function() {
-    return this.get('name') + ' - ' + this.get('host') + this.get('pathPrefix');
+    return this.name + ' - ' + this.host + this.pathPrefix;
   }),
 }).reopenClass({
   urlRoot: '/api-umbrella/v1/api_scopes',

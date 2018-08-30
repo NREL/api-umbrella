@@ -45,7 +45,7 @@ export default Component.extend({
 
     addRateLimit() {
       let collection = this.get('model.rateLimits');
-      collection.pushObject(this.get('store').createRecord('api/rate-limit'));
+      collection.pushObject(this.store.createRecord('api/rate-limit'));
     },
 
     deleteRateLimit(rateLimit) {

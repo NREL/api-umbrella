@@ -24,7 +24,7 @@ export default Base.extend({
   },
 
   model() {
-    let params = this.get('backendQueryParamValues');
+    let params = this.backendQueryParamValues;
     if(this.validateParams(params)) {
       return StatsLogs.find(params);
     } else {

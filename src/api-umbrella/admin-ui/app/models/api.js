@@ -54,17 +54,17 @@ export default DS.Model.extend(Validations, {
   },
 
   setDefaults() {
-    if(!this.get('settings')) {
-      this.set('settings', this.get('store').createRecord('api/settings'));
+    if(!this.settings) {
+      this.set('settings', this.store.createRecord('api/settings'));
     }
   },
 
   exampleIncomingUrlRoot: computed('frontendHost', function() {
-    return 'https://' + (this.get('frontendHost') || '');
+    return 'https://' + (this.frontendHost || '');
   }),
 
   exampleOutgoingUrlRoot: computed('backendProtocol', 'backendHost', 'fontendHost', function() {
-    return this.get('backendProtocol') + '://' + (this.get('backendHost') || this.get('frontendHost') || '');
+    return this.backendProtocol + '://' + (this.backendHost || this.frontendHost || '');
   }),
 }).reopenClass({
   urlRoot: '/api-umbrella/v1/apis',

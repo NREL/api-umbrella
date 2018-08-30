@@ -10,7 +10,7 @@ export default Mixin.create({
   }),
 
   updateSortOrder(indexes) {
-    this.get('sortableCollection').forEach(function(record) {
+    this.sortableCollection.forEach(function(record) {
       let index = indexes[guidFor(record)];
       record.set('sortOrder', index);
     });

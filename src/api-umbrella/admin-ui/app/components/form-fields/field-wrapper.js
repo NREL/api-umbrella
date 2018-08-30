@@ -8,23 +8,23 @@ export default Component.extend({
   canShowErrors: false,
 
   labelFor: computed('labelForId', 'inputId', function() {
-    return this.get('labelForId') || this.get('inputId');
+    return this.labelForId || this.inputId;
   }),
 
   // eslint-disable-next-line ember/no-on-calls-in-components
   fieldNameDidChange: on('init', observer('fieldName', function() {
-    let fieldName = this.get('fieldName');
+    let fieldName = this.fieldName;
     let fieldValidations = 'model.validations.attrs.' + fieldName;
     Ember.mixin(this, {
       fieldErrorMessages: computed(fieldValidations + '.messages', 'canShowErrors', function() {
-        if(this.get('canShowErrors')) {
+        if(this.canShowErrors) {
           return this.get(fieldValidations + '.messages');
         } else {
           return [];
         }
       }),
       fieldHasErrors: computed(fieldValidations + '.isValid', 'canShowErrors', function() {
-        if(this.get('canShowErrors')) {
+        if(this.canShowErrors) {
           return (this.get(fieldValidations + '.isValid') === false);
         } else {
           return false;
@@ -34,7 +34,7 @@ export default Component.extend({
   })),
 
   wrapperErrorClass: computed('fieldHasErrors', function() {
-    if(this.get('fieldHasErrors')) {
+    if(this.fieldHasErrors) {
       return 'has-error';
     } else {
       return '';

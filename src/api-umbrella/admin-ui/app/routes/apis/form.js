@@ -8,7 +8,7 @@ export default Base.extend(Confirmation, UncachedModel, {
   fetchModels(record) {
     return hash({
       record: record,
-      roleOptions: this.get('store').findAll('api-user-role', { reload: true }),
+      roleOptions: this.store.findAll('api-user-role', { reload: true }),
     });
   },
 });

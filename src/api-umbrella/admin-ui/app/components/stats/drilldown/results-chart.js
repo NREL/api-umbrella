@@ -23,7 +23,7 @@ export default Component.extend({
     let data = []
     let labels = [];
 
-    let hits = this.get('hitsOverTime');
+    let hits = this.hitsOverTime;
     for(let i = 1; i < hits.cols.length; i++) {
       data.push({
         name: hits.cols[i].label,
@@ -59,7 +59,7 @@ export default Component.extend({
   })),
 
   draw() {
-    if(!this.chart || !this.get('chartData')) {
+    if(!this.chart || !this.chartData) {
       return;
     }
 
@@ -101,9 +101,9 @@ export default Component.extend({
       xAxis: {
         type: 'category',
         boundaryGap: false,
-        data: this.get('chartLabels'),
+        data: this.chartLabels,
       },
-      series: this.get('chartData'),
+      series: this.chartData,
       title: {
         show: false,
       },

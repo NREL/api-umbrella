@@ -15,9 +15,9 @@ export default Route.extend(ApplicationRouteMixin, {
   attemptedTransitionChange: observer('session.attemptedTransition', function() {
     const attemptedTransition = this.get('session.attemptedTransition');
     if(attemptedTransition) {
-      this.get('session').set('data.attemptedTransitionUrl', attemptedTransition.intent.url);
+      this.session.set('data.attemptedTransitionUrl', attemptedTransition.intent.url);
     } else {
-      this.get('session').set('data.attemptedTransitionUrl', null);
+      this.session.set('data.attemptedTransitionUrl', null);
     }
   }),
 
@@ -31,15 +31,15 @@ export default Route.extend(ApplicationRouteMixin, {
     if(attemptedTransitionUrl) {
       this.transitionTo(attemptedTransitionUrl);
       this.set('session.attemptedTransition', null);
-      this.get('session').set('data.attemptedTransitionUrl', null);
+      this.session.set('data.attemptedTransitionUrl', null);
     } else {
-      this.transitionTo(this.get('routeAfterAuthentication'));
+      this.transitionTo(this.routeAfterAuthentication);
     }
   },
 
   actions: {
     loading(transition) {
-      let busy = this.get('busy');
+      let busy = this.busy;
       busy.show();
       transition.promise.finally(function() {
         busy.hide();
@@ -63,7 +63,7 @@ export default Route.extend(ApplicationRouteMixin, {
         }
         // eslint-disable-next-line no-console
         console.error(errorMessage);
-        this.get('busy').hide();
+        this.busy.hide();
         return this.intermediateTransitionTo('error');
       }
     },

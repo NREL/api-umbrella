@@ -20,9 +20,9 @@ export default Component.extend({
   // modals to work, since the select on those isn't set until the modal opens
   // (so setting a default value just on the very first render doesn't work).
   updateDefault() {
-    let value = this.get('value');
+    let value = this.value;
     if(value === undefined) {
-      let options = this.get('options');
+      let options = this.options;
       if(options) {
         let firstOption = options[0];
         if(firstOption && firstOption.id) {

@@ -13,7 +13,7 @@ export default Component.extend({
       ajax: {
         url: '/admin/stats/users.json',
         data: function(data) {
-          return _.extend({}, data, this.get('backendQueryParamValues'));
+          return _.extend({}, data, this.backendQueryParamValues);
         }.bind(this),
       },
       order: [[4, 'desc']],
@@ -24,7 +24,7 @@ export default Component.extend({
           defaultContent: '-',
           render: function(email, type, data) {
             if(type === 'display' && email && email !== '-') {
-              let params = _.clone(this.get('presentQueryParamValues'));
+              let params = _.clone(this.presentQueryParamValues);
               params.search = 'user_id:"' + data.id + '"';
               let link = '#/stats/logs?' + $.param(params);
 
@@ -87,6 +87,6 @@ export default Component.extend({
   }),
 
   downloadUrl: computed('backendQueryParamValues', function() {
-    return '/admin/stats/users.csv?' + $.param(this.get('backendQueryParamValues'));
+    return '/admin/stats/users.csv?' + $.param(this.backendQueryParamValues);
   }),
 });

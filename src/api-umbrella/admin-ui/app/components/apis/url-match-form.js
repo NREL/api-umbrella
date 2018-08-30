@@ -18,33 +18,33 @@ export default Component.extend({
 
   bufferedModel: computed('model', function() {
     let owner = getOwner(this).ownerInjection();
-    return BufferedProxy.extend(UrlMatch.validationClass).create(owner, { content: this.get('model') });
+    return BufferedProxy.extend(UrlMatch.validationClass).create(owner, { content: this.model });
   }),
 
   exampleIncomingUrl: computed('bufferedModel.frontendPrefix', function() {
-    let root = this.get('apiExampleIncomingUrlRoot') || '';
+    let root = this.apiExampleIncomingUrlRoot || '';
     let prefix = this.get('bufferedModel.frontendPrefix') || '';
-    return root + prefix + this.get('exampleSuffix');
+    return root + prefix + this.exampleSuffix;
   }),
 
   exampleOutgoingUrl: computed('bufferedModel.{frontendPrefix,backendPrefix}', function() {
-    let root = this.get('apiExampleOutgoingUrlRoot') || '';
+    let root = this.apiExampleOutgoingUrlRoot || '';
     let prefix = this.get('bufferedModel.backendPrefix') || this.get('bufferedModel.frontendPrefix') || '';
-    return root + prefix + this.get('exampleSuffix');
+    return root + prefix + this.exampleSuffix;
   }),
 
   actions: {
     submit() {
-      this.get('bufferedModel').applyChanges();
+      this.bufferedModel.applyChanges();
       if(this.get('model.isNew')) {
-        this.get('collection').pushObject(this.get('model'));
+        this.collection.pushObject(this.model);
       }
 
       this.set('openModal', false);
     },
 
     closed() {
-      this.get('bufferedModel').discardChanges();
+      this.bufferedModel.discardChanges();
       this.set('openModal', false);
     },
   },

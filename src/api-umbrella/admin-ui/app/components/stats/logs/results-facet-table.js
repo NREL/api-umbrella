@@ -6,9 +6,9 @@ import { on } from '@ember/object/evented';
 export default Component.extend({
   // eslint-disable-next-line ember/no-on-calls-in-components
   setLinks: on('init', observer('facets', function() {
-    _.each(this.get('facets'), function(bucket) {
-      let params = _.clone(this.get('presentQueryParamValues'));
-      params.search = _.compact([params.search, this.get('field') + ':"' + bucket.key + '"']).join(' AND ');
+    _.each(this.facets, function(bucket) {
+      let params = _.clone(this.presentQueryParamValues);
+      params.search = _.compact([params.search, this.field + ':"' + bucket.key + '"']).join(' AND ');
       bucket.link = '#/stats/logs?' + $.param(params);
     }.bind(this));
   })),

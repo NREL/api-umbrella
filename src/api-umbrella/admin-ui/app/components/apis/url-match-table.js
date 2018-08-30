@@ -13,7 +13,7 @@ export default Component.extend(Sortable, {
 
   actions: {
     add() {
-      this.set('urlMatchModel', this.get('store').createRecord('api/url-match'));
+      this.set('urlMatchModel', this.store.createRecord('api/url-match'));
       this.set('openModal', true);
     },
 

@@ -64,7 +64,7 @@ export default Component.extend({
   },
 
   downloadUrl: computed('queryParams', function() {
-    let params = this.get('queryParams');
+    let params = this.queryParams;
     if(params) {
       params = $.param(params);
     }
