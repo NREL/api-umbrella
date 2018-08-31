@@ -36,7 +36,7 @@ gem "elasticsearch", "~> 6.1.0"
 gem "active_attr", "~> 0.12.0"
 
 # Factories for test database data
-gem "factory_bot", "~> 4.10.0"
+gem "factory_bot", "~> 4.11.0"
 
 # Deleting database data between tests.
 gem "database_cleaner", "~> 1.7.0"
@@ -48,7 +48,7 @@ gem "rails_compatible_cookies_utils", "~> 0.1.0"
 gem "addressable", "~> 2.5.2"
 
 # Browser/JavaScript integration tests
-gem "capybara", "~> 3.5.1"
+gem "capybara", "~> 3.6.0"
 
 # Webkit-based driver for capybara
 gem "poltergeist", "~> 1.18.1"

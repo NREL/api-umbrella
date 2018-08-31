@@ -6,7 +6,7 @@ gem "rails", "~> 4.2.10"
 gem "puma", "~> 3.12.0"
 
 # Error notification service (optional)
-gem "rollbar", "~> 2.16.2"
+gem "rollbar", "~> 2.17.0"
 
 # Abort requests that take too long
 gem "rack-timeout", "~> 0.5.1", :require => "rack/timeout/base"
@@ -42,7 +42,7 @@ gem "mongoid_store", :git => "https://github.com/GUI/mongoid_store.git"
 gem "elasticsearch", "~> 6.1.0"
 
 # OmniAuth-based authentication
-gem "devise", "~> 4.4.3"
+gem "devise", "~> 4.5.0"
 gem "devise-i18n", "~> 1.6.0"
 gem "omniauth", "~> 1.8.1"
 gem "omniauth-cas", "~> 1.1.0", :git => "https://github.com/GUI/omniauth-cas.git", :branch => "rexml", :require => false
