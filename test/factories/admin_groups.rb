@@ -2,41 +2,43 @@ FactoryBot.define do
   factory :admin_group do
     sequence(:name) { |n| "Example#{n}" }
     api_scopes { [ApiScope.find_or_create_by_instance!(FactoryBot.build(:api_scope))] }
-    permission_ids [
-      "analytics",
-      "user_view",
-      "user_manage",
-      "admin_manage",
-      "backend_manage",
-      "backend_publish",
-    ]
+    permission_ids do
+      [
+        "analytics",
+        "user_view",
+        "user_manage",
+        "admin_manage",
+        "backend_manage",
+        "backend_publish",
+      ]
+    end
 
     trait :analytics_permission do
-      permission_ids ["analytics"]
+      permission_ids { ["analytics"] }
     end
 
     trait :user_view_permission do
-      permission_ids ["user_view"]
+      permission_ids { ["user_view"] }
     end
 
     trait :user_manage_permission do
-      permission_ids ["user_manage"]
+      permission_ids { ["user_manage"] }
     end
 
     trait :user_view_and_manage_permission do
-      permission_ids ["user_view", "user_manage"]
+      permission_ids { ["user_view", "user_manage"] }
     end
 
     trait :admin_manage_permission do
-      permission_ids ["admin_manage"]
+      permission_ids { ["admin_manage"] }
     end
 
     trait :backend_manage_permission do
-      permission_ids ["backend_manage"]
+      permission_ids { ["backend_manage"] }
     end
 
     trait :backend_publish_permission do
-      permission_ids ["backend_publish"]
+      permission_ids { ["backend_publish"] }
     end
 
     factory :localhost_root_admin_group do
