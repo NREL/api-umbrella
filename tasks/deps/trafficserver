@@ -7,7 +7,7 @@ set -e -u -x
 source ./tasks/helpers.sh
 
 task_working_dir
-download "http://mirror.olnevhost.net/pub/apache/trafficserver/trafficserver-$trafficserver_version.tar.bz2" "sha512" "$trafficserver_hash"
+download "http://apache.mirrors.pair.com/trafficserver/trafficserver-$trafficserver_version.tar.bz2" "sha512" "$trafficserver_hash"
 extract_download "trafficserver-$trafficserver_version.tar.bz2"
 
 cd "trafficserver-$trafficserver_version"
