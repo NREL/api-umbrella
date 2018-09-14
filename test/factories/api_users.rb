@@ -10,7 +10,7 @@ FactoryBot.define do
     end
 
     factory :xss_api_user do
-      email { 'a@"><script class="xss-test">alert("Hello-first_name");</script>.com' }
+      email { 'a@"><script&nbsp;class="xss-test">alert("Hello-first_name");</script>.com' }
       first_name { '"><script class="xss-test">alert("Hello first_name");</script>' }
       last_name { '"><script class="xss-test">alert("Hello last_name");</script>' }
       use_description { '"><script class="xss-test">alert("Hello use_description");</script>' }
