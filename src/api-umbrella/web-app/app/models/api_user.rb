@@ -59,7 +59,7 @@ class ApiUser
   validates :email,
     :presence => { :message => "Provide your email address." },
     :format => {
-      :with => /.+@.+\..+/,
+      :with => proc { ::Regexp.new(ApiUmbrellaConfig[:web][:api_user][:email_regex], ::Regexp::IGNORECASE) },
       :allow_blank => true,
       :message => "Provide a valid email address.",
     },

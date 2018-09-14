@@ -79,6 +79,7 @@ web:
     min_threads: 2
     max_threads: 24
   api_user:
+    email_regex: "\\A[^@\\s]+@[^@\\s]+\\.[^@\\s]+\\z"
     first_name_exclude_regex: "(http|https|www|<|>|\\r|\\n)"
     last_name_exclude_regex: "(http|https|www|<|>|\\r|\\n)"
   admin:
@@ -86,7 +87,7 @@ web:
     username_is_email: true
     password_length_min: 14
     password_length_max: 72
-    email_regex: "\\A[^@\\s]+@[^@\\s]+\\z"
+    email_regex: "\\A[^@\\s]+@[^@\\s]+\\.[^@\\s]+\\z"
     password_regex:
     auth_strategies:
       enabled:
