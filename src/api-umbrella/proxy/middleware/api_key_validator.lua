@@ -49,6 +49,7 @@ return function(settings)
   local api_key = resolve_api_key()
   -- Find if and IdP was set
   if settings["require_idp"] then
+    api_key.idp=config["gatekeeper"]["default_idp"]
     api_key.idp=settings["require_idp"]
     api_key.trusted_apps = settings["trusted_apps"]
     api_key.app_id = settings["idp_app_id"]

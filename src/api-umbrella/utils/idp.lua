@@ -27,13 +27,13 @@ function _M.first(dict)
         idp_host="https://www.googleapis.com"
     elseif idp_back_name == "fiware-oauth2" and mode == "authorization" then
         rpath = "/user"
-        idp_host="https://130.206.84.14"
+        idp_host=dict["idp"]["host"]
         resource = ngx.ctx.uri
         method = ngx.ctx.request_method
         rquery = "access_token="..token.."&app_id="..app_id.."&resource="..resource.."&action="..method
     elseif idp_back_name == "fiware-oauth2" and mode == "authentication" then
         rpath = "/user"
-        idp_host="https://130.206.84.14"
+        idp_host=dict["idp"]["host"]
         rquery = "access_token="..token.."&app_id="..app_id
     elseif idp_back_name == "facebook-oauth2" then
         rpath = "/me"
