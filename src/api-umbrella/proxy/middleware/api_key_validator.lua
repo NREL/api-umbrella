@@ -51,6 +51,8 @@ return function(settings)
   if settings["require_idp"] then
     api_key.idp=settings["require_idp"]
     api_key.trusted_apps = settings["trusted_apps"]
+    api_key.app_id = settings["idp_app_id"]
+    api_key.mode = settings["idp_mode"]
   end
   if is_empty(api_key["key_value"]) then
     if settings and settings["disable_api_key"] then

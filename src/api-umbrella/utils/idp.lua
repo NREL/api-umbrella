@@ -11,8 +11,10 @@ local _M = {}
 function _M.first(dict)
     local idp_back_name = dict["idp"]
     local token = dict["key_value"]
-    local idp_host, result, res, err, rpath
+    local idp_host, result, res, err, rpath,resource, method
     local ssl=false
+    local app_id = dict["app_id"]
+    local mode = dict["mode"]
     local httpc = http.new()
     httpc:set_timeout(45000)
 
@@ -23,9 +25,16 @@ function _M.first(dict)
     if idp_back_name == "google-oauth2" then
         rpath = "/oauth2/v3/userinfo"
         idp_host="https://www.googleapis.com"
-    elseif idp_back_name == "fiware-oauth2" then
+    elseif idp_back_name == "fiware-oauth2" and mode == "authorization" then
         rpath = "/user"
         idp_host="https://130.206.84.14"
+        resource = ngx.ctx.uri
+        method = ngx.ctx.request_method
+        rquery = "access_token="..token.."&app_id="..app_id.."&resource="..resource.."&action="..method
+    elseif idp_back_name == "fiware-oauth2" and mode == "authentication" then
+        rpath = "/user"
+        idp_host="https://130.206.84.14"
+        rquery = "access_token="..token.."&app_id="..app_id
     elseif idp_back_name == "facebook-oauth2" then
         rpath = "/me"
         idp_host="https://graph.facebook.com"
