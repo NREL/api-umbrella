@@ -52,7 +52,8 @@ return function(settings)
   -- Find if and IdP was set
   if settings and settings["ext_auth_allowed"] and config["gatekeeper"]["default_idp"] then
     api_key.idp=config["gatekeeper"]["default_idp"]
-    api_key.idp.app_id = settings["idp_app_id"]
+    api_key.app_id = settings["idp_app_id"]
+    api_key.mode = settings["idp_mode"]
   end
 
   if is_empty(api_key["key_value"]) then
