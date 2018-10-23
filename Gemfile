@@ -54,10 +54,10 @@ gem "capybara", "~> 3.6.0"
 gem "poltergeist", "~> 1.18.1"
 
 # Take screenshots on capybara test failures
-gem "capybara-screenshot", "~> 1.0.14"
+gem "capybara-screenshot", "~> 1.0.21"
 
 # HTML or XML parsing
-gem "nokogiri", "~> 1.8.1"
+gem "nokogiri", "~> 1.8.5"
 
 # Useful additions
 gem "activesupport", "~> 5.2.0"
