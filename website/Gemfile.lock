@@ -28,8 +28,8 @@ GEM
     execjs (2.7.0)
     fast_blank (1.0.0)
     fastimage (2.1.0)
-    ffi (1.9.18)
-    ffi (1.9.18-java)
+    ffi (1.9.25)
+    ffi (1.9.25-java)
     font-awesome-sass (4.7.0)
       sass (>= 3.2)
     haml (4.0.7)
@@ -126,4 +126,4 @@ DEPENDENCIES
   mini_racer (~> 0.1.9)
 
 BUNDLED WITH
-   1.16.2
+   1.16.4

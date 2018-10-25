@@ -6,7 +6,7 @@ gem "rails", "~> 4.2.10"
 gem "puma", "~> 3.12.0"
 
 # Error notification service (optional)
-gem "rollbar", "~> 2.17.0"
+gem "rollbar", "~> 2.18.0"
 
 # Abort requests that take too long
 gem "rack-timeout", "~> 0.5.1", :require => "rack/timeout/base"
@@ -31,7 +31,7 @@ gem "mongoid_delorean", "~> 1.3.0"
 gem "mongoid-embedded-errors", "~> 2.1.1"
 
 # Data migrations
-gem "mongoid_rails_migrations", "~> 1.1.0"
+gem "mongoid_rails_migrations", "~> 1.2.0"
 
 # Rails cache store using mongo.
 #
@@ -53,7 +53,7 @@ gem "omniauth-google-oauth2", "~> 0.5.3", :require => false
 gem "omniauth-ldap", "~> 2.0.0", :require => false
 
 # Authorization
-gem "pundit", "~> 1.1.0"
+gem "pundit", "~> 2.0.0"
 
 # Views/templates for APIs
 gem "rabl", "~> 0.13.1"

@@ -105,6 +105,7 @@ namespace :i18n do
 
     I18n.available_locales.each do |locale|
       next if(locale == :en)
+
       locale_data = I18n.with_locale(locale) { I18n.t(".") }
       gettext_data = i18n_to_gettext(en_data, locale_data)
 

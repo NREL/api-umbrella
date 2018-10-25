@@ -253,6 +253,7 @@ class Test::Proxy::TestMongodbReplicaSet < Minitest::Test
     if(response.code != 200)
       raise MongoOrchestrationError
     end
+
     assert_equal("application/json", response.headers["content-type"])
 
     MultiJson.load(response.body)

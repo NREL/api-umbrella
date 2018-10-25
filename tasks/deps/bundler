@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-bundler_version="1.16.4"
+bundler_version="1.16.6"
 
 set -e -u -x
 source ./tasks/helpers.sh

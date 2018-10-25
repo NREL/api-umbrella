@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-mongodb_version="3.2.20"
-mongodb_hash="01f7660d86b3de679ce388eaa681286a"
+mongodb_version="3.2.21"
+mongodb_hash="18c48764662d4074d5444a6fdf496406"
 
 set -e -u -x
 source ./tasks/helpers.sh

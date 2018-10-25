@@ -18,7 +18,7 @@ gem "minitest-hooks", "~> 1.5.0"
 gem "minitest-ci", "~> 3.4.0"
 
 # Ruby lint/style checker
-gem "rubocop", "~> 0.58.1", :require => false
+gem "rubocop", "~> 0.59.2", :require => false
 
 # Running background processes
 gem "childprocess", "~> 0.9.0"
@@ -48,7 +48,7 @@ gem "rails_compatible_cookies_utils", "~> 0.1.0"
 gem "addressable", "~> 2.5.2"
 
 # Browser/JavaScript integration tests
-gem "capybara", "~> 3.6.0"
+gem "capybara", "~> 3.10.0"
 
 # Webkit-based driver for capybara
 gem "poltergeist", "~> 1.18.1"
