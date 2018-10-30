@@ -16,7 +16,7 @@ gem "rack-proxy", "~> 0.6.4"
 
 # JSON handling
 gem "multi_json", "~> 1.13.1"
-gem "oj", "~> 3.6.2", :platforms => [:ruby]
+gem "oj", "~> 3.7.0", :platforms => [:ruby]
 
 # MongoDB
 gem "mongoid", "~> 5.4"
@@ -48,7 +48,7 @@ gem "omniauth", "~> 1.8.1"
 gem "omniauth-cas", "~> 1.1.0", :git => "https://github.com/GUI/omniauth-cas.git", :branch => "rexml", :require => false
 gem "omniauth-facebook", "~> 5.0.0", :require => false
 gem "omniauth-github", "~> 1.3.0", :require => false
-gem "omniauth-gitlab", "~> 1.0.3", :require => false
+gem "omniauth-gitlab", "~> 2.0.0", :require => false
 gem "omniauth-google-oauth2", "~> 0.5.3", :require => false
 gem "omniauth-ldap", "~> 2.0.0", :require => false
 

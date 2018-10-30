@@ -141,7 +141,7 @@ GEM
       multi_json (>= 1.2)
     jwt (2.1.0)
     kramdown (1.17.0)
-    loofah (2.2.2)
+    loofah (2.2.3)
       crass (~> 1.0.2)
       nokogiri (>= 1.5.9)
     mail (2.7.1)
@@ -149,7 +149,7 @@ GEM
     mini_mime (1.0.1)
     mini_portile2 (2.3.0)
     minitest (5.11.3)
-    money (6.13.0)
+    money (6.13.1)
       i18n (>= 0.6.4, <= 2)
     mongo (2.6.2)
       bson (>= 4.3.0, < 5.0.0)
@@ -186,7 +186,7 @@ GEM
       multi_json (~> 1.3)
       multi_xml (~> 0.5)
       rack (>= 1.2, < 3)
-    oj (3.6.12)
+    oj (3.7.0)
     omniauth (1.8.1)
       hashie (>= 3.4.6, < 3.6.0)
       rack (>= 1.6.2, < 3)
@@ -195,7 +195,7 @@ GEM
     omniauth-github (1.3.0)
       omniauth (~> 1.5)
       omniauth-oauth2 (>= 1.4.0, < 2.0)
-    omniauth-gitlab (1.0.4)
+    omniauth-gitlab (2.0.0)
       omniauth (~> 1.0)
       omniauth-oauth2 (~> 1.0)
     omniauth-google-oauth2 (0.5.3)
@@ -332,12 +332,12 @@ DEPENDENCIES
   mongoid_store!
   multi_json (~> 1.13.1)
   nokogiri (~> 1.8.1)
-  oj (~> 3.6.2)
+  oj (~> 3.7.0)
   omniauth (~> 1.8.1)
   omniauth-cas (~> 1.1.0)!
   omniauth-facebook (~> 5.0.0)
   omniauth-github (~> 1.3.0)
-  omniauth-gitlab (~> 1.0.3)
+  omniauth-gitlab (~> 2.0.0)
   omniauth-google-oauth2 (~> 0.5.3)
   omniauth-ldap (~> 2.0.0)
   premailer-rails (~> 1.10.2)
@@ -355,4 +355,4 @@ DEPENDENCIES
   simple_form (~> 3.5)
 
 BUNDLED WITH
-   1.16.6
+   1.17.1
