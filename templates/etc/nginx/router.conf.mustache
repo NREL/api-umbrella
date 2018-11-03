@@ -136,11 +136,13 @@ http {
   ssl_buffer_size {{nginx.ssl_buffer_size}};
   ssl_prefer_server_ciphers {{nginx.ssl_prefer_server_ciphers}};
   ssl_ecdh_curve {{nginx.ssl_ecdh_curve}};
-
   {{#nginx.dhparam}}
   # Diffie-Hellman parameter for DHE ciphersuites, recommended 2048 bits
   ssl_dhparam {{nginx.dhparam}};
   {{/nginx.dhparam}}
+
+  proxy_buffer_size {{nginx.proxy_buffer_size}};
+  proxy_buffers {{nginx.proxy_buffers}};
 
   {{#nginx.server_names_hash_bucket_size}}
     server_names_hash_bucket_size {{nginx.server_names_hash_bucket_size}};

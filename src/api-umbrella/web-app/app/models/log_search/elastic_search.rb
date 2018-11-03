@@ -76,6 +76,7 @@ class LogSearch::ElasticSearch < LogSearch::Base
       # Don't return partial results.
       raise "Elasticsearch request timed out"
     end
+
     @result = LogResult.factory(self, raw_result)
   end
 

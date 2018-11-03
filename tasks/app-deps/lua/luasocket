@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-lua_luasocket_version="5813cd05054599b0409480d3214f1827c2360467"
-lua_luasocket_hash="b74ac43d6e25830556173e510133dcc2"
+lua_luasocket_version="288219fd6b53ce2e709745c9918aa4c4b7f715c9"
+lua_luasocket_hash="8dfe5d11178cc9279fc94f72eeb05dfc"
 
 set -e -u -x
 source ./tasks/helpers.sh

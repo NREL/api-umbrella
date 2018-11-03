@@ -2,8 +2,8 @@
 
 openresty_version="1.13.6.2"
 openresty_hash="d95bc4bbe15e4b045a0593b4ecc0db38"
-openssl_version="1.0.2o"
-openssl_hash="ec3f5c9714ba0fd45cb4e087301eb1336c317e0d20b575a125050470e8089e4d"
+openssl_version="1.0.2p"
+openssl_hash="50a98e07b1a89eb8f6a99477f262df71c6fa7bef77df4dc83025a2845c827d00"
 pcre_version="8.42"
 pcre_hash="085b6aa253e0f91cae70b3cdbe8c1ac2"
 

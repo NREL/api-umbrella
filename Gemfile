@@ -18,7 +18,7 @@ gem "minitest-hooks", "~> 1.5.0"
 gem "minitest-ci", "~> 3.4.0"
 
 # Ruby lint/style checker
-gem "rubocop", "~> 0.58.1", :require => false
+gem "rubocop", "~> 0.60.0", :require => false
 
 # Running background processes
 gem "childprocess", "~> 0.9.0"
@@ -28,7 +28,7 @@ gem "typhoeus", "~> 1.3.0"
 
 # JSON parsing
 gem "multi_json", "~> 1.13.1"
-gem "oj", "~> 3.6.2"
+gem "oj", "~> 3.7.0"
 
 # Database libraries
 gem "mongoid", "~> 7.0.1"
@@ -36,7 +36,7 @@ gem "elasticsearch", "~> 6.1.0"
 gem "active_attr", "~> 0.12.0"
 
 # Factories for test database data
-gem "factory_bot", "~> 4.10.0"
+gem "factory_bot", "~> 4.11.0"
 
 # Deleting database data between tests.
 gem "database_cleaner", "~> 1.7.0"
@@ -48,16 +48,16 @@ gem "rails_compatible_cookies_utils", "~> 0.1.0"
 gem "addressable", "~> 2.5.2"
 
 # Browser/JavaScript integration tests
-gem "capybara", "~> 3.5.1"
+gem "capybara", "~> 3.10.0"
 
 # Webkit-based driver for capybara
 gem "poltergeist", "~> 1.18.1"
 
 # Take screenshots on capybara test failures
-gem "capybara-screenshot", "~> 1.0.14"
+gem "capybara-screenshot", "~> 1.0.21"
 
 # HTML or XML parsing
-gem "nokogiri", "~> 1.8.1"
+gem "nokogiri", "~> 1.8.5"
 
 # Useful additions
 gem "activesupport", "~> 5.2.0"

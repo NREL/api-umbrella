@@ -54,6 +54,7 @@ module ApiUmbrella
 
     def attributify_settings!(data, old_data)
       return unless(data.key?("settings"))
+
       data["settings_attributes"] = data.delete("settings") || {}
 
       settings_data = data["settings_attributes"]
@@ -82,6 +83,7 @@ module ApiUmbrella
 
     def attributify_embeds_many!(data, collection_name, old_data)
       return unless(data.key?(collection_name))
+
       attribute_key = "#{collection_name}_attributes"
       data[attribute_key] = data.delete(collection_name) || []
 

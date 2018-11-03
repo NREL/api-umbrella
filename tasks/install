@@ -61,9 +61,9 @@ mkdir -p \
 )
 
 sed -i "s#$STAGE_DIR##g" \
-  "$destdir$install_prefix/embedded/openresty/luajit/bin/luarocks-5.1" \
-  "$destdir$install_prefix/embedded/openresty/luajit/bin/luarocks-admin-5.1" \
-  "$destdir$install_prefix/embedded/openresty/luajit/share/lua/5.1/luarocks/site_config.lua"
+  "$destdir$install_prefix/embedded/openresty/luajit/bin/luarocks" \
+  "$destdir$install_prefix/embedded/openresty/luajit/bin/luarocks-admin" \
+  "$destdir$install_prefix/embedded/openresty/luajit/etc/luarocks/config-5.1.lua"
 
 chmod 1777 "$destdir$install_prefix/var/tmp"
 

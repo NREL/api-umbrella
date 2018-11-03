@@ -66,7 +66,22 @@ class Api::V1::UsersController < Api::V1::BaseController
         end
 
         if(send_welcome_email)
-          ApiUserMailer.signup_email(@api_user.id, params[:options] || {}).deliver_later
+          # The contact URLs or example API URLs to embed within the e-mail
+          # message are accepted via the form params. To prevent sending
+          # e-mails that may link to third-party or malicious sites, sanitize
+          # these URLs to ensure they point to a known domain that is
+          # configured within API Umbrella.
+          #
+          # TODO: It may be better to have admins more explicitly manage these
+          # settings within the admin tool, but to retain compatibility with
+          # the current approach, we'll use this domain-based sanitization.
+          known_hosts = KnownHosts.new
+          options = params[:options]&.deep_dup || {}
+          options[:example_api_url] = known_hosts.sanitized_api_url(options[:example_api_url])
+          options[:contact_url] = known_hosts.sanitized_url(options[:contact_url])
+          options[:email_from_address] = known_hosts.sanitized_email(options[:email_from_address])
+
+          ApiUserMailer.signup_email(@api_user.id, options).deliver_later
         end
         if(send_notify_email)
           ApiUserMailer.notify_api_admin(@api_user.id).deliver_later

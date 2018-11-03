@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-luarocks_version="2.4.4"
-luarocks_hash="04e8b19d565e86b1d08f745adc4b1a56"
+luarocks_version="3.0.4"
+luarocks_hash="b67be533e0e027a26e3fd2b566ac938f"
 
 set -e -u -x
 source ./tasks/helpers.sh
@@ -13,10 +13,12 @@ extract_download "luarocks-$luarocks_version.tar.gz"
 cd "luarocks-$luarocks_version"
 ./configure \
   --prefix="$INSTALL_PREFIX_EMBEDDED/openresty/luajit" \
-  --with-lua="$STAGE_EMBEDDED_DIR/openresty/luajit" \
-  --with-lua-include="$STAGE_EMBEDDED_DIR/openresty/luajit/include/luajit-2.1" \
-  --lua-suffix=jit
-make build
+  --with-lua="$STAGE_EMBEDDED_DIR/openresty/luajit"
+make
+# Clean old installations on version upgrades.
+rm -rf "$STAGE_DIR$INSTALL_PREFIX_EMBEDDED/openresty/luajit/share/lua/5.1/luarocks" \
+  "$STAGE_DIR$INSTALL_PREFIX_EMBEDDED/openresty/luajit/bin/luarocks"* \
+  "$STAGE_DIR$INSTALL_PREFIX_EMBEDDED/openresty/luajit/etc/luarocks"
 make install DESTDIR="$STAGE_DIR"
 (cd "$STAGE_EMBEDDED_DIR/bin" && ln -snf ../openresty/luajit/bin/luarocks ./luarocks)
 

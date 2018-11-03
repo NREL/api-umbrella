@@ -35,6 +35,7 @@ class Test::Processes::TestReloads < Minitest::Test
             new_child_pids = nginx_child_pids(parent_pid)
             pid_intersection = new_child_pids & original_child_pids
             break if(pid_intersection.empty?)
+
             sleep 0.1
           end
         end
@@ -216,6 +217,7 @@ class Test::Processes::TestReloads < Minitest::Test
           assert_equal(0, status, output)
           pids = output.strip.split("\n")
           break if(pids.length == expected_num_workers)
+
           sleep 0.1
         end
       end

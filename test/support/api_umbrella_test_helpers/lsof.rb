@@ -13,6 +13,7 @@ module ApiUmbrellaTestHelpers
       if(::Process.euid == 0)
         all_processes.fetch(:owners).each do |owner|
           next if(owner == "root")
+
           rows += run_lsof(conditions, all_processes.fetch(:pids), ["sudo", "-u", owner])
         end
       end

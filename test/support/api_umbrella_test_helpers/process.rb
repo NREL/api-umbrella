@@ -175,6 +175,7 @@ module ApiUmbrellaTestHelpers
         unless(File.exist?(runtime_config_path))
           raise "runtime_config.yml file not found after starting: #{runtime_config_path.inspect}"
         end
+
         $config = YAML.load_file(runtime_config_path)
       ensure
         # Restore the original environment before we wiped the bundler

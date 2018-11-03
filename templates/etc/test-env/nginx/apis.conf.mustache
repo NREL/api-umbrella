@@ -614,6 +614,18 @@ server {
     echo $random;
   }
 
+  location /response-headers-length/ {
+    content_by_lua_block {
+      local header_length = tonumber(ngx.var.arg_header_length)
+      local header_count = tonumber(ngx.var.arg_header_count)
+      for index = 1, header_count do
+        ngx.header["X-Foo" .. index] = string.rep("a", header_length)
+      end
+
+      ngx.print("Hello")
+    }
+  }
+
   location = / {
     echo -n "Test Home Page";
   }
