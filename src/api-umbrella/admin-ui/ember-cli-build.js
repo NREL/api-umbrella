@@ -9,6 +9,7 @@ module.exports = function(defaults) {
       alias: {
         echarts: 'echarts/dist/echarts-en',
         'bootstrap-daterangepicker': 'bootstrap-daterangepicker/daterangepicker.js',
+        numeral: 'numeral/numeral',
       },
 
       webpack: {

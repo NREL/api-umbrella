@@ -76,6 +76,7 @@
     "marked": "~0.5.1",
     "moment-timezone": "^0.5.14",
     "node-sass": "~4.9.4",
+    "numeral": "~2.0.6",
     "pnotify": "~3.2.1",
     "qtip2": "~3.0.3",
     "qunit-dom": "^0.8.0",
