@@ -1,6 +1,6 @@
 import $ from 'jquery';
 import Component from '@ember/component';
-import echarts from 'echarts';
+import echarts from 'echarts/lib/echarts';
 import { observer } from '@ember/object';
 import { on } from '@ember/object/evented';
 

@@ -1,6 +1,6 @@
 import $ from 'jquery';
 import Component from '@ember/component';
-import echarts from 'echarts';
+import echarts from 'echarts/lib/echarts';
 import { inject } from '@ember/service';
 import { observer } from '@ember/object';
 import { on } from '@ember/object/evented';
@@ -102,6 +102,8 @@ export default Component.extend({
       echarts.registerMap('region', geojson, specialMapAreas);
 
       this.set('loadedMapRegion', this.get('allQueryParamValues.region'));
+
+      this.fillInChartDataMissingRegions();
       this.draw();
     });
   })),
@@ -110,7 +112,7 @@ export default Component.extend({
   refreshData: on('init', observer('regions', function() {
     let currentRegion = this.get('allQueryParamValues.region');
 
-    let data = [];
+    let data = {};
     let maxValue = 2;
     let maxValueDisplay = '2';
     let hits = this.regions;
@@ -122,11 +124,11 @@ export default Component.extend({
         valueDisplay = hits[i].c[3].f;
         let lat = hits[i].c[0].v;
         let lng = hits[i].c[1].v;
-        data.push({
+        data[i] = {
           name: hits[i].c[2].v,
           value: [lng, lat, value],
           valueDisplay: valueDisplay,
-        });
+        };
       } else {
         value = hits[i].c[1].v;
         valueDisplay = hits[i].c[1].f;
@@ -135,11 +137,11 @@ export default Component.extend({
           code = 'US-' + code;
         }
 
-        data.push({
+        data[code] = {
           name: code,
           value: value,
           valueDisplay: valueDisplay,
-        });
+        };
       }
 
       if(value > maxValue) {
@@ -153,8 +155,32 @@ export default Component.extend({
     this.set('chartDataMaxValueDisplay', maxValueDisplay);
     this.set('loadedDataRegion', this.get('allQueryParamValues.region'));
 
+    this.fillInChartDataMissingRegions();
     this.draw();
   })),
+
+  // In order to generate tooltips with the region names, the region data must
+  // contain a record for each region, even if no data is present (otherwise
+  // the "params" passed to the tooltip's formatter function doesn't contain
+  // the hovered region code as of ECharts 4). To fix this when no data is
+  // present, ensure that anytime the chart data or labels are changed, this
+  // function gets called to fill in any missing data.
+  fillInChartDataMissingRegions() {
+    if(this.chartData && this.labels && this.regionField !== 'request_ip_city') {
+      let data = this.chartData
+      const regionCodes = Object.keys(this.labels);
+      for(let i = 0, len = regionCodes.length; i < len; i++) {
+        const regionCode = regionCodes[i];
+        if(!data[regionCode]) {
+          data[regionCode] = {
+            name: regionCode,
+          };
+        }
+      }
+
+      this.set('chartData', data);
+    }
+  },
 
   draw() {
     let currentRegion = this.get('allQueryParamValues.region');
@@ -164,6 +190,7 @@ export default Component.extend({
 
     let geo;
     let series = {};
+    const data = Object.values(this.chartData);
     if(this.regionField === 'request_ip_city') {
       geo = {
         map: 'region',
@@ -176,7 +203,7 @@ export default Component.extend({
           name: 'Hits Scatter',
           type: 'scatter',
           coordinateSystem: 'geo',
-          data: this.chartData,
+          data,
           symbolSize: (val) => {
             return Math.max(Math.round((val[2] / maxValue) * 30), 6);
           },
@@ -189,7 +216,7 @@ export default Component.extend({
           type: 'map',
           map: 'region',
           selectedMode: 'single',
-          data: this.chartData,
+          data,
         },
       ];
     }
@@ -201,7 +228,7 @@ export default Component.extend({
         trigger: 'item',
         formatter: function(params) {
           let label = this.labels[params.name] || params.name;
-          let valueDisplay = params.data.valueDisplay || 0;
+          let valueDisplay = (params.data && params.data.valueDisplay) ? params.data.valueDisplay : 0;
           return '<strong>' + label + '</strong><br>Hits: <strong>' + valueDisplay + '</strong>';
         }.bind(this),
       },

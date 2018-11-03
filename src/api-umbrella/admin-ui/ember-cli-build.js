@@ -7,7 +7,6 @@ module.exports = function(defaults) {
   let app = new EmberApp(defaults, {
     autoImport: {
       alias: {
-        echarts: 'echarts/dist/echarts-en',
         'bootstrap-daterangepicker': 'bootstrap-daterangepicker/daterangepicker.js',
         numeral: 'numeral/numeral',
       },
