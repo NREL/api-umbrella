@@ -1,6 +1,6 @@
 import $ from 'jquery';
 import Mixin from '@ember/object/mixin'
-import PNotify from 'npm:pnotify';
+import PNotify from 'pnotify';
 import { inject } from '@ember/service';
 
 export default Mixin.create({

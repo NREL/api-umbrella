@@ -1,5 +1,5 @@
 import DS from 'ember-data';
-import moment from 'npm:moment-timezone';
+import moment from 'moment-timezone';
 import { observer } from '@ember/object';
 
 export default DS.Model.extend({

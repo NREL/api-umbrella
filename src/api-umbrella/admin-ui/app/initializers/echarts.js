@@ -1,4 +1,4 @@
-import echarts from 'npm:echarts';
+import echarts from 'echarts';
 
 export function initialize() {
   let colorPalette = [

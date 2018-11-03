@@ -1,5 +1,5 @@
 import { helper } from '@ember/component/helper';
-import moment from 'npm:moment-timezone';
+import moment from 'moment-timezone';
 
 export function formatDate(params) {
   let date = params[0];

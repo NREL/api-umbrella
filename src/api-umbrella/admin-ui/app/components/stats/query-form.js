@@ -1,10 +1,10 @@
-import 'npm:bootstrap-daterangepicker';
+import 'bootstrap-daterangepicker';
 
 import $ from 'jquery';
 import Component from '@ember/component';
-import I18n from 'npm:i18n-js';
+import I18n from 'i18n-js';
 import { inject } from '@ember/service';
-import moment from 'npm:moment-timezone';
+import moment from 'moment-timezone';
 import { observer } from '@ember/object';
 
 export default Component.extend({

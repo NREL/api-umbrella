@@ -1,4 +1,4 @@
-import moment from 'npm:moment-timezone';
+import moment from 'moment-timezone';
 
 export default {
   renderEscaped(value, type) {

@@ -1,7 +1,7 @@
 import { buildValidations, validator } from 'ember-cp-validations';
 
 import DS from 'ember-data';
-import I18n from 'npm:i18n-js';
+import I18n from 'i18n-js';
 
 const Validations = buildValidations({
   frontendHost: [

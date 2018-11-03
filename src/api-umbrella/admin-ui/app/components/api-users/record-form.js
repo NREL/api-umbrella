@@ -1,5 +1,5 @@
 import Component from '@ember/component';
-import I18n from 'npm:i18n-js';
+import I18n from 'i18n-js';
 import Save from 'api-umbrella-admin-ui/mixins/save';
 
 export default Component.extend(Save, {

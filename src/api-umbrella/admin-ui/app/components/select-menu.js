@@ -26,8 +26,7 @@ export default Component.extend({
       if(options) {
         let firstOption = options[0];
         if(firstOption && firstOption.id) {
-          // eslint-disable-next-line ember/closure-actions
-          this.sendAction('action', firstOption.id, this);
+          this.get('action')(firstOption.id);
         }
       }
     }

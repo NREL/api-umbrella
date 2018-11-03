@@ -1,7 +1,7 @@
 import $ from 'jquery';
 import AuthenticatedRouteMixin from 'ember-simple-auth/mixins/authenticated-route-mixin';
 import Route from '@ember/routing/route';
-import moment from 'npm:moment-timezone';
+import moment from 'moment-timezone';
 
 export default Route.extend(AuthenticatedRouteMixin, {
   setupController(controller, model) {

@@ -1,15 +1,29 @@
 'use strict';
 
-let EmberApp = require('ember-cli/lib/broccoli/ember-app');
+const EmberApp = require('ember-cli/lib/broccoli/ember-app');
+const nodeSass = require('node-sass');
 
 module.exports = function(defaults) {
   let app = new EmberApp(defaults, {
+    autoImport: {
+      alias: {
+        echarts: 'echarts/dist/echarts-en',
+        'bootstrap-daterangepicker': 'bootstrap-daterangepicker/daterangepicker.js',
+      },
+
+      webpack: {
+        externals: { jquery: 'jQuery' }
+      }
+    },
+
     sourcemaps: {
       // Always enable sourcemaps, even for the production build.
       enabled: true,
     },
 
     sassOptions: {
+      implementation: nodeSass,
+
       // The Sass number precision must be increased to 8 for Bootstrap, or
       // else certain things don't line up:
       // https://github.com/twbs/bootstrap-sass#sass-number-precision

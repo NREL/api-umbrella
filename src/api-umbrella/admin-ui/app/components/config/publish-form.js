@@ -1,6 +1,6 @@
 import $ from 'jquery';
 import Component from '@ember/component';
-import PNotify from 'npm:pnotify';
+import PNotify from 'pnotify';
 import { computed } from '@ember/object';
 
 export default Component.extend({
@@ -112,8 +112,7 @@ export default Component.extend({
           text: 'Successfully published the configuration<br>Changes should be live in a few seconds...',
         });
 
-        // eslint-disable-next-line ember/closure-actions
-        this.sendAction('refreshCurrentRouteController');
+        this.get('refreshCurrentRouteController')();
       }, this), function(response) {
         let message = '<h3>Error</h3>';
         try {

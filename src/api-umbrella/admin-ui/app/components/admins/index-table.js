@@ -1,7 +1,7 @@
 import $ from 'jquery';
 import Component from '@ember/component';
 import DataTablesHelpers from 'api-umbrella-admin-ui/utils/data-tables-helpers';
-import I18n from 'npm:i18n-js';
+import I18n from 'i18n-js';
 import { computed } from '@ember/object';
 import { inject } from '@ember/service';
 
