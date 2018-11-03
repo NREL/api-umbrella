@@ -16,7 +16,7 @@
         {{/f.static-field}}
         {{#f.static-field "apiKey" label="API Key"}}
           {{#if model.apiKey}}
-            <span class="api-key" data-api-key="{{model.apiKey}}" data-api-key-preview="{{model.apiKeyPreview}}">{{model.apiKeyPreview}}</span> <a href="#" {{action "apiKeyRevealToggle"}} class="api-key-reveal-toggle">{{t "admin.reveal_action"}}</a>
+            <span class="api-key" data-api-key={{model.apiKey}} data-api-key-preview={{model.apiKeyPreview}}>{{model.apiKeyPreview}}</span> <a href="#" {{action "apiKeyRevealToggle"}} class="api-key-reveal-toggle">{{t "admin.reveal_action"}}</a>
           {{else}}
             <span class="api-key">{{model.apiKeyPreview}}</span>
           {{/if}}
@@ -53,16 +53,16 @@
         Last Updated: {{format-date model.updatedAt}}{{#if model.updater}} by {{model.updater.username}}{{/if}}<br>
         E-mail Verified: {{model.emailVerified}}<br>
         {{#if model.registrationIp}}
-        Registration IP: {{model.registrationIp}}<br>
+          Registration IP: {{model.registrationIp}}<br>
         {{/if}}
         {{#if model.registrationUserAgent}}
-        Registration User Agent: {{model.registrationUserAgent}}<br>
+          Registration User Agent: {{model.registrationUserAgent}}<br>
         {{/if}}
         {{#if model.registrationReferer}}
-        Registration Referer: {{model.registrationReferer}}<br>
+          Registration Referer: {{model.registrationReferer}}<br>
         {{/if}}
         {{#if model.registrationOrigin}}
-        Registration Origin: {{model.registrationOrigin}}<br>
+          Registration Origin: {{model.registrationOrigin}}<br>
         {{/if}}
       </div>
     </div>

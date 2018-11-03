@@ -1,7 +1,7 @@
 <form id="filter_form" action="#" method="get" {{action "submit" on="submit"}}>
   <div class="row">
     <div class="col-sm-4">
-      <a id="filter_toggle" {{action "toggleFilters"}}><i class="fa fa-caret-right"></i>{{t "admin.stats.filter_results"}}</a>
+      <a id="filter_toggle" href="#" {{action "toggleFilters"}}><i class="fa fa-caret-right"></i>{{t "admin.stats.filter_results"}}</a>
     </div>
     <div class="col-sm-8 filter-times">
       {{#if enableInterval}}
@@ -33,28 +33,28 @@
               <button class="btn btn-default btn-sm" type="submit">{{t "admin.stats.filter"}}</button>
             </div>
             <div class="col-sm-6 text-right">
-              <a {{action "toggleFilterType" "advanced"}} class="filter-type-toggle">{{t "admin.stats.switch_advanced_filters"}}</a>
+              <a href="#" {{action "toggleFilterType" "advanced"}} class="filter-type-toggle">{{t "admin.stats.switch_advanced_filters"}}</a>
             </div>
           </div>
         </div>
         <div id="filter_type_advanced" class="filter-type" style="display: none;">
           <div id="search_field">
             <div class="input-group">
-              <input type="text" name="search" class="form-control" placeholder="{{t "admin.stats.advanced_filters_placeholder"}}" value="{{query.params.search}}" />
+              <input type="text" name="search" class="form-control" placeholder={{t "admin.stats.advanced_filters_placeholder"}} value={{query.params.search}}>
               <span class="input-group-btn">
                 <button class="btn btn-default" type="submit">{{t "admin.stats.filter"}}</button>
               </span>
             </div>
             <div class="row">
               <div class="col-sm-6">
-                <span class="help-block">{{{t "admin.stats.advanced_filters_tip"}}}</span>
+                <span class="help-block">{{! template-lint-disable no-bare-strings no-triple-curlies }}{{{t "admin.stats.advanced_filters_tip"}}}</span>
               </div>
               <div class="col-sm-6 text-right">
-                <a {{action "toggleFilterType" "builder"}} class="filter-type-toggle">{{t "admin.stats.switch_simple_filters"}}</a>
+                <a href="#" {{action "toggleFilterType" "builder"}} class="filter-type-toggle">{{t "admin.stats.switch_simple_filters"}}</a>
               </div>
             </div>
             <div id="query_syntax_help_content" style="display: none;">
-              <p>{{{t "admin.stats.advanced_filters_help_content"}}}</p>
+              <p>{{! template-lint-disable no-bare-strings no-triple-curlies }}{{{t "admin.stats.advanced_filters_help_content"}}}</p>
               <p>{{t "admin.stats.example"}}:</p>
               <pre>request_method:"POST" AND response_status:[400 TO *]</pre>
               <p>{{t "admin.stats.available_fields"}}:</p>

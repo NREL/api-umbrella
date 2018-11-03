@@ -70,7 +70,7 @@
     <div id="advanced_settings" class="collapse form-horizontal">
       {{#fields-for model=model style="horizontal-wide-labels" as |f|}}
         {{f.select-field "balanceAlgorithm" label="Balance Algorithm" options=balanceAlgorithmOptions}}
-       {{/fields-for}}
+      {{/fields-for}}
 
       {{#fields-for model=model.settings.errorTemplates style="horizontal-wide-labels" as |f|}}
         <h4>{{t "mongoid.attributes.api/settings.error_templates"}}</h4>

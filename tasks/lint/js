@@ -7,4 +7,5 @@ set -x
 (
   cd "$SOURCE_DIR/src/api-umbrella/admin-ui"
   PATH="$DEV_PATH" yarn run lint:js
+  PATH="$DEV_PATH" yarn run lint:hbs
 )

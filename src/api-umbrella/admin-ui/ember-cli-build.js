@@ -12,8 +12,8 @@ module.exports = function(defaults) {
       },
 
       webpack: {
-        externals: { jquery: 'jQuery' }
-      }
+        externals: { jquery: 'jQuery' },
+      },
     },
 
     sourcemaps: {

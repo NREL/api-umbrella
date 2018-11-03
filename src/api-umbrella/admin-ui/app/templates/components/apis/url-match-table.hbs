@@ -13,7 +13,7 @@
     <tbody>
       {{#if model.urlMatches}}
         {{#each model.urlMatches as |urlMatch|}}
-          <tr data-guid="{{guid-for urlMatch}}">
+          <tr data-guid={{guid-for urlMatch}}>
             <td>{{urlMatch.frontendPrefix}}</td>
             <td>{{urlMatch.backendPrefixWithDefault}}</td>
             <td class="table-row-actions">

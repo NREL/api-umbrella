@@ -14,7 +14,7 @@
   <tbody>
     {{#if model.rewrites}}
       {{#each model.rewrites as |rewrite|}}
-        <tr data-guid="{{guid-for rewrite}}">
+        <tr data-guid={{guid-for rewrite}}>
           <td>{{rewrite.matcherType}}</td>
           <td>{{rewrite.httpMethod}}</td>
           <td>{{rewrite.frontendMatcher}}</td>

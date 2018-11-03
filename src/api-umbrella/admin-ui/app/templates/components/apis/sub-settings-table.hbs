@@ -12,7 +12,7 @@
   <tbody>
     {{#if model.subSettings}}
       {{#each model.subSettings as |subSettings|}}
-        <tr data-guid="{{guid-for subSettings}}">
+        <tr data-guid={{guid-for subSettings}}>
           <td>{{subSettings.httpMethod}}</td>
           <td>{{subSettings.regex}}</td>
           <td class="table-row-actions" style="width: 90px; white-space: nowrap;">

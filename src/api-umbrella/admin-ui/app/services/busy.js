@@ -1,5 +1,5 @@
-import Service from '@ember/service';
 import Evented from '@ember/object/evented';
+import Service from '@ember/service';
 
 export default Service.extend(Evented, {
   hide() {
@@ -8,5 +8,5 @@ export default Service.extend(Evented, {
 
   show(options) {
     this.trigger('show', options);
-  }
+  },
 });
