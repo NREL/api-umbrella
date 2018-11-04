@@ -2,6 +2,8 @@ import { computed, observer } from '@ember/object';
 
 import $ from 'jquery';
 import Component from '@ember/component';
+import clone from 'lodash-es/clone';
+import escape from 'lodash-es/escape';
 import { inject } from '@ember/service';
 import numeral from 'numeral';
 
@@ -21,13 +23,13 @@ export default Component.extend({
           render: function(name, type, data) {
             if(type === 'display' && name && name !== '-') {
               if(data.terminal) {
-                return '<i class="fa fa-file-o fa-space-right"></i>' + _.escape(name);
+                return '<i class="fa fa-file-o fa-space-right"></i>' + escape(name);
               } else {
-                let params = _.clone(this.presentQueryParamValues);
+                let params = clone(this.presentQueryParamValues);
                 params.prefix = data.descendent_prefix;
                 let link = '#/stats/drilldown?' + $.param(params);
 
-                return '<a href="' + link + '"><i class="fa fa-folder-o fa-space-right"></i>' + _.escape(name) + '</a>';
+                return '<a href="' + link + '"><i class="fa fa-folder-o fa-space-right"></i>' + escape(name) + '</a>';
               }
             }
 

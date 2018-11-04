@@ -46,7 +46,7 @@
   position: fixed;
   top: 0;
   width: 100%;
-  //z-index: $zindex-modal-background;
+  z-index: $zindex-modal-backdrop;
 }
 
 .busy-blocker__content {
@@ -60,7 +60,7 @@
   text-align: center;
   top: 50%;
   width: 200px;
-  //z-index: $zindex-modal;
+  z-index: $zindex-modal;
 }
 
 .busy-blocker__content p {

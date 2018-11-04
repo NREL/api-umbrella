@@ -1,5 +1,6 @@
 import $ from 'jquery';
 import Component from '@ember/component';
+import debounce from 'lodash-es/debounce';
 import echarts from 'echarts/lib/echarts';
 import { observer } from '@ember/object';
 import { on } from '@ember/object/evented';
@@ -15,7 +16,7 @@ export default Component.extend({
     this.chart = echarts.init(this.$()[0], 'api-umbrella-theme');
     this.draw();
 
-    $(window).on('resize', _.debounce(this.chart.resize, 100));
+    $(window).on('resize', debounce(this.chart.resize, 100));
   },
 
   // eslint-disable-next-line ember/no-on-calls-in-components

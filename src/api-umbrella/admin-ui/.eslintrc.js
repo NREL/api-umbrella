@@ -32,12 +32,6 @@ module.exports = {
   },
   globals: {
     'CommonValidations': true,
-    'JsDiff': true,
-    '_': true,
-    'ace': true,
-    'bootbox': true,
-    'inflection': true,
-    'marked': true,
   },
   overrides: [
     // node files

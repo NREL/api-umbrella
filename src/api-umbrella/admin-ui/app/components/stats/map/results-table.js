@@ -2,6 +2,8 @@ import { computed, observer } from '@ember/object';
 
 import $ from 'jquery';
 import Component from '@ember/component';
+import clone from 'lodash-es/clone';
+import escape from 'lodash-es/escape';
 import numeral from 'numeral';
 
 export default Component.extend({
@@ -15,10 +17,10 @@ export default Component.extend({
           data: 'name',
           title: 'Location',
           defaultContent: '-',
-          render: _.bind(function(name, type, data) {
+          render: (name, type, data) => {
             if(type === 'display' && name && name !== '-') {
               let link;
-              let params = _.clone(this.presentQueryParamValues);
+              let params = clone(this.presentQueryParamValues);
               if(this.regionField === 'request_ip_city') {
                 delete params.region;
                 params.search = 'request_ip_city:"' + data.id + '"';
@@ -28,11 +30,11 @@ export default Component.extend({
                 link = '#/stats/map?' + $.param(params);
               }
 
-              return '<a href="' + link + '">' + _.escape(name) + '</a>';
+              return '<a href="' + link + '">' + escape(name) + '</a>';
             }
 
             return name;
-          }, this),
+          },
         },
         {
           data: 'hits',

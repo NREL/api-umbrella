@@ -1,4 +1,5 @@
 import Component from '@ember/component';
+import bootbox from 'bootbox';
 import { inject } from '@ember/service';
 
 export default Component.extend({

@@ -1,6 +1,7 @@
 import { buildValidations, validator } from 'ember-cp-validations';
 
 import DS from 'ember-data';
+import compact from 'lodash-es/compact';
 import { computed } from '@ember/object';
 
 const Validations = buildValidations({
@@ -68,7 +69,7 @@ export default DS.Model.extend(Validations, {
       return rolesString;
     },
     set(key, value) {
-      let roles = _.compact(value.split(','));
+      let roles = compact(value.split(','));
       if(roles.length === 0) { roles = null; }
       this.set('roles', roles);
       return value;

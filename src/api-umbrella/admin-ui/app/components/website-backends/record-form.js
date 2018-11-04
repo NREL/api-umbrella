@@ -1,5 +1,6 @@
 import Component from '@ember/component';
 import Save from 'api-umbrella-admin-ui/mixins/save';
+import escape from 'lodash-es/escape';
 import { observer } from '@ember/object';
 
 export default Component.extend(Save, {
@@ -30,15 +31,15 @@ export default Component.extend(Save, {
     submit() {
       this.saveRecord({
         transitionToRoute: 'website_backends',
-        message: 'Successfully saved the "' + _.escape(this.get('model.frontendHost')) + '" website backend<br><strong>Note:</strong> Your changes are not yet live. <a href="/admin/#/config/publish">Publish Changes</a> to send your updates live.',
+        message: 'Successfully saved the "' + escape(this.get('model.frontendHost')) + '" website backend<br><strong>Note:</strong> Your changes are not yet live. <a href="/admin/#/config/publish">Publish Changes</a> to send your updates live.',
       });
     },
 
     delete() {
       this.destroyRecord({
-        prompt: 'Are you sure you want to delete the website backend "' + _.escape(this.get('model.frontendHost')) + '"?',
+        prompt: 'Are you sure you want to delete the website backend "' + escape(this.get('model.frontendHost')) + '"?',
         transitionToRoute: 'website_backends',
-        message: 'Successfully deleted the "' + _.escape(this.get('model.frontendHost')) + '" website backend<br><strong>Note:</strong> Your changes are not yet live. <a href="/admin/#/config/publish">Publish Changes</a> to send your updates live.',
+        message: 'Successfully deleted the "' + escape(this.get('model.frontendHost')) + '" website backend<br><strong>Note:</strong> Your changes are not yet live. <a href="/admin/#/config/publish">Publish Changes</a> to send your updates live.',
       });
     },
   },

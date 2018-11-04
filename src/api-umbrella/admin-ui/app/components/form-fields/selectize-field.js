@@ -1,6 +1,7 @@
 import BaseField from './base-field';
 import { observer } from '@ember/object';
 import { on } from '@ember/object/evented';
+import uniq from 'lodash-es/uniq';
 
 export default BaseField.extend({
   optionValuePath: 'id',
@@ -43,17 +44,17 @@ export default BaseField.extend({
 
   // eslint-disable-next-line ember/no-on-calls-in-components
   defaultOptionsDidChange: on('init', observer('options.@each', function() {
-    this.set('defaultOptions', this.options.map(_.bind(function(item) {
+    this.set('defaultOptions', this.options.map((item) => {
       return {
         id: item.get(this.optionValuePath),
         label: item.get(this.optionLabelPath),
       };
-    }, this)));
+    }));
 
     if(this.selectize) {
-      this.defaultOptions.forEach(_.bind(function(option) {
+      this.defaultOptions.forEach((option) => {
         this.selectize.addOption(option);
-      }, this));
+      });
 
       this.selectize.refreshOptions(false);
     }
@@ -67,7 +68,7 @@ export default BaseField.extend({
       if(valueString !== this.selectize.getValue()) {
         let values = valueString;
         if(values) {
-          values = _.uniq(values.split(','));
+          values = uniq(values.split(','));
 
           // Ensure the selected value is available as an option in the menu.
           // This takes into account the fact that the default options may not

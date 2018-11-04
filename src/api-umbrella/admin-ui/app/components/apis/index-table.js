@@ -1,7 +1,10 @@
 import $ from 'jquery';
 import Component from '@ember/component';
 import DataTablesHelpers from 'api-umbrella-admin-ui/utils/data-tables-helpers';
+import bootbox from 'bootbox';
+import escape from 'lodash-es/escape';
 import { inject } from '@ember/service';
+import isEqual from 'lodash-es/isEqual';
 import { observer } from '@ember/object';
 
 export default Component.extend({
@@ -22,14 +25,14 @@ export default Component.extend({
           data: 'name',
           title: 'Name',
           defaultContent: '-',
-          render: _.bind(function(name, type, data) {
+          render: (name, type, data) => {
             if(type === 'display' && name && name !== '-') {
               let link = '#/apis/' + data.id + '/edit';
-              return '<a href="' + link + '">' + _.escape(name) + '</a>';
+              return '<a href="' + link + '">' + escape(name) + '</a>';
             }
 
             return name;
-          }, this),
+          },
         },
         {
           data: 'frontend_host',
@@ -62,7 +65,7 @@ export default Component.extend({
     }));
 
     this.table
-      .on('search', _.bind(function(event, settings) {
+      .on('search', (event, settings) => {
         // Disable reordering if the user tries to filter the table by anything
         // (otherwise, our reordering logic won't work, since it relies on the
         // neighboring rows).
@@ -71,17 +74,17 @@ export default Component.extend({
             this.set('reorderActive', false);
           }
         }
-      }, this))
-      .on('order', _.bind(function(event, settings) {
+      })
+      .on('order', (event, settings) => {
         // Disable reordering if the user tries to sort the table by anything
         // other than the sort order (otherwise, our reordering logic won't
         // work, since it relies on the neighboring rows).
         if(this.reorderActive) {
-          if(settings.aaSorting && !_.isEqual(settings.aaSorting, [[3, 'asc']])) {
+          if(settings.aaSorting && !isEqual(settings.aaSorting, [[3, 'asc']])) {
             this.set('reorderActive', false);
           }
         }
-      }, this));
+      });
 
     this.$().find('tbody').sortable({
       handle: '.reorder-handle',
@@ -92,7 +95,7 @@ export default Component.extend({
         });
         return ui;
       },
-      stop: _.bind(function(event, ui) {
+      stop: (event, ui) => {
         let row = $(ui.item);
         let previousRow = row.prev('tbody tr');
         let moveAfterId = null;
@@ -101,7 +104,7 @@ export default Component.extend({
         }
 
         this.saveReorder(row.data('id'), moveAfterId);
-      }, this),
+      },
     });
   },
 

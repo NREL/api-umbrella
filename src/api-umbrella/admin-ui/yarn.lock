@@ -2065,10 +2065,9 @@ body@^5.1.0:
     raw-body "~1.1.0"
     safe-json-parse "~1.0.1"
 
-bootbox@~4.4.0:
-  version "4.4.0"
-  resolved "https://registry.yarnpkg.com/bootbox/-/bootbox-4.4.0.tgz#ff7f898fb87d4527e547feb64158f88450d1a0c9"
-  integrity sha1-/3+Jj7h9RSflR/62QVj4hFDRoMk=
+"bootbox@git+https://github.com/makeusabrew/bootbox.git#v5.x":
+  version "5.0.0"
+  resolved "git+https://github.com/makeusabrew/bootbox.git#5f506b2bffbd190ec42ed589c013dc0a983bb345"
 
 "bootstrap@>=3.1.0 <4":
   version "3.3.7"
@@ -2079,11 +2078,6 @@ bootstrap@^4.0.0:
   version "4.1.3"
   resolved "https://registry.yarnpkg.com/bootstrap/-/bootstrap-4.1.3.tgz#0eb371af2c8448e8c210411d0cb824a6409a12be"
   integrity sha512-rDFIzgXcof0jDyjNosjv4Sno77X4KuPeFxG2XZZv1/Kc8DRVGVADdoQyyOVDwPqL36DDmtCQbrpMCqvpPLJQ0w==
-
-bootswatch@~4.1.3:
-  version "4.1.3"
-  resolved "https://registry.yarnpkg.com/bootswatch/-/bootswatch-4.1.3.tgz#30e3723b19fa89568cffcdc9c8943b469a2745e9"
-  integrity sha1-MONyOxn6iVaM/83JyJQ7RponRek=
 
 bower-config@^1.3.0:
   version "1.4.1"
@@ -4878,11 +4872,6 @@ etag@~1.8.1:
   resolved "https://registry.yarnpkg.com/etag/-/etag-1.8.1.tgz#41ae2eeb65efa62268aebfea83ac7d79299b0887"
   integrity sha1-Qa4u62XvpiJorr/qg6x9eSmbCIc=
 
-ev-emitter@^1.0.0:
-  version "1.1.1"
-  resolved "https://registry.yarnpkg.com/ev-emitter/-/ev-emitter-1.1.1.tgz#8f18b0ce5c76a5d18017f71c0a795c65b9138f2a"
-  integrity sha512-ipiDYhdQSCZ4hSbX4rMW+XzNKMD1prg/sTvoVmSLkuQ1MVlwjJQQA+sW8tMYR3BLUr9KjodFV4pvzunvRhd33Q==
-
 eventemitter3@^3.0.0:
   version "3.1.0"
   resolved "https://registry.yarnpkg.com/eventemitter3/-/eventemitter3-3.1.0.tgz#090b4d6cdbd645ed10bf750d4b5407942d7ba163"
@@ -6063,13 +6052,6 @@ ignore@^3.3.3, ignore@^3.3.5:
   resolved "https://registry.yarnpkg.com/ignore/-/ignore-3.3.10.tgz#0a97fb876986e8081c631160f8f9f389157f0043"
   integrity sha512-Pgs951kaMm5GXP7MOvxERINe3gsaVjUWFm+UZPSq9xYriQAksyhg0csnS0KXSNRD5NmNdapXEpjxG49+AKh/ug==
 
-imagesloaded@>=3.0.0:
-  version "4.1.4"
-  resolved "https://registry.yarnpkg.com/imagesloaded/-/imagesloaded-4.1.4.tgz#1376efcd162bb768c34c3727ac89cc04051f3cc7"
-  integrity sha512-ltiBVcYpc/TYTF5nolkMNsnREHW+ICvfQ3Yla2Sgr71YFwQ86bDwV9hgpFhFtrGPuwEx5+LqOHIrdXBdoWwwsA==
-  dependencies:
-    ev-emitter "^1.0.0"
-
 imurmurhash@^0.1.4:
   version "0.1.4"
   resolved "https://registry.yarnpkg.com/imurmurhash/-/imurmurhash-0.1.4.tgz#9218b9b2b928a238b13dc4fb6b6d576f231453ea"
@@ -6568,7 +6550,7 @@ jquery.scrollto@~2.1.2:
   dependencies:
     jquery ">=1.8"
 
-jquery@>=1.10, jquery@>=1.6.0, jquery@>=1.7, jquery@>=1.8, jquery@>=1.9.1, jquery@^3.3.1:
+jquery@>=1.10, jquery@>=1.7, jquery@>=1.8, jquery@>=1.9.1, jquery@^3.3.1:
   version "3.3.1"
   resolved "https://registry.yarnpkg.com/jquery/-/jquery-3.3.1.tgz#958ce29e81c9790f31be7792df5d4d95fc57fbca"
   integrity sha512-Ubldcmxp5np52/ENotGxlLe6aGMvmF4R8S6tZjsP6Knsaxd/xp3Zrh50cG93lR6nPXyUFwzN3ZSOQI0wRJNdGg==
@@ -7219,7 +7201,7 @@ lodash.values@~2.3.0:
   dependencies:
     lodash.keys "~2.3.0"
 
-lodash@^4.0.0, lodash@^4.17.10, lodash@^4.17.4, lodash@^4.3.0, lodash@^4.5.1, lodash@~4.17.10, lodash@~4.17.5:
+lodash@^4.0.0, lodash@^4.17.10, lodash@^4.17.4, lodash@^4.3.0, lodash@^4.5.1, lodash@~4.17.10:
   version "4.17.11"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.11.tgz#b39ea6229ef607ecd89e2c8df12536891cac9b8d"
   integrity sha512-cQKh8igo5QUhZ7lg38DYWAxMvjSAKG0A8wGSVimP07SIUEK2UO+arSRKbRZWtelMtN5V0Hkwh5ryOto/SshYIg==
@@ -8548,14 +8530,6 @@ qs@6.5.2, qs@^6.2.0, qs@^6.4.0, qs@~6.5.2:
   version "6.5.2"
   resolved "https://registry.yarnpkg.com/qs/-/qs-6.5.2.tgz#cb3ae806e8740444584ef154ce8ee98d403f3e36"
   integrity sha512-N5ZAX4/LxJmF+7wN74pUD6qAh9/wnvdQcjq9TZjevvXzSUo7bfmw91saqMjzGS2xq91/odN2dW/WOl7qQHNDGA==
-
-qtip2@~3.0.3:
-  version "3.0.3"
-  resolved "https://registry.yarnpkg.com/qtip2/-/qtip2-3.0.3.tgz#7df088ae4412c24a4064de69e824cb3cf76210dc"
-  integrity sha1-ffCIrkQSwkpAZN5p6CTLPPdiENw=
-  dependencies:
-    imagesloaded ">=3.0.0"
-    jquery ">=1.6.0"
 
 querystring-es3@^0.2.0:
   version "0.2.1"
@@ -9925,6 +9899,13 @@ tiny-lr@^1.1.1:
     livereload-js "^2.3.0"
     object-assign "^4.1.0"
     qs "^6.4.0"
+
+tippy.js@^3.1.1:
+  version "3.1.1"
+  resolved "https://registry.yarnpkg.com/tippy.js/-/tippy.js-3.1.1.tgz#758c24d6e33eb8de762f269b05c991180659a4cb"
+  integrity sha512-okRIUESCkUTLxV90XwOudmWAlwUN4aCcRoA+JP79oWG2SOMo8OUQoJITYfCZFMOD9Qc5bQ3p8Lha0EttisTp1g==
+  dependencies:
+    popper.js "^1.14.4"
 
 tmp@0.0.28:
   version "0.0.28"

@@ -2,6 +2,7 @@ import { buildValidations, validator } from 'ember-cp-validations';
 
 import DS from 'ember-data';
 import I18n from 'i18n-js';
+import compact from 'lodash-es/compact';
 import { computed } from '@ember/object';
 
 const Validations = buildValidations({
@@ -23,7 +24,7 @@ export default DS.Model.extend(Validations, {
   port: DS.attr('number'),
 
   hostWithPort: computed('host', 'port', function() {
-    return _.compact([this.host, this.port]).join(':');
+    return compact([this.host, this.port]).join(':');
   }),
 }).reopenClass({
   validationClass: Validations,

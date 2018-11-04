@@ -195,13 +195,13 @@ en:
           Default template:
 
           ```
-          &lt;?xml version="1.0" encoding="UTF-8"?&gt;
-          &lt;response&gt;
-            &lt;error&gt;
-              &lt;code&gt;{{code}}&lt;/code&gt;
-              &lt;message&gt;{{message}}&lt;/message&gt;
-            &lt;/error&gt;
-          &lt;/response&gt;
+          <?xml version="1.0" encoding="UTF-8"?>
+          <response>
+            <error>
+              <code>{{code}}</code>
+              <message>{{message}}</message>
+            </error>
+          </response>
           ```
         error_templates_csv: CSV Template
         error_templates_csv_tooltip_markdown: |-
@@ -314,7 +314,7 @@ en:
       switch_advanced_filters: Switch to advanced filters
       switch_simple_filters: Switch to simple filters
       advanced_filters_placeholder: Advanced filters...
-      advanced_filters_tip: Advanced filters use <a href="#query_syntax_help_content" rel="popover">Lucene's Query Syntax</a>.
+      advanced_filters_tip: Advanced filters use <button type="button" class="btn btn-link btn-tooltip tooltip-trigger" data-tippy-theme="light-border wide" data-tooltip-content-selector="#query_syntax_help_content">Lucene's Query Syntax</a>.
       advanced_filters_help_content: Use <a href="http://www.lucenetutorial.com/lucene-query-syntax.html" target="_blank">Lucene's query syntax</a> to perform complex queries.
       available_fields: Available Fields
       field: Field

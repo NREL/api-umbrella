@@ -2,6 +2,14 @@ body {
   padding-top: 60px;
 }
 
+.code-block,
+.tippy-tooltip pre {
+  background-color: $light;
+  border: $card-border-width solid $card-border-color;
+  @include border-radius($card-border-radius);
+  padding: 0.5rem;
+}
+
 .navbar .navbar-brand {
   font-weight: bold;
 }
@@ -124,14 +132,14 @@ div.dataTables_wrapper {
 }
 
 .form-horizontal {
-  .form-group {
-    @extend .row;
-  }
-
-  .control-label {
-    @extend .col-form-label;
+  .col-form-label {
+    font-weight: bold;
     text-align: right;
   }
+}
+
+.form-fields-checkboxes-field .form-horizontal .col-form-label {
+  padding-top: 0px;
 }
 
 .form-horizontal.condensed .form-group {
@@ -236,7 +244,7 @@ fieldset .table {
 }
 
 a {
-  .fa {
+  svg {
     text-decoration: none;
     margin-right: 3px;
   }
@@ -324,33 +332,6 @@ td.reorder-handle {
   height: 96px;
   border: 1px solid $input-border-color;
   border-radius: $input-border-radius;
-}
-
-.control-label a[rel='tooltip'] {
-  margin-left: 8px;
-}
-
-.qtip-bootstrap {
-  font-size: 12px;
-  max-width: 320px;
-
-  pre {
-    font-size: 11px;
-    line-height: 15px;
-  }
-}
-
-.qtip-wide {
-  max-width: 700px;
-}
-
-.qtip-forced-wide {
-  min-width: 400px;
-  max-width: 600px;
-}
-
-.qtip-content p:last-child {
-  margin-bottom: 0px;
 }
 
 .query-syntax-help .example {

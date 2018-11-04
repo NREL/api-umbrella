@@ -1,4 +1,8 @@
 import RESTAdapter from 'ember-data/adapters/rest';
+import flatten from 'lodash-es/flatten';
+import isArray from 'lodash-es/isArray';
+import isPlainObject from 'lodash-es/isPlainObject';
+import isString from 'lodash-es/isString';
 
 export default RESTAdapter.extend({
   // Build the URL using the customizable "urlRoot" attribute that can be set
@@ -33,14 +37,14 @@ export default RESTAdapter.extend({
       let rawErrors = payload[key];
       let normalizedErrors = [];
 
-      if(_.isArray(rawErrors)) {
+      if(isArray(rawErrors)) {
         // If an array is returned by the API, no need to process further.
         normalizedErrors = rawErrors;
-      } else if(_.isPlainObject(rawErrors)) {
+      } else if(isPlainObject(rawErrors)) {
         // Turn an object of error messages into an array of error objects.
         for(let field in rawErrors) {
           // The value might be an array of error messages.
-          let messages = _.flatten([rawErrors[field]]);
+          let messages = flatten([rawErrors[field]]);
           messages.forEach(function(message) {
             normalizedErrors.push({
               field: field,
@@ -48,7 +52,7 @@ export default RESTAdapter.extend({
             });
           });
         }
-      } else if(_.isString(rawErrors)) {
+      } else if(isString(rawErrors)) {
         // Turn a single string error into an array.
         normalizedErrors = [{
           message: rawErrors,

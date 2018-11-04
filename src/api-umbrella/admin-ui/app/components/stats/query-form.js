@@ -3,9 +3,31 @@ import 'daterangepicker';
 import $ from 'jquery';
 import Component from '@ember/component';
 import I18n from 'i18n-js';
+import QueryBuilder from 'jQuery-QueryBuilder';
+import forEach from 'lodash-es/forEach';
 import { inject } from '@ember/service';
 import moment from 'moment-timezone';
 import { observer } from '@ember/object';
+
+QueryBuilder.define('filter-description', function() {
+  this.on('afterUpdateRuleFilter afterUpdateRuleOperator', function(e, rule) {
+    let $b = rule.$el.find('button.filter-description');
+    const description = e.builder.getFilterDescription(rule.filter, rule);
+
+    if(!description) {
+      $b.hide();
+    } else {
+      if($b.length === 0) {
+        $b = $('<button type="button" class="btn btn-xs btn-info filter-description btn-tooltip tooltip-trigger"><i class="fas fa-question-circle"></i></button>');
+        $b.prependTo(rule.$el.find(QueryBuilder.selectors.rule_actions));
+      } else {
+        $b.css('display', '');
+      }
+
+      $b.attr('data-tippy-content', description);
+    }
+  });
+});
 
 export default Component.extend({
   session: inject('session'),
@@ -15,7 +37,7 @@ export default Component.extend({
   didInsertElement() {
     let rangeOptions = {};
     let rangeKeys = {};
-    _.forEach(this.dateRanges, function(range, key) {
+    forEach(this.dateRanges, function(range, key) {
       rangeOptions[range.label] = [
         range.start_at,
         range.end_at,
@@ -69,8 +91,7 @@ export default Component.extend({
     let $queryBuilder = $('#query_builder').queryBuilder({
       plugins: {
         'filter-description': {
-          icon: 'fa fa-info-circle',
-          mode: 'bootbox',
+          mode: 'tippy',
         },
         //'bt-tooltip-errors': null,
       },

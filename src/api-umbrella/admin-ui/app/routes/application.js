@@ -1,6 +1,7 @@
 import ApplicationRouteMixin from 'ember-simple-auth/mixins/application-route-mixin';
 import Route from '@ember/routing/route';
 import { inject } from '@ember/service';
+import isString from 'lodash-es/isString';
 import { observer } from '@ember/object';
 
 export default Route.extend(ApplicationRouteMixin, {
@@ -57,7 +58,7 @@ export default Route.extend(ApplicationRouteMixin, {
           errorMessage = error;
           // Very long text error messages can seem to hang some of the console
           // tools, so truncate the messages.
-          if(_.isString(errorMessage)) {
+          if(isString(errorMessage)) {
             errorMessage = errorMessage.substring(0, 1000);
           }
         }

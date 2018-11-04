@@ -2,9 +2,10 @@
 //import 'pnotify/dist/pnotify.mobile';
 
 import PNotify from 'pnotify';
+import merge from 'lodash-es/merge';
 
 export function initialize() {
-  _.merge(PNotify.prototype.options, {
+  merge(PNotify.prototype.options, {
     styling: 'bootstrap3',
     width: '400px',
     icon: false,

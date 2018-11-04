@@ -1,7 +1,9 @@
 <form id="filter_form" action="#" method="get" {{action "submit" on="submit"}}>
   <div class="row">
     <div class="col-sm-4">
-      <a id="filter_toggle" href="#" {{action "toggleFilters"}}>{{fa-icon "caret-right"}}{{t "admin.stats.filter_results"}}</a>
+      <div class="form-control-plaintext form-control-sm">
+        <a id="filter_toggle" href="#" {{action "toggleFilters"}}>{{fa-icon "caret-right"}}{{t "admin.stats.filter_results"}}</a>
+      </div>
     </div>
     <div class="col-sm-8 filter-times">
       {{#if enableInterval}}
@@ -30,10 +32,12 @@
           <div id="query_builder"></div>
           <div class="row">
             <div class="col-sm-6">
-              <button class="btn btn-light btn-sm" type="submit">{{t "admin.stats.filter"}}</button>
+              <button class="btn btn-primary btn-sm" type="submit">{{t "admin.stats.filter"}}</button>
             </div>
             <div class="col-sm-6 text-right">
-              <a href="#" {{action "toggleFilterType" "advanced"}} class="filter-type-toggle">{{t "admin.stats.switch_advanced_filters"}}</a>
+              <div class="form-control-plaintext form-control-sm">
+                <a href="#" {{action "toggleFilterType" "advanced"}} class="filter-type-toggle">{{t "admin.stats.switch_advanced_filters"}}</a>
+              </div>
             </div>
           </div>
         </div>
@@ -41,22 +45,24 @@
           <div id="search_field">
             <div class="input-group">
               <input type="text" name="search" class="form-control" placeholder={{t "admin.stats.advanced_filters_placeholder"}} value={{query.params.search}}>
-              <span class="input-group-btn">
-                <button class="btn btn-light" type="submit">{{t "admin.stats.filter"}}</button>
+              <span class="input-group-append">
+                <button class="btn btn-primary" type="submit">{{t "admin.stats.filter"}}</button>
               </span>
             </div>
             <div class="row">
               <div class="col-sm-6">
-                <span class="help-block">{{! template-lint-disable no-bare-strings no-triple-curlies }}{{{t "admin.stats.advanced_filters_tip"}}}</span>
+                <div class="form-control-plaintext form-control-sm text-muted">{{! template-lint-disable no-bare-strings no-triple-curlies }}{{{t "admin.stats.advanced_filters_tip"}}}</div>
               </div>
               <div class="col-sm-6 text-right">
-                <a href="#" {{action "toggleFilterType" "builder"}} class="filter-type-toggle">{{t "admin.stats.switch_simple_filters"}}</a>
+                <div class="form-control-plaintext form-control-sm">
+                  <a href="#" {{action "toggleFilterType" "builder"}} class="filter-type-toggle">{{t "admin.stats.switch_simple_filters"}}</a>
+                </div>
               </div>
             </div>
             <div id="query_syntax_help_content" style="display: none;">
               <p>{{! template-lint-disable no-bare-strings no-triple-curlies }}{{{t "admin.stats.advanced_filters_help_content"}}}</p>
               <p>{{t "admin.stats.example"}}:</p>
-              <pre>request_method:"POST" AND response_status:[400 TO *]</pre>
+              <pre class="code-block">request_method:"POST" AND response_status:[400 TO *]</pre>
               <p>{{t "admin.stats.available_fields"}}:</p>
               <table class="table table-sm query-syntax-help">
                 <thead>

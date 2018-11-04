@@ -2,6 +2,7 @@ import EmberObject, { computed, observer } from '@ember/object';
 
 import { A } from '@ember/array';
 import DS from 'ember-data';
+import compact from 'lodash-es/compact';
 
 export default DS.Model.extend({
   appendQueryString: DS.attr(),
@@ -56,7 +57,7 @@ export default DS.Model.extend({
       return rolesString;
     },
     set(key, value) {
-      let roles = _.compact(value.split(','));
+      let roles = compact(value.split(','));
       if(roles.length === 0) { roles = null; }
       this.set('requiredRoles', roles);
       return value;
@@ -72,7 +73,7 @@ export default DS.Model.extend({
       return allowedIpsString;
     },
     set(key, value) {
-      let ips = _.compact(value.split(/[\r\n]+/));
+      let ips = compact(value.split(/[\r\n]+/));
       if(ips.length === 0) { ips = null; }
       this.set('allowedIps', ips);
       return value;
@@ -88,7 +89,7 @@ export default DS.Model.extend({
       return allowedReferersString;
     },
     set(key, value) {
-      let referers = _.compact(value.split(/[\r\n]+/));
+      let referers = compact(value.split(/[\r\n]+/));
       if(referers.length === 0) { referers = null; }
       this.set('allowedReferers', referers);
       return value;

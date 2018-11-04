@@ -1,5 +1,6 @@
 import Component from '@ember/component';
 import DataTablesHelpers from 'api-umbrella-admin-ui/utils/data-tables-helpers';
+import escape from 'lodash-es/escape';
 
 export default Component.extend({
   didInsertElement() {
@@ -13,14 +14,14 @@ export default Component.extend({
           data: 'name',
           title: 'Name',
           defaultContent: '-',
-          render: _.bind(function(name, type, data) {
+          render: (name, type, data) => {
             if(type === 'display' && name && name !== '-') {
               let link = '#/api_scopes/' + data.id + '/edit';
-              return '<a href="' + link + '">' + _.escape(name) + '</a>';
+              return '<a href="' + link + '">' + escape(name) + '</a>';
             }
 
             return name;
-          }, this),
+          },
         },
         {
           data: 'host',

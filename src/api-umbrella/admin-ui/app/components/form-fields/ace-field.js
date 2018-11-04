@@ -1,5 +1,9 @@
+import 'ace-builds/src-noconflict/mode-json';
+import 'ace-builds/src-noconflict/mode-xml';
+import 'ace-builds/src-noconflict/mode-yaml';
 import $ from 'jquery';
 import BaseField from './base-field';
+import ace from 'ace-builds/src-noconflict/ace'
 
 export default BaseField.extend({
   init() {

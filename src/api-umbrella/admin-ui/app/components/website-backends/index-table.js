@@ -1,5 +1,6 @@
 import $ from 'jquery';
 import Component from '@ember/component';
+import escape from 'lodash-es/escape';
 
 export default Component.extend({
   didInsertElement() {
@@ -16,14 +17,14 @@ export default Component.extend({
           data: 'frontend_host',
           title: 'Host',
           defaultContent: '-',
-          render: _.bind(function(name, type, data) {
+          render: (name, type, data) => {
             if(type === 'display' && name && name !== '-') {
               let link = '#/website_backends/' + data.id + '/edit';
-              return '<a href="' + link + '">' + _.escape(name) + '</a>';
+              return '<a href="' + link + '">' + escape(name) + '</a>';
             }
 
             return name;
-          }, this),
+          },
         },
       ],
     }));

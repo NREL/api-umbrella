@@ -13,7 +13,7 @@
             <th class="text-center">
               Primary
               <a rel="tooltip" title="<p>Controls which rate limit will return its status in the HTTP response headers. This informs the end-users of this limit and how many remaining requests they have. For example:</p>
-<pre>
+<pre class='code-block'>
 X-RateLimit-Limit: 1000
 X-RateLimit-Remaining: 840
 </pre>
@@ -27,24 +27,26 @@ X-RateLimit-Remaining: 840
         <tbody>
           {{#if model.rateLimits}}
             {{#each model.rateLimits as |rateLimit|}}
-              <tr class="form-inline">
+              <tr>
                 <td>
-                  {{input type="text" value=rateLimit.durationInUnits class="form-control input-xs rate-limit-duration-in-units"}}
+                  {{input type="text" value=rateLimit.durationInUnits class="form-control form-control-sm rate-limit-duration-in-units"}}
                 </td>
                 <td style="text-align: left;">
-                  {{select-menu value=rateLimit.durationUnits action=(action (mut rateLimit.durationUnits)) options=rateLimitDurationUnitOptions inputClass="form-control input-xs rate-limit-duration-units"}}
+                  {{select-menu value=rateLimit.durationUnits action=(action (mut rateLimit.durationUnits)) options=rateLimitDurationUnitOptions inputClass="custom-select custom-select-sm rate-limit-duration-units"}}
                 </td>
                 <td>
-                  {{select-menu value=rateLimit.limitBy action=(action (mut rateLimit.limitBy)) options=rateLimitLimitByOptions inputClass="form-control input-xs rate-limit-limit-by"}}
+                  {{select-menu value=rateLimit.limitBy action=(action (mut rateLimit.limitBy)) options=rateLimitLimitByOptions inputClass="custom-select custom-select-sm rate-limit-limit-by"}}
                 </td>
                 <td>
-                  <div class="input-group">
-                    {{input type="text" value=rateLimit.limit class="form-control input-xs rate-limit-limit"}}
-                    <span class="input-group-addon input-xs">requests</span>
+                  <div class="input-group input-group-sm">
+                    {{input type="text" value=rateLimit.limit class="form-control rate-limit-limit"}}
+                    <div class="input-group-append">
+                      <span class="input-group-text">requests</span>
+                    </div>
                   </div>
                 </td>
                 <td class="text-center">
-                  {{one-way-radio name=uniqueSettingsId value=rateLimit.responseHeaders option=true class="rate-limit-response-headers" update=(action "primaryRateLimitChange" rateLimit)}}
+                  {{one-way-radio name=uniqueSettingsId value=rateLimit.responseHeaders option=true class="rate-limit-response-headers mt-2" update=(action "primaryRateLimitChange" rateLimit)}}
                 </td>
                 <td class="table-row-actions">
                   <a href="#" class="remove-action" {{action "deleteRateLimit" rateLimit}}>{{fa-icon "times"}}Remove</a>

@@ -10,6 +10,11 @@ module.exports = function(defaults) {
       alias: {
         numeral: 'numeral/numeral',
         pnotify: 'pnotify/dist/es/PNotify',
+        bootbox: 'bootbox/src/bootbox',
+        diff: 'diff/dist/diff',
+        marked: 'marked/lib/marked',
+        inflection: 'inflection/lib/inflection',
+        'jQuery-QueryBuilder': 'jQuery-QueryBuilder/dist/js/query-builder.standalone',
       },
 
       webpack: {
@@ -48,8 +53,8 @@ module.exports = function(defaults) {
     'ember-bootstrap': {
       'bootstrapVersion': 4,
       'importBootstrapFont': false,
-      'importBootstrapCSS': false
-    }
+      'importBootstrapCSS': false,
+    },
   });
 
   // Use `app.import` to add additional libraries to the generated
@@ -68,12 +73,13 @@ module.exports = function(defaults) {
   // Prepend Ace before Ember, or else the "define" method from Ember's
   // loader.js conflicts with Ace after these changes in Ace v1.2.4:
   // https://github.com/ajaxorg/ace/pull/2914
-  app.import('node_modules/ace-builds/src-noconflict/mode-json.js', { prepend: true });
-  app.import('node_modules/ace-builds/src-noconflict/mode-xml.js', { prepend: true });
-  app.import('node_modules/ace-builds/src-noconflict/mode-yaml.js', { prepend: true });
-  app.import('node_modules/ace-builds/src-noconflict/ace.js', { prepend: true });
+  //app.import('node_modules/ace-builds/src-noconflict/mode-json.js', { prepend: true });
+  //app.import('node_modules/ace-builds/src-noconflict/mode-xml.js', { prepend: true });
+  //app.import('node_modules/ace-builds/src-noconflict/mode-yaml.js', { prepend: true });
+  //app.import('node_modules/ace-builds/src-noconflict/ace.js', { prepend: true });
 
-  app.import('node_modules/bootbox/bootbox.js');
+  //app.import('node_modules/bootbox/bootbox.js');
+  //app.import('node_modules/bootbox/src/bootbox.js');
   app.import('node_modules/popper.js/dist/umd/popper.js');
   app.import('node_modules/bootstrap/dist/js/bootstrap.js');
   /*
@@ -93,15 +99,6 @@ module.exports = function(defaults) {
   app.import('node_modules/font-awesome/fonts/fontawesome-webfont.woff', { destDir: 'fonts' });
   app.import('node_modules/font-awesome/fonts/fontawesome-webfont.woff2', { destDir: 'fonts' });
   */
-  app.import('node_modules/inflection/lib/inflection.js');
-  app.import('node_modules/jQuery-QueryBuilder/dist/js/query-builder.standalone.js');
-  app.import('node_modules/jQuery-QueryBuilder/dist/js/query-builder.standalone.js');
-  app.import('node_modules/jquery.scrollto/jquery.scrollTo.js');
-  app.import('node_modules/diff/dist/diff.js');
-  app.import('node_modules/lodash/lodash.js');
-  app.import('node_modules/marked/lib/marked.js');
-  app.import('node_modules/qtip2/dist/jquery.qtip.css');
-  app.import('node_modules/qtip2/dist/jquery.qtip.js');
   app.import('node_modules/selectize/dist/css/selectize.default.css');
   app.import('node_modules/selectize/dist/js/standalone/selectize.js');
   app.import('node_modules/jquery-ui/ui/version.js');

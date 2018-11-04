@@ -1,13 +1,16 @@
 import $ from 'jquery';
 import Component from '@ember/component';
+import JsDiff from 'diff';
 import PNotify from 'pnotify';
+import bootbox from 'bootbox';
 import { computed } from '@ember/object';
+import { run } from '@ember/runloop';
 
 export default Component.extend({
   didInsertElement() {
     this.$submitButton = $('#publish_button');
     this.$toggleCheckboxesLink = $('#toggle_checkboxes');
-    $('#publish_form').on('change', ':checkbox', _.bind(this.onCheckboxChange, this));
+    $('#publish_form').on('change', ':checkbox', this.onCheckboxChange.bind(this));
 
     let $checkboxes = $('#publish_form :checkbox');
     if($checkboxes.length === 1) {
@@ -104,7 +107,7 @@ export default Component.extend({
         url: '/api-umbrella/v1/config/publish',
         type: 'POST',
         data: form.serialize(),
-      }).then(_.bind(function() {
+      }).then(run.bind(this, function() {
         button.button('reset');
         new PNotify({
           type: 'success',
@@ -113,7 +116,7 @@ export default Component.extend({
         });
 
         this.get('refreshCurrentRouteController')();
-      }, this), function(response) {
+      }), function(response) {
         let message = '<h3>Error</h3>';
         try {
           let errors = response.responseJSON.errors;

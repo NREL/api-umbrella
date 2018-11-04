@@ -1,5 +1,7 @@
 import $ from 'jquery';
 import Component from '@ember/component';
+import clone from 'lodash-es/clone';
+import debounce from 'lodash-es/debounce';
 import echarts from 'echarts/lib/echarts';
 import { inject } from '@ember/service';
 import { observer } from '@ember/object';
@@ -20,11 +22,11 @@ export default Component.extend({
     this.chart.on('click', this.handleCityClick.bind(this));
     this.draw();
 
-    $(window).on('resize', _.debounce(this.chart.resize, 100));
+    $(window).on('resize', debounce(this.chart.resize, 100));
   },
 
   handleRegionClick(event) {
-    let queryParams = _.clone(this.presentQueryParamValues);
+    let queryParams = clone(this.presentQueryParamValues);
     queryParams.region = event.batch[0].name;
     this.router.transitionTo('stats.map', { queryParams });
   },
@@ -34,7 +36,7 @@ export default Component.extend({
       let currentRegion = this.get('allQueryParamValues.region').split('-');
       let currentCountry = currentRegion[0];
       currentRegion = currentRegion[1];
-      let queryParams = _.clone(this.presentQueryParamValues);
+      let queryParams = clone(this.presentQueryParamValues);
       queryParams.query = JSON.stringify({
         condition: 'AND',
         rules: [

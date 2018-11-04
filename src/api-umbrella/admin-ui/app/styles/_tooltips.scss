@@ -1,0 +1,31 @@
+@import "node_modules/tippy.js/dist/tippy";
+@import "node_modules/tippy.js/dist/themes/light-border";
+
+.btn-link.btn-tooltip {
+  padding: 0px;
+  margin: 0px;
+  border-width: 0px;
+  vertical-align: baseline;
+  font-size: inherit;
+}
+
+.col-form-label .btn-link.btn-tooltip {
+  margin-left: 8px;
+}
+
+.tippy-tooltip {
+  text-align: left;
+
+  p:last-child {
+    margin-bottom: 0px;
+  }
+}
+
+.tippy-tooltip.wide-theme {
+  max-width: 700px;
+}
+
+.tippy-tooltip.forced-wide-theme {
+  min-width: 400px;
+  max-width: 600px;
+}

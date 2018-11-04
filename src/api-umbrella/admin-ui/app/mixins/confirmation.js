@@ -1,5 +1,6 @@
 import ConfirmationMixin from 'ember-onbeforeunload/mixins/confirmation';
 import Mixin from '@ember/object/mixin'
+import isEqual from 'lodash-es/isEqual';
 
 export default Mixin.create(ConfirmationMixin, {
   afterModel(model) {
@@ -48,7 +49,7 @@ export default Mixin.create(ConfirmationMixin, {
     } else {
       let initialSerialized = record.get('_confirmationRecordInitialSerialized');
       let currentSerialized = record.serialize();
-      return !_.isEqual(currentSerialized, initialSerialized);
+      return !isEqual(currentSerialized, initialSerialized);
     }
   },
 });

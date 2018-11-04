@@ -1,8 +1,9 @@
 import $ from 'jquery';
+import merge from 'lodash-es/merge';
 
 export function initialize(appInstance) {
   // Defaults for DataTables.
-  _.merge($.fn.DataTable.defaults, {
+  merge($.fn.DataTable.defaults, {
     // Don't show the DataTables processing message. We'll handle the processing
     // message logic in preDrawCallback.
     processing: false,
@@ -31,20 +32,20 @@ export function initialize(appInstance) {
         //
         // Set this early on during pre-draw so that the processing message shows
         // up for the first load.
-        $(this).DataTable().on('processing', _.bind(function(event, settings, processing) {
+        $(this).DataTable().on('processing', (event, settings, processing) => {
           if(processing) {
             appInstance.lookup('service:busy').show();
           } else {
             appInstance.lookup('service:busy').hide();
           }
-        }, this));
+        });
 
         this.customProcessingCallbackSet = true;
       }
     },
   });
 
-  _.merge($.fn.DataTable.ext.classes, {
+  merge($.fn.DataTable.ext.classes, {
     sFilterInput: 'form-control',
     sLengthSelect: 'custom-select form-control',
   });

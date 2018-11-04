@@ -1,5 +1,7 @@
 import Component from '@ember/component';
 import Save from 'api-umbrella-admin-ui/mixins/save';
+import bootbox from 'bootbox';
+import escape from 'lodash-es/escape';
 
 export default Component.extend(Save, {
   init() {
@@ -21,15 +23,15 @@ export default Component.extend(Save, {
     submit() {
       this.saveRecord({
         transitionToRoute: 'apis',
-        message: 'Successfully saved the "' + _.escape(this.get('model.name')) + '" API backend<br><strong>Note:</strong> Your changes are not yet live. <a href="/admin/#/config/publish">Publish Changes</a> to send your updates live.',
+        message: 'Successfully saved the "' + escape(this.get('model.name')) + '" API backend<br><strong>Note:</strong> Your changes are not yet live. <a href="/admin/#/config/publish">Publish Changes</a> to send your updates live.',
       });
     },
 
     delete() {
       this.destroyRecord({
-        prompt: 'Are you sure you want to delete the API backend "' + _.escape(this.get('model.name')) + '"?',
+        prompt: 'Are you sure you want to delete the API backend "' + escape(this.get('model.name')) + '"?',
         transitionToRoute: 'apis',
-        message: 'Successfully deleted the "' + _.escape(this.get('model.name')) + '" API backend<br><strong>Note:</strong> Your changes are not yet live. <a href="/admin/#/config/publish">Publish Changes</a> to send your updates live.',
+        message: 'Successfully deleted the "' + escape(this.get('model.name')) + '" API backend<br><strong>Note:</strong> Your changes are not yet live. <a href="/admin/#/config/publish">Publish Changes</a> to send your updates live.',
       });
     },
 

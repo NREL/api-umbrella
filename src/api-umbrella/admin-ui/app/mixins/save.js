@@ -1,14 +1,17 @@
 import $ from 'jquery';
 import Mixin from '@ember/object/mixin'
 import PNotify from 'pnotify';
+import bootbox from 'bootbox';
 import { inject } from '@ember/service';
+import isFunction from 'lodash-es/isFunction';
+import scrollTo from 'jquery.scrollto';
 
 export default Mixin.create({
   router: inject(),
 
   scrollToErrors() {
     $('#save_button').button('reset');
-    $.scrollTo('#error_messages', { offset: -60, duration: 200 });
+    scrollTo('#error_messages', { offset: -60, duration: 200 });
   },
 
   afterSaveComplete(options, button) {
@@ -16,7 +19,7 @@ export default Mixin.create({
     new PNotify({
       type: 'success',
       title: 'Saved',
-      text: (_.isFunction(options.message)) ? options.message(this.model) : options.message,
+      text: (isFunction(options.message)) ? options.message(this.model) : options.message,
     });
 
     this.router.transitionTo(options.transitionToRoute);
@@ -64,7 +67,7 @@ export default Mixin.create({
           new PNotify({
             type: 'success',
             title: 'Deleted',
-            text: (_.isFunction(options.message)) ? options.message(this.model) : options.message,
+            text: (isFunction(options.message)) ? options.message(this.model) : options.message,
           });
 
           this.router.transitionTo(options.transitionToRoute);
