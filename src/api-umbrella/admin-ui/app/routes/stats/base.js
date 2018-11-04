@@ -11,8 +11,8 @@ export default Route.extend(AuthenticatedRouteMixin, {
     controller.set('allQueryParamValues', this.allQueryParamValues || {});
     controller.set('backendQueryParamValues', this.backendQueryParamValues || {});
 
-    $('ul.nav li').removeClass('active');
-    $('ul.nav li.nav-analytics').addClass('active');
+    $('ul.navbar-nav li').removeClass('active');
+    $('ul.navbar-nav li.nav-analytics').addClass('active');
   },
 
   beforeModel() {

@@ -1,5 +1,5 @@
-import 'pnotify/dist/pnotify.buttons';
-import 'pnotify/dist/pnotify.mobile';
+//import 'pnotify/dist/pnotify.buttons';
+//import 'pnotify/dist/pnotify.mobile';
 
 import PNotify from 'pnotify';
 

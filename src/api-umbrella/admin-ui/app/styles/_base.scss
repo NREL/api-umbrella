@@ -24,9 +24,10 @@ body {
 }
 
 #results_table .table thead th {
-  color: $link-color;
+  //color: $link-color;
 }
 
+/*
 table.table thead .sorting,
 table.table thead .sorting_asc,
 table.table thead .sorting_desc {
@@ -38,13 +39,13 @@ table.table thead .sorting_asc:after,
 table.table thead .sorting_desc:after {
   opacity: 1.0;
   font-family: FontAwesome;
-  color: $gray-lighter;
+  color: $gray-200;
   margin-left: 8px;
 }
 
 table.table thead .sorting_asc:after,
 table.table thead .sorting_desc:after {
-  color: $link-color;
+  //color: $link-color;
 }
 
 table.table thead .sorting:after {
@@ -58,11 +59,15 @@ table.table thead .sorting_asc:after {
 table.table thead .sorting_desc:after {
   content: "\F0DD";
 }
+*/
+div.dataTables_wrapper div.dataTables_paginate ul.pagination {
+  justify-content: center;
+}
 
 div.dataTables_info {
   padding: 0px;
   font-size: 13px;
-  color: $text-color-light;
+  //color: $text-color-light;
 }
 
 div.dataTables_paginate {
@@ -76,7 +81,7 @@ div.dataTables_length {
   label {
     float: none;
     font-size: 13px;
-    color: $text-color-light;
+    //color: $text-color-light;
   }
 
   select {
@@ -108,10 +113,25 @@ div.dataTables_wrapper {
   margin-top: -30px;
   border: 1px solid #ddd;
   text-align: center;
-  color: $gray-light;
+  color: $gray-600;
   font-size: 32px;
   line-height: 60px;
   background-color: white;
+}
+
+.control-label {
+  font-weight: bold;
+}
+
+.form-horizontal {
+  .form-group {
+    @extend .row;
+  }
+
+  .control-label {
+    @extend .col-form-label;
+    text-align: right;
+  }
 }
 
 .form-horizontal.condensed .form-group {
@@ -133,9 +153,10 @@ fieldset.collapsible {
 
 legend {
   margin-bottom: 2px;
-  border-bottom-width: 1px;
-  border-color: $gray-light;
   margin-left: -12px;
+  border-width: 0px 0px 1px 0px;
+  border-style: solid;
+  border-color: $gray-600;
   padding: 6px 10px 3px 2px;
   line-height: 22px;
   background-color: #fff;
@@ -147,7 +168,7 @@ legend a {
 
 .fieldset-note {
   font-size: 85%;
-  color: $text-color-light;
+  //color: $text-color-light;
   margin-bottom: 4px;
 }
 
@@ -197,13 +218,13 @@ fieldset .table {
 .arrow {
   margin-top: 24px;
   text-align: center;
-  color: $gray-light;
+  color: $gray-600;
   font-size: 10px;
   line-height: 10px;
 }
 
-.arrow i {
-  color: lighten($gray-light, 16%);
+.arrow svg {
+  color: lighten($gray-600, 16%);
 }
 
 .arrow-vertical {
@@ -236,7 +257,7 @@ a {
 
 a.remove-action {
   font-size: 12px;
-  color: $brand-danger;
+  color: $danger;
 }
 
 .table-actions {
@@ -276,7 +297,7 @@ a:hover {
   text-align: right;
   font-size: 11px;
   line-height: 13px;
-  color: $text-color-lighter;
+  //color: $text-color-lighter;
 }
 
 th.reorder-handle,
@@ -296,12 +317,12 @@ td.reorder-handle {
 
 .reorder-placeholder th,
 .reorder-placeholder td {
-  background-color: $state-warning-bg !important;
+  //background-color: $state-warning-bg !important;
 }
 
 .form-horizontal .ace_editor {
   height: 96px;
-  border: 1px solid $input-border;
+  border: 1px solid $input-border-color;
   border-radius: $input-border-radius;
 }
 
@@ -349,7 +370,7 @@ td.reorder-handle {
   text-align: center;
   font-size: 12px;
   font-style: italic;
-  color: $text-color-light;
+  //color: $text-color-light;
 }
 
 .table th.text-center,
@@ -395,13 +416,13 @@ td.reorder-handle {
 }
 
 #version_footer .row-fluid {
-  border-top: 1px solid $gray-lighter;
+  border-top: 1px solid $gray-200;
   text-align: center;
   margin-top: 3em;
   margin-bottom: 1em;
   padding-top: 1em;
   font-size: 11px;
-  color: $text-color-lighter;
+  //color: $text-color-lighter;
 }
 
 // For when we want to submit a form with the enter key, but don't want a real
@@ -422,4 +443,8 @@ table.table-max-width-cells td {
   max-width: 400px;
   text-overflow: ellipsis;
   overflow: hidden;
+}
+
+.btn-light {
+  @include button-variant($gray-300, $gray-300);
 }

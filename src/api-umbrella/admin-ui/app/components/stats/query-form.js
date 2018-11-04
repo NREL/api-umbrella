@@ -1,4 +1,4 @@
-import 'bootstrap-daterangepicker';
+import 'daterangepicker';
 
 import $ from 'jquery';
 import Component from '@ember/component';
@@ -72,7 +72,7 @@ export default Component.extend({
           icon: 'fa fa-info-circle',
           mode: 'bootbox',
         },
-        'bt-tooltip-errors': null,
+        //'bt-tooltip-errors': null,
       },
       allow_empty: true,
       allow_groups: false,

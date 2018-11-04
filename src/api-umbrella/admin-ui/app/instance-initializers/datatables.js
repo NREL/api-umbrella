@@ -12,7 +12,7 @@ export function initialize(appInstance) {
 
     // Re-arrange how the table and surrounding fields (pagination, search, etc)
     // are laid out.
-    dom: 'rft<"row"<"col-sm-3 table-info"i><"col-sm-6 table-pagination"p><"col-sm-3 table-length"l>>',
+    dom: 'rft<"row"<"col-sm-3"i><"col-sm-6 table-pagination"p><"col-sm-3 table-length"l>>',
 
     language: {
       // Don't have an explicit label for the search field. Use a placeholder
@@ -42,6 +42,11 @@ export function initialize(appInstance) {
         this.customProcessingCallbackSet = true;
       }
     },
+  });
+
+  _.merge($.fn.DataTable.ext.classes, {
+    sFilterInput: 'form-control',
+    sLengthSelect: 'custom-select form-control',
   });
 }
 

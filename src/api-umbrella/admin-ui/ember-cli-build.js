@@ -2,13 +2,14 @@
 
 const EmberApp = require('ember-cli/lib/broccoli/ember-app');
 const nodeSass = require('node-sass');
+const autoprefixer = require('autoprefixer');
 
 module.exports = function(defaults) {
   let app = new EmberApp(defaults, {
     autoImport: {
       alias: {
-        'bootstrap-daterangepicker': 'bootstrap-daterangepicker/daterangepicker.js',
         numeral: 'numeral/numeral',
+        pnotify: 'pnotify/dist/es/PNotify',
       },
 
       webpack: {
@@ -29,6 +30,26 @@ module.exports = function(defaults) {
       // https://github.com/twbs/bootstrap-sass#sass-number-precision
       precision: 8,
     },
+
+    postcssOptions: {
+      compile: {
+        enabled: false,
+      },
+      filter: {
+        enabled: true,
+        plugins: [
+          {
+            module: autoprefixer,
+          },
+        ],
+      },
+    },
+
+    'ember-bootstrap': {
+      'bootstrapVersion': 4,
+      'importBootstrapFont': false,
+      'importBootstrapCSS': false
+    }
   });
 
   // Use `app.import` to add additional libraries to the generated
@@ -53,20 +74,25 @@ module.exports = function(defaults) {
   app.import('node_modules/ace-builds/src-noconflict/ace.js', { prepend: true });
 
   app.import('node_modules/bootbox/bootbox.js');
-  app.import('node_modules/bootstrap-sass/assets/javascripts/bootstrap.js');
+  app.import('node_modules/popper.js/dist/umd/popper.js');
+  app.import('node_modules/bootstrap/dist/js/bootstrap.js');
+  /*
   app.import('node_modules/bootstrap-sass/assets/fonts/bootstrap/glyphicons-halflings-regular.eot', { destDir: 'fonts/bootstrap' });
   app.import('node_modules/bootstrap-sass/assets/fonts/bootstrap/glyphicons-halflings-regular.svg', { destDir: 'fonts/bootstrap' });
   app.import('node_modules/bootstrap-sass/assets/fonts/bootstrap/glyphicons-halflings-regular.ttf', { destDir: 'fonts/bootstrap' });
   app.import('node_modules/bootstrap-sass/assets/fonts/bootstrap/glyphicons-halflings-regular.woff', { destDir: 'fonts/bootstrap' });
   app.import('node_modules/bootstrap-sass/assets/fonts/bootstrap/glyphicons-halflings-regular.woff2', { destDir: 'fonts/bootstrap' });
-  app.import('node_modules/datatables.net-bs/css/dataTables.bootstrap.css');
+  */
+  app.import('node_modules/datatables.net-bs4/css/dataTables.bootstrap4.css');
   app.import('node_modules/datatables.net/js/jquery.dataTables.js');
-  app.import('node_modules/datatables.net-bs/js/dataTables.bootstrap.js');
+  app.import('node_modules/datatables.net-bs4/js/dataTables.bootstrap4.js');
+  /*
   app.import('node_modules/font-awesome/fonts/fontawesome-webfont.eot', { destDir: 'fonts' });
   app.import('node_modules/font-awesome/fonts/fontawesome-webfont.svg', { destDir: 'fonts' });
   app.import('node_modules/font-awesome/fonts/fontawesome-webfont.ttf', { destDir: 'fonts' });
   app.import('node_modules/font-awesome/fonts/fontawesome-webfont.woff', { destDir: 'fonts' });
   app.import('node_modules/font-awesome/fonts/fontawesome-webfont.woff2', { destDir: 'fonts' });
+  */
   app.import('node_modules/inflection/lib/inflection.js');
   app.import('node_modules/jQuery-QueryBuilder/dist/js/query-builder.standalone.js');
   app.import('node_modules/jQuery-QueryBuilder/dist/js/query-builder.standalone.js');

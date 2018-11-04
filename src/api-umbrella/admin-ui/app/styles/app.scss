@@ -1,18 +1,20 @@
 @import "_variables_pre.scss";
-@import "node_modules/bootswatch/cerulean/_variables.scss";
+//@import "node_modules/bootswatch/cerulean/_variables.scss";
 @import "_variables_post.scss";
-@import "node_modules/bootstrap-sass/assets/stylesheets/_bootstrap.scss";
-@import "node_modules/bootswatch/cerulean/_bootswatch.scss";
-@import "node_modules/font-awesome/scss/font-awesome.scss";
+@import "node_modules/bootstrap/scss/bootstrap.scss";
+//@import "node_modules/bootswatch/cerulean/_bootswatch.scss";
+//@import "node_modules/font-awesome/scss/font-awesome.scss";
 
 @import "node_modules/jQuery-QueryBuilder/dist/scss/default.scss";
-@import "node_modules/bootstrap-daterangepicker/daterangepicker";
-@import "node_modules/pnotify/dist/pnotify";
-@import "node_modules/pnotify/dist/pnotify.buttons";
-@import "node_modules/pnotify/dist/pnotify.mobile";
+@import "node_modules/daterangepicker/daterangepicker";
+//@import "node_modules/pnotify/dist/pnotify";
+//@import "node_modules/pnotify/dist/pnotify.buttons";
+//@import "node_modules/pnotify/dist/pnotify.mobile";
 @import "_noscript.scss";
 @import "_busy-blocker.scss";
 @import "_input-xs.scss";
 @import "_base.scss";
 @import "_stats.scss";
 @import "_selectize.scss";
+
+//@import "ember-bootstrap/bootstrap";

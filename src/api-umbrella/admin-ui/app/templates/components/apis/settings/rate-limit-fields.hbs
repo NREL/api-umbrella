@@ -3,7 +3,7 @@
 
   {{#if model.isRateLimitModeCustom}}
     {{#form-fields/field-wrapper style=(if style style "horizontal")}}
-      <table class="table table-striped table-condensed table-small custom-rate-limits-table">
+      <table class="table table-striped table-sm table-small custom-rate-limits-table">
         <thead>
           <tr>
             <th>Duration</th>
@@ -18,7 +18,7 @@ X-RateLimit-Limit: 1000
 X-RateLimit-Remaining: 840
 </pre>
 <p>Only one rate limit may return this status information, so it will likely be your primary, publicized rate limit (for example, hourly), and not more granular rate limits you may have assigned (for example, per-second limits).</p>">
-                <i class="fa fa-question-circle"></i>
+                {{fa-icon "question-circle"}}
               </a>
             </th>
             <th></th>
@@ -47,7 +47,7 @@ X-RateLimit-Remaining: 840
                   {{one-way-radio name=uniqueSettingsId value=rateLimit.responseHeaders option=true class="rate-limit-response-headers" update=(action "primaryRateLimitChange" rateLimit)}}
                 </td>
                 <td class="table-row-actions">
-                  <a href="#" class="remove-action" {{action "deleteRateLimit" rateLimit}}><i class="fa fa-times"></i>Remove</a>
+                  <a href="#" class="remove-action" {{action "deleteRateLimit" rateLimit}}>{{fa-icon "times"}}Remove</a>
                 </td>
               </tr>
             {{/each}}
@@ -56,7 +56,7 @@ X-RateLimit-Remaining: 840
           {{/if}}
         </tbody>
       </table>
-      <button type="button" class="btn btn-default btn-xs" {{action "addRateLimit"}}><i class="fa fa-plus-circle"></i> Add Rate Limit</button>
+      <button type="button" class="btn btn-light btn-sm" {{action "addRateLimit"}}>{{fa-icon "plus-circle"}} Add Rate Limit</button>
     {{/form-fields/field-wrapper}}
   {{/if}}
 {{/fields-for}}
