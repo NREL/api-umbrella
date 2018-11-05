@@ -28,7 +28,7 @@
     "ace-builds": "~1.4.1",
     "autoprefixer": "^9.3.1",
     "bootbox": "git+https://github.com/makeusabrew/bootbox.git#v5.x",
-    "bootstrap": "^4.0.0",
+    "bootstrap": "git+https://github.com/twbs/bootstrap.git#v4-dev",
     "broccoli-asset-rev": "^2.7.0",
     "datatables.net": "~1.10.19",
     "datatables.net-bs4": "~1.10.19",

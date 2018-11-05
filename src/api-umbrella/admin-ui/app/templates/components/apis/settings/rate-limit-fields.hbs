@@ -12,14 +12,14 @@
             <th>Limit</th>
             <th class="text-center">
               Primary
-              <a rel="tooltip" title="<p>Controls which rate limit will return its status in the HTTP response headers. This informs the end-users of this limit and how many remaining requests they have. For example:</p>
+              <button type="button" class="btn btn-link btn-tooltip tooltip-trigger" data-tippy-content="<p>Controls which rate limit will return its status in the HTTP response headers. This informs the end-users of this limit and how many remaining requests they have. For example:</p>
 <pre class='code-block'>
 X-RateLimit-Limit: 1000
 X-RateLimit-Remaining: 840
 </pre>
 <p>Only one rate limit may return this status information, so it will likely be your primary, publicized rate limit (for example, hourly), and not more granular rate limits you may have assigned (for example, per-second limits).</p>">
-                {{fa-icon "question-circle"}}
-              </a>
+                {{fa-icon "question-circle"}}<span class="sr-only">Help</span>
+              </button>
             </th>
             <th></th>
           </tr>
@@ -46,7 +46,10 @@ X-RateLimit-Remaining: 840
                   </div>
                 </td>
                 <td class="text-center">
-                  {{one-way-radio name=uniqueSettingsId value=rateLimit.responseHeaders option=true class="rate-limit-response-headers mt-2" update=(action "primaryRateLimitChange" rateLimit)}}
+                  <div class="custom-control custom-radio custom-control-no-label mt-1">
+                    {{one-way-radio name=uniqueSettingsId id=(concat uniqueSettingsId "_" rateLimit.id) value=rateLimit.responseHeaders option=true class="rate-limit-response-headers custom-control-input" update=(action "primaryRateLimitChange" rateLimit)}}
+                    <label class="custom-control-label" for="{{uniqueSettingsId}}_{{rateLimit.id}}"></label>
+                  </div>
                 </td>
                 <td class="table-row-actions">
                   <a href="#" class="remove-action" {{action "deleteRateLimit" rateLimit}}>{{fa-icon "times"}}Remove</a>

@@ -2,7 +2,7 @@
   <div class="row">
     <div class="col-sm-4">
       <div class="form-control-plaintext form-control-sm">
-        <a id="filter_toggle" href="#" {{action "toggleFilters"}}>{{fa-icon "caret-right"}}{{t "admin.stats.filter_results"}}</a>
+        <a id="filter_toggle" data-toggle="collapse" data-target="#filters_ui" href="#">{{fa-icon "caret-down" fixedWidth=true}}{{t "admin.stats.filter_results"}}</a>
       </div>
     </div>
     <div class="col-sm-8 filter-times">
@@ -27,7 +27,7 @@
   </div>
   <div class="row">
     <div class="col-sm-12 advanced-filter">
-      <div id="filters_ui" style="display: none;">
+      <div id="filters_ui" class="collapse show">
         <div id="filter_type_builder" class="filter-type">
           <div id="query_builder"></div>
           <div class="row">

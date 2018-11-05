@@ -1,17 +1,18 @@
-{{#bs-modal open=openModal onSubmit=(action "submit") onHidden=(action "closed") backdropClose=false size="lg" as |modal|}}
+{{#bs-modal open=openModal onSubmit=(action "submit") onHidden=(action "closed") backdropClose=false size="xl" as |modal|}}
   {{modal.header title=modalTitle}}
   {{#modal.body}}
     <form {{action "submit" on="submit"}}>
       {{#fields-for model=bufferedModel style="vertical" as |f|}}
         <div class="row">
-          <div class="col-sm-2">
+          <div class="col-sm-3">
             {{f.select-field "httpMethod" label="HTTP Method" options=httpMethodOptions}}
           </div>
-          <div class="col-sm-10">
+          <div class="col-sm-9">
             {{f.text-field "regex" label="Regex" placeholder="^/example.*param1=.+"}}
           </div>
         </div>
       {{/fields-for}}
+      <hr class="mt-0">
       {{apis/settings/common-fields model=model.settings roleOptions=roleOptions isSubSettings=true}}
       <input type="submit" class="hidden-submit-button" tabindex="-1">
     </form>

@@ -286,10 +286,8 @@ export default Component.extend({
         $queryBuilder.queryBuilder('setRules', rules);
       }
 
-      this.send('toggleFilters');
       this.send('toggleFilterType', 'builder');
     } else if(this.search) {
-      this.send('toggleFilters');
       this.send('toggleFilterType', 'advanced');
     }
   },
@@ -364,20 +362,6 @@ export default Component.extend({
   },
 
   actions: {
-    toggleFilters() {
-      let $container = $('#filters_ui');
-      let $icon = $('#filter_toggle .fa');
-      if($container.is(':visible')) {
-        $icon.addClass('fa-caret-right');
-        $icon.removeClass('fa-caret-down');
-      } else {
-        $icon.addClass('fa-caret-down');
-        $icon.removeClass('fa-caret-right');
-      }
-
-      $container.slideToggle(100);
-    },
-
     toggleFilterType(type) {
       $('.filter-type').hide();
       $('#filter_type_' + type).show();

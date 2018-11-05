@@ -23,13 +23,13 @@ export default Component.extend({
           render: function(name, type, data) {
             if(type === 'display' && name && name !== '-') {
               if(data.terminal) {
-                return '<i class="fa fa-file-o fa-space-right"></i>' + escape(name);
+                return '<i class="far fa-file fa-fw mr-1"></i>' + escape(name);
               } else {
                 let params = clone(this.presentQueryParamValues);
                 params.prefix = data.descendent_prefix;
                 let link = '#/stats/drilldown?' + $.param(params);
 
-                return '<a href="' + link + '"><i class="fa fa-folder-o fa-space-right"></i>' + escape(name) + '</a>';
+                return '<a href="' + link + '"><i class="far fa-folder fa-fw mr-1"></i>' + escape(name) + '</a>';
               }
             }
 

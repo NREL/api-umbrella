@@ -14,7 +14,10 @@
             <input type="hidden" name="config[{{category}}][{{record.id}}][active_version]" value={{record.active.version}}>
             <input type="hidden" name="config[{{category}}][{{record.id}}][pending_version]" value={{record.pending.version}}>
             <input type="hidden" name="config[{{category}}][{{record.id}}][publish]" value="0">
-            <input type="checkbox" name="config[{{category}}][{{record.id}}][publish]" value="1">
+            <div class="custom-control custom-checkbox custom-control-no-label">
+              <input type="checkbox" class="custom-control-input" name="config[{{category}}][{{record.id}}][publish]" value="1" id="config_{{category}}_{{record.id}}">
+              <label class="custom-control-label" for="config_{{category}}_{{record.id}}"></label>
+            </div>
           </td>
           <td>{{record.name}}<br><small><a href="#" {{action "toggleConfigDiff" record.id}}>View Config Differences</a></small></td>
         </tr>

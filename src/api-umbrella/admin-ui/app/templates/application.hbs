@@ -10,10 +10,10 @@
           <li class="nav-item dropdown nav-analytics">
             <a href="#" class="nav-link dropdown-toggle" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">{{t "admin.nav.analytics"}}</a>
             <div class="dropdown-menu">
-              {{#link-to "stats.drilldown" class="dropdown-item"}}{{fa-icon "sitemap"}} {{t "admin.nav.api_drilldown"}}{{/link-to}}
-              {{#link-to "stats.logs" class="dropdown-item"}}{{fa-icon "signal"}} {{t "admin.nav.filter_logs"}}{{/link-to}}
-              {{#link-to "stats.users" class="dropdown-item"}}{{fa-icon "user"}} {{t "admin.nav.by_users"}}{{/link-to}}
-              {{#link-to "stats.map" class="dropdown-item"}}{{fa-icon "map-marker-alt"}} {{t "admin.nav.by_location"}}{{/link-to}}
+              {{#link-to "stats.drilldown" class="dropdown-item"}}{{fa-icon "sitemap" fixedWidth=true}} {{t "admin.nav.api_drilldown"}}{{/link-to}}
+              {{#link-to "stats.logs" class="dropdown-item"}}{{fa-icon "signal" fixedWidth=true}} {{t "admin.nav.filter_logs"}}{{/link-to}}
+              {{#link-to "stats.users" class="dropdown-item"}}{{fa-icon "user" fixedWidth=true}} {{t "admin.nav.by_users"}}{{/link-to}}
+              {{#link-to "stats.map" class="dropdown-item"}}{{fa-icon "map-marker-alt" fixedWidth=true}} {{t "admin.nav.by_location"}}{{/link-to}}
             </div>
           </li>
         {{/if}}
@@ -22,14 +22,14 @@
             <a href="#" class="nav-link dropdown-toggle" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">{{t "admin.nav.users"}}</a>
             <div class="dropdown-menu">
               {{#if currentAdmin.permissions.user_view}}
-                {{#link-to "api_users" class="dropdown-item"}}{{fa-icon "user"}} {{t "admin.nav.api_users"}}{{/link-to}}
+                {{#link-to "api_users" class="dropdown-item"}}{{fa-icon "user" fixedWidth=true}} {{t "admin.nav.api_users"}}{{/link-to}}
               {{/if}}
               {{#if currentAdmin.permissions.admin_manage}}
-                {{#link-to "admins" class="dropdown-item"}}{{fa-icon "user"}} {{t "admin.nav.admin_accounts"}}{{/link-to}}
+                {{#link-to "admins" class="dropdown-item"}}{{fa-icon "user" fixedWidth=true}} {{t "admin.nav.admin_accounts"}}{{/link-to}}
                 <div class="dropdown-divider"></div>
                 <div role="presentation" class="dropdown-header"> {{t "admin.nav.permissions_management"}}</div>
-                {{#link-to "api_scopes" class="dropdown-item"}}{{fa-icon "lock"}} {{t "admin.nav.api_scopes"}}{{/link-to}}
-                {{#link-to "admin_groups" class="dropdown-item"}}{{fa-icon "users"}} {{t "admin.nav.admin_groups"}}{{/link-to}}
+                {{#link-to "api_scopes" class="dropdown-item"}}{{fa-icon "lock" fixedWidth=true}} {{t "admin.nav.api_scopes"}}{{/link-to}}
+                {{#link-to "admin_groups" class="dropdown-item"}}{{fa-icon "users" fixedWidth=true}} {{t "admin.nav.admin_groups"}}{{/link-to}}
               {{/if}}
             </div>
           </li>
@@ -39,11 +39,11 @@
             <a href="#" class="nav-link dropdown-toggle" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">{{t "admin.nav.configuration"}}</a>
             <div class="dropdown-menu">
               {{#if currentAdmin.permissions.backend_manage}}
-                {{#link-to "apis" class="dropdown-item"}}{{fa-icon "cog"}} {{t "admin.nav.api_backends"}}{{/link-to}}
-                {{#link-to "website_backends" class="dropdown-item"}}{{fa-icon "cog"}} {{t "admin.nav.website_backends"}}{{/link-to}}
+                {{#link-to "apis" class="dropdown-item"}}{{fa-icon "cog" fixedWidth=true}} {{t "admin.nav.api_backends"}}{{/link-to}}
+                {{#link-to "website_backends" class="dropdown-item"}}{{fa-icon "cog" fixedWidth=true}} {{t "admin.nav.website_backends"}}{{/link-to}}
               {{/if}}
               {{#if currentAdmin.permissions.backend_publish}}
-                {{#link-to "config.publish" class="dropdown-item"}}{{fa-icon "upload"}} {{t "admin.nav.publish_changes"}}{{/link-to}}
+                {{#link-to "config.publish" class="dropdown-item"}}{{fa-icon "upload" fixedWidth=true}} {{t "admin.nav.publish_changes"}}{{/link-to}}
               {{/if}}
             </div>
           </li>
@@ -51,7 +51,7 @@
       </ul>
       <ul class="navbar-nav">
         <li class="nav-item dropdown">
-          <a href="#" id="nav_gear_menu" class="nav-link dropdown-toggle" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">{{fa-icon "cog"}}</a>
+          <a href="#" id="nav_gear_menu" class="nav-link dropdown-toggle" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">{{fa-icon "cog" fixedWidth=true}}</a>
           <div class="dropdown-menu dropdown-menu-right">
             {{#link-to "admins.edit" session.data.authenticated.admin.id class="dropdown-item" id="my_account_nav_link"}}{{t "admin.nav.my_account"}}{{/link-to}}
             <a href="#" class="dropdown-item" {{action "logout"}}>{{t "admin.nav.logout"}}</a>

@@ -3,8 +3,8 @@
 <table id="rewrites_table" class="table table-striped table-sm">
   <thead>
     <tr>
-      <th style="width: 110px;">Matching Type</th>
-      <th style="width: 110px;">HTTP Method</th>
+      <th style="width: 135px;">Matching Type</th>
+      <th style="width: 125px;">HTTP Method</th>
       <th>From</th>
       <th>To</th>
       <th></th>
@@ -20,7 +20,7 @@
           <td>{{rewrite.frontendMatcher}}</td>
           <td>{{rewrite.backendReplacement}}</td>
           <td class="table-row-actions">
-            <a href="#" {{action "edit" rewrite}}>{{fa-icon "pencil"}}{{t "admin.edit"}}</a>
+            <a href="#" {{action "edit" rewrite}}>{{fa-icon "pencil-alt"}}{{t "admin.edit"}}</a>
             <a href="#" class="remove-action" {{action "remove" rewrite}}>{{fa-icon "times"}}{{t "admin.remove"}}</a>
           </td>
           <td class="reorder-handle">{{fa-icon "bars"}}</td>
