@@ -1,60 +1,64 @@
 require "capybara/minitest"
-require "capybara/poltergeist"
 require "capybara-screenshot/minitest"
 require "support/api_umbrella_test_helpers/process"
 
-class PoltergeistLogger
-  attr_reader :logger
+def capybara_register_driver(driver_name, options = {})
+  ::Capybara.register_driver(driver_name) do |app|
+    root_dir = File.join(ApiUmbrellaTestHelpers::Process::TEST_RUN_ROOT, "capybara")
+    FileUtils.mkdir_p(root_dir)
 
-  def initialize(path)
-    @logger = Logger.new(path)
-  end
+    driver_options = ::Selenium::WebDriver::Chrome::Options.new
+    driver_options.args << "--headless"
 
-  def puts(line)
-    @logger.info(line)
-  end
+    # Allow connections to our self-signed SSL localhost test server.
+    driver_options.args << "--allow-insecure-localhost"
 
-  def write(msg)
-    if(msg)
-      @line ||= ""
-      @line << msg.chomp
+    # Use /tmp instead of /dev/shm for Docker environments where /dev/shm is
+    # too small:
+    # https://github.com/GoogleChrome/puppeteer/blob/v1.10.0/docs/troubleshooting.md#tips
+    driver_options.args << "--disable-dev-shm-usage"
 
-      if(msg.include?("\n"))
-        @logger.info(@line)
-        @line = ""
-      end
+    if options[:lang]
+      driver_options.args << "--lang=#{options[:lang]}"
     end
+
+    capabilities = ::Selenium::WebDriver::Remote::Capabilities.chrome({
+      :loggingPrefs => {
+        :browser => "ALL",
+      },
+    })
+
+    driver = ::Capybara::Selenium::Driver.new(app, {
+      :browser => :chrome,
+      :options => driver_options,
+      :desired_capabilities => capabilities,
+      :driver_opts => {
+        :log_path => File.join(root_dir, "#{driver_name}.log"),
+        :verbose => true,
+      },
+    })
+    driver.resize_window_to(driver.current_window_handle, 1200, 1200)
+
+    driver
+  end
+
+  Capybara::Screenshot.register_driver(driver_name) do |driver, path|
+    driver.browser.save_screenshot(path)
   end
 end
 
-root_dir = File.join(ApiUmbrellaTestHelpers::Process::TEST_RUN_ROOT, "capybara")
-
+capybara_register_driver(:selenium_chrome_headless)
+Capybara.default_driver = :selenium_chrome_headless
 Capybara.default_max_wait_time = 5
-Capybara.register_driver :poltergeist do |app|
-  FileUtils.mkdir_p(root_dir)
-  Capybara::Poltergeist::Driver.new(app, {
-    :logger => PoltergeistLogger.new(File.join(root_dir, "poltergeist.log")),
-    :phantomjs_logger => PoltergeistLogger.new(File.join(root_dir, "phantomjs.log")),
-    :phantomjs_options => [
-      "--ignore-ssl-errors=true",
-      # Use disk-based cache for more accurate browser caching behavior:
-      # https://github.com/teampoltergeist/poltergeist/issues/754#issuecomment-228433228
-      "--disk-cache=true",
-      "--disk-cache-path=#{File.join(root_dir, "disk-cache")}",
-      "--offline-storage-path=#{File.join(root_dir, "offline-storage")}",
-      "--local-storage-path=#{File.join(root_dir, "local-storage")}",
-    ],
-    :extensions => [
-      File.join(API_UMBRELLA_SRC_ROOT, "test/support/capybara/disable_animations.js"),
-      File.join(API_UMBRELLA_SRC_ROOT, "test/support/capybara/disable_fixed_header.js"),
-      File.join(API_UMBRELLA_SRC_ROOT, "test/support/capybara/timekeeper.js"),
-    ],
-  })
-end
-Capybara.default_driver = :poltergeist
 Capybara.run_server = false
 Capybara.app_host = "https://127.0.0.1:9081"
 Capybara.save_path = File.join(API_UMBRELLA_SRC_ROOT, "test/tmp/capybara")
+
+Capybara::Chromedriver::Logger.raise_js_errors = true
+Capybara::Chromedriver::Logger.filters = [
+  # Ignore warnings about the self-signed localhost cert.
+  /127.0.0.1.*This site does not have a valid SSL certificate/,
+]
 
 module Minitest
   module Capybara
@@ -62,15 +66,23 @@ module Minitest
       include ::Capybara::DSL
       include ::Capybara::Minitest::Assertions
 
-      # After each capybara test, also clear the memory cache in Poltergeist. This
-      # seems to be necessary to prevent Poltergeist from incorrectly caching
-      # redirect results across different tests, and other oddities:
-      # https://github.com/teampoltergeist/poltergeist/issues/754
+      attr_accessor :raise_js_errors
+
       def teardown
         super
-        ::Capybara.reset_session!
-        page.driver.clear_memory_cache
+
+        # Clear the session and logout after each test.
+        ::Capybara.reset_sessions!
+
+        # Ensure the default driver is used again for future tests (for any
+        # tests that may have changed the driver).
         ::Capybara.use_default_driver
+
+        # Inspect console logs/errors after each test and raise errors if
+        # JavaScript errors were encountered.
+        unless @skip_raise_js_errors
+          ::Capybara::Chromedriver::Logger::TestHooks.after_example!
+        end
       end
     end
   end

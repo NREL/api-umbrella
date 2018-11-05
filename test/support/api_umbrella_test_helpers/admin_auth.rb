@@ -1,11 +1,13 @@
 require "securerandom"
+require "support/api_umbrella_test_helpers/selenium"
 
 module ApiUmbrellaTestHelpers
   module AdminAuth
+    include ApiUmbrellaTestHelpers::Selenium
+
     def admin_login(admin = nil)
       Capybara.reset_session!
-      page.driver.clear_memory_cache
-      page.driver.set_cookie("_api_umbrella_session", encrypt_session_cookie(admin_session_data(admin)))
+      selenium_add_cookie("_api_umbrella_session", encrypt_session_cookie(admin_session_data(admin)))
 
       visit "/admin/login"
       assert_logged_in(admin)

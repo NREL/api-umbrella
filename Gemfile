@@ -48,10 +48,10 @@ gem "rails_compatible_cookies_utils", "~> 0.1.0"
 gem "addressable", "~> 2.5.2"
 
 # Browser/JavaScript integration tests
-gem "capybara", "~> 3.10.0"
-
-# Webkit-based driver for capybara
-gem "poltergeist", "~> 1.18.1"
+gem "capybara", "~> 3.10.1"
+gem "selenium-webdriver", "~> 3.141"
+gem "chromedriver-helper", "~> 2.1.0"
+gem "capybara-chromedriver-logger", "~> 0.2.1"
 
 # Take screenshots on capybara test failures
 gem "capybara-screenshot", "~> 1.0.21"
@@ -69,7 +69,7 @@ gem "lazyhash", "~> 0.1.1"
 gem "faker", "~> 1.9.1"
 
 # Concurrency helpers.
-gem "concurrent-ruby", "~> 1.0.5"
+gem "concurrent-ruby", "~> 1.1.1"
 
 # Time zone randomization for tests.
 gem "zonebie", "~> 0.6.1"

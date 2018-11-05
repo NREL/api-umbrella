@@ -60,7 +60,6 @@ class Test::AdminUi::TestStatsDrilldown < Minitest::Capybara::Test
         sleep(0.1)
       end
     end
-    assert_equal(200, page.status_code)
     assert_equal("text/csv", page.response_headers["Content-Type"])
   end
 

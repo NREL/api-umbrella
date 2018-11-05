@@ -697,16 +697,6 @@ tasks:
       - ./build/work/stamp/test-deps/openldap
     method: checksum
 
-  test-deps:phantomjs:
-    cmds:
-      - ./tasks/test-deps/phantomjs
-    sources:
-      - ./tasks/test-deps/phantomjs
-      - ./tasks/helpers.sh
-    generates:
-      - ./build/work/stamp/test-deps/phantomjs
-    method: checksum
-
   test-deps:shellcheck:
     cmds:
       - ./tasks/test-deps/shellcheck
@@ -737,7 +727,6 @@ tasks:
       - task: test-deps:mailhog
       - task: test-deps:mongo-orchestration
       - task: test-deps:openldap
-      - task: test-deps:phantomjs
       - task: test-deps:shellcheck
       - task: test-deps:unbound
 

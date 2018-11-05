@@ -8,6 +8,10 @@ class Test::AdminUi::TestElasticsearchProxy < Minitest::Capybara::Test
   def setup
     super
     setup_server
+
+    # Don't raise errors in "teardown" stage, since the 403 forbidden responses
+    # we expect in these tests should be ignored.
+    @skip_raise_js_errors = true
   end
 
   def test_redirect_to_login_for_unauthenticated_requests
@@ -28,12 +32,10 @@ class Test::AdminUi::TestElasticsearchProxy < Minitest::Capybara::Test
     admin_login(FactoryBot.create(:limited_admin))
 
     visit "/admin/elasticsearch"
-    assert_equal(403, page.status_code)
     assert_text("Forbidden")
     refute_text('"lucene_version"')
 
     visit "/admin/elasticsearch/_search"
-    assert_equal(403, page.status_code)
     assert_text("Forbidden")
     refute_text('"hits"')
   end
@@ -42,17 +44,15 @@ class Test::AdminUi::TestElasticsearchProxy < Minitest::Capybara::Test
     admin_login
 
     visit "/admin/elasticsearch"
-    assert_equal(200, page.status_code)
     assert_text('"lucene_version"')
 
     visit "/admin/elasticsearch/_search"
-    assert_equal(200, page.status_code)
     assert_text('"hits"')
 
     # Redirect rewriting
     response = Typhoeus.get("https://127.0.0.1:9081/admin/elasticsearch/_plugin/foobar", keyless_http_options.deep_merge({
       :headers => {
-        "Cookie" => "_api_umbrella_session=#{page.driver.cookies["_api_umbrella_session"].value}",
+        "Cookie" => "_api_umbrella_session=#{selenium_cookie_named("_api_umbrella_session").fetch(:value)}",
       },
     }))
     assert_response_code(301, response)

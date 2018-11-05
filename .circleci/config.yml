@@ -4,7 +4,7 @@ jobs:
     parallelism: 3
     working_directory: /app
     docker:
-      - image: ubuntu:16.04
+      - image: circleci/buildpack-deps:16.04-browsers
     environment:
       CACHE_VERSION: v1
     steps:

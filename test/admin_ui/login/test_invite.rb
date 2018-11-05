@@ -28,7 +28,6 @@ class Test::AdminUi::Login::TestInvite < Minitest::Capybara::Test
 
     # Logout
     ::Capybara.reset_session!
-    page.driver.clear_memory_cache
 
     # Find admin record
     admin = Admin.where(:username => "#{unique_test_id.downcase}@example.com").first
