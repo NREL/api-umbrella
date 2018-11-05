@@ -21,7 +21,7 @@ class Test::AdminUi::Login::TestInvite < Minitest::Capybara::Test
     visit "/admin/#/admins/new"
     assert_text("Add Admin")
     fill_in "Email", :with => "#{unique_test_id}@example.com"
-    assert_checked_field("Send invite email")
+    assert_checked_field("Send invite email", :visible => :all)
     check "Superuser"
     click_button "Save"
     assert_text("Successfully saved the admin")

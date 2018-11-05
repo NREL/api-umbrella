@@ -18,7 +18,7 @@ class Test::AdminUi::TestApiUsers < Minitest::Capybara::Test
     fill_in "E-mail", :with => "example@example.com"
     fill_in "First Name", :with => "John"
     fill_in "Last Name", :with => "Doe"
-    check "User agrees to the terms and conditions"
+    label_check "User agrees to the terms and conditions", :click => { :x => 0, :y => 0 }
 
     # Rate Limiting
     select "Custom rate limits", :from => "Rate Limit"

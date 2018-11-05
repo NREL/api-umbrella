@@ -38,7 +38,7 @@ class Test::AdminUi::TestRoles < Minitest::Capybara::Test
     fill_in "E-mail", :with => "example@example.com"
     fill_in "First Name", :with => "John"
     fill_in "Last Name", :with => "Doe"
-    check "User agrees to the terms and conditions"
+    label_check "User agrees to the terms and conditions", :click => { :x => 0, :y => 0 }
     find(".selectize-input input").set("test-new-role")
     find(".selectize-dropdown-content div", :text => /Add test-new-role/).click
     click_button("Save")
@@ -61,7 +61,7 @@ class Test::AdminUi::TestRoles < Minitest::Capybara::Test
     fill_in "E-mail", :with => "example@example.com"
     fill_in "First Name", :with => "John"
     fill_in "Last Name", :with => "Doe"
-    check "User agrees to the terms and conditions"
+    label_check "User agrees to the terms and conditions", :click => { :x => 0, :y => 0 }
     find(".selectize-input input").set("test-new-user-role")
     find(".selectize-dropdown-content div", :text => /Add test-new-user-role/).click
     click_button("Save")

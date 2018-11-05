@@ -1,22 +1,14 @@
-//import 'pnotify/dist/pnotify.buttons';
-//import 'pnotify/dist/pnotify.mobile';
-
+import 'pnotify/lib/es/PNotifyButtons';
+import 'pnotify/lib/es/PNotifyMobile';
 import PNotify from 'pnotify';
-import merge from 'lodash-es/merge';
 
 export function initialize() {
-  merge(PNotify.prototype.options, {
-    styling: 'bootstrap3',
-    width: '400px',
-    icon: false,
-    animation: 'none',
-    history: {
-      history: false,
-    },
-    buttons: {
-      sticker: false,
-    },
-  });
+  PNotify.defaults.styling = 'bootstrap4';
+  PNotify.defaults.width = '400px';
+  PNotify.defaults.icon = false;
+  PNotify.defaults.icons = 'fontawesome5'; // Icons used for Buttons plugin.
+  PNotify.defaults.animation = 'none';
+  PNotify.modules.Buttons.defaults.sticker = false;
 
   // Export the removeAll function as a global, for use in our test suite.
   window.PNotifyRemoveAll = PNotify.removeAll;

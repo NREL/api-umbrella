@@ -16,10 +16,10 @@ export default Mixin.create({
 
   afterSaveComplete(options, button) {
     button.button('reset');
-    new PNotify({
-      type: 'success',
+    PNotify.success({
       title: 'Saved',
       text: (isFunction(options.message)) ? options.message(this.model) : options.message,
+      textTrusted: true,
     });
 
     this.router.transitionTo(options.transitionToRoute);
@@ -64,10 +64,10 @@ export default Mixin.create({
     bootbox.confirm(options.prompt, function(result) {
       if(result) {
         this.model.destroyRecord().then(function() {
-          new PNotify({
-            type: 'success',
+          PNotify.success({
             title: 'Deleted',
             text: (isFunction(options.message)) ? options.message(this.model) : options.message,
+            textTrusted: true,
           });
 
           this.router.transitionTo(options.transitionToRoute);

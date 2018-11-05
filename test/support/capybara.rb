@@ -54,6 +54,14 @@ Capybara.run_server = false
 Capybara.app_host = "https://127.0.0.1:9081"
 Capybara.save_path = File.join(API_UMBRELLA_SRC_ROOT, "test/tmp/capybara")
 
+# Since we're using custom styled checkboxes and radios, the actual inputs
+# aren't visible. So enable this option so that Capybara will fallback to
+# searching and clicking on the label for the associated checkbox when calling
+# "check" and "uncheck".
+Capybara.automatic_label_click = true
+
+Capybara::Screenshot.prune_strategy = :keep_last_run
+
 Capybara::Chromedriver::Logger.raise_js_errors = true
 Capybara::Chromedriver::Logger.filters = [
   # Ignore warnings about the self-signed localhost cert.
@@ -65,8 +73,6 @@ module Minitest
     class Test < Minitest::Test
       include ::Capybara::DSL
       include ::Capybara::Minitest::Assertions
-
-      attr_accessor :raise_js_errors
 
       def teardown
         super
@@ -83,6 +89,43 @@ module Minitest
         unless @skip_raise_js_errors
           ::Capybara::Chromedriver::Logger::TestHooks.after_example!
         end
+      end
+
+      # For our custom radio/checkboxes, we need to click on the label, rather
+      # than the input (since the input is technically hidden and only
+      # virtually shown). The "automatic_label_click" option makes this work in
+      # most cases, so we can use the default "check" and "uncheck" helpers",
+      # however for our "User agrees to the terms and conditions" checkbox,
+      # this doesn't work, since that label also has a link tag embedded
+      # inside, so clicking on the center of the label ends up triggering the
+      # popup, rather than the checkbox checking/unchecking.
+      #
+      # So these batch of label helpers are for cases where we know we need to
+      # click directly on the label, and they also accept ":click" options that
+      # are passed along to the label click for controlling it's position.
+      #
+      # Should be identical to the existing implementation, except that it
+      # accepts the click options, and we don't bother trying to click on the
+      # checkbox/radio first:
+      # https://github.com/teamcapybara/capybara/blob/3.10.1/lib/capybara/node/actions.rb#L323
+      def label_choose(locator = nil, **options)
+        _custom_check_with_label(:radio_button, true, locator, options)
+      end
+
+      def label_check(locator = nil, **options)
+        _custom_check_with_label(:checkbox, true, locator, options)
+      end
+
+      def label_uncheck(locator = nil, **options)
+        _custom_check_with_label(:checkbox, false, locator, options)
+      end
+
+      def _custom_check_with_label(selector, checked, locator, **options)
+        options[:allow_self] = true if locator.nil?
+        click_options = options.delete(:click) || {}
+
+        el = find(selector, locator, options.merge(:visible => :all))
+        el.session.find(:label, :for => el, :visible => true).click(click_options) unless el.checked? == checked
       end
     end
   end

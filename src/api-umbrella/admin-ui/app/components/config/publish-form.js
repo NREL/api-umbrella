@@ -109,10 +109,10 @@ export default Component.extend({
         data: form.serialize(),
       }).then(run.bind(this, function() {
         button.button('reset');
-        new PNotify({
-          type: 'success',
+        PNotify.success({
           title: 'Published',
           text: 'Successfully published the configuration<br>Changes should be live in a few seconds...',
+          textTrusted: true,
         });
 
         this.get('refreshCurrentRouteController')();

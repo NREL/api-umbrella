@@ -91,7 +91,8 @@ class Test::AdminUi::TestApisReordering < Minitest::Capybara::Test
     refute_selector(".busy-blocker")
     assert_selector("tbody tr:first-child td:first-child", :text => "API B")
     handle = find("tbody td:first-child", :text => "API A").find(:xpath, "..").find("td.reorder-handle")
-    handle.native.drag_by(0, -70)
+    browser = page.driver.browser
+    browser.action.drag_and_drop_by(handle.native, 0, -70).perform
     assert_selector("tbody tr:first-child td:first-child", :text => "API A")
     refute_selector(".busy-blocker")
 

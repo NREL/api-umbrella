@@ -270,8 +270,8 @@ class Test::AdminUi::TestApis < Minitest::Capybara::Test
     field = find_field("Required Roles")
     assert_selector("#" + field["data-selectize-control-id"], :text => "some-role×some-role2×")
     assert_equal("some-role,some-role2", find_by_id(field["data-raw-input-id"], :visible => :all).value)
-    assert_checked_field("Via HTTP header")
-    assert_checked_field("Via GET query parameter")
+    assert_checked_field("Via HTTP header", :visible => :all)
+    assert_checked_field("Via GET query parameter", :visible => :all)
     assert_select("Rate Limit", :selected => "Custom rate limits")
     within(".custom-rate-limits-table") do
       assert_equal("2", find(".rate-limit-duration-in-units").value)
@@ -298,9 +298,9 @@ class Test::AdminUi::TestApis < Minitest::Capybara::Test
       field = find_field("Required Roles")
       assert_selector("#" + field["data-selectize-control-id"], :text => "sub-role×")
       assert_equal("sub-role", find_by_id(field["data-raw-input-id"], :visible => :all).value)
-      assert_checked_field('Override required roles from "Global Request Settings"')
-      assert_checked_field("Via HTTP header")
-      assert_checked_field("Via GET query parameter")
+      assert_checked_field('Override required roles from "Global Request Settings"', :visible => :all)
+      assert_checked_field("Via HTTP header", :visible => :all)
+      assert_checked_field("Via GET query parameter", :visible => :all)
       assert_select("Rate Limit", :selected => "Custom rate limits")
       within(".custom-rate-limits-table") do
         assert_equal("3", find(".rate-limit-duration-in-units").value)

@@ -9,7 +9,7 @@ module.exports = function(defaults) {
     autoImport: {
       alias: {
         numeral: 'numeral/numeral',
-        pnotify: 'pnotify/dist/es/PNotify',
+        pnotify: 'pnotify/lib/es/PNotify',
         bootbox: 'bootbox/src/bootbox',
         diff: 'diff/dist/diff',
         marked: 'marked/lib/marked',
