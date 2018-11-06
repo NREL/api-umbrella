@@ -8,9 +8,11 @@ jobs:
     environment:
       CACHE_VERSION: v1
     steps:
+      - run: sudo mkdir /app
+      - run: sudo chown $USER:$USER /app
       - checkout
       # Install any system package dependencies.
-      - run: env INSTALL_TEST_DEPENDENCIES=true ./tasks/install-system-build-dependencies
+      - run: sudo env INSTALL_TEST_DEPENDENCIES=true ./tasks/install-system-build-dependencies
       - restore_cache:
           # CircleCI's prefix based matching will mean the cache from the last
           # cache for this branch will be restored.
@@ -36,7 +38,7 @@ jobs:
             - build/work/task
             - build/work/tasks
             - build/work/test-env
-      - run: groupadd -r api-umbrella && useradd -r -g api-umbrella -s /sbin/nologin -d /opt/api-umbrella -c "API Umbrella user" api-umbrella
+      - run: sudo groupadd -r api-umbrella && useradd -r -g api-umbrella -s /sbin/nologin -d /opt/api-umbrella -c "API Umbrella user" api-umbrella
       - run: make test:circle-ci
       - store_test_results:
           path: test/tmp/reports
