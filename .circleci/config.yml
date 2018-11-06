@@ -2,14 +2,11 @@ version: 2
 jobs:
   build:
     parallelism: 3
-    working_directory: /app
     docker:
       - image: circleci/buildpack-deps:16.04-browsers
     environment:
       CACHE_VERSION: v1
     steps:
-      - run: sudo mkdir /app
-      - run: sudo chown $USER:$USER /app
       - checkout
       # Install any system package dependencies.
       - run: sudo env INSTALL_TEST_DEPENDENCIES=true ./tasks/install-system-build-dependencies
