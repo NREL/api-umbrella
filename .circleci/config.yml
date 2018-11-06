@@ -5,7 +5,7 @@ jobs:
     docker:
       - image: circleci/buildpack-deps:16.04-browsers
     environment:
-      CACHE_VERSION: v1
+      CACHE_VERSION: v2
     steps:
       - checkout
       # Install any system package dependencies.
