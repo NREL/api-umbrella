@@ -6,6 +6,10 @@ jobs:
       - image: circleci/buildpack-deps:16.04-browsers
     steps:
       - checkout
+      # Add user to supplementary group for compiling svlogd (the make process
+      # for svlogd requires the compiling user belong to a supplementary
+      # group).
+      - run: "sudo usermod -a -G users $(whoami)"
       # Install any system package dependencies.
       - run: sudo env INSTALL_TEST_DEPENDENCIES=true ./tasks/install-system-build-dependencies
       - restore_cache:
