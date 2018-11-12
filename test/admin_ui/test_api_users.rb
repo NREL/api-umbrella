@@ -28,7 +28,7 @@ class Test::AdminUi::TestApiUsers < Minitest::Capybara::Test
       find(".rate-limit-duration-units").select("hours")
       find(".rate-limit-limit-by").select("IP Address")
       find(".rate-limit-limit").set("1500")
-      find(".rate-limit-response-headers").click
+      custom_input_trigger_click(find(".rate-limit-response-headers", :visible => :all))
     end
     select "Rate limit by IP address", :from => "Limit By"
 
