@@ -2,16 +2,14 @@ version: 2
 jobs:
   build:
     parallelism: 3
+    working_directory: /app
     docker:
       - image: circleci/buildpack-deps:16.04-browsers
+        user: root
     steps:
       - checkout
-      # Add user to supplementary group for compiling svlogd (the make process
-      # for svlogd requires the compiling user belong to a supplementary
-      # group).
-      - run: "sudo usermod -a -G users $(whoami)"
       # Install any system package dependencies.
-      - run: sudo env INSTALL_TEST_DEPENDENCIES=true ./tasks/install-system-build-dependencies
+      - run: env INSTALL_TEST_DEPENDENCIES=true ./tasks/install-system-build-dependencies
       - restore_cache:
           # CircleCI's prefix based matching will mean the cache from the last
           # cache for this branch will be restored.
@@ -37,7 +35,7 @@ jobs:
             - build/work/task
             - build/work/tasks
             - build/work/test-env
-      - run: sudo groupadd -r api-umbrella && useradd -r -g api-umbrella -s /sbin/nologin -d /opt/api-umbrella -c "API Umbrella user" api-umbrella
+      - run: groupadd -r api-umbrella && useradd -r -g api-umbrella -s /sbin/nologin -d /opt/api-umbrella -c "API Umbrella user" api-umbrella
       - run: make test:circle-ci
       - store_test_results:
           path: test/tmp/reports
