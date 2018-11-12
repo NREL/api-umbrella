@@ -1,4 +1,4 @@
-{{#bs-modal open=openModal onSubmit=(action "submit") onHidden=(action "closed") backdropClose=false size="lg" as |modal|}}
+{{#bs-modal open=openModal onSubmit=(action "submit") onHidden=(action "closed") backdropClose=false size="lg" fade=false as |modal|}}
   {{modal.header title=modalTitle}}
   {{#modal.body}}
     <form {{action "submit" on="submit"}}>
