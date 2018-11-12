@@ -84,6 +84,7 @@
     "popper.js": "^1.14.4",
     "qunit-dom": "^0.8.0",
     "selectize": "~0.12.4",
+    "timekeeper": "^2.1.2",
     "tippy.js": "^3.1.1"
   },
   "engines": {

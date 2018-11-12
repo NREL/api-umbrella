@@ -37,7 +37,7 @@ def capybara_register_driver(driver_name, options = {})
         :verbose => true,
       },
     })
-    driver.resize_window_to(driver.current_window_handle, 1200, 1200)
+    driver.resize_window_to(driver.current_window_handle, 1200, 4000)
 
     driver
   end
@@ -66,6 +66,10 @@ Capybara::Chromedriver::Logger.raise_js_errors = true
 Capybara::Chromedriver::Logger.filters = [
   # Ignore warnings about the self-signed localhost cert.
   /127.0.0.1.*This site does not have a valid SSL certificate/,
+
+  # Ignore expected ajax request failures.
+  /127.0.0.1.*the server responded with a status of 403/,
+  /127.0.0.1.*the server responded with a status of 422/,
 ]
 
 module Minitest
@@ -86,9 +90,7 @@ module Minitest
 
         # Inspect console logs/errors after each test and raise errors if
         # JavaScript errors were encountered.
-        unless @skip_raise_js_errors
-          ::Capybara::Chromedriver::Logger::TestHooks.after_example!
-        end
+        ::Capybara::Chromedriver::Logger::TestHooks.after_example!
       end
 
       # For our custom radio/checkboxes, we need to click on the label, rather
@@ -126,6 +128,16 @@ module Minitest
 
         el = find(selector, locator, options.merge(:visible => :all))
         el.session.find(:label, :for => el, :visible => true).click(click_options) unless el.checked? == checked
+      end
+
+      def custom_input_trigger_click(input)
+        # Ensure there's a label for the custom checkbox or radio styling.
+        label = find(:label, :for => input, :visible => true)
+        assert(label.text)
+
+        id = input[:id]
+        assert(id)
+        page.execute_script("document.getElementById('#{id}').click()")
       end
     end
   end

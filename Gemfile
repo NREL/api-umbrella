@@ -51,7 +51,8 @@ gem "addressable", "~> 2.5.2"
 gem "capybara", "~> 3.10.1"
 gem "selenium-webdriver", "~> 3.141"
 gem "chromedriver-helper", "~> 2.1.0"
-gem "capybara-chromedriver-logger", "~> 0.2.1"
+# https://github.com/dbalatero/capybara-chromedriver-logger/pull/7
+gem "capybara-chromedriver-logger", "~> 0.3.0", :git => "https://github.com/ThriveTRM/capybara-chromedriver-logger.git", :branch => "do-not-raise-on-filtered-errors"
 
 # Take screenshots on capybara test failures
 gem "capybara-screenshot", "~> 1.0.21"

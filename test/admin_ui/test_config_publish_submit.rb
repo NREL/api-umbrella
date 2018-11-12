@@ -39,7 +39,8 @@ class Test::AdminUi::TestConfigPublishSubmit < Minitest::Capybara::Test
 
     admin_login
     visit "/admin/#/config/publish"
-    check("config[apis][#{api1.id}][publish]")
+    checkbox = find("input[type=checkbox][name='config[apis][#{api1.id}][publish]']", :visible => :all)
+    custom_input_trigger_click(checkbox)
     click_button("Publish")
 
     refute_text("Published configuration is up to date")

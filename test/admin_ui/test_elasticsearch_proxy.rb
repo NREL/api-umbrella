@@ -8,10 +8,6 @@ class Test::AdminUi::TestElasticsearchProxy < Minitest::Capybara::Test
   def setup
     super
     setup_server
-
-    # Don't raise errors in "teardown" stage, since the 403 forbidden responses
-    # we expect in these tests should be ignored.
-    @skip_raise_js_errors = true
   end
 
   def test_redirect_to_login_for_unauthenticated_requests

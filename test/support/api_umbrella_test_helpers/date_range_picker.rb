@@ -132,11 +132,11 @@ module ApiUmbrellaTestHelpers
       within(".daterangepicker") do
         assert_selector(".ranges li.active", :text => range_label)
         if(range_label == "Custom Range")
-          assert_selector(".calendar", :visible => :visible)
+          assert_selector(".calendar-table", :visible => :visible)
           assert_field("daterangepicker_start", :with => start_at.strftime("%m/%d/%Y"))
           assert_field("daterangepicker_end", :with => end_at.strftime("%m/%d/%Y"))
         else
-          assert_selector(".calendar", :visible => :hidden)
+          assert_selector(".calendar-table", :visible => :hidden)
         end
         click_button("Cancel")
       end

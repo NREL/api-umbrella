@@ -88,13 +88,13 @@ class Test::AdminUi::TestApis < Minitest::Capybara::Test
     visit "/admin/#/apis/new"
 
     find("legend a", :text => /Global Request Settings/).click
-    refute_field('Override required roles from "Global Request Settings"')
+    refute_field('Override required roles from "Global Request Settings"', :visible => :all)
 
     find("legend a", :text => /Sub-URL Request Settings/).click
     find("button", :text => /Add URL Settings/).click
-    assert_selector(".modal")
-    within(".modal") do
-      assert_field('Override required roles from "Global Request Settings"')
+    assert_selector(".modal-content")
+    within(".modal-content") do
+      assert_field('Override required roles from "Global Request Settings"', :visible => :all)
     end
   end
 
@@ -113,8 +113,8 @@ class Test::AdminUi::TestApis < Minitest::Capybara::Test
     # Backend
     select "https", :from => "Backend Protocol"
     find("button", :text => /Add Server/).click
-    assert_selector(".modal")
-    within(".modal") do
+    assert_selector(".modal-content")
+    within(".modal-content") do
       fill_in "Host", :with => "google.com"
       assert_field("Port", :with => "443")
       click_button("OK")
@@ -126,8 +126,8 @@ class Test::AdminUi::TestApis < Minitest::Capybara::Test
 
     # Matching URL Prefixes
     find("button", :text => /Add URL Prefix/).click
-    assert_selector(".modal")
-    within(".modal") do
+    assert_selector(".modal-content")
+    within(".modal-content") do
       fill_in "Frontend Prefix", :with => "/foo"
       fill_in "Backend Prefix", :with => "/bar"
       assert_text("Incoming Frontend Request: https://api.foo.com/fooexample.json?param=value")
@@ -158,7 +158,7 @@ class Test::AdminUi::TestApis < Minitest::Capybara::Test
       find(".rate-limit-duration-units").select("hours")
       find(".rate-limit-limit-by").select("IP Address")
       find(".rate-limit-limit").set("1500")
-      find(".rate-limit-response-headers").click
+      custom_input_trigger_click(find(".rate-limit-response-headers", :visible => :all))
     end
     select "IP Only - API key rate limits are ignored (only IP based limits are applied)", :from => "Anonymous Rate Limit Behavior"
     select "API Key Only - IP based rate limits are ignored (only API key limits are applied)", :from => "Authenticated Rate Limit Behavior"
@@ -168,8 +168,8 @@ class Test::AdminUi::TestApis < Minitest::Capybara::Test
     # Sub-URL Request Settings
     find("legend a", :text => /Sub-URL Request Settings/).click
     find("button", :text => /Add URL Settings/).click
-    assert_selector(".modal")
-    within(".modal") do
+    assert_selector(".modal-content")
+    within(".modal-content") do
       select "OPTIONS", :from => "HTTP Method"
       fill_in "Regex", :with => "^/foo.*"
       select "Required - HTTP requests will receive a message to use HTTPS", :from => "HTTPS Requirements"
@@ -183,7 +183,7 @@ class Test::AdminUi::TestApis < Minitest::Capybara::Test
     end
     find(".selectize-dropdown-content div.create", :text => /Add sub-role/).click
     find("body").send_keys(:escape)
-    within(".modal") do
+    within(".modal-content") do
       check 'Override required roles from "Global Request Settings"'
       check "Via HTTP header"
       check "Via GET query parameter"
@@ -194,7 +194,7 @@ class Test::AdminUi::TestApis < Minitest::Capybara::Test
         find(".rate-limit-duration-units").select("minutes")
         find(".rate-limit-limit-by").select("IP Address")
         find(".rate-limit-limit").set("100")
-        find(".rate-limit-response-headers").click
+        custom_input_trigger_click(find(".rate-limit-response-headers", :visible => :all))
       end
       select "IP Only - API key rate limits are ignored (only IP based limits are applied)", :from => "Anonymous Rate Limit Behavior"
       select "API Key Only - IP based rate limits are ignored (only API key limits are applied)", :from => "Authenticated Rate Limit Behavior"
@@ -206,8 +206,8 @@ class Test::AdminUi::TestApis < Minitest::Capybara::Test
     # Advanced Requests Rewriting
     find("legend a", :text => /Advanced Requests Rewriting/).click
     find("button", :text => /Add Rewrite/).click
-    assert_selector(".modal")
-    within(".modal") do
+    assert_selector(".modal-content")
+    within(".modal-content") do
       select "Regular Expression", :from => "Matcher Type"
       select "PUT", :from => "HTTP Method"
       fill_in "Frontend Matcher", :with => "[0-9]+"
@@ -239,8 +239,8 @@ class Test::AdminUi::TestApis < Minitest::Capybara::Test
     # Backend
     assert_select("Backend Protocol", :selected => "https")
     find("#servers_table a", :text => /Edit/).click
-    assert_selector(".modal")
-    within(".modal") do
+    assert_selector(".modal-content")
+    within(".modal-content") do
       assert_field("Host", :with => "google.com")
       assert_field("Port", :with => "443")
       click_button("OK")
@@ -252,8 +252,8 @@ class Test::AdminUi::TestApis < Minitest::Capybara::Test
 
     # Matching URL Prefixes
     find("#url_matches_table a", :text => /Edit/).click
-    assert_selector(".modal")
-    within(".modal") do
+    assert_selector(".modal-content")
+    within(".modal-content") do
       assert_field("Frontend Prefix", :with => "/foo")
       assert_field("Backend Prefix", :with => "/bar")
       click_button("OK")
@@ -268,7 +268,7 @@ class Test::AdminUi::TestApis < Minitest::Capybara::Test
     assert_select("API Key Checks", :selected => "Disabled - API keys are optional")
     assert_select("API Key Verification Requirements", :selected => "None - API keys can be used without any verification")
     field = find_field("Required Roles")
-    assert_selector("#" + field["data-selectize-control-id"], :text => "some-role×some-role2×")
+    assert_selector("#" + field["data-selectize-control-id"], :text => "some-role\n×\nsome-role2\n×")
     assert_equal("some-role,some-role2", find_by_id(field["data-raw-input-id"], :visible => :all).value)
     assert_checked_field("Via HTTP header", :visible => :all)
     assert_checked_field("Via GET query parameter", :visible => :all)
@@ -278,7 +278,7 @@ class Test::AdminUi::TestApis < Minitest::Capybara::Test
       assert_equal("hours", find(".rate-limit-duration-units").value)
       assert_equal("ip", find(".rate-limit-limit-by").value)
       assert_equal("1500", find(".rate-limit-limit").value)
-      assert_equal(true, find(".rate-limit-response-headers").checked?)
+      assert_equal(true, find(".rate-limit-response-headers", :visible => :all).checked?)
     end
     assert_select("Anonymous Rate Limit Behavior", :selected => "IP Only - API key rate limits are ignored (only IP based limits are applied)")
     assert_select("Authenticated Rate Limit Behavior", :selected => "API Key Only - IP based rate limits are ignored (only API key limits are applied)")
@@ -288,15 +288,15 @@ class Test::AdminUi::TestApis < Minitest::Capybara::Test
     # Sub-URL Request Settings
     find("legend a", :text => /Sub-URL Request Settings/).click
     find("#sub_settings_table a", :text => /Edit/).click
-    assert_selector(".modal")
-    within(".modal") do
+    assert_selector(".modal-content")
+    within(".modal-content") do
       assert_select("HTTP Method", :selected => "OPTIONS")
       assert_field("Regex", :with => "^/foo.*")
       assert_select("HTTPS Requirements", :selected => "Required - HTTP requests will receive a message to use HTTPS")
       assert_select("API Key Checks", :selected => "Disabled - API keys are optional")
       assert_select("API Key Verification Requirements", :selected => "E-mail verification required - Existing API keys will break, only new API keys will work if verified")
       field = find_field("Required Roles")
-      assert_selector("#" + field["data-selectize-control-id"], :text => "sub-role×")
+      assert_selector("#" + field["data-selectize-control-id"], :text => "sub-role\n×")
       assert_equal("sub-role", find_by_id(field["data-raw-input-id"], :visible => :all).value)
       assert_checked_field('Override required roles from "Global Request Settings"', :visible => :all)
       assert_checked_field("Via HTTP header", :visible => :all)
@@ -307,7 +307,7 @@ class Test::AdminUi::TestApis < Minitest::Capybara::Test
         assert_equal("minutes", find(".rate-limit-duration-units").value)
         assert_equal("ip", find(".rate-limit-limit-by").value)
         assert_equal("100", find(".rate-limit-limit").value)
-        assert_equal(true, find(".rate-limit-response-headers").checked?)
+        assert_equal(true, find(".rate-limit-response-headers", :visible => :all).checked?)
       end
       assert_select("Anonymous Rate Limit Behavior", :selected => "IP Only - API key rate limits are ignored (only IP based limits are applied)")
       assert_select("Authenticated Rate Limit Behavior", :selected => "API Key Only - IP based rate limits are ignored (only API key limits are applied)")
@@ -319,8 +319,8 @@ class Test::AdminUi::TestApis < Minitest::Capybara::Test
     # Advanced Requests Rewriting
     find("legend a", :text => /Advanced Requests Rewriting/).click
     find("#rewrites a", :text => /Edit/).click
-    assert_selector(".modal")
-    within(".modal") do
+    assert_selector(".modal-content")
+    within(".modal-content") do
       assert_select("Matcher Type", :selected => "Regular Expression")
       assert_select("HTTP Method", :selected => "PUT")
       assert_field("Frontend Matcher", :with => "[0-9]+")
@@ -369,7 +369,7 @@ class Test::AdminUi::TestApis < Minitest::Capybara::Test
       assert_equal("minutes", find(".rate-limit-duration-units").value)
       assert_equal("ip", find(".rate-limit-limit-by").value)
       assert_equal("500", find(".rate-limit-limit").value)
-      assert_equal(true, find(".rate-limit-response-headers").checked?)
+      assert_equal(true, find(".rate-limit-response-headers", :visible => :all).checked?)
 
       find(".rate-limit-limit").set("200")
     end
@@ -392,8 +392,8 @@ class Test::AdminUi::TestApis < Minitest::Capybara::Test
     # Add a sub-url setting.
     find("legend a", :text => /Sub-URL Request Settings/).click
     find("button", :text => /Add URL Settings/).click
-    assert_selector(".modal")
-    within(".modal") do
+    assert_selector(".modal-content")
+    within(".modal-content") do
       fill_in "Regex", :with => "^/foo.*"
       click_button("OK")
     end
@@ -425,8 +425,8 @@ class Test::AdminUi::TestApis < Minitest::Capybara::Test
     # Verify the sub-url setting in the modal and make explicit change the HTTP
     # method select.
     find("#sub_settings_table a", :text => /Edit/).click
-    assert_selector(".modal")
-    within(".modal") do
+    assert_selector(".modal-content")
+    within(".modal-content") do
       assert_select("HTTP Method", :selected => "Any")
 
       # Make another change.
@@ -456,8 +456,8 @@ class Test::AdminUi::TestApis < Minitest::Capybara::Test
       assert_text("^/foo.*")
     end
     find("#sub_settings_table a", :text => /Edit/).click
-    assert_selector(".modal")
-    within(".modal") do
+    assert_selector(".modal-content")
+    within(".modal-content") do
       assert_select("HTTP Method", :selected => "OPTIONS")
     end
   end

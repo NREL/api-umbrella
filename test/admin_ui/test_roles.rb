@@ -77,7 +77,7 @@ class Test::AdminUi::TestRoles < Minitest::Capybara::Test
 
     find("a", :text => /Sub-URL Request Settings/).click
     find("button", :text => /Add URL Settings/).click
-    find(".modal .selectize-input").click
+    find(".modal-content .selectize-input").click
     assert_text("test-new-user-role")
   end
 

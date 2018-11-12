@@ -33,6 +33,18 @@ export default DS.Model.extend({
   },
 
   setDefaults() {
+    if(this.requireHttps === undefined) {
+      this.set('requireHttps', null);
+    }
+
+    if(this.disableApiKey === undefined) {
+      this.set('disableApiKey', null);
+    }
+
+    if(this.apiKeyVerificationLevel === undefined) {
+      this.set('apiKeyVerificationLevel', null);
+    }
+
     if(this.rateLimitMode === undefined) {
       this.set('rateLimitMode', null);
     }

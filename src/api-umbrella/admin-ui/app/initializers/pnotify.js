@@ -9,9 +9,6 @@ export function initialize() {
   PNotify.defaults.icons = 'fontawesome5'; // Icons used for Buttons plugin.
   PNotify.defaults.animation = 'none';
   PNotify.modules.Buttons.defaults.sticker = false;
-
-  // Export the removeAll function as a global, for use in our test suite.
-  window.PNotifyRemoveAll = PNotify.removeAll;
 }
 
 export default {

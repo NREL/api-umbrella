@@ -9,10 +9,6 @@ class Test::AdminUi::TestValidations < Minitest::Capybara::Test
     super
     setup_server
 
-    # Don't raise errors in "teardown" stage, since the 422 validation error
-    # responses are expected in these tests.
-    @skip_raise_js_errors = true
-
     Api.delete_all
   end
 
