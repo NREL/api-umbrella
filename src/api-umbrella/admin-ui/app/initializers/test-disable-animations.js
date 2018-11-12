@@ -7,7 +7,7 @@ function ready() {
   // Disable all CSS animations and transitions.
   const style = document.createElement('style');
   style.type = 'text/css';
-  style.innerHTML = '* {' +
+  style.innerHTML = '*, *:before, *:after {' +
     '-webkit-transition: none !important;' +
     '-moz-transition: none !important;' +
     '-ms-transition: none !important;' +

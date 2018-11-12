@@ -23,7 +23,7 @@ class Test::AdminUi::TestApis < Minitest::Capybara::Test
     assert_equal("Save Test API", find_field("Name").value)
 
     find("legend a", :text => /Advanced Settings/).click
-    fill_in "API Key Missing", :with => "hello1: foo\nhello2: bar", :visible => :all
+    fill_in_codemirror "API Key Missing", :with => "hello1: foo\nhello2: bar"
 
     click_button("Save")
     assert_text("Successfully saved")
@@ -217,16 +217,16 @@ class Test::AdminUi::TestApis < Minitest::Capybara::Test
 
     # Advanced Settings
     find("legend a", :text => /Advanced Settings/).click
-    fill_in "JSON Template", :with => '{"foo":"bar"}', :visible => :all
-    fill_in "XML Template", :with => "<foo>bar</foo>", :visible => :all
-    fill_in "CSV Template", :with => "foo,bar\nbar,foo", :visible => :all
-    fill_in "Common (All Errors)", :with => "foo0: bar0\nbar0: foo0", :visible => :all
-    fill_in "API Key Missing", :with => "foo1: bar1\nbar1: foo1", :visible => :all
-    fill_in "API Key Invalid", :with => "foo2: bar2\nbar2: foo2", :visible => :all
-    fill_in "API Key Disabled", :with => "foo3: bar3\nbar3: foo3", :visible => :all
-    fill_in "API Key Unauthorized", :with => "foo4: bar4\nbar4: foo4", :visible => :all
-    fill_in "Over Rate Limit", :with => "foo5: bar5\nbar5: foo5", :visible => :all
-    fill_in "HTTPS Required", :with => "foo6: bar6\nbar6: foo6", :visible => :all
+    fill_in_codemirror "JSON Template", :with => '{"foo":"bar"}'
+    fill_in_codemirror "XML Template", :with => "<foo>bar</foo>"
+    fill_in_codemirror "CSV Template", :with => "foo,bar\nbar,foo"
+    fill_in_codemirror "Common (All Errors)", :with => "foo0: bar0\nbar0: foo0"
+    fill_in_codemirror "API Key Missing", :with => "foo1: bar1\nbar1: foo1"
+    fill_in_codemirror "API Key Invalid", :with => "foo2: bar2\nbar2: foo2"
+    fill_in_codemirror "API Key Disabled", :with => "foo3: bar3\nbar3: foo3"
+    fill_in_codemirror "API Key Unauthorized", :with => "foo4: bar4\nbar4: foo4"
+    fill_in_codemirror "Over Rate Limit", :with => "foo5: bar5\nbar5: foo5"
+    fill_in_codemirror "HTTPS Required", :with => "foo6: bar6\nbar6: foo6"
 
     click_button("Save")
     assert_text("Successfully saved")
@@ -330,30 +330,14 @@ class Test::AdminUi::TestApis < Minitest::Capybara::Test
 
     # Advanced Settings
     find("legend a", :text => /Advanced Settings/).click
-    field = find_field("JSON Template", :visible => :all)
-    assert_selector("#" + field["data-ace-content-id"], :text => '{"foo":"bar"}')
-    assert_equal('{"foo":"bar"}', find_by_id(field["data-raw-input-id"], :visible => :all).value)
-    field = find_field("XML Template", :visible => :all)
-    assert_selector("#" + field["data-ace-content-id"], :text => "<foo>bar</foo>")
-    assert_equal("<foo>bar</foo>", find_by_id(field["data-raw-input-id"], :visible => :all).value)
-    field = find_field("CSV Template", :visible => :all)
-    assert_selector("#" + field["data-ace-content-id"], :text => "foo,bar\nbar,foo")
-    assert_equal("foo,bar\nbar,foo", find_by_id(field["data-raw-input-id"], :visible => :all).value)
-    field = find_field("API Key Missing", :visible => :all)
-    assert_selector("#" + field["data-ace-content-id"], :text => "foo1: bar1\nbar1: foo1")
-    assert_equal("foo1: bar1\nbar1: foo1", find_by_id(field["data-raw-input-id"], :visible => :all).value)
-    field = find_field("API Key Invalid", :visible => :all)
-    assert_selector("#" + field["data-ace-content-id"], :text => "foo2: bar2\nbar2: foo2")
-    assert_equal("foo2: bar2\nbar2: foo2", find_by_id(field["data-raw-input-id"], :visible => :all).value)
-    field = find_field("API Key Disabled", :visible => :all)
-    assert_selector("#" + field["data-ace-content-id"], :text => "foo3: bar3\nbar3: foo3")
-    assert_equal("foo3: bar3\nbar3: foo3", find_by_id(field["data-raw-input-id"], :visible => :all).value)
-    field = find_field("API Key Unauthorized", :visible => :all)
-    assert_selector("#" + field["data-ace-content-id"], :text => "foo4: bar4\nbar4: foo4")
-    assert_equal("foo4: bar4\nbar4: foo4", find_by_id(field["data-raw-input-id"], :visible => :all).value)
-    field = find_field("Over Rate Limit", :visible => :all)
-    assert_selector("#" + field["data-ace-content-id"], :text => "foo5: bar5\nbar5: foo5")
-    assert_equal("foo5: bar5\nbar5: foo5", find_by_id(field["data-raw-input-id"], :visible => :all).value)
+    assert_codemirror_field("JSON Template", :with => '{"foo":"bar"}')
+    assert_codemirror_field("XML Template", :with => "<foo>bar</foo>")
+    assert_codemirror_field("CSV Template", :with => "foo,bar\nbar,foo")
+    assert_codemirror_field("API Key Missing", :with => "foo1: bar1\nbar1: foo1")
+    assert_codemirror_field("API Key Invalid", :with => "foo2: bar2\nbar2: foo2")
+    assert_codemirror_field("API Key Disabled", :with => "foo3: bar3\nbar3: foo3")
+    assert_codemirror_field("API Key Unauthorized", :with => "foo4: bar4\nbar4: foo4")
+    assert_codemirror_field("Over Rate Limit", :with => "foo5: bar5\nbar5: foo5")
   end
 
   def test_edit_custom_rate_limits

@@ -74,20 +74,20 @@
 
       {{#fields-for model=model.settings.errorTemplates style="horizontal-wide-labels" as |f|}}
         <h4>{{t "mongoid.attributes.api/settings.error_templates"}}</h4>
-        {{f.ace-field "json" label=(t "admin.api.settings.error_templates_json") tooltip=(t "admin.api.settings.error_templates_json_tooltip_markdown") mode="json"}}
-        {{f.ace-field "xml" label=(t "admin.api.settings.error_templates_xml") tooltip=(t "admin.api.settings.error_templates_xml_tooltip_markdown") mode="xml"}}
-        {{f.ace-field "csv" label=(t "admin.api.settings.error_templates_csv") tooltip=(t "admin.api.settings.error_templates_csv_tooltip_markdown") mode="text"}}
+        {{f.codemirror-field "json" label=(t "admin.api.settings.error_templates_json") tooltip=(t "admin.api.settings.error_templates_json_tooltip_markdown") mode="application/json"}}
+        {{f.codemirror-field "xml" label=(t "admin.api.settings.error_templates_xml") tooltip=(t "admin.api.settings.error_templates_xml_tooltip_markdown") mode="application/xml"}}
+        {{f.codemirror-field "csv" label=(t "admin.api.settings.error_templates_csv") tooltip=(t "admin.api.settings.error_templates_csv_tooltip_markdown") mode="text/plain"}}
       {{/fields-for}}
 
       {{#fields-for model=model.settings.errorDataYamlStrings style="horizontal-wide-labels" as |f|}}
         <h4>{{t "mongoid.attributes.api/settings.error_data"}}</h4>
-        {{f.ace-field "common" label=(t "admin.api.settings.error_data_common") tooltip=(t "admin.api.settings.error_data_common_tooltip_markdown") mode="yaml"}}
-        {{f.ace-field "api_key_missing" label=(t "admin.api.settings.error_data_api_key_missing") tooltip=(t "admin.api.settings.error_data_api_key_missing_tooltip_markdown") mode="yaml"}}
-        {{f.ace-field "api_key_invalid" label=(t "admin.api.settings.error_data_api_key_invalid") tooltip=(t "admin.api.settings.error_data_api_key_invalid_tooltip_markdown") mode="yaml"}}
-        {{f.ace-field "api_key_disabled" label=(t "admin.api.settings.error_data_api_key_disabled") tooltip=(t "admin.api.settings.error_data_api_key_disabled_tooltip_markdown") mode="yaml"}}
-        {{f.ace-field "api_key_unauthorized" label=(t "admin.api.settings.error_data_api_key_unauthorized") tooltip=(t "admin.api.settings.error_data_api_key_unauthorized_tooltip_markdown") mode="yaml"}}
-        {{f.ace-field "over_rate_limit" label=(t "admin.api.settings.error_data_over_rate_limit") tooltip=(t "admin.api.settings.error_data_over_rate_limit_tooltip_markdown") mode="yaml"}}
-        {{f.ace-field "https_required" label=(t "admin.api.settings.error_data_https_required") tooltip=(t "admin.api.settings.error_data_https_required_tooltip_markdown") mode="yaml"}}
+        {{f.codemirror-field "common" label=(t "admin.api.settings.error_data_common") tooltip=(t "admin.api.settings.error_data_common_tooltip_markdown") mode="text/x-yaml"}}
+        {{f.codemirror-field "api_key_missing" label=(t "admin.api.settings.error_data_api_key_missing") tooltip=(t "admin.api.settings.error_data_api_key_missing_tooltip_markdown") mode="text/x-yaml"}}
+        {{f.codemirror-field "api_key_invalid" label=(t "admin.api.settings.error_data_api_key_invalid") tooltip=(t "admin.api.settings.error_data_api_key_invalid_tooltip_markdown") mode="text/x-yaml"}}
+        {{f.codemirror-field "api_key_disabled" label=(t "admin.api.settings.error_data_api_key_disabled") tooltip=(t "admin.api.settings.error_data_api_key_disabled_tooltip_markdown") mode="text/x-yaml"}}
+        {{f.codemirror-field "api_key_unauthorized" label=(t "admin.api.settings.error_data_api_key_unauthorized") tooltip=(t "admin.api.settings.error_data_api_key_unauthorized_tooltip_markdown") mode="text/x-yaml"}}
+        {{f.codemirror-field "over_rate_limit" label=(t "admin.api.settings.error_data_over_rate_limit") tooltip=(t "admin.api.settings.error_data_over_rate_limit_tooltip_markdown") mode="text/x-yaml"}}
+        {{f.codemirror-field "https_required" label=(t "admin.api.settings.error_data_https_required") tooltip=(t "admin.api.settings.error_data_https_required_tooltip_markdown") mode="text/x-yaml"}}
       {{/fields-for}}
     </div>
   </fieldset>
