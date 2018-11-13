@@ -1,5 +1,8 @@
 require "capybara/minitest"
 require "capybara-screenshot/minitest"
+require "support/api_umbrella_test_helpers/capybara_codemirror"
+require "support/api_umbrella_test_helpers/capybara_custom_bootstrap_inputs"
+require "support/api_umbrella_test_helpers/capybara_selectize"
 require "support/api_umbrella_test_helpers/process"
 
 def capybara_register_driver(driver_name, options = {})
@@ -77,6 +80,9 @@ module Minitest
     class Test < Minitest::Test
       include ::Capybara::DSL
       include ::Capybara::Minitest::Assertions
+      include ApiUmbrellaTestHelpers::CapybaraCodemirror
+      include ApiUmbrellaTestHelpers::CapybaraCustomBootstrapInputs
+      include ApiUmbrellaTestHelpers::CapybaraSelectize
 
       def teardown
         super
@@ -91,101 +97,6 @@ module Minitest
         # Inspect console logs/errors after each test and raise errors if
         # JavaScript errors were encountered.
         ::Capybara::Chromedriver::Logger::TestHooks.after_example!
-      end
-
-      # For our custom radio/checkboxes, we need to click on the label, rather
-      # than the input (since the input is technically hidden and only
-      # virtually shown). The "automatic_label_click" option makes this work in
-      # most cases, so we can use the default "check" and "uncheck" helpers",
-      # however for our "User agrees to the terms and conditions" checkbox,
-      # this doesn't work, since that label also has a link tag embedded
-      # inside, so clicking on the center of the label ends up triggering the
-      # popup, rather than the checkbox checking/unchecking.
-      #
-      # So these batch of label helpers are for cases where we know we need to
-      # click directly on the label, and they also accept ":click" options that
-      # are passed along to the label click for controlling it's position.
-      #
-      # Should be identical to the existing implementation, except that it
-      # accepts the click options, and we don't bother trying to click on the
-      # checkbox/radio first:
-      # https://github.com/teamcapybara/capybara/blob/3.10.1/lib/capybara/node/actions.rb#L323
-      def label_choose(locator = nil, **options)
-        _custom_check_with_label(:radio_button, true, locator, options)
-      end
-
-      def label_check(locator = nil, **options)
-        _custom_check_with_label(:checkbox, true, locator, options)
-      end
-
-      def label_uncheck(locator = nil, **options)
-        _custom_check_with_label(:checkbox, false, locator, options)
-      end
-
-      def _custom_check_with_label(selector, checked, locator, **options)
-        options[:allow_self] = true if locator.nil?
-        click_options = options.delete(:click) || {}
-
-        el = find(selector, locator, options.merge(:visible => :all))
-        el.session.find(:label, :for => el, :visible => true).click(click_options) unless el.checked? == checked
-      end
-
-      def custom_input_trigger_click(input)
-        # Ensure there's a label for the custom checkbox or radio styling.
-        label = find(:label, :for => input, :visible => true)
-        assert(label.text)
-
-        id = input[:id]
-        assert(id)
-        page.execute_script("document.getElementById('#{id}').click()")
-      end
-
-      def fill_in_codemirror(locator, options = {})
-        field = find_field(locator, :visible => :all)
-
-        # Click on the label to force the codemirror input to focus. Otherwise,
-        # the input field is invisible and text can't be entered until this
-        # focus happens.
-        label = find(:label, :for => field)
-        label.click
-
-        fill_in(locator, options.merge(:visible => :all))
-      end
-
-      def assert_codemirror_field(locator, options = {})
-        field = find_field(locator, :visible => :all)
-
-        # Verify that the displayed text by code mirror contains the expected
-        # value, along with the expected line numbers.
-        expected_value = options.fetch(:with)
-        expected_text = expected_value.split("\n").map.with_index(1) do |line_value, line_num|
-          "#{line_num}\n#{line_value}"
-        end.join("\n")
-        assert_selector("#" + field["data-codemirror-wrapper-element-id"], :text => expected_text)
-
-        # Verify that the hidden original textarea contains the expected value.
-        assert_equal(expected_value, find_by_id(field["data-codemirror-original-textarea-id"], :visible => :all).value)
-      end
-
-      def selectize_add(locator, value)
-        fill_in locator, :with => value
-        page.document.find(".selectize-dropdown-content div.create", :text => /Add #{value}/).click
-        page.document.find("body").send_keys(:escape)
-      end
-
-      def selectize_remove(locator, value)
-        field = find_field(locator)
-        find("#" + field["data-selectize-control-id"] + " [data-value='#{value}'] .remove").click
-      end
-
-      def assert_selectize_field(locator, options = {})
-        field = find_field(locator)
-
-        expected_value = options.fetch(:with)
-        expected_text = expected_value.split(",").map { |value| "#{value}\n×" }.join("\n")
-        assert_selector("#" + field["data-selectize-control-id"], :text => expected_text)
-
-        assert_equal(expected_value, find_by_id(field["data-raw-input-id"], :visible => :all).value)
       end
     end
   end
