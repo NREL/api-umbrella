@@ -50,6 +50,9 @@ export default Component.extend({
     let $dateRangePicker = $('#reportrange');
     $dateRangePicker.daterangepicker({
       ranges: rangeOptions,
+      showDropdowns: true,
+      minYear: 2000,
+      maxYear: new Date().getFullYear() + 1,
     });
     $dateRangePicker.on('showCalendar.daterangepicker', this.handleDateRangeCalendarShow.bind(this));
     $dateRangePicker.on('hideCalendar.daterangepicker', this.handleDateRangeCalendarHide.bind(this));
