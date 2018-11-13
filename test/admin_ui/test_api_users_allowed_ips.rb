@@ -55,7 +55,7 @@ class Test::AdminUi::TestApiUsersAllowedIps < Minitest::Capybara::Test
     visit "/admin/#/api_users/#{user.id}/edit"
 
     assert_equal("10.0.0.0/24\n10.2.2.2", find_field("Restrict Access to IPs").value)
-    fill_in "Restrict Access to IPs", :with => ""
+    fill_in "Restrict Access to IPs", :with => "", :fill_options => { :clear => :backspace }
     click_button("Save")
 
     assert_text("Successfully saved the user")

@@ -55,7 +55,7 @@ class Test::AdminUi::TestApiUsersAllowedReferers < Minitest::Capybara::Test
     visit "/admin/#/api_users/#{user.id}/edit"
 
     assert_equal("*.example.com/*\nhttp://google.com/*", find_field("Restrict Access to HTTP Referers").value)
-    fill_in "Restrict Access to HTTP Referers", :with => ""
+    fill_in "Restrict Access to HTTP Referers", :with => "", :fill_options => { :clear => :backspace }
     click_button("Save")
 
     assert_text("Successfully saved the user")
