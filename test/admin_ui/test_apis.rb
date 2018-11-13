@@ -143,12 +143,8 @@ class Test::AdminUi::TestApis < Minitest::Capybara::Test
     select "Optional - HTTPS is optional", :from => "HTTPS Requirements"
     select "Disabled - API keys are optional", :from => "API Key Checks"
     select "None - API keys can be used without any verification", :from => "API Key Verification Requirements"
-    fill_in "Required Roles", :with => "some-role"
-    find(".selectize-dropdown-content div.create", :text => /Add some-role/).click
-    find("body").send_keys(:escape)
-    fill_in "Required Roles", :with => "some-role2"
-    find(".selectize-dropdown-content div.create", :text => /Add some-role2/).click
-    find("body").send_keys(:escape)
+    selectize_add "Required Roles", "some-role"
+    selectize_add "Required Roles", "some-role2"
     check "Via HTTP header"
     check "Via GET query parameter"
     select "Custom rate limits", :from => "Rate Limit"
@@ -175,14 +171,8 @@ class Test::AdminUi::TestApis < Minitest::Capybara::Test
       select "Required - HTTP requests will receive a message to use HTTPS", :from => "HTTPS Requirements"
       select "Disabled - API keys are optional", :from => "API Key Checks"
       select "E-mail verification required - Existing API keys will break, only new API keys will work if verified", :from => "API Key Verification Requirements"
-      # FIXME: Without this sleep, then the selectize test below will randomly
-      # fail sometimes. Not exactly sure why, but nothing gets filled in and
-      # the selectize dropdown doesn't show up.
-      sleep 1
-      fill_in "Required Roles", :with => "sub-role"
+      selectize_add "Required Roles", "sub-role"
     end
-    find(".selectize-dropdown-content div.create", :text => /Add sub-role/).click
-    find("body").send_keys(:escape)
     within(".modal-content") do
       check 'Override required roles from "Global Request Settings"'
       check "Via HTTP header"
@@ -267,9 +257,7 @@ class Test::AdminUi::TestApis < Minitest::Capybara::Test
     assert_select("HTTPS Requirements", :selected => "Optional - HTTPS is optional")
     assert_select("API Key Checks", :selected => "Disabled - API keys are optional")
     assert_select("API Key Verification Requirements", :selected => "None - API keys can be used without any verification")
-    field = find_field("Required Roles")
-    assert_selector("#" + field["data-selectize-control-id"], :text => "some-role\n×\nsome-role2\n×")
-    assert_equal("some-role,some-role2", find_by_id(field["data-raw-input-id"], :visible => :all).value)
+    assert_selectize_field("Required Roles", :with => "some-role,some-role2")
     assert_checked_field("Via HTTP header", :visible => :all)
     assert_checked_field("Via GET query parameter", :visible => :all)
     assert_select("Rate Limit", :selected => "Custom rate limits")
@@ -295,9 +283,7 @@ class Test::AdminUi::TestApis < Minitest::Capybara::Test
       assert_select("HTTPS Requirements", :selected => "Required - HTTP requests will receive a message to use HTTPS")
       assert_select("API Key Checks", :selected => "Disabled - API keys are optional")
       assert_select("API Key Verification Requirements", :selected => "E-mail verification required - Existing API keys will break, only new API keys will work if verified")
-      field = find_field("Required Roles")
-      assert_selector("#" + field["data-selectize-control-id"], :text => "sub-role\n×")
-      assert_equal("sub-role", find_by_id(field["data-raw-input-id"], :visible => :all).value)
+      assert_selectize_field("Required Roles", :with => "sub-role")
       assert_checked_field('Override required roles from "Global Request Settings"', :visible => :all)
       assert_checked_field("Via HTTP header", :visible => :all)
       assert_checked_field("Via GET query parameter", :visible => :all)
