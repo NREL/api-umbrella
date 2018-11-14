@@ -37,6 +37,10 @@ class Test::AdminUi::TestNoscript < Minitest::Capybara::Test
       visit "/admin/"
       assert_text("Loading...")
       refute_text("This application requires JavaScript")
+
+      # Wait for page to fully load to prevent javascript errors by trying to
+      # cancel/navigate away too early.
+      assert_text("Welcome!")
     end
   end
 end
