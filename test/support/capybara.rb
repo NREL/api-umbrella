@@ -3,6 +3,7 @@ require "capybara-screenshot/minitest"
 require "support/api_umbrella_test_helpers/capybara_codemirror"
 require "support/api_umbrella_test_helpers/capybara_custom_bootstrap_inputs"
 require "support/api_umbrella_test_helpers/capybara_selectize"
+require "support/api_umbrella_test_helpers/downloads"
 require "support/api_umbrella_test_helpers/process"
 
 def capybara_register_driver(driver_name, options = {})
@@ -41,6 +42,7 @@ def capybara_register_driver(driver_name, options = {})
       },
     })
     driver.resize_window_to(driver.current_window_handle, 1200, 4000)
+    driver.browser.download_path = ApiUmbrellaTestHelpers::Downloads::DOWNLOADS_ROOT
 
     driver
   end

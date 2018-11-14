@@ -73,9 +73,25 @@ class Test::Apis::Admin::Stats::TestLogs < Minitest::Test
     assert_equal("text/csv", response.headers["Content-Type"])
     assert_match("attachment; filename=\"api_logs (#{Time.now.utc.strftime("%b %-e %Y")}).csv\"", response.headers["Content-Disposition"])
 
-    lines = response.body.split("\n")
-    assert_equal("Time,Method,Host,URL,User,IP Address,Country,State,City,Status,Reason Denied,Response Time,Content Type,Accept Encoding,User Agent", lines[0])
-    assert_equal(1506, lines.length, lines)
+    csv = CSV.parse(response.body)
+    assert_equal(1506, csv.length, csv)
+    assert_equal([
+      "Time",
+      "Method",
+      "Host",
+      "URL",
+      "User",
+      "IP Address",
+      "Country",
+      "State",
+      "City",
+      "Status",
+      "Reason Denied",
+      "Response Time",
+      "Content Type",
+      "Accept Encoding",
+      "User Agent",
+    ], csv[0])
   end
 
   def test_query_builder_case_insensitive_defaults
