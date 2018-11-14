@@ -1,3 +1,4 @@
+import 'selectize';
 import BaseField from './base-field';
 import { observer } from '@ember/object';
 import { on } from '@ember/object/evented';

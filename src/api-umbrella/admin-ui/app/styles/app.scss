@@ -1,8 +1,6 @@
-@import "_variables_pre.scss";
-@import "_variables_post.scss";
+@import "_variables.scss";
 @import "node_modules/bootstrap/scss/bootstrap.scss";
 @import "_tooltips";
-//@import "node_modules/font-awesome/scss/font-awesome.scss";
 
 @import "_query-builder.scss";
 @import "node_modules/daterangepicker/daterangepicker";
@@ -16,5 +14,3 @@
 @import "_tables.scss";
 @import "_stats.scss";
 @import "_selectize.scss";
-
-//@import "ember-bootstrap/bootstrap";

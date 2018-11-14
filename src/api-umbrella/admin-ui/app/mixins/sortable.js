@@ -1,3 +1,4 @@
+import 'jquery-ui/ui/widgets/sortable';
 import $ from 'jquery';
 import Mixin from '@ember/object/mixin'
 import { computed } from '@ember/object';

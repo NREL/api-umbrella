@@ -1,3 +1,5 @@
+import 'datatables.net';
+import 'datatables.net-bs4';
 import $ from 'jquery';
 import merge from 'lodash-es/merge';
 

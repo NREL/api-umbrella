@@ -8,13 +8,14 @@ module.exports = function(defaults) {
   let app = new EmberApp(defaults, {
     autoImport: {
       alias: {
-        numeral: 'numeral/numeral',
-        pnotify: 'pnotify/lib/es/PNotify',
+        'jQuery-QueryBuilder': 'jQuery-QueryBuilder/dist/js/query-builder.standalone',
         bootbox: 'bootbox/src/bootbox',
         diff: 'diff/dist/diff',
-        marked: 'marked/lib/marked',
         inflection: 'inflection/lib/inflection',
-        'jQuery-QueryBuilder': 'jQuery-QueryBuilder/dist/js/query-builder.standalone',
+        marked: 'marked/lib/marked',
+        numeral: 'numeral/numeral',
+        pnotify: 'pnotify/lib/es/PNotify',
+        selectize: 'selectize/dist/js/standalone/selectize',
       },
 
       webpack: {
@@ -69,46 +70,6 @@ module.exports = function(defaults) {
   // modules that you would like to import into your application
   // please specify an object with the list of modules as keys
   // along with the exports of each module as its value.
-
-  // Prepend Ace before Ember, or else the "define" method from Ember's
-  // loader.js conflicts with Ace after these changes in Ace v1.2.4:
-  // https://github.com/ajaxorg/ace/pull/2914
-  //app.import('node_modules/ace-builds/src-noconflict/mode-json.js', { prepend: true });
-  //app.import('node_modules/ace-builds/src-noconflict/mode-xml.js', { prepend: true });
-  //app.import('node_modules/ace-builds/src-noconflict/mode-yaml.js', { prepend: true });
-  //app.import('node_modules/ace-builds/src-noconflict/ace.js', { prepend: true });
-
-  //app.import('node_modules/bootbox/bootbox.js');
-  //app.import('node_modules/bootbox/src/bootbox.js');
-  app.import('node_modules/popper.js/dist/umd/popper.js');
-  app.import('node_modules/bootstrap/dist/js/bootstrap.js');
-  /*
-  app.import('node_modules/bootstrap-sass/assets/fonts/bootstrap/glyphicons-halflings-regular.eot', { destDir: 'fonts/bootstrap' });
-  app.import('node_modules/bootstrap-sass/assets/fonts/bootstrap/glyphicons-halflings-regular.svg', { destDir: 'fonts/bootstrap' });
-  app.import('node_modules/bootstrap-sass/assets/fonts/bootstrap/glyphicons-halflings-regular.ttf', { destDir: 'fonts/bootstrap' });
-  app.import('node_modules/bootstrap-sass/assets/fonts/bootstrap/glyphicons-halflings-regular.woff', { destDir: 'fonts/bootstrap' });
-  app.import('node_modules/bootstrap-sass/assets/fonts/bootstrap/glyphicons-halflings-regular.woff2', { destDir: 'fonts/bootstrap' });
-  */
-  app.import('node_modules/datatables.net-bs4/css/dataTables.bootstrap4.css');
-  app.import('node_modules/datatables.net/js/jquery.dataTables.js');
-  app.import('node_modules/datatables.net-bs4/js/dataTables.bootstrap4.js');
-  /*
-  app.import('node_modules/font-awesome/fonts/fontawesome-webfont.eot', { destDir: 'fonts' });
-  app.import('node_modules/font-awesome/fonts/fontawesome-webfont.svg', { destDir: 'fonts' });
-  app.import('node_modules/font-awesome/fonts/fontawesome-webfont.ttf', { destDir: 'fonts' });
-  app.import('node_modules/font-awesome/fonts/fontawesome-webfont.woff', { destDir: 'fonts' });
-  app.import('node_modules/font-awesome/fonts/fontawesome-webfont.woff2', { destDir: 'fonts' });
-  */
-  app.import('node_modules/selectize/dist/css/selectize.default.css');
-  app.import('node_modules/selectize/dist/js/standalone/selectize.js');
-  app.import('node_modules/jquery-ui/ui/version.js');
-  app.import('node_modules/jquery-ui/ui/data.js');
-  app.import('node_modules/jquery-ui/ui/ie.js');
-  app.import('node_modules/jquery-ui/ui/scroll-parent.js');
-  app.import('node_modules/jquery-ui/ui/widget.js');
-  app.import('node_modules/jquery-ui/ui/widgets/mouse.js');
-  app.import('node_modules/jquery-ui/ui/widgets/sortable.js');
-  // app.import('node_modules/tbasse-jquery-truncate/jquery.truncate.js');
 
   return app.toTree();
 };
