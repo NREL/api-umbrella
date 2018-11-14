@@ -8,6 +8,7 @@ class Test::AdminUi::TestNoscript < Minitest::Capybara::Test
   def setup
     super
     setup_server
+    Admin.delete_all
   end
 
   def test_noscript_message
