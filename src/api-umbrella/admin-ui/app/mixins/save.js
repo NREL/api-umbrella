@@ -51,6 +51,8 @@ export default Mixin.create({
           if(error && error.errors) {
             this.set('model.serverErrors', error.errors);
           } else {
+            // eslint-disable-next-line no-console
+            console.error('Unexpected save error: ', error);
             this.set('model.serverErrors', [{ message: 'Unexpected error' }]);
           }
 

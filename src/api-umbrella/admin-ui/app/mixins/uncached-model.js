@@ -1,4 +1,5 @@
 import Mixin from '@ember/object/mixin'
+import { run } from '@ember/runloop';
 
 export default Mixin.create({
   // Call before fetching a model to clear any client-side cache data.
@@ -31,6 +32,11 @@ export default Mixin.create({
   // https://github.com/emberjs/data/issues/4564
   // https://github.com/emberjs/data/issues/4595
   clearStoreCache() {
-    this.store.unloadAll();
+    // Must explicitly wrap in run loop or else the _idToModel mapping is still
+    // present (at least in development, but oddly not in production mode).
+    // Semi-related: https://github.com/emberjs/data/issues/5041
+    run(() => {
+      this.store.unloadAll();
+    });
   },
 });
