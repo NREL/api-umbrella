@@ -1,5 +1,5 @@
 {{#if hasChanges}}
-  <form id="publish_form">
+  <form id="publish_form" {{action "publish" on="submit"}}>
     {{#if model.config.apis.new}}
       <fieldset>
         <legend>{{model.config.apis.new.length}} New API Backends</legend>
@@ -47,7 +47,7 @@
     </div>
 
     <div class="text-center">
-      <button type="submit" {{action "publish"}} id="publish_button" class="btn btn-large btn-primary" data-loading-text="<i class='fa fa-refresh fa-spin'></i> Publishing...">Publish</button>
+      <button type="submit" class="btn btn-lg btn-primary publish-button"><span class="btn-label">Publish</span><span class="btn-loading-label">{{fa-icon "sync-alt" spin=true}}Publishing...</span></button>
     </div>
   </form>
 {{else}}

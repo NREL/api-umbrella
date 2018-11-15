@@ -11,7 +11,7 @@ module ApiUmbrellaTestHelpers
     def selenium_delete_cookie(name)
       selenium_ensure_cookies
       browser = Capybara.current_session.driver.browser
-      browser.manage.delete_cookie("test_mock_omniauth")
+      browser.manage.delete_cookie(name)
     end
 
     def selenium_all_cookies

@@ -122,3 +122,23 @@ fieldset .table {
     left: -1rem;
   }
 }
+
+.btn {
+  .btn-loading-label {
+    display: none;
+
+    .svg-inline--fa:first-child {
+      @extend .mr-2;
+    }
+  }
+
+  &.btn-loading {
+    .btn-label {
+      display: none;
+    }
+
+    .btn-loading-label {
+      display: inline;
+    }
+  }
+}

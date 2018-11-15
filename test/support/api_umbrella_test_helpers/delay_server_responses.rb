@@ -12,7 +12,6 @@ module ApiUmbrellaTestHelpers
     # too quickly if the server responds too quickly (for example, testing
     # loading spinners showing up during an ajax call).
     def delay_server_responses(delay)
-      Capybara.reset_session!
       selenium_add_cookie("test_delay_server_responses", delay.to_s)
       yield
     ensure

@@ -1,4 +1,4 @@
-import $ from 'jquery';
+import LoadingButton from 'api-umbrella-admin-ui/utils/loading-button';
 import Mixin from '@ember/object/mixin'
 import PNotify from 'pnotify';
 import bootbox from 'bootbox';
@@ -9,13 +9,13 @@ import scrollTo from 'jquery.scrollto';
 export default Mixin.create({
   router: inject(),
 
-  scrollToErrors() {
-    $('#save_button').button('reset');
+  scrollToErrors(button) {
+    LoadingButton.reset(button);
     scrollTo('#error_messages', { offset: -60, duration: 200 });
   },
 
   afterSaveComplete(options, button) {
-    button.button('reset');
+    LoadingButton.reset(button);
     PNotify.success({
       title: 'Saved',
       text: (isFunction(options.message)) ? options.message(this.model) : options.message,
@@ -26,8 +26,8 @@ export default Mixin.create({
   },
 
   saveRecord(options) {
-    let button = $('#save_button');
-    button.button('loading');
+    const button = this.element.querySelector('.save-button');
+    LoadingButton.loading(button);
 
     this.setProperties({
       'model.clientErrors': [],
@@ -37,7 +37,7 @@ export default Mixin.create({
     this.model.validate().then(function() {
       if(this.get('model.validations.isValid') === false) {
         this.set('model.clientErrors', this.get('model.validations.errors'));
-        this.scrollToErrors();
+        this.scrollToErrors(button);
       } else {
         this.model.save().then(function() {
           if(options.afterSave) {
@@ -54,7 +54,7 @@ export default Mixin.create({
             this.set('model.serverErrors', [{ message: 'Unexpected error' }]);
           }
 
-          this.scrollToErrors();
+          this.scrollToErrors(button);
         }.bind(this));
       }
     }.bind(this));
