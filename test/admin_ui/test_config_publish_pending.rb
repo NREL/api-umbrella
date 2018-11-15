@@ -146,7 +146,7 @@ class Test::AdminUi::TestConfigPublishPending < Minitest::Capybara::Test
 
     assert_selector("input[type=checkbox][name*=publish]", :visible => :all, :count => 2)
     refute_selector("input[type=checkbox][name*=publish]:checked", :visible => :all)
-    publish_button = find("#publish_button")
+    publish_button = find(".publish-button")
     checkbox = first("input[type=checkbox][name*=publish]", :visible => :all)
 
     assert_equal(false, checkbox.checked?)
@@ -169,7 +169,7 @@ class Test::AdminUi::TestConfigPublishPending < Minitest::Capybara::Test
 
     assert_selector("input[type=checkbox][name*=publish]", :visible => :all, :count => 1)
     assert_selector("input[type=checkbox][name*=publish]:checked", :visible => :all, :count => 1)
-    publish_button = find("#publish_button")
+    publish_button = find(".publish-button")
     checkbox = first("input[type=checkbox][name*=publish]", :visible => :all)
 
     assert_equal(true, checkbox.checked?)
