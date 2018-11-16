@@ -54,7 +54,7 @@ gem "capybara", "~> 3.10.0"
 gem "poltergeist", "~> 1.18.1"
 
 # Take screenshots on capybara test failures
-gem "capybara-screenshot", "~> 1.0.21"
+gem "capybara-screenshot", "~> 1.0.22"
 
 # HTML or XML parsing
 gem "nokogiri", "~> 1.8.5"
