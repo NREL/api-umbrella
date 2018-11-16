@@ -22,7 +22,6 @@
     "@ember/optional-features": "^0.6.3",
     "@fortawesome/ember-fontawesome": "~0.1.8",
     "@fortawesome/fontawesome-svg-core": "~1.2.8",
-    "@fortawesome/free-brands-svg-icons": "~5.5.0",
     "@fortawesome/free-regular-svg-icons": "~5.5.0",
     "@fortawesome/free-solid-svg-icons": "~5.5.0",
     "autoprefixer": "~9.3.1",

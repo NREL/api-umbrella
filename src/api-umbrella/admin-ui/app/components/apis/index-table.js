@@ -59,7 +59,7 @@ export default Component.extend({
           className: 'reorder-handle',
           orderable: false,
           render() {
-            return '<i class="fa fa-reorder"></i>';
+            return '<i class="fas fa-bars"></i>';
           },
         },
       ],
