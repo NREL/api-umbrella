@@ -55,7 +55,7 @@ gem "chromedriver-helper", "~> 2.1.0"
 gem "capybara-chromedriver-logger", "~> 0.3.0", :git => "https://github.com/ThriveTRM/capybara-chromedriver-logger.git", :branch => "do-not-raise-on-filtered-errors"
 
 # Take screenshots on capybara test failures
-gem "capybara-screenshot", "~> 1.0.21"
+gem "capybara-screenshot", "~> 1.0.22"
 
 # HTML or XML parsing
 gem "nokogiri", "~> 1.8.5"
