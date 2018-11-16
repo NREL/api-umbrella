@@ -18,7 +18,7 @@ QueryBuilder.define('filter-description', function() {
       $b.hide();
     } else {
       if($b.length === 0) {
-        $b = $('<button type="button" class="btn btn-xs btn-info filter-description btn-tooltip tooltip-trigger"><i class="fas fa-question-circle"></i></button>');
+        $b = $('<button type="button" class="btn btn-sm btn-info filter-description btn-tooltip tooltip-trigger"><i class="fas fa-question-circle"></i></button>');
         $b.prependTo(rule.$el.find(QueryBuilder.selectors.rule_actions));
       } else {
         $b.css('display', '');
@@ -96,7 +96,6 @@ export default Component.extend({
         'filter-description': {
           mode: 'tippy',
         },
-        //'bt-tooltip-errors': null,
       },
       allow_empty: true,
       allow_groups: false,

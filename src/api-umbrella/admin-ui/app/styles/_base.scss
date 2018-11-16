@@ -1,5 +1,5 @@
 body {
-  padding-top: 60px;
+  padding-top: 66px;
 }
 
 .code-block,
@@ -65,7 +65,7 @@ a:hover {
   text-align: right;
   font-size: 11px;
   line-height: 13px;
-  //color: $text-color-lighter;
+  color: $text-muted;
 }
 
 .query-syntax-help .example {
@@ -115,7 +115,7 @@ a:hover {
   margin-bottom: 1em;
   padding-top: 1em;
   font-size: 11px;
-  //color: $text-color-lighter;
+  color: $text-muted;
 }
 
 // For when we want to submit a form with the enter key, but don't want a real

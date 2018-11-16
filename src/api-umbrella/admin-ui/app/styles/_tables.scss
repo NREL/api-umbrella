@@ -1,47 +1,68 @@
 @import "node_modules/datatables.net-bs4/css/dataTables.bootstrap4";
 
-#results_table .table th,
-#results_table .table td {
+.table-nowrap th,
+.table-nowrap td {
   white-space: nowrap;
 }
 
-#results_table .table thead th {
-  //color: $link-color;
+table.dataTable.table thead .sorting:before,
+table.dataTable.table thead .sorting:after,
+table.dataTable.table thead .sorting_asc:before,
+table.dataTable.table thead .sorting_asc:after,
+table.dataTable.table thead .sorting_desc:before,
+table.dataTable.table thead .sorting_desc:after, {
+  display: none;
 }
 
-/*
-table.table thead .sorting,
-table.table thead .sorting_asc,
-table.table thead .sorting_desc {
-  background: none;
+table.dataTable.table thead .sorting,
+table.dataTable.table thead .sorting_asc,
+table.dataTable.table thead .sorting_desc {
+  .svg-inline--fa {
+    color: $gray-500;
+    position: absolute;
+    right: 0.5rem;
+    top: 0.5rem;
+  }
 }
 
-table.table thead .sorting:after,
-table.table thead .sorting_asc:after,
-table.table thead .sorting_desc:after {
-  opacity: 1.0;
-  font-family: FontAwesome;
-  color: $gray-200;
-  margin-left: 8px;
+table.dataTable.table thead .sorting_asc,
+table.dataTable.table thead .sorting_desc {
+  .svg-inline--fa {
+    color: $link-color;
+  }
 }
 
-table.table thead .sorting_asc:after,
-table.table thead .sorting_desc:after {
-  //color: $link-color;
+table.dataTable.table thead .sorting_disabled {
+  .svg-inline--fa {
+    display: none;
+  }
 }
 
-table.table thead .sorting:after {
-  content: "\F0DC";
+table.dataTable.table thead .sorting {
+  .fa-sort-up,
+  .fa-sort-down {
+    display: none;
+  }
 }
 
-table.table thead .sorting_asc:after {
-  content: "\F0DE";
+table.dataTable.table thead .sorting_asc {
+  .fa-sort,
+  .fa-sort-down {
+    display: none;
+  }
 }
 
-table.table thead .sorting_desc:after {
-  content: "\F0DD";
+table.dataTable.table thead .sorting_desc {
+  .fa-sort,
+  .fa-sort-up {
+    display: none;
+  }
 }
-*/
+
+table.dataTable.table-sm > thead > tr > th {
+  padding-right: 1.5rem;
+}
+
 div.dataTables_wrapper div.dataTables_paginate ul.pagination {
   justify-content: center;
 }
@@ -134,7 +155,7 @@ td.reorder-handle {
 
 .reorder-placeholder th,
 .reorder-placeholder td {
-  //background-color: $state-warning-bg !important;
+  background-color: $yellow !important;
 }
 
 .table-small {
@@ -145,7 +166,7 @@ td.reorder-handle {
   text-align: center;
   font-size: 12px;
   font-style: italic;
-  //color: $text-color-light;
+  color: $text-muted;
 }
 
 .table th.text-center,

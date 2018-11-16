@@ -45,6 +45,11 @@ export function initialize(appInstance) {
         this.customProcessingCallbackSet = true;
       }
     },
+
+    headerCallback(thead) {
+      $(thead).find('th:not(.sort-arrows-added)').append('<i class="fas fa-sort"></i><i class="fas fa-sort-up"></i><i class="fas fa-sort-down"></i>');
+      $(thead).find('th').addClass('sort-arrows-added');
+    },
   });
 
   merge($.fn.DataTable.ext.classes, {
