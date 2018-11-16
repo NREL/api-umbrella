@@ -2,6 +2,7 @@ import EmberObject, { computed, observer } from '@ember/object';
 
 import { A } from '@ember/array';
 import DS from 'ember-data';
+import compact from 'lodash-es/compact';
 
 export default DS.Model.extend({
   appendQueryString: DS.attr(),
@@ -32,17 +33,29 @@ export default DS.Model.extend({
   },
 
   setDefaults() {
-    if(this.get('rateLimitMode') === undefined) {
+    if(this.requireHttps === undefined) {
+      this.set('requireHttps', null);
+    }
+
+    if(this.disableApiKey === undefined) {
+      this.set('disableApiKey', null);
+    }
+
+    if(this.apiKeyVerificationLevel === undefined) {
+      this.set('apiKeyVerificationLevel', null);
+    }
+
+    if(this.rateLimitMode === undefined) {
       this.set('rateLimitMode', null);
     }
 
     // Make sure at least an empty object exists so the form builder can dive
     // into this section even when there's no pre-existing data.
-    if(!this.get('errorTemplates')) {
+    if(!this.errorTemplates) {
       this.set('errorTemplates', EmberObject.create({}));
     }
 
-    if(!this.get('errorDataYamlStrings')) {
+    if(!this.errorDataYamlStrings) {
       this.set('errorDataYamlStrings', EmberObject.create({}));
     }
   },
@@ -50,13 +63,13 @@ export default DS.Model.extend({
   requiredRolesString: computed('requiredRoles', {
     get() {
       let rolesString = '';
-      if(this.get('requiredRoles')) {
-        rolesString = this.get('requiredRoles').join(',');
+      if(this.requiredRoles) {
+        rolesString = this.requiredRoles.join(',');
       }
       return rolesString;
     },
     set(key, value) {
-      let roles = _.compact(value.split(','));
+      let roles = compact(value.split(','));
       if(roles.length === 0) { roles = null; }
       this.set('requiredRoles', roles);
       return value;
@@ -66,13 +79,13 @@ export default DS.Model.extend({
   allowedIpsString: computed('allowedIps', {
     get() {
       let allowedIpsString = '';
-      if(this.get('allowedIps')) {
-        allowedIpsString = this.get('allowedIps').join('\n');
+      if(this.allowedIps) {
+        allowedIpsString = this.allowedIps.join('\n');
       }
       return allowedIpsString;
     },
     set(key, value) {
-      let ips = _.compact(value.split(/[\r\n]+/));
+      let ips = compact(value.split(/[\r\n]+/));
       if(ips.length === 0) { ips = null; }
       this.set('allowedIps', ips);
       return value;
@@ -82,13 +95,13 @@ export default DS.Model.extend({
   allowedReferersString: computed('allowedReferers', {
     get() {
       let allowedReferersString = '';
-      if(this.get('allowedReferers')) {
-        allowedReferersString = this.get('allowedReferers').join('\n');
+      if(this.allowedReferers) {
+        allowedReferersString = this.allowedReferers.join('\n');
       }
       return allowedReferersString;
     },
     set(key, value) {
-      let referers = _.compact(value.split(/[\r\n]+/));
+      let referers = compact(value.split(/[\r\n]+/));
       if(referers.length === 0) { referers = null; }
       this.set('allowedReferers', referers);
       return value;
@@ -97,22 +110,22 @@ export default DS.Model.extend({
 
   passApiKey: computed('passApiKeyHeader', 'passApiKeyQueryParam', function() {
     let options = A([]);
-    if(this.get('passApiKeyHeader')) {
+    if(this.passApiKeyHeader) {
       options.pushObject('header');
     }
-    if(this.get('passApiKeyQueryParam')) {
+    if(this.passApiKeyQueryParam) {
       options.pushObject('param');
     }
     return options;
   }),
 
   passApiKeyDidChange: observer('passApiKey.@each', function() {
-    let options = this.get('passApiKey');
+    let options = this.passApiKey;
     this.set('passApiKeyHeader', options.includes('header'));
     this.set('passApiKeyQueryParam', options.includes('param'));
   }),
 
   isRateLimitModeCustom: computed('rateLimitMode', function() {
-    return (this.get('rateLimitMode') === 'custom');
+    return this.rateLimitMode === 'custom';
   }),
 });

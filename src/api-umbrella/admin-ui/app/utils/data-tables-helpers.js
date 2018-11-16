@@ -1,9 +1,12 @@
-import moment from 'npm:moment-timezone';
+import escape from 'lodash-es/escape';
+import isArray from 'lodash-es/isArray';
+import map from 'lodash-es/map';
+import moment from 'moment-timezone';
 
 export default {
   renderEscaped(value, type) {
     if(type === 'display' && value) {
-      return _.escape(value);
+      return escape(value);
     }
 
     return value;
@@ -11,10 +14,10 @@ export default {
 
   renderListEscaped(value, type) {
     if(type === 'display' && value) {
-      if(_.isArray(value)) {
-        return _.map(value, function(v) { return _.escape(v); }).join('<br>');
+      if(isArray(value)) {
+        return map(value, function(v) { return escape(v); }).join('<br>');
       } else {
-        return _.escape(value);
+        return escape(value);
       }
     }
 

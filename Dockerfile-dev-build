@@ -51,6 +51,16 @@ COPY --from=build /build /build
 WORKDIR /app
 RUN env INSTALL_TEST_DEPENDENCIES=true /app/tasks/install-system-build-dependencies
 
+# Add Chrome for integration tests, similar to how the CircleCI images add it:
+# https://github.com/CircleCI-Public/circleci-dockerfiles/blob/c24e69355b400aaba34a1ddfc55cdb1fef9dedff/buildpack-deps/images/xenial/browsers/Dockerfile#L47
+RUN set -x && \
+  apt-get update && \
+  curl --silent --show-error --location --fail --retry 3 --output /tmp/google-chrome-stable_current_amd64.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb && \
+  (dpkg -i /tmp/google-chrome-stable_current_amd64.deb || apt-get -fy install) && \
+  rm -f /tmp/google-chrome-stable_current_amd64.deb && \
+  sed -i 's|HERE/chrome"|HERE/chrome" --disable-setuid-sandbox --no-sandbox|g' /opt/google/chrome/google-chrome && \
+  google-chrome --version
+
 RUN groupadd -r api-umbrella && \
   useradd -r -g api-umbrella -s /sbin/nologin -d /opt/api-umbrella -c "API Umbrella user" api-umbrella
 

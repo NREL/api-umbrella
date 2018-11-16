@@ -134,9 +134,6 @@ class OutdatedPackages
     "perp" => {
       :http => "http://b0llix.net/perp/site.cgi?page=download",
     },
-    "phantomjs" => {
-      :git => "https://github.com/ariya/phantomjs.git",
-    },
     "ruby" => {
       :git => "https://github.com/ruby/ruby.git",
       :constraint => "~> 2.4.3",

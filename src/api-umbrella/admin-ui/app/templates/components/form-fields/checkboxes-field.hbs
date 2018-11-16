@@ -1,7 +1,8 @@
 {{#form-fields/field-wrapper model=model style=style fieldName=fieldName inputId=inputId label=label tooltip=tooltip hint=hint}}
   {{#multiselect-checkboxes options=options selection=(get model fieldName) tagName="div" valueProperty="id" as |option isSelected|}}
-    <div class="checkbox">
-      <label>{{input type="checkbox" checked=isSelected}} {{option.name}}</label>
+    <div class="custom-control custom-checkbox">
+      {{input type="checkbox" checked=isSelected id=(concat inputId "-" option.id) class="custom-control-input"}}
+      <label class="custom-control-label" for="{{inputId}}-{{option.id}}">{{option.name}}</label>
     </div>
   {{/multiselect-checkboxes}}
 {{/form-fields/field-wrapper}}

@@ -1,8 +1,11 @@
+import 'datatables.net';
+import 'datatables.net-bs4';
 import $ from 'jquery';
+import merge from 'lodash-es/merge';
 
 export function initialize(appInstance) {
   // Defaults for DataTables.
-  _.merge($.fn.DataTable.defaults, {
+  merge($.fn.DataTable.defaults, {
     // Don't show the DataTables processing message. We'll handle the processing
     // message logic in preDrawCallback.
     processing: false,
@@ -12,7 +15,7 @@ export function initialize(appInstance) {
 
     // Re-arrange how the table and surrounding fields (pagination, search, etc)
     // are laid out.
-    dom: 'rft<"row"<"col-sm-3 table-info"i><"col-sm-6 table-pagination"p><"col-sm-3 table-length"l>>',
+    dom: 'rft<"row"<"col-sm-3"i><"col-sm-6 table-pagination"p><"col-sm-3 table-length"l>>',
 
     language: {
       // Don't have an explicit label for the search field. Use a placeholder
@@ -31,17 +34,27 @@ export function initialize(appInstance) {
         //
         // Set this early on during pre-draw so that the processing message shows
         // up for the first load.
-        $(this).DataTable().on('processing', _.bind(function(event, settings, processing) {
+        $(this).DataTable().on('processing', (event, settings, processing) => {
           if(processing) {
             appInstance.lookup('service:busy').show();
           } else {
             appInstance.lookup('service:busy').hide();
           }
-        }, this));
+        });
 
         this.customProcessingCallbackSet = true;
       }
     },
+
+    headerCallback(thead) {
+      $(thead).find('th:not(.sort-arrows-added)').append('<i class="fas fa-sort"></i><i class="fas fa-sort-up"></i><i class="fas fa-sort-down"></i>');
+      $(thead).find('th').addClass('sort-arrows-added');
+    },
+  });
+
+  merge($.fn.DataTable.ext.classes, {
+    sFilterInput: 'form-control',
+    sLengthSelect: 'custom-select form-control',
   });
 }
 

@@ -1,18 +1,21 @@
 import $ from 'jquery';
 import AuthenticatedRouteMixin from 'ember-simple-auth/mixins/authenticated-route-mixin';
 import Route from '@ember/routing/route';
-import moment from 'npm:moment-timezone';
+import bootbox from 'bootbox';
+import cloneDeep from 'lodash-es/cloneDeep';
+import moment from 'moment-timezone';
+import omit from 'lodash-es/omit';
 
 export default Route.extend(AuthenticatedRouteMixin, {
   setupController(controller, model) {
     controller.set('model', model);
-    controller.set('dateRanges', this.get('dateRanges'));
-    controller.set('presentQueryParamValues', this.get('presentQueryParamValues') || {});
-    controller.set('allQueryParamValues', this.get('allQueryParamValues') || {});
-    controller.set('backendQueryParamValues', this.get('backendQueryParamValues') || {});
+    controller.set('dateRanges', this.dateRanges);
+    controller.set('presentQueryParamValues', this.presentQueryParamValues || {});
+    controller.set('allQueryParamValues', this.allQueryParamValues || {});
+    controller.set('backendQueryParamValues', this.backendQueryParamValues || {});
 
-    $('ul.nav li').removeClass('active');
-    $('ul.nav li.nav-analytics').addClass('active');
+    $('ul.navbar-nav li').removeClass('active');
+    $('ul.navbar-nav li.nav-analytics').addClass('active');
   },
 
   beforeModel() {
@@ -67,7 +70,7 @@ export default Route.extend(AuthenticatedRouteMixin, {
     // 2. So that the default value changes if the user has the app open for
     //    multiple days (we don't want the default value from the very first
     //    load to never be updated again).
-    let allParams = _.cloneDeep(this.paramsFor(this.routeName) || {});
+    let allParams = cloneDeep(this.paramsFor(this.routeName) || {});
     if(allParams.date_range) {
       let range = dateRanges[allParams.date_range];
       if(range) {
@@ -82,7 +85,7 @@ export default Route.extend(AuthenticatedRouteMixin, {
 
     this.set('dateRanges', dateRanges);
     this.set('allQueryParamValues', allParams);
-    this.set('backendQueryParamValues', _.omit(allParams, ['date_range']));
+    this.set('backendQueryParamValues', omit(allParams, ['date_range']));
   },
 
 

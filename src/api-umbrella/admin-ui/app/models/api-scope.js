@@ -1,7 +1,7 @@
 import { buildValidations, validator } from 'ember-cp-validations';
 
 import DS from 'ember-data';
-import I18n from 'npm:i18n-js';
+import I18n from 'i18n-js';
 import { computed } from '@ember/object';
 
 const Validations = buildValidations({
@@ -32,7 +32,7 @@ export default DS.Model.extend(Validations, {
   updater: DS.attr(),
 
   displayName: computed('name', 'host', 'pathPrefix', function() {
-    return this.get('name') + ' - ' + this.get('host') + this.get('pathPrefix');
+    return this.name + ' - ' + this.host + this.pathPrefix;
   }),
 }).reopenClass({
   urlRoot: '/api-umbrella/v1/api_scopes',

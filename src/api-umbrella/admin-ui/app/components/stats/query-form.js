@@ -1,11 +1,33 @@
-import 'npm:bootstrap-daterangepicker';
+import 'daterangepicker';
 
 import $ from 'jquery';
 import Component from '@ember/component';
-import I18n from 'npm:i18n-js';
+import I18n from 'i18n-js';
+import QueryBuilder from 'jQuery-QueryBuilder';
+import forEach from 'lodash-es/forEach';
 import { inject } from '@ember/service';
-import moment from 'npm:moment-timezone';
+import moment from 'moment-timezone';
 import { observer } from '@ember/object';
+
+QueryBuilder.define('filter-description', function() {
+  this.on('afterUpdateRuleFilter afterUpdateRuleOperator', function(e, rule) {
+    let $b = rule.$el.find('button.filter-description');
+    const description = e.builder.getFilterDescription(rule.filter, rule);
+
+    if(!description) {
+      $b.hide();
+    } else {
+      if($b.length === 0) {
+        $b = $('<button type="button" class="btn btn-sm btn-info filter-description btn-tooltip tooltip-trigger"><i class="fas fa-question-circle"></i></button>');
+        $b.prependTo(rule.$el.find(QueryBuilder.selectors.rule_actions));
+      } else {
+        $b.css('display', '');
+      }
+
+      $b.attr('data-tippy-content', description);
+    }
+  });
+});
 
 export default Component.extend({
   session: inject('session'),
@@ -15,7 +37,7 @@ export default Component.extend({
   didInsertElement() {
     let rangeOptions = {};
     let rangeKeys = {};
-    _.forEach(this.get('dateRanges'), function(range, key) {
+    forEach(this.dateRanges, function(range, key) {
       rangeOptions[range.label] = [
         range.start_at,
         range.end_at,
@@ -28,6 +50,9 @@ export default Component.extend({
     let $dateRangePicker = $('#reportrange');
     $dateRangePicker.daterangepicker({
       ranges: rangeOptions,
+      showDropdowns: true,
+      minYear: 2000,
+      maxYear: new Date().getFullYear() + 1,
     });
     $dateRangePicker.on('showCalendar.daterangepicker', this.handleDateRangeCalendarShow.bind(this));
     $dateRangePicker.on('hideCalendar.daterangepicker', this.handleDateRangeCalendarHide.bind(this));
@@ -69,10 +94,8 @@ export default Component.extend({
     let $queryBuilder = $('#query_builder').queryBuilder({
       plugins: {
         'filter-description': {
-          icon: 'fa fa-info-circle',
-          mode: 'bootbox',
+          mode: 'tippy',
         },
-        'bt-tooltip-errors': null,
       },
       allow_empty: true,
       allow_groups: false,
@@ -254,7 +277,7 @@ export default Component.extend({
       ],
     });
 
-    let query = this.get('query');
+    let query = this.query;
     let rules;
     if(query) {
       rules = JSON.parse(query);
@@ -265,16 +288,14 @@ export default Component.extend({
         $queryBuilder.queryBuilder('setRules', rules);
       }
 
-      this.send('toggleFilters');
       this.send('toggleFilterType', 'builder');
-    } else if(this.get('search')) {
-      this.send('toggleFilters');
+    } else if(this.search) {
       this.send('toggleFilterType', 'advanced');
     }
   },
 
   updateQueryBuilderRules: observer('query', function() {
-    let query = this.get('query');
+    let query = this.query;
     let rules;
     if(query) {
       rules = JSON.parse(query);
@@ -321,9 +342,9 @@ export default Component.extend({
     // predefined range. To workaround this issue (so any dates picked when
     // "Custom Range" is open are treated the same), we check to see if the
     // "Custom Range" calendars are visible or not.
-    let rangeOptions = this.get('rangeOptions');
-    if(rangeOptions[picker.chosenLabel] && !this.get('calendarShown')) {
-      let rangeKeys = this.get('rangeKeys');
+    let rangeOptions = this.rangeOptions;
+    if(rangeOptions[picker.chosenLabel] && !this.calendarShown) {
+      let rangeKeys = this.rangeKeys;
       this.setProperties({
         start_at: '',
         end_at: '',
@@ -343,20 +364,6 @@ export default Component.extend({
   },
 
   actions: {
-    toggleFilters() {
-      let $container = $('#filters_ui');
-      let $icon = $('#filter_toggle .fa');
-      if($container.is(':visible')) {
-        $icon.addClass('fa-caret-right');
-        $icon.removeClass('fa-caret-down');
-      } else {
-        $icon.addClass('fa-caret-down');
-        $icon.removeClass('fa-caret-right');
-      }
-
-      $container.slideToggle(100);
-    },
-
     toggleFilterType(type) {
       $('.filter-type').hide();
       $('#filter_type_' + type).show();

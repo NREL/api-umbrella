@@ -1,7 +1,7 @@
 {{apis/url-match-form model=urlMatchModel collection=model.urlMatches apiExampleIncomingUrlRoot=model.exampleIncomingUrlRoot apiExampleOutgoingUrlRoot=model.exampleOutgoingUrlRoot openModal=openModal}}
 
 <div id="url_matches">
-  <table id="url_matches_table" class="table table-striped table-condensed">
+  <table id="url_matches_table" class="table table-striped table-sm">
     <thead>
       <tr>
         <th>Frontend Prefix</th>
@@ -13,28 +13,28 @@
     <tbody>
       {{#if model.urlMatches}}
         {{#each model.urlMatches as |urlMatch|}}
-          <tr data-guid="{{guid-for urlMatch}}">
+          <tr data-guid={{guid-for urlMatch}}>
             <td>{{urlMatch.frontendPrefix}}</td>
             <td>{{urlMatch.backendPrefixWithDefault}}</td>
             <td class="table-row-actions">
-              <a href="#" {{action "edit" urlMatch}}><i class="fa fa-pencil"></i>{{t "admin.edit"}}</a>
-              <a href="#" class="remove-action" {{action "remove" urlMatch}}><i class="fa fa-times"></i>{{t "admin.remove"}}</a>
+              <a href="#" {{action "edit" urlMatch}}>{{fa-icon "pencil-alt"}}{{t "admin.edit"}}</a>
+              <a href="#" class="remove-action" {{action "remove" urlMatch}}>{{fa-icon "times"}}{{t "admin.remove"}}</a>
             </td>
-            <td class="reorder-handle"><i class="fa fa-reorder"></i></td>
+            <td class="reorder-handle">{{fa-icon "bars"}}</td>
           </tr>
         {{/each}}
       {{else}}
-        <tr class="empty"><td colspan="2">{{t "admin.api.url_matches.empty_list" add=(t "admin.api.url_matches.add")}}</td></tr>
+        <tr class="empty"><td colspan="3">{{t "admin.api.url_matches.empty_list" add=(t "admin.api.url_matches.add")}}</td></tr>
       {{/if}}
     </tbody>
   </table>
   <div class="row">
-    <div class="col-xs-6">
-      <button type="button" class="btn btn-default btn-xs" {{action "add"}}><i class="fa fa-plus-circle"></i> {{t "admin.api.url_matches.add"}}</button>
+    <div class="col-6">
+      <button type="button" class="btn btn-light btn-sm" {{action "add"}}>{{fa-icon "plus-circle"}} {{t "admin.api.url_matches.add"}}</button>
     </div>
-    <div class="col-xs-6 text-right">
+    <div class="col-6 text-right">
       {{#if isReorderable}}
-        <button type="button" id="url_matches_reorder" class="btn btn-default btn-xs" {{action "reorderCollection" "url_matches"}}><i class="fa fa-reorder"></i> <span class="reorder-button-text">{{t "admin.reorder"}}</span></button>
+        <button type="button" id="url_matches_reorder" class="btn btn-light btn-sm" {{action "reorderCollection" "url_matches"}}>{{fa-icon "bars"}} <span class="reorder-button-text">{{t "admin.reorder"}}</span></button>
       {{/if}}
     </div>
   </div>

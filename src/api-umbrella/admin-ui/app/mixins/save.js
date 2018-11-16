@@ -1,42 +1,45 @@
-import $ from 'jquery';
+import LoadingButton from 'api-umbrella-admin-ui/utils/loading-button';
 import Mixin from '@ember/object/mixin'
-import PNotify from 'npm:pnotify';
+import PNotify from 'pnotify';
+import bootbox from 'bootbox';
 import { inject } from '@ember/service';
+import isFunction from 'lodash-es/isFunction';
+import scrollTo from 'jquery.scrollto';
 
 export default Mixin.create({
   router: inject(),
 
-  scrollToErrors() {
-    $('#save_button').button('reset');
-    $.scrollTo('#error_messages', { offset: -60, duration: 200 });
+  scrollToErrors(button) {
+    LoadingButton.reset(button);
+    scrollTo('#error_messages', { offset: -60, duration: 200 });
   },
 
   afterSaveComplete(options, button) {
-    button.button('reset');
-    new PNotify({
-      type: 'success',
+    LoadingButton.reset(button);
+    PNotify.success({
       title: 'Saved',
-      text: (_.isFunction(options.message)) ? options.message(this.get('model')) : options.message,
+      text: (isFunction(options.message)) ? options.message(this.model) : options.message,
+      textTrusted: true,
     });
 
-    this.get('router').transitionTo(options.transitionToRoute);
+    this.router.transitionTo(options.transitionToRoute);
   },
 
   saveRecord(options) {
-    let button = $('#save_button');
-    button.button('loading');
+    const button = this.element.querySelector('.save-button');
+    LoadingButton.loading(button);
 
     this.setProperties({
       'model.clientErrors': [],
       'model.serverErrors': [],
     });
 
-    this.get('model').validate().then(function() {
+    this.model.validate().then(function() {
       if(this.get('model.validations.isValid') === false) {
         this.set('model.clientErrors', this.get('model.validations.errors'));
-        this.scrollToErrors();
+        this.scrollToErrors(button);
       } else {
-        this.get('model').save().then(function() {
+        this.model.save().then(function() {
           if(options.afterSave) {
             options.afterSave(this.afterSaveComplete.bind(this, options, button));
           } else {
@@ -48,10 +51,12 @@ export default Mixin.create({
           if(error && error.errors) {
             this.set('model.serverErrors', error.errors);
           } else {
+            // eslint-disable-next-line no-console
+            console.error('Unexpected save error: ', error);
             this.set('model.serverErrors', [{ message: 'Unexpected error' }]);
           }
 
-          this.scrollToErrors();
+          this.scrollToErrors(button);
         }.bind(this));
       }
     }.bind(this));
@@ -60,14 +65,14 @@ export default Mixin.create({
   destroyRecord(options) {
     bootbox.confirm(options.prompt, function(result) {
       if(result) {
-        this.get('model').destroyRecord().then(function() {
-          new PNotify({
-            type: 'success',
+        this.model.destroyRecord().then(function() {
+          PNotify.success({
             title: 'Deleted',
-            text: (_.isFunction(options.message)) ? options.message(this.get('model')) : options.message,
+            text: (isFunction(options.message)) ? options.message(this.model) : options.message,
+            textTrusted: true,
           });
 
-          this.get('router').transitionTo(options.transitionToRoute);
+          this.router.transitionTo(options.transitionToRoute);
         }.bind(this), function(response) {
           bootbox.alert('Unexpected error deleting record: ' + response.responseText);
         });

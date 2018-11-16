@@ -28,4 +28,11 @@ PATH="$DEV_INSTALL_PREFIX/bin:$DEFAULT_PATH" ./node_modules/.bin/ember build \
   --environment=production \
   --output-path=../_persist/dist
 
+# Copy the index.html to a separate location for the test suite, and modify the
+# inline config in the HTML file to set "integrationTestMode: true".
+rm -rf "$TEST_INSTALL_PREFIX/admin-ui"
+mkdir -p "$TEST_INSTALL_PREFIX/admin-ui"
+cp ../_persist/dist/index.html "$TEST_INSTALL_PREFIX/admin-ui/index.html"
+sed -i -e 's#<meta name="api-umbrella-admin-ui/config/environment" content="%7B%22#<meta name="api-umbrella-admin-ui/config/environment" content="%7B%22integrationTestMode%22%3Atrue%2C%22#' "$TEST_INSTALL_PREFIX/admin-ui/index.html"
+
 stamp

@@ -1,5 +1,5 @@
 import Component from '@ember/component';
-import I18n from 'npm:i18n-js';
+import I18n from 'i18n-js';
 
 export default Component.extend({
   init() {

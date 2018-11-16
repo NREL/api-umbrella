@@ -20,7 +20,7 @@
           {{f.text-field "frontendHost" label="Frontend Host"}}
         </div>
         <div class="col-sm-2 arrow">
-          <i class="fa fa-arrow-right fa-2x"></i>
+          {{fa-icon "arrow-right" size="2x"}}
           <div>rewrite to</div>
         </div>
         <div class="col-sm-5">
@@ -37,7 +37,7 @@
   </fieldset>
 
   <fieldset class="collapsible">
-    <legend><a data-toggle="collapse" class="collapsed" data-target="#global_settings"><i class="fa fa-caret-down"></i> Global Request Settings</a></legend>
+    <legend><a data-toggle="collapse" class="collapsed" data-target="#global_settings">{{fa-icon "caret-down" fixedWidth=true}}Global Request Settings</a></legend>
     <div id="global_settings" class="collapse form-horizontal">
       {{#fields-for model=model.settings style="horizontal-wide-labels" as |f|}}
         {{f.text-field "appendQueryString" label="Append Query String Parameters" placeholder="param1=value&param2=value"}}
@@ -50,7 +50,7 @@
   </fieldset>
 
   <fieldset class="collapsible">
-    <legend><a data-toggle="collapse" class="collapsed" data-target="#sub_settings"><i class="fa fa-caret-down"></i> {{t "admin.api.sub_settings.legend"}}</a></legend>
+    <legend><a data-toggle="collapse" class="collapsed" data-target="#sub_settings">{{fa-icon "caret-down" fixedWidth=true}}{{t "admin.api.sub_settings.legend"}}</a></legend>
     <div id="sub_settings" class="collapse">
       <p class="fieldset-note">{{t "admin.api.sub_settings.note"}}</p>
       {{apis/sub-settings-table model=model roleOptions=roleOptions}}
@@ -58,7 +58,7 @@
   </fieldset>
 
   <fieldset class="collapsible">
-    <legend><a data-toggle="collapse" class="collapsed" data-target="#rewrites"><i class="fa fa-caret-down"></i> {{t "admin.api.rewrites.legend"}}</a></legend>
+    <legend><a data-toggle="collapse" class="collapsed" data-target="#rewrites">{{fa-icon "caret-down" fixedWidth=true}}{{t "admin.api.rewrites.legend"}}</a></legend>
     <div id="rewrites" class="collapse">
       <p class="fieldset-note">{{t "admin.api.rewrites.note"}}</p>
       {{apis/rewrite-table model=model}}
@@ -66,35 +66,35 @@
   </fieldset>
 
   <fieldset class="collapsible">
-    <legend><a data-toggle="collapse" class="collapsed" data-target="#advanced_settings"><i class="fa fa-caret-down"></i> Advanced Settings</a></legend>
+    <legend><a data-toggle="collapse" class="collapsed" data-target="#advanced_settings">{{fa-icon "caret-down" fixedWidth=true}}Advanced Settings</a></legend>
     <div id="advanced_settings" class="collapse form-horizontal">
       {{#fields-for model=model style="horizontal-wide-labels" as |f|}}
         {{f.select-field "balanceAlgorithm" label="Balance Algorithm" options=balanceAlgorithmOptions}}
-       {{/fields-for}}
+      {{/fields-for}}
 
       {{#fields-for model=model.settings.errorTemplates style="horizontal-wide-labels" as |f|}}
         <h4>{{t "mongoid.attributes.api/settings.error_templates"}}</h4>
-        {{f.ace-field "json" label=(t "admin.api.settings.error_templates_json") tooltip=(t "admin.api.settings.error_templates_json_tooltip_markdown") mode="json"}}
-        {{f.ace-field "xml" label=(t "admin.api.settings.error_templates_xml") tooltip=(t "admin.api.settings.error_templates_xml_tooltip_markdown") mode="xml"}}
-        {{f.ace-field "csv" label=(t "admin.api.settings.error_templates_csv") tooltip=(t "admin.api.settings.error_templates_csv_tooltip_markdown") mode="text"}}
+        {{f.codemirror-field "json" label=(t "admin.api.settings.error_templates_json") tooltip=(t "admin.api.settings.error_templates_json_tooltip_markdown") mode="application/json"}}
+        {{f.codemirror-field "xml" label=(t "admin.api.settings.error_templates_xml") tooltip=(t "admin.api.settings.error_templates_xml_tooltip_markdown") mode="application/xml"}}
+        {{f.codemirror-field "csv" label=(t "admin.api.settings.error_templates_csv") tooltip=(t "admin.api.settings.error_templates_csv_tooltip_markdown") mode="text/plain"}}
       {{/fields-for}}
 
       {{#fields-for model=model.settings.errorDataYamlStrings style="horizontal-wide-labels" as |f|}}
         <h4>{{t "mongoid.attributes.api/settings.error_data"}}</h4>
-        {{f.ace-field "common" label=(t "admin.api.settings.error_data_common") tooltip=(t "admin.api.settings.error_data_common_tooltip_markdown") mode="yaml"}}
-        {{f.ace-field "api_key_missing" label=(t "admin.api.settings.error_data_api_key_missing") tooltip=(t "admin.api.settings.error_data_api_key_missing_tooltip_markdown") mode="yaml"}}
-        {{f.ace-field "api_key_invalid" label=(t "admin.api.settings.error_data_api_key_invalid") tooltip=(t "admin.api.settings.error_data_api_key_invalid_tooltip_markdown") mode="yaml"}}
-        {{f.ace-field "api_key_disabled" label=(t "admin.api.settings.error_data_api_key_disabled") tooltip=(t "admin.api.settings.error_data_api_key_disabled_tooltip_markdown") mode="yaml"}}
-        {{f.ace-field "api_key_unauthorized" label=(t "admin.api.settings.error_data_api_key_unauthorized") tooltip=(t "admin.api.settings.error_data_api_key_unauthorized_tooltip_markdown") mode="yaml"}}
-        {{f.ace-field "over_rate_limit" label=(t "admin.api.settings.error_data_over_rate_limit") tooltip=(t "admin.api.settings.error_data_over_rate_limit_tooltip_markdown") mode="yaml"}}
-        {{f.ace-field "https_required" label=(t "admin.api.settings.error_data_https_required") tooltip=(t "admin.api.settings.error_data_https_required_tooltip_markdown") mode="yaml"}}
+        {{f.codemirror-field "common" label=(t "admin.api.settings.error_data_common") tooltip=(t "admin.api.settings.error_data_common_tooltip_markdown") mode="text/x-yaml"}}
+        {{f.codemirror-field "api_key_missing" label=(t "admin.api.settings.error_data_api_key_missing") tooltip=(t "admin.api.settings.error_data_api_key_missing_tooltip_markdown") mode="text/x-yaml"}}
+        {{f.codemirror-field "api_key_invalid" label=(t "admin.api.settings.error_data_api_key_invalid") tooltip=(t "admin.api.settings.error_data_api_key_invalid_tooltip_markdown") mode="text/x-yaml"}}
+        {{f.codemirror-field "api_key_disabled" label=(t "admin.api.settings.error_data_api_key_disabled") tooltip=(t "admin.api.settings.error_data_api_key_disabled_tooltip_markdown") mode="text/x-yaml"}}
+        {{f.codemirror-field "api_key_unauthorized" label=(t "admin.api.settings.error_data_api_key_unauthorized") tooltip=(t "admin.api.settings.error_data_api_key_unauthorized_tooltip_markdown") mode="text/x-yaml"}}
+        {{f.codemirror-field "over_rate_limit" label=(t "admin.api.settings.error_data_over_rate_limit") tooltip=(t "admin.api.settings.error_data_over_rate_limit_tooltip_markdown") mode="text/x-yaml"}}
+        {{f.codemirror-field "https_required" label=(t "admin.api.settings.error_data_https_required") tooltip=(t "admin.api.settings.error_data_https_required_tooltip_markdown") mode="text/x-yaml"}}
       {{/fields-for}}
     </div>
   </fieldset>
 
   <div class="row">
     <div class="col-sm-6">
-      <button type="submit" id="save_button" class="btn btn-lg btn-primary" data-loading-text="<i class='fa fa-refresh fa-spin'></i> Saving...">Save</button>
+      <button type="submit" class="btn btn-lg btn-primary save-button"><span class="btn-label">Save</span><span class="btn-loading-label">{{fa-icon "sync-alt" spin=true}}Saving...</span></button>
     </div>
     <div class="col-sm-6 record-details">
       {{#if model.id}}
@@ -105,7 +105,7 @@
   </div>
   {{#if model.id}}
     <div class="form-extra-actions">
-      <a href="#" class="remove-action" {{action "delete"}}><i class="fa fa-times"></i>Delete API</a>
+      <a href="#" class="remove-action" {{action "delete"}}>{{fa-icon "times"}}Delete API</a>
     </div>
   {{/if}}
 </form>

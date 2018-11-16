@@ -1,6 +1,7 @@
 import ApplicationRouteMixin from 'ember-simple-auth/mixins/application-route-mixin';
 import Route from '@ember/routing/route';
 import { inject } from '@ember/service';
+import isString from 'lodash-es/isString';
 import { observer } from '@ember/object';
 
 export default Route.extend(ApplicationRouteMixin, {
@@ -15,9 +16,9 @@ export default Route.extend(ApplicationRouteMixin, {
   attemptedTransitionChange: observer('session.attemptedTransition', function() {
     const attemptedTransition = this.get('session.attemptedTransition');
     if(attemptedTransition) {
-      this.get('session').set('data.attemptedTransitionUrl', attemptedTransition.intent.url);
+      this.session.set('data.attemptedTransitionUrl', attemptedTransition.intent.url);
     } else {
-      this.get('session').set('data.attemptedTransitionUrl', null);
+      this.session.set('data.attemptedTransitionUrl', null);
     }
   }),
 
@@ -31,15 +32,15 @@ export default Route.extend(ApplicationRouteMixin, {
     if(attemptedTransitionUrl) {
       this.transitionTo(attemptedTransitionUrl);
       this.set('session.attemptedTransition', null);
-      this.get('session').set('data.attemptedTransitionUrl', null);
+      this.session.set('data.attemptedTransitionUrl', null);
     } else {
-      this.transitionTo(this.get('routeAfterAuthentication'));
+      this.transitionTo(this.routeAfterAuthentication);
     }
   },
 
   actions: {
     loading(transition) {
-      let busy = this.get('busy');
+      let busy = this.busy;
       busy.show();
       transition.promise.finally(function() {
         busy.hide();
@@ -57,13 +58,13 @@ export default Route.extend(ApplicationRouteMixin, {
           errorMessage = error;
           // Very long text error messages can seem to hang some of the console
           // tools, so truncate the messages.
-          if(_.isString(errorMessage)) {
+          if(isString(errorMessage)) {
             errorMessage = errorMessage.substring(0, 1000);
           }
         }
         // eslint-disable-next-line no-console
         console.error(errorMessage);
-        this.get('busy').hide();
+        this.busy.hide();
         return this.intermediateTransitionTo('error');
       }
     },

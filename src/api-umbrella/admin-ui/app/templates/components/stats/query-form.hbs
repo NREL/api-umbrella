@@ -1,64 +1,69 @@
 <form id="filter_form" action="#" method="get" {{action "submit" on="submit"}}>
   <div class="row">
     <div class="col-sm-4">
-      <a id="filter_toggle" {{action "toggleFilters"}}><i class="fa fa-caret-right"></i>{{t "admin.stats.filter_results"}}</a>
+      <div class="form-control-plaintext form-control-sm">
+        <a id="filter_toggle" data-toggle="collapse" data-target="#filters_ui" href="#">{{fa-icon "caret-down" fixedWidth=true}}{{t "admin.stats.filter_results"}}</a>
+      </div>
     </div>
     <div class="col-sm-8 filter-times">
       {{#if enableInterval}}
-        {{#bs-button-group value=interval onChange=(action (mut interval)) type="radio" size="xs" id="interval_buttons" as |bg|}}
-          {{#bg.button value="minute"}}{{t "admin.stats.minute"}}{{/bg.button}}
-          {{#bg.button value="hour"}}{{t "admin.stats.hour"}}{{/bg.button}}
-          {{#bg.button value="day"}}{{t "admin.stats.day"}}{{/bg.button}}
-          {{#bg.button value="week"}}{{t "admin.stats.week"}}{{/bg.button}}
-          {{#bg.button value="month"}}{{t "admin.stats.month"}}{{/bg.button}}
+        {{#bs-button-group value=interval onChange=(action (mut interval)) type="radio" size="sm" id="interval_buttons" as |bg|}}
+          {{#bg.button type="light" value="minute"}}{{t "admin.stats.minute"}}{{/bg.button}}
+          {{#bg.button type="light" value="hour"}}{{t "admin.stats.hour"}}{{/bg.button}}
+          {{#bg.button type="light" value="day"}}{{t "admin.stats.day"}}{{/bg.button}}
+          {{#bg.button type="light" value="week"}}{{t "admin.stats.week"}}{{/bg.button}}
+          {{#bg.button type="light" value="month"}}{{t "admin.stats.month"}}{{/bg.button}}
         {{/bs-button-group}}
       {{/if}}
 
       <div id="reportrange" class="pull-right">
-        <a class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" href="#">
-          <i class="fa fa-calendar fa-lg"></i>
+        <button class="btn btn-light btn-sm dropdown-toggle" type="button" aria-haspopup="true" aria-expanded="false">
+          {{fa-icon "calendar"}}
           <span class="text"></span>
-          <span class="caret"></span>
-        </a>
+        </button>
       </div>
     </div>
   </div>
   <div class="row">
     <div class="col-sm-12 advanced-filter">
-      <div id="filters_ui" style="display: none;">
+      <div id="filters_ui" class="collapse show">
         <div id="filter_type_builder" class="filter-type">
           <div id="query_builder"></div>
           <div class="row">
             <div class="col-sm-6">
-              <button class="btn btn-default btn-sm" type="submit">{{t "admin.stats.filter"}}</button>
+              <button class="btn btn-primary btn-sm" type="submit">{{t "admin.stats.filter"}}</button>
             </div>
             <div class="col-sm-6 text-right">
-              <a {{action "toggleFilterType" "advanced"}} class="filter-type-toggle">{{t "admin.stats.switch_advanced_filters"}}</a>
+              <div class="form-control-plaintext form-control-sm">
+                <a href="#" {{action "toggleFilterType" "advanced"}} class="filter-type-toggle">{{t "admin.stats.switch_advanced_filters"}}</a>
+              </div>
             </div>
           </div>
         </div>
         <div id="filter_type_advanced" class="filter-type" style="display: none;">
           <div id="search_field">
             <div class="input-group">
-              <input type="text" name="search" class="form-control" placeholder="{{t "admin.stats.advanced_filters_placeholder"}}" value="{{query.params.search}}" />
-              <span class="input-group-btn">
-                <button class="btn btn-default" type="submit">{{t "admin.stats.filter"}}</button>
+              <input type="text" name="search" class="form-control" placeholder={{t "admin.stats.advanced_filters_placeholder"}} value={{query.params.search}}>
+              <span class="input-group-append">
+                <button class="btn btn-primary" type="submit">{{t "admin.stats.filter"}}</button>
               </span>
             </div>
             <div class="row">
               <div class="col-sm-6">
-                <span class="help-block">{{{t "admin.stats.advanced_filters_tip"}}}</span>
+                <div class="form-control-plaintext form-control-sm text-muted">{{! template-lint-disable no-bare-strings no-triple-curlies }}{{{t "admin.stats.advanced_filters_tip"}}}</div>
               </div>
               <div class="col-sm-6 text-right">
-                <a {{action "toggleFilterType" "builder"}} class="filter-type-toggle">{{t "admin.stats.switch_simple_filters"}}</a>
+                <div class="form-control-plaintext form-control-sm">
+                  <a href="#" {{action "toggleFilterType" "builder"}} class="filter-type-toggle">{{t "admin.stats.switch_simple_filters"}}</a>
+                </div>
               </div>
             </div>
             <div id="query_syntax_help_content" style="display: none;">
-              <p>{{{t "admin.stats.advanced_filters_help_content"}}}</p>
+              <p>{{! template-lint-disable no-bare-strings no-triple-curlies }}{{{t "admin.stats.advanced_filters_help_content"}}}</p>
               <p>{{t "admin.stats.example"}}:</p>
-              <pre>request_method:"POST" AND response_status:[400 TO *]</pre>
+              <pre class="code-block">request_method:"POST" AND response_status:[400 TO *]</pre>
               <p>{{t "admin.stats.available_fields"}}:</p>
-              <table class="table table-condensed query-syntax-help">
+              <table class="table table-sm query-syntax-help">
                 <thead>
                   <tr>
                     <th>{{t "admin.stats.field"}}</th>

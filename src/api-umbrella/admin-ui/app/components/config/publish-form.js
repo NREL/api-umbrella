@@ -1,13 +1,17 @@
 import $ from 'jquery';
 import Component from '@ember/component';
-import PNotify from 'npm:pnotify';
+import JsDiff from 'diff';
+import LoadingButton from 'api-umbrella-admin-ui/utils/loading-button';
+import PNotify from 'pnotify';
+import bootbox from 'bootbox';
 import { computed } from '@ember/object';
+import { run } from '@ember/runloop';
 
 export default Component.extend({
   didInsertElement() {
-    this.$submitButton = $('#publish_button');
+    this.publishButton = this.element.querySelector('.publish-button');
     this.$toggleCheckboxesLink = $('#toggle_checkboxes');
-    $('#publish_form').on('change', ':checkbox', _.bind(this.onCheckboxChange, this));
+    $('#publish_form').on('change', ':checkbox', this.onCheckboxChange.bind(this));
 
     let $checkboxes = $('#publish_form :checkbox');
     if($checkboxes.length === 1) {
@@ -57,11 +61,13 @@ export default Component.extend({
       this.$toggleCheckboxesLink.text(this.$toggleCheckboxesLink.data('uncheck-all'));
     }
 
-    let $checked = $('#publish_form :checkbox:checked');
-    if($checked.length > 0) {
-      this.$submitButton.prop('disabled', false);
-    } else {
-      this.$submitButton.prop('disabled', true);
+    if(this.publishButton) {
+      let $checked = $('#publish_form :checkbox:checked');
+      if($checked.length > 0) {
+        this.publishButton.disabled = false;
+      } else {
+        this.publishButton.disabled = true;
+      }
     }
   },
 
@@ -97,24 +103,22 @@ export default Component.extend({
     publish() {
       let form = $('#publish_form');
 
-      let button = $('#publish_button');
-      button.button('loading');
+      LoadingButton.loading(this.publishButton);
 
       $.ajax({
         url: '/api-umbrella/v1/config/publish',
         type: 'POST',
         data: form.serialize(),
-      }).then(_.bind(function() {
-        button.button('reset');
-        new PNotify({
-          type: 'success',
+      }).then(run.bind(this, function() {
+        LoadingButton.reset(this.publishButton);
+        PNotify.success({
           title: 'Published',
           text: 'Successfully published the configuration<br>Changes should be live in a few seconds...',
+          textTrusted: true,
         });
 
-        // eslint-disable-next-line ember/closure-actions
-        this.sendAction('refreshCurrentRouteController');
-      }, this), function(response) {
+        this.get('refreshCurrentRouteController')();
+      }), function(response) {
         let message = '<h3>Error</h3>';
         try {
           let errors = response.responseJSON.errors;
@@ -125,7 +129,7 @@ export default Component.extend({
           message = 'An unexpected error occurred: ' + response.responseText;
         }
 
-        button.button('reset');
+        LoadingButton.reset(this.publishButton);
         // eslint-disable-next-line no-console
         console.error(message);
         bootbox.alert(message);

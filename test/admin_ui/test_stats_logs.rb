@@ -4,7 +4,20 @@ class Test::AdminUi::TestStatsLogs < Minitest::Capybara::Test
   include Capybara::Screenshot::MiniTestPlugin
   include ApiUmbrellaTestHelpers::AdminAuth
   include ApiUmbrellaTestHelpers::DateRangePicker
+  include ApiUmbrellaTestHelpers::Downloads
   include ApiUmbrellaTestHelpers::Setup
+
+  DEFAULT_QUERY = JSON.generate({
+    "condition" => "AND",
+    "rules" => [{
+      "field" => "gatekeeper_denied_code",
+      "id" => "gatekeeper_denied_code",
+      "input" => "select",
+      "operator" => "is_null",
+      "type" => "string",
+      "value" => nil,
+    }],
+  })
 
   def setup
     super
@@ -34,17 +47,6 @@ class Test::AdminUi::TestStatsLogs < Minitest::Capybara::Test
   def test_csv_download_link_changes_with_filters
     FactoryBot.create(:log_item, :request_at => Time.parse("2015-01-16T06:06:28.816Z").utc)
     LogItem.refresh_indices!
-    default_query = JSON.generate({
-      "condition" => "AND",
-      "rules" => [{
-        "field" => "gatekeeper_denied_code",
-        "id" => "gatekeeper_denied_code",
-        "input" => "select",
-        "operator" => "is_null",
-        "type" => "string",
-        "value" => nil,
-      }],
-    })
 
     admin_login
     visit "/admin/#/stats/logs?search=&start_at=2015-01-12&end_at=2015-01-18&interval=day"
@@ -58,7 +60,7 @@ class Test::AdminUi::TestStatsLogs < Minitest::Capybara::Test
       "start_at" => "2015-01-12",
       "end_at" => "2015-01-18",
       "interval" => "day",
-      "query" => default_query,
+      "query" => DEFAULT_QUERY,
     }, uri.query_values)
 
     visit "/admin/#/stats/logs?search=&start_at=2015-01-13&end_at=2015-01-18&interval=day"
@@ -72,7 +74,7 @@ class Test::AdminUi::TestStatsLogs < Minitest::Capybara::Test
       "start_at" => "2015-01-13",
       "end_at" => "2015-01-18",
       "interval" => "day",
-      "query" => default_query,
+      "query" => DEFAULT_QUERY,
     }, uri.query_values)
 
     visit "/admin/#/stats/logs?search=&start_at=2015-01-12&end_at=2015-01-18&interval=day"
@@ -123,6 +125,18 @@ class Test::AdminUi::TestStatsLogs < Minitest::Capybara::Test
     visit "/admin/#/stats/logs?search=&start_at=2015-01-12&end_at=2015-01-18&interval=day"
     refute_selector(".busy-blocker")
 
+    assert_link("Download CSV", :href => /start_at=2015-01-12/)
+    link = find_link("Download CSV")
+    uri = Addressable::URI.parse(link[:href])
+    assert_equal("/admin/stats/logs.csv", uri.path)
+    assert_equal({
+      "search" => "",
+      "start_at" => "2015-01-12",
+      "end_at" => "2015-01-18",
+      "interval" => "day",
+      "query" => DEFAULT_QUERY,
+    }, uri.query_values)
+
     # Wait for the ajax actions to fetch the graph and tables to both
     # complete, or else the download link seems to be flakey in Capybara.
     assert_text("Download CSV")
@@ -130,15 +144,26 @@ class Test::AdminUi::TestStatsLogs < Minitest::Capybara::Test
     refute_selector(".busy-blocker")
     click_link "Download CSV"
 
-    # Downloading files via Capybara generally seems flakey, so add an extra
-    # wait.
-    Timeout.timeout(Capybara.default_max_wait_time) do
-      while(page.response_headers["Content-Type"] != "text/csv")
-        sleep(0.1)
-      end
-    end
-    assert_equal(200, page.status_code)
-    assert_equal("text/csv", page.response_headers["Content-Type"])
+    file = download_file
+    assert_equal(".csv", File.extname(file.path))
+    csv = CSV.read(file.path)
+    assert_equal([
+      "Time",
+      "Method",
+      "Host",
+      "URL",
+      "User",
+      "IP Address",
+      "Country",
+      "State",
+      "City",
+      "Status",
+      "Reason Denied",
+      "Response Time",
+      "Content Type",
+      "Accept Encoding",
+      "User Agent",
+    ], csv[0])
   end
 
   def test_changing_intervals

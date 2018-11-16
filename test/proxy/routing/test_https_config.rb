@@ -13,7 +13,7 @@ class Test::Proxy::Routing::TestHttpsConfig < Minitest::Test
     # Check the non-API static web content.
     response = Typhoeus.get("https://127.0.0.1:9081/admin/", keyless_http_options)
     assert_response_code(200, response)
-    assert_match(%r{<script src="assets/api-umbrella-admin-ui-\w+\.js"}, response.body)
+    assert_match(%r{<script src="/admin/assets/api-umbrella-admin-ui-\w+\.js"}, response.body)
 
     response = Typhoeus.get("http://127.0.0.1:9080/admin/", keyless_http_options)
     assert_response_code(301, response)

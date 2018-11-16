@@ -1,6 +1,10 @@
 import Component from '@ember/component';
-import I18n from 'npm:i18n-js';
+import I18n from 'i18n-js';
 import { computed } from '@ember/object';
+import each from 'lodash-es/each';
+import inflection from 'inflection';
+import isArray from 'lodash-es/isArray';
+import marked from 'marked';
 
 export default Component.extend({
   messages: computed('model.{clientErrors,serverErrors}', function() {
@@ -9,8 +13,8 @@ export default Component.extend({
 
     let clientErrors = this.get('model.clientErrors');
     if(clientErrors) {
-      if(_.isArray(clientErrors)) {
-        _.each(clientErrors, function(clientError) {
+      if(isArray(clientErrors)) {
+        each(clientErrors, function(clientError) {
           let message = clientError.get('message');
           if(message) {
             errors.push({
@@ -28,8 +32,8 @@ export default Component.extend({
 
     let serverErrors = this.get('model.serverErrors');
     if(serverErrors) {
-      if(_.isArray(serverErrors)) {
-        _.each(serverErrors, function(serverError) {
+      if(isArray(serverErrors)) {
+        each(serverErrors, function(serverError) {
           let message = serverError.message;
           if(!message && serverError.title) {
             message = serverError.title;
@@ -54,7 +58,7 @@ export default Component.extend({
     }
 
     let messages = [];
-    _.each(errors, function(error) {
+    each(errors, function(error) {
       let message = '';
       if(error.fullMessage) {
         message += error.fullMessage;
@@ -81,6 +85,6 @@ export default Component.extend({
   }),
 
   hasErrors: computed('messages', function() {
-    return (this.get('messages').length > 0);
+    return this.messages.length > 0;
   }),
 });

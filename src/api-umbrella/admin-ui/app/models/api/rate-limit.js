@@ -1,5 +1,5 @@
 import DS from 'ember-data';
-import moment from 'npm:moment-timezone';
+import moment from 'moment-timezone';
 import { observer } from '@ember/object';
 
 export default DS.Model.extend({
@@ -14,7 +14,7 @@ export default DS.Model.extend({
   },
 
   setDefaults() {
-    let duration = this.get('duration');
+    let duration = this.duration;
     if(duration) {
       let days = duration / 86400000;
       let hours = duration / 3600000;
@@ -46,9 +46,9 @@ export default DS.Model.extend({
   },
 
   durationInUnitsDidChange: observer('durationInUnits', 'durationUnits', function() {
-    if(this.get('durationUnits')) {
-      let inUnits = parseInt(this.get('durationInUnits'), 10);
-      let units = this.get('durationUnits');
+    if(this.durationUnits) {
+      let inUnits = parseInt(this.durationInUnits, 10);
+      let units = this.durationUnits;
       this.set('duration', moment.duration(inUnits, units).asMilliseconds());
     }
   }),

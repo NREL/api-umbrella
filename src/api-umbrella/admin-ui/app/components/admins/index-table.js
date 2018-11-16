@@ -1,8 +1,9 @@
 import $ from 'jquery';
 import Component from '@ember/component';
 import DataTablesHelpers from 'api-umbrella-admin-ui/utils/data-tables-helpers';
-import I18n from 'npm:i18n-js';
+import I18n from 'i18n-js';
 import { computed } from '@ember/object';
+import escape from 'lodash-es/escape';
 import { inject } from '@ember/service';
 
 export default Component.extend({
@@ -20,14 +21,14 @@ export default Component.extend({
           name: 'Username',
           title: I18n.t('mongoid.attributes.admin.username'),
           defaultContent: '-',
-          render: _.bind(function(username, type, data) {
+          render: (username, type, data) => {
             if(type === 'display' && username && username !== '-') {
               let link = '#/admins/' + data.id + '/edit';
-              return '<a href="' + link + '">' + _.escape(username) + '</a>';
+              return '<a href="' + link + '">' + escape(username) + '</a>';
             }
 
             return username;
-          }, this),
+          },
         },
         {
           data: 'group_names',
@@ -64,7 +65,7 @@ export default Component.extend({
   },
 
   downloadUrl: computed('queryParams', function() {
-    let params = this.get('queryParams');
+    let params = this.queryParams;
     if(params) {
       params = $.param(params);
     }

@@ -1,0 +1,56 @@
+@import "node_modules/jQuery-QueryBuilder/dist/scss/default.scss";
+
+.query-builder {
+  .pull-right {
+    float: right !important;
+  }
+
+  .rules-group-container {
+    width: 100%;
+    background: #edf5fc;
+    background: rgba(237, 245, 252, 0.5);
+    border-color: #96bedc;
+    margin-top: 0px;
+
+    .btn-xs {
+      @extend .btn-sm;
+    }
+  }
+
+  .rule-container {
+    display: flex;
+
+    .rule-header {
+      @extend .order-last;
+      margin-left: auto;
+    }
+
+    .rule-value-container {
+      @extend .flex-fill;
+      border-width: 0px;
+      padding-left: 0px;
+      padding-right: 16px;
+
+      input[type='number'].form-control,
+      input[type='text'].form-control,
+      select.form-control {
+        width: 100%;
+        margin-right: 16px;
+      }
+
+      input[type='number'].form-control {
+        max-width: 6rem;
+      }
+    }
+
+    select.form-control {
+      @extend .custom-select;
+      @extend .custom-select-sm;
+    }
+
+    input[type='number'].form-control,
+    input[type='text'].form-control {
+      @extend .form-control-sm;
+    }
+  }
+}

@@ -20,7 +20,7 @@ class Test::AdminUi::TestApiUsersRateLimits < Minitest::Capybara::Test
       assert_equal("minutes", find(".rate-limit-duration-units").value)
       assert_equal("ip", find(".rate-limit-limit-by").value)
       assert_equal("500", find(".rate-limit-limit").value)
-      assert_equal(true, find(".rate-limit-response-headers").checked?)
+      assert_equal(true, find(".rate-limit-response-headers", :visible => :all).checked?)
 
       find(".rate-limit-limit").set("200")
     end

@@ -1,5 +1,6 @@
 import Component from '@ember/component';
 import Sortable from 'api-umbrella-admin-ui/mixins/sortable';
+import bootbox from 'bootbox';
 import { computed } from '@ember/object';
 import { inject } from '@ember/service';
 
@@ -13,7 +14,7 @@ export default Component.extend(Sortable, {
 
   actions: {
     add() {
-      this.set('rewriteModel', this.get('store').createRecord('api/rewrite'));
+      this.set('rewriteModel', this.store.createRecord('api/rewrite'));
       this.set('openModal', true);
     },
 

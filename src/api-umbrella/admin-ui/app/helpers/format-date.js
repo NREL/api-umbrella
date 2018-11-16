@@ -1,11 +1,12 @@
 import { helper } from '@ember/component/helper';
-import moment from 'npm:moment-timezone';
+import isString from 'lodash-es/isString';
+import moment from 'moment-timezone';
 
 export function formatDate(params) {
   let date = params[0];
   let format = params[1];
 
-  if(!format || !_.isString(format)) {
+  if(!format || !isString(format)) {
     format = 'YYYY-MM-DD HH:mm Z';
   }
 

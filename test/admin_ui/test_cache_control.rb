@@ -20,26 +20,26 @@ class Test::AdminUi::TestCacheControl < Minitest::Test
 
     # Parse the HTML page and find the JS and CSS assets.
     doc = Nokogiri::HTML(response.body)
-    scripts = doc.xpath("//body//script[starts-with(@src, 'assets/')]")
+    scripts = doc.xpath("//body//script[starts-with(@src, '/admin/assets/')]")
     assert_operator(scripts.length, :>=, 1)
-    stylesheets = doc.xpath("//head//link[starts-with(@href, 'assets/')]")
+    stylesheets = doc.xpath("//head//link[starts-with(@href, '/admin/assets/')]")
     assert_operator(stylesheets.length, :>=, 1)
 
     # Ensure that all the linked assets use fingerprinted filenames (for cache
     # busting), and return long cache-control headers.
     scripts.each do |script|
-      assert_match(%r{\Aassets/[\w-]+-\w{32}\.js\z}, script[:src])
+      assert_match(%r{\A/admin/assets/[\w-]+-\w{32}\.js\z}, script[:src])
 
-      response = Typhoeus.get("https://127.0.0.1:9081/admin/#{script[:src]}", keyless_http_options)
+      response = Typhoeus.get("https://127.0.0.1:9081#{script[:src]}", keyless_http_options)
       assert_response_code(200, response)
       assert_equal("application/javascript", response.headers["Content-Type"])
       assert_equal("public, max-age=31536000, immutable", response.headers["Cache-Control"])
       assert_nil(response.headers["Pragma"])
     end
     stylesheets.each do |stylesheet|
-      assert_match(%r{\Aassets/[\w-]+-\w{32}\.css\z}, stylesheet[:href])
+      assert_match(%r{\A/admin/assets/[\w-]+-\w{32}\.css\z}, stylesheet[:href])
 
-      response = Typhoeus.get("https://127.0.0.1:9081/admin/#{stylesheet[:href]}", keyless_http_options)
+      response = Typhoeus.get("https://127.0.0.1:9081#{stylesheet[:href]}", keyless_http_options)
       assert_response_code(200, response)
       assert_equal("text/css", response.headers["Content-Type"])
       assert_equal("public, max-age=31536000, immutable", response.headers["Cache-Control"])

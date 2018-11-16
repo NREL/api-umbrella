@@ -1,4 +1,10 @@
-import echarts from 'npm:echarts';
+import 'echarts/lib/chart/line';
+import 'echarts/lib/chart/map';
+import 'echarts/lib/chart/scatter';
+import 'echarts/lib/component/geo';
+import 'echarts/lib/component/tooltip';
+import 'echarts/lib/component/visualMapContinuous';
+import echarts from 'echarts/lib/echarts';
 
 export function initialize() {
   let colorPalette = [
@@ -37,21 +43,19 @@ export function initialize() {
   function mapCommon() {
     return {
       itemStyle: {
-        normal: {
-          color: 'transparent',
-          areaColor: '#f5f5f5',
-          borderColor: '#bbb',
-        },
-        emphasis: {
+        color: 'transparent',
+        areaColor: '#f5f5f5',
+        borderColor: '#bbb',
+      },
+      label: {
+        show: false,
+      },
+      emphasis: {
+        itemStyle: {
           borderColor: '#999',
           borderWidth: 1,
         },
-      },
-      label: {
-        normal: {
-          show: false,
-        },
-        emphasis: {
+        label: {
           show: false,
         },
       },
@@ -64,9 +68,7 @@ export function initialize() {
       color: colorPalette,
     },
     areaStyle: {
-      normal: {
-        opacity: 0.2,
-      },
+      opacity: 0.2,
     },
     timeAxis: axisCommon(),
     logAxis: axisCommon(),
@@ -76,11 +78,11 @@ export function initialize() {
     map: mapCommon(),
     scatter: {
       itemStyle: {
-        normal: {
-          borderColor: '#bbb',
-          borderWidth: 1,
-        },
-        emphasis: {
+        borderColor: '#bbb',
+        borderWidth: 1,
+      },
+      emphasis: {
+        itemStyle: {
           borderColor: '#666',
           borderWidth: 1,
         },

@@ -1,0 +1,144 @@
+label {
+  font-weight: bold;
+  margin-bottom: 0.1rem;
+}
+
+.custom-control-label,
+.form-check-label {
+  font-weight: normal;
+}
+
+.form-horizontal .col-form-label {
+  text-align: right;
+}
+
+.form-fields-checkboxes-field .form-horizontal .col-form-label {
+  padding-top: 0px;
+}
+
+.form-horizontal.condensed .form-group {
+  margin-bottom: 5px;
+}
+
+fieldset {
+  margin: 12px 0px 32px 0px;
+  padding: 6px 0px;
+}
+
+fieldset.collapsible {
+  margin-bottom: 12px;
+
+  .collapse.in {
+    margin-bottom: 24px;
+  }
+}
+
+legend {
+  margin-bottom: 2px;
+  border-width: 0px 0px 1px 0px;
+  border-style: solid;
+  border-color: $gray-600;
+  padding: 6px 10px 3px 2px;
+  line-height: 22px;
+  background-color: #fff;
+}
+
+legend a {
+  display: block;
+  color: $link-color !important;
+}
+
+legend a:hover {
+  color: $link-hover-color !important;
+  text-decoration: none;
+}
+
+.fieldset-note {
+  font-size: 85%;
+  color: $text-muted;
+  margin-bottom: 4px;
+}
+
+fieldset .table {
+  margin-bottom: 4px;
+}
+
+.has-error {
+  .form-control {
+    @extend .is-invalid;
+  }
+
+  .invalid-feedback,
+  .invalid-tooltip {
+    display: block;
+  }
+}
+
+.error-messages {
+  h4 {
+    margin-bottom: 4px;
+  }
+
+  ul {
+    margin-bottom: 0px;
+
+    ul {
+      margin-top: 10px;
+      margin-bottom: 10px;
+    }
+  }
+
+  li {
+    p {
+      margin: 10px 0px 0px 0px;
+    }
+
+    p:first-child {
+      margin: 0px;
+    }
+  }
+}
+
+.error-page {
+  margin: 0px auto;
+  max-width: 420px;
+}
+
+.form-extra-actions {
+  margin-top: 20px;
+}
+
+.custom-control.custom-control-no-label {
+  display: inline-block;
+  padding-left: 1rem;
+
+  .custom-control-label {
+    display: block;
+    width: 0px;
+  }
+
+  .custom-control-label::before,
+  .custom-control-label::after {
+    left: -1rem;
+  }
+}
+
+.btn {
+  .btn-loading-label {
+    display: none;
+
+    .svg-inline--fa:first-child {
+      @extend .mr-2;
+    }
+  }
+
+  &.btn-loading {
+    .btn-label {
+      display: none;
+    }
+
+    .btn-loading-label {
+      display: inline;
+    }
+  }
+}

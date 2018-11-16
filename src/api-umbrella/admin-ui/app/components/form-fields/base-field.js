@@ -3,7 +3,7 @@ import { computed } from '@ember/object';
 
 export default Component.extend({
   inputId: computed('elementId', 'fieldName', function() {
-    return this.get('elementId') + '-' + this.get('fieldName');
+    return this.elementId + '-' + this.fieldName;
   }),
 }).reopenClass({
   positionalParams: ['fieldName'],

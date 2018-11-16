@@ -7,7 +7,7 @@ export default Route.extend(UnauthenticatedRouteMixin, {
   },
 
   authenticate() {
-    this.get('session').authenticate('authenticator:devise-server-side').catch((error) => {
+    this.session.authenticate('authenticator:devise-server-side').catch((error) => {
       if(error !== 'unexpected_error') {
         window.location.href = '/admin/login';
       }

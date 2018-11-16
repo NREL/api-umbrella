@@ -1,8 +1,10 @@
 {{#if (eq style "horizontal")}}
   <div class="form-horizontal">
-    <div class="form-group {{wrapperErrorClass}}">
-      <div class="col-sm-2 control-label">
-        <label for="{{labelFor}}">{{label}}</label>
+    <div class="form-group row {{wrapperErrorClass}}">
+      <div class="col-sm-2 col-form-label">
+        {{#if label}}
+          <label for={{labelFor}}>{{label}}</label>
+        {{/if}}
         {{help-tooltip tooltip=tooltip}}
       </div>
       <div class="col-sm-10">
@@ -14,9 +16,11 @@
   </div>
 {{else if (eq style "horizontal-wide-labels")}}
   <div class="form-horizontal">
-    <div class="form-group {{wrapperErrorClass}}">
-      <div class="col-sm-3 control-label">
-        <label for="{{labelFor}}">{{label}}</label>
+    <div class="form-group row {{wrapperErrorClass}}">
+      <div class="col-sm-3 col-form-label">
+        {{#if label}}
+          <label for={{labelFor}}>{{label}}</label>
+        {{/if}}
         {{help-tooltip tooltip=tooltip}}
       </div>
       <div class="col-sm-9">
@@ -28,7 +32,9 @@
   </div>
 {{else}}
   <div class="form-group {{wrapperErrorClass}}">
-    <label for="{{labelFor}}">{{label}}</label>
+    {{#if label}}
+      <label for={{labelFor}}>{{label}}</label>
+    {{/if}}
     {{help-tooltip tooltip=tooltip}}
     {{yield}}
     {{form-fields/hint hint=hint}}

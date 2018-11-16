@@ -1,7 +1,7 @@
 import { buildValidations, validator } from 'ember-cp-validations';
 
 import DS from 'ember-data';
-import I18n from 'npm:i18n-js';
+import I18n from 'i18n-js';
 import { computed } from '@ember/object';
 
 const Validations = buildValidations({
@@ -27,7 +27,7 @@ export default DS.Model.extend(Validations, {
   backendPrefix: DS.attr(),
 
   backendPrefixWithDefault: computed('backendPrefix', 'frontendPrefix', function() {
-    return this.get('backendPrefix') || this.get('frontendPrefix');
+    return this.backendPrefix || this.frontendPrefix;
   }),
 }).reopenClass({
   validationClass: Validations,

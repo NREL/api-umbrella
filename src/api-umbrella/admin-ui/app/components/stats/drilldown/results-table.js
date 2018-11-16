@@ -2,6 +2,8 @@ import { computed, observer } from '@ember/object';
 
 import $ from 'jquery';
 import Component from '@ember/component';
+import clone from 'lodash-es/clone';
+import escape from 'lodash-es/escape';
 import { inject } from '@ember/service';
 import numeral from 'numeral';
 
@@ -12,7 +14,7 @@ export default Component.extend({
     this.$().find('table').DataTable({
       searching: false,
       order: [[1, 'desc']],
-      data: this.get('results'),
+      data: this.results,
       columns: [
         {
           data: 'path',
@@ -21,13 +23,13 @@ export default Component.extend({
           render: function(name, type, data) {
             if(type === 'display' && name && name !== '-') {
               if(data.terminal) {
-                return '<i class="fa fa-file-o fa-space-right"></i>' + _.escape(name);
+                return '<i class="far fa-file fa-fw mr-1"></i>' + escape(name);
               } else {
-                let params = _.clone(this.get('presentQueryParamValues'));
+                let params = clone(this.presentQueryParamValues);
                 params.prefix = data.descendent_prefix;
                 let link = '#/stats/drilldown?' + $.param(params);
 
-                return '<a href="' + link + '"><i class="fa fa-folder-o fa-space-right"></i>' + _.escape(name) + '</a>';
+                return '<a href="' + link + '"><i class="far fa-folder fa-fw mr-1"></i>' + escape(name) + '</a>';
               }
             }
 
@@ -53,11 +55,11 @@ export default Component.extend({
   refreshData: observer('results', function() {
     let table = this.$().find('table').dataTable().api();
     table.clear();
-    table.rows.add(this.get('results'));
+    table.rows.add(this.results);
     table.draw();
   }),
 
   downloadUrl: computed('backendQueryParamValues', function() {
-    return '/api-umbrella/v1/analytics/drilldown.csv?api_key=' + this.get('session.data.authenticated.api_key') + '&' + $.param(this.get('backendQueryParamValues'));
+    return '/api-umbrella/v1/analytics/drilldown.csv?api_key=' + this.get('session.data.authenticated.api_key') + '&' + $.param(this.backendQueryParamValues);
   }),
 });

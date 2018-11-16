@@ -1,6 +1,8 @@
 import $ from 'jquery';
 import Component from '@ember/component';
-import echarts from 'npm:echarts';
+import clone from 'lodash-es/clone';
+import debounce from 'lodash-es/debounce';
+import echarts from 'echarts/lib/echarts';
 import { inject } from '@ember/service';
 import { observer } from '@ember/object';
 import { on } from '@ember/object/evented';
@@ -20,13 +22,13 @@ export default Component.extend({
     this.chart.on('click', this.handleCityClick.bind(this));
     this.draw();
 
-    $(window).on('resize', _.debounce(this.chart.resize, 100));
+    $(window).on('resize', debounce(this.chart.resize, 100));
   },
 
   handleRegionClick(event) {
-    let queryParams = _.clone(this.get('presentQueryParamValues'));
+    let queryParams = clone(this.presentQueryParamValues);
     queryParams.region = event.batch[0].name;
-    this.get('router').transitionTo('stats.map', { queryParams });
+    this.router.transitionTo('stats.map', { queryParams });
   },
 
   handleCityClick(event) {
@@ -34,7 +36,7 @@ export default Component.extend({
       let currentRegion = this.get('allQueryParamValues.region').split('-');
       let currentCountry = currentRegion[0];
       currentRegion = currentRegion[1];
-      let queryParams = _.clone(this.get('presentQueryParamValues'));
+      let queryParams = clone(this.presentQueryParamValues);
       queryParams.query = JSON.stringify({
         condition: 'AND',
         rules: [
@@ -73,7 +75,7 @@ export default Component.extend({
         ],
       });
 
-      this.get('router').transitionTo('stats.logs', { queryParams });
+      this.router.transitionTo('stats.logs', { queryParams });
     }
   },
 
@@ -102,6 +104,8 @@ export default Component.extend({
       echarts.registerMap('region', geojson, specialMapAreas);
 
       this.set('loadedMapRegion', this.get('allQueryParamValues.region'));
+
+      this.fillInChartDataMissingRegions();
       this.draw();
     });
   })),
@@ -110,11 +114,11 @@ export default Component.extend({
   refreshData: on('init', observer('regions', function() {
     let currentRegion = this.get('allQueryParamValues.region');
 
-    let data = [];
+    let data = {};
     let maxValue = 2;
     let maxValueDisplay = '2';
-    let hits = this.get('regions');
-    let regionField = this.get('regionField');
+    let hits = this.regions;
+    let regionField = this.regionField;
     for(let i = 0; i < hits.length; i++) {
       let value, valueDisplay;
       if(regionField === 'request_ip_city') {
@@ -122,11 +126,11 @@ export default Component.extend({
         valueDisplay = hits[i].c[3].f;
         let lat = hits[i].c[0].v;
         let lng = hits[i].c[1].v;
-        data.push({
+        data[i] = {
           name: hits[i].c[2].v,
           value: [lng, lat, value],
           valueDisplay: valueDisplay,
-        });
+        };
       } else {
         value = hits[i].c[1].v;
         valueDisplay = hits[i].c[1].f;
@@ -135,11 +139,11 @@ export default Component.extend({
           code = 'US-' + code;
         }
 
-        data.push({
+        data[code] = {
           name: code,
           value: value,
           valueDisplay: valueDisplay,
-        });
+        };
       }
 
       if(value > maxValue) {
@@ -153,30 +157,55 @@ export default Component.extend({
     this.set('chartDataMaxValueDisplay', maxValueDisplay);
     this.set('loadedDataRegion', this.get('allQueryParamValues.region'));
 
+    this.fillInChartDataMissingRegions();
     this.draw();
   })),
 
+  // In order to generate tooltips with the region names, the region data must
+  // contain a record for each region, even if no data is present (otherwise
+  // the "params" passed to the tooltip's formatter function doesn't contain
+  // the hovered region code as of ECharts 4). To fix this when no data is
+  // present, ensure that anytime the chart data or labels are changed, this
+  // function gets called to fill in any missing data.
+  fillInChartDataMissingRegions() {
+    if(this.chartData && this.labels && this.regionField !== 'request_ip_city') {
+      let data = this.chartData
+      const regionCodes = Object.keys(this.labels);
+      for(let i = 0, len = regionCodes.length; i < len; i++) {
+        const regionCode = regionCodes[i];
+        if(!data[regionCode]) {
+          data[regionCode] = {
+            name: regionCode,
+          };
+        }
+      }
+
+      this.set('chartData', data);
+    }
+  },
+
   draw() {
     let currentRegion = this.get('allQueryParamValues.region');
-    if(!this.chart || this.get('loadedDataRegion') !== currentRegion || this.get('loadedMapRegion') !== currentRegion) {
+    if(!this.chart || this.loadedDataRegion !== currentRegion || this.loadedMapRegion !== currentRegion) {
       return;
     }
 
     let geo;
     let series = {};
-    if(this.get('regionField') === 'request_ip_city') {
+    const data = Object.values(this.chartData);
+    if(this.regionField === 'request_ip_city') {
       geo = {
         map: 'region',
         silent: true,
       };
 
-      let maxValue = this.get('chartDataMaxValue');
+      let maxValue = this.chartDataMaxValue;
       series = [
         {
           name: 'Hits Scatter',
           type: 'scatter',
           coordinateSystem: 'geo',
-          data: this.get('chartData'),
+          data,
           symbolSize: (val) => {
             return Math.max(Math.round((val[2] / maxValue) * 30), 6);
           },
@@ -189,7 +218,7 @@ export default Component.extend({
           type: 'map',
           map: 'region',
           selectedMode: 'single',
-          data: this.get('chartData'),
+          data,
         },
       ];
     }
@@ -201,7 +230,7 @@ export default Component.extend({
         trigger: 'item',
         formatter: function(params) {
           let label = this.labels[params.name] || params.name;
-          let valueDisplay = params.data.valueDisplay || 0;
+          let valueDisplay = (params.data && params.data.valueDisplay) ? params.data.valueDisplay : 0;
           return '<strong>' + label + '</strong><br>Hits: <strong>' + valueDisplay + '</strong>';
         }.bind(this),
       },
@@ -225,10 +254,10 @@ export default Component.extend({
       visualMap: {
         type: 'continuous',
         min: 1,
-        max: this.get('chartDataMaxValue'),
+        max: this.chartDataMaxValue,
         orient: 'horizontal',
         text: [
-          this.get('chartDataMaxValueDisplay'),
+          this.chartDataMaxValueDisplay,
           '1',
         ],
       },
