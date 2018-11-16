@@ -6,13 +6,13 @@ gem "middleman", "~> 4.2.1"
 gem "middleman-sprockets", "~> 4.1.0"
 
 # For execjs
-gem "mini_racer", "~> 0.1.9"
+gem "mini_racer", "~> 0.2.4"
 
 # Deploy to GitHub Pages
 gem "middleman-gh-pages", "~> 0.3.1"
 
 # Markdown
-gem "kramdown", "~> 1.13.2"
+gem "kramdown", "~> 1.17.0"
 
 # Assets
 gem "bootstrap-sass", "~> 3.3.7"

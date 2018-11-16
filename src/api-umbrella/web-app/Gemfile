@@ -43,7 +43,7 @@ gem "elasticsearch", "~> 6.1.0"
 
 # OmniAuth-based authentication
 gem "devise", "~> 4.5.0"
-gem "devise-i18n", "~> 1.6.0"
+gem "devise-i18n", "~> 1.7.0"
 gem "omniauth", "~> 1.8.1"
 gem "omniauth-cas", "~> 1.1.0", :git => "https://github.com/GUI/omniauth-cas.git", :branch => "rexml", :require => false
 gem "omniauth-facebook", "~> 5.0.0", :require => false
@@ -56,8 +56,8 @@ gem "omniauth-ldap", "~> 2.0.0", :require => false
 gem "pundit", "~> 2.0.0"
 
 # Views/templates for APIs
-gem "rabl", "~> 0.13.1"
-gem "jbuilder", "~> 2.7.0"
+gem "rabl", "~> 0.14.0"
+gem "jbuilder", "~> 2.8.0"
 gem "csv_builder", "~> 2.1.1"
 
 # Country and state name lookups
@@ -89,7 +89,7 @@ gem "lucene_query_parser", :git => "https://github.com/zerowidth/lucene_query_pa
 gem "request_store", "~> 1.4.1"
 
 # Share i18n data with the admin-ui client-side app.
-gem "i18n-js", "~> 3.0.8"
+gem "i18n-js", "~> 3.2.0"
 
 # Log to stdout instead of file
 #
