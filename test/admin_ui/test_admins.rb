@@ -72,4 +72,31 @@ class Test::AdminUi::TestAdmins < Minitest::Capybara::Test
     admin = Admin.find(admin.id)
     assert_equal([@group3.id].sort, admin.group_ids.sort)
   end
+
+  def test_non_admin_manager_views_own_profile
+    # An admin without the "admin_manage" role.
+    admin = FactoryBot.create(:limited_admin, :groups => [
+      FactoryBot.create(:google_admin_group, :analytics_permission),
+    ])
+    admin_login(admin)
+
+    visit "/admin/#/admins/#{admin.id}/edit"
+
+    refute_field("Email")
+    assert_text("Email")
+    assert_text(admin.username)
+    refute_field("Notes")
+    assert_text("Notes")
+    # TODO: Admins should be able to set their own password, even if they lack
+    # the admin_manage role.
+    refute_text("Change Your Password")
+    refute_field("Current Password")
+    refute_field("New Password")
+    refute_text("Permissions")
+    assert_text("Admin API Access")
+    assert_text("Admin API Token")
+    assert(admin.authentication_token)
+    assert_text(admin.authentication_token)
+    refute_button("Save")
+  end
 end

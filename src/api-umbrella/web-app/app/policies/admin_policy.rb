@@ -21,6 +21,29 @@ class AdminPolicy < ApplicationPolicy
   end
 
   def show?
+    # Allow admins to always view their own record, even if they don't have the
+    # admin_manage privilege (so they can view their admin token).
+    #
+    # TODO: An admin should also be able to update their own password if using
+    # local password authentication, but that is not yet implemented.
+    manage? || (user.id == record.id)
+  end
+
+  def update?
+    manage?
+  end
+
+  def create?
+    update?
+  end
+
+  def destroy?
+    update?
+  end
+
+  private
+
+  def manage?
     allowed = false
     if(user.superuser?)
       allowed = true
@@ -41,17 +64,5 @@ class AdminPolicy < ApplicationPolicy
     end
 
     allowed
-  end
-
-  def update?
-    show?
-  end
-
-  def create?
-    update?
-  end
-
-  def destroy?
-    update?
   end
 end

@@ -239,6 +239,35 @@ class Test::Apis::V1::Admins::TestAdminPermissions < Minitest::Test
     assert_equal(false, record.superuser)
   end
 
+  def test_permits_any_admin_to_view_but_not_edit_own_record
+    # An admin without the "admin_manage" role.
+    admin = FactoryBot.create(:limited_admin, :groups => [
+      FactoryBot.create(:google_admin_group, :analytics_permission),
+    ])
+
+    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/admins/#{admin.id}.json", http_options.deep_merge(admin_token(admin)))
+    assert_response_code(200, response)
+    data = MultiJson.load(response.body)
+    assert_equal(["admin"], data.keys)
+
+    attributes = admin.serializable_hash
+    attributes["username"] += rand(999_999).to_s
+    response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/admins/#{admin.id}.json", http_options.deep_merge(admin_token(admin)).deep_merge({
+      :headers => { "Content-Type" => "application/json" },
+      :body => MultiJson.dump(:admin => attributes),
+    }))
+    assert_response_code(403, response)
+    data = MultiJson.load(response.body)
+    assert_equal(["errors"], data.keys)
+
+    initial_count = active_count
+    response = Typhoeus.delete("https://127.0.0.1:9081/api-umbrella/v1/admins/#{admin.id}.json", http_options.deep_merge(admin_token(admin)))
+    assert_response_code(403, response)
+    data = MultiJson.load(response.body)
+    assert_equal(["errors"], data.keys)
+    assert_equal(0, active_count - initial_count)
+  end
+
   private
 
   def assert_admin_permitted(factory, admin)
