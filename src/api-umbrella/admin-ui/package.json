@@ -28,7 +28,7 @@
     "bootbox": "git+https://github.com/makeusabrew/bootbox.git#v5.x",
     "bootstrap": "git+https://github.com/twbs/bootstrap.git#v4-dev",
     "broccoli-asset-rev": "^2.7.0",
-    "codemirror": "~5.41.0",
+    "codemirror": "~5.42.0",
     "datatables.net": "~1.10.19",
     "datatables.net-bs4": "~1.10.19",
     "daterangepicker": "~3.0.3",
@@ -36,7 +36,7 @@
     "echarts": "~4.2.0-rc.2",
     "ember-ajax": "^3.1.0",
     "ember-auto-import": "~1.2.15",
-    "ember-bootstrap": "~2.2.0",
+    "ember-bootstrap": "~2.3.0",
     "ember-buffered-proxy": "~1.0.0",
     "ember-cli": "~3.5.1",
     "ember-cli-app-version": "^3.2.0",
@@ -79,12 +79,12 @@
     "moment-timezone": "~0.5.14",
     "node-sass": "~4.11.0",
     "numeral": "~2.0.6",
-    "pnotify": "~4.0.0-alpha.4",
+    "pnotify": "~4.0.0-beta.1",
     "popper.js": "~1.14.5",
     "qunit-dom": "^0.8.0",
     "selectize": "~0.12.4",
     "timekeeper": "~2.1.2",
-    "tippy.js": "~3.2.0"
+    "tippy.js": "~3.3.0"
   },
   "engines": {
     "node": "6.* || 8.* || >= 10.*"
