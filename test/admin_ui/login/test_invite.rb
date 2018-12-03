@@ -88,6 +88,7 @@ class Test::AdminUi::Login::TestInvite < Minitest::Capybara::Test
     # Ensure edits don't resend invites by default.
     visit "/admin/#/admins/#{admin.id}/edit"
     assert_text("Edit Admin")
+    assert_field("Email", :with => admin.email)
     fill_in "Notes", :with => "Foo"
     assert_equal(false, find_field("Resend invite email", :visible => :all).checked?)
     click_button "Save"
@@ -101,6 +102,7 @@ class Test::AdminUi::Login::TestInvite < Minitest::Capybara::Test
     # Force the invite to be resent.
     visit "/admin/#/admins/#{admin.id}/edit"
     assert_text("Edit Admin")
+    assert_field("Email", :with => admin.email)
     fill_in "Notes", :with => "Bar"
     assert_equal(false, find_field("Resend invite email", :visible => :all).checked?)
     label_check "Resend invite email"
@@ -117,6 +119,8 @@ class Test::AdminUi::Login::TestInvite < Minitest::Capybara::Test
 
     admin.update(:current_sign_in_at => Time.now.utc)
     visit "/admin/#/admins/#{admin.id}/edit"
+    assert_text("Edit Admin")
+    assert_field("Email", :with => admin.email)
     refute_field("Resend invite email", :visible => :all)
   end
 end
