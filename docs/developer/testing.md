@@ -12,11 +12,10 @@ API Umbrella's test suite uses Ruby's [minitest](https://github.com/seattlerb/mi
 
 ## Running Tests
 
-Assuming you have a [Vagrant development environment](dev-setup.html), you can run all the tests with:
+Assuming you have a [Docker development environment](dev-setup.html), you can run all the tests with:
 
 ```sh
-$ cd /vagrant
-$ make test
+docker-compose run --rm app make test
 ```
 
 ### Running Individual Tests
@@ -24,7 +23,5 @@ $ make test
 If you'd like to run individual tests, rather than all the tests, there are a few different ways to do that:
 
 ```sh
-# Run individual files or tests within the web-app test suite:
-$ cd /vagrant
-$ ruby test/apis/v1/admins/test_create.rb
+docker-compose run --rm app bundle exec minitest test/apis/v1/admins/test_create.rb
 ```
