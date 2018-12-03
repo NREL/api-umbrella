@@ -258,6 +258,7 @@ tasks:
       - ./tasks/app-deps/admin-ui/yarn
     sources:
       - ./build/work/stamp/build-deps/yarn
+      - ./src/api-umbrella/admin-ui/.yarnrc
       - ./src/api-umbrella/admin-ui/package.json
       - ./src/api-umbrella/admin-ui/yarn.lock
       - ./tasks/app-deps/admin-ui/yarn

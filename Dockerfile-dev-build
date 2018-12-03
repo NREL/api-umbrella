@@ -32,6 +32,7 @@ COPY Gemfile.lock /app/Gemfile.lock
 COPY tasks/test-deps /app/tasks/test-deps
 RUN make test-deps && make clean:dev
 
+COPY src/api-umbrella/admin-ui/.yarnrc /app/src/api-umbrella/admin-ui/.yarnrc
 COPY src/api-umbrella/admin-ui/package.json /app/src/api-umbrella/admin-ui/package.json
 COPY src/api-umbrella/admin-ui/yarn.lock /app/src/api-umbrella/admin-ui/yarn.lock
 COPY src/api-umbrella/web-app/Gemfile /app/src/api-umbrella/web-app/Gemfile
