@@ -366,7 +366,7 @@ local function set_computed_config()
   --   layer receiving the requests, it makes most sense to handle this timeout
   --   at this first layer.
   config["trafficserver"]["_connect_attempts_timeout"] = config["nginx"]["proxy_connect_timeout"] + config["nginx"]["proxy_read_timeout"] + 2
-  config["trafficserver"]["_post_connect_attempts_timeout "] = config["trafficserver"]["_connect_attempts_timeout"]
+  config["trafficserver"]["_post_connect_attempts_timeout"] = config["trafficserver"]["_connect_attempts_timeout"]
   config["trafficserver"]["_transaction_no_activity_timeout_out"] = config["nginx"]["proxy_read_timeout"]
   config["trafficserver"]["_transaction_no_activity_timeout_in"] = config["nginx"]["proxy_read_timeout"]
   config["nginx"]["_initial_proxy_connect_timeout"] = config["nginx"]["proxy_connect_timeout"]
