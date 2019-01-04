@@ -47,8 +47,8 @@ X-RateLimit-Remaining: 840
                 </td>
                 <td class="text-center">
                   <div class="custom-control custom-radio custom-control-no-label mt-1">
-                    {{one-way-radio name=uniqueSettingsId id=(concat uniqueSettingsId "_" rateLimit.id) value=rateLimit.responseHeaders option=true class="rate-limit-response-headers custom-control-input" update=(action "primaryRateLimitChange" rateLimit)}}
-                    <label class="custom-control-label" for="{{uniqueSettingsId}}_{{rateLimit.id}}"><span class="sr-only">Use as primary rate limit</span></label>
+                    {{one-way-radio name=uniqueSettingsId id=(concat uniqueSettingsId "_" rateLimit.uniqueId) value=rateLimit.responseHeaders option=true class="rate-limit-response-headers custom-control-input" update=(action "primaryRateLimitChange" rateLimit)}}
+                    <label class="custom-control-label" for="{{uniqueSettingsId}}_{{rateLimit.uniqueId}}"><span class="sr-only">Use as primary rate limit</span></label>
                   </div>
                 </td>
                 <td class="table-row-actions">

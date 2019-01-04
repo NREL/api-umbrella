@@ -1,6 +1,7 @@
+import { computed, observer } from '@ember/object';
 import DS from 'ember-data';
 import moment from 'moment-timezone';
-import { observer } from '@ember/object';
+import uniqueId from 'lodash-es/uniqueId';
 
 export default DS.Model.extend({
   duration: DS.attr('number'),
@@ -51,5 +52,9 @@ export default DS.Model.extend({
       let units = this.durationUnits;
       this.set('duration', moment.duration(inUnits, units).asMilliseconds());
     }
+  }),
+
+  uniqueId: computed(function() {
+    return uniqueId('rate_limit_');
   }),
 });
