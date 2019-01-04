@@ -16,7 +16,7 @@ Drilldown.reopenClass({
         url: this.urlRoot,
         data: params,
       }).then(function(data) {
-        resolve(new Drilldown(data));
+        resolve(Drilldown.create(data));
       }, function(data) {
         reject(data.responseText);
       });

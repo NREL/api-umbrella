@@ -18,7 +18,7 @@ gem "minitest-hooks", "~> 1.5.0"
 gem "minitest-ci", "~> 3.4.0"
 
 # Ruby lint/style checker
-gem "rubocop", "~> 0.60.0", :require => false
+gem "rubocop", "~> 0.62.0", :require => false
 
 # Running background processes
 gem "childprocess", "~> 0.9.0"
@@ -58,7 +58,7 @@ gem "capybara-chromedriver-logger", "~> 0.3.0", :git => "https://github.com/Thri
 gem "capybara-screenshot", "~> 1.0.22"
 
 # HTML or XML parsing
-gem "nokogiri", "~> 1.8.5"
+gem "nokogiri", "~> 1.10.0"
 
 # Useful additions
 gem "activesupport", "~> 5.2.0"

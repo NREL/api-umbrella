@@ -18,6 +18,7 @@ export BUNDLE_APP_CONFIG
   cd _persist
 
   # Install all the gems for use in packaging.
+  bundle update --bundler
   bundle config --local build.nokogiri --use-system-libraries
   bundle config --local path "$(pwd)/bundle"
   bundle config --local clean true

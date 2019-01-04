@@ -8,6 +8,9 @@ AllCops:
 Rails:
   Enabled: true
 
+Bundler/OrderedGems:
+  Enabled: false
+
 Lint/AssignmentInCondition:
   AllowSafeAssignment: false
 

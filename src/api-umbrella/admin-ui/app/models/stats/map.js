@@ -19,7 +19,7 @@ Map.reopenClass({
         url: this.urlRoot,
         data: params,
       }).then(function(data) {
-        resolve(new Map(data));
+        resolve(Map.create(data));
       }, function(data) {
         reject(data.responseText);
       });

@@ -3,11 +3,11 @@
     <%= f.input :username, :required => false, :autofocus => true %>
     <%= f.input :password, :required => false %>
     <div class="row">
-      <div class="col-xs-6">
+      <div class="col-6">
         <%= f.input :remember_me, :as => :boolean if devise_mapping.rememberable? %>
       </div>
       <%- if devise_mapping.recoverable? %>
-        <div class="col-xs-6 text-right">
+        <div class="col-6 text-right">
           <%= link_to t("devise.shared.links.forgot_your_password"), new_password_path(resource_name) %><br />
         </div>
       <% end -%>

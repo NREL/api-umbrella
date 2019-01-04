@@ -34,7 +34,7 @@ node :map_regions do
       {
         :c => region_location_columns(bucket) + [
           { :v => bucket["doc_count"], :f => number_with_delimiter(bucket["doc_count"]) },
-        ]
+        ],
       }
     end
   else

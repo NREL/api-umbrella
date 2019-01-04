@@ -133,7 +133,7 @@ class ApiUser
   end
 
   def api_key_hides_at
-    @api_key_hides_at ||= self.created_at + 2.weeks
+    @api_key_hides_at ||= (self.created_at + 2.weeks).utc
   end
 
   def serializable_hash(options = nil)

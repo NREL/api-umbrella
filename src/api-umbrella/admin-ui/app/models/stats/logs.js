@@ -19,7 +19,7 @@ Logs.reopenClass({
         url: this.urlRoot,
         data: params,
       }).then(function(data) {
-        resolve(new Logs(data));
+        resolve(Logs.create(data));
       }, function(data) {
         reject(data.responseText);
       });

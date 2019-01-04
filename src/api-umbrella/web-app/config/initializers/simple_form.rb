@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Use this setup block to configure all options available in SimpleForm.
 SimpleForm.setup do |config|
   # Wrappers are used by the form builder to generate a
@@ -28,7 +30,11 @@ SimpleForm.setup do |config|
     # extensions by default, you can change `b.optional` to `b.use`.
 
     # Calculates maxlength from length validations for string inputs
+    # and/or database column lengths
     b.optional :maxlength
+
+    # Calculate minlength from length validations for string inputs
+    b.optional :minlength
 
     # Calculates pattern from format validations for string inputs
     b.optional :pattern
@@ -58,7 +64,7 @@ SimpleForm.setup do |config|
   # Defaults to :nested for bootstrap config.
   #   inline: input + label
   #   nested: label > input
-  config.boolean_style = :nested
+  config.boolean_style = :inline
 
   # Default class for buttons
   config.button_class = 'btn'

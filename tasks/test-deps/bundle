@@ -15,6 +15,7 @@ export PATH="$STAGE_EMBEDDED_PATH"
 export BUNDLE_GEMFILE="$SOURCE_DIR/Gemfile"
 BUNDLE_APP_CONFIG="$(pwd)/.bundle"
 export BUNDLE_APP_CONFIG
+bundle update --bundler
 bundle config --local build.nokogiri --use-system-libraries
 bundle config --local path "$(pwd)/bundle"
 bundle config --local clean true
