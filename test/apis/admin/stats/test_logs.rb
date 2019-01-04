@@ -91,6 +91,10 @@ class Test::Apis::Admin::Stats::TestLogs < Minitest::Test
       "Content Type",
       "Accept Encoding",
       "User Agent",
+      "User Agent Family",
+      "User Agent Type",
+      "Referer",
+      "Origin",
     ], csv[0])
   end
 

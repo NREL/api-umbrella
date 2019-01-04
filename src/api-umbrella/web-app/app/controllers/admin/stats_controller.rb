@@ -76,7 +76,27 @@ class Admin::StatsController < Admin::BaseController
         # http://stackoverflow.com/a/10252798/222487
         response.headers["Last-Modified"] = Time.now.utc.httpdate
 
-        headers = ["Time", "Method", "Host", "URL", "User", "IP Address", "Country", "State", "City", "Status", "Reason Denied", "Response Time", "Content Type", "Accept Encoding", "User Agent"]
+        headers = [
+          "Time",
+          "Method",
+          "Host",
+          "URL",
+          "User",
+          "IP Address",
+          "Country",
+          "State",
+          "City",
+          "Status",
+          "Reason Denied",
+          "Response Time",
+          "Content Type",
+          "Accept Encoding",
+          "User Agent",
+          "User Agent Family",
+          "User Agent Type",
+          "Referer",
+          "Origin",
+        ]
 
         send_file_headers!(:disposition => "attachment", :filename => "api_logs (#{Time.now.utc.strftime("%b %-e %Y")}).#{params[:format]}")
         self.response_body = CsvStreamer.new(@result, headers) do |row|
