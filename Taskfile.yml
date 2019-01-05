@@ -610,10 +610,10 @@ tasks:
 
   all:
     cmds:
-      - task: app
-      - task: app-deps
       - task: build-deps
       - task: deps
+      - task: app-deps
+      - task: app
 
   test-deps:bundle:
     deps:
