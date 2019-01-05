@@ -10,7 +10,7 @@ task_working_dir
 download "https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-$elasticsearch6_version.tar.gz" "sha1" "$elasticsearch6_hash"
 extract_download "elasticsearch-$elasticsearch6_version.tar.gz"
 
-mkdir -p "$TEST_INSTALL_PREFIX"
+mkdir -p "$TEST_INSTALL_PREFIX/elasticsearch6"
 rsync -a -v --checksum --delete-after "elasticsearch-$elasticsearch6_version/" "$TEST_INSTALL_PREFIX/elasticsearch6/"
 "$TEST_INSTALL_PREFIX/elasticsearch6/bin/elasticsearch-keystore" create
 chmod 660 "$TEST_INSTALL_PREFIX/elasticsearch6/config/elasticsearch.keystore"

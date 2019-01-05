@@ -10,6 +10,7 @@ task_working_dir
 download "https://nodejs.org/dist/v$nodejs_version/node-v$nodejs_version-linux-x64.tar.xz" "sha256" "$nodejs_hash"
 extract_download "node-v$nodejs_version-linux-x64.tar.xz"
 
+mkdir -p "$DEV_INSTALL_PREFIX"
 rsync -a -v "node-v$nodejs_version-linux-x64/" "$DEV_INSTALL_PREFIX/"
 
 stamp
