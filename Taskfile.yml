@@ -586,6 +586,7 @@ tasks:
       - ./tasks/app/web-app/precompile
     sources:
       - ./build/work/stamp/app-deps/web-app/bundle
+      - ./build/work/stamp/build-deps/nodejs
       - ./src/api-umbrella/web-app/app/assets/**/*.css
       - ./src/api-umbrella/web-app/app/assets/**/*.erb
       - ./src/api-umbrella/web-app/app/assets/**/*.js
