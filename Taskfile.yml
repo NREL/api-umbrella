@@ -18,8 +18,14 @@
 #   work for multiple levels of dependencies). So, for example, if the libgeoip
 #   dependency changes, rebuilding it properly cascades and triggers a rebuild
 #   of openresty (1st level dependency) and luarocks (2nd level dependency).
+# - For colorized output we use the "unbuffer" tool to force color output on
+#   some commands, since Task doesn't easily support detecting colorized output
+#   (as of the output changes in 2.0.3):
+#   https://github.com/go-task/task/issues/136
 
 version: "2"
+
+output: interleaved
 
 tasks:
   deps:bundler:
@@ -737,31 +743,31 @@ tasks:
     deps:
       - app-deps:admin-ui:yarn
     cmds:
-      - ./tasks/lint/js
+      - unbuffer ./tasks/lint/js
 
   lint:lua:
     deps:
       - test-deps:lua:luacheck
     cmds:
-      - ./tasks/lint/lua
+      - unbuffer ./tasks/lint/lua
 
   lint:resty:
     deps:
       - test-deps:lua:penlight
     cmds:
-      - ./tasks/lint/resty/run
+      - unbuffer ./tasks/lint/resty/run
 
   lint:ruby:
     deps:
       - test-deps:bundle
     cmds:
-      - ./tasks/lint/ruby
+      - unbuffer ./tasks/lint/ruby
 
   lint:shell:
     deps:
       - test-deps:shellcheck
     cmds:
-      - ./tasks/lint/shell
+      - unbuffer ./tasks/lint/shell
 
   lint:
     cmds:
@@ -773,14 +779,14 @@ tasks:
 
   outdated:
     cmds:
-      - ./tasks/outdated
+      - unbuffer ./tasks/outdated
 
   test:
     deps:
       - all
       - test-deps
     cmds:
-      - ./tasks/test/default
+      - unbuffer ./tasks/test/default
 
   test:circle-ci:
     deps:

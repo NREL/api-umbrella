@@ -95,6 +95,9 @@ if [ -f /etc/redhat-release ]; then
     tcl-devel
     unzip
     xz
+
+    # For "unbuffer" command for Taskfile.
+    expect
   )
   test_build_dependencies=(
     # Binary and readelf tests
@@ -220,6 +223,9 @@ elif [ -f /etc/debian_version ]; then
     unzip
     uuid-dev
     xz-utils
+
+    # For "unbuffer" command for Taskfile.
+    expect
   )
   test_build_dependencies=(
     # Binary and readelf tests
