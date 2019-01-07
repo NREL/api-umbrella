@@ -1,19 +1,12 @@
 local _M = {}
 
+local escape = require("pl.utils").escape
 local is_empty = require("pl.types").is_empty
 local iso8601_to_timestamp = require("api-umbrella.utils.time").iso8601_to_timestamp
 local json_null = require("cjson").null
-local plutils = require "pl.utils"
 local table_keys = require("pl.tablex").keys
 
-local escape = plutils.escape
 local gsub = ngx.re.gsub
-local is_empty = types.is_empty
-local split = plutils.split
-local strip = stringx.strip
-local table_keys = tablex.keys
-
-local _M = {}
 
 -- Append an array to the end of the destination array.
 --

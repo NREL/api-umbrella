@@ -1,8 +1,6 @@
 import Component from '@ember/component';
-import I18n from 'i18n-js';
 import { computed } from '@ember/object';
 import each from 'lodash-es/each';
-import inflection from 'inflection';
 import isArray from 'lodash-es/isArray';
 import marked from 'marked';
 import { t } from 'api-umbrella-admin-ui/utils/i18n';

@@ -3,7 +3,7 @@ require_relative "../../../test_helper"
 class Test::Apis::V1::Users::TestCreateWelcomeEmailSanitizedLinks < Minitest::Test
   include ApiUmbrellaTestHelpers::AdminAuth
   include ApiUmbrellaTestHelpers::Setup
-  include ApiUmbrellaTestHelpers::DelayedJob
+  include ApiUmbrellaTestHelpers::SentEmails
 
   def setup
     super
@@ -175,7 +175,7 @@ class Test::Apis::V1::Users::TestCreateWelcomeEmailSanitizedLinks < Minitest::Te
     }))
     assert_response_code(201, response)
 
-    messages = delayed_job_sent_messages
+    messages = sent_emails
     assert_equal(1, messages.length)
     messages.first
   end
