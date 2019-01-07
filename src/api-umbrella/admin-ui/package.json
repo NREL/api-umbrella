@@ -84,7 +84,7 @@
     "qunit-dom": "^0.8.0",
     "selectize": "~0.12.4",
     "timekeeper": "~2.1.2",
-    "tippy.js": "~3.3.0"
+    "tippy.js": "~3.4.0"
   },
   "engines": {
     "node": "6.* || 8.* || >= 10.*"
