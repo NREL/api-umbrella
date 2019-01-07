@@ -12,9 +12,9 @@ local incr_err
 WORKER_GROUP_ID, incr_err = ngx.shared.active_config:incr("worker_group_id", 1)
 if incr_err == "not found" then
   WORKER_GROUP_ID = 1
-  local success, set_err = ngx.shared.active_config:set("worker_group_id", 1)
-  if not success then
-    ngx.log(ngx.ERR, "worker_group_id set err: ", set_err)
+  local set_ok, set_err = ngx.shared.active_config:safe_set("worker_group_id", 1)
+  if not set_ok then
+    ngx.log(ngx.ERR, "failed to set 'worker_group_id' in 'active_config' shared dict: ", set_err)
     return
   end
 elseif incr_err then
@@ -23,4 +23,7 @@ end
 
 ngx.shared.stats:delete("distributed_last_fetched_at")
 ngx.shared.api_users:delete("last_fetched_at")
-ngx.shared.active_config:set("elasticsearch_templates_created", false)
+local set_ok, set_err = ngx.shared.active_config:safe_set("elasticsearch_templates_created", false)
+if not set_ok then
+  ngx.log(ngx.ERR, "failed to set 'elasticsearch_templates_created' in 'active_config' shared dict: ", set_err)
+end

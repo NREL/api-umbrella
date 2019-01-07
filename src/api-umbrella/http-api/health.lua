@@ -3,15 +3,12 @@ local elasticsearch_query = require("api-umbrella.utils.elasticsearch").query
 local http = require "resty.http"
 local json_encode = require "api-umbrella.utils.json_encode"
 
-local function status_response()
+local function status_response(quick)
   local response = {
     status = "red",
     details = {
       apis_config = "red",
       api_users = "red",
-      analytics_db = "red",
-      analytics_db_setup = "red",
-      web_app = "red",
     },
   }
 
@@ -24,6 +21,18 @@ local function status_response()
   if ngx.shared.api_users:get("last_fetched_version") then
     response["details"]["api_users"] = "green"
   end
+
+  if quick then
+    if response["details"]["apis_config"] == "green" and response["details"]["api_users"] == "green" then
+      response["status"] = "green"
+    end
+
+    return response
+  end
+
+  response["details"]["analytics_db"] = "red"
+  response["details"]["analytics_db_setup"] = "red"
+  response["details"]["web_app"] = "red"
 
   local httpc = http.new()
   httpc:set_timeout(3000)
@@ -84,8 +93,9 @@ end
 -- wait_for_status=yellow will return if the status is actually yellow.
 local response
 local wait_for_status = ngx.var.arg_wait_for_status
+local quick = ngx.var.arg_quick == "true"
 if not wait_for_status then
-  response = status_response()
+  response = status_response(quick)
 else
   -- Validate the wait_for_status param.
   if wait_for_status ~= "green" and wait_for_status ~= "yellow" and wait_for_status ~= "red" then
@@ -111,7 +121,7 @@ else
   -- Loop until the status is met or we timeout.
   local timeout_at = ngx.now() + wait_timeout
   while true do
-    response = status_response()
+    response = status_response(quick)
 
     -- Break out of loop if the status (or better) is met.
     local status = response["status"]

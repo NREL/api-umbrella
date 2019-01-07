@@ -50,7 +50,10 @@ function _M.create_templates()
     end
   end
 
-  ngx.shared.active_config:set("elasticsearch_templates_created", true)
+  local set_ok, set_err = ngx.shared.active_config:safe_set("elasticsearch_templates_created", true)
+  if not set_ok then
+    ngx.log(ngx.ERR, "failed to set 'elasticsearch_templates_created' in 'active_config' shared dict: ", set_err)
+  end
 end
 
 function _M.create_aliases()

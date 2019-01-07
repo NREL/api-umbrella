@@ -80,40 +80,55 @@ class Test::Proxy::TestHttpsRequirements < Minitest::Test
   end
 
   def test_default_required_return_error
-    assert_https_allowed("/#{unique_test_class_id}/default/hello")
+    assert_https_allowed_missing_key("/#{unique_test_class_id}/default/hello")
+    assert_https_allowed("/#{unique_test_class_id}/default/hello", self.api_key)
     assert_http_error("/#{unique_test_class_id}/default/hello")
+    assert_http_error("/#{unique_test_class_id}/default/hello", self.api_key)
   end
 
   def test_required_return_error
-    assert_https_allowed("/#{unique_test_class_id}/required_return_error/hello")
+    assert_https_allowed_missing_key("/#{unique_test_class_id}/required_return_error/hello")
+    assert_https_allowed("/#{unique_test_class_id}/required_return_error/hello", self.api_key)
     assert_http_error("/#{unique_test_class_id}/required_return_error/hello")
+    assert_http_error("/#{unique_test_class_id}/required_return_error/hello", self.api_key)
   end
 
-  def transition_return_error_user_created_before_transition_time
+  def test_transition_return_error_missing_key
+    assert_https_allowed_missing_key("/#{unique_test_class_id}/transition_return_error/hello")
+    assert_http_error("/#{unique_test_class_id}/transition_return_error/hello")
+  end
+
+  def test_transition_return_error_user_created_before_transition_time
     user = FactoryBot.create(:api_user, :created_at => Time.iso8601("2013-01-01T01:26:59Z"))
     assert_https_allowed("/#{unique_test_class_id}/transition_return_error/hello", user.api_key)
     assert_http_allowed("/#{unique_test_class_id}/transition_return_error/hello", user.api_key)
   end
 
-  def transition_return_error_user_created_after_transition_time
+  def test_transition_return_error_user_created_after_transition_time
     user = FactoryBot.create(:api_user, :created_at => Time.iso8601("2013-01-01T01:27:00Z"))
     assert_https_allowed("/#{unique_test_class_id}/transition_return_error/hello", user.api_key)
     assert_http_error("/#{unique_test_class_id}/transition_return_error/hello", user.api_key)
   end
 
   def test_optional
-    assert_https_allowed("/#{unique_test_class_id}/optional/hello")
-    assert_http_allowed("/#{unique_test_class_id}/optional/hello")
+    assert_https_allowed_missing_key("/#{unique_test_class_id}/optional/hello")
+    assert_https_allowed("/#{unique_test_class_id}/optional/hello", self.api_key)
+    assert_http_allowed_missing_key("/#{unique_test_class_id}/optional/hello")
+    assert_http_allowed("/#{unique_test_class_id}/optional/hello", self.api_key)
   end
 
   def test_sub_url_settings_inherits_parent_settings
-    assert_https_allowed("/#{unique_test_class_id}/optional/hello/sub-inherit/")
-    assert_http_allowed("/#{unique_test_class_id}/optional/hello/sub-inherit/")
+    assert_https_allowed_missing_key("/#{unique_test_class_id}/optional/hello/sub-inherit/")
+    assert_https_allowed("/#{unique_test_class_id}/optional/hello/sub-inherit/", self.api_key)
+    assert_http_allowed_missing_key("/#{unique_test_class_id}/optional/hello/sub-inherit/")
+    assert_http_allowed("/#{unique_test_class_id}/optional/hello/sub-inherit/", self.api_key)
   end
 
   def test_sub_url_settings_overrides_parent_settings
-    assert_https_allowed("/#{unique_test_class_id}/optional/hello/sub-required/")
+    assert_https_allowed_missing_key("/#{unique_test_class_id}/optional/hello/sub-required/")
+    assert_https_allowed("/#{unique_test_class_id}/optional/hello/sub-required/", self.api_key)
     assert_http_error("/#{unique_test_class_id}/optional/hello/sub-required/")
+    assert_http_error("/#{unique_test_class_id}/optional/hello/sub-required/", self.api_key)
   end
 
   def test_https_url_with_host_in_error_message
@@ -141,31 +156,43 @@ class Test::Proxy::TestHttpsRequirements < Minitest::Test
 
   private
 
+  def http_options_with_key(key = nil)
+    http_opts = keyless_http_options.deep_dup
+    if key
+      http_opts.merge!({
+        :headers => {
+          "X-Api-Key" => key || self.api_key,
+        },
+      })
+    end
+
+    http_opts
+  end
+
   def assert_https_allowed(path, key = nil)
-    response = Typhoeus.get("https://127.0.0.1:9081#{path}", http_options.deep_merge({
-      :headers => {
-        "X-Api-Key" => key || self.api_key,
-      },
-    }))
+    response = Typhoeus.get("https://127.0.0.1:9081#{path}", http_options_with_key(key))
     assert_response_code(200, response)
+  end
+
+  def assert_https_allowed_missing_key(path, key = nil)
+    response = Typhoeus.get("https://127.0.0.1:9081#{path}", http_options_with_key(key))
+    assert_response_code(403, response)
+    assert_match("API_KEY_MISSING", response.body)
   end
 
   def assert_http_allowed(path, key = nil)
-    response = Typhoeus.get("http://127.0.0.1:9080#{path}", http_options.deep_merge({
-      :headers => {
-        "X-Api-Key" => key || self.api_key,
-      },
-    }))
-
+    response = Typhoeus.get("http://127.0.0.1:9080#{path}", http_options_with_key(key))
     assert_response_code(200, response)
   end
 
+  def assert_http_allowed_missing_key(path, key = nil)
+    response = Typhoeus.get("http://127.0.0.1:9080#{path}", http_options_with_key(key))
+    assert_response_code(403, response)
+    assert_match("API_KEY_MISSING", response.body)
+  end
+
   def assert_http_error(path, key = nil)
-    response = Typhoeus.get("http://127.0.0.1:9080#{path}", http_options.deep_merge({
-      :headers => {
-        "X-Api-Key" => key || self.api_key,
-      },
-    }))
+    response = Typhoeus.get("http://127.0.0.1:9080#{path}", http_options_with_key(key))
     assert_response_code(400, response)
     assert_match("HTTPS_REQUIRED", response.body)
     assert_match("https://127.0.0.1:9081#{path}", response.body)

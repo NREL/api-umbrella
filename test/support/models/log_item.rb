@@ -72,6 +72,7 @@ class LogItem
     loop do
       hits = result["hits"]["hits"]
       break if hits.empty?
+
       hits.each do |hit|
         bulk_request << { :delete => { :_index => hit["_index"], :_type => hit["_type"], :_id => hit["_id"] } }
       end

@@ -17,15 +17,15 @@ export default Component.extend({
 
   bufferedModel: computed('model', function() {
     let owner = getOwner(this).ownerInjection();
-    return BufferedProxy.extend(Server.validationClass).create(owner, { content: this.get('model') });
+    return BufferedProxy.extend(Server.validationClass).create(owner, { content: this.model });
   }),
 
   actions: {
     open() {
       // For new servers, intelligently pick the default port based on the
       // backend protocol selected.
-      if(this.get('bufferedModel') && !this.get('bufferedModel.port')) {
-        if(this.get('apiBackendProtocol') === 'https') {
+      if(this.bufferedModel && !this.get('bufferedModel.port')) {
+        if(this.apiBackendProtocol === 'https') {
           this.set('bufferedModel.port', 443);
         } else {
           this.set('bufferedModel.port', 80);
@@ -34,15 +34,15 @@ export default Component.extend({
     },
 
     submit() {
-      this.get('bufferedModel').applyChanges();
+      this.bufferedModel.applyChanges();
       if(this.get('model.isNew')) {
-        this.get('collection').pushObject(this.get('model'));
+        this.collection.pushObject(this.model);
       }
 
       // After the first server is added, fill out a default value for the
       // "Backend Host" field based on the server's host (because in most
       // non-load balancing situations they will match).
-      if(!this.get('apiBackendHost')) {
+      if(!this.apiBackendHost) {
         let server = this.get('collection.firstObject');
         if(server && server.get('host')) {
           this.set('apiBackendHost', server.get('host'));
@@ -53,7 +53,7 @@ export default Component.extend({
     },
 
     closed() {
-      this.get('bufferedModel').discardChanges();
+      this.bufferedModel.discardChanges();
       this.set('openModal', false);
     },
   },

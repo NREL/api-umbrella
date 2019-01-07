@@ -21,7 +21,7 @@ class Test::AdminUi::TestApiUsersWelcomeEmail < Minitest::Capybara::Test
     fill_in "E-mail", :with => "example@example.com"
     fill_in "First Name", :with => "John"
     fill_in "Last Name", :with => "Doe"
-    check "User agrees to the terms and conditions"
+    label_check "User agrees to the terms and conditions", :click => { :x => 0, :y => 0 }
     click_button("Save")
     assert_text("Successfully saved the user")
 
@@ -35,7 +35,7 @@ class Test::AdminUi::TestApiUsersWelcomeEmail < Minitest::Capybara::Test
     fill_in "E-mail", :with => "example@example.com"
     fill_in "First Name", :with => "John"
     fill_in "Last Name", :with => "Doe"
-    check "User agrees to the terms and conditions"
+    label_check "User agrees to the terms and conditions", :click => { :x => 0, :y => 0 }
     check "Send user welcome e-mail with API key information"
     click_button("Save")
     assert_text("Successfully saved the user")

@@ -1,5 +1,6 @@
 import Component from '@ember/component';
 import DataTablesHelpers from 'api-umbrella-admin-ui/utils/data-tables-helpers';
+import escape from 'lodash-es/escape';
 
 export default Component.extend({
   didInsertElement() {
@@ -13,14 +14,14 @@ export default Component.extend({
           data: 'email',
           title: 'E-mail',
           defaultContent: '-',
-          render: _.bind(function(email, type, data) {
+          render: (email, type, data) => {
             if(type === 'display' && email && email !== '-') {
               let link = '#/api_users/' + data.id + '/edit';
-              return '<a href="' + link + '">' + _.escape(email) + '</a>';
+              return '<a href="' + link + '">' + escape(email) + '</a>';
             }
 
             return email;
-          }, this),
+          },
         },
         {
           data: 'first_name',

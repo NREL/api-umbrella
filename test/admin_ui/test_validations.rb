@@ -23,7 +23,7 @@ class Test::AdminUi::TestValidations < Minitest::Capybara::Test
 
     # Inline messages
     refute_selector(".has-error")
-    refute_selector(".with-errors")
+    refute_selector(".invalid-feedback")
 
     # Trigger validations with save of empty form.
     click_button("Save")
@@ -44,7 +44,7 @@ class Test::AdminUi::TestValidations < Minitest::Capybara::Test
 
     # Inline messages
     assert_selector(".has-error", :count => 3)
-    assert_selector(".with-errors", :count => 3)
+    assert_selector(".invalid-feedback", :count => 3)
   end
 
   def test_inline_client_side_validations_on_blur
@@ -52,12 +52,13 @@ class Test::AdminUi::TestValidations < Minitest::Capybara::Test
     visit "/admin/#/api_users/new"
 
     refute_selector(".has-error")
-    refute_selector(".with-errors")
+    refute_selector(".invalid-feedback")
 
-    find_field("E-mail").trigger("blur")
+    id = find_field("E-mail")[:id]
+    page.execute_script("document.getElementById('#{id}').focus(); document.getElementById('#{id}').blur()")
 
     assert_selector(".has-error", :count => 1)
-    assert_selector(".with-errors", :count => 1)
+    assert_selector(".invalid-feedback", :count => 1)
   end
 
   def test_server_side_validations
@@ -74,7 +75,7 @@ class Test::AdminUi::TestValidations < Minitest::Capybara::Test
 
     # Inline messages
     refute_selector(".has-error")
-    refute_selector(".with-errors")
+    refute_selector(".invalid-feedback")
 
     # Trigger validations with save of filled out (but invalid) form.
     fill_in "E-mail", :with => "invalid"
@@ -96,7 +97,7 @@ class Test::AdminUi::TestValidations < Minitest::Capybara::Test
 
     # Inline messages
     refute_selector(".has-error")
-    refute_selector(".with-errors")
+    refute_selector(".invalid-feedback")
   end
 
   def test_i18n_client_side

@@ -1,70 +1,63 @@
 {{#if session.isAuthenticated}}
-  <nav class="navbar navbar-default navbar-fixed-top">
-    <div class="container-fluid">
-      <div class="navbar-header">
-        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
-          <span class="sr-only">Toggle navigation</span>
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-        </button>
-        <span class="navbar-brand" href="#">API Umbrella</span>
-      </div>
-      <div class="collapse navbar-collapse">
-        <ul class="nav navbar-nav">
-          {{#if currentAdmin.permissions.analytics}}
-            <li class="dropdown nav-analytics">
-              <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">{{t "Analytics"}} <span class="caret"></span></a>
-              <ul class="dropdown-menu">
-                <li>{{#link-to "stats.drilldown"}}<i class="fa fa-sitemap" aria-hidden="true"></i> {{t "API Drilldown"}}{{/link-to}}</li>
-                <li>{{#link-to "stats.logs"}}<i class="fa fa-signal" aria-hidden="true"></i> {{t "Filter Logs"}}{{/link-to}}</li>
-                <li>{{#link-to "stats.users"}}<i class="fa fa-user" aria-hidden="true"></i> {{t "By Users"}}{{/link-to}}</li>
-                <li>{{#link-to "stats.map"}}<i class="fa fa-map-marker" aria-hidden="true"></i> {{t "By Location"}}{{/link-to}}</li>
-              </ul>
-            </li>
-          {{/if}}
-          {{#if (or currentAdmin.permissions.user_view currentAdmin.permissions.admin_manage)}}
-            <li class="dropdown nav-users">
-              <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">{{t "Users"}} <span class="caret"></span></a>
-              <ul class="dropdown-menu">
-                {{#if currentAdmin.permissions.user_view}}
-                  <li>{{#link-to "api_users"}}<i class="fa fa-user" aria-hidden="true"></i> {{t "API Users"}}{{/link-to}}</li>
-                {{/if}}
-                {{#if currentAdmin.permissions.admin_manage}}
-                  <li>{{#link-to "admins"}}<i class="fa fa-user" aria-hidden="true"></i> {{t "Admin Accounts"}}{{/link-to}}</li>
-                  <li role="separator" class="divider"></li>
-                  <li role="presentation" class="dropdown-header"> {{t "Permissions Management"}}</li>
-                  <li>{{#link-to "api_scopes"}}<i class="fa fa-lock" aria-hidden="true"></i> {{t "API Scopes"}}{{/link-to}}</li>
-                  <li>{{#link-to "admin_groups"}}<i class="fa fa-group" aria-hidden="true"></i> {{t "Admin Groups"}}{{/link-to}}</li>
-                {{/if}}
-              </ul>
-            </li>
-          {{/if}}
-          {{#if (or currentAdmin.permissions.backend_manage currentAdmin.permissions.backend_publish)}}
-            <li class="dropdown nav-config">
-              <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">{{t "Configuration"}} <span class="caret"></span></a>
-              <ul class="dropdown-menu">
-                {{#if currentAdmin.permissions.backend_manage}}
-                  <li>{{#link-to "apis"}}<i class="fa fa-gear" aria-hidden="true"></i> {{t "API Backends"}}{{/link-to}}</li>
-                  <li>{{#link-to "website_backends"}}<i class="fa fa-gear" aria-hidden="true"></i> {{t "Website Backends"}}{{/link-to}}</li>
-                {{/if}}
-                {{#if currentAdmin.permissions.backend_publish}}
-                  <li>{{#link-to "config.publish"}}<i class="fa fa-upload" aria-hidden="true"></i> {{t "Publish Changes"}}{{/link-to}}</li>
-                {{/if}}
-              </ul>
-            </li>
-          {{/if}}
-        </ul>
-        <ul class="nav navbar-nav navbar-right">
-          <li class="dropdown">
-            <a href="#" id="nav_gear_menu" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fa fa-gear" aria-hidden="true"></i> <span class="caret"></span></a>
-            <ul class="dropdown-menu">
-              <li>{{#link-to "admins.edit" session.data.authenticated.admin.id id="my_account_nav_link"}}{{t "My Account"}}{{/link-to}}</li>
-              <li><a href="#" {{action "logout"}}>{{t "Sign out"}}</a></li>
-            </ul>
+  <nav class="navbar navbar-expand-md fixed-top navbar-dark bg-dark">
+    <span class="navbar-brand">API Umbrella</span>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+      <ul class="navbar-nav mr-auto">
+        {{#if currentAdmin.permissions.analytics}}
+          <li class="nav-item dropdown nav-analytics">
+            <a href="#" class="nav-link dropdown-toggle" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">{{t "Analytics"}}</a>
+            <div class="dropdown-menu">
+              {{#link-to "stats.drilldown" class="dropdown-item"}}{{fa-icon "sitemap" fixedWidth=true}} {{t "API Drilldown"}}{{/link-to}}
+              {{#link-to "stats.logs" class="dropdown-item"}}{{fa-icon "signal" fixedWidth=true}} {{t "Filter Logs"}}{{/link-to}}
+              {{#link-to "stats.users" class="dropdown-item"}}{{fa-icon "user" fixedWidth=true}} {{t "By Users"}}{{/link-to}}
+              {{#link-to "stats.map" class="dropdown-item"}}{{fa-icon "map-marker-alt" fixedWidth=true}} {{t "By Location"}}{{/link-to}}
+            </div>
           </li>
-        </ul>
-      </div>
+        {{/if}}
+        {{#if (or currentAdmin.permissions.user_view currentAdmin.permissions.admin_manage)}}
+          <li class="nav-item dropdown nav-users">
+            <a href="#" class="nav-link dropdown-toggle" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">{{t "Users"}}</a>
+            <div class="dropdown-menu">
+              {{#if currentAdmin.permissions.user_view}}
+                {{#link-to "api_users" class="dropdown-item"}}{{fa-icon "user" fixedWidth=true}} {{t "API Users"}}{{/link-to}}
+              {{/if}}
+              {{#if currentAdmin.permissions.admin_manage}}
+                {{#link-to "admins" class="dropdown-item"}}{{fa-icon "user" fixedWidth=true}} {{t "Admin Accounts"}}{{/link-to}}
+                <div class="dropdown-divider"></div>
+                <div role="presentation" class="dropdown-header"> {{t "Permissions Management"}}</div>
+                {{#link-to "api_scopes" class="dropdown-item"}}{{fa-icon "lock" fixedWidth=true}} {{t "API Scopes"}}{{/link-to}}
+                {{#link-to "admin_groups" class="dropdown-item"}}{{fa-icon "users" fixedWidth=true}} {{t "Admin Groups"}}{{/link-to}}
+              {{/if}}
+            </div>
+          </li>
+        {{/if}}
+        {{#if (or currentAdmin.permissions.backend_manage currentAdmin.permissions.backend_publish)}}
+          <li class="nav-item dropdown nav-config">
+            <a href="#" class="nav-link dropdown-toggle" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">{{t "Configuration"}}</a>
+            <div class="dropdown-menu">
+              {{#if currentAdmin.permissions.backend_manage}}
+                {{#link-to "apis" class="dropdown-item"}}{{fa-icon "cog" fixedWidth=true}} {{t "API Backends"}}{{/link-to}}
+                {{#link-to "website_backends" class="dropdown-item"}}{{fa-icon "cog" fixedWidth=true}} {{t "Website Backends"}}{{/link-to}}
+              {{/if}}
+              {{#if currentAdmin.permissions.backend_publish}}
+                {{#link-to "config.publish" class="dropdown-item"}}{{fa-icon "upload" fixedWidth=true}} {{t "Publish Changes"}}{{/link-to}}
+              {{/if}}
+            </div>
+          </li>
+        {{/if}}
+      </ul>
+      <ul class="navbar-nav">
+        <li class="nav-item dropdown">
+          <a href="#" id="nav_gear_menu" class="nav-link dropdown-toggle" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">{{fa-icon "cog" fixedWidth=true}}</a>
+          <div class="dropdown-menu dropdown-menu-right">
+            {{#link-to "admins.edit" session.data.authenticated.admin.id class="dropdown-item" id="my_account_nav_link"}}{{t "My Account"}}{{/link-to}}
+            <a href="#" class="dropdown-item" {{action "logout"}}>{{t "Sign out"}}</a>
+          </div>
+        </li>
+      </ul>
     </div>
   </nav>
 

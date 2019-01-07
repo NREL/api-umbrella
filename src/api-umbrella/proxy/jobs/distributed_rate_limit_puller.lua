@@ -3,16 +3,12 @@ local _M = {}
 local int64 = require "api-umbrella.utils.int64"
 local interval_lock = require "api-umbrella.utils.interval_lock"
 local pg_utils = require "api-umbrella.utils.pg_utils"
-local utils = require "api-umbrella.proxy.utils"
-
-local get_packed = utils.get_packed
-local set_packed = utils.set_packed
 
 local delay = 0.25  -- in seconds
 
 local function do_check()
   local current_fetch_time = ngx.now()
-  local last_fetched_version = get_packed(ngx.shared.stats, "distributed_last_fetched_version") or int64.MIN_VALUE_STRING
+  local last_fetched_version = ngx.shared.stats:get("distributed_last_fetched_version") or int64.MIN_VALUE_STRING
 
   -- Find any rate limit counters modified since the last poll.
   --
@@ -44,9 +40,11 @@ local function do_check()
           ttl = 3600
         end
 
-        local _, set_err = ngx.shared.stats:set(key, tonumber(distributed_count), ttl)
-        if set_err then
-          ngx.log(ngx.ERR, "failed to set rate limit key: ", set_err)
+        local set_ok, set_err, set_forcible = ngx.shared.stats:set(key, tonumber(distributed_count), ttl)
+        if not set_ok then
+          ngx.log(ngx.ERR, "failed to set rate limit key in 'stats' shared dict: ", set_err)
+        elseif set_forcible then
+          ngx.log(ngx.WARN, "forcibly set rate limit key in 'stats' shared dict (shared dict may be too small)")
         end
       end
     elseif distributed_count > local_count then
@@ -58,8 +56,19 @@ local function do_check()
     end
   end
 
-  set_packed(ngx.shared.stats, "distributed_last_fetched_version", last_fetched_version)
-  ngx.shared.stats:set("distributed_last_pulled_at", current_fetch_time * 1000)
+  local set_ok, set_err, set_forcible = ngx.shared.stats:set("distributed_last_fetched_version", last_fetched_version)
+  if not set_ok then
+    ngx.log(ngx.ERR, "failed to set 'distributed_last_fetched_version' in 'stats' shared dict: ", set_err)
+  elseif set_forcible then
+    ngx.log(ngx.WARN, "forcibly set 'distributed_last_fetched_version' in 'stats' shared dict (shared dict may be too small)")
+  end
+
+  local set_ok, set_err, set_forcible = ngx.shared.stats:set("distributed_last_pulled_at", current_fetch_time * 1000)
+  if not set_ok then
+    ngx.log(ngx.ERR, "failed to set 'distributed_last_pulled_at' in 'stats' shared dict: ", set_err)
+  elseif set_forcible then
+    ngx.log(ngx.WARN, "forcibly set 'distributed_last_pulled_at' in 'stats' shared dict (shared dict may be too small)")
+  end
 end
 
 function _M.spawn()

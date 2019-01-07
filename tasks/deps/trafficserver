@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 
-trafficserver_version="7.1.3"
-trafficserver_hash="1ddb23a1c0564929d2246ff3cd97595a9d0b1891736a9d0ef8ca56f52a7b86159b657bbc22f2e64aaccee13009ceff2a47c92b8b25121d65c7ccfdedf8b084ea"
+trafficserver_version="7.1.4"
+trafficserver_hash="117fec0c48fb47ed841a8931703e440800ca0eac6817a258893a1c629181bc4355a84c0f0bb1b45207fa8e5aa75a0e63f1013a34095656c96e2ba6aa528b16bc"
 
 set -e -u -x
 source ./tasks/helpers.sh
 
 task_working_dir
-download "http://mirror.olnevhost.net/pub/apache/trafficserver/trafficserver-$trafficserver_version.tar.bz2" "sha512" "$trafficserver_hash"
+download "http://apache.mirrors.pair.com/trafficserver/trafficserver-$trafficserver_version.tar.bz2" "sha512" "$trafficserver_hash"
 extract_download "trafficserver-$trafficserver_version.tar.bz2"
 
 cd "trafficserver-$trafficserver_version"

@@ -42,9 +42,8 @@ class Test::AdminUi::TestRoles < Minitest::Capybara::Test
     fill_in "E-mail", :with => "#{unique_test_id}@example.com"
     fill_in "First Name", :with => "John"
     fill_in "Last Name", :with => "Doe"
-    check "User agrees to the terms and conditions"
-    find(".selectize-input input").set("test-new-role")
-    find(".selectize-dropdown-content div", :text => /Add test-new-role/).click
+    label_check "User agrees to the terms and conditions", :click => { :x => 0, :y => 0 }
+    selectize_add "Roles", "test-new-role"
     click_button("Save")
 
     assert_text("Successfully saved the user")
@@ -68,9 +67,8 @@ class Test::AdminUi::TestRoles < Minitest::Capybara::Test
     fill_in "E-mail", :with => "#{unique_test_id}@example.com"
     fill_in "First Name", :with => "John"
     fill_in "Last Name", :with => "Doe"
-    check "User agrees to the terms and conditions"
-    find(".selectize-input input").set("test-new-user-role")
-    find(".selectize-dropdown-content div", :text => /Add test-new-user-role/).click
+    label_check "User agrees to the terms and conditions", :click => { :x => 0, :y => 0 }
+    selectize_add "Roles", "test-new-user-role"
     click_button("Save")
 
     assert_text("Successfully saved the user")
@@ -87,7 +85,7 @@ class Test::AdminUi::TestRoles < Minitest::Capybara::Test
 
     find("a", :text => /Sub-URL Request Settings/).click
     find("button", :text => /Add URL Settings/).click
-    find(".modal .selectize-input").click
+    find(".modal-content .selectize-input").click
     assert_text("test-new-user-role")
   end
 
@@ -99,10 +97,9 @@ class Test::AdminUi::TestRoles < Minitest::Capybara::Test
     visit "/admin/#/api_users/#{user.id}/edit"
     assert_text("Edit API User")
 
-    field = find_field("Roles")
-    assert_selector("#" + field["data-selectize-control-id"], :text => "test-role1×test-role2×")
-    find("#" + field["data-selectize-control-id"] + " [data-value=test-role1] .remove").click
-    assert_selector("#" + field["data-selectize-control-id"], :text => "test-role2×")
+    assert_selectize_field("Roles", :with => "test-role1,test-role2")
+    selectize_remove "Roles", "test-role1"
+    assert_selectize_field("Roles", :with => "test-role2")
 
     click_button("Save")
     assert_text("Successfully saved")
@@ -115,10 +112,9 @@ class Test::AdminUi::TestRoles < Minitest::Capybara::Test
     visit "/admin/#/api_users/#{user.id}/edit"
     assert_text("Edit API User")
 
-    field = find_field("Roles")
-    assert_selector("#" + field["data-selectize-control-id"], :text => "test-role2×")
-    find("#" + field["data-selectize-control-id"] + " [data-value=test-role2] .remove").click
-    assert_selector("#" + field["data-selectize-control-id"], :text => "")
+    assert_selectize_field("Roles", :with => "test-role2")
+    selectize_remove "Roles", "test-role2"
+    assert_selectize_field("Roles", :with => "")
 
     click_button("Save")
     assert_text("Successfully saved")
@@ -140,10 +136,9 @@ class Test::AdminUi::TestRoles < Minitest::Capybara::Test
     assert_text("Edit API")
 
     find("legend a", :text => /Global Request Settings/).click
-    field = find_field("Required Roles")
-    assert_selector("#" + field["data-selectize-control-id"], :text => "test-role1×test-role2×")
-    find("#" + field["data-selectize-control-id"] + " [data-value=test-role1] .remove").click
-    assert_selector("#" + field["data-selectize-control-id"], :text => "test-role2×")
+    assert_selectize_field("Required Roles", :with => "test-role1,test-role2")
+    selectize_remove "Required Roles", "test-role1"
+    assert_selectize_field("Required Roles", :with => "test-role2")
 
     click_button("Save")
     assert_text("Successfully saved")
@@ -157,10 +152,9 @@ class Test::AdminUi::TestRoles < Minitest::Capybara::Test
     assert_text("Edit API")
 
     find("legend a", :text => /Global Request Settings/).click
-    field = find_field("Required Roles")
-    assert_selector("#" + field["data-selectize-control-id"], :text => "test-role2×")
-    find("#" + field["data-selectize-control-id"] + " [data-value=test-role2] .remove").click
-    assert_selector("#" + field["data-selectize-control-id"], :text => "")
+    assert_selectize_field("Required Roles", :with => "test-role2")
+    selectize_remove "Required Roles", "test-role2"
+    assert_selectize_field("Required Roles", :with => "")
 
     click_button("Save")
     assert_text("Successfully saved")

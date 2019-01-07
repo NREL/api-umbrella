@@ -1,6 +1,7 @@
 import { buildValidations, validator } from 'ember-cp-validations';
 
 import DS from 'ember-data';
+import compact from 'lodash-es/compact';
 import { computed } from '@ember/object';
 import { t } from 'api-umbrella-admin-ui/utils/i18n';
 
@@ -52,19 +53,19 @@ export default DS.Model.extend(Validations, {
   },
 
   setDefaults() {
-    if(this.get('throttleByIp') === undefined) {
+    if(this.throttleByIp === undefined) {
       this.set('throttleByIp', false);
     }
 
-    if(this.get('enabled') === undefined) {
+    if(this.enabled === undefined) {
       this.set('enabled', true);
     }
 
-    if(!this.get('settings')) {
-      this.set('settings', this.get('store').createRecord('api/settings'));
+    if(!this.settings) {
+      this.set('settings', this.store.createRecord('api/settings'));
     }
 
-    if(!this.get('registrationSource') && this.get('isNew')) {
+    if(!this.registrationSource && this.isNew) {
       this.set('registrationSource', 'web_admin');
     }
   },
@@ -72,13 +73,13 @@ export default DS.Model.extend(Validations, {
   rolesString: computed('roles', {
     get() {
       let rolesString = '';
-      if(this.get('roles')) {
-        rolesString = this.get('roles').join(',');
+      if(this.roles) {
+        rolesString = this.roles.join(',');
       }
       return rolesString;
     },
     set(key, value) {
-      let roles = _.compact(value.split(','));
+      let roles = compact(value.split(','));
       if(roles.length === 0) { roles = null; }
       this.set('roles', roles);
       return value;

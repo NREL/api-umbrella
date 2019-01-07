@@ -1,13 +1,17 @@
-local cmsgpack = require "cmsgpack"
+local _M = {}
+
 local is_empty = require("pl.types").is_empty
 local iso8601_to_timestamp = require("api-umbrella.utils.time").iso8601_to_timestamp
+local json_null = require("cjson").null
 local plutils = require "pl.utils"
 local table_keys = require("pl.tablex").keys
 
 local escape = plutils.escape
 local gsub = ngx.re.gsub
-local pack = cmsgpack.pack
-local unpack = cmsgpack.unpack
+local is_empty = types.is_empty
+local split = plutils.split
+local strip = stringx.strip
+local table_keys = tablex.keys
 
 local _M = {}
 
@@ -43,15 +47,18 @@ function _M.base_url()
   return base
 end
 
-function _M.get_packed(dict, key)
-  local packed = dict:get(key)
-  if packed then
-    return unpack(packed)
-  end
-end
+function _M.pick_where_present(dict, keys)
+  local selected = {}
 
-function _M.set_packed(dict, key, value)
-  return dict:set(key, pack(value))
+  if type(dict) == "table" and type(keys) == "table" then
+    for _, key in ipairs(keys) do
+      if dict[key] and dict[key] ~= false and dict[key] ~= json_null and not is_empty(dict[key]) then
+        selected[key] = dict[key]
+      end
+    end
+  end
+
+  return selected
 end
 
 function _M.cache_computed_settings(settings)

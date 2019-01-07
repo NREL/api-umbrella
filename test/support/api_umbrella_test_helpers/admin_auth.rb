@@ -1,4 +1,5 @@
 require "securerandom"
+require "support/api_umbrella_test_helpers/selenium"
 
 module ApiUmbrellaTestHelpers
   module AdminAuth
@@ -7,10 +8,11 @@ module ApiUmbrellaTestHelpers
     # a hard-coded user agent when we're pre-seeding the session cookie value.
     STATIC_USER_AGENT = "Test - Static user agent for session user agent checks".freeze
 
+    include ApiUmbrellaTestHelpers::Selenium
+
     def admin_login(admin = nil)
       Capybara.reset_session!
-      page.driver.clear_memory_cache
-      page.driver.set_cookie("_api_umbrella_session", encrypt_session_cookie(admin_session_data(admin)))
+      selenium_add_cookie("_api_umbrella_session", encrypt_session_cookie(admin_session_data(admin)))
       page.driver.add_headers("User-Agent" => STATIC_USER_AGENT)
 
       visit "/admin/login"

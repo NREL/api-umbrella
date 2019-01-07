@@ -1,6 +1,7 @@
 import $ from 'jquery';
 import Component from '@ember/component';
-import echarts from 'npm:echarts';
+import debounce from 'lodash-es/debounce';
+import echarts from 'echarts/lib/echarts';
 import { observer } from '@ember/object';
 import { on } from '@ember/object/evented';
 
@@ -15,7 +16,7 @@ export default Component.extend({
     this.chart = echarts.init(this.$()[0], 'api-umbrella-theme');
     this.draw();
 
-    $(window).on('resize', _.debounce(this.chart.resize, 100));
+    $(window).on('resize', debounce(this.chart.resize, 100));
   },
 
   // eslint-disable-next-line ember/no-on-calls-in-components
@@ -23,7 +24,7 @@ export default Component.extend({
     let data = []
     let labels = [];
 
-    let hits = this.get('hitsOverTime');
+    let hits = this.hitsOverTime;
     for(let i = 1; i < hits.cols.length; i++) {
       data.push({
         name: hits.cols[i].label,
@@ -59,7 +60,7 @@ export default Component.extend({
   })),
 
   draw() {
-    if(!this.chart || !this.get('chartData')) {
+    if(!this.chart || !this.chartData) {
       return;
     }
 
@@ -101,9 +102,9 @@ export default Component.extend({
       xAxis: {
         type: 'category',
         boundaryGap: false,
-        data: this.get('chartLabels'),
+        data: this.chartLabels,
       },
-      series: this.get('chartData'),
+      series: this.chartData,
       title: {
         show: false,
       },

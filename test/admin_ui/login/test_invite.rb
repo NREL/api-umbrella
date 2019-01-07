@@ -21,14 +21,13 @@ class Test::AdminUi::Login::TestInvite < Minitest::Capybara::Test
     visit "/admin/#/admins/new"
     assert_text("Add Admin")
     fill_in "Email", :with => "#{unique_test_id}@example.com"
-    assert_checked_field("Send invite email")
+    assert_equal(true, find_field("Send invite email", :visible => :all).checked?)
     check "Superuser"
     click_button "Save"
     assert_text("Successfully saved the admin")
 
     # Logout
     ::Capybara.reset_session!
-    page.driver.clear_memory_cache
 
     # Find admin record
     admin = Admin.where(:username => "#{unique_test_id.downcase}@example.com").first
@@ -67,7 +66,7 @@ class Test::AdminUi::Login::TestInvite < Minitest::Capybara::Test
     visit "/admin/#/admins/new"
     assert_text("Add Admin")
     fill_in "Email", :with => "#{unique_test_id}@example.com"
-    uncheck "Send invite email"
+    label_uncheck "Send invite email"
     check "Superuser"
     click_button "Save"
     assert_text("Successfully saved the admin")
@@ -89,8 +88,9 @@ class Test::AdminUi::Login::TestInvite < Minitest::Capybara::Test
     # Ensure edits don't resend invites by default.
     visit "/admin/#/admins/#{admin.id}/edit"
     assert_text("Edit Admin")
+    assert_field("Email", :with => admin.email)
     fill_in "Notes", :with => "Foo"
-    assert_equal(false, find_field("Resend invite email").checked?)
+    assert_equal(false, find_field("Resend invite email", :visible => :all).checked?)
     click_button "Save"
     assert_text("Successfully saved the admin")
     page.execute_script("window.PNotifyRemoveAll()")
@@ -102,9 +102,10 @@ class Test::AdminUi::Login::TestInvite < Minitest::Capybara::Test
     # Force the invite to be resent.
     visit "/admin/#/admins/#{admin.id}/edit"
     assert_text("Edit Admin")
+    assert_field("Email", :with => admin.email)
     fill_in "Notes", :with => "Bar"
-    assert_equal(false, find_field("Resend invite email").checked?)
-    check "Resend invite email"
+    assert_equal(false, find_field("Resend invite email", :visible => :all).checked?)
+    label_check "Resend invite email"
     click_button "Save"
     assert_text("Successfully saved the admin")
     page.execute_script("window.PNotifyRemoveAll()")
@@ -118,6 +119,8 @@ class Test::AdminUi::Login::TestInvite < Minitest::Capybara::Test
 
     admin.update(:current_sign_in_at => Time.now.utc)
     visit "/admin/#/admins/#{admin.id}/edit"
-    refute_field("Resend invite email")
+    assert_text("Edit Admin")
+    assert_field("Email", :with => admin.email)
+    refute_field("Resend invite email", :visible => :all)
   end
 end

@@ -68,6 +68,9 @@ Layout/IndentArray:
 Layout/IndentHash:
   EnforcedStyle: consistent
 
+Layout/MultilineOperationIndentation:
+  EnforcedStyle: indented
+
 Layout/SpaceAroundKeyword:
   Enabled: false
 

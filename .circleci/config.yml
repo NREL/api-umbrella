@@ -4,9 +4,8 @@ jobs:
     parallelism: 3
     working_directory: /app
     docker:
-      - image: ubuntu:16.04
-    environment:
-      CACHE_VERSION: v1
+      - image: circleci/buildpack-deps:16.04-browsers
+        user: root
     steps:
       - checkout
       # Install any system package dependencies.

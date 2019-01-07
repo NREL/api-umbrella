@@ -6,7 +6,7 @@ export default Route.extend(AuthenticatedRouteMixin, {
   setupController(controller, model) {
     controller.set('model', model);
 
-    $('ul.nav li').removeClass('active');
-    $('ul.nav li.nav-config').addClass('active');
+    $('ul.navbar-nav li').removeClass('active');
+    $('ul.navbar-nav li.nav-config').addClass('active');
   },
 });

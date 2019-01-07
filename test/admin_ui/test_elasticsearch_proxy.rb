@@ -26,25 +26,27 @@ class Test::AdminUi::TestElasticsearchProxy < Minitest::Capybara::Test
     admin_login(FactoryBot.create(:limited_admin))
 
     visit "/admin/elasticsearch"
-    assert_equal(404, page.status_code)
+    assert_text("Forbidden")
+    refute_text('"lucene_version"')
 
     visit "/admin/elasticsearch/_search"
-    assert_equal(404, page.status_code)
+    assert_text("Forbidden")
+    refute_text('"hits"')
   end
 
   def test_not_found_for_superuser_admins
     admin_login
 
     visit "/admin/elasticsearch"
-    assert_equal(404, page.status_code)
+    assert_text('"lucene_version"')
 
     visit "/admin/elasticsearch/_search"
-    assert_equal(404, page.status_code)
+    assert_text('"hits"')
 
     # Redirect rewriting
     response = Typhoeus.get("https://127.0.0.1:9081/admin/elasticsearch/_plugin/foobar", keyless_http_options.deep_merge({
       :headers => {
-        "Cookie" => "_api_umbrella_session=#{page.driver.cookies["_api_umbrella_session"].value}",
+        "Cookie" => "_api_umbrella_session=#{selenium_cookie_named("_api_umbrella_session").fetch(:value)}",
       },
     }))
     assert_response_code(404, response)

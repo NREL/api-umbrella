@@ -1,4 +1,5 @@
 import { helper } from '@ember/component/helper';
+import inflection from 'inflection';
 
 export function inflect(params) {
   let word = params[0];

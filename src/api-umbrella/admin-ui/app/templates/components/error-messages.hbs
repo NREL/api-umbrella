@@ -4,7 +4,7 @@
       <h4>Oops! Please check the errors below:</h4>
       <ul>
         {{#each messages as |message|}}
-          <li>{{{message}}}</li>
+          <li>{{! template-lint-disable no-bare-strings no-triple-curlies }}{{{message}}}</li>
         {{/each}}
       </ul>
     </div>

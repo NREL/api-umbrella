@@ -127,32 +127,51 @@ module ApiUmbrellaTestHelpers
       end_at = Date.parse(end_at)
 
       assert_text("#{start_at.strftime("%b %e, %Y")} - #{end_at.strftime("%b %e, %Y")}")
-      find("#reportrange a").click
+      find("#reportrange button").click
       assert_selector(".daterangepicker")
       within(".daterangepicker") do
         assert_selector(".ranges li.active", :text => range_label)
         if(range_label == "Custom Range")
-          assert_selector(".calendar", :visible => :visible)
-          assert_field("daterangepicker_start", :with => start_at.strftime("%m/%d/%Y"))
-          assert_field("daterangepicker_end", :with => end_at.strftime("%m/%d/%Y"))
+          assert_selector(".calendar-table", :visible => :visible)
+          assert_selector(".drp-selected", :text => "#{start_at.strftime("%m/%d/%Y")} - #{end_at.strftime("%m/%d/%Y")}")
+          click_button("Cancel")
         else
-          assert_selector(".calendar", :visible => :hidden)
+          assert_selector(".calendar-table", :visible => :hidden)
+          page.document.find("#reportrange button").click
         end
-        click_button("Cancel")
       end
       refute_selector(".daterangepicker")
     end
 
     def change_date_picker(range_label, start_at = nil, end_at = nil)
-      find("#reportrange a").click
+      find("#reportrange button").click
       within(".daterangepicker") do
         find("li", :text => range_label).click
         if(range_label == "Custom Range")
           start_at = Date.parse(start_at)
           end_at = Date.parse(end_at)
 
-          fill_in("daterangepicker_start", :with => start_at.strftime("%m/%d/%Y"))
-          fill_in("daterangepicker_end", :with => end_at.strftime("%m/%d/%Y"))
+          within(".drp-calendar.left") do
+            within("select.monthselect") do
+              select start_at.strftime("%b")
+            end
+            within("select.yearselect") do
+              select start_at.year
+            end
+            find(".calendar-table td", :text => start_at.day).click
+          end
+
+          within(".drp-calendar.right") do
+            within("select.monthselect") do
+              select end_at.strftime("%b")
+            end
+            within("select.yearselect") do
+              select end_at.year
+            end
+            find(".calendar-table td", :text => end_at.day).click
+          end
+
+          assert_selector(".drp-selected", :text => "#{start_at.strftime("%m/%d/%Y")} - #{end_at.strftime("%m/%d/%Y")}")
           click_button("Apply")
         end
       end

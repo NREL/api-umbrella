@@ -1,0 +1,7 @@
+@import "node_modules/codemirror/lib/codemirror";
+
+.CodeMirror {
+  @extend .form-control;
+  padding: 0px;
+  height: 8rem;
+}

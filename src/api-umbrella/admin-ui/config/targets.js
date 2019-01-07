@@ -1,8 +1,12 @@
+'use strict';
+
+const browsers = [
+  '> 1%',
+  'last 2 versions',
+  'not ie <= 8',
+  'ie 11',
+];
+
 module.exports = {
-  browsers: [
-    'ie 9',
-    'last 1 Chrome versions',
-    'last 1 Firefox versions',
-    'last 1 Safari versions',
-  ],
+  browsers,
 };

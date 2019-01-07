@@ -41,7 +41,7 @@ APP_CORE_VENDOR_BUNDLE_DIR="$APP_CORE_VENDOR_DIR/bundle"
 APP_CORE_VENDOR_LUA_DIR="$APP_CORE_VENDOR_DIR/lua"
 APP_CORE_VENDOR_LUA_SHARE_DIR="$APP_CORE_VENDOR_LUA_DIR/share/lua/5.1"
 LUA_PREFIX="$STAGE_EMBEDDED_DIR"
-LUAROCKS_CMD=(env "LUA_PATH=$LUA_PREFIX/openresty/luajit/share/lua/5.1/?.lua;$LUA_PREFIX/openresty/luajit/share/lua/5.1/?/init.lua;;" "$LUA_PREFIX/bin/luarocks")
+LUAROCKS_CMD=(env "LUA_PATH=$LUA_PREFIX/openresty/luajit/share/lua/5.1/?.lua;$LUA_PREFIX/openresty/luajit/share/lua/5.1/?/init.lua;;" "LUAROCKS_SYSCONFDIR=$LUA_PREFIX/openresty/luajit/etc/luarocks" "$LUA_PREFIX/bin/luarocks")
 OPM_CMD=(env "LUA_PATH=$LUA_PREFIX/openresty/lualib/?.lua;$LUA_PREFIX/openresty/lualib/?/init.lua;;" "PATH=$STAGE_EMBEDDED_PATH" "LD_LIBRARY_PATH=$STAGE_EMBEDDED_DIR/openresty/luajit/lib:$STAGE_EMBEDDED_DIR/lib" opm)
 
 # Determine the sub-path for the currently executing task. This can be used for
@@ -75,6 +75,10 @@ clean_task_working_dir() {
   set -x
 
   if [[ -d "$dir" && "${DEBUG_TASK_SKIP_CLEAN:-}" != "true" ]]; then
+    # Go to the task parent directory, since cleaning may end up deleting
+    # sub-paths where the shell is currently cd-ed into.
+    cd "$dir" || exit 1
+
     find "$dir" -mindepth 1 -maxdepth 1 -not -name "_persist" -print -exec rm -rf {} \;
   fi
 }

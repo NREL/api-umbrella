@@ -20,7 +20,7 @@
           {{f.text-field "frontendHost" label="Frontend Host"}}
         </div>
         <div class="col-sm-2 arrow">
-          <i class="fa fa-arrow-right fa-2x"></i>
+          {{fa-icon "arrow-right" size="2x"}}
           <div>rewrite to</div>
         </div>
         <div class="col-sm-5">
@@ -37,7 +37,7 @@
   </fieldset>
 
   <fieldset class="collapsible">
-    <legend><a data-toggle="collapse" class="collapsed" data-target="#global_settings"><i class="fa fa-caret-down"></i> Global Request Settings</a></legend>
+    <legend><a data-toggle="collapse" class="collapsed" data-target="#global_settings">{{fa-icon "caret-down" fixedWidth=true}}Global Request Settings</a></legend>
     <div id="global_settings" class="collapse form-horizontal">
       {{#fields-for model=model.settings style="horizontal-wide-labels" as |f|}}
         {{f.text-field "appendQueryString" label="Append Query String Parameters" placeholder="param1=value&param2=value"}}
@@ -50,7 +50,7 @@
   </fieldset>
 
   <fieldset class="collapsible">
-    <legend><a data-toggle="collapse" class="collapsed" data-target="#sub_settings"><i class="fa fa-caret-down"></i> {{t "Sub-URL Request Settings"}}</a></legend>
+    <legend><a data-toggle="collapse" class="collapsed" data-target="#sub_settings">{{fa-icon "caret-down" fixedWidth=true}}{{t "Sub-URL Request Settings"}}</a></legend>
     <div id="sub_settings" class="collapse">
       <p class="fieldset-note">{{t "Change settings for specific sub-URLs within this API."}}</p>
       {{apis/sub-settings-table model=model roleOptions=roleOptions}}
@@ -58,7 +58,7 @@
   </fieldset>
 
   <fieldset class="collapsible">
-    <legend><a data-toggle="collapse" class="collapsed" data-target="#rewrites"><i class="fa fa-caret-down"></i> {{t "Advanced Requests Rewriting"}}</a></legend>
+    <legend><a data-toggle="collapse" class="collapsed" data-target="#rewrites">{{fa-icon "caret-down" fixedWidth=true}}{{t "Advanced Requests Rewriting"}}</a></legend>
     <div id="rewrites" class="collapse">
       <p class="fieldset-note">{{t "Modify the incoming request's URL or headers before passing it to the backend."}}</p>
       {{apis/rewrite-table model=model}}
@@ -66,35 +66,35 @@
   </fieldset>
 
   <fieldset class="collapsible">
-    <legend><a data-toggle="collapse" class="collapsed" data-target="#advanced_settings"><i class="fa fa-caret-down"></i> Advanced Settings</a></legend>
+    <legend><a data-toggle="collapse" class="collapsed" data-target="#advanced_settings">{{fa-icon "caret-down" fixedWidth=true}}Advanced Settings</a></legend>
     <div id="advanced_settings" class="collapse form-horizontal">
       {{#fields-for model=model style="horizontal-wide-labels" as |f|}}
         {{f.select-field "balanceAlgorithm" label="Balance Algorithm" options=balanceAlgorithmOptions}}
-       {{/fields-for}}
+      {{/fields-for}}
 
       {{#fields-for model=model.settings.errorTemplates style="horizontal-wide-labels" as |f|}}
         <h4>{{t "Error Templates"}}</h4>
-        {{f.ace-field "json" label=(t "JSON Template") tooltip=(t "A <a href=\"http://handlebarsjs.com\" target=\"_blank\">Handlebars</a> template of the JSON error response. Available Handlebars variables are defined below in the Error Data section.\n\nDefault template:\n\n```\n{\n  \"error\": {\n    \"code\": {{code}},\n    \"message\": {{message}}\n  }\n}\n```") mode="json"}}
-        {{f.ace-field "xml" label=(t "XML Template") tooltip=(t "A <a href=\"http://handlebarsjs.com\" target=\"_blank\">Handlebars</a> template of the XML error response. Available Handlebars variables are defined below in the Error Data section.\n\nDefault template:\n\n```\n&lt;?xml version=\"1.0\" encoding=\"UTF-8\"?&gt;\n&lt;response&gt;\n  &lt;error&gt;\n    &lt;code&gt;{{code}}&lt;/code&gt;\n    &lt;message&gt;{{message}}&lt;/message&gt;\n  &lt;/error&gt;\n&lt;/response&gt;\n```") mode="xml"}}
-        {{f.ace-field "csv" label=(t "CSV Template") tooltip=(t "A <a href=\"http://handlebarsjs.com\" target=\"_blank\">Handlebars</a> template of the CSV error response. Available Handlebars variables are defined below in the Error Data section.\n\nDefault template:\n\n```\nError Code,Error Message\n{{code}},{{message}}\n```") mode="text"}}
+        {{f.codemirror-field "json" label=(t "JSON Template") tooltip=(t "A <a href=\"http://handlebarsjs.com\" target=\"_blank\">Handlebars</a> template of the JSON error response. Available Handlebars variables are defined below in the Error Data section.\n\nDefault template:\n\n```\n{\n  \"error\": {\n    \"code\": {{code}},\n    \"message\": {{message}}\n  }\n}\n```") mode="application/json"}}
+        {{f.codemirror-field "xml" label=(t "XML Template") tooltip=(t "A <a href=\"http://handlebarsjs.com\" target=\"_blank\">Handlebars</a> template of the XML error response. Available Handlebars variables are defined below in the Error Data section.\n\nDefault template:\n\n```\n&lt;?xml version=\"1.0\" encoding=\"UTF-8\"?&gt;\n&lt;response&gt;\n  &lt;error&gt;\n    &lt;code&gt;{{code}}&lt;/code&gt;\n    &lt;message&gt;{{message}}&lt;/message&gt;\n  &lt;/error&gt;\n&lt;/response&gt;\n```") mode="application/xml"}}
+        {{f.codemirror-field "csv" label=(t "CSV Template") tooltip=(t "A <a href=\"http://handlebarsjs.com\" target=\"_blank\">Handlebars</a> template of the CSV error response. Available Handlebars variables are defined below in the Error Data section.\n\nDefault template:\n\n```\nError Code,Error Message\n{{code}},{{message}}\n```") mode="text/plain"}}
       {{/fields-for}}
 
       {{#fields-for model=model.settings.errorDataYamlStrings style="horizontal-wide-labels" as |f|}}
         <h4>{{t "Error Data"}}</h4>
-        {{f.ace-field "common" label=(t "Common (All Errors)") tooltip=(t "<a href=\"http://en.wikipedia.org/wiki/YAML\" target=\"_blank\">YAML</a> definition of the Handlebars variables available to all error templates.\n\nDefault data:\n\n```\nsignup_url: {{base_url}}\ncontact_url: \"{{base_url}}/contact/\"\n```\n\n`{{base_url}}` is a special variable that contains a reference to the current root URL of the domain being accessed (with no trailing slash). For example, if the API URL being accessed is `https://www.example.com/foo/bar.json` then `{{base_url}}` would be `https://www.example.com`.") mode="yaml"}}
-        {{f.ace-field "api_key_missing" label=(t "API Key Missing") tooltip=(t "<a href=\"http://en.wikipedia.org/wiki/YAML\" target=\"_blank\">YAML</a> definition of the Handlebars variables available to the error templates.\n\nDefault data:\n\n```\nstatus_code: 403\ncode: API_KEY_MISSING\nmessage: No api_key was supplied. Get one at {{signup_url}}\n```") mode="yaml"}}
-        {{f.ace-field "api_key_invalid" label=(t "API Key Invalid") tooltip=(t "<a href=\"http://en.wikipedia.org/wiki/YAML\" target=\"_blank\">YAML</a> definition of the Handlebars variables available to the error templates.\n\nDefault data:\n\n```\nstatus_code: 403\ncode: API_KEY_INVALID\nmessage: An invalid api_key was supplied. Get one at {{signup_url}}\n```") mode="yaml"}}
-        {{f.ace-field "api_key_disabled" label=(t "API Key Disabled") tooltip=(t "<a href=\"http://en.wikipedia.org/wiki/YAML\" target=\"_blank\">YAML</a> definition of the Handlebars variables available to the error templates.\n\nDefault data:\n\n```\nstatus_code: 403\ncode: API_KEY_DISABLED\nmessage: The api_key supplied has been disabled. Contact us at {{contact_url}} for assistance\n```") mode="yaml"}}
-        {{f.ace-field "api_key_unauthorized" label=(t "API Key Unauthorized") tooltip=(t "<a href=\"http://en.wikipedia.org/wiki/YAML\" target=\"_blank\">YAML</a> definition of the Handlebars variables available to the error templates.\n\nDefault data:\n\n```\nstatus_code: 403\ncode: API_KEY_UNAUTHORIZED\nmessage: The api_key supplied is not authorized to access the given service. Contact us at {{contact_url}} for assistance\n```") mode="yaml"}}
-        {{f.ace-field "over_rate_limit" label=(t "Over Rate Limit") tooltip=(t "<a href=\"http://en.wikipedia.org/wiki/YAML\" target=\"_blank\">YAML</a> definition of the Handlebars variables available to the error templates.\n\nDefault data:\n\n```\nstatus_code: 429\ncode: OVER_RATE_LIMIT\nmessage: You have exceeded your rate limit. Try again later or contact us at {{contact_url}} for assistance\n```") mode="yaml"}}
-        {{f.ace-field "https_required" label=(t "HTTPS Required") tooltip=(t "<a href=\"http://en.wikipedia.org/wiki/YAML\" target=\"_blank\">YAML</a> definition of the Handlebars variables available to the error templates.\n\nDefault data:\n\n```\nstatus_code: 400\ncode: HTTPS_REQUIRED\nmessage: \"Requests must be made over HTTPS. Try accessing the API at: {{https_url}}\"\n```\n\n`{{https_url}}` is a special variable that is available within the context of the HTTPS requirement error that contains a copy of the current URL with the URL schemed switched to HTTPS.") mode="yaml"}}
+        {{f.codemirror-field "common" label=(t "Common (All Errors)") tooltip=(t "<a href=\"http://en.wikipedia.org/wiki/YAML\" target=\"_blank\">YAML</a> definition of the Handlebars variables available to all error templates.\n\nDefault data:\n\n```\nsignup_url: {{base_url}}\ncontact_url: \"{{base_url}}/contact/\"\n```\n\n`{{base_url}}` is a special variable that contains a reference to the current root URL of the domain being accessed (with no trailing slash). For example, if the API URL being accessed is `https://www.example.com/foo/bar.json` then `{{base_url}}` would be `https://www.example.com`.") mode="text/x-yaml"}}
+        {{f.codemirror-field "api_key_missing" label=(t "API Key Missing") tooltip=(t "<a href=\"http://en.wikipedia.org/wiki/YAML\" target=\"_blank\">YAML</a> definition of the Handlebars variables available to the error templates.\n\nDefault data:\n\n```\nstatus_code: 403\ncode: API_KEY_MISSING\nmessage: No api_key was supplied. Get one at {{signup_url}}\n```") mode="text/x-yaml"}}
+        {{f.codemirror-field "api_key_invalid" label=(t "API Key Invalid") tooltip=(t "<a href=\"http://en.wikipedia.org/wiki/YAML\" target=\"_blank\">YAML</a> definition of the Handlebars variables available to the error templates.\n\nDefault data:\n\n```\nstatus_code: 403\ncode: API_KEY_INVALID\nmessage: An invalid api_key was supplied. Get one at {{signup_url}}\n```") mode="text/x-yaml"}}
+        {{f.codemirror-field "api_key_disabled" label=(t "API Key Disabled") tooltip=(t "<a href=\"http://en.wikipedia.org/wiki/YAML\" target=\"_blank\">YAML</a> definition of the Handlebars variables available to the error templates.\n\nDefault data:\n\n```\nstatus_code: 403\ncode: API_KEY_DISABLED\nmessage: The api_key supplied has been disabled. Contact us at {{contact_url}} for assistance\n```") mode="text/x-yaml"}}
+        {{f.codemirror-field "api_key_unauthorized" label=(t "API Key Unauthorized") tooltip=(t "<a href=\"http://en.wikipedia.org/wiki/YAML\" target=\"_blank\">YAML</a> definition of the Handlebars variables available to the error templates.\n\nDefault data:\n\n```\nstatus_code: 403\ncode: API_KEY_UNAUTHORIZED\nmessage: The api_key supplied is not authorized to access the given service. Contact us at {{contact_url}} for assistance\n```") mode="text/x-yaml"}}
+        {{f.codemirror-field "over_rate_limit" label=(t "Over Rate Limit") tooltip=(t "<a href=\"http://en.wikipedia.org/wiki/YAML\" target=\"_blank\">YAML</a> definition of the Handlebars variables available to the error templates.\n\nDefault data:\n\n```\nstatus_code: 429\ncode: OVER_RATE_LIMIT\nmessage: You have exceeded your rate limit. Try again later or contact us at {{contact_url}} for assistance\n```") mode="text/x-yaml"}}
+        {{f.codemirror-field "https_required" label=(t "HTTPS Required") tooltip=(t "<a href=\"http://en.wikipedia.org/wiki/YAML\" target=\"_blank\">YAML</a> definition of the Handlebars variables available to the error templates.\n\nDefault data:\n\n```\nstatus_code: 400\ncode: HTTPS_REQUIRED\nmessage: \"Requests must be made over HTTPS. Try accessing the API at: {{https_url}}\"\n```\n\n`{{https_url}}` is a special variable that is available within the context of the HTTPS requirement error that contains a copy of the current URL with the URL schemed switched to HTTPS.") mode="text/x-yaml"}}
       {{/fields-for}}
     </div>
   </fieldset>
 
   <div class="row">
     <div class="col-sm-6">
-      <button type="submit" id="save_button" class="btn btn-lg btn-primary" data-loading-text="<i class='fa fa-refresh fa-spin'></i> Saving...">Save</button>
+      <button type="submit" class="btn btn-lg btn-primary save-button"><span class="btn-label">Save</span><span class="btn-loading-label">{{fa-icon "sync-alt" spin=true}}Saving...</span></button>
     </div>
     <div class="col-sm-6 record-details">
       {{#if model.id}}
@@ -105,7 +105,7 @@
   </div>
   {{#if model.id}}
     <div class="form-extra-actions">
-      <a href="#" class="remove-action" {{action "delete"}}><i class="fa fa-times"></i>Delete API</a>
+      <a href="#" class="remove-action" {{action "delete"}}>{{fa-icon "times"}}Delete API</a>
     </div>
   {{/if}}
 </form>

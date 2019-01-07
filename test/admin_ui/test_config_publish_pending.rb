@@ -76,8 +76,8 @@ class Test::AdminUi::TestConfigPublishPending < Minitest::Capybara::Test
 
     admin_login
     visit "/admin/#/config/publish"
-    assert_selector("input[type=checkbox][name*=publish]", :count => 1)
-    assert_selector("input[type=checkbox][name*=publish]:checked", :count => 1)
+    assert_selector("input[type=checkbox][name*=publish]", :visible => :all, :count => 1)
+    assert_selector("input[type=checkbox][name*=publish]:checked", :visible => :all, :count => 1)
   end
 
   def test_no_auto_selection_for_multiple_changes
@@ -86,8 +86,8 @@ class Test::AdminUi::TestConfigPublishPending < Minitest::Capybara::Test
 
     admin_login
     visit "/admin/#/config/publish"
-    assert_selector("input[type=checkbox][name*=publish]", :count => 2)
-    refute_selector("input[type=checkbox][name*=publish]:checked")
+    assert_selector("input[type=checkbox][name*=publish]", :visible => :all, :count => 2)
+    refute_selector("input[type=checkbox][name*=publish]:checked", :visible => :all)
   end
 
   def test_refreshes_changes_on_load
@@ -115,27 +115,27 @@ class Test::AdminUi::TestConfigPublishPending < Minitest::Capybara::Test
     admin_login
     visit "/admin/#/config/publish"
 
-    assert_selector("input[type=checkbox][name*=publish]", :count => 2)
+    assert_selector("input[type=checkbox][name*=publish]", :visible => :all, :count => 2)
     refute_text("Uncheck all")
     assert_text("Check all")
-    refute_selector("input[type=checkbox][name*=publish]:checked")
+    refute_selector("input[type=checkbox][name*=publish]:checked", :visible => :all)
 
     click_link("Check all")
-    assert_selector("input[type=checkbox][name*=publish]:checked")
+    assert_selector("input[type=checkbox][name*=publish]:checked", :visible => :all)
     refute_text("Check all")
     assert_text("Uncheck all")
 
     click_link("Uncheck all")
-    refute_selector("input[type=checkbox][name*=publish]:checked")
+    refute_selector("input[type=checkbox][name*=publish]:checked", :visible => :all)
     refute_text("Uncheck all")
     assert_text("Check all")
 
-    checkboxes = all("input[type=checkbox][name*=publish]")
-    checkboxes[0].click
+    checkboxes = all("input[type=checkbox][name*=publish]", :visible => :all)
+    custom_input_trigger_click(checkboxes[0])
     assert_text("Check all")
-    checkboxes[1].click
+    custom_input_trigger_click(checkboxes[1])
     assert_text("Uncheck all")
-    checkboxes[1].click
+    custom_input_trigger_click(checkboxes[1])
     assert_text("Check all")
   end
 
@@ -146,20 +146,20 @@ class Test::AdminUi::TestConfigPublishPending < Minitest::Capybara::Test
     admin_login
     visit "/admin/#/config/publish"
 
-    assert_selector("input[type=checkbox][name*=publish]", :count => 2)
-    refute_selector("input[type=checkbox][name*=publish]:checked")
-    publish_button = find("#publish_button")
-    checkbox = all("input[type=checkbox][name*=publish]")[0]
+    assert_selector("input[type=checkbox][name*=publish]", :visible => :all, :count => 2)
+    refute_selector("input[type=checkbox][name*=publish]:checked", :visible => :all)
+    publish_button = find(".publish-button")
+    checkbox = first("input[type=checkbox][name*=publish]", :visible => :all)
 
-    assert_equal(false, checkbox[:checked])
+    assert_equal(false, checkbox.checked?)
     assert_equal(true, publish_button.disabled?)
 
-    checkbox.click
-    assert_equal(true, checkbox[:checked])
+    custom_input_trigger_click(checkbox)
+    assert_equal(true, checkbox.checked?)
     assert_equal(false, publish_button.disabled?)
 
-    checkbox.click
-    assert_equal(false, checkbox[:checked])
+    custom_input_trigger_click(checkbox)
+    assert_equal(false, checkbox.checked?)
     assert_equal(true, publish_button.disabled?)
   end
 
@@ -169,16 +169,16 @@ class Test::AdminUi::TestConfigPublishPending < Minitest::Capybara::Test
     admin_login
     visit "/admin/#/config/publish"
 
-    assert_selector("input[type=checkbox][name*=publish]", :count => 1)
-    assert_selector("input[type=checkbox][name*=publish]:checked", :count => 1)
-    publish_button = find("#publish_button")
-    checkbox = all("input[type=checkbox][name*=publish]")[0]
+    assert_selector("input[type=checkbox][name*=publish]", :visible => :all, :count => 1)
+    assert_selector("input[type=checkbox][name*=publish]:checked", :visible => :all, :count => 1)
+    publish_button = find(".publish-button")
+    checkbox = first("input[type=checkbox][name*=publish]", :visible => :all)
 
-    assert_equal(true, checkbox[:checked])
+    assert_equal(true, checkbox.checked?)
     assert_equal(false, publish_button.disabled?)
 
-    checkbox.click
-    assert_equal(false, checkbox[:checked])
+    custom_input_trigger_click(checkbox)
+    assert_equal(false, checkbox.checked?)
     assert_equal(true, publish_button.disabled?)
   end
 end

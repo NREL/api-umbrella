@@ -10,7 +10,7 @@ GEM
       ffi (~> 1.0, >= 1.0.11)
     clamp (1.0.1)
     dotenv (2.2.0)
-    ffi (1.9.17)
+    ffi (1.9.25)
     fpm (1.8.0)
       archive-tar-minitar
       arr-pm (~> 0.0.10)
@@ -45,4 +45,4 @@ DEPENDENCIES
   fpm (~> 1.8.0)
 
 BUNDLED WITH
-   1.14.3
+   1.16.4

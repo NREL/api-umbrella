@@ -33,7 +33,12 @@ local function do_check()
     end
   end
 
-  api_users:set("last_fetched_version", last_fetched_version)
+  local set_ok, set_err, set_forcible = api_users:set("last_fetched_version", last_fetched_version)
+  if not set_ok then
+    ngx.log(ngx.ERR, "failed to set 'last_fetched_version' in 'api_users' shared dict: ", set_err)
+  elseif set_forcible then
+    ngx.log(ngx.WARN, "forcibly set 'last_fetched_version' in 'api_users' shared dict (shared dict may be too small)")
+  end
 end
 
 function _M.spawn()

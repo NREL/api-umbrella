@@ -67,7 +67,7 @@ class Test::AdminUi::TestLocales < Minitest::Capybara::Test
     locale_method_name = locale.to_s.downcase.gsub(/[^\w]/, "_")
 
     define_method("test_server_side_translations_in_#{locale_method_name}_locale") do
-      page.driver.add_headers("Accept-Language" => locale.to_s)
+      selenium_use_language_driver(locale.to_s)
       visit "/admin/login"
 
       # From devise-i18n based on attribute names
@@ -78,7 +78,7 @@ class Test::AdminUi::TestLocales < Minitest::Capybara::Test
     end
 
     define_method("test_client_side_translations_in_#{locale_method_name}_locale") do
-      page.driver.add_headers("Accept-Language" => locale.to_s)
+      selenium_use_language_driver(locale.to_s)
       admin_login
       visit "/admin/#/api_users/new"
 
@@ -92,7 +92,7 @@ class Test::AdminUi::TestLocales < Minitest::Capybara::Test
 
   def test_server_side_fall_back_to_english_for_unknown_locale
     locale = "zz"
-    page.driver.add_headers("Accept-Language" => locale)
+    selenium_use_language_driver(locale)
     visit "/admin/login"
 
     refute(File.exist?(File.join(LOCALES_ROOT_DIR, "#{locale}.po")))
@@ -101,7 +101,7 @@ class Test::AdminUi::TestLocales < Minitest::Capybara::Test
 
   def test_client_side_fall_back_to_english_for_unknown_locale
     locale = "zz"
-    page.driver.add_headers("Accept-Language" => locale)
+    selenium_use_language_driver(locale)
     admin_login
     visit "/admin/#/api_users/new"
 
@@ -111,7 +111,7 @@ class Test::AdminUi::TestLocales < Minitest::Capybara::Test
 
   def test_server_side_fall_back_to_english_for_missing_data_in_known_locale
     locale = "zy"
-    page.driver.add_headers("Accept-Language" => locale)
+    selenium_use_language_driver(locale)
     visit "/admin/login"
 
     assert(File.exist?(File.join(LOCALES_ROOT_DIR, "#{locale}.po")))
@@ -120,7 +120,7 @@ class Test::AdminUi::TestLocales < Minitest::Capybara::Test
 
   def test_client_side_fall_back_to_english_for_missing_data_in_known_locale
     locale = "zy"
-    page.driver.add_headers("Accept-Language" => locale)
+    selenium_use_language_driver(locale)
     admin_login
     visit "/admin/#/api_users/new"
 

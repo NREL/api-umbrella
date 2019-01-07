@@ -10,6 +10,8 @@ fi
 
 rm -rf \
   "$SOURCE_DIR/.bundle" \
+  "$SOURCE_DIR/.task"/* \
+  "$SOURCE_DIR/build/package/work" \
   "$SOURCE_DIR/build/work"/* \
   "$SOURCE_DIR/src/api-umbrella/admin-ui/node_modules" \
   "$SOURCE_DIR/src/api-umbrella/web-app/.bundle" \

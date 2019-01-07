@@ -58,7 +58,7 @@ class Test::AdminUi::Login::TestLocalProvider < Minitest::Capybara::Test
   def test_login_empty_password
     visit "/admin/login"
     fill_in "admin_username", :with => @admin.username
-    fill_in "admin_password", :with => ""
+    fill_in "admin_password", :with => "", :fill_options => { :clear => :backspace }
     click_button "sign_in"
     assert_text("Invalid email or password")
   end
@@ -69,7 +69,7 @@ class Test::AdminUi::Login::TestLocalProvider < Minitest::Capybara::Test
 
     visit "/admin/login"
     fill_in "admin_username", :with => admin.username
-    fill_in "admin_password", :with => ""
+    fill_in "admin_password", :with => "", :fill_options => { :clear => :backspace }
     click_button "sign_in"
     assert_text("Invalid email or password")
   end
@@ -173,7 +173,7 @@ class Test::AdminUi::Login::TestLocalProvider < Minitest::Capybara::Test
     assert_nil(@admin.notes)
 
     # No current password
-    fill_in "Current Password", :with => ""
+    fill_in "Current Password", :with => "", :fill_options => { :clear => :backspace }
     fill_in "New Password", :with => "password234567"
     fill_in "Confirm New Password", :with => "password234567"
     click_button "Save"

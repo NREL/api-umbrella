@@ -4,6 +4,7 @@ class Test::AdminUi::TestStatsUsers < Minitest::Capybara::Test
   include Capybara::Screenshot::MiniTestPlugin
   include ApiUmbrellaTestHelpers::AdminAuth
   include ApiUmbrellaTestHelpers::DateRangePicker
+  include ApiUmbrellaTestHelpers::Downloads
   include ApiUmbrellaTestHelpers::Setup
 
   def setup
@@ -79,15 +80,20 @@ class Test::AdminUi::TestStatsUsers < Minitest::Capybara::Test
     refute_selector(".busy-blocker")
     click_link "Download CSV"
 
-    # Downloading files via Capybara generally seems flakey, so add an extra
-    # wait.
-    Timeout.timeout(Capybara.default_max_wait_time) do
-      while(page.response_headers["Content-Type"] != "text/csv")
-        sleep(0.1)
-      end
-    end
-    assert_equal(200, page.status_code)
-    assert_equal("text/csv", page.response_headers["Content-Type"])
+    file = download_file
+    assert_equal(".csv", File.extname(file.path))
+    csv = CSV.read(file.path)
+    assert_equal([
+      "Email",
+      "First Name",
+      "Last Name",
+      "Website",
+      "Registration Source",
+      "Signed Up (UTC)",
+      "Hits",
+      "Last Request (UTC)",
+      "Use Description",
+    ], csv[0])
   end
 
   def test_date_range_picker

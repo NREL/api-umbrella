@@ -11,10 +11,6 @@ if [ "${1}" = "start" ]; then
   api_umbrella_user="{{user}}"
 
   dir="{{_src_root_dir}}/src/api-umbrella/admin-ui"
-  if [ -d /vagrant-admin-ui ]; then
-    dir="/vagrant-admin-ui"
-  fi
-
   run_args=("-e" "rc.env" "-c" "$dir")
   if [ -n "$api_umbrella_user" ]; then
     run_args+=("-u" "$api_umbrella_user")

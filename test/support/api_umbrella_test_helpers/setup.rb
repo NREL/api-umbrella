@@ -317,7 +317,25 @@ module ApiUmbrellaTestHelpers
         File.write(ApiUmbrellaTestHelpers::Process::CONFIG_OVERRIDES_PATH, YAML.dump(config))
         self.api_umbrella_process.reload(reload_flag)
         @@current_override_config = config
-        self.api_umbrella_process.wait_for_config_version("file_config_version", config["version"], config)
+        Timeout.timeout(50) do
+          begin
+            self.api_umbrella_process.wait_for_config_version("file_config_version", config["version"], config)
+          rescue MultiJson::ParseError => e
+            # If the configuration changes involve changes to the
+            # "active_config" shdict size, then this can result in the API
+            # configuration being temporarily unpublished during reloads. In
+            # these cases, the publishing process may temporarily throw errors,
+            # since the "state" and "health" endpoints may temporarily go
+            # missing. So in these cases, retry and wait for the configuration
+            # publishing to take effect again.
+            if(previous_override_config.dig("nginx", "shared_dicts", "active_config") || @@current_override_config.dig("nginx", "shared_dicts", "active_config"))
+              sleep 0.1
+              retry
+            else
+              raise e
+            end
+          end
+        end
 
         # When changes to the DNS server are made, this is one area where a
         # simple "reload" signal won't do the trick. Instead, we also need to
@@ -365,7 +383,7 @@ module ApiUmbrellaTestHelpers
       assert_operator(unique_number, :<=, 999999)
       hostname = "#{hostname}-#{unique_number.to_s.rjust(6, "0")}"
 
-      "#{hostname}.test"
+      hostname
     end
 
     def unique_test_class_id
@@ -380,8 +398,12 @@ module ApiUmbrellaTestHelpers
       @unique_test_id ||= to_unique_id(self.location)
     end
 
+    def unique_test_subdomain
+      @unique_test_subdomain ||= to_unique_hostname(unique_test_id)
+    end
+
     def unique_test_hostname
-      @unique_test_hostname ||= to_unique_hostname(unique_test_id)
+      @unique_test_hostname ||= "#{unique_test_subdomain}.test"
     end
 
     def next_unique_number

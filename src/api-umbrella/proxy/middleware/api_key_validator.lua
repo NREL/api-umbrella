@@ -1,38 +1,9 @@
-local config = require "api-umbrella.proxy.models.file_config"
-local types = require "pl.types"
-local user_store = require "api-umbrella.proxy.user_store"
-
-local get_user = user_store.get
-local is_empty = types.is_empty
-
-local function resolve_api_key()
-  local api_key_methods = config["gatekeeper"]["api_key_methods"]
-  local api_key
-
-  for _, method in ipairs(api_key_methods) do
-    if method == "header" then
-      api_key = ngx.ctx.http_x_api_key
-    elseif method == "getParam" then
-      api_key = ngx.ctx.arg_api_key
-    elseif method == "basicAuthUsername" then
-      api_key = ngx.ctx.remote_user
-    end
-
-    if not is_empty(api_key) then
-      break
-    end
-  end
-
-  -- Store the api key for logging.
-  ngx.ctx.api_key = api_key
-
-  return api_key
-end
+local get_user = require("api-umbrella.proxy.user_store").get
 
 return function(settings)
-  -- Find the API key in the header, query string, or HTTP auth.
-  local api_key = resolve_api_key()
-  if is_empty(api_key) then
+  -- Retrieve the API key found in the resolve_api_key middleware.
+  local api_key = ngx.ctx.api_key
+  if not api_key then
     if settings and settings["disable_api_key"] then
       return nil
     else

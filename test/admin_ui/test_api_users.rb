@@ -18,7 +18,7 @@ class Test::AdminUi::TestApiUsers < Minitest::Capybara::Test
     fill_in "E-mail", :with => "example@example.com"
     fill_in "First Name", :with => "John"
     fill_in "Last Name", :with => "Doe"
-    check "User agrees to the terms and conditions"
+    label_check "User agrees to the terms and conditions", :click => { :x => 0, :y => 0 }
 
     # Rate Limiting
     select "Custom rate limits", :from => "Rate Limit"
@@ -28,16 +28,13 @@ class Test::AdminUi::TestApiUsers < Minitest::Capybara::Test
       find(".rate-limit-duration-units").select("hours")
       find(".rate-limit-limit-by").select("IP Address")
       find(".rate-limit-limit").set("1500")
-      find(".rate-limit-response-headers").click
+      custom_input_trigger_click(find(".rate-limit-response-headers", :visible => :all))
     end
     select "Rate limit by IP address", :from => "Limit By"
 
     # Permissions
-    fill_in "Roles", :with => "some-user-role"
-    find(".selectize-dropdown-content div", :text => /Add some-user-role/).click
-    find("body").native.send_key(:Escape) # Sporadically seems necessary to reset selectize properly for second input.
-    fill_in "Roles", :with => "some-user-role2"
-    find(".selectize-dropdown-content div", :text => /Add some-user-role2/).click
+    selectize_add "Roles", "some-user-role"
+    selectize_add "Roles", "some-user-role2"
     fill_in "Restrict Access to IPs", :with => "127.0.0.1\n10.1.1.1/16"
     fill_in "Restrict Access to HTTP Referers", :with => "*.example.com/*\n*//example2.com/*"
     select "Disabled", :from => "Account Enabled"
@@ -60,13 +57,12 @@ class Test::AdminUi::TestApiUsers < Minitest::Capybara::Test
       assert_equal("hours", find(".rate-limit-duration-units").value)
       assert_equal("ip", find(".rate-limit-limit-by").value)
       assert_equal("1500", find(".rate-limit-limit").value)
-      assert_equal(true, find(".rate-limit-response-headers").checked?)
+      assert_equal(true, find(".rate-limit-response-headers", :visible => :all).checked?)
     end
     assert_select("Limit By", :selected => "Rate limit by IP address")
 
     # Permissions
-    assert_equal("some-user-role,some-user-role2", find_by_id(find_field("Roles")["data-raw-input-id"], :visible => :all).value)
-    assert_equal("some-user-role×some-user-role2×", find_by_id(find_field("Roles")["data-selectize-control-id"]).text)
+    assert_selectize_field("Roles", :with => "some-user-role,some-user-role2")
     assert_field("Restrict Access to IPs", :with => "127.0.0.1\n10.1.1.1/16")
     assert_field("Restrict Access to HTTP Referers", :with => "*.example.com/*\n*//example2.com/*")
     assert_select("Account Enabled", :selected => "Disabled")

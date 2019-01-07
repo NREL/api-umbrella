@@ -111,7 +111,7 @@ class OutdatedPackages
     },
     "nodejs" => {
       :git => "https://github.com/nodejs/node.git",
-      :constraint => "~> 8.10",
+      :constraint => "~> 10.13",
     },
     "openldap" => {
       :git => "https://github.com/openldap/openldap.git",
@@ -147,9 +147,6 @@ class OutdatedPackages
     "perp" => {
       :http => "http://b0llix.net/perp/site.cgi?page=download",
     },
-    "phantomjs" => {
-      :git => "https://github.com/ariya/phantomjs.git",
-    },
     "postgresql" => {
       :git => "https://github.com/postgres/postgres.git",
     },
@@ -167,9 +164,10 @@ class OutdatedPackages
     },
     "trafficserver" => {
       :git => "https://github.com/apache/trafficserver.git",
+      :constraint => "~> 7.1",
     },
     "unbound" => {
-      :http => "https://www.unbound.net/download.html",
+      :http => "https://nlnetlabs.nl/projects/unbound/download/",
     },
     "yarn" => {
       :git => "https://github.com/yarnpkg/yarn.git",

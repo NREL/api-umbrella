@@ -8,7 +8,7 @@ export default Base.extend(Confirmation, UncachedModel, {
   fetchModels(record) {
     return hash({
       record: record,
-      groupOptions: this.get('store').findAll('admin-group', { reload: true }),
+      groupOptions: this.store.findAll('admin-group', { reload: true }),
     });
   },
 });

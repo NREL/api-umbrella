@@ -35,7 +35,7 @@ export default DS.Model.extend(Validations, {
   backendPrefix: DS.attr(),
 
   backendPrefixWithDefault: computed('backendPrefix', 'frontendPrefix', function() {
-    return this.get('backendPrefix') || this.get('frontendPrefix');
+    return this.backendPrefix || this.frontendPrefix;
   }),
 }).reopenClass({
   validationClass: Validations,

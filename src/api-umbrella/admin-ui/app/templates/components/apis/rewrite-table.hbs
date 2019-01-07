@@ -1,10 +1,10 @@
 {{apis/rewrite-form model=rewriteModel collection=model.rewrites openModal=openModal}}
 
-<table id="rewrites_table" class="table table-striped table-condensed">
+<table id="rewrites_table" class="table table-striped table-sm">
   <thead>
     <tr>
-      <th style="width: 110px;">Matching Type</th>
-      <th style="width: 110px;">HTTP Method</th>
+      <th style="width: 135px;">Matching Type</th>
+      <th style="width: 125px;">HTTP Method</th>
       <th>From</th>
       <th>To</th>
       <th></th>
@@ -14,16 +14,16 @@
   <tbody>
     {{#if model.rewrites}}
       {{#each model.rewrites as |rewrite|}}
-        <tr data-guid="{{guid-for rewrite}}">
+        <tr data-guid={{guid-for rewrite}}>
           <td>{{rewrite.matcherType}}</td>
           <td>{{rewrite.httpMethod}}</td>
           <td>{{rewrite.frontendMatcher}}</td>
           <td>{{rewrite.backendReplacement}}</td>
           <td class="table-row-actions">
-            <a href="#" {{action "edit" rewrite}}><i class="fa fa-pencil"></i>{{t "Edit"}}</a>
-            <a href="#" class="remove-action" {{action "remove" rewrite}}><i class="fa fa-times"></i>{{t "Remove"}}</a>
+            <a href="#" {{action "edit" rewrite}}>{{fa-icon "pencil-alt"}}{{t "Edit"}}</a>
+            <a href="#" class="remove-action" {{action "remove" rewrite}}>{{fa-icon "times"}}{{t "Remove"}}</a>
           </td>
-          <td class="reorder-handle"><i class="fa fa-reorder"></i></td>
+          <td class="reorder-handle">{{fa-icon "bars"}}</td>
         </tr>
       {{/each}}
     {{else}}
@@ -33,11 +33,11 @@
 </table>
 <div class="row-fluid">
   <div class="span6">
-    <button type="button" class="btn btn-default btn-xs" {{action "add"}}><i class="fa fa-plus-circle"></i> {{t "Add Rewrite"}}</button>
+    <button type="button" class="btn btn-light btn-sm" {{action "add"}}>{{fa-icon "plus-circle"}} {{t "Add Rewrite"}}</button>
   </div>
   <div class="span6 text-right">
     {{#if isReorderable}}
-      <button type="button" id="rewrites_reorder" class="btn btn-default btn-xs" {{action "reorderCollection" "rewrites"}}><i class="fa fa-reorder"></i> <span class="reorder-button-text">{{t "Reorder"}}</span></button>
+      <button type="button" id="rewrites_reorder" class="btn btn-light btn-sm" {{action "reorderCollection" "rewrites"}}>{{fa-icon "bars"}} <span class="reorder-button-text">{{t "Reorder"}}</span></button>
     {{/if}}
   </div>
 </div>

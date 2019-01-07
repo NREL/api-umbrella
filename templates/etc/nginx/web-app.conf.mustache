@@ -75,6 +75,14 @@ http {
       {{/_development_env?}}
     }
 
+    {{#_test_env?}}
+      location ~ ^/admin($|/$|/index\.html) {
+        more_set_headers "Cache-Control: no-cache, max-age=0, must-revalidate, no-store";
+        more_set_headers "Pragma: no-cache";
+        alias {{_test_env_install_dir}}/admin-ui/$1;
+      }
+    {{/_test_env?}}
+
     location ~ ^/admin($|/$|/index\.html|/fonts/.+|/maps/.+|/ember.+) {
       {{^_development_env?}}
         more_set_headers "Cache-Control: no-cache, max-age=0, must-revalidate, no-store";

@@ -3,6 +3,11 @@ import { computed, observer } from '@ember/object';
 import $ from 'jquery';
 import Component from '@ember/component';
 import DataTablesHelpers from 'api-umbrella-admin-ui/utils/data-tables-helpers';
+import clone from 'lodash-es/clone';
+import compact from 'lodash-es/compact';
+import escape from 'lodash-es/escape';
+import extend from 'lodash-es/extend';
+import tippy from 'tippy.js'
 
 export default Component.extend({
   didInsertElement() {
@@ -15,32 +20,24 @@ export default Component.extend({
         // exceed URL length limits in IE (and apparently Capybara too).
         type: 'POST',
         data: function(data) {
-          return _.extend({}, data, this.get('backendQueryParamValues'));
+          return extend({}, data, this.backendQueryParamValues);
         }.bind(this),
       },
-      drawCallback: _.bind(function() {
+      drawCallback: () => {
         this.$().find('td').each(function() {
           if(this.scrollWidth > this.offsetWidth) {
             const $cell = $(this);
-            $cell.prop('title', $cell.text());
+            $cell.attr('data-tippy-content', $cell.text());
 
-            $cell.qtip({
-              style: {
-                classes: 'qtip-bootstrap qtip-forced-wide',
-              },
-              hide: {
-                fixed: true,
-                delay: 200,
-              },
-              position: {
-                viewport: false,
-                my: 'bottom center',
-                at: 'top center',
-              },
+            tippy($cell[0], {
+              interactive: true,
+              theme: 'light-border forced-wide',
+              arrow: true,
+              delay: 200,
             });
           }
         });
-      }, this),
+      },
       order: [[0, 'desc']],
       columns: [
         {
@@ -74,11 +71,11 @@ export default Component.extend({
           defaultContent: '-',
           render: function(email, type, data) {
             if(type === 'display' && email && email !== '-') {
-              let params = _.clone(this.get('presentQueryParamValues'));
-              params.search = _.compact([params.search, 'user_id:"' + data.user_id + '"']).join(' AND ');
+              let params = clone(this.presentQueryParamValues);
+              params.search = compact([params.search, 'user_id:"' + data.user_id + '"']).join(' AND ');
               let link = '#/stats/logs?' + $.param(params);
 
-              return '<a href="' + link + '">' + _.escape(email) + '</a>';
+              return '<a href="' + link + '">' + escape(email) + '</a>';
             }
 
             return email;
@@ -183,6 +180,6 @@ export default Component.extend({
   }),
 
   downloadUrl: computed('backendQueryParamValues', function() {
-    return '/admin/stats/logs.csv?' + $.param(this.get('backendQueryParamValues'));
+    return '/admin/stats/logs.csv?' + $.param(this.backendQueryParamValues);
   }),
 });

@@ -1,4 +1,4 @@
-{{#bs-modal open=openModal onSubmit=(action "submit") onHidden=(action "closed") backdropClose=false size="lg" as |modal|}}
+{{#bs-modal open=openModal onSubmit=(action "submit") onHidden=(action "closed") backdropClose=false size="lg" fade=false as |modal|}}
   {{modal.header title=modalTitle}}
   {{#modal.body}}
     <form {{action "submit" on="submit"}}>
@@ -9,18 +9,22 @@
           </div>
         </div>
         <div class="row">
-          <div class="col-sm-2">
+          <div class="col-sm-3">
             {{f.select-field "httpMethod" label="HTTP Method" options=httpMethodOptions}}
           </div>
-          <div class="col-sm-10">
+          <div class="col-sm-9">
             {{f.text-field "frontendMatcher" label="Frontend Matcher" placeholder="/example/"}}
           </div>
         </div>
-        <div class="row arrow arrow-vertical">
-          <i class="fa fa-arrow-down fa-2x"></i> rewrite to
+        <div class="row">
+          <div class="col-sm-9 offset-sm-3">
+            <div class="arrow arrow-vertical">
+              {{fa-icon "arrow-down" size="2x"}} rewrite to
+            </div>
+          </div>
         </div>
         <div class="row">
-          <div class="col-sm-offset-2 col-sm-10">
+          <div class="col-sm-9 offset-sm-3">
             {{f.text-field "backendReplacement" label="Backend Replacement" placeholder="/example/"}}
           </div>
         </div>

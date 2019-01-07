@@ -1,10 +1,10 @@
 FactoryBot.define do
   factory :api_backend do
     sequence(:name) { |n| "Example #{n}" }
-    backend_protocol "http"
-    frontend_host "localhost"
-    backend_host "example.com"
-    balance_algorithm "least_conn"
+    backend_protocol { "http" }
+    frontend_host { "localhost" }
+    backend_host { "example.com" }
+    balance_algorithm { "least_conn" }
 
     servers do
       [FactoryBot.attributes_or_build(@build_strategy, :api_backend_server, :host => "example.com")]
@@ -40,7 +40,7 @@ FactoryBot.define do
 
     factory :google_api_backend do
       sequence(:name) { |n| "Google #{n}" }
-      backend_host "google.com"
+      backend_host { "google.com" }
 
       servers do
         [FactoryBot.attributes_or_build(@build_strategy, :api_backend_server, :host => "google.com")]
@@ -82,7 +82,7 @@ FactoryBot.define do
 
     factory :yahoo_api_backend do
       sequence(:name) { |n| "Yahoo #{n}" }
-      backend_host "yahoo.com"
+      backend_host { "yahoo.com" }
 
       servers do
         [FactoryBot.attributes_or_build(@build_strategy, :api_backend_server, :host => "yahoo.com")]
@@ -107,7 +107,7 @@ FactoryBot.define do
 
     factory :bing_api_backend do
       sequence(:name) { |n| "Bing #{n}" }
-      backend_host "bing.com"
+      backend_host { "bing.com" }
 
       servers do
         [FactoryBot.attributes_or_build(@build_strategy, :api_backend_server, :host => "bing.com")]

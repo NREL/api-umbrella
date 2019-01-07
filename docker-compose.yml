@@ -7,10 +7,6 @@ services:
     volumes:
       - .:/app
       - build_cache:/build
-    tmpfs:
-      # Mount the ember-cli tmp directory as a tmpfs partition for better
-      # performance.
-      - /app/src/api-umbrella/admin-ui/tmp:rw,size=128m,mode=1777
     environment:
       HTTP_PORT: 8200
       HTTPS_PORT: 8201

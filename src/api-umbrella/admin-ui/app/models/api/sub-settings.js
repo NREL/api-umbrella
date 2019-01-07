@@ -31,8 +31,8 @@ export default DS.Model.extend(Validations, {
   },
 
   setDefaults() {
-    if(!this.get('settings')) {
-      this.set('settings', this.get('store').createRecord('api/settings'));
+    if(!this.settings) {
+      this.set('settings', this.store.createRecord('api/settings'));
     }
   },
 }).reopenClass({

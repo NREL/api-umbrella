@@ -1,5 +1,6 @@
 import Component from '@ember/component';
 import Save from 'api-umbrella-admin-ui/mixins/save';
+import escape from 'lodash-es/escape';
 import { t } from 'api-umbrella-admin-ui/utils/i18n';
 
 export default Component.extend(Save, {
@@ -37,9 +38,9 @@ export default Component.extend(Save, {
       this.saveRecord({
         transitionToRoute: 'api_users',
         message(model) {
-          let message = 'Successfully saved the user "' + _.escape(model.get('email')) + '"';
+          let message = 'Successfully saved the user "' + escape(model.get('email')) + '"';
           if(model.get('apiKey')) {
-            message += '<br>API Key: <code>' + _.escape(model.get('apiKey')) + '</code>';
+            message += '<br>API Key: <code>' + escape(model.get('apiKey')) + '</code>';
           }
 
           return message;

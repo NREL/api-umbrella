@@ -15,8 +15,8 @@ class Test::AdminUi::TestPermissionsNavigation < Minitest::Capybara::Test
 
     assert_nav([
       "API Umbrella",
-      "Analytics ",
-      "Users ",
+      "Analytics",
+      "Users",
       "Configuration",
     ])
 

@@ -1,6 +1,7 @@
 import $ from 'jquery';
 import Base from 'ember-simple-auth/authenticators/base';
 import { Promise } from 'rsvp';
+import bootbox from 'bootbox';
 import { run } from '@ember/runloop';
 
 export default Base.extend({

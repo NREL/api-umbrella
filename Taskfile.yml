@@ -247,6 +247,7 @@ tasks:
       - ./tasks/app-deps/admin-ui/yarn
     sources:
       - ./build/work/stamp/build-deps/yarn
+      - ./src/api-umbrella/admin-ui/.yarnrc
       - ./src/api-umbrella/admin-ui/package.json
       - ./src/api-umbrella/admin-ui/yarn.lock
       - ./tasks/app-deps/admin-ui/yarn
@@ -787,16 +788,6 @@ tasks:
       - ./build/work/stamp/test-deps/openldap
     method: checksum
 
-  test-deps:phantomjs:
-    cmds:
-      - ./tasks/test-deps/phantomjs
-    sources:
-      - ./tasks/test-deps/phantomjs
-      - ./tasks/helpers.sh
-    generates:
-      - ./build/work/stamp/test-deps/phantomjs
-    method: checksum
-
   test-deps:shellcheck:
     cmds:
       - ./tasks/test-deps/shellcheck
@@ -826,7 +817,6 @@ tasks:
       - task: test-deps:lua:penlight
       - task: test-deps:mailhog
       - task: test-deps:openldap
-      - task: test-deps:phantomjs
       - task: test-deps:shellcheck
       - task: test-deps:unbound
 
