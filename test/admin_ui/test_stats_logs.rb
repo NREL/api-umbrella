@@ -163,6 +163,10 @@ class Test::AdminUi::TestStatsLogs < Minitest::Capybara::Test
       "Content Type",
       "Accept Encoding",
       "User Agent",
+      "User Agent Family",
+      "User Agent Type",
+      "Referer",
+      "Origin",
     ], csv[0])
   end
 

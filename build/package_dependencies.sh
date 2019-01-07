@@ -104,6 +104,9 @@ if [ -f /etc/redhat-release ]; then
     unzip
     xz
 
+    # For "unbuffer" command for Taskfile.
+    expect
+
     # Building the static-site
     ruby
     rubygem-bundler
@@ -255,6 +258,9 @@ elif [ -f /etc/debian_version ]; then
     unzip
     uuid-dev
     xz-utils
+
+    # For "unbuffer" command for Taskfile.
+    expect
 
     # Building the static-site
     ruby

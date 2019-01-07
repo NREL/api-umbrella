@@ -16,7 +16,7 @@ ConfigPendingChanges.reopenClass({
         url: this.urlRoot,
         data: params,
       }).then(function(data) {
-        resolve(new ConfigPendingChanges(data));
+        resolve(ConfigPendingChanges.create(data));
       }, function(data) {
         reject(data.responseText);
       });
