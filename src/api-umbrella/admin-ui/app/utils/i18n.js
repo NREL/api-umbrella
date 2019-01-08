@@ -1,4 +1,4 @@
-import Jed from 'npm:jed';
+import Jed from 'jed';
 
 const i18n = new Jed({
   locale_data: window.localeData,
