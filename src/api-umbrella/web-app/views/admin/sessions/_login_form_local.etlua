@@ -12,12 +12,14 @@
       <input class="form-control password optional" type="password" name="admin[password]" id="admin_password" />
     </div>
     <div class="row">
-      <div class="col-xs-6">
-        <div class="form-group boolean optional admin_remember_me">
-          <div class="checkbox"><input value="0" type="hidden" name="admin[remember_me]" /><label class="boolean optional" for="admin_remember_me"><input class="boolean optional" type="checkbox" value="1" name="admin[remember_me]" id="admin_remember_me" /><%= t("Remember me") %></label></div>
+      <div class="col-6">
+        <div class="form-group custom-control custom-checkbox">
+          <input value="0" type="hidden" name="admin[remember_me]" />
+          <input class="custom-control-input" type="checkbox" value="1" name="admin[remember_me]" id="admin_remember_me" />
+          <label class="custom-control-label" for="admin_remember_me"><%= t("Remember me") %></label>
         </div>
       </div>
-      <div class="col-xs-6 text-right">
+      <div class="col-6 text-right">
         <a href="/admins/password/new"><%= t("Forgot your password?") %></a><br />
       </div>
     </div>

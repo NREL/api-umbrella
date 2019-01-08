@@ -5,6 +5,7 @@
     <title>API Umbrella Admin</title>
     <meta content="width=device-width,initial-scale=1" name="viewport">
     <link rel="stylesheet" media="screen" href="/web-assets/<%= LOGIN_CSS_FILENAME %>" />
+    <script defer src="/web-assets/<%= LOGIN_JS_FILENAME %>"></script>
   </head>
   <body>
     <div class="login">

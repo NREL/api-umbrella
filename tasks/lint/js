@@ -9,3 +9,8 @@ set -x
   PATH="$DEV_PATH" yarn run lint:js
   PATH="$DEV_PATH" yarn run lint:hbs
 )
+
+(
+  cd "$SOURCE_DIR/src/api-umbrella/web-app"
+  PATH="$DEV_PATH" ./node_modules/.bin/eslint .
+)

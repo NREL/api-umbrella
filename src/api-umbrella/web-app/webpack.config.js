@@ -1,47 +1,43 @@
+'use strict';
+
 const path = require('path');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
-const ExtractTextPlugin = require('extract-text-webpack-plugin');
-
-const extractStylesheet = new ExtractTextPlugin({
-  filename: './assets/login.css',
-});
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
 module.exports = {
   entry: {
-    'login': './assets/login.scss',
+    login: './assets/login.js',
   },
   output: {
     path: path.resolve(__dirname, './assets/dist'),
-    filename: '[name]-[hash].css',
+    filename: '[name]-[hash].js',
   },
   module: {
     rules: [
       {
-        test: /\.woff2?$|\.ttf$|\.eot$|\.svg$/,
-        loader: 'file-loader?name=[name]-[hash].[ext]',
-      },
-      {
         test: /\.scss$/,
-        use: ExtractTextPlugin.extract({
-          use: [
-            {
-              loader: 'css-loader',
+        use: [
+          {
+            loader: MiniCssExtractPlugin.loader,
+          },
+          {
+            loader: 'css-loader',
+          },
+          {
+            loader: 'sass-loader',
+            options: {
+              outputStyle: 'compressed',
             },
-            {
-              loader: 'sass-loader',
-              options: {
-                outputStyle: 'compressed',
-                // Increase sass number precision for bootstrap-sass.
-                precision: 8,
-              },
-            },
-          ],
-        }),
+          },
+        ],
       },
-    ]
+    ],
   },
   plugins: [
     new CleanWebpackPlugin(['./assets/dist']),
-    new ExtractTextPlugin('[name]-[hash].css'),
-  ]
+    new MiniCssExtractPlugin({
+      filename: '[name]-[hash].css',
+      chunkFilename: '[id]-[hash].css',
+    }),
+  ],
 };

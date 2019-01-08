@@ -21,6 +21,13 @@ else
   ngx.log(ngx.ERR, "could not find login css file path")
 end
 
+local login_js_paths = dir_getfiles(path.join(config["_embedded_root_dir"], "apps/core/current/build/dist/web-assets"), "login-*.js")
+if login_js_paths and #login_js_paths == 1 then
+  LOGIN_JS_FILENAME = path.basename(login_js_paths[1])
+else
+  ngx.log(ngx.ERR, "could not find login js file path")
+end
+
 LOCALE_DATA = {}
 local locale_paths = dir_getfiles(path.join(config["_embedded_root_dir"], "apps/core/current/build/dist/locale"), "*.json")
 for _, locale_path in ipairs(locale_paths) do
