@@ -27,7 +27,7 @@ class Test::AdminUi::Login::TestLocalProvider < Minitest::Capybara::Test
     # Local login fields
     assert_field("Email")
     assert_field("Password")
-    assert_field("Remember me")
+    assert_field("Remember me", :visible => :all)
     assert_link("Forgot your password?")
     assert_button("Sign in")
 

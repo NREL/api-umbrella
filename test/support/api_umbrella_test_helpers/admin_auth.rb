@@ -6,14 +6,13 @@ module ApiUmbrellaTestHelpers
     # Since lua-resty-session checks the user agent when decrypting the session
     # (to ensure the session hasn't been lifted and being used elsewhere), set
     # a hard-coded user agent when we're pre-seeding the session cookie value.
-    STATIC_USER_AGENT = "Test - Static user agent for session user agent checks".freeze
+    STATIC_USER_AGENT = "TestStaticUserAgent".freeze
 
     include ApiUmbrellaTestHelpers::Selenium
 
     def admin_login(admin = nil)
       Capybara.reset_session!
       selenium_add_cookie("_api_umbrella_session", encrypt_session_cookie(admin_session_data(admin)))
-      page.driver.add_headers("User-Agent" => STATIC_USER_AGENT)
 
       visit "/admin/login"
       assert_logged_in(admin)
@@ -217,13 +216,18 @@ module ApiUmbrellaTestHelpers
     end
 
     def csrf_token(csrf_token_key)
-      message = Base64.strict_encode64(MultiJson.dump({
-        "key" => csrf_token_key,
-        "expires" => Time.now.to_i + 60 * 60 * 8,
-      })).strip
-      signature = Base64.strict_encode64(OpenSSL::HMAC.digest("sha1", $config["secret_key"], message)).strip
+      iv = SecureRandom.hex(6)
+      data_encrypted = Encryptor.encrypt({
+        :value => csrf_token_key,
+        :iv => iv,
+        :key => Digest::SHA256.digest($config["secret_key"]),
+        :auth_data => [
+          STATIC_USER_AGENT,
+          "http",
+        ].join(""),
+      })
 
-      "#{message}.#{signature}"
+      "#{Base64.strict_encode64(data_encrypted)}|#{iv}"
     end
 
     def admin_session_data(admin)
@@ -245,11 +249,11 @@ module ApiUmbrellaTestHelpers
       iv = id[0, 12]
       expires = Time.now.to_i + 3600
       data_serialized = MultiJson.dump(data)
-      hmac_data_key = OpenSSL::HMAC.digest("sha1", $config["secret_key"], [
+      hmac_data_key = OpenSSL::HMAC.digest("sha256", $config["secret_key"], [
         id,
         expires,
       ].join(""))
-      hmac_data = OpenSSL::HMAC.digest("sha1", hmac_data_key, [
+      hmac_data = OpenSSL::HMAC.digest("sha256", hmac_data_key, [
         id,
         expires,
         data_serialized,
@@ -308,11 +312,11 @@ module ApiUmbrellaTestHelpers
       iv = id[0, 12]
       expires = Time.now.to_i + 3600
       data_serialized = MultiJson.dump(data)
-      hmac_data_key = OpenSSL::HMAC.digest("sha1", $config["secret_key"], [
+      hmac_data_key = OpenSSL::HMAC.digest("sha256", $config["secret_key"], [
         id,
         expires,
       ].join(""))
-      hmac_data = OpenSSL::HMAC.digest("sha1", hmac_data_key, [
+      hmac_data = OpenSSL::HMAC.digest("sha256", hmac_data_key, [
         id,
         expires,
         data_serialized,

@@ -52,7 +52,7 @@ class Test::AdminUi::Login::TestLdapProvider < Minitest::Capybara::Test
 
     # No local login fields
     refute_field("Email")
-    refute_field("Remember me")
+    refute_field("Remember me", :visible => :all)
     refute_link("Forgot your password?")
 
     # No external login links

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-lua_resty_mail_version="1.0.0"
+lua_resty_mail_version="1.0.1"
 
 set -e -u -x
 source ./tasks/helpers.sh

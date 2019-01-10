@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-lua_lapis_version="1.6.0-1"
+lua_lapis_version="1.7.0-1"
 
 set -e -u -x
 source ./tasks/helpers.sh

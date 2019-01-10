@@ -1,5 +1,6 @@
 require "capybara/minitest"
 require "capybara-screenshot/minitest"
+require "support/api_umbrella_test_helpers/admin_auth"
 require "support/api_umbrella_test_helpers/capybara_codemirror"
 require "support/api_umbrella_test_helpers/capybara_custom_bootstrap_inputs"
 require "support/api_umbrella_test_helpers/capybara_selectize"
@@ -21,6 +22,9 @@ def capybara_register_driver(driver_name, options = {})
     # too small:
     # https://github.com/GoogleChrome/puppeteer/blob/v1.10.0/docs/troubleshooting.md#tips
     driver_options.args << "--disable-dev-shm-usage"
+
+    # Use a static user agent for some session tests.
+    driver_options.args << "--user-agent=#{ApiUmbrellaTestHelpers::AdminAuth::STATIC_USER_AGENT}"
 
     if options[:lang]
       driver_options.args << "--lang=#{options[:lang]}"

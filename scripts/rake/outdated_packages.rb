@@ -56,7 +56,7 @@ class OutdatedPackages
       :luarock => "inspect",
     },
     "lua_lapis" => {
-      :git => "https://github.com/leafo/lapis.git",
+      :luarock => "lapis",
     },
     "lua_libcidr_ffi" => {
       :git => "https://github.com/GUI/lua-libcidr-ffi.git",
@@ -93,6 +93,15 @@ class OutdatedPackages
       :git => "https://github.com/cloudflare/lua-resty-logger-socket.git",
       :git_ref => "master",
     },
+    "lua_resty_mail" => {
+      :git => "https://github.com/GUI/lua-resty-mail.git",
+    },
+    "lua_resty_nettle" => {
+      :git => "https://github.com/bungle/lua-resty-nettle.git",
+    },
+    "lua_resty_session" => {
+      :git => "https://github.com/bungle/lua-resty-session.git",
+    },
     "lua_resty_shcache" => {
       :git => "https://github.com/cloudflare/lua-resty-shcache.git",
       :git_ref => "master",
@@ -102,6 +111,9 @@ class OutdatedPackages
     },
     "lua_resty_uuid" => {
       :luarock => "lua-resty-uuid",
+    },
+    "lua_resty_validation" => {
+      :git => "https://github.com/bungle/lua-resty-validation.git",
     },
     "luarocks" => {
       :git => "https://github.com/keplerproject/luarocks.git",
@@ -122,24 +134,6 @@ class OutdatedPackages
     "openssl" => {
       :git => "https://github.com/openssl/openssl.git",
       :string_version => true,
-    },
-    "opm_libcidr" => {
-      :git => "https://github.com/GUI/lua-libcidr-ffi.git",
-    },
-    "opm_resty_http" => {
-      :git => "https://github.com/pintsized/lua-resty-http.git",
-    },
-    "opm_resty_mail" => {
-      :git => "https://github.com/GUI/lua-resty-mail.git",
-    },
-    "opm_resty_nettle" => {
-      :git => "https://github.com/bungle/lua-resty-nettle.git",
-    },
-    "opm_resty_session" => {
-      :git => "https://github.com/bungle/lua-resty-session.git",
-    },
-    "opm_resty_validation" => {
-      :git => "https://github.com/bungle/lua-resty-validation.git",
     },
     "pcre" => {
       :http => "https://ftp.pcre.org/pub/pcre/",

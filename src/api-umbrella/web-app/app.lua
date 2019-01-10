@@ -13,6 +13,7 @@ local lapis_config = require("lapis.config").get()
 local pg_utils = require "api-umbrella.utils.pg_utils"
 local resty_session = require "resty.session"
 local session_cipher = require "api-umbrella.web-app.utils.session_cipher"
+local session_hmac = require "api-umbrella.web-app.utils.session_hmac"
 local session_identifier = require "api-umbrella.web-app.utils.session_identifier"
 local session_postgresql_storage = require "api-umbrella.web-app.utils.session_postgresql_storage"
 local t = require("api-umbrella.web-app.utils.gettext").gettext
@@ -90,6 +91,7 @@ local function init_session_db(self)
       },
     })
     self.session_db.cipher = session_cipher.new(self.session_db)
+    self.session_db.hmac = session_hmac
     self.session_db.identifier = session_identifier
     self.session_db.storage = session_postgresql_storage.new(self.session_db)
   end
@@ -121,6 +123,7 @@ local function init_session_cookie(self)
       },
     })
     self.session_cookie.cipher = session_cipher.new(self.session_cookie)
+    self.session_cookie.hmac = session_hmac
     self.session_cookie.identifier = session_identifier
   end
 end

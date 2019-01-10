@@ -60,7 +60,7 @@ function _M.decrypt(encrypted_value, iv, auth_data, options)
 
   -- Validate the auth tag.
   if auth_tag ~= encrypted_auth_tag then
-    ngx.log(ngx.ERR, "Failed to decrypt value. Is the current encryption_key the same as the one used to originally encrypt the value?")
+    ngx.log(ngx.ERR, "Failed to decrypt value (authentication tag did not match). Is the current encryption key or authentication tag the same as the one used to originally encrypt the value?")
     return nil, "decrypt failed"
   end
 

@@ -1,15 +1,21 @@
 local hmac = require "api-umbrella.utils.hmac"
 local json_encode = require "api-umbrella.utils.json_encode"
-local lapis_csrf = require "lapis.csrf"
+local encryptor = require "api-umbrella.utils.encryptor"
 local random_token = require "api-umbrella.utils.random_token"
 local t = require("api-umbrella.web-app.utils.gettext").gettext
+local split = require("ngx.re").split
 
 local _M = {}
 
+-- A CSRF token implementation.
+--
+-- Note that we're not using the default Lapis CSRF implementation. This
+-- implementation integrates a bit more easily with resty-session and the rest
+-- of our standard encryption libraries. It also makes generating the token a
+-- bit easier, since the token can be generated inside views, rather than
+-- having to be generated before (due to ordering of how Lapis sets cookies).
+
 function _M.generate_token(self)
-  -- Generate a random key and store it in the cookie session. The key is
-  -- necessary for Lapi's CSRF protection to actually be effective:
-  -- https://github.com/leafo/lapis/issues/219
   self:init_session_cookie()
   self.session_cookie:start()
   local csrf_token_key = self.session_cookie.data["csrf_token_key"]
@@ -19,26 +25,46 @@ function _M.generate_token(self)
     self.session_cookie:save()
   end
 
-  return lapis_csrf.generate_token(self, csrf_token_key)
+  local auth_data = (ngx.var.http_user_agent or "") .. (ngx.var.scheme or "")
+  local encrypted, iv = encryptor.encrypt(csrf_token_key, auth_data)
+  return encrypted .. "|" .. iv
+end
+
+local function validate_token(self)
+  self:init_session_cookie()
+  self.session_cookie:open()
+  local key = self.session_cookie.data["csrf_token_key"]
+  if not key then
+    return false, "Missing CSRF token key"
+  end
+
+  local csrf_token = self.params.csrf_token or ngx.var.http_x_csrf_token
+  if not csrf_token then
+    return false, "Missing CSRF token"
+  end
+
+  local parts = split(csrf_token, "\\|")
+  if #parts ~= 2 then
+    return false, "Unable to extract CSRF token"
+  end
+
+  local encrypted = parts[1]
+  local iv = parts[2]
+
+  local auth_data = (ngx.var.http_user_agent or "") .. (ngx.var.scheme or "")
+  local decrypted, decrypt_err = encryptor.decrypt(encrypted, iv, auth_data)
+  if decrypted == key then
+    return true
+  elseif decrypt_err then
+    return false, decrypt_err
+  else
+    return false, "Invalid CSRF token"
+  end
 end
 
 function _M.validate_token_filter(fn)
   return function(self, ...)
-    self:init_session_cookie()
-    self.session_cookie:open()
-    local key = self.session_cookie.data["csrf_token_key"]
-
-    local valid = false
-    local err
-    if not key then
-      err = "Missing CSRF token key"
-    else
-      if not self.params.csrf_token and ngx.var.http_x_csrf_token then
-        self.params.csrf_token = ngx.var.http_x_csrf_token
-      end
-      valid, err = lapis_csrf.validate_token(self, key)
-    end
-
+    local valid, err = validate_token(self)
     if not valid then
       ngx.log(ngx.WARN, "CSRF validation failure: ", err)
 
