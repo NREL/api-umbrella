@@ -1,9 +1,9 @@
 source "https://rubygems.org"
 
-gem "middleman", "~> 4.2.1"
+gem "middleman", "~> 4.3.0"
 
 # Assets
-gem "middleman-sprockets", "~> 4.1.0"
+gem "middleman-sprockets", "~> 4.1.1"
 
 # For execjs
 gem "mini_racer", "~> 0.2.4"
