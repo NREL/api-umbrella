@@ -36,9 +36,9 @@ class Test::Processes::TestFilePermissions < Minitest::Test
     assert_group(stat)
   end
 
-  def test_db_mongodb_dir
-    stat = File.stat(File.join($config["db_dir"], "mongodb"))
-    assert_equal("40750", stat.mode.to_s(8))
+  def test_db_postgresql_dir
+    stat = File.stat(File.join($config["db_dir"], "postgresql"))
+    assert_equal("40700", stat.mode.to_s(8))
     assert_owner(stat)
     assert_group(stat)
   end

@@ -121,6 +121,11 @@ function _M.authorize(self, strategy_name, url, params)
 end
 
 function _M.userinfo(self, strategy_name, options)
+  local err_param = self.params["error_reason"] or self.params["error"]
+  if err_param then
+    return nil, err_param
+  end
+
   self:init_session_cookie()
   self.session_cookie:open()
   if not self.session_cookie or not self.session_cookie.data or not self.session_cookie.data["oauth2_state"] then

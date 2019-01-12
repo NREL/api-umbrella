@@ -10,10 +10,6 @@ class Test::AdminUi::TestLoadingButton < Minitest::Capybara::Test
   def setup
     super
     setup_server
-    Api.delete_all
-    ApiScope.delete_all
-    WebsiteBackend.delete_all
-    ConfigVersion.delete_all
   end
 
   def after_all
@@ -59,14 +55,14 @@ class Test::AdminUi::TestLoadingButton < Minitest::Capybara::Test
     delay_server_responses(0.5) do
       admin_login
 
-      FactoryBot.create(:api)
+      FactoryBot.create(:api_backend)
       visit "/admin/#/config/publish"
       assert_loading_button("Publish", "Publishing...")
       assert_text("Successfully published the configuration")
 
       # Verify that after the first publish, the button gets reset and can be
       # used again.
-      FactoryBot.create(:api)
+      FactoryBot.create(:api_backend)
       find("nav a", :text => /Configuration/).click
       find("nav a", :text => /API Backends/).click
       assert_text("Add API Backend")

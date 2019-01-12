@@ -2,6 +2,7 @@ local Admin = require "api-umbrella.web-app.models.admin"
 local build_url = require "api-umbrella.utils.build_url"
 local cas = require "api-umbrella.web-app.utils.auth_external_cas"
 local config = require "api-umbrella.proxy.models.file_config"
+local escape_html = require("lapis.html").escape
 local flash = require "api-umbrella.web-app.utils.flash"
 local is_empty = require("pl.types").is_empty
 local ldap = require "api-umbrella.web-app.utils.auth_external_ldap"
@@ -13,18 +14,23 @@ local username_label = require "api-umbrella.web-app.utils.username_label"
 local _M = {}
 
 local function email_unverified_error(self)
-  flash.session(self, "danger", string.format(t([[The email address '%s' is not verified. Please contact us for further assistance.]]), self.username))
+  flash.session(self, "danger", string.format(t([[The email address '%s' is not verified. Please <a href="%s">contact us</a> for further assistance.]]), escape_html(self.username or ""), escape_html(config["contact_url"] or "")), { html_safe = true })
+  return { redirect_to = build_url("/admin/login") }
+end
+
+local function mfa_required_error(self)
+  flash.session(self, "danger", string.format(t([[You must use multi-factor authentication to sign in. Please try again, or <a href="%s">contact us</a> for further assistance.]]), escape_html(config["contact_url"] or "")), { html_safe = true })
   return { redirect_to = build_url("/admin/login") }
 end
 
 local function login(self, strategy_name, err)
   if err then
-    flash.session(self, "danger", string.format(t([[Could not authenticate you because "%s"]]), err))
+    flash.session(self, "danger", string.format(t([[Could not authenticate you because "%s".]]), err))
     return { redirect_to = build_url("/admin/login") }
   end
 
   if is_empty(self.username) then
-    flash.session(self, "danger", string.format(t([[Could not authenticate you because "%s"]]), t("Invalid credentials")))
+    flash.session(self, "danger", string.format(t([[Could not authenticate you because "%s".]]), t("Invalid credentials")))
     return { redirect_to = build_url("/admin/login") }
   end
 
@@ -32,7 +38,7 @@ local function login(self, strategy_name, err)
   if admin then
     return { redirect_to = login_admin(self, admin, strategy_name) }
   else
-    flash.session(self, "danger", string.format(t([[The account for "%s" is not authorized to access the admin. Please contact us for further assistance.]]), self.username))
+    flash.session(self, "danger", string.format(t([[The account for '%s' is not authorized to access the admin. Please <a href="%s">contact us</a> for further assistance.]]), escape_html(self.username or ""), escape_html(config["contact_url"] or "")), { html_safe = true })
     return { redirect_to = build_url("/admin/login") }
   end
 end
@@ -194,9 +200,11 @@ function _M.google_callback(self)
 end
 
 function _M.ldap_login(self)
-  self.admin_params = {}
   self.config = config
   self.username_label = username_label()
+  if not self.admin_params then
+    self.admin_params = {}
+  end
 
   if config["app_env"] == "test" and ngx.var.cookie_test_mock_userinfo then
     return _M.ldap_callback(self)
@@ -218,8 +226,8 @@ function _M.ldap_callback(self)
   else
     self.admin_params = admin_params
     self.username_label = username_label()
-    flash.now(self, "danger", string.format(t([[Could not authenticate you because "%s"]]), t("Invalid credentials")))
-    return { render = require("api-umbrella.web-app.views.admin.auth_external.ldap_login") }
+    flash.now(self, "danger", string.format(t([[Could not authenticate you because "%s".]]), t("Invalid credentials")))
+    return _M.ldap_login(self)
   end
 end
 
@@ -231,6 +239,12 @@ function _M.max_gov_callback(self)
   local userinfo, err = cas.userinfo(self, "max.gov")
   if userinfo then
     self.username = userinfo["user"]
+  end
+
+  if config["web"]["admin"]["auth_strategies"]["max.gov"]["require_mfa"] then
+    if not userinfo or not userinfo["max_security_level"] or not string.find(userinfo["max_security_level"], "securePlus2") then
+      return mfa_required_error(self)
+    end
   end
 
   return login(self, "max.gov", err)

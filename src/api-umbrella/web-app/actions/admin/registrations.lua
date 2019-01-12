@@ -12,7 +12,10 @@ local username_label = require "api-umbrella.web-app.utils.username_label"
 local _M = {}
 
 function _M.new(self)
-  self.admin_params = {}
+  if not self.admin_params then
+    self.admin_params = {}
+  end
+
   self.config = config
   self.username_label = username_label()
   return { render = require("api-umbrella.web-app.views.admin.registrations.new") }
@@ -68,9 +71,7 @@ return function(app)
         _M.first_time_setup_check(self)
       end,
       POST = csrf.validate_token_filter(capture_errors({
-        on_error = function()
-          return { render = require("api-umbrella.web-app.views.admin.registrations.new") }
-        end,
+        on_error = _M.new,
         _M.create,
       })),
     }))

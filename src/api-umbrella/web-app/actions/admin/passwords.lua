@@ -111,16 +111,12 @@ return function(app)
   if config["web"]["admin"]["auth_strategies"]["_enabled"]["local"] then
     app:get("/admins/password/new(.:format)", _M.new)
     app:post("/admins/password(.:format)", csrf.validate_token_filter(capture_errors({
-      on_error = function()
-        return { render = require("api-umbrella.web-app.views.admin.passwords.new") }
-      end,
+      on_error = _M.new,
       _M.create,
     })))
     app:get("/admins/password/edit(.:format)", _M.edit)
     app:post("/admins/password/update(.:format)", csrf.validate_token_filter(capture_errors({
-      on_error = function()
-        return { render = require("api-umbrella.web-app.views.admin.passwords.edit") }
-      end,
+      on_error = _M.edit,
       _M.update,
     })))
   end

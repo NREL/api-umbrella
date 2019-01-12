@@ -70,7 +70,7 @@ class Test::AdminUi::Login::TestLdapProvider < Minitest::Capybara::Test
     fill_in "Planet Express Username", :with => "hermes"
     fill_in "Planet Express Password", :with => "hermes"
     click_button "Sign in"
-    assert_text('The account for "hermes" is not authorized to access the admin. Please contact us for further assistance.')
+    assert_text("The account for 'hermes' is not authorized to access the admin. Please contact us for further assistance.")
   end
 
   def test_forbids_ldap_user_with_invalid_password

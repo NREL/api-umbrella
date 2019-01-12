@@ -23,7 +23,7 @@ module ApiUmbrellaTestHelpers
     def mock_userinfo(data)
       # Set a cookie to mock the userinfo responses. When the app is running in
       # test mode, it looks for this cookie to provide mock data.
-      selenium_add_cookie("test_mock_userinfo", Base64.urlsafe_encode64(MultiJson.dump(data)))
+      selenium_add_cookie("test_mock_userinfo", CGI.escape(Base64.strict_encode64(data)))
       yield
     ensure
       selenium_delete_cookie("test_mock_userinfo")

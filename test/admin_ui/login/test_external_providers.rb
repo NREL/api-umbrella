@@ -102,9 +102,8 @@ class Test::AdminUi::Login::TestExternalProviders < Minitest::Capybara::Test
     uri = Addressable::URI.parse(response.headers["Location"])
     assert_equal("https", uri.scheme)
     assert_equal("accounts.google.com", uri.host)
-    assert_equal("/o/oauth2/auth", uri.path)
+    assert_equal("/o/oauth2/v2/auth", uri.path)
     assert_equal([
-      "access_type",
       "client_id",
       "prompt",
       "redirect_uri",
@@ -112,7 +111,6 @@ class Test::AdminUi::Login::TestExternalProviders < Minitest::Capybara::Test
       "scope",
       "state",
     ].sort, uri.query_values.keys.sort)
-    assert_equal("offline", uri.query_values.fetch("access_type"))
     assert_equal("test_fake_id", uri.query_values.fetch("client_id"))
     assert_equal("select_account", uri.query_values.fetch("prompt"))
     # Ensure the host used to access the site is part of the redirect URI (and
@@ -120,7 +118,7 @@ class Test::AdminUi::Login::TestExternalProviders < Minitest::Capybara::Test
     # used instead).
     assert_equal("https://foobar.example.com:9081/admins/auth/google_oauth2/callback", uri.query_values.fetch("redirect_uri"))
     assert_equal("code", uri.query_values.fetch("response_type"))
-    assert_equal("https://www.googleapis.com/auth/userinfo.email", uri.query_values.fetch("scope"))
+    assert_equal("openid email", uri.query_values.fetch("scope"))
     assert_kind_of(String, uri.query_values.fetch("state"))
   end
 
@@ -198,6 +196,9 @@ class Test::AdminUi::Login::TestExternalProviders < Minitest::Capybara::Test
         <cas:serviceResponse xmlns:cas="http://www.yale.edu/tp/cas">
           <cas:authenticationSuccess>
             <cas:user>{{username}}</cas:user>
+            <cas:attributes>
+              <maxAttribute:MaxSecurityLevel>standard, securePlus2</maxAttribute:MaxSecurityLevel>
+            </cas:attributes>
           </cas:authenticationSuccess>
         </cas:serviceResponse>
       EOS

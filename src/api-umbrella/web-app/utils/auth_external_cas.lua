@@ -37,11 +37,19 @@ local function parse_userinfo(body)
   if data then
     local success_element = data:child_with_name("authenticationSuccess")
     if success_element then
+      userinfo = {}
+
       local user_element = success_element:child_with_name("user")
       if user_element then
-        userinfo = {
-          user = user_element:get_text(),
-        }
+        userinfo["user"] = user_element:get_text()
+      end
+
+      local attributes_element = success_element:child_with_name("attributes")
+      if attributes_element then
+        local max_security_level_element = attributes_element:child_with_name("maxAttribute:MaxSecurityLevel")
+        if max_security_level_element then
+          userinfo["max_security_level"] = max_security_level_element:get_text()
+        end
       end
     else
       return nil, t("Authorization failed")
@@ -55,9 +63,13 @@ function _M.authorize(strategy_name)
   local options = config["web"]["admin"]["auth_strategies"][strategy_name]["options"]
 
   local callback_url = service_url(strategy_name)
-  local redirect = cas_url_root(options) .. options["login_url"] .. "?" .. ngx.encode_args({
+  local params = {
     service = callback_url,
-  })
+  }
+  if config["web"]["admin"]["auth_strategies"]["max.gov"]["require_mfa"] then
+    params["securityLevel"] = "securePlus2"
+  end
+  local redirect = cas_url_root(options) .. options["login_url"] .. "?" .. ngx.encode_args(params)
 
   if config["app_env"] == "test" and ngx.var.cookie_test_mock_userinfo then
     redirect = callback_url

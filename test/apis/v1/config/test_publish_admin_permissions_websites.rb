@@ -8,9 +8,6 @@ class Test::Apis::V1::Config::TestPublishAdminPermissionsWebsites < Minitest::Te
   def setup
     super
     setup_server
-    Api.delete_all
-    WebsiteBackend.delete_all
-    ConfigVersion.delete_all
 
     @localhost_website = FactoryBot.create(:website_backend)
     @example_com_website = FactoryBot.create(:example_com_website_backend)
@@ -35,7 +32,7 @@ class Test::Apis::V1::Config::TestPublishAdminPermissionsWebsites < Minitest::Te
     }))
 
     assert_response_code(201, response)
-    active_config = ConfigVersion.active_config
+    active_config = PublishedConfig.active_config
     assert_equal(2, active_config["website_backends"].length)
     assert_equal([
       @localhost_website.id,
@@ -57,7 +54,7 @@ class Test::Apis::V1::Config::TestPublishAdminPermissionsWebsites < Minitest::Te
     }))
 
     assert_response_code(201, response)
-    active_config = ConfigVersion.active_config
+    active_config = PublishedConfig.active_config
     assert_equal(1, active_config["website_backends"].length)
     assert_equal(@localhost_website.id, active_config["website_backends"].first["_id"])
   end
@@ -78,7 +75,7 @@ class Test::Apis::V1::Config::TestPublishAdminPermissionsWebsites < Minitest::Te
     assert_response_code(403, response)
     data = MultiJson.load(response.body)
     assert_equal(["errors"], data.keys)
-    assert_nil(ConfigVersion.active_config)
+    assert_nil(PublishedConfig.active_config)
   end
 
   def test_reject_limited_admins_without_publish_permission
@@ -97,7 +94,7 @@ class Test::Apis::V1::Config::TestPublishAdminPermissionsWebsites < Minitest::Te
     assert_response_code(403, response)
     data = MultiJson.load(response.body)
     assert_equal(["errors"], data.keys)
-    assert_nil(ConfigVersion.active_config)
+    assert_nil(PublishedConfig.active_config)
   end
 
   def test_reject_limited_admins_without_root_url_permission
@@ -116,6 +113,6 @@ class Test::Apis::V1::Config::TestPublishAdminPermissionsWebsites < Minitest::Te
     assert_response_code(403, response)
     data = MultiJson.load(response.body)
     assert_equal(["errors"], data.keys)
-    assert_nil(ConfigVersion.active_config)
+    assert_nil(PublishedConfig.active_config)
   end
 end
