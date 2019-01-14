@@ -292,7 +292,7 @@ module ApiUmbrellaTestHelpers
 
     def override_config(config, reload_flag)
       self.config_lock.synchronize do
-        original_config = @@current_override_config
+        original_config = @@current_override_config.deep_dup
         original_config["version"] ||= SecureRandom.uuid
 
         begin
@@ -316,7 +316,7 @@ module ApiUmbrellaTestHelpers
         config["version"] = SecureRandom.uuid
         File.write(ApiUmbrellaTestHelpers::Process::CONFIG_OVERRIDES_PATH, YAML.dump(config))
         self.api_umbrella_process.reload(reload_flag)
-        @@current_override_config = config
+        @@current_override_config = config.deep_dup
         Timeout.timeout(50) do
           begin
             self.api_umbrella_process.wait_for_config_version("file_config_version", config["version"], config)

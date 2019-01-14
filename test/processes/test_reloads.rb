@@ -19,7 +19,7 @@ class Test::Processes::TestReloads < Minitest::Test
     # after each one.
     15.times do
       # Get the list of original nginx worker process PIDs on startup.
-      original_child_pids = nginx_child_pids(parent_pid)
+      original_child_pids = api_umbrella_process.nginx_child_pids(parent_pid, $config["nginx"]["workers"])
 
       # Send a reload signal to nginx.
       ::Process.kill("HUP", parent_pid.to_i)
@@ -28,20 +28,7 @@ class Test::Processes::TestReloads < Minitest::Test
       # processes is running. This prevents us from checking file descriptors
       # when some of the old worker processes are still alive, but in the
       # process of shutting down.
-      output = nil
-      begin
-        Timeout.timeout(70) do
-          loop do
-            new_child_pids = nginx_child_pids(parent_pid)
-            pid_intersection = new_child_pids & original_child_pids
-            break if(pid_intersection.empty?)
-
-            sleep 0.1
-          end
-        end
-      rescue Timeout::Error
-        flunk("nginx child processes did not change during reload. original_child_pids: #{original_child_pids.inspect} Last output: #{output.inspect}")
-      end
+      api_umbrella_process.nginx_wait_for_new_child_pids(parent_pid, $config["nginx"]["workers"], original_child_pids)
 
       # Make a number of concurrent requests to ensure that each nginx worker
       # process is warmed up. This ensures that each worker should at least
@@ -122,7 +109,7 @@ class Test::Processes::TestReloads < Minitest::Test
       parent_pid = nginx_parent_pid
 
       # Gather the worker ids at the start (so we can sanity check that the reloads happened).
-      original_child_pids = nginx_child_pids(parent_pid)
+      original_child_pids = api_umbrella_process.nginx_child_pids(parent_pid, $config["nginx"]["workers"])
 
       # Randomly send reload signals every 5-500ms during the testing period.
       reload_thread = Thread.new do
@@ -145,7 +132,7 @@ class Test::Processes::TestReloads < Minitest::Test
       reload_thread.exit
 
       # Gather the worker ids at the end (so we can sanity check that the reloads happened).
-      final_child_pids = nginx_child_pids(parent_pid)
+      final_child_pids = api_umbrella_process.nginx_child_pids(parent_pid, $config["nginx"]["workers"])
 
       refute_equal(original_child_pids.sort, final_child_pids.sort)
     end
@@ -204,27 +191,5 @@ class Test::Processes::TestReloads < Minitest::Test
     assert(parent_pid)
 
     parent_pid
-  end
-
-  def nginx_child_pids(parent_pid)
-    pids = []
-    output = nil
-    expected_num_workers = $config["nginx"]["workers"]
-    begin
-      Timeout.timeout(70) do
-        loop do
-          output, status = run_shell("pgrep", "-P", parent_pid)
-          assert_equal(0, status, output)
-          pids = output.strip.split("\n")
-          break if(pids.length == expected_num_workers)
-
-          sleep 0.1
-        end
-      end
-    rescue Timeout::Error
-      flunk("Did not find expected number of nginx child processes. Last output: #{output.inspect}")
-    end
-
-    pids
   end
 end

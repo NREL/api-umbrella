@@ -225,13 +225,48 @@ module ApiUmbrellaTestHelpers
       end
     end
 
-    def reload(flag)
-      reload = ChildProcess.build(*[File.join(API_UMBRELLA_SRC_ROOT, "bin/api-umbrella"), "reload", flag].flatten.compact)
+    def reload(flags)
+      flags = Array(flags)
+
+      # Read the currently active config (to detect any changes in
+      # $config["nginx"]["workers"]).
+      runtime_config_path = File.join($config["root_dir"], "var/run/runtime_config.yml")
+      $config = YAML.load_file(runtime_config_path)
+
+      # Get the list of original nginx worker process PIDs on startup.
+      if flags.empty? || flags.include?("--router")
+        nginx_parent_pid = perp_pid("nginx")
+        original_nginx_child_pids = nginx_child_pids(nginx_parent_pid, $config["nginx"]["workers"])
+      end
+      if flags.empty? || flags.include?("--web")
+        nginx_web_app_parent_pid = perp_pid("nginx-web-app")
+        original_nginx_web_app_child_pids = nginx_child_pids(nginx_web_app_parent_pid, $config["web"]["workers"])
+      end
+
+      # Send the reload command.
+      reload = ChildProcess.build(*[File.join(API_UMBRELLA_SRC_ROOT, "bin/api-umbrella"), "reload", flags].flatten.compact)
       reload.io.inherit!
       reload.environment["API_UMBRELLA_EMBEDDED_ROOT"] = EMBEDDED_ROOT
       reload.environment["API_UMBRELLA_CONFIG"] = CONFIG
       reload.start
       reload.wait
+
+      # Re-read the currently active config after reloading (to detect any
+      # changes in $config["nginx"]["workers"]).
+      $config = YAML.load_file(runtime_config_path)
+
+      # After sending the reload signal, wait until only the new set of worker
+      # processes is running. This prevents race conditions from occurring
+      # while testing reloads where some of the workers may still be reflecting
+      # the old configuration, while new workers have the new configuration. By
+      # waiting for all the workers to be new, that ensures a consistent point
+      # to test from.
+      if flags.empty? || flags.include?("--router")
+        nginx_wait_for_new_child_pids(nginx_parent_pid, $config["nginx"]["workers"], original_nginx_child_pids)
+      end
+      if flags.empty? || flags.include?("--web")
+        nginx_wait_for_new_child_pids(nginx_web_app_parent_pid, $config["web"]["workers"], original_nginx_web_app_child_pids)
+      end
     end
 
     def perp_signal(service_name, signal_name)
@@ -398,6 +433,50 @@ module ApiUmbrellaTestHelpers
         :pids => pids,
         :owners => owners,
       }
+    end
+
+    def nginx_child_pids(parent_pid, expected_num_workers)
+      parent_pid = Integer(parent_pid)
+      expected_num_workers = Integer(expected_num_workers)
+
+      pids = []
+      output = nil
+      begin
+        Timeout.timeout(70) do
+          loop do
+            output, status = run_shell("pgrep", "-P", parent_pid)
+            if status != 0
+              raise "Error fetching nginx child PIDs: #{output}"
+            end
+
+            pids = output.strip.split("\n")
+            break if(pids.length == expected_num_workers)
+
+            sleep 0.1
+          end
+        end
+      rescue Timeout::Error
+        raise "Did not find expected number of nginx child processes (#{expected_num_workers}). Last PIDs seen: #{pids.inspect} Last output: #{output.inspect}"
+      end
+
+      pids
+    end
+
+    def nginx_wait_for_new_child_pids(parent_pid, expected_num_workers, original_child_pids)
+      new_child_pids = nil
+      begin
+        Timeout.timeout(70) do
+          loop do
+            new_child_pids = nginx_child_pids(parent_pid, expected_num_workers)
+            pid_intersection = new_child_pids & original_child_pids
+            break if(pid_intersection.empty?)
+
+            sleep 0.1
+          end
+        end
+      rescue Timeout::Error
+        raise "nginx child processes did not change during reload. original_child_pids: #{original_child_pids.inspect} new_child_pids: #{new_child_pids.inspect}"
+      end
     end
   end
 end

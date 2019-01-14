@@ -60,10 +60,13 @@ return function(options)
 
   reload_perp(perp_base)
 
+  if config["_service_web_enabled?"] and (is_empty(options) or options["web"]) then
+    reload_nginx_web_app(perp_base)
+  end
+
   if config["_service_router_enabled?"] and (is_empty(options) or options["router"]) then
     reload_trafficserver(config)
     reload_nginx(perp_base)
-    reload_nginx_web_app(perp_base)
   end
 
   if config["app_env"] == "development" then
