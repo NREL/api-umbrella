@@ -146,6 +146,7 @@ GEM
       multi_json (>= 1.2)
     jwt (2.1.0)
     kramdown (1.17.0)
+    libv8 (3.16.14.19)
     loofah (2.2.3)
       crass (~> 1.0.2)
       nokogiri (>= 1.5.9)
@@ -261,6 +262,7 @@ GEM
     rb-fsevent (0.10.3)
     rb-inotify (0.10.0)
       ffi (~> 1.0)
+    ref (2.0.0)
     request_store (1.4.1)
       rack (>= 1.4)
     responders (2.4.0)
@@ -301,6 +303,9 @@ GEM
       actionpack (>= 4.0)
       activesupport (>= 4.0)
       sprockets (>= 3.0.0)
+    therubyracer (0.12.3)
+      libv8 (~> 3.16.14.15)
+      ref
     thor (0.20.3)
     thread_safe (0.3.6)
     tilt (2.0.9)
@@ -363,6 +368,7 @@ DEPENDENCIES
   safe_yaml (~> 1.0.4)
   sass-rails (~> 5.0)
   simple_form (~> 3.5)
+  therubyracer (~> 0.12.3)
 
 BUNDLED WITH
    1.17.3
