@@ -102,10 +102,8 @@ gem "simple_form", "~> 3.5"
 
 # Login stylesheets
 gem "sass-rails", "~> 5.0"
-gem "bootstrap", "~> 4.2.1"
-gem "font-awesome-rails", "~> 4.7.0"
-# execjs runtime needed for bootstrap dependency.
-gem "therubyracer", "~> 0.12.3"
+gem "bootstrap", "~> 4.2.1", :require => false
+gem "font-awesome-rails", "~> 4.7.0", :require => false
 
 # Table-less models
 gem "active_attr", "~> 0.12.0"

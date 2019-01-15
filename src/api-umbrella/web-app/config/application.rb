@@ -10,6 +10,11 @@ require "sprockets/railtie"
 # you've limited to :test, :development, or :production.
 Bundler.require(*Rails.groups)
 
+if(Rails.env.development? || ENV["RAILS_ASSETS_PRECOMPILE"])
+  require "bootstrap"
+  require "font-awesome-rails"
+end
+
 module ApiUmbrella
   class Application < Rails::Application
     config.autoload_paths += ["#{config.root}/lib"]
