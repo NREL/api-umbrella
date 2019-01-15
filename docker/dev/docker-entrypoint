@@ -24,6 +24,9 @@ ln -snf /build/test/tmp/run /app/test/tmp/run
 mkdir -p /app/build/work/tasks/app-deps/admin-ui/yarn/_persist/node_modules
 ln -snf /app/build/work/tasks/app-deps/admin-ui/yarn/_persist/node_modules /app/src/api-umbrella/admin-ui/node_modules
 
+mkdir -p /app/build/work/tasks/app-deps/web-app/yarn/_persist/node_modules
+ln -snf /app/build/work/tasks/app-deps/web-app/yarn/_persist/node_modules /app/src/api-umbrella/web-app/node_modules
+
 mkdir -p /app/build/work/tasks/test-deps/bundle/_persist/.bundle
 ln -snf /app/build/work/tasks/test-deps/bundle/_persist/.bundle /app/.bundle
 

@@ -6,7 +6,7 @@ source ./tasks/helpers.sh
 shopt -s globstar
 
 ln -snf "$WORK_DIR/tasks/app-deps/admin-ui/yarn/_persist/node_modules" "$SOURCE_DIR/src/api-umbrella/admin-ui/node_modules"
-ln -snf "$WORK_DIR/tasks/app-deps/web-app/bundle/_persist/.bundle" "$SOURCE_DIR/src/api-umbrella/web-app/.bundle"
+ln -snf "$WORK_DIR/tasks/app-deps/web-app/yarn/_persist/node_modules" "$SOURCE_DIR/src/api-umbrella/web-app/node_modules"
 
 # Due to some of our hard-coded assumptions about running things on specific
 # nodes, ensure that the CI is at least running on the number of nodes
