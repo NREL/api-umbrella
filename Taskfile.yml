@@ -829,6 +829,7 @@ tasks:
   lint:js:
     deps:
       - app-deps:admin-ui:yarn
+      - app-deps:web-app:yarn
     cmds:
       - unbuffer ./tasks/lint/js
 
