@@ -42,15 +42,33 @@ function _M.first(dict)
     })
 
     if res and (res.status == 200 or res.status == 201) then
-        local body= res.body
+        local body = res.body
         if not body then
             return nil
         end
         result = cjson.decode(body)
 
-        -- Validate the app id (token scope) for FIWARE services
-        if idp_back_name == "fiware-oauth2" and dict["idp"]["app_id"] ~= result["app_id"] then
-            return nil, "The provided token is not valid for the current scope"
+        if idp_back_name == "fiware-oauth2" then
+            -- Validate the app id (token scope) for FIWARE services
+            if dict["idp"]["app_id"] ~= result["app_id"] then
+                return nil, "The provided token is not valid for the current scope"
+            end
+
+            -- Process organization info to generate organization scope roles
+            if result["organizations"] ~= nil then
+                for _, org in ipairs(result["organizations"]) do
+                    for _, org_role in ipairs(org["roles"]) do
+                        -- Generate organization role
+                        local role_name = string.lower(org["name"]) .. "."
+
+                        role_name = role_name:gsub("%s+", "-")
+                        role_name = role_name .. org_role["name"]
+
+                        ngx.log(ngx.INFO, "Generated org role: ", role_name)
+                        result["roles"][#result["roles"] + 1] = role_name
+                    end
+                end
+            end
         end
     end
 
