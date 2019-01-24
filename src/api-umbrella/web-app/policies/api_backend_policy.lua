@@ -51,7 +51,7 @@ function _M.authorized_query_scope(current_admin, permission_id)
   end
 end
 
-function _M.authorize_show(current_admin, data, permission_id)
+function _M.is_authorized_show(current_admin, data, permission_id)
   assert(current_admin)
   assert(data)
 
@@ -85,7 +85,12 @@ function _M.authorize_show(current_admin, data, permission_id)
     end
   end
 
-  if all_url_matches_allowed then
+  return all_url_matches_allowed
+end
+
+function _M.authorize_show(current_admin, data, permission_id)
+  local allowed = _M.is_authorized_show(current_admin, data, permission_id)
+  if allowed then
     return true
   else
     return throw_authorization_error(current_admin)

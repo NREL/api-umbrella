@@ -144,11 +144,13 @@ local function model_pending_changes_json(active_records_config, model, policy, 
   for _, active_record_config in ipairs(active_records_config) do
     local pending_record_config = pending_records_config_by_id[active_record_config["id"]]
     if not pending_record_config then
-      table.insert(changes["deleted"], {
-        mode = "deleted",
-        active = active_record_config,
-        pending = nil,
-      })
+      if policy.is_authorized_show(current_admin, active_record_config, policy_permission_id) then
+        table.insert(changes["deleted"], {
+          mode = "deleted",
+          active = active_record_config,
+          pending = nil,
+        })
+      end
     end
   end
 
