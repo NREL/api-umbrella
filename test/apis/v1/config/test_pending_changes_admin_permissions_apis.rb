@@ -29,6 +29,9 @@ class Test::Apis::V1::Config::TestPendingChangesAdminPermissionsApis < Minitest:
 
     assert_response_code(200, response)
     data = MultiJson.load(response.body)
+    assert_equal([], data["config"]["apis"]["deleted"])
+    assert_equal([], data["config"]["apis"]["modified"])
+    assert_equal([], data["config"]["apis"]["new"])
     api_ids = data["config"]["apis"]["identical"].map { |api| api["pending"]["_id"] }
     assert_includes(api_ids, @api.id)
     assert_includes(api_ids, @google_api.id)
@@ -42,6 +45,9 @@ class Test::Apis::V1::Config::TestPendingChangesAdminPermissionsApis < Minitest:
 
     assert_response_code(200, response)
     data = MultiJson.load(response.body)
+    assert_equal([], data["config"]["apis"]["deleted"])
+    assert_equal([], data["config"]["apis"]["modified"])
+    assert_equal([], data["config"]["apis"]["new"])
     api_ids = data["config"]["apis"]["identical"].map { |api| api["pending"]["_id"] }
     assert_includes(api_ids, @google_api.id)
   end
@@ -52,6 +58,9 @@ class Test::Apis::V1::Config::TestPendingChangesAdminPermissionsApis < Minitest:
 
     assert_response_code(200, response)
     data = MultiJson.load(response.body)
+    assert_equal([], data["config"]["apis"]["deleted"])
+    assert_equal([], data["config"]["apis"]["modified"])
+    assert_equal([], data["config"]["apis"]["new"])
     api_ids = data["config"]["apis"]["identical"].map { |api| api["pending"]["_id"] }
     refute_includes(api_ids, @yahoo_api.id)
   end
@@ -62,6 +71,9 @@ class Test::Apis::V1::Config::TestPendingChangesAdminPermissionsApis < Minitest:
 
     assert_response_code(200, response)
     data = MultiJson.load(response.body)
+    assert_equal([], data["config"]["apis"]["deleted"])
+    assert_equal([], data["config"]["apis"]["modified"])
+    assert_equal([], data["config"]["apis"]["new"])
     api_ids = data["config"]["apis"]["identical"].map { |api| api["pending"]["_id"] }
     refute_includes(api_ids, @google_extra_url_match_api.id)
   end
@@ -72,6 +84,9 @@ class Test::Apis::V1::Config::TestPendingChangesAdminPermissionsApis < Minitest:
 
     assert_response_code(200, response)
     data = MultiJson.load(response.body)
+    assert_equal([], data["config"]["apis"]["deleted"])
+    assert_equal([], data["config"]["apis"]["modified"])
+    assert_equal([], data["config"]["apis"]["new"])
     api_ids = data["config"]["apis"]["identical"].map { |api| api["pending"]["_id"] }
     assert_equal(0, api_ids.length)
   end

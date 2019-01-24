@@ -27,6 +27,9 @@ class Test::Apis::V1::Config::TestPendingChangesAdminPermissionsWebsites < Minit
 
     assert_response_code(200, response)
     data = MultiJson.load(response.body)
+    assert_equal([], data["config"]["apis"]["deleted"])
+    assert_equal([], data["config"]["apis"]["modified"])
+    assert_equal([], data["config"]["apis"]["new"])
     website_ids = data["config"]["website_backends"]["identical"].map { |website| website["pending"]["_id"] }
     assert_includes(website_ids, @localhost_website.id)
     assert_includes(website_ids, @example_com_website.id)
@@ -38,6 +41,9 @@ class Test::Apis::V1::Config::TestPendingChangesAdminPermissionsWebsites < Minit
 
     assert_response_code(200, response)
     data = MultiJson.load(response.body)
+    assert_equal([], data["config"]["apis"]["deleted"])
+    assert_equal([], data["config"]["apis"]["modified"])
+    assert_equal([], data["config"]["apis"]["new"])
     website_ids = data["config"]["website_backends"]["identical"].map { |website| website["pending"]["_id"] }
     assert_includes(website_ids, @localhost_website.id)
   end
@@ -48,6 +54,9 @@ class Test::Apis::V1::Config::TestPendingChangesAdminPermissionsWebsites < Minit
 
     assert_response_code(200, response)
     data = MultiJson.load(response.body)
+    assert_equal([], data["config"]["apis"]["deleted"])
+    assert_equal([], data["config"]["apis"]["modified"])
+    assert_equal([], data["config"]["apis"]["new"])
     website_ids = data["config"]["website_backends"]["identical"].map { |website| website["pending"]["_id"] }
     refute_includes(website_ids, @example_com_website.id)
   end
@@ -58,6 +67,9 @@ class Test::Apis::V1::Config::TestPendingChangesAdminPermissionsWebsites < Minit
 
     assert_response_code(200, response)
     data = MultiJson.load(response.body)
+    assert_equal([], data["config"]["apis"]["deleted"])
+    assert_equal([], data["config"]["apis"]["modified"])
+    assert_equal([], data["config"]["apis"]["new"])
     website_ids = data["config"]["website_backends"]["identical"].map { |website| website["pending"]["_id"] }
     assert_equal(0, website_ids.length)
   end
@@ -68,6 +80,9 @@ class Test::Apis::V1::Config::TestPendingChangesAdminPermissionsWebsites < Minit
 
     assert_response_code(200, response)
     data = MultiJson.load(response.body)
+    assert_equal([], data["config"]["apis"]["deleted"])
+    assert_equal([], data["config"]["apis"]["modified"])
+    assert_equal([], data["config"]["apis"]["new"])
     website_ids = data["config"]["website_backends"]["identical"].map { |website| website["pending"]["_id"] }
     assert_equal(0, website_ids.length)
   end
