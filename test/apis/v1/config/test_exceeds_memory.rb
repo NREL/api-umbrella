@@ -8,9 +8,6 @@ class Test::Apis::V1::Config::TestExceedsMemory < Minitest::Test
   def setup
     super
     setup_server
-    Api.delete_all
-    WebsiteBackend.delete_all
-    ConfigVersion.delete_all
     once_per_class_setup do
       override_config_set({
         :nginx => {
@@ -50,7 +47,7 @@ class Test::Apis::V1::Config::TestExceedsMemory < Minitest::Test
 
     # Publish the API backend changes.
     publish_api_ids(api_ids)
-    config_initial = ConfigVersion.active
+    config_initial = PublishedConfig.active
     config_initial.wait_until_live
 
     # No errors should have occurred during publishing
@@ -61,11 +58,15 @@ class Test::Apis::V1::Config::TestExceedsMemory < Minitest::Test
     response = Typhoeus.get("https://127.0.0.1:9081/#{unique_test_id}/initial/0/info/", http_options)
     assert_response_code(200, response)
     data = MultiJson.load(response.body)
-    assert_equal(4096, data["headers"]["x-new-api"].bytesize)
+    10.times do |i|
+      assert_equal(250, data["headers"]["x-new-api#{i}"].bytesize)
+    end
     response = Typhoeus.get("https://127.0.0.1:9081/#{unique_test_id}/initial/1/info/", http_options)
     assert_response_code(200, response)
     data = MultiJson.load(response.body)
-    assert_equal(4096, data["headers"]["x-new-api"].bytesize)
+    10.times do |i|
+      assert_equal(250, data["headers"]["x-new-api#{i}"].bytesize)
+    end
 
     # Requests to the next set of config should still not succeed.
     response = Typhoeus.get("https://127.0.0.1:9081/#{unique_test_id}/too-big/0/info/", http_options)
@@ -81,12 +82,12 @@ class Test::Apis::V1::Config::TestExceedsMemory < Minitest::Test
 
     # Publish the API backend changes (which are too big to fit in memory).
     publish_api_ids(api_ids)
-    config_too_big = ConfigVersion.active
+    config_too_big = PublishedConfig.active
     config_too_big.wait_until_live
 
     # Ensure that a new configuration version was at least attempted to be
     # published (even though it was too big to successfully publish).
-    refute_equal(config_initial.version, config_too_big.version)
+    refute_equal(config_initial.id, config_too_big.id)
 
     # Verify that an error was printed to the log about being out of memory.
     log_output = log_tail.read
@@ -97,11 +98,15 @@ class Test::Apis::V1::Config::TestExceedsMemory < Minitest::Test
     response = Typhoeus.get("https://127.0.0.1:9081/#{unique_test_id}/initial/0/info/", http_options)
     assert_response_code(200, response)
     data = MultiJson.load(response.body)
-    assert_equal(4096, data["headers"]["x-new-api"].bytesize)
+    10.times do |i|
+      assert_equal(250, data["headers"]["x-new-api#{i}"].bytesize)
+    end
     response = Typhoeus.get("https://127.0.0.1:9081/#{unique_test_id}/initial/1/info/", http_options)
     assert_response_code(200, response)
     data = MultiJson.load(response.body)
-    assert_equal(4096, data["headers"]["x-new-api"].bytesize)
+    10.times do |i|
+      assert_equal(250, data["headers"]["x-new-api#{i}"].bytesize)
+    end
 
     # The new API backends (that were too big to fit into memory) should still
     # fail, since there wasn't enough memory to successfully publish them.
@@ -114,17 +119,19 @@ class Test::Apis::V1::Config::TestExceedsMemory < Minitest::Test
   private
 
   def create_api(frontend_prefix)
-    api_attributes = FactoryBot.attributes_for(:api, {
+    # Add some large headers so each API backend will take up more memory.
+    headers = []
+    10.times do |i|
+      headers << { :key => "X-New-Api#{i}", :value => SecureRandom.hex(125) }
+    end
+
+    api_attributes = FactoryBot.attributes_for(:api_backend, {
       :frontend_host => "127.0.0.1",
       :backend_host => "127.0.0.1",
       :servers => [{ :host => "127.0.0.1", :port => 9444 }],
       :url_matches => [{ :frontend_prefix => frontend_prefix, :backend_prefix => "/" }],
       :settings => {
-        :headers => [
-          # Add some large headers so each API backend will take up more
-          # memory.
-          { :key => "X-New-Api", :value => SecureRandom.hex(2048) },
-        ],
+        :headers => headers,
       },
     })
     response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/apis.json", http_options.deep_merge(admin_token).deep_merge({
