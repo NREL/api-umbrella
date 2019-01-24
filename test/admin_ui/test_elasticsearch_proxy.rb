@@ -1,7 +1,5 @@
 require_relative "../test_helper"
 
-# Deprecated: Remove this test, since we're no longer providing this proxy
-# functionality.
 class Test::AdminUi::TestElasticsearchProxy < Minitest::Capybara::Test
   include Capybara::Screenshot::MiniTestPlugin
   include ApiUmbrellaTestHelpers::AdminAuth
@@ -12,29 +10,33 @@ class Test::AdminUi::TestElasticsearchProxy < Minitest::Capybara::Test
     setup_server
   end
 
-  def test_not_found_for_unauthenticated_requests
+  def test_redirect_to_login_for_unauthenticated_requests
     FactoryBot.create(:admin)
 
     visit "/admin/elasticsearch"
-    assert_equal(404, page.status_code)
+    assert_text("You need to sign in")
+    refute_text('"lucene_version"')
+    assert_match(%r{/admin/elasticsearch\z}, page.current_url)
 
     visit "/admin/elasticsearch/_search"
-    assert_equal(404, page.status_code)
+    assert_text("You need to sign in")
+    refute_text('"hits"')
+    assert_match(%r{/admin/elasticsearch/_search\z}, page.current_url)
   end
 
-  def test_not_found_for_unauthorized_admins
+  def test_forbidden_for_unauthorized_admins
     admin_login(FactoryBot.create(:limited_admin))
 
     visit "/admin/elasticsearch"
-    assert_text("Forbidden")
+    assert_text("FORBIDDEN")
     refute_text('"lucene_version"')
 
     visit "/admin/elasticsearch/_search"
-    assert_text("Forbidden")
+    assert_text("FORBIDDEN")
     refute_text('"hits"')
   end
 
-  def test_not_found_for_superuser_admins
+  def test_allowed_for_superuser_admins
     admin_login
 
     visit "/admin/elasticsearch"
@@ -47,8 +49,13 @@ class Test::AdminUi::TestElasticsearchProxy < Minitest::Capybara::Test
     response = Typhoeus.get("https://127.0.0.1:9081/admin/elasticsearch/_plugin/foobar", keyless_http_options.deep_merge({
       :headers => {
         "Cookie" => "_api_umbrella_session=#{selenium_cookie_named("_api_umbrella_session").fetch(:value)}",
+        "User-Agent" => ApiUmbrellaTestHelpers::AdminAuth::STATIC_USER_AGENT,
       },
     }))
-    assert_response_code(404, response)
+    assert_response_code(301, response)
+    assert_equal("/admin/elasticsearch/_plugin/foobar/", response.headers["Location"])
+    assert_match(%r{URL=/admin/elasticsearch/_plugin/foobar/}, response.body)
+    assert_nil(response.headers["Content-Length"])
+    assert_equal("chunked", response.headers["Transfer-Encoding"])
   end
 end

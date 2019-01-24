@@ -231,6 +231,7 @@ app.handle_404 = handle_404
 app:before_filter(before_filter)
 
 require("api-umbrella.web-app.actions.admin.auth_external")(app)
+require("api-umbrella.web-app.actions.admin.elasticsearch")(app)
 require("api-umbrella.web-app.actions.admin.passwords")(app)
 require("api-umbrella.web-app.actions.admin.registrations")(app)
 require("api-umbrella.web-app.actions.admin.server_side_loader")(app)

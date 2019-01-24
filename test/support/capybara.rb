@@ -77,6 +77,7 @@ Capybara::Chromedriver::Logger.filters = [
   /127.0.0.1.*This site does not have a valid SSL certificate/,
 
   # Ignore expected ajax request failures.
+  /127.0.0.1.*the server responded with a status of 401/,
   /127.0.0.1.*the server responded with a status of 403/,
   /127.0.0.1.*the server responded with a status of 422/,
 ]
