@@ -35,6 +35,8 @@ http {
   lua_check_client_abort on;
   if_modified_since off;
 
+  lua_shared_dict active_config {{nginx.shared_dicts.active_config.size}};
+  lua_shared_dict interval_locks {{nginx.shared_dicts.interval_locks.size}};
   lua_shared_dict locks {{nginx.shared_dicts.locks.size}};
 
   {{#dns_resolver._nameservers_nginx}}
@@ -47,6 +49,7 @@ http {
   include ./realip.conf;
 
   init_by_lua_file '{{_src_root_dir}}/src/api-umbrella/web-app/hooks/init.lua';
+  init_worker_by_lua_file '{{_src_root_dir}}/src/api-umbrella/web-app/hooks/init_worker.lua';
 
   server {
     listen {{web.host}}:{{web.port}} so_keepalive=on;

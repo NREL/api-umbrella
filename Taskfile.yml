@@ -101,6 +101,16 @@ tasks:
       - ./build/work/stamp/deps/libgeoip
     method: checksum
 
+  deps:libpsl:
+    cmds:
+      - ./tasks/deps/libpsl
+    sources:
+      - ./tasks/deps/libpsl
+      - ./tasks/helpers.sh
+    generates:
+      - ./build/work/stamp/deps/libpsl
+    method: checksum
+
   deps:luarocks:
     deps:
       - deps:openresty
@@ -211,6 +221,7 @@ tasks:
       - task: deps:elasticsearch
       - task: deps:geolitecity
       - task: deps:libcidr
+      - task: deps:libpsl
       - task: deps:luarocks
       - task: deps:openresty
       - task: deps:perp
@@ -446,6 +457,21 @@ tasks:
       - ./build/work/stamp/app-deps/lua/penlight
     method: checksum
 
+  app-deps:lua:psl:
+    deps:
+      - deps:libpsl
+      - deps:luarocks
+    cmds:
+      - ./tasks/app-deps/lua/psl
+    sources:
+      - ./build/work/stamp/deps/libpsl
+      - ./build/work/stamp/deps/luarocks
+      - ./tasks/app-deps/lua/psl
+      - ./tasks/helpers.sh
+    generates:
+      - ./build/work/stamp/app-deps/lua/psl
+    method: checksum
+
   app-deps:lua:resty-auto-ssl:
     deps:
       - deps:luarocks
@@ -608,6 +634,7 @@ tasks:
       - task: app-deps:lua:lustache
       - task: app-deps:lua:lyaml
       - task: app-deps:lua:penlight
+      - task: app-deps:lua:psl
       - task: app-deps:lua:resty-auto-ssl
       - task: app-deps:lua:resty-http
       - task: app-deps:lua:resty-logger-socket

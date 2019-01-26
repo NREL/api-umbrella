@@ -8,11 +8,13 @@ local datatables = require "api-umbrella.web-app.utils.datatables"
 local db = require "lapis.db"
 local dbify_json_nulls = require "api-umbrella.web-app.utils.dbify_json_nulls"
 local deep_merge_overwrite_arrays = require "api-umbrella.utils.deep_merge_overwrite_arrays"
+local deepcopy = require("pl.tablex").deepcopy
 local flatten_headers = require "api-umbrella.utils.flatten_headers"
 local is_array = require "api-umbrella.utils.is_array"
 local is_hash = require "api-umbrella.utils.is_hash"
 local json_params = require("lapis.application").json_params
 local json_response = require "api-umbrella.web-app.utils.json_response"
+local known_domains = require "api-umbrella.utils.known_domains"
 local parse_post_for_pseudo_ie_cors = require "api-umbrella.web-app.utils.parse_post_for_pseudo_ie_cors"
 local require_admin = require "api-umbrella.web-app.utils.require_admin"
 local respond_to = require "api-umbrella.web-app.utils.respond_to"
@@ -59,7 +61,12 @@ local function send_welcome_email(self, api_user)
     return nil
   end
 
-  local ok, err = api_user_welcome_mailer(api_user, self.params["options"])
+  local options = deepcopy(self.params["options"])
+  options["example_api_url"] = known_domains.sanitized_api_url(options["example_api_url"])
+  options["contact_url"] = known_domains.sanitized_url(options["contact_url"])
+  options["email_from_address"] = known_domains.sanitized_email(options["email_from_address"])
+
+  local ok, err = api_user_welcome_mailer(api_user, options)
   if not ok then
     ngx.log(ngx.ERR, "mail error: ", err)
   end

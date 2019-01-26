@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+libpsl_version="0.20.2"
+libpsl_hash="f604f7d30d64bc673870ecf84b860a1e"
+
+set -e -u -x
+source ./tasks/helpers.sh
+
+task_working_dir
+download "https://github.com/rockdaboot/libpsl/releases/download/libpsl-$libpsl_version/libpsl-$libpsl_version.tar.gz" "md5" "$libpsl_hash"
+extract_download "libpsl-$libpsl_version.tar.gz"
+
+cd "libpsl-$libpsl_version"
+./configure --prefix="$INSTALL_PREFIX_EMBEDDED"
+make
+make install DESTDIR="$STAGE_DIR"
+
+stamp

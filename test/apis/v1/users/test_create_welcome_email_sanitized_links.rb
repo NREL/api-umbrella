@@ -188,14 +188,14 @@ class Test::Apis::V1::Users::TestCreateWelcomeEmailSanitizedLinks < Minitest::Te
     })
 
     assert_equal(["test@#{host}"], message.fetch("Content").fetch("Headers").fetch("From"))
-    assert_match("https://#{host}/api.json?test=1", message.fetch("_mime_parts").fetch("text/plain; charset=UTF-8").fetch("Body"))
-    assert_match("https://#{host}/contact-us", message.fetch("_mime_parts").fetch("text/plain; charset=UTF-8").fetch("Body"))
+    assert_match("https://#{host}/api.json?test=1", message.fetch("_mime_parts").fetch("text/plain").fetch("_body"))
+    assert_match("https://#{host}/contact-us", message.fetch("_mime_parts").fetch("text/plain").fetch("_body"))
 
     message = create_user({
       :contact_url => "mailto:example@#{host}",
     })
-    assert_match(/(?!mailto:)#{Regexp.escape("example@#{host}")}/, message.fetch("_mime_parts").fetch("text/plain; charset=UTF-8").fetch("Body"))
-    assert_match("mailto:example@#{host}", message.fetch("_mime_parts").fetch("text/html; charset=UTF-8").fetch("Body"))
+    assert_match(/(?!mailto:)#{Regexp.escape("example@#{host}")}/, message.fetch("_mime_parts").fetch("text/plain").fetch("_body"))
+    assert_match("mailto:example@#{host}", message.fetch("_mime_parts").fetch("text/html").fetch("_body"))
   end
 
   def refute_host_links(host)
@@ -206,14 +206,14 @@ class Test::Apis::V1::Users::TestCreateWelcomeEmailSanitizedLinks < Minitest::Te
     })
 
     assert_equal(["noreply@localhost"], message.fetch("Content").fetch("Headers").fetch("From"))
-    refute_match(host, message.fetch("_mime_parts").fetch("text/plain; charset=UTF-8").fetch("Body"))
-    assert_match("http://localhost/contact", message.fetch("_mime_parts").fetch("text/plain; charset=UTF-8").fetch("Body"))
+    refute_match(host, message.fetch("_mime_parts").fetch("text/plain").fetch("_body"))
+    assert_match("http://localhost/contact", message.fetch("_mime_parts").fetch("text/plain").fetch("_body"))
 
     message = create_user({
       :contact_url => "mailto:example@#{host}",
     })
-    assert_match("http://localhost/contact", message.fetch("_mime_parts").fetch("text/plain; charset=UTF-8").fetch("Body"))
-    assert_match("http://localhost/contact", message.fetch("_mime_parts").fetch("text/html; charset=UTF-8").fetch("Body"))
+    assert_match("http://localhost/contact", message.fetch("_mime_parts").fetch("text/plain").fetch("_body"))
+    assert_match("http://localhost/contact", message.fetch("_mime_parts").fetch("text/html").fetch("_body"))
   end
 
   def assert_contact_only_host_links(host)
@@ -224,13 +224,13 @@ class Test::Apis::V1::Users::TestCreateWelcomeEmailSanitizedLinks < Minitest::Te
     })
 
     assert_equal(["test@#{host}"], message.fetch("Content").fetch("Headers").fetch("From"))
-    refute_match("api.json", message.fetch("_mime_parts").fetch("text/plain; charset=UTF-8").fetch("Body"))
-    assert_match("https://#{host}/contact-us", message.fetch("_mime_parts").fetch("text/plain; charset=UTF-8").fetch("Body"))
+    refute_match("api.json", message.fetch("_mime_parts").fetch("text/plain").fetch("_body"))
+    assert_match("https://#{host}/contact-us", message.fetch("_mime_parts").fetch("text/plain").fetch("_body"))
 
     message = create_user({
       :contact_url => "mailto:example@#{host}",
     })
-    assert_match(/(?!mailto:)#{Regexp.escape("example@#{host}")}/, message.fetch("_mime_parts").fetch("text/plain; charset=UTF-8").fetch("Body"))
-    assert_match("mailto:example@#{host}", message.fetch("_mime_parts").fetch("text/html; charset=UTF-8").fetch("Body"))
+    assert_match(/(?!mailto:)#{Regexp.escape("example@#{host}")}/, message.fetch("_mime_parts").fetch("text/plain").fetch("_body"))
+    assert_match("mailto:example@#{host}", message.fetch("_mime_parts").fetch("text/html").fetch("_body"))
   end
 end

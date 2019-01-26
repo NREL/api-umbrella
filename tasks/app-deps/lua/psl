@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+lua_psl_version="0.3-0"
+
+set -e -u -x
+source ./tasks/helpers.sh
+
+#export PSL_DIR="$STAGE_DIR"
+#luarocks_install "psl" "$lua_psl_version"
+"${LUAROCKS_CMD[@]}" --tree="$APP_CORE_VENDOR_LUA_DIR" install "psl" "$lua_psl_version" PSL_DIR="$INSTALL_PREFIX_EMBEDDED"
+
+stamp

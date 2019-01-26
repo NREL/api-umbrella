@@ -7,6 +7,7 @@ local json_encode = require "api-umbrella.utils.json_encode"
 local mustache_unescape = require "api-umbrella.utils.mustache_unescape"
 local packed_shared_dict = require "api-umbrella.utils.packed_shared_dict"
 local plutils = require "pl.utils"
+local psl = require "api-umbrella.utils.psl"
 local random_token = require "api-umbrella.utils.random_token"
 local startswith = require("pl.stringx").startswith
 local tablex = require "pl.tablex"
@@ -216,13 +217,85 @@ local function parse_website_backends(website_backends)
   table.sort(website_backends, sort_by_frontend_host_length)
 end
 
+local function build_known_api_domains(apis)
+  local domains = {}
+
+  if config["web"]["default_host"] then
+    domains[config["web"]["default_host"]] = 1
+  end
+
+  if config["router"]["web_app_host"] then
+    domains[config["router"]["web_app_host"]] = 1
+  end
+
+  if config["hosts"] then
+    for _, host in ipairs(config["hosts"]) do
+      if host and host["hostname"] then
+        domains[host["hostname"]] = 1
+      end
+    end
+  end
+
+  if apis then
+    for _, api in ipairs(apis) do
+      if api and api["frontend_host"] then
+        domains[api["frontend_host"]] = 1
+      end
+    end
+  end
+
+  return domains
+end
+
+local function build_known_private_suffix_domains(known_api_domains, website_backends)
+  local domains = {}
+
+  if known_api_domains then
+    for domain, _ in pairs(known_api_domains) do
+      if domain then
+        local private_suffix_domain = psl:registrable_domain(domain)
+        if private_suffix_domain then
+          domains[private_suffix_domain] = 1
+        end
+      end
+    end
+  end
+
+  if website_backends then
+    for _, website_backend in ipairs(website_backends) do
+      if website_backend and website_backend["frontend_host"] then
+        local private_suffix_domain = psl:registrable_domain(website_backend["frontend_host"])
+        if private_suffix_domain then
+          domains[private_suffix_domain] = 1
+        end
+      end
+    end
+  end
+
+  return domains
+end
+
 local function build_active_config(apis, website_backends)
   parse_apis(apis)
   parse_website_backends(website_backends)
 
+  local api_ok, known_api_domains = xpcall(build_known_api_domains, xpcall_error_handler, apis)
+  if not api_ok then
+    ngx.log(ngx.ERR, "failed building known API domains: ", known_api_domains)
+  end
+
+  local private_ok, known_private_suffix_domains = xpcall(build_known_private_suffix_domains, xpcall_error_handler, known_api_domains, website_backends)
+  if not private_ok then
+    ngx.log(ngx.ERR, "failed building known API domains: ", known_api_domains)
+  end
+
   local active_config = {
     apis = apis,
     websites = website_backends,
+    known_domains = {
+      apis = known_api_domains,
+      private_suffixes = known_private_suffix_domains,
+    },
   }
 
   return active_config
