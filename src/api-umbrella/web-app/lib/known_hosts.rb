@@ -75,7 +75,12 @@ class KnownHosts
     return nil if url.blank?
 
     begin
-      Addressable::URI.parse(url).host
+      parsed = Addressable::URI.parse(url)
+      if parsed.scheme == "mailto"
+        email_host(parsed.path)
+      else
+        parsed.host
+      end
     rescue Addressable::URI::InvalidURIError
       nil
     end

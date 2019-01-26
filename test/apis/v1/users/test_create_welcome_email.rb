@@ -173,7 +173,4 @@ class Test::Apis::V1::Users::TestCreateWelcomeEmail < Minitest::Test
       assert_match("contact us \r\n( https://example.com/contact-us )", message["_mime_parts"]["text/plain; charset=UTF-8"]["Body"])
     end
   end
-
-  def test_sanitize
-  end
 end
