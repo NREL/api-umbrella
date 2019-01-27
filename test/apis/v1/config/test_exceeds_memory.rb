@@ -17,13 +17,13 @@ class Test::Apis::V1::Config::TestExceedsMemory < Minitest::Test
             },
           },
         },
-      }, "--router")
+      })
     end
   end
 
   def after_all
     super
-    override_config_reset("--router")
+    override_config_reset
     default_config_version_needed
   end
 

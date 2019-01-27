@@ -18,13 +18,13 @@ class Test::AdminUi::Login::TestInitialSuperuserSeeding < Minitest::Test
             ],
           },
         },
-      }, ["--router"])
+      })
     end
   end
 
   def after_all
     super
-    override_config_reset(["--router"])
+    override_config_reset
   end
 
   def test_initial_superusers

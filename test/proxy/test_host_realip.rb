@@ -15,7 +15,7 @@ class Test::Proxy::Logging::TestHostRealip < Minitest::Test
             "real_ip_header" => "True-Client-IP",
           },
         ],
-      }, "--router")
+      })
 
       prepend_api_backends([
         {

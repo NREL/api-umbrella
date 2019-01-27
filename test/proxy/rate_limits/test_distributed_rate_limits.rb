@@ -23,7 +23,7 @@ class Test::Proxy::RateLimits::TestDistributedRateLimits < Minitest::Test
       },
     }
     once_per_class_setup do
-      override_config_set(@override_config, "--router")
+      override_config_set(@override_config)
 
       prepend_api_backends([
         {
@@ -116,7 +116,7 @@ class Test::Proxy::RateLimits::TestDistributedRateLimits < Minitest::Test
 
   def after_all
     super
-    override_config_reset("--router")
+    override_config_reset
   end
 
   def test_sets_new_limits_to_distributed_value
@@ -305,7 +305,7 @@ class Test::Proxy::RateLimits::TestDistributedRateLimits < Minitest::Test
     # technically changing the configuration, setting the config gives us an
     # easier way to wait until the nginx processes have fully reloaded before
     # proceeding (so this test doesn't interfere with other tests).
-    override_config_set(@override_config, "--router") do
+    override_config_set(@override_config) do
       options[:time] = time
       assert_local_count("/api/hello", 100, options)
     end

@@ -23,13 +23,13 @@ class Test::Proxy::RateLimits::TestSingleLimit < Minitest::Test
             },
           ],
         },
-      }, "--router")
+      })
     end
   end
 
   def after_all
     super
-    override_config_reset("--router")
+    override_config_reset
   end
 
   def test_api_key_rate_limit
@@ -85,7 +85,7 @@ class Test::Proxy::RateLimits::TestSingleLimit < Minitest::Test
           },
         ],
       },
-    }, "--router") do
+    }) do
       # Make sure any local worker cache is cleared across all possible worker
       # processes.
       responses = exercise_all_workers("/api/info/", http_opts)

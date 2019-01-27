@@ -53,13 +53,13 @@ class Test::Proxy::Routing::TestExplicitWebAppHostAndDefaultHost < Minitest::Tes
             "default" => true,
           },
         ],
-      }, "--router")
+      })
     end
   end
 
   def after_all
     super
-    override_config_reset("--router")
+    override_config_reset
   end
 
   include ApiUmbrellaSharedTests::Routing

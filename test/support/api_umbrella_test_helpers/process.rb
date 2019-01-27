@@ -225,26 +225,20 @@ module ApiUmbrellaTestHelpers
       end
     end
 
-    def reload(flags)
-      flags = Array(flags)
-
+    def reload
       # Read the currently active config (to detect any changes in
       # $config["nginx"]["workers"]).
       runtime_config_path = File.join($config["root_dir"], "var/run/runtime_config.yml")
       $config = YAML.load_file(runtime_config_path)
 
       # Get the list of original nginx worker process PIDs on startup.
-      if flags.empty? || flags.include?("--router")
-        nginx_parent_pid = perp_pid("nginx")
-        original_nginx_child_pids = nginx_child_pids(nginx_parent_pid, $config["nginx"]["workers"])
-      end
-      if flags.empty? || flags.include?("--web")
-        nginx_web_app_parent_pid = perp_pid("nginx-web-app")
-        original_nginx_web_app_child_pids = nginx_child_pids(nginx_web_app_parent_pid, $config["web"]["workers"])
-      end
+      nginx_parent_pid = perp_pid("nginx")
+      original_nginx_child_pids = nginx_child_pids(nginx_parent_pid, $config["nginx"]["workers"])
+      nginx_web_app_parent_pid = perp_pid("nginx-web-app")
+      original_nginx_web_app_child_pids = nginx_child_pids(nginx_web_app_parent_pid, $config["web"]["workers"])
 
       # Send the reload command.
-      reload = ChildProcess.build(*[File.join(API_UMBRELLA_SRC_ROOT, "bin/api-umbrella"), "reload", flags].flatten.compact)
+      reload = ChildProcess.build(*[File.join(API_UMBRELLA_SRC_ROOT, "bin/api-umbrella"), "reload"].flatten.compact)
       reload.io.inherit!
       reload.environment["API_UMBRELLA_EMBEDDED_ROOT"] = EMBEDDED_ROOT
       reload.environment["API_UMBRELLA_CONFIG"] = CONFIG
@@ -261,12 +255,8 @@ module ApiUmbrellaTestHelpers
       # the old configuration, while new workers have the new configuration. By
       # waiting for all the workers to be new, that ensures a consistent point
       # to test from.
-      if flags.empty? || flags.include?("--router")
-        nginx_wait_for_new_child_pids(nginx_parent_pid, $config["nginx"]["workers"], original_nginx_child_pids)
-      end
-      if flags.empty? || flags.include?("--web")
-        nginx_wait_for_new_child_pids(nginx_web_app_parent_pid, $config["web"]["workers"], original_nginx_web_app_child_pids)
-      end
+      nginx_wait_for_new_child_pids(nginx_parent_pid, $config["nginx"]["workers"], original_nginx_child_pids)
+      nginx_wait_for_new_child_pids(nginx_web_app_parent_pid, $config["web"]["workers"], original_nginx_web_app_child_pids)
     end
 
     def perp_signal(service_name, signal_name)
@@ -360,10 +350,7 @@ module ApiUmbrellaTestHelpers
       state = nil
       health = nil
       begin
-        # Reloading is normally fast, but can sometimes be slower if the
-        # web-app is being reloaded and we have to wait for it to become
-        # healthy again.
-        Timeout.timeout(40) do
+        Timeout.timeout(10) do
           loop do
             state = self.fetch("http://127.0.0.1:9080/api-umbrella/v1/state?#{rand}", config)
             if(state.dig(field).to_s == version.to_s && state.dig("web_app", field).to_s == version.to_s)

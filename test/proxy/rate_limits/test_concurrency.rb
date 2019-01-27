@@ -31,13 +31,13 @@ class Test::Proxy::RateLimits::TestConcurrency < Minitest::Test
             },
           ],
         },
-      }, "--router")
+      })
     end
   end
 
   def after_all
     super
-    override_config_reset("--router")
+    override_config_reset
   end
 
   def test_accurately_reports_remaining_requests_across_parallel_requests

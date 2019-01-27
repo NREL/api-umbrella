@@ -115,7 +115,7 @@ class Test::Processes::TestReloads < Minitest::Test
       reload_thread = Thread.new do
         loop do
           sleep rand(0.005..0.5)
-          api_umbrella_process.reload("--router")
+          api_umbrella_process.reload
         end
       end
 
@@ -148,7 +148,7 @@ class Test::Processes::TestReloads < Minitest::Test
       "nginx" => {
         "workers" => 1,
       },
-    }, "--router") do
+    }) do
       nginx_config = File.read(nginx_config_path)
       assert_match("worker_processes 1;", nginx_config)
     end
@@ -173,7 +173,7 @@ class Test::Processes::TestReloads < Minitest::Test
           },
         },
       ],
-    }, "--router") do
+    }) do
       response = Typhoeus.get("https://127.0.0.1:9081/#{unique_test_id}/file-config/info/", http_options)
       assert_response_code(200, response)
       data = MultiJson.load(response.body)

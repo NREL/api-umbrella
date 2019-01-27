@@ -114,7 +114,7 @@ class Test::Apis::V1::Users::TestCreateWelcomeEmailSanitizedLinks < Minitest::Te
       "nginx" => {
         "server_names_hash_bucket_size" => 128,
       },
-    }, ["--router", "--web"]) do
+    }) do
       assert_host_links(unique_test_hostname)
     end
   end
@@ -129,7 +129,7 @@ class Test::Apis::V1::Users::TestCreateWelcomeEmailSanitizedLinks < Minitest::Te
           "url_matches" => [{ "frontend_prefix" => "/#{unique_test_id}/", "backend_prefix" => "/" }],
         },
       ],
-    }, ["--router", "--web"]) do
+    }) do
       assert_host_links(unique_test_hostname)
     end
   end
@@ -143,7 +143,7 @@ class Test::Apis::V1::Users::TestCreateWelcomeEmailSanitizedLinks < Minitest::Te
           "server_port" => 9443,
         },
       ],
-    }, ["--router", "--web"]) do
+    }) do
       assert_contact_only_host_links(unique_test_hostname)
     end
   end
@@ -153,7 +153,7 @@ class Test::Apis::V1::Users::TestCreateWelcomeEmailSanitizedLinks < Minitest::Te
       "web" => {
         "default_host" => unique_test_hostname,
       },
-    }, ["--router", "--web"]) do
+    }) do
       assert_host_links(unique_test_hostname)
     end
   end

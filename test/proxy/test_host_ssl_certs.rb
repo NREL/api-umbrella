@@ -17,13 +17,13 @@ class Test::Proxy::TestHostSslCerts < Minitest::Test
             "ssl_cert_key" => File.join(API_UMBRELLA_SRC_ROOT, "test/config/ssl_test.key"),
           },
         ],
-      }, "--router")
+      })
     end
   end
 
   def after_all
     super
-    override_config_reset("--router")
+    override_config_reset
   end
 
   def test_default_self_signed_cert

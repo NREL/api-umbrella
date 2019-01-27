@@ -15,13 +15,13 @@ class Test::Proxy::TestBackendSniSsl < Minitest::Test
           "max_stale" => 0,
           "negative_ttl" => false,
         },
-      }, "--router")
+      })
     end
   end
 
   def after_all
     super
-    override_config_reset("--router")
+    override_config_reset
   end
 
   def test_backends_requiring_sni_support

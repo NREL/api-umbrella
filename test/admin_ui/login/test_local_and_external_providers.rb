@@ -22,13 +22,13 @@ class Test::AdminUi::Login::TestLocalAndExternalProviders < Minitest::Capybara::
             },
           },
         },
-      }, ["--router", "--web"])
+      })
     end
   end
 
   def after_all
     super
-    override_config_reset(["--router", "--web"])
+    override_config_reset
   end
 
   def test_allows_first_time_admin_creation

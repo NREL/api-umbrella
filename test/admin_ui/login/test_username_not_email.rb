@@ -18,13 +18,13 @@ class Test::AdminUi::Login::TestUsernameNotEmail < Minitest::Capybara::Test
             "username_is_email" => false,
           },
         },
-      }, ["--router", "--web"])
+      })
     end
   end
 
   def after_all
     super
-    override_config_reset(["--router", "--web"])
+    override_config_reset
   end
 
   def test_username_label_on_login

@@ -17,13 +17,13 @@ class Test::Proxy::Dns::TestNegativeCaching < Minitest::Test
           "max_stale" => 0,
           "negative_ttl" => NEGATIVE_TTL,
         },
-      }, "--router")
+      })
     end
   end
 
   def after_all
     super
-    override_config_reset("--router")
+    override_config_reset
   end
 
   def test_caches_failed_lookups_before_retrying
@@ -43,7 +43,7 @@ class Test::Proxy::Dns::TestNegativeCaching < Minitest::Test
         "max_stale" => 0,
         "negative_ttl" => negative_ttl,
       },
-    }, "--router") do
+    }) do
       assert_negative_ttl(negative_ttl)
     end
   end

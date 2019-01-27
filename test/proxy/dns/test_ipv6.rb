@@ -16,7 +16,7 @@ class Test::Proxy::Dns::TestIpv6 < Minitest::Test
         "max_stale" => 0,
         "negative_ttl" => false,
       },
-    }, "--router") do
+    }) do
       set_dns_records(["#{unique_test_hostname} 60 AAAA ::1"])
 
       prepend_api_backends([
@@ -43,7 +43,7 @@ class Test::Proxy::Dns::TestIpv6 < Minitest::Test
         "negative_ttl" => false,
         "allow_ipv6" => true,
       },
-    }, "--router") do
+    }) do
       set_dns_records(["#{unique_test_hostname} 60 AAAA ::1"])
 
       prepend_api_backends([

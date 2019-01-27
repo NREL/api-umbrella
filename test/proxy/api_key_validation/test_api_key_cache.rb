@@ -99,7 +99,7 @@ class Test::Proxy::ApiKeyValidation::TestApiKeyCache < Minitest::Test
       "gatekeeper" => {
         "api_key_cache" => false,
       },
-    }, "--router") do
+    }) do
       user = FactoryBot.create(:api_user, {
         :settings => FactoryBot.build(:api_user_settings, {
           :rate_limit_mode => "unlimited",

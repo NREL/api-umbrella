@@ -17,7 +17,7 @@ class Test::Proxy::TestHttpsRequirements < Minitest::Test
         "apiSettings" => {
           "require_https" => "required_return_error",
         },
-      }, "--router")
+      })
 
       prepend_api_backends([
         {
@@ -76,7 +76,7 @@ class Test::Proxy::TestHttpsRequirements < Minitest::Test
 
   def after_all
     super
-    override_config_reset("--router")
+    override_config_reset
   end
 
   def test_default_required_return_error

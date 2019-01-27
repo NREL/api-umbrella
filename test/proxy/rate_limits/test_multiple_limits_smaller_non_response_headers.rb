@@ -29,13 +29,13 @@ class Test::Proxy::RateLimits::TestMultipleLimitsSmallerNonResponseHeaders < Min
             },
           ],
         },
-      }, "--router")
+      })
     end
   end
 
   def after_all
     super
-    override_config_reset("--router")
+    override_config_reset
   end
 
   def test_api_key_rate_limit

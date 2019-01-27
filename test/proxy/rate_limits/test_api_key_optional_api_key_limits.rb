@@ -30,7 +30,7 @@ class Test::Proxy::RateLimits::TestApiKeyOptionalApiKeyLimits < Minitest::Test
             },
           ],
         },
-      }, "--router")
+      })
 
       prepend_api_backends([
         {
@@ -68,7 +68,7 @@ class Test::Proxy::RateLimits::TestApiKeyOptionalApiKeyLimits < Minitest::Test
 
   def after_all
     super
-    override_config_reset("--router")
+    override_config_reset
   end
 
   def test_default_anonymous_behavior_api_key_provided

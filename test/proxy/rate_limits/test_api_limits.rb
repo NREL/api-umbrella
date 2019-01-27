@@ -23,7 +23,7 @@ class Test::Proxy::RateLimits::TestApiLimits < Minitest::Test
             },
           ],
         },
-      }, "--router")
+      })
 
       prepend_api_backends([
         {
@@ -102,7 +102,7 @@ class Test::Proxy::RateLimits::TestApiLimits < Minitest::Test
 
   def after_all
     super
-    override_config_reset("--router")
+    override_config_reset
   end
 
   def test_non_api_default_limit

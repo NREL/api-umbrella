@@ -100,7 +100,7 @@ class Test::Proxy::Routing::TestHttpsConfig < Minitest::Test
       "router" => {
         "web_app_host" => "127.0.0.1",
       },
-    }, "--router") do
+    }) do
       # gatekeeper API backends
       response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/state.json", http_opts)
       assert_response_code(404, response)
@@ -136,7 +136,7 @@ class Test::Proxy::Routing::TestHttpsConfig < Minitest::Test
       "router" => {
         "website_backend_required_https_regex_default" => "^/website-https-test",
       },
-    }, "--router") do
+    }) do
       response = Typhoeus.get("http://127.0.0.1:9080/", keyless_http_options)
       assert_response_code(200, response)
       assert_match("Your API Site Name", response.body)
@@ -169,7 +169,7 @@ class Test::Proxy::Routing::TestHttpsConfig < Minitest::Test
       "router" => {
         "web_app_host" => "127.0.0.1",
       },
-    }, "--router") do
+    }) do
       response = Typhoeus.get("https://127.0.0.1:9081/#{unique_test_id}", http_opts)
       assert_response_code(404, response)
       assert_equal("application/json", response.headers["content-type"])
@@ -185,7 +185,7 @@ class Test::Proxy::Routing::TestHttpsConfig < Minitest::Test
         "web_app_host" => "127.0.0.1",
         "redirect_not_found_to_https" => false,
       },
-    }, "--router") do
+    }) do
       response = Typhoeus.get("https://127.0.0.1:9081/#{unique_test_id}", http_opts)
       assert_response_code(404, response)
       assert_equal("application/json", response.headers["content-type"])
@@ -216,7 +216,7 @@ class Test::Proxy::Routing::TestHttpsConfig < Minitest::Test
       "router" => {
         "api_backend_required_https_regex_default" => "^/?$",
       },
-    }, "--router") do
+    }) do
       prepend_api_backends([
         {
           :frontend_host => "127.0.0.1",

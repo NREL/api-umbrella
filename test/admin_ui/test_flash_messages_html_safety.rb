@@ -29,13 +29,13 @@ class Test::AdminUi::TestFlashMessagesHtmlSafety < Minitest::Capybara::Test
             },
           },
         },
-      }, ["--router", "--web"])
+      })
     end
   end
 
   def after_all
     super
-    override_config_reset(["--router", "--web"])
+    override_config_reset
   end
 
   def test_unverified_html_message

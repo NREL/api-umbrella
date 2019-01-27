@@ -24,7 +24,7 @@ class Test::Proxy::TestNginxRewrites < Minitest::Test
           "hostname" => "known.foo",
         },
       ],
-    }, "--router") do
+    }) do
       refute_nginx_duplicate_server_name_warnings(log_tail)
 
       # Basic rewrite
@@ -54,7 +54,7 @@ class Test::Proxy::TestNginxRewrites < Minitest::Test
           "hostname" => "known.foo",
         },
       ],
-    }, "--router") do
+    }) do
       refute_nginx_duplicate_server_name_warnings(log_tail)
 
       # Known host without rewrites
@@ -90,7 +90,7 @@ class Test::Proxy::TestNginxRewrites < Minitest::Test
           ],
         },
       ],
-    }, "--router") do
+    }) do
       refute_nginx_duplicate_server_name_warnings(log_tail)
 
       # Known host without rewrites
@@ -125,7 +125,7 @@ class Test::Proxy::TestNginxRewrites < Minitest::Test
           "hostname" => "known.foo",
         },
       ],
-    }, "--router") do
+    }) do
       refute_nginx_duplicate_server_name_warnings(log_tail)
 
       # Known host without rewrites
@@ -156,7 +156,7 @@ class Test::Proxy::TestNginxRewrites < Minitest::Test
           ],
         },
       ],
-    }, "--router") do
+    }) do
       refute_nginx_duplicate_server_name_warnings(log_tail)
 
       # Known host without rewrites
@@ -188,7 +188,7 @@ class Test::Proxy::TestNginxRewrites < Minitest::Test
           "hostname" => "known.foo",
         },
       ],
-    }, "--router") do
+    }) do
       refute_nginx_duplicate_server_name_warnings(log_tail)
 
       # Known host without rewrites
@@ -221,7 +221,7 @@ class Test::Proxy::TestNginxRewrites < Minitest::Test
           "default" => true,
         },
       ],
-    }, "--router") do
+    }) do
       refute_nginx_duplicate_server_name_warnings(log_tail)
 
       # Known host without rewrites
@@ -268,7 +268,7 @@ class Test::Proxy::TestNginxRewrites < Minitest::Test
           ],
         },
       ],
-    }, "--router") do
+    }) do
       refute_nginx_duplicate_server_name_warnings(log_tail)
 
       http_opts = http_options.deep_merge({

@@ -13,7 +13,7 @@ class Test::Proxy::TestNginxBans < Minitest::Test
       "ban" => {
         "user_agents" => ["~*naughty"],
       },
-    }, "--router") do
+    }) do
       response = Typhoeus.get("http://127.0.0.1:9080/api/info/", http_options)
       assert_response_code(200, response)
 
@@ -31,7 +31,7 @@ class Test::Proxy::TestNginxBans < Minitest::Test
       "ban" => {
         "ips" => ["7.4.2.2", "8.7.1.0/24"],
       },
-    }, "--router") do
+    }) do
       response = Typhoeus.get("http://127.0.0.1:9080/api/info/", http_options)
       assert_response_code(200, response)
 
@@ -57,7 +57,7 @@ class Test::Proxy::TestNginxBans < Minitest::Test
       "ban" => {
         "user_agents" => ["~*naughty"],
       },
-    }, "--router") do
+    }) do
       response = Typhoeus.get("http://127.0.0.1:9080/api/info/", http_options)
       assert_response_code(200, response)
 
@@ -81,7 +81,7 @@ class Test::Proxy::TestNginxBans < Minitest::Test
           "message" => "You've been banned!",
         },
       },
-    }, "--router") do
+    }) do
       response = Typhoeus.get("http://127.0.0.1:9080/api/info/", http_options)
       assert_response_code(200, response)
 
@@ -102,7 +102,7 @@ class Test::Proxy::TestNginxBans < Minitest::Test
       "ban" => {
         "user_agents" => ["~*naughty"],
       },
-    }, "--router") do
+    }) do
       response = Typhoeus.get("https://127.0.0.1:9081/signup/", http_options)
       assert_response_code(200, response)
       assert_match("API Key Signup", response.body)

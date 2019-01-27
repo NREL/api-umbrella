@@ -45,7 +45,7 @@ class Test::Proxy::ApiMatching::TestForwardedHost < Minitest::Test
       :router => {
         :match_x_forwarded_host => true,
       },
-    }, "--router") do
+    }) do
       response = make_request_to_host("#{unique_test_class_id}-a", "/info/", :headers => { "X-Forwarded-Host" => "#{unique_test_class_id}-b" })
       assert_backend_match("host-b", response)
     end

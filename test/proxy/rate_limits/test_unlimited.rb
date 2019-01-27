@@ -28,13 +28,13 @@ class Test::Proxy::RateLimits::TestUnlimited < Minitest::Test
             },
           ],
         },
-      }, "--router")
+      })
     end
   end
 
   def after_all
     super
-    override_config_reset("--router")
+    override_config_reset
   end
 
   def test_unlimited_rate_limit

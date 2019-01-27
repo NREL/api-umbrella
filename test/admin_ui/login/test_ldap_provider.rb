@@ -31,13 +31,13 @@ class Test::AdminUi::Login::TestLdapProvider < Minitest::Capybara::Test
             },
           },
         },
-      }, ["--router", "--web"])
+      })
     end
   end
 
   def after_all
     super
-    override_config_reset(["--router", "--web"])
+    override_config_reset
   end
 
   def test_forbids_first_time_admin_creation

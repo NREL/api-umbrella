@@ -49,13 +49,13 @@ class Test::Proxy::Routing::TestDefaultWildcardWebAppHostAndDefaultHost < Minite
             "default" => true,
           },
         ],
-      }, "--router")
+      })
     end
   end
 
   def after_all
     super
-    override_config_reset("--router")
+    override_config_reset
   end
 
   include ApiUmbrellaSharedTests::Routing

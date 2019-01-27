@@ -31,7 +31,7 @@ class Test::Proxy::RateLimits::TestNginxGlobalRateLimits < Minitest::Test
           "ip_connections" => 20,
         },
       },
-    }, "--router") do
+    }) do
       hydra = Typhoeus::Hydra.new
       requests = Array.new(21) do
         request = Typhoeus::Request.new("http://127.0.0.1:9080/api/delay/2000", http_options)
@@ -58,7 +58,7 @@ class Test::Proxy::RateLimits::TestNginxGlobalRateLimits < Minitest::Test
           "ip_burst" => 20,
         },
       },
-    }, "--router") do
+    }) do
       http_opts = http_options.deep_merge({
         :headers => {
           # Perform each batch of tests as though its from a unique IP address
@@ -100,7 +100,7 @@ class Test::Proxy::RateLimits::TestNginxGlobalRateLimits < Minitest::Test
           "ip_connections" => 5,
         },
       },
-    }, "--router") do
+    }) do
       hydra = Typhoeus::Hydra.new
       requests = Array.new(8) do |index|
         request = Typhoeus::Request.new("http://127.0.0.1:9080/api/delay/2000", log_http_options)

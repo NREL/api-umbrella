@@ -2,9 +2,6 @@ local path = require "pl.path"
 local run_command = require "api-umbrella.utils.run_command"
 local setup = require "api-umbrella.cli.setup"
 local status = require "api-umbrella.cli.status"
-local types = require "pl.types"
-
-local is_empty = types.is_empty
 
 local function reload_perp(perp_base)
   local _, _, err = run_command({ "perphup", perp_base })
@@ -60,11 +57,11 @@ return function(options)
 
   reload_perp(perp_base)
 
-  if config["_service_web_enabled?"] and (is_empty(options) or options["web"]) then
+  if config["_service_web_enabled?"] then
     reload_nginx_web_app(perp_base)
   end
 
-  if config["_service_router_enabled?"] and (is_empty(options) or options["router"]) then
+  if config["_service_router_enabled?"] then
     reload_trafficserver(config)
     reload_nginx(perp_base)
   end

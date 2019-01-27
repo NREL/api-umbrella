@@ -290,21 +290,21 @@ module ApiUmbrellaTestHelpers
       end
     end
 
-    def override_config(config, reload_flag)
+    def override_config(config)
       self.config_lock.synchronize do
         original_config = @@current_override_config.deep_dup
         original_config["version"] ||= SecureRandom.uuid
 
         begin
-          override_config_set(config, reload_flag)
+          override_config_set(config)
           yield
         ensure
-          override_config_set(original_config, reload_flag)
+          override_config_set(original_config)
         end
       end
     end
 
-    def override_config_set(config, reload_flag)
+    def override_config_set(config)
       self.config_set_lock.synchronize do
         if(self.class.test_order == :parallel)
           raise "`override_config_set` cannot be called with `parallelize_me!` in the same class. Since overriding config affects the global state, it cannot be used with parallel tests."
@@ -315,7 +315,7 @@ module ApiUmbrellaTestHelpers
         config = config.deep_stringify_keys
         config["version"] = SecureRandom.uuid
         File.write(ApiUmbrellaTestHelpers::Process::CONFIG_OVERRIDES_PATH, YAML.dump(config))
-        self.api_umbrella_process.reload(reload_flag)
+        self.api_umbrella_process.reload
         @@current_override_config = config.deep_dup
         Timeout.timeout(50) do
           begin
@@ -357,8 +357,8 @@ module ApiUmbrellaTestHelpers
       end
     end
 
-    def override_config_reset(reload_flag)
-      override_config_set({}, reload_flag)
+    def override_config_reset
+      override_config_set({})
     end
 
     def to_unique_id(name)

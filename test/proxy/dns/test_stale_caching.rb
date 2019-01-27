@@ -17,13 +17,13 @@ class Test::Proxy::Dns::TestStaleCaching < Minitest::Test
           "max_stale" => MAX_STALE,
           "negative_ttl" => false,
         },
-      }, "--router")
+      })
     end
   end
 
   def after_all
     super
-    override_config_reset("--router")
+    override_config_reset
   end
 
   def test_failed_host_down_after_ttl_expires

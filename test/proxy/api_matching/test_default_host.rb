@@ -54,7 +54,7 @@ class Test::Proxy::ApiMatching::TestDefaultHost < Minitest::Test
           :default => true,
         },
       ],
-    }, "--router") do
+    }) do
       response = make_request_to_host("other-#{unique_test_class_id}", "/info/")
       assert_backend_match("host-other", response)
 
