@@ -250,6 +250,8 @@ require("api-umbrella.web-app.actions.v1.contact")(app)
 require("api-umbrella.web-app.actions.v1.user_roles")(app)
 require("api-umbrella.web-app.actions.v1.users")(app)
 require("api-umbrella.web-app.actions.v1.website_backends")(app)
+require("api-umbrella.web-app.actions.web_app_health")(app)
+require("api-umbrella.web-app.actions.web_app_state")(app)
 
 if config["app_env"] == "test" then
   app:get("/api-umbrella/v1/test-500", function()

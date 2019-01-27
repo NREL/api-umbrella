@@ -282,11 +282,13 @@ local function build_active_config(apis, website_backends)
   local api_ok, known_api_domains = xpcall(build_known_api_domains, xpcall_error_handler, apis)
   if not api_ok then
     ngx.log(ngx.ERR, "failed building known API domains: ", known_api_domains)
+    known_api_domains = nil
   end
 
   local private_ok, known_private_suffix_domains = xpcall(build_known_private_suffix_domains, xpcall_error_handler, known_api_domains, website_backends)
   if not private_ok then
-    ngx.log(ngx.ERR, "failed building known API domains: ", known_api_domains)
+    ngx.log(ngx.ERR, "failed building known API domains: ", known_private_suffix_domains)
+    known_private_suffix_domains = nil
   end
 
   local active_config = {

@@ -63,7 +63,7 @@ local function status_response(quick)
   res, err = httpc:request_uri("http://127.0.0.1:" .. config["web"]["port"] .. "/_web-app-health")
   if err then
     ngx.log(ngx.ERR, "failed to fetch web app: ", err)
-  elseif res.body then
+  elseif res.status == 200 then
     response["details"]["web_app"] = "green"
   end
 
