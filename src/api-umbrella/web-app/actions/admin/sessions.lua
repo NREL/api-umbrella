@@ -1,6 +1,5 @@
 local Admin = require "api-umbrella.web-app.models.admin"
 local ApiUser = require "api-umbrella.web-app.models.api_user"
-local array_includes = require "api-umbrella.utils.array_includes"
 local build_url = require "api-umbrella.utils.build_url"
 local config = require "api-umbrella.proxy.models.file_config"
 local csrf = require "api-umbrella.web-app.utils.csrf"
@@ -160,7 +159,6 @@ function _M.auth(self)
 
     response["authenticated"] = true
     response["analytics_timezone"] = json_null_default(config["analytics"]["timezone"])
-    response["enable_beta_analytics"] = (config["analytics"]["adapter"] == "kylin" or (config["analytics"]["outputs"] and array_includes(config["analytics"]["outputs"], "kylin")))
     response["username_is_email"] = json_null_default(config["web"]["admin"]["username_is_email"])
     response["local_auth_enabled"] = json_null_default(local_auth_enabled)
     response["password_length_min"] = json_null_default(config["web"]["admin"]["password_length_min"])

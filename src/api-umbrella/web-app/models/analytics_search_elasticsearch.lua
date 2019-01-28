@@ -215,8 +215,21 @@ function _M.new(options)
 end
 
 function _M:set_permission_scope(scopes)
-  local filter = parse_query_builder(scopes)
-  table.insert(self.body["query"]["bool"]["filter"]["bool"]["must"], filter)
+  if scopes and scopes["rules"] then
+    local filter = {
+      bool = {
+        should = {},
+      },
+    }
+
+    for _, rule in ipairs(scopes["rules"]) do
+      table.insert(filter["bool"]["should"], parse_query_builder(rule))
+    end
+
+    table.insert(self.body["query"]["bool"]["filter"]["bool"]["must"], filter)
+  elseif scopes then
+    table.insert(self.body["query"]["bool"]["filter"]["bool"]["must"], scopes)
+  end
 end
 
 function _M:filter_exclude_imported()
@@ -226,7 +239,6 @@ function _M:filter_exclude_imported()
     },
   })
 end
-
 
 function _M:set_search_query_string(query_string)
   if not is_empty(query_string) then

@@ -5,9 +5,7 @@ local throw_authorization_error = require "api-umbrella.web-app.policies.throw_a
 local _M = {}
 
 function _M.authorized_query_scope(current_admin)
-  if not current_admin then
-    return throw_authorization_error(current_admin)
-  end
+  assert(current_admin)
 
   if current_admin.superuser then
     return nil
@@ -15,7 +13,14 @@ function _M.authorized_query_scope(current_admin)
 
   local api_scopes = current_admin:api_scopes_with_permission("analytics")
   if is_empty(api_scopes) then
-    return throw_authorization_error(current_admin)
+    -- Don't match any records if the admin has no authorized scopes.
+    return {
+      bool = {
+        must_not = {
+          match_all = {},
+        },
+      },
+    }
   else
     local rules = {}
     for _, api_scope in ipairs(api_scopes) do

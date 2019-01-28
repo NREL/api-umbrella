@@ -336,6 +336,10 @@ function _M.logs(self)
       "Content Type",
       "Accept Encoding",
       "User Agent",
+      "User Agent Family",
+      "User Agent Type",
+      "Referer",
+      "Origin",
     }))
     ngx.flush(true)
 

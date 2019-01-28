@@ -92,26 +92,26 @@ class Test::Apis::V1::Users::TestCreateWelcomeEmail < Minitest::Test
 
     # To
     refute_nil(user.email)
-    assert_equal([user.email], message["Content"]["Headers"]["To"])
+    assert_equal([user.email], message.fetch("Content").fetch("Headers").fetch("To"))
 
     # API key
     refute_nil(user.api_key)
-    assert_match(user.api_key, message["_mime_parts"]["text/html"]["_body"])
-    assert_match(user.api_key, message["_mime_parts"]["text/plain"]["_body"])
+    assert_match(user.api_key, message.fetch("_mime_parts").fetch("text/html").fetch("_body"))
+    assert_match(user.api_key, message.fetch("_mime_parts").fetch("text/plain").fetch("_body"))
 
     # Subject
-    assert_equal(["Your API Umbrella API key"], message["Content"]["Headers"]["Subject"])
+    assert_equal(["Your API Umbrella API key"], message.fetch("Content").fetch("Headers").fetch("Subject"))
 
     # From
-    assert_equal(["noreply@localhost"], message["Content"]["Headers"]["From"])
+    assert_equal(["noreply@localhost"], message.fetch("Content").fetch("Headers").fetch("From"))
 
     # Example API URL
-    refute_match("Here's an example", message["_mime_parts"]["text/html"]["_body"])
-    refute_match("Here's an example", message["_mime_parts"]["text/plain"]["_body"])
+    refute_match("Here's an example", message.fetch("_mime_parts").fetch("text/html").fetch("_body"))
+    refute_match("Here's an example", message.fetch("_mime_parts").fetch("text/plain").fetch("_body"))
 
     # Contact URL
-    assert_match(%(<a href="http://localhost/contact/">contact us</a>), message["_mime_parts"]["text/html"]["_body"])
-    assert_match("contact us ( http://localhost/contact/ )", message["_mime_parts"]["text/plain"]["_body"])
+    assert_match(%(<a href="http://localhost/contact/">contact us</a>), message.fetch("_mime_parts").fetch("text/html").fetch("_body"))
+    assert_match("contact us ( http://localhost/contact/ )", message.fetch("_mime_parts").fetch("text/plain").fetch("_body"))
   end
 
   def test_customized_content
@@ -148,28 +148,28 @@ class Test::Apis::V1::Users::TestCreateWelcomeEmail < Minitest::Test
 
       # To
       refute_nil(user.email)
-      assert_equal([user.email], message["Content"]["Headers"]["To"])
+      assert_equal([user.email], message.fetch("Content").fetch("Headers").fetch("To"))
 
       # API key
       refute_nil(user.api_key)
-      assert_match(user.api_key, message["_mime_parts"]["text/html; charset=UTF-8"]["Body"])
-      assert_match(user.api_key, message["_mime_parts"]["text/plain; charset=UTF-8"]["Body"])
+      assert_match(user.api_key, message.fetch("_mime_parts").fetch("text/html").fetch("_body"))
+      assert_match(user.api_key, message.fetch("_mime_parts").fetch("text/plain").fetch("_body"))
 
       # Subject
-      assert_equal(["Your External Example API key"], message["Content"]["Headers"]["Subject"])
+      assert_equal(["Your External Example API key"], message.fetch("Content").fetch("Headers").fetch("Subject"))
 
       # From
-      assert_equal(["Tester <test@example.com>"], message["Content"]["Headers"]["From"])
+      assert_equal(["Tester <test@example.com>"], message.fetch("Content").fetch("Headers").fetch("From"))
 
       # URL Example
-      assert_match("Here's an example", message["_mime_parts"]["text/html; charset=UTF-8"]["Body"])
-      assert_match("Here's an\r\nexample", message["_mime_parts"]["text/plain; charset=UTF-8"]["Body"])
-      assert_match(%(<a href="https://example.com/api.json?api_key=#{user.api_key}&amp;test=1">https://example.com/api.json?<strong>api_key=#{user.api_key}</strong>&amp;test=1</a>), message["_mime_parts"]["text/html; charset=UTF-8"]["Body"])
-      assert_match("https://example.com/api.json?api_key=#{user.api_key}&test=1\r\n\r\n( https://example.com/api.json?api_key=#{user.api_key}&test=1 )", message["_mime_parts"]["text/plain; charset=UTF-8"]["Body"])
+      assert_match("Here's an example", message.fetch("_mime_parts").fetch("text/html").fetch("_body"))
+      assert_match("Here's an example", message.fetch("_mime_parts").fetch("text/plain").fetch("_body"))
+      assert_match(%(<a href="https://example.com/api.json?api_key=#{user.api_key}&amp;test=1">https://example.com/api.json?<strong>api_key=#{user.api_key}</strong>&amp;test=1</a>), message.fetch("_mime_parts").fetch("text/html").fetch("_body"))
+      assert_match("\n\nhttps://example.com/api.json?api_key=#{user.api_key}&test=1\n\n\n", message.fetch("_mime_parts").fetch("text/plain").fetch("_body"))
 
       # Contact URL
-      assert_match(%(<a href="https://example.com/contact-us">contact us</a>), message["_mime_parts"]["text/html; charset=UTF-8"]["Body"])
-      assert_match("contact us \r\n( https://example.com/contact-us )", message["_mime_parts"]["text/plain; charset=UTF-8"]["Body"])
+      assert_match(%(<a href="https://example.com/contact-us">contact us</a>), message.fetch("_mime_parts").fetch("text/html").fetch("_body"))
+      assert_match("contact us ( https://example.com/contact-us )", message.fetch("_mime_parts").fetch("text/plain").fetch("_body"))
     end
   end
 end

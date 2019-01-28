@@ -61,7 +61,7 @@ local function send_welcome_email(self, api_user)
     return nil
   end
 
-  local options = deepcopy(self.params["options"])
+  local options = deepcopy(self.params["options"]) or {}
   options["example_api_url"] = known_domains.sanitized_api_url(options["example_api_url"])
   options["contact_url"] = known_domains.sanitized_url(options["contact_url"])
   options["email_from_address"] = known_domains.sanitized_email(options["email_from_address"])

@@ -152,6 +152,12 @@ module ApiUmbrellaTestHelpers
       end
     end
 
+    def publish_default_config_version
+      PublishedConfig.delete_all
+      PublishedConfig.create!(:config => {})
+      PublishedConfig.active.wait_until_live
+    end
+
     # If tests need to delete all the PublishedConfig records from the database,
     # then they need to call this method after finishing so the default
     # PublishedConfig record will be re-created for other tests that depend on

@@ -46,7 +46,7 @@ function _M.authorized_query_scope(current_admin, permission_id)
   end
 end
 
-function _M.authorize_show(current_admin, data, permission_id)
+function _M.is_authorized_modify(current_admin, data, permission_id)
   assert(current_admin)
   assert(data)
 
@@ -55,7 +55,7 @@ function _M.authorize_show(current_admin, data, permission_id)
   end
 
   if data["superuser"] and data["superuser"] ~= false then
-    return throw_authorization_error(current_admin)
+    return false
   end
 
   if not permission_id then
@@ -79,10 +79,31 @@ function _M.authorize_show(current_admin, data, permission_id)
   if all_groups_allowed then
     return true
   else
+    return false
+  end
+end
+
+function _M.authorize_modify(current_admin, data, permission_id)
+  local allowed = _M.is_authorized_modify(current_admin, data, permission_id)
+  if allowed then
+    return true
+  else
     return throw_authorization_error(current_admin)
   end
 end
 
-_M.authorize_modify = _M.authorize_show
+function _M.authorize_show(current_admin, data, permission_id)
+  -- Allow admins to always view their own record, even if they don't have the
+  -- admin_manage privilege (so they can view their admin token).
+  --
+  -- TODO: An admin should also be able to update their own password if using
+  -- local password authentication, but that is not yet implemented.
+  local allowed =  _M.is_authorized_modify(current_admin, data, permission_id) or (current_admin.id and data["id"] and current_admin.id == data["id"])
+  if allowed then
+    return true
+  else
+    return throw_authorization_error(current_admin)
+  end
+end
 
 return _M
