@@ -68,7 +68,7 @@ class Test::Apis::V1::Apis::TestSaveEmbeddedYaml < Minitest::Test
     attributes = attributes_for(action)
     attributes["settings"] = FactoryBot.attributes_for(:api_backend_settings, {
       :"#{field}_yaml_strings" => {
-        :api_key_invalid => "status_code: 422\nfoo: bar",
+        :api_key_invalid => "z: 1\nstatus_code: 422\nfoo: bar\ng: true\nb: 2\na: 3",
       },
     }).deep_stringify_keys
 
@@ -83,10 +83,34 @@ class Test::Apis::V1::Apis::TestSaveEmbeddedYaml < Minitest::Test
     end
     assert_equal({
       "api_key_invalid" => {
-        "status_code" => 422,
+        "a" => 3,
+        "b" => 2,
         "foo" => "bar",
+        "g" => true,
+        "status_code" => 422,
+        "z" => 1,
       },
     }, api.settings[field])
+
+    # Check how the saved input is then output in the YAML string fields. Since
+    # the data is stored unsorted (due to JSONB storage), we always sort the
+    # output in alphabetical order of keys.
+    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/apis/#{api.id}.json", http_options.deep_merge(admin_token))
+    assert_response_code(200, response)
+    data = MultiJson.load(response.body)
+    assert_equal({
+      "api_key_invalid" => {
+        "a" => 3,
+        "b" => 2,
+        "foo" => "bar",
+        "g" => true,
+        "status_code" => 422,
+        "z" => 1,
+      },
+    }, data.fetch("api").fetch("settings").fetch(field.to_s))
+    assert_equal({
+      "api_key_invalid" => "a: 3\nb: 2\nfoo: bar\ng: true\nstatus_code: 422\nz: 1",
+    }, data.fetch("api").fetch("settings").fetch("#{field}_yaml_strings"))
   end
 
   def attributes_for(action)

@@ -317,11 +317,11 @@ class Test::AdminUi::TestApis < Minitest::Capybara::Test
     assert_codemirror_field("JSON Template", :with => '{"foo":"bar"}')
     assert_codemirror_field("XML Template", :with => "<foo>bar</foo>")
     assert_codemirror_field("CSV Template", :with => "foo,bar\nbar,foo")
-    assert_codemirror_field("API Key Missing", :with => "foo1: bar1\nbar1: foo1")
-    assert_codemirror_field("API Key Invalid", :with => "foo2: bar2\nbar2: foo2")
-    assert_codemirror_field("API Key Disabled", :with => "foo3: bar3\nbar3: foo3")
-    assert_codemirror_field("API Key Unauthorized", :with => "foo4: bar4\nbar4: foo4")
-    assert_codemirror_field("Over Rate Limit", :with => "foo5: bar5\nbar5: foo5")
+    assert_codemirror_field("API Key Missing", :with => "bar1: foo1\nfoo1: bar1")
+    assert_codemirror_field("API Key Invalid", :with => "bar2: foo2\nfoo2: bar2")
+    assert_codemirror_field("API Key Disabled", :with => "bar3: foo3\nfoo3: bar3")
+    assert_codemirror_field("API Key Unauthorized", :with => "bar4: foo4\nfoo4: bar4")
+    assert_codemirror_field("Over Rate Limit", :with => "bar5: foo5\nfoo5: bar5")
   end
 
   def test_edit_custom_rate_limits

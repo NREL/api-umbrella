@@ -95,7 +95,7 @@ class Test::Apis::V1::Users::TestCreateNotifyEmail < Minitest::Test
         "send_notify_email" => true,
       },
     }
-    override_config(config, nil) do
+    override_config(config) do
       response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(admin_token).deep_merge({
         :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
         :body => {
