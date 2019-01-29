@@ -163,17 +163,18 @@ class Test::Apis::V1::Users::TestIndex < Minitest::Test
     # Since the API key search is a bit special (the values are encrypted in
     # the database, so we only search by a prefix part that is stored
     # unencrypted), perform some further search tests.
-    record = ApiUser.find_by!(:api_key_prefix => "QhcfMp_API_KEY")
+    record = ApiUser.find_by!(:api_key_prefix => "QhcfMp_API_KEY_S")
 
     # Ensure the full string matches (even though it's longer than the prefix).
     assert_wildcard_search_match(:api_key, "QhcfMp_API_KEY_SEARCH_TEST", "qhcfmp_api_key_search_test", record)
 
-    # Since we're matching based on the first 14 characters, then search
-    # strings beyond 14 characters will still match the record, even though the
+    # Since we're matching based on the first 16 characters, then search
+    # strings beyond 16 characters will still match the record, even though the
     # search value doesn't technically match the full API key (but that's okay,
-    # since we assume the first 14 characters should still provide plenty of
+    # since we assume the first 16 characters should still provide plenty of
     # uniqueness).
-    assert_wildcard_search_match(:api_key, "API_KEY_SEARCH_TEST", "qhcfmp_api_keyZZZ", record)
+    assert_wildcard_search_match(:api_key, "API_KEY_SEARCH_TEST", "qhcfmp_api_key_sZZZ", record)
+    refute_wildcard_search_match(:api_key, "API_KEY_SEARCH_TEST", "qhcfmp_api_key_ZZZ")
 
     # We only perform a prefix based search, rather than a full wildcard search
     # (since there's not really a reason to search for strings in the middle of

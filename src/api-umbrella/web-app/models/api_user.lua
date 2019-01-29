@@ -19,7 +19,7 @@ local db_null = db.NULL
 local json_null = cjson.null
 local validate_field = model_ext.validate_field
 
-local API_KEY_PREFIX_LENGTH = 14
+local API_KEY_PREFIX_LENGTH = 16
 
 local ApiUser
 ApiUser = model_ext.new_class("api_users", {

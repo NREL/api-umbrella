@@ -1140,7 +1140,7 @@ CREATE TABLE api_users (
     api_key_hash character varying(64) NOT NULL,
     api_key_encrypted character varying(76) NOT NULL,
     api_key_encrypted_iv character varying(12) NOT NULL,
-    api_key_prefix character varying(14) NOT NULL,
+    api_key_prefix character varying(16) NOT NULL,
     email character varying(255) NOT NULL,
     email_verified boolean DEFAULT false NOT NULL,
     first_name character varying(80),
@@ -1810,6 +1810,13 @@ CREATE UNIQUE INDEX api_scopes_host_path_prefix_idx ON api_scopes USING btree (h
 --
 
 CREATE UNIQUE INDEX api_users_api_key_hash_idx ON api_users USING btree (api_key_hash);
+
+
+--
+-- Name: api_users_api_key_prefix_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX api_users_api_key_prefix_idx ON api_users USING btree (api_key_prefix);
 
 
 --

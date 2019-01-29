@@ -484,7 +484,7 @@ return {
         api_key_hash varchar(64) NOT NULL,
         api_key_encrypted varchar(76) NOT NULL,
         api_key_encrypted_iv varchar(12) NOT NULL,
-        api_key_prefix varchar(14) NOT NULL,
+        api_key_prefix varchar(16) NOT NULL,
         email varchar(255) NOT NULL,
         email_verified boolean NOT NULL DEFAULT FALSE,
         first_name varchar(80),
@@ -510,6 +510,7 @@ return {
     ]])
     db.query("CREATE UNIQUE INDEX ON api_users(version)")
     db.query("CREATE UNIQUE INDEX ON api_users(api_key_hash)")
+    db.query("CREATE UNIQUE INDEX ON api_users(api_key_prefix)")
     -- Use the full negative and positive bigint range for this sequence.
     --
     -- For the minimum value, we actually use 1 plus the bigint minimum so we
