@@ -31,6 +31,7 @@ class Test::Apis::V1::Users::TestCreateWelcomeEmailSanitizedLinks < Minitest::Te
     prepend_website_backends([
       {
         :frontend_host => unique_test_hostname,
+        :backend_protocol => "http",
         :server_host => "127.0.0.1",
         :server_port => 9443,
       },
