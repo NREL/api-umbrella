@@ -289,9 +289,9 @@ function _M.search(self)
   }
 
   if results["aggregations"] then
-    response["total_users"] = results["aggregations"]["unique_user_email"]["value"]
-    response["total_ips"] = results["aggregations"]["unique_request_ip"]["value"]
-    response["average_response_time"] = results["aggregations"]["response_time_average"]["value"]
+    response["stats"]["total_users"] = results["aggregations"]["unique_user_email"]["value"]
+    response["stats"]["total_ips"] = results["aggregations"]["unique_request_ip"]["value"]
+    response["stats"]["average_response_time"] = results["aggregations"]["response_time_average"]["value"]
   end
 
   setmetatable(response["hits_over_time"], cjson.empty_array_mt)

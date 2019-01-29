@@ -16,7 +16,6 @@ local CASE_SENSITIVE_FIELDS = {
 }
 
 local UPPERCASE_FIELDS = {
-  request_method = 1,
   request_ip_country = 1,
   request_ip_region = 1,
 }
