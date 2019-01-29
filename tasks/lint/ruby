@@ -4,7 +4,7 @@ set -e -u -x
 source ./tasks/helpers.sh
 set +x
 
-export PATH="$STAGE_EMBEDDED_PATH"
+export PATH="$DEV_PATH"
 export BUNDLE_APP_CONFIG="$WORK_DIR/tasks/test-deps/bundle/_persist/.bundle"
 
 mapfile -t files < <(git ls-files | grep -E '(Rakefile|\.(rb|rake|rabl))$')

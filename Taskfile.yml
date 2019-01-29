@@ -28,19 +28,6 @@ version: "2"
 output: interleaved
 
 tasks:
-  deps:bundler:
-    deps:
-      - deps:rubygems
-    cmds:
-      - ./tasks/deps/bundler
-    sources:
-      - ./build/work/stamp/deps/rubygems
-      - ./tasks/deps/bundler
-      - ./tasks/helpers.sh
-    generates:
-      - ./build/work/stamp/deps/bundler
-    method: checksum
-
   deps:elasticsearch:
     cmds:
       - ./tasks/deps/elasticsearch
@@ -172,29 +159,6 @@ tasks:
       - ./build/work/stamp/deps/rsyslog
     method: checksum
 
-  deps:ruby:
-    cmds:
-      - ./tasks/deps/ruby
-    sources:
-      - ./tasks/deps/ruby
-      - ./tasks/helpers.sh
-    generates:
-      - ./build/work/stamp/deps/ruby
-    method: checksum
-
-  deps:rubygems:
-    deps:
-      - deps:ruby
-    cmds:
-      - ./tasks/deps/rubygems
-    sources:
-      - ./build/work/stamp/deps/ruby
-      - ./tasks/deps/rubygems
-      - ./tasks/helpers.sh
-    generates:
-      - ./build/work/stamp/deps/rubygems
-    method: checksum
-
   deps:runit_svlogd:
     cmds:
       - ./tasks/deps/runit_svlogd
@@ -217,7 +181,6 @@ tasks:
 
   deps:
     cmds:
-      - task: deps:bundler
       - task: deps:elasticsearch
       - task: deps:geolitecity
       - task: deps:libcidr
@@ -230,6 +193,19 @@ tasks:
       - task: deps:runit_svlogd
       - task: deps:trafficserver
 
+  build-deps:bundler:
+    deps:
+      - build-deps:rubygems
+    cmds:
+      - ./tasks/build-deps/bundler
+    sources:
+      - ./build/work/stamp/build-deps/rubygems
+      - ./tasks/build-deps/bundler
+      - ./tasks/helpers.sh
+    generates:
+      - ./build/work/stamp/build-deps/bundler
+    method: checksum
+
   build-deps:nodejs:
     cmds:
       - ./tasks/build-deps/nodejs
@@ -238,6 +214,29 @@ tasks:
       - ./tasks/helpers.sh
     generates:
       - ./build/work/stamp/build-deps/nodejs
+    method: checksum
+
+  build-deps:ruby:
+    cmds:
+      - ./tasks/build-deps/ruby
+    sources:
+      - ./tasks/build-deps/ruby
+      - ./tasks/helpers.sh
+    generates:
+      - ./build/work/stamp/build-deps/ruby
+    method: checksum
+
+  build-deps:rubygems:
+    deps:
+      - build-deps:ruby
+    cmds:
+      - ./tasks/build-deps/rubygems
+    sources:
+      - ./build/work/stamp/build-deps/ruby
+      - ./tasks/build-deps/rubygems
+      - ./tasks/helpers.sh
+    generates:
+      - ./build/work/stamp/build-deps/rubygems
     method: checksum
 
   build-deps:yarn:
@@ -255,6 +254,7 @@ tasks:
 
   build-deps:
     cmds:
+      - task: build-deps:bundler
       - task: build-deps:yarn
 
   app-deps:admin-ui:yarn:
@@ -701,12 +701,12 @@ tasks:
   app:static-site:
     deps:
       - build-deps:nodejs
-      - deps:bundler
+      - build-deps:bundler
     cmds:
       - ./tasks/app/static-site
     sources:
       - ./build/work/stamp/build-deps/nodejs
-      - ./build/work/stamp/deps/bundler
+      - ./build/work/stamp/build-deps/bundler
       - ./tasks/app/static-site
       - ./tasks/helpers.sh
     generates:
@@ -742,11 +742,11 @@ tasks:
 
   test-deps:bundle:
     deps:
-      - deps:bundler
+      - build-deps:bundler
     cmds:
       - ./tasks/test-deps/bundle
     sources:
-      - ./build/work/stamp/deps/bundler
+      - ./build/work/stamp/build-deps/bundler
       - ./Gemfile
       - ./Gemfile.lock
       - ./tasks/test-deps/bundle

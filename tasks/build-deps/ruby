@@ -12,11 +12,11 @@ extract_download "ruby-$ruby_version.tar.bz2"
 
 cd "ruby-$ruby_version"
 ./configure \
-  --prefix="$INSTALL_PREFIX_EMBEDDED" \
+  --prefix="$DEV_INSTALL_PREFIX" \
   --enable-load-relative \
   --disable-rpath \
   --disable-install-doc
 make -j"$NPROC"
-make install DESTDIR="$STAGE_DIR"
+make install
 
 stamp

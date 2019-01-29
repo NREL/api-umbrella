@@ -11,7 +11,7 @@ mkdir -p _persist
 cd _persist
 
 # Install all the gems for use in development/test.
-export PATH="$STAGE_EMBEDDED_PATH"
+export PATH="$DEV_PATH"
 export BUNDLE_GEMFILE="$SOURCE_DIR/Gemfile"
 BUNDLE_APP_CONFIG="$(pwd)/.bundle"
 export BUNDLE_APP_CONFIG

@@ -211,7 +211,7 @@ return function(app)
     before = function(self)
       _M.first_time_setup_check(self)
       if self.current_admin then
-        return self:write({ redirect_to = build_url("/admin/") })
+        return self:write({ redirect_to = build_url("/admin/#/login") })
       end
     end,
     GET = _M.new,

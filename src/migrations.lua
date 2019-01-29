@@ -411,6 +411,7 @@ return {
         http_basic_auth varchar(255),
         require_https varchar(23) CHECK(require_https IN('required_return_error', 'transition_return_error', 'optional')),
         require_https_transition_start_at timestamp with time zone,
+        redirect_https boolean NOT NULL DEFAULT FALSE,
         disable_api_key boolean,
         api_key_verification_level varchar(16) CHECK(api_key_verification_level IN('none', 'transition_email', 'required_email')),
         api_key_verification_transition_start_at timestamp with time zone,

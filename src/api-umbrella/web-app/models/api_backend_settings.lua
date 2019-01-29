@@ -155,6 +155,7 @@ local ApiBackendSettings = model_ext.new_class("api_backend_settings", {
       rate_limit_bucket_name = json_null_default(self.rate_limit_bucket_name),
       rate_limit_mode = json_null_default(self.rate_limit_mode),
       rate_limits = {},
+      redirect_https = json_null_default(self.redirect_https),
       require_https = json_null_default(self.require_https),
       require_https_transition_start_at = json_null_default(time.postgres_to_iso8601(self.require_https_transition_start_at)),
       required_roles = json_null_default(self:required_role_ids()),

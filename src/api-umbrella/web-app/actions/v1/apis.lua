@@ -114,6 +114,7 @@ local function api_backend_settings_params(input_settings)
     pass_api_key_query_param = input_settings["pass_api_key_query_param"],
     rate_limit_bucket_name = input_settings["rate_limit_bucket_name"],
     rate_limit_mode = input_settings["rate_limit_mode"],
+    redirect_https = input_settings["redirect_https"],
     require_https = input_settings["require_https"],
     require_https_transition_start_at = input_settings["require_https_transition_start_at"],
     required_role_ids = input_settings["required_roles"],

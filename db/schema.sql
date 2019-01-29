@@ -2,8 +2,8 @@
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 9.6.5
--- Dumped by pg_dump version 9.6.5
+-- Dumped from database version 9.6.6
+-- Dumped by pg_dump version 9.6.6
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -968,6 +968,7 @@ CREATE TABLE api_backend_settings (
     http_basic_auth character varying(255),
     require_https character varying(23),
     require_https_transition_start_at timestamp with time zone,
+    redirect_https boolean DEFAULT false NOT NULL,
     disable_api_key boolean,
     api_key_verification_level character varying(16),
     api_key_verification_transition_start_at timestamp with time zone,
