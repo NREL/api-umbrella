@@ -11,7 +11,6 @@ module ApiUmbrellaTestHelpers
     include ApiUmbrellaTestHelpers::Selenium
 
     def admin_login(admin = nil)
-      Capybara.reset_session!
       selenium_add_cookie("_api_umbrella_session", encrypt_session_cookie(admin_session_data(admin)))
 
       visit "/admin/login"
