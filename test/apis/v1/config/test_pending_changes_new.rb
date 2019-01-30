@@ -9,13 +9,13 @@ class Test::Apis::V1::Config::TestPendingChangesNew < Minitest::Test
     super
     setup_server
 
-    PublishedConfig.delete_all
+    publish_default_config_version
     @api = FactoryBot.create(:api_backend)
   end
 
   def after_all
     super
-    default_config_version_needed
+    publish_default_config_version
   end
 
   def test_new_if_never_published

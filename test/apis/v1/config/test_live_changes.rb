@@ -8,11 +8,12 @@ class Test::Apis::V1::Config::TestLiveChanges < Minitest::Test
   def setup
     super
     setup_server
+    publish_default_config_version
   end
 
   def after_all
     super
-    default_config_version_needed
+    publish_default_config_version
   end
 
   def test_detects_published_api_changes_within_1_second

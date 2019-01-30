@@ -9,38 +9,15 @@ class Test::Apis::V1::Config::TestPublish < Minitest::Test
     super
     setup_server
 
-    PublishedConfig.delete_all
+    publish_default_config_version
   end
 
   def after_all
     super
-    default_config_version_needed
+    publish_default_config_version
   end
 
   def test_publish_with_no_existing_config
-    assert_equal(0, PublishedConfig.count)
-
-    api = FactoryBot.create(:api_backend)
-    config = {
-      :apis => {
-        api.id => { :publish => "1" },
-      },
-    }
-
-    response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/config/publish.json", http_options.deep_merge(admin_token).deep_merge({
-      :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
-      :body => { :config => config },
-    }))
-
-    assert_response_code(201, response)
-    assert_equal(1, PublishedConfig.count)
-    active_config = PublishedConfig.active_config
-    assert_equal(1, active_config["apis"].length)
-  end
-
-  def test_publish_with_existing_config
-    api = FactoryBot.create(:api_backend)
-    publish_api_backends([api.id])
     assert_equal(1, PublishedConfig.count)
 
     api = FactoryBot.create(:api_backend)
@@ -58,6 +35,29 @@ class Test::Apis::V1::Config::TestPublish < Minitest::Test
     assert_response_code(201, response)
     assert_equal(2, PublishedConfig.count)
     active_config = PublishedConfig.active_config
+    assert_equal(1, active_config["apis"].length)
+  end
+
+  def test_publish_with_existing_config
+    api = FactoryBot.create(:api_backend)
+    publish_api_backends([api.id])
+    assert_equal(2, PublishedConfig.count)
+
+    api = FactoryBot.create(:api_backend)
+    config = {
+      :apis => {
+        api.id => { :publish => "1" },
+      },
+    }
+
+    response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/config/publish.json", http_options.deep_merge(admin_token).deep_merge({
+      :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
+      :body => { :config => config },
+    }))
+
+    assert_response_code(201, response)
+    assert_equal(3, PublishedConfig.count)
+    active_config = PublishedConfig.active_config
     assert_equal(2, active_config["apis"].length)
   end
 
@@ -65,7 +65,7 @@ class Test::Apis::V1::Config::TestPublish < Minitest::Test
     api1 = FactoryBot.create(:api_backend, :sort_order => 40)
     api2 = FactoryBot.create(:api_backend, :sort_order => 15)
     publish_api_backends([api1.id, api2.id])
-    assert_equal(1, PublishedConfig.count)
+    assert_equal(2, PublishedConfig.count)
 
     api3 = FactoryBot.create(:api_backend, :sort_order => 90)
     api4 = FactoryBot.create(:api_backend, :sort_order => 1)

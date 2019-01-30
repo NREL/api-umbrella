@@ -9,7 +9,7 @@ class Test::Apis::V1::Config::TestPendingChangesDeleted < Minitest::Test
     super
     setup_server
 
-    PublishedConfig.delete_all
+    publish_default_config_version
     @api = FactoryBot.create(:api_backend)
     publish_api_backends([@api.id])
     @api.delete
@@ -17,7 +17,7 @@ class Test::Apis::V1::Config::TestPendingChangesDeleted < Minitest::Test
 
   def after_all
     super
-    default_config_version_needed
+    publish_default_config_version
   end
 
   def test_deleted_after_last_publish

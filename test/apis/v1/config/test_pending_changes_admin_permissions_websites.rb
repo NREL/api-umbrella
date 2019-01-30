@@ -9,6 +9,7 @@ class Test::Apis::V1::Config::TestPendingChangesAdminPermissionsWebsites < Minit
     super
     setup_server
 
+    publish_default_config_version
     @localhost_website = FactoryBot.create(:website_backend_localhost)
     @example_com_website = FactoryBot.create(:example_com_website_backend)
     publish_website_backends([
@@ -19,7 +20,7 @@ class Test::Apis::V1::Config::TestPendingChangesAdminPermissionsWebsites < Minit
 
   def after_all
     super
-    default_config_version_needed
+    publish_default_config_version
   end
 
   def test_all_websites_for_superuser

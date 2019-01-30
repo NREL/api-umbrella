@@ -8,6 +8,7 @@ class Test::Apis::V1::Config::TestExceedsMemory < Minitest::Test
   def setup
     super
     setup_server
+    publish_default_config_version
     once_per_class_setup do
       override_config_set({
         :nginx => {
@@ -24,7 +25,7 @@ class Test::Apis::V1::Config::TestExceedsMemory < Minitest::Test
   def after_all
     super
     override_config_reset
-    default_config_version_needed
+    publish_default_config_version
   end
 
   def test_retains_previous_config_when_new_config_exceeds_memory

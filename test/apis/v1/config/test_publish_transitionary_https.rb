@@ -9,12 +9,12 @@ class Test::Apis::V1::Config::TestPublishTransitionaryHttps < Minitest::Test
     super
     setup_server
 
-    PublishedConfig.delete_all
+    publish_default_config_version
   end
 
   def after_all
     super
-    default_config_version_needed
+    publish_default_config_version
   end
 
   def test_transition_return_error_set_timestamp
@@ -42,7 +42,7 @@ class Test::Apis::V1::Config::TestPublishTransitionaryHttps < Minitest::Test
       }))
 
       assert_response_code(201, response)
-      assert_equal(1, PublishedConfig.count)
+      assert_equal(2, PublishedConfig.count)
       active_config = PublishedConfig.active_config
 
       api.reload
@@ -75,7 +75,7 @@ class Test::Apis::V1::Config::TestPublishTransitionaryHttps < Minitest::Test
       }))
 
       assert_response_code(201, response)
-      assert_equal(1, PublishedConfig.count)
+      assert_equal(2, PublishedConfig.count)
       active_config = PublishedConfig.active_config
 
       api.reload
@@ -106,7 +106,7 @@ class Test::Apis::V1::Config::TestPublishTransitionaryHttps < Minitest::Test
       }))
 
       assert_response_code(201, response)
-      assert_equal(1, PublishedConfig.count)
+      assert_equal(2, PublishedConfig.count)
       active_config = PublishedConfig.active_config
 
       api.reload
@@ -157,7 +157,7 @@ class Test::Apis::V1::Config::TestPublishTransitionaryHttps < Minitest::Test
       }))
 
       assert_response_code(201, response)
-      assert_equal(1, PublishedConfig.count)
+      assert_equal(2, PublishedConfig.count)
       active_config = PublishedConfig.active_config
 
       api.reload
@@ -190,7 +190,7 @@ class Test::Apis::V1::Config::TestPublishTransitionaryHttps < Minitest::Test
       }))
 
       assert_response_code(201, response)
-      assert_equal(1, PublishedConfig.count)
+      assert_equal(2, PublishedConfig.count)
       active_config = PublishedConfig.active_config
 
       api.reload
@@ -223,7 +223,7 @@ class Test::Apis::V1::Config::TestPublishTransitionaryHttps < Minitest::Test
       }))
 
       assert_response_code(201, response)
-      assert_equal(1, PublishedConfig.count)
+      assert_equal(2, PublishedConfig.count)
       active_config = PublishedConfig.active_config
 
       api.reload

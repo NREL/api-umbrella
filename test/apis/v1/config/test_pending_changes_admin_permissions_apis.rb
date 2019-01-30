@@ -9,7 +9,7 @@ class Test::Apis::V1::Config::TestPendingChangesAdminPermissionsApis < Minitest:
     super
     setup_server
 
-    PublishedConfig.delete_all
+    publish_default_config_version
     @api = FactoryBot.create(:api_backend)
     @google_api = FactoryBot.create(:google_api_backend)
     @google_extra_url_match_api = FactoryBot.create(:google_extra_url_match_api_backend)
@@ -24,7 +24,7 @@ class Test::Apis::V1::Config::TestPendingChangesAdminPermissionsApis < Minitest:
 
   def after_all
     super
-    default_config_version_needed
+    publish_default_config_version
   end
 
   def test_all_apis_for_superuser

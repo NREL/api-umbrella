@@ -143,10 +143,7 @@ module ApiUmbrellaTestHelpers
         end
 
         unless self.setup_config_version_complete
-          PublishedConfig.delete_all
-          PublishedConfig.create!(:config => {})
-          PublishedConfig.active.wait_until_live
-
+          publish_default_config_version
           self.setup_config_version_complete = true
         end
       end
@@ -156,16 +153,6 @@ module ApiUmbrellaTestHelpers
       PublishedConfig.delete_all
       PublishedConfig.create!(:config => {})
       PublishedConfig.active.wait_until_live
-    end
-
-    # If tests need to delete all the PublishedConfig records from the database,
-    # then they need to call this method after finishing so the default
-    # PublishedConfig record will be re-created for other tests that depend on
-    # it.
-    def default_config_version_needed
-      ApiUmbrellaTestHelpers::Setup.setup_lock.synchronize do
-        ApiUmbrellaTestHelpers::Setup.setup_config_version_complete = false
-      end
     end
 
     # If tests need to delete all the ApiUser records from the database, then

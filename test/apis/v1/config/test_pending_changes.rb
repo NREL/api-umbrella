@@ -9,12 +9,12 @@ class Test::Apis::V1::Config::TestPendingChanges < Minitest::Test
     super
     setup_server
 
-    PublishedConfig.delete_all
+    publish_default_config_version
   end
 
   def after_all
     super
-    default_config_version_needed
+    publish_default_config_version
   end
 
   def test_grouped_into_categories

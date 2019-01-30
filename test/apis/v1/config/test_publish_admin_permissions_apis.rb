@@ -9,7 +9,7 @@ class Test::Apis::V1::Config::TestPublishAdminPermissionsApis < Minitest::Test
     super
     setup_server
 
-    PublishedConfig.delete_all
+    publish_default_config_version
     @api = FactoryBot.create(:api_backend)
     @google_api = FactoryBot.create(:google_api_backend)
     @google_extra_url_match_api = FactoryBot.create(:google_extra_url_match_api_backend)
@@ -18,7 +18,7 @@ class Test::Apis::V1::Config::TestPublishAdminPermissionsApis < Minitest::Test
 
   def after_all
     super
-    default_config_version_needed
+    publish_default_config_version
   end
 
   def test_superusers_publish_anything
@@ -82,7 +82,7 @@ class Test::Apis::V1::Config::TestPublishAdminPermissionsApis < Minitest::Test
     assert_response_code(403, response)
     data = MultiJson.load(response.body)
     assert_equal(["errors"], data.keys)
-    assert_nil(PublishedConfig.active_config)
+    assert_equal({}, PublishedConfig.active_config)
   end
 
   def test_reject_limited_admins_publish_partial_access_apis
@@ -101,7 +101,7 @@ class Test::Apis::V1::Config::TestPublishAdminPermissionsApis < Minitest::Test
     assert_response_code(403, response)
     data = MultiJson.load(response.body)
     assert_equal(["errors"], data.keys)
-    assert_nil(PublishedConfig.active_config)
+    assert_equal({}, PublishedConfig.active_config)
   end
 
   def test_reject_limited_admins_without_publish_permission
@@ -120,6 +120,6 @@ class Test::Apis::V1::Config::TestPublishAdminPermissionsApis < Minitest::Test
     assert_response_code(403, response)
     data = MultiJson.load(response.body)
     assert_equal(["errors"], data.keys)
-    assert_nil(PublishedConfig.active_config)
+    assert_equal({}, PublishedConfig.active_config)
   end
 end
