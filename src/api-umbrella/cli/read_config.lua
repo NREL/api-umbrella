@@ -570,9 +570,8 @@ return function(options)
     set_computed_config()
     set_process_permissions()
 
-    set_cached_random_tokens()
-
     if options and options["write"] then
+      set_cached_random_tokens()
       write_runtime_config()
     end
   end
