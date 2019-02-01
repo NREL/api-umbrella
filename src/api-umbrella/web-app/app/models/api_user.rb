@@ -174,7 +174,7 @@ class ApiUser
   # turning on cascade_callbacks seems to lead to tack level too deep errors.
   def handle_rate_limit_mode
     if(self.settings.present?)
-      if(self.settings.rate_limit_mode != "custom")
+      if(self.settings.rate_limit_mode != "custom" && self.settings.rate_limit_mode != "custom-header")
         self.settings.rate_limits.clear
       end
     end

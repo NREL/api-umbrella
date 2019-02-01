@@ -92,6 +92,14 @@ class Api::V1::UsersController < Api::V1::BaseController
     end
   end
 
+  def destroy
+    @api_user = ApiUser.find(params[:id])
+    authorize(@api_user)
+    @api_user.enabled = false
+    @api_user.save
+    respond_with(:api_v1, @api_user, :root => "api_user")
+  end
+
   private
 
   def assign_attributes!

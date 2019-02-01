@@ -53,6 +53,15 @@ local function set_via_header()
   end
 end
 
+local function set_cors_headers()
+  local acah = ngx.header["Access-Control-Allow-Headers"]
+  if acah == "" or acah == nil then
+          ngx.header["Access-Control-Allow-Headers"] = "x-api-key"
+  else
+          ngx.header["Access-Control-Allow-Headers"] = acah .. ",x-api-key"
+  end
+end
+
 local function set_default_headers(settings)
   if settings["_default_response_headers"] then
     local existing_headers = ngx.resp.get_headers()
@@ -120,6 +129,8 @@ end
 return function(settings)
   set_cache_header()
   set_via_header()
+
+  set_cors_headers()
 
   if settings then
     set_default_headers(settings)

@@ -1,5 +1,29 @@
 local distributed_rate_limit_queue = require "api-umbrella.proxy.distributed_rate_limit_queue"
 
+local function get_increment(settings)
+  local increment
+  increment = 1
+  if ngx.get_phase() == "header_filter" then
+    if settings["rate_limit_mode"] == "custom-header" then
+      local rate_limit_cost_header = settings["rate_limit_cost_header"]
+      increment = ngx.resp.get_headers()[rate_limit_cost_header]
+      increment = tonumber(increment)
+      if increment == nil then
+        increment = 0
+      elseif increment > 1 then
+        -- compensate for the 1 used earlier
+        increment = increment - 1
+      else
+        -- cost can't be less than 1.
+        increment = 0
+      end
+    else
+      increment = 0
+    end
+  end
+  return increment
+end
+
 local function bucket_keys(settings, user, limit, current_time)
   local bucket_time = math.floor(current_time / limit["accuracy"]) * limit["accuracy"]
 
@@ -9,10 +33,18 @@ local function bucket_keys(settings, user, limit, current_time)
     limit_by = "ip"
   end
 
+  -- If origin based limiting is set but the request is authenticated,
+  -- apiKey takes precedence.
+  if limit_by == "origin" and user then
+    limit_by = "apiKey"
+  end
+
   if limit_by == "apiKey" then
     key_base = key_base .. user["api_key"]
   elseif limit_by == "ip" then
     key_base = key_base .. ngx.ctx.remote_addr
+  elseif limit_by == "origin" then
+    key_base = key_base .. ngx.req.get_headers()["Origin"]
   else
     ngx.log(ngx.ERR, "stats unknown limit by")
   end
@@ -35,17 +67,18 @@ local function bucket_keys(settings, user, limit, current_time)
   return keys
 end
 
-local function increment_limit(current_time_key, duration, distributed)
-  local ok, count, err
+local function increment_limit(settings, current_time_key, duration, distributed)
+  local ok, count, err, increment
+
+  increment = get_increment(settings)
 
   -- Try to increment an existing key.
-  count, err = ngx.shared.stats:incr(current_time_key, 1)
+  count, err = ngx.shared.stats:incr(current_time_key, increment)
   if err then
     -- If the increment failed because the key doesn't exist, add it as a new
     -- key.
     if err == "not found" then
-      count = 1
-      ok, err = ngx.shared.stats:add(current_time_key, count, duration / 1000)
+      ok, err = ngx.shared.stats:add(current_time_key, increment, duration / 1000)
       if not ok then
         -- If the add failed because they key already exists, make another
         -- attempt at incrementing it again.
@@ -56,7 +89,7 @@ local function increment_limit(current_time_key, duration, distributed)
         -- this is really possible, since we're not performing any other async
         -- tasks between the incr and add).
         if err == "exists" then
-          count, err = ngx.shared.stats:incr(current_time_key, 1)
+          count, err = ngx.shared.stats:incr(current_time_key, increment)
           if err then
             ngx.log(ngx.ERR, "stats incr retry err: ", err)
           end
@@ -73,7 +106,7 @@ local function increment_limit(current_time_key, duration, distributed)
     distributed_rate_limit_queue.push(current_time_key)
   end
 
-  return count or 1
+  return count or increment
 end
 
 local function get_remaining_for_limit(settings, user, limit, keys)
@@ -102,7 +135,7 @@ local function get_remaining_for_limit(settings, user, limit, keys)
 
     -- Keep track of the bucket count of the current time for later use.
     if index == current_time_key_index then
-      bucket_count = bucket_count + 1
+      bucket_count = bucket_count + get_increment(settings)
       limit["_current_time_count"] = bucket_count
     end
 
@@ -124,7 +157,6 @@ local function process_remaining(limit, remaining, over_limit)
   if remaining then
     if remaining < 0 then
       over_limit = true
-      remaining = 0
     end
 
     if limit["response_headers"] then
@@ -159,7 +191,7 @@ local function increment_all_limits(settings)
   local over_limit = false
 
   for _, limit in ipairs(settings["rate_limits"]) do
-    local increment_count = increment_limit(limit["_current_time_key"], limit["duration"], limit["distributed"])
+    local increment_count = increment_limit(settings, limit["_current_time_key"], limit["duration"], limit["distributed"])
 
     -- Since we fetch all of our rate limit counts first, and then increment
     -- the counts separately (to ensure we don't increment requests that have
@@ -200,6 +232,11 @@ return function(settings, user)
     return
   end
 
+  local increment = get_increment(settings)
+  if increment == 0 then
+    return
+  end
+
   local current_time = math.floor(ngx.now() * 1000)
   local test_env_skip_increment_limits = false
   if config["app_env"] == "test" then
@@ -219,20 +256,25 @@ return function(settings, user)
   -- If the request isn't over any limits, then increment all the rate limit
   -- values (we only do this when not over limits so that over rate limit
   -- requests don't count against the user).
-  if not over_limit and not test_env_skip_increment_limits then
+  -- If this is header filter phase request already was sent. Let it count.
+  if (not over_limit or ngx.get_phase() == 'header_filter') and not test_env_skip_increment_limits then
     over_limit = increment_all_limits(settings)
   elseif test_env_skip_increment_limits then
     -- If we're in the test environment and incrementing rate limits is
     -- disabled, then add 1 back to the remaining count (since this hit hasn't
     -- actually subtracted 1).
-    ngx.ctx.response_header_remaining = ngx.ctx.response_header_remaining + 1
+    ngx.ctx.response_header_remaining = ngx.ctx.response_header_remaining + increment
   end
 
   if ngx.ctx.response_header_limit then
     ngx.header["X-RateLimit-Limit"] = ngx.ctx.response_header_limit
   end
   if ngx.ctx.response_header_remaining then
-    ngx.header["X-RateLimit-Remaining"] = ngx.ctx.response_header_remaining
+    if ngx.ctx.response_header_remaining < 0 then
+      ngx.header["X-RateLimit-Remaining"] = 0
+    else
+      ngx.header["X-RateLimit-Remaining"] = ngx.ctx.response_header_remaining
+    end
   end
 
   if over_limit then

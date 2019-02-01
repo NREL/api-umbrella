@@ -17,6 +17,13 @@ return function(api)
     deep_merge_overwrite_arrays(settings, api["settings"])
   end
 
+  -- Add some defaults for OPTIONS
+  -- See https://github.com/apinf/platform/issues/3531
+  local request_method = ngx.ctx.request_method
+  if(request_method == "options") then
+    settings["disable_api_key"] = true
+  end
+
   -- See if there's any settings for a matching sub-url.
   if api["sub_settings"] then
     local request_method = ngx.ctx.request_method
