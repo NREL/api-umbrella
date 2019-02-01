@@ -29,6 +29,14 @@ DatabaseCleaner.strategy = :deletion, {
     # stick around for all the tests in the class (rather than being cleared
     # before each individual test).
     "published_config",
+
+    # Don't truncate the table of cached city locations from geoip results.
+    # Since these cached values are only inserted if the nginx processes
+    # haven't seen the city before (and not inserted if it's in the in-memory
+    # cache), truncating this table in the middle of runs may lead to
+    # unexpected results (since data will then be missing from the table that
+    # the in-memory cache thinks should be there).
+    "analytics_cities",
   ],
 }
 # ActiveRecord::Base.logger = Logger.new(STDOUT)
