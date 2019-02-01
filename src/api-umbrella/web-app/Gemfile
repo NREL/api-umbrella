@@ -109,7 +109,7 @@ gem "font-awesome-rails", "~> 4.7.0", :require => false
 gem "active_attr", "~> 0.12.0"
 
 # URI parsing
-gem "addressable", "~> 2.5.2"
+gem "addressable", "~> 2.6.0"
 
 # Public suffix for hostnames.
 gem "public_suffix", "~> 3.0.3"

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-elasticsearch6_version="6.5.4"
+elasticsearch6_version="6.6.0"
 elasticsearch6_hash="f89d5796108b393cff87a0c0325065bc112b01ad"
 
 set -e -u -x
