@@ -156,7 +156,7 @@ module ApiUmbrellaTestHelpers
               select start_at.strftime("%b")
             end
             within("select.yearselect") do
-              select start_at.year
+              select start_at.year.to_s
             end
             find(".calendar-table td", :text => start_at.day).click
           end
@@ -166,7 +166,7 @@ module ApiUmbrellaTestHelpers
               select end_at.strftime("%b")
             end
             within("select.yearselect") do
-              select end_at.year
+              select end_at.year.to_s
             end
             find(".calendar-table td", :text => end_at.day).click
           end
