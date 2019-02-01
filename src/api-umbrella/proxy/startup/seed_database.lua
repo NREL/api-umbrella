@@ -35,8 +35,8 @@ local function wait_for_postgres()
 end
 
 local function set_stamping()
-  pg_utils.query("SET LOCAL audit.user_id = '00000000-0000-0000-0000-000000000000'")
-  pg_utils.query("SET LOCAL audit.user_name = 'api-umbrella-proxy'")
+  pg_utils.query("SET LOCAL audit.application_user_id = '00000000-0000-0000-0000-000000000000'")
+  pg_utils.query("SET LOCAL audit.application_user_name = 'api-umbrella-proxy'")
 end
 
 local function seed_api_keys()

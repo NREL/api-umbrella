@@ -4,7 +4,7 @@
 --
 
 -- Complain if script is sourced in psql, rather than via CREATE EXTENSION
--- \echo Use "CREATE EXTENSION pg-audit-json" to load this file. \quit
+\echo Use "CREATE EXTENSION pg-audit-json" to load this file. \quit
 
 --
 -- Implements missing "-" JSONB operators that are available in HSTORE
@@ -185,6 +185,11 @@ CREATE INDEX log_relid_idx ON audit.log(relid);
 CREATE INDEX log_action_tstamp_tx_stm_idx ON audit.log(action_tstamp_stm);
 CREATE INDEX log_action_idx ON audit.log(action);
 
+--
+-- Allow the user of the extension to create a backup of the audit log data
+--
+SELECT pg_catalog.pg_extension_config_dump('audit.log', '');
+
 CREATE OR REPLACE FUNCTION audit.if_modified_func()
 RETURNS TRIGGER
 LANGUAGE plpgsql
@@ -214,8 +219,8 @@ BEGIN
     statement_timestamp(),                          -- action_tstamp_stm
     clock_timestamp(),                              -- action_tstamp_clk
     txid_current(),                                 -- transaction ID
-    current_setting('application_name', true),      -- client application
-    current_setting('audit.user_name', true),       -- client user name
+    current_setting('audit.application_name', true),      -- client application
+    current_setting('audit.application_user_name', true), -- client user name
     inet_client_addr(),                             -- client_addr
     inet_client_port(),                             -- client_port
     current_query(),                                -- top-level query or queries

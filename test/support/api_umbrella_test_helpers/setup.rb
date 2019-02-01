@@ -65,9 +65,9 @@ module ApiUmbrellaTestHelpers
             :pool => 50,
             :variables => {
               "timezone" => "UTC",
-              "application_name" => "test_app_name",
-              "audit.user_id" => "00000000-1111-2222-3333-444444444444",
-              "audit.user_name" => "test_example_admin_username",
+              "audit.application_name" => "test_app_name",
+              "audit.application_user_id" => "00000000-1111-2222-3333-444444444444",
+              "audit.application_user_name" => "test_example_admin_username",
             },
           })
         end

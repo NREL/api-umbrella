@@ -8,8 +8,10 @@ return {
     db.query("START TRANSACTION")
     db.query("CREATE EXTENSION IF NOT EXISTS pgcrypto")
 
-    local audit_sql_path = path.join(os.getenv("API_UMBRELLA_SRC_ROOT"), "db/pg-audit-json--1.0.0.sql")
+    local audit_sql_path = path.join(os.getenv("API_UMBRELLA_SRC_ROOT"), "db/pg-audit-json--1.0.1.sql")
     local audit_sql = file.read(audit_sql_path, true)
+    audit_sql = ngx.re.sub(audit_sql, [[^(\\echo Use)]], "-- $1", "m")
+    audit_sql = ngx.re.sub(audit_sql, [[^(SELECT pg_catalog.pg_extension_config_dump)]], "-- $1", "m")
     db.query(audit_sql)
     db.query("CREATE INDEX ON audit.log(schema_name, table_name)")
     db.query("CREATE INDEX ON audit.log(application_user_name)")
@@ -19,7 +21,7 @@ return {
       CREATE OR REPLACE FUNCTION current_app_user_id()
       RETURNS uuid AS $$
       BEGIN
-        RETURN current_setting('audit.user_id')::uuid;
+        RETURN current_setting('audit.application_user_id')::uuid;
       END;
       $$ LANGUAGE plpgsql;
     ]])
@@ -28,7 +30,7 @@ return {
       CREATE OR REPLACE FUNCTION current_app_username()
       RETURNS varchar(255) AS $$
       BEGIN
-        RETURN current_setting('audit.user_name');
+        RETURN current_setting('audit.application_user_name');
       END;
       $$ LANGUAGE plpgsql;
     ]])

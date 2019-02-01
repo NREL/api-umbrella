@@ -113,7 +113,7 @@ function _M.connect()
   if pg.sock:getreusedtimes() == 0 then
     local queries = {
       -- Set an application name for connection details.
-      "SET SESSION application_name = 'api-umbrella'",
+      "SET SESSION audit.application_name = 'api-umbrella'",
 
       -- Always use UTC.
       "SET SESSION timezone = 'UTC'",

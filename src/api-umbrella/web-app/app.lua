@@ -167,7 +167,7 @@ local function before_filter(self)
   -- the socket is reused), but Lapi's "db" instance doesn't have a way to get
   -- the underlying pgmoon connection before executing a query (the connection
   -- is lazily established after the first query).
-  db.query("SET SESSION application_name = 'api-umbrella-web-app'")
+  db.query("SET SESSION audit.application_name = 'api-umbrella-web-app'")
   db.query("SET SESSION timezone = 'UTC'")
 
   -- Note that ngx.ctx.pgmoon will only be set after running the db.query

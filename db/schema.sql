@@ -179,8 +179,8 @@ BEGIN
     statement_timestamp(),                          -- action_tstamp_stm
     clock_timestamp(),                              -- action_tstamp_clk
     txid_current(),                                 -- transaction ID
-    current_setting('application_name', true),      -- client application
-    current_setting('audit.user_name', true),       -- client user name
+    current_setting('audit.application_name', true),      -- client application
+    current_setting('audit.application_user_name', true), -- client user name
     inet_client_addr(),                             -- client_addr
     inet_client_port(),                             -- client_port
     current_query(),                                -- top-level query or queries
@@ -289,7 +289,7 @@ CREATE FUNCTION current_app_user_id() RETURNS uuid
     LANGUAGE plpgsql
     AS $$
       BEGIN
-        RETURN current_setting('audit.user_id')::uuid;
+        RETURN current_setting('audit.application_user_id')::uuid;
       END;
       $$;
 
@@ -302,7 +302,7 @@ CREATE FUNCTION current_app_username() RETURNS character varying
     LANGUAGE plpgsql
     AS $$
       BEGIN
-        RETURN current_setting('audit.user_name');
+        RETURN current_setting('audit.application_user_name');
       END;
       $$;
 
