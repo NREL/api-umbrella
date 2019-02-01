@@ -1,6 +1,7 @@
-local file = require "pl.file"
-local path = require "pl.path"
 local db = require("lapis.db")
+local file = require "pl.file"
+local json_encode = require "api-umbrella.utils.json_encode"
+local path = require "pl.path"
 
 return {
   [1498350289] = function()
@@ -36,15 +37,15 @@ return {
       CREATE OR REPLACE FUNCTION stamp_record()
       RETURNS TRIGGER AS $$
       DECLARE
-        foreign_table_row record;
+        associations jsonb;
+        association jsonb;
       BEGIN
         -- Only perform stamping ON INSERT/DELETE or if the UPDATE actually
         -- changed any fields.
         IF TG_OP != 'UPDATE' OR row(NEW.*) IS DISTINCT FROM row(OLD.*) THEN
-          -- Find any foreign keys on this table, and also update the
-          -- updated_at timestamp on those related tables (which in turn will
-          -- trigger this stamp_record() on that table if the timestamp changes
-          -- to take care of any userstamping).
+          -- Update the updated_at timestamp on associated tables (which in
+          -- turn will trigger this stamp_record() on that table if the
+          -- timestamp changes to take care of any userstamping).
           --
           -- This is done so that insert/updates/deletes of nested data cascade
           -- the updated stamping information to any parent records. For
@@ -68,29 +69,20 @@ return {
           -- top-level records to detect any changes and invalidate caches (for
           -- example, detecting when api_users are changed to clear the proxy
           -- cache).
-          FOR foreign_table_row IN
-            -- Find all the foreign tables that any foreign keys on this table
-            -- reference.
-            --
-            -- Note that this doesn't use the more common
-            -- information_schema.constraint_column_usage approach, since that
-            -- only gets foreign keys owned by the current user (so it won't work
-            -- when running as a different user than the table owners).
-            EXECUTE format('SELECT
-                pga1.attname as column_name,
-                cast(pgcon.confrelid as regclass) as foreign_table_name,
-                pga2.attname as foreign_column_name
-              FROM
-                pg_constraint AS pgcon
-                JOIN pg_attribute AS pga1
-                  ON (pgcon.conrelid = pga1.attrelid AND pga1.attnum = ANY(pgcon.conkey))
-                JOIN pg_attribute AS pga2
-                  ON (pgcon.confrelid = pga2.attrelid AND pga2.attnum = ANY(pgcon.confkey))
-                WHERE pgcon.contype = ''f''
-                  AND pgcon.conrelid = cast(%L as regclass)', TG_TABLE_NAME)
-          LOOP
-            EXECUTE format('UPDATE %I SET updated_at = transaction_timestamp() WHERE %I = ($1).%s', foreign_table_row.foreign_table_name, foreign_table_row.foreign_column_name, foreign_table_row.column_name) USING (CASE WHEN TG_OP = 'DELETE' THEN OLD ELSE NEW END);
-          END LOOP;
+          --
+          -- Note: We don't try to automatically detect all associations based
+          -- on foreign keys, since that can lead to unnecessary updates (eg,
+          -- when updating "api_users_roles" it only really makes sense to
+          -- cascade the update time to the user, but not the roles table),
+          -- which can also lead to deadlocks under higher concurrency (seen
+          -- mainly in our test environment).
+          IF TG_ARGV[0] IS NOT NULL THEN
+            associations = TG_ARGV[0]::jsonb;
+            FOR association IN SELECT * FROM jsonb_array_elements(associations)
+            LOOP
+              EXECUTE format('UPDATE %I SET updated_at = transaction_timestamp() WHERE %I = ($1).%s', association->>'table_name', association->>'primary_key', association->>'foreign_key') USING (CASE WHEN TG_OP = 'DELETE' THEN OLD ELSE NEW END);
+            END LOOP;
+          END IF;
 
           -- Set the created/updated timestamp and userstamp columns on INSERT
           -- or UPDATE.
@@ -251,7 +243,13 @@ return {
         PRIMARY KEY(admin_group_id, admin_permission_id)
       )
     ]])
-    db.query("CREATE TRIGGER admin_groups_admin_permissions_stamp_record BEFORE INSERT OR UPDATE OR DELETE ON admin_groups_admin_permissions FOR EACH ROW EXECUTE PROCEDURE stamp_record()")
+    db.query("CREATE TRIGGER admin_groups_admin_permissions_stamp_record BEFORE INSERT OR UPDATE OR DELETE ON admin_groups_admin_permissions FOR EACH ROW EXECUTE PROCEDURE stamp_record(?)", json_encode({
+      {
+        table_name = "admin_groups",
+        primary_key = "id",
+        foreign_key = "admin_group_id",
+      },
+    }))
     db.query("SELECT audit.audit_table('admin_groups_admin_permissions')")
 
     db.query([[
@@ -267,7 +265,13 @@ return {
         PRIMARY KEY(admin_group_id, admin_id)
       )
     ]])
-    db.query("CREATE TRIGGER admin_groups_admins_stamp_record BEFORE INSERT OR UPDATE OR DELETE ON admin_groups_admins FOR EACH ROW EXECUTE PROCEDURE stamp_record()")
+    db.query("CREATE TRIGGER admin_groups_admins_stamp_record BEFORE INSERT OR UPDATE OR DELETE ON admin_groups_admins FOR EACH ROW EXECUTE PROCEDURE stamp_record(?)", json_encode({
+      {
+        table_name = "admins",
+        primary_key = "id",
+        foreign_key = "admin_id",
+      },
+    }))
     db.query("SELECT audit.audit_table('admin_groups_admins')")
 
     db.query([[
@@ -283,7 +287,13 @@ return {
         PRIMARY KEY(admin_group_id, api_scope_id)
       )
     ]])
-    db.query("CREATE TRIGGER admin_groups_api_scopes_stamp_record BEFORE INSERT OR UPDATE OR DELETE ON admin_groups_api_scopes FOR EACH ROW EXECUTE PROCEDURE stamp_record()")
+    db.query("CREATE TRIGGER admin_groups_api_scopes_stamp_record BEFORE INSERT OR UPDATE OR DELETE ON admin_groups_api_scopes FOR EACH ROW EXECUTE PROCEDURE stamp_record(?)", json_encode({
+      {
+        table_name = "admin_groups",
+        primary_key = "id",
+        foreign_key = "admin_group_id",
+      },
+    }))
     db.query("SELECT audit.audit_table('admin_groups_api_scopes')")
 
     db.query([[
@@ -341,7 +351,13 @@ return {
     ]])
     db.query("CREATE UNIQUE INDEX ON api_backend_rewrites(api_backend_id, matcher_type, http_method, frontend_matcher)")
     db.query("CREATE UNIQUE INDEX ON api_backend_rewrites(api_backend_id, sort_order)")
-    db.query("CREATE TRIGGER api_backend_rewrites_stamp_record BEFORE INSERT OR UPDATE OR DELETE ON api_backend_rewrites FOR EACH ROW EXECUTE PROCEDURE stamp_record()")
+    db.query("CREATE TRIGGER api_backend_rewrites_stamp_record BEFORE INSERT OR UPDATE OR DELETE ON api_backend_rewrites FOR EACH ROW EXECUTE PROCEDURE stamp_record(?)", json_encode({
+      {
+        table_name = "api_backends",
+        primary_key = "id",
+        foreign_key = "api_backend_id",
+      },
+    }))
     db.query("SELECT audit.audit_table('api_backend_rewrites')")
 
     db.query([[
@@ -359,7 +375,13 @@ return {
       )
     ]])
     db.query("CREATE UNIQUE INDEX ON api_backend_servers(api_backend_id, host, port)")
-    db.query("CREATE TRIGGER api_backend_servers_stamp_record BEFORE INSERT OR UPDATE OR DELETE ON api_backend_servers FOR EACH ROW EXECUTE PROCEDURE stamp_record()")
+    db.query("CREATE TRIGGER api_backend_servers_stamp_record BEFORE INSERT OR UPDATE OR DELETE ON api_backend_servers FOR EACH ROW EXECUTE PROCEDURE stamp_record(?)", json_encode({
+      {
+        table_name = "api_backends",
+        primary_key = "id",
+        foreign_key = "api_backend_id",
+      },
+    }))
     db.query("SELECT audit.audit_table('api_backend_servers')")
 
     db.query([[
@@ -379,7 +401,13 @@ return {
     ]])
     db.query("CREATE UNIQUE INDEX ON api_backend_sub_url_settings(api_backend_id, http_method, regex)")
     db.query("CREATE UNIQUE INDEX ON api_backend_sub_url_settings(api_backend_id, sort_order)")
-    db.query("CREATE TRIGGER api_backend_sub_url_settings_stamp_record BEFORE INSERT OR UPDATE OR DELETE ON api_backend_sub_url_settings FOR EACH ROW EXECUTE PROCEDURE stamp_record()")
+    db.query("CREATE TRIGGER api_backend_sub_url_settings_stamp_record BEFORE INSERT OR UPDATE OR DELETE ON api_backend_sub_url_settings FOR EACH ROW EXECUTE PROCEDURE stamp_record(?)", json_encode({
+      {
+        table_name = "api_backends",
+        primary_key = "id",
+        foreign_key = "api_backend_id",
+      },
+    }))
     db.query("SELECT audit.audit_table('api_backend_sub_url_settings')")
 
     db.query([[
@@ -399,7 +427,13 @@ return {
     ]])
     db.query("CREATE UNIQUE INDEX ON api_backend_url_matches(api_backend_id, frontend_prefix)")
     db.query("CREATE UNIQUE INDEX ON api_backend_url_matches(api_backend_id, sort_order)")
-    db.query("CREATE TRIGGER api_backend_url_matches_stamp_record BEFORE INSERT OR UPDATE OR DELETE ON api_backend_url_matches FOR EACH ROW EXECUTE PROCEDURE stamp_record()")
+    db.query("CREATE TRIGGER api_backend_url_matches_stamp_record BEFORE INSERT OR UPDATE OR DELETE ON api_backend_url_matches FOR EACH ROW EXECUTE PROCEDURE stamp_record(?)", json_encode({
+      {
+        table_name = "api_backends",
+        primary_key = "id",
+        foreign_key = "api_backend_id",
+      },
+    }))
     db.query("SELECT audit.audit_table('api_backend_url_matches')")
 
     db.query([[
@@ -437,7 +471,18 @@ return {
     ]])
     db.query("CREATE UNIQUE INDEX ON api_backend_settings(api_backend_id)")
     db.query("CREATE UNIQUE INDEX ON api_backend_settings(api_backend_sub_url_settings_id)")
-    db.query("CREATE TRIGGER api_backend_settings_stamp_record BEFORE INSERT OR UPDATE OR DELETE ON api_backend_settings FOR EACH ROW EXECUTE PROCEDURE stamp_record()")
+    db.query("CREATE TRIGGER api_backend_settings_stamp_record BEFORE INSERT OR UPDATE OR DELETE ON api_backend_settings FOR EACH ROW EXECUTE PROCEDURE stamp_record(?)", json_encode({
+      {
+        table_name = "api_backends",
+        primary_key = "id",
+        foreign_key = "api_backend_id",
+      },
+      {
+        table_name = "api_backend_sub_url_settings",
+        primary_key = "id",
+        foreign_key = "api_backend_sub_url_settings_id",
+      },
+    }))
     db.query("SELECT audit.audit_table('api_backend_settings')")
 
     db.query([[
@@ -454,7 +499,13 @@ return {
       )
     ]])
     db.query("CREATE UNIQUE INDEX ON api_backend_settings_required_roles(api_backend_settings_id, api_role_id)")
-    db.query("CREATE TRIGGER api_backend_settings_required_roles_stamp_record BEFORE INSERT OR UPDATE OR DELETE ON api_backend_settings_required_roles FOR EACH ROW EXECUTE PROCEDURE stamp_record()")
+    db.query("CREATE TRIGGER api_backend_settings_required_roles_stamp_record BEFORE INSERT OR UPDATE OR DELETE ON api_backend_settings_required_roles FOR EACH ROW EXECUTE PROCEDURE stamp_record(?)", json_encode({
+      {
+        table_name = "api_backend_settings",
+        primary_key = "id",
+        foreign_key = "api_backend_settings_id",
+      },
+    }))
     db.query("SELECT audit.audit_table('api_backend_settings_required_roles')")
 
     db.query([[
@@ -474,7 +525,13 @@ return {
       )
     ]])
     db.query("CREATE UNIQUE INDEX ON api_backend_http_headers(api_backend_settings_id, header_type, sort_order)")
-    db.query("CREATE TRIGGER api_backend_http_headers_stamp_record BEFORE INSERT OR UPDATE OR DELETE ON api_backend_http_headers FOR EACH ROW EXECUTE PROCEDURE stamp_record()")
+    db.query("CREATE TRIGGER api_backend_http_headers_stamp_record BEFORE INSERT OR UPDATE OR DELETE ON api_backend_http_headers FOR EACH ROW EXECUTE PROCEDURE stamp_record(?)", json_encode({
+      {
+        table_name = "api_backend_settings",
+        primary_key = "id",
+        foreign_key = "api_backend_settings_id",
+      },
+    }))
     db.query("SELECT audit.audit_table('api_backend_http_headers')")
 
     db.query([[
@@ -549,7 +606,13 @@ return {
       )
     ]])
     db.query("CREATE UNIQUE INDEX ON api_users_roles(api_user_id, api_role_id)")
-    db.query("CREATE TRIGGER api_users_roles_stamp_record BEFORE INSERT OR UPDATE OR DELETE ON api_users_roles FOR EACH ROW EXECUTE PROCEDURE stamp_record()")
+    db.query("CREATE TRIGGER api_users_roles_stamp_record BEFORE INSERT OR UPDATE OR DELETE ON api_users_roles FOR EACH ROW EXECUTE PROCEDURE stamp_record(?)", json_encode({
+      {
+        table_name = "api_users",
+        primary_key = "id",
+        foreign_key = "api_user_id",
+      },
+    }))
     db.query("SELECT audit.audit_table('api_users_roles')")
 
     db.query([[
@@ -567,7 +630,13 @@ return {
         updated_by_username varchar(255) NOT NULL
       )
     ]])
-    db.query("CREATE TRIGGER api_user_settings_stamp_record BEFORE INSERT OR UPDATE OR DELETE ON api_user_settings FOR EACH ROW EXECUTE PROCEDURE stamp_record()")
+    db.query("CREATE TRIGGER api_user_settings_stamp_record BEFORE INSERT OR UPDATE OR DELETE ON api_user_settings FOR EACH ROW EXECUTE PROCEDURE stamp_record(?)", json_encode({
+      {
+        table_name = "api_users",
+        primary_key = "id",
+        foreign_key = "api_user_id",
+      },
+    }))
     db.query("SELECT audit.audit_table('api_user_settings')")
 
     db.query([[
@@ -606,7 +675,18 @@ return {
       )
     ]])
     db.query("CREATE UNIQUE INDEX ON rate_limits(api_backend_settings_id, api_user_settings_id, limit_by, duration)")
-    db.query("CREATE TRIGGER rate_limits_stamp_record BEFORE INSERT OR UPDATE OR DELETE ON rate_limits FOR EACH ROW EXECUTE PROCEDURE stamp_record()")
+    db.query("CREATE TRIGGER rate_limits_stamp_record BEFORE INSERT OR UPDATE OR DELETE ON rate_limits FOR EACH ROW EXECUTE PROCEDURE stamp_record(?)", json_encode({
+      {
+        table_name = "api_backend_settings",
+        primary_key = "id",
+        foreign_key = "api_backend_settings_id",
+      },
+      {
+        table_name = "api_user_settings",
+        primary_key = "id",
+        foreign_key = "api_user_settings_id",
+      },
+    }))
     db.query("SELECT audit.audit_table('rate_limits')")
 
     db.query([[
