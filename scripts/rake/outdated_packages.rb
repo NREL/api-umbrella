@@ -9,6 +9,9 @@ class OutdatedPackages
       :git => "https://github.com/NREL/api-umbrella-static-site.git",
       :git_ref => "master",
     },
+    "bundler" => {
+      :git => "https://github.com/bundler/bundler.git",
+    },
     "elasticsearch" => {
       :git => "https://github.com/elasticsearch/elasticsearch.git",
       :constraint => "~> 2.4",
@@ -35,6 +38,9 @@ class OutdatedPackages
     },
     "libgeoip" => {
       :git => "https://github.com/maxmind/geoip-api-c.git",
+    },
+    "libpsl" => {
+      :git => "https://github.com/rockdaboot/libpsl.git",
     },
     "lua_argparse" => {
       :luarock => "argparse",
@@ -82,6 +88,9 @@ class OutdatedPackages
     },
     "lua_penlight" => {
       :luarock => "penlight",
+    },
+    "lua_psl" => {
+      :luarock => "psl",
     },
     "lua_resty_auto_ssl" => {
       :luarock => "lua-resty-auto-ssl",
@@ -144,6 +153,13 @@ class OutdatedPackages
     "postgresql" => {
       :git => "https://github.com/postgres/postgres.git",
     },
+    "ruby" => {
+      :git => "https://github.com/ruby/ruby.git",
+      :constraint => "~> 2.4.3",
+    },
+    "rubygems" => {
+      :git => "https://github.com/rubygems/rubygems.git",
+    },
     "rsyslog" => {
       :git => "https://github.com/rsyslog/rsyslog.git",
     },
@@ -203,7 +219,7 @@ class OutdatedPackages
     when "openldap"
       tag.gsub!(/^rel_eng_/, "")
       tag.tr!("_", ".")
-    when "openssl"
+    when "openssl", "ruby"
       tag.tr!("_", ".")
     when "postgresql"
       tag.gsub!(/^rel/, "")
