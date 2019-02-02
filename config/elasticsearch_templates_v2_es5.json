@@ -48,6 +48,9 @@
               "type": "keyword",
               "normalizer": "lowercase_normalizer"
             },
+            "imported": {
+              "type": "boolean"
+            },
             "request_accept": {
               "type": "keyword",
               "normalizer": "lowercase_normalizer"

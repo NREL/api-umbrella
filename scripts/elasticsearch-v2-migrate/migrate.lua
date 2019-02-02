@@ -1,16 +1,16 @@
 local argparse = require "argparse"
 local deepcompare = require("pl.tablex").deepcompare
 local elasticsearch_query = require("api-umbrella.utils.elasticsearch").query
-local elasticsearch_setup = require "api-umbrella.proxy.jobs.elasticsearch_setup"
 local escape_uri_non_ascii = require "api-umbrella.utils.escape_uri_non_ascii"
+local file = require "pl.file"
 local http = require "resty.http"
 local icu_date = require "icu-date"
 local inspect = require "inspect"
 local is_empty = require("pl.types").is_empty
+local json_decode = require("cjson").decode
 local json_encode = require "api-umbrella.utils.json_encode"
 local log_utils = require "api-umbrella.proxy.log_utils"
 local nillify_json_nulls = require "api-umbrella.utils.nillify_json_nulls"
--- local pretty = require "pl.pretty"
 local split = require("pl.utils").split
 
 local format_date = icu_date.formats.pattern("yyyy-MM-dd")
@@ -66,13 +66,19 @@ local function parse_args()
     os.exit(1)
   end
 
-  local _, input_host, input_port = unpack(input_uri)
-  parsed_args["input_host"] = input_host
-  parsed_args["input_port"] = input_port
+  local input_scheme, input_host, input_port = unpack(input_uri)
+  parsed_args["_input_server"] = {
+    scheme = input_scheme,
+    host = input_host,
+    port = input_port,
+  }
 
-  local _, output_host, output_port = unpack(output_uri)
-  parsed_args["output_host"] = output_host
-  parsed_args["output_port"] = output_port
+  local output_scheme, output_host, output_port = unpack(output_uri)
+  parsed_args["_output_server"] = {
+    scheme = output_scheme,
+    host = output_host,
+    port = output_port,
+  }
 
   if parsed_args["start_date"] then
     parsed_args["_start_date"] = parse_date(parsed_args["start_date"])
@@ -95,14 +101,11 @@ end
 
 local function v1_first_index_time()
   local res, err = elasticsearch_query("/api-umbrella-logs-v1-*/_aliases", {
-    server = {
-      host = args["input_host"],
-      port = args["input_port"],
-    },
+    server = args["_input_server"],
   })
   if err then
-    ngx.log(ngx.ERR, "failed to query elasticsearch: ", err)
-    return false
+    print("failed to query elasticsearch: " .. err)
+    os.exit(1)
   end
 
   local months = {}
@@ -124,11 +127,6 @@ end
 local bulk_commands = {}
 local last_bulk_commands_timestamp = nil
 local function flush_bulk_commands()
-  print("FLUSH " .. #bulk_commands)
-  bulk_commands = {}
-
-  --[[
-
   if #bulk_commands == 0 then
     return
   end
@@ -136,32 +134,27 @@ local function flush_bulk_commands()
   print("\n" .. os.date("!%Y-%m-%dT%TZ") .. " - Log data from " .. os.date("!%Y-%m-%dT%TZ", last_bulk_commands_timestamp / 1000))
 
   local res, err = elasticsearch_query("/_bulk", {
-    server = {
-      host = args["output_host"],
-      port = args["output_port"],
-    },
+    server = args["_output_server"],
     method = "POST",
     headers = {
-      ["Content-Type"] = "application/json",
+      ["Content-Type"] = "application/x-ndjson",
     },
     body = table.concat(bulk_commands, "\n") .. "\n",
   })
   if err then
-    ngx.log(ngx.ERR, "unexpected error: " .. err)
-    return false
+    print("unexpected error: " .. err)
+    os.exit(1)
   end
 
   local raw_results = res.body_json
   if type(raw_results["items"]) ~= "table" then
-    ngx.log(ngx.ERR, "unexpected error: " .. (raw_results["items"] or nil))
-    return false
+    print("unexpected error: " .. (raw_results["items"] or nil))
+    os.exit(1)
   end
 
   local skipped_count = 0
   local created_count = 0
   local error_count = 0
-  local created_ids = {}
-  --print(inspect(raw_results))
   for _, item in ipairs(raw_results["items"]) do
     if item["create"]["status"] == 409 then
       io.write(string.char(27) .. "[30m" .. string.char(27) .. "[2m-" .. string.char(27) .. "[0m")
@@ -169,7 +162,6 @@ local function flush_bulk_commands()
     elseif item["create"]["status"] == 201 then
       io.write(string.char(27) .. "[32m" .. string.char(27) .. "[1m✔" .. string.char(27) .. "[0m")
       created_count = created_count + 1
-      table.insert(created_ids, item["create"]["_id"])
     else
       io.write(string.char(27) .. "[31m" .. string.char(27) .. "[1m✖" .. string.char(27) .. "[0m")
       error_count = error_count + 1
@@ -178,7 +170,6 @@ local function flush_bulk_commands()
   print("")
   if created_count > 0 then
     print("Created: " .. created_count)
-    -- print("Created IDs: " .. table.concat(created_ids, ", "))
   end
   if skipped_count > 0 then
     print("Skipped (already exists): " .. skipped_count)
@@ -189,14 +180,11 @@ local function flush_bulk_commands()
 
   bulk_commands = {}
   last_bulk_commands_timestamp = nil
-  ]]
 end
 
 local function process_hit(hit, output_index)
   nillify_json_nulls(hit)
 
-  io.write(".")
-  --print(pretty.write(hit))
   local source = hit["_source"]
   local data = {
     api_backend_id = source["api_backend_id"],
@@ -347,13 +335,11 @@ end
 
 local function search_day(date_start, date_end)
   local input_index = "api-umbrella-logs-v1-" .. date_start:format(icu_date.formats.pattern("yyyy-MM"))
-  local output_index = "api-umbrella-logs-v2-" .. date_start:format(icu_date.formats.pattern("yyyy-MM-dd"))
+  local output_index_date = date_start:format(icu_date.formats.pattern("yyyy-MM-dd"))
+  local output_index = "api-umbrella-logs-v2-" .. output_index_date
 
   local res, err = elasticsearch_query("/" .. input_index .. "/log/_search", {
-    server = {
-      host = args["input_host"],
-      port = args["input_port"],
-    },
+    server = args["_input_server"],
     method = "POST",
     query = {
       scroll = "10m",
@@ -372,8 +358,8 @@ local function search_day(date_start, date_end)
     }
   })
   if err then
-    ngx.log(ngx.ERR, "failed to query elasticsearch: ", err)
-    return false
+    print("failed to query elasticsearch: " .. err)
+    os.exit(1)
   end
 
   local raw_results = res.body_json
@@ -383,10 +369,7 @@ local function search_day(date_start, date_end)
   while true do
     scroll_id = raw_results["_scroll_id"]
     res, err = elasticsearch_query("/_search/scroll", {
-      server = {
-        host = args["input_host"],
-        port = args["input_port"],
-      },
+      server = args["_input_server"],
       method = "GET",
       body = {
         scroll = "10m",
@@ -394,8 +377,8 @@ local function search_day(date_start, date_end)
       },
     })
     if err then
-      ngx.log(ngx.ERR, "failed to query elasticsearch: ", err)
-      return false
+      print("failed to query elasticsearch: " .. err)
+      os.exit(1)
     end
 
     raw_results = res.body_json
@@ -408,16 +391,53 @@ local function search_day(date_start, date_end)
 
   flush_bulk_commands()
 
+  print("Optimizing '" .. output_index .. "' index...")
   elasticsearch_query("/" .. output_index .. "/_forcemerge", {
-    server = {
-      host = args["output_host"],
-      port = args["output_port"],
-    },
+    server = args["_output_server"],
     method = "POST",
     query = {
       max_num_segments = "1",
     },
   })
+
+  print("Creating index aliases for '" .. output_index .. "'...")
+  local aliases = {
+    {
+      alias = "api-umbrella-logs-" .. output_index_date,
+      index = output_index,
+    },
+    {
+      alias = "api-umbrella-logs-write-" .. output_index_date,
+      index = output_index,
+    },
+  }
+  for _, alias in ipairs(aliases) do
+    -- Only create aliases if they don't already exist.
+    local exists_res, exists_err = elasticsearch_query("/_alias/" .. alias["alias"], {
+      server = args["_output_server"],
+      method = "HEAD",
+    })
+    if exists_err then
+      print("failed to check elasticsearch index alias: " .. exists_err)
+      os.exit(1)
+    elseif exists_res.status == 404 then
+      -- Make sure the index exists.
+      elasticsearch_query("/" .. alias["index"], {
+        server = args["_output_server"],
+        method = "PUT",
+      })
+
+      -- Create the alias for the index.
+      local _, alias_err = elasticsearch_query("/" .. alias["index"] .. "/_alias/" .. alias["alias"], {
+        server = args["_output_server"],
+        method = "PUT",
+      })
+      if alias_err then
+        print("failed to create elasticsearch index alias: " .. alias_err)
+        os.exit(1)
+      end
+    end
+  end
 end
 
 local function search()
@@ -443,12 +463,31 @@ local function search()
   end
 end
 
+local function create_templates()
+  local path = os.getenv("API_UMBRELLA_SRC_ROOT") .. "/config/elasticsearch_templates_v2_es5.json"
+  local content, read_err = file.read(path)
+  if read_err then
+    print(read_err)
+    os.exit(1)
+  end
+
+  local elasticsearch_templates = json_decode(content)
+  for _, template in ipairs(elasticsearch_templates) do
+    local _, err = elasticsearch_query("/_template/" .. template["id"], {
+      server = args["_output_server"],
+      method = "PUT",
+      body = template["template"],
+    })
+    if err then
+      print("failed to update elasticsearch template: " .. err)
+      os.exit(1)
+    end
+  end
+end
+
 local function run()
   args = parse_args()
-
-  elasticsearch_setup.wait_for_elasticsearch()
-  elasticsearch_setup.create_templates()
-
+  create_templates()
   search()
 end
 
