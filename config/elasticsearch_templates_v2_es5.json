@@ -118,6 +118,10 @@
             "request_size": {
               "type": "integer"
             },
+            "request_url": {
+              "type": "keyword",
+              "normalizer": "lowercase_normalizer"
+            },
             "request_url_hierarchy_level0": {
               "type": "keyword",
               "normalizer": "lowercase_normalizer"

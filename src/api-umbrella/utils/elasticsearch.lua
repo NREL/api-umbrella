@@ -15,6 +15,11 @@ function _M.query(path, options)
     options = {}
   end
 
+  if options["server"] then
+    server = options["server"]
+    options["server"] = nil
+  end
+
   options["path"] = path
 
   if not options["headers"] then
@@ -66,7 +71,7 @@ function _M.query(path, options)
     return nil, "elasticsearch keepalive error: " .. (keepalive_err or "")
   end
 
-  if res.status >= 400 and res.status ~= 404 then
+  if res.status >= 300 and res.status ~= 404 then
     return nil, "Unsuccessful response: " .. (body or "")
   else
     if res.headers["Content-Type"] and string.sub(res.headers["Content-Type"], 1, 16) == "application/json" and not is_empty(body) then

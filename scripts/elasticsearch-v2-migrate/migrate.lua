@@ -1,22 +1,21 @@
-local config = require "api-umbrella.proxy.models.file_config"
-
--- local Date = require "pl.Date"
 local argparse = require "argparse"
+local deepcompare = require("pl.tablex").deepcompare
+local elasticsearch_query = require("api-umbrella.utils.elasticsearch").query
 local elasticsearch_setup = require "api-umbrella.proxy.jobs.elasticsearch_setup"
 local escape_uri_non_ascii = require "api-umbrella.utils.escape_uri_non_ascii"
 local http = require "resty.http"
+local icu_date = require "icu-date"
 local inspect = require "inspect"
-local json_decode = require("cjson").decode
+local is_empty = require("pl.types").is_empty
 local json_encode = require "api-umbrella.utils.json_encode"
 local log_utils = require "api-umbrella.proxy.log_utils"
-local luatz = require "luatz"
 local nillify_json_nulls = require "api-umbrella.utils.nillify_json_nulls"
-local plutils = require "pl.utils"
 -- local pretty = require "pl.pretty"
-local tablex = require "pl.tablex"
+local split = require("pl.utils").split
 
--- local keys = tablex.keys
-local split = plutils.split
+local format_date = icu_date.formats.pattern("yyyy-MM-dd")
+local format_iso8601 = icu_date.formats.iso8601()
+local hit_date = icu_date.new()
 
 local bulk_size = 1000
 local args = {}
@@ -24,7 +23,7 @@ local args = {}
 local function table_difference(t1, t2)
   local res = {}
   for k,v in pairs(t1) do
-    if not tablex.deepcompare(t1[k], t2[k]) then res[k] = v end
+    if not deepcompare(t1[k], t2[k]) then res[k] = v end
   end
   return res
 end
@@ -32,9 +31,10 @@ end
 local function parse_date(string)
   local date
   if string then
-    local m = ngx.re.match(string, "^(\\d{4})-(\\d{2})-(\\d{2})$")
-    if m then
-      date = luatz.timetable.new(tonumber(m[1]), tonumber(m[2]), tonumber(m[3]), 0, 0, 0)
+    date = icu_date.new()
+    local ok = pcall(date.parse, date, format_date, string)
+    if not ok then
+      date = nil
     end
   end
 
@@ -93,71 +93,54 @@ local function parse_args()
   return parsed_args
 end
 
-local function elasticsearch_query(host, port, options)
-  local httpc = http.new()
-  httpc:set_timeout(120000)
-  httpc:connect(host, port)
-  local res, err = httpc:request(options)
-  if err then
-    ngx.log(ngx.ERR, "elasticsearch query failed: " .. err)
-    return nil, err
-  end
-
-  local body, body_err = res:read_body()
-  if not body then
-    ngx.log(ngx.ERR, body_err)
-    return nil, body_err
-  end
-
-  local keepalive_ok, keepalive_err = httpc:set_keepalive()
-  if not keepalive_ok then
-    ngx.log(ngx.ERR, keepalive_err)
-  end
-
-  local response = json_decode(body)
-  return response
-end
-
 local function v1_first_index_time()
-  local res, err = elasticsearch_query(args["input_host"], args["input_port"], {
-    method = "GET",
-    path = "/api-umbrella-logs-v1-*/_aliases",
+  local res, err = elasticsearch_query("/api-umbrella-logs-v1-*/_aliases", {
+    server = {
+      host = args["input_host"],
+      port = args["input_port"],
+    },
   })
   if err then
-    ngx.log(ngx.ERR, "unexpected error: " .. err)
+    ngx.log(ngx.ERR, "failed to query elasticsearch: ", err)
     return false
   end
 
-  --print(pretty.write(res))
   local months = {}
-  for index, _ in pairs(res) do
+  for index, _ in pairs(res.body_json) do
     local m = ngx.re.match(index, "-(\\d{4})-(\\d{2})")
     if m then
-      local date = luatz.timetable.new(tonumber(m[1]), tonumber(m[2]), 1, 0, 0, 0)
-      table.insert(months, date)
+      local date = icu_date.new()
+      date:parse(format_iso8601, m[1] .. "-" .. m[2] .. "-01T00:00:00.000Z")
+      table.insert(months, date:get_millis())
     end
   end
   table.sort(months)
-  --print(pretty.write(months))
-  return months[1]
+
+  local date = icu_date.new()
+  date:set_millis(months[1])
+  return date
 end
 
 local bulk_commands = {}
 local last_bulk_commands_timestamp = nil
 local function flush_bulk_commands()
+  print("FLUSH " .. #bulk_commands)
+  bulk_commands = {}
+
+  --[[
+
   if #bulk_commands == 0 then
     return
   end
 
   print("\n" .. os.date("!%Y-%m-%dT%TZ") .. " - Log data from " .. os.date("!%Y-%m-%dT%TZ", last_bulk_commands_timestamp / 1000))
 
-  local httpc = http.new()
-  httpc:set_timeout(120000)
-  httpc:connect(config["elasticsearch"]["_first_server"]["host"], config["elasticsearch"]["_first_server"]["port"])
-
-  local res, err = elasticsearch_query(args["output_host"], args["output_port"], {
+  local res, err = elasticsearch_query("/_bulk", {
+    server = {
+      host = args["output_host"],
+      port = args["output_port"],
+    },
     method = "POST",
-    path = "/_bulk",
     headers = {
       ["Content-Type"] = "application/json",
     },
@@ -168,8 +151,9 @@ local function flush_bulk_commands()
     return false
   end
 
-  if type(res["items"]) ~= "table" then
-    ngx.log(ngx.ERR, "unexpected error: " .. (res["items"] or nil))
+  local raw_results = res.body_json
+  if type(raw_results["items"]) ~= "table" then
+    ngx.log(ngx.ERR, "unexpected error: " .. (raw_results["items"] or nil))
     return false
   end
 
@@ -177,8 +161,8 @@ local function flush_bulk_commands()
   local created_count = 0
   local error_count = 0
   local created_ids = {}
-  --print(inspect(res))
-  for _, item in ipairs(res["items"]) do
+  --print(inspect(raw_results))
+  for _, item in ipairs(raw_results["items"]) do
     if item["create"]["status"] == 409 then
       io.write(string.char(27) .. "[30m" .. string.char(27) .. "[2m-" .. string.char(27) .. "[0m")
       skipped_count = skipped_count + 1
@@ -205,24 +189,36 @@ local function flush_bulk_commands()
 
   bulk_commands = {}
   last_bulk_commands_timestamp = nil
+  ]]
 end
 
 local function process_hit(hit, output_index)
   nillify_json_nulls(hit)
 
+  io.write(".")
   --print(pretty.write(hit))
   local source = hit["_source"]
   local data = {
     api_backend_id = source["api_backend_id"],
     api_backend_url_match_id = source["api_backend_url_match_id"],
-    legacy_api_key = source["api_key"],
     denied_reason = source["gatekeeper_denied_code"],
+    legacy_api_key = source["api_key"],
+    legacy_request_url = source["request_url"],
+    legacy_user_email = source["user_email"],
+    legacy_user_registration_source = source["user_registration_source"],
     request_accept = source["request_accept"],
     request_accept_encoding = source["request_accept_encoding"],
-    timestamp_utc = source["request_at"],
     request_basic_auth_username = source["request_basic_auth_username"],
     request_connection = source["request_connection"],
     request_content_type = source["request_content_type"],
+    request_ip = source["request_ip"],
+    request_ip_city = source["request_ip_city"],
+    request_ip_country = source["request_ip_country"],
+    request_ip_region = source["request_ip_region"],
+    request_method = source["request_method"],
+    request_origin = source["request_origin"],
+    request_referer = source["request_referer"],
+    request_size = source["request_size"],
     request_url_hierarchy = source["request_hierarchy"],
     request_url_hierarchy_level0 = source["request_url_hierarchy_level0"],
     request_url_hierarchy_level1 = source["request_url_hierarchy_level1"],
@@ -232,17 +228,9 @@ local function process_hit(hit, output_index)
     request_url_hierarchy_level5 = source["request_url_hierarchy_level5"],
     request_url_hierarchy_level6 = source["request_url_hierarchy_level6"],
     request_url_host = source["request_host"],
-    request_ip = source["request_ip"],
-    request_ip_city = source["request_ip_city"],
-    request_ip_country = source["request_ip_country"],
-    request_ip_region = source["request_ip_region"],
-    request_method = source["request_method"],
-    request_origin = source["request_origin"],
     request_url_path = source["request_path"],
-    request_referer = source["request_referer"],
-    request_url_scheme = source["request_scheme"],
-    request_size = source["request_size"],
     request_url_query = source["request_url_query"],
+    request_url_scheme = source["request_scheme"],
     request_user_agent = source["request_user_agent"],
     request_user_agent_family = source["request_user_agent_family"],
     request_user_agent_type = source["request_user_agent_type"],
@@ -254,15 +242,15 @@ local function process_hit(hit, output_index)
     response_server = source["response_server"],
     response_size = source["response_size"],
     response_status = source["response_status"],
-    timer_response = source["response_time"],
     response_transfer_encoding = source["response_transfer_encoding"],
-    legacy_user_email = source["user_email"],
+    timer_response = source["response_time"],
+    timestamp_utc = source["request_at"],
     user_id = source["user_id"],
-    legacy_user_registration_source = source["user_registration_source"],
   }
 
   if type(data["timestamp_utc"]) == "string" then
-    data["timestamp_utc"] = luatz.parse.rfc_3339(data["timestamp_utc"]):timestamp() * 1000
+    hit_date:parse(format_iso8601, data["timestamp_utc"])
+    data["timestamp_utc"] = hit_date:get_millis()
   end
 
   log_utils.set_url_hierarchy(data)
@@ -280,6 +268,7 @@ local function process_hit(hit, output_index)
     api_backend_url_match_id = new_hit["api_backend_url_match_id"],
     api_key = new_hit["legacy_api_key"],
     gatekeeper_denied_code = new_hit["denied_reason"],
+    imported = source["imported"],
     request_accept = new_hit["request_accept"],
     request_accept_encoding = new_hit["request_accept_encoding"],
     request_at = new_hit["timestamp_utc"],
@@ -287,13 +276,6 @@ local function process_hit(hit, output_index)
     request_connection = new_hit["request_connection"],
     request_content_type = new_hit["request_content_type"],
     request_hierarchy = new_hit["request_url_hierarchy"],
-    request_url_hierarchy_level0 = new_hit["request_url_hierarchy_level0"],
-    request_url_hierarchy_level1 = new_hit["request_url_hierarchy_level1"],
-    request_url_hierarchy_level2 = new_hit["request_url_hierarchy_level2"],
-    request_url_hierarchy_level3 = new_hit["request_url_hierarchy_level3"],
-    request_url_hierarchy_level4 = new_hit["request_url_hierarchy_level4"],
-    request_url_hierarchy_level5 = new_hit["request_url_hierarchy_level5"],
-    request_url_hierarchy_level6 = new_hit["request_url_hierarchy_level6"],
     request_host = new_hit["request_url_host"],
     request_ip = new_hit["request_ip"],
     request_ip_city = new_hit["request_ip_city"],
@@ -305,6 +287,14 @@ local function process_hit(hit, output_index)
     request_referer = new_hit["request_referer"],
     request_scheme = new_hit["request_url_scheme"],
     request_size = new_hit["request_size"],
+    request_url = new_hit["legacy_request_url"],
+    request_url_hierarchy_level0 = new_hit["request_url_hierarchy_level0"],
+    request_url_hierarchy_level1 = new_hit["request_url_hierarchy_level1"],
+    request_url_hierarchy_level2 = new_hit["request_url_hierarchy_level2"],
+    request_url_hierarchy_level3 = new_hit["request_url_hierarchy_level3"],
+    request_url_hierarchy_level4 = new_hit["request_url_hierarchy_level4"],
+    request_url_hierarchy_level5 = new_hit["request_url_hierarchy_level5"],
+    request_url_hierarchy_level6 = new_hit["request_url_hierarchy_level6"],
     request_url_query = new_hit["request_url_query"],
     request_user_agent = new_hit["request_user_agent"],
     request_user_agent_family = new_hit["request_user_agent_family"],
@@ -322,7 +312,6 @@ local function process_hit(hit, output_index)
     user_email = new_hit["legacy_user_email"],
     user_id = new_hit["user_id"],
     user_registration_source = new_hit["legacy_user_registration_source"],
-    imported = source["imported"],
   }
 
   if args["debug"] then
@@ -350,68 +339,81 @@ local function process_hit(hit, output_index)
   end
 end
 
+local function process_hits(hits, output_index)
+  for _, hit in ipairs(hits) do
+    process_hit(hit, output_index)
+  end
+end
+
 local function search_day(date_start, date_end)
-  local input_index = string.format("api-umbrella-logs-v1-%04d-%02d", date_start["year"], date_start["month"])
-  local output_index = string.format("api-umbrella-logs-v2-%04d-%02d-%02d", date_start["year"], date_start["month"], date_start["day"])
+  local input_index = "api-umbrella-logs-v1-" .. date_start:format(icu_date.formats.pattern("yyyy-MM"))
+  local output_index = "api-umbrella-logs-v2-" .. date_start:format(icu_date.formats.pattern("yyyy-MM-dd"))
+
+  local res, err = elasticsearch_query("/" .. input_index .. "/log/_search", {
+    server = {
+      host = args["input_host"],
+      port = args["input_port"],
+    },
+    method = "POST",
+    query = {
+      scroll = "10m",
+    },
+    body = {
+      sort = "request_at",
+      size = bulk_size,
+      query = {
+        range = {
+          request_at = {
+            gte = date_start:get_millis(),
+            lt = date_end:get_millis(),
+          },
+        },
+      },
+    }
+  })
+  if err then
+    ngx.log(ngx.ERR, "failed to query elasticsearch: ", err)
+    return false
+  end
+
+  local raw_results = res.body_json
+  process_hits(raw_results["hits"]["hits"], output_index)
+
   local scroll_id
   while true do
-    local res, err
-    if scroll_id then
-      res, err = elasticsearch_query(args["input_host"], args["input_port"], {
-        method = "GET",
-        path = "/_search/scroll",
-        query = {
-          scroll = "5m",
-          scroll_id = scroll_id,
-        },
-      })
-    else
-      res, err = elasticsearch_query(args["input_host"], args["input_port"], {
-        method = "GET",
-        path = "/" .. input_index .. "/_search",
-        query = {
-          scroll = "5m",
-          scroll_id = scroll_id,
-        },
-        headers = {
-          ["Content-Type"] = "application/json",
-        },
-        body = json_encode({
-          sort = "request_at",
-          size = bulk_size,
-          query = {
-            range = {
-              request_at = {
-                gte = date_start:timestamp() * 1000,
-                lt = date_end:timestamp() * 1000,
-              },
-            },
-          },
-        })
-      })
-    end
+    scroll_id = raw_results["_scroll_id"]
+    res, err = elasticsearch_query("/_search/scroll", {
+      server = {
+        host = args["input_host"],
+        port = args["input_port"],
+      },
+      method = "GET",
+      body = {
+        scroll = "10m",
+        scroll_id = scroll_id,
+      },
+    })
     if err then
-      ngx.log(ngx.ERR, "elasticsearch query failed: " .. err)
+      ngx.log(ngx.ERR, "failed to query elasticsearch: ", err)
       return false
     end
 
-    scroll_id = res["_scroll_id"]
-    --print "."
-    -- print(inspect(response))
-    if not res["hits"] or not res["hits"]["hits"] or #res["hits"]["hits"] == 0 then
+    raw_results = res.body_json
+    if not raw_results["hits"] or is_empty(raw_results["hits"]["hits"]) then
       break
     end
 
-    for _, hit in ipairs(res["hits"]["hits"]) do
-      process_hit(hit, output_index)
-    end
+    process_hits(raw_results["hits"]["hits"], output_index)
   end
 
   flush_bulk_commands()
 
-  elasticsearch_query(args["output_host"], args["output_port"], {
+  elasticsearch_query("/" .. output_index .. "/_forcemerge", {
+    server = {
+      host = args["output_host"],
+      port = args["output_port"],
+    },
     method = "POST",
-    path = "/" .. output_index .. "/_forcemerge",
     query = {
       max_num_segments = "1",
     },
@@ -426,14 +428,14 @@ local function search()
 
   local end_date = args["_end_date"]
   if not end_date then
-    end_date = luatz.now()
+    end_date = icu_date:new()
   end
 
   local date = start_date
-  while date:timestamp() <= end_date:timestamp() do
-    local next_day = date:clone()
-    next_day["day"] = next_day["day"] + 1
-    next_day:normalise()
+  while date:get_millis() <= end_date:get_millis() do
+    local next_day = icu_date.new()
+    next_day:set_millis(date:get_millis())
+    next_day:add(icu_date.fields.DATE, 1)
 
     search_day(date, next_day)
 
