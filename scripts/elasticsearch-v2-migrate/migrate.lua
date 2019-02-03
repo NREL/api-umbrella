@@ -131,7 +131,10 @@ local function flush_bulk_commands()
     return
   end
 
-  print("\n" .. os.date("!%Y-%m-%dT%TZ") .. " - Log data from " .. os.date("!%Y-%m-%dT%TZ", last_bulk_commands_timestamp / 1000))
+  ngx.update_time()
+  local benchmark_start = ngx.now()
+
+  print("Indexing records from " .. os.date("!%Y-%m-%dT%TZ", last_bulk_commands_timestamp / 1000))
 
   local res, err = elasticsearch_query("/_bulk", {
     server = args["_output_server"],
@@ -146,6 +149,9 @@ local function flush_bulk_commands()
     os.exit(1)
   end
 
+  ngx.update_time()
+  local benchmark_end = ngx.now()
+
   local raw_results = res.body_json
   if type(raw_results["items"]) ~= "table" then
     print("unexpected error: " .. (raw_results["items"] or nil))
@@ -157,17 +163,25 @@ local function flush_bulk_commands()
   local error_count = 0
   for _, item in ipairs(raw_results["items"]) do
     if item["create"]["status"] == 409 then
-      io.write(string.char(27) .. "[30m" .. string.char(27) .. "[2m-" .. string.char(27) .. "[0m")
+      if args["debug"] then
+        io.write(string.char(27) .. "[30m" .. string.char(27) .. "[2m-" .. string.char(27) .. "[0m")
+      end
       skipped_count = skipped_count + 1
     elseif item["create"]["status"] == 201 then
-      io.write(string.char(27) .. "[32m" .. string.char(27) .. "[1m✔" .. string.char(27) .. "[0m")
+      if args["debug"] then
+        io.write(string.char(27) .. "[32m" .. string.char(27) .. "[1m✔" .. string.char(27) .. "[0m")
+      end
       created_count = created_count + 1
     else
-      io.write(string.char(27) .. "[31m" .. string.char(27) .. "[1m✖" .. string.char(27) .. "[0m")
+      if args["debug"] then
+        io.write(string.char(27) .. "[31m" .. string.char(27) .. "[1m✖" .. string.char(27) .. "[0m")
+      end
       error_count = error_count + 1
     end
   end
-  print("")
+  if args["debug"] then
+    print("")
+  end
   if created_count > 0 then
     print("Created: " .. created_count)
   end
@@ -177,6 +191,9 @@ local function flush_bulk_commands()
   if error_count > 0 then
     print("Errors: " .. error_count)
   end
+
+  local count = #bulk_commands / 2
+  print("Indexed " .. count .. " records (" .. (count / (benchmark_end - benchmark_start)) .. " records/sec)")
 
   bulk_commands = {}
   last_bulk_commands_timestamp = nil
@@ -327,10 +344,23 @@ local function process_hit(hit, output_index)
   end
 end
 
-local function process_hits(hits, output_index)
+local function process_hits(results, output_index)
+  ngx.update_time()
+  local benchmark_start = ngx.now()
+
+  local hits = results["hits"]["hits"]
+  local count = #hits
+  print(os.date("!%Y-%m-%dT%TZ"))
+  print("Fetched " .. count .. " records in " .. results["took"] .. " ms (" .. (count / (results["took"] / 1000)) .. " records/sec)")
+
   for _, hit in ipairs(hits) do
     process_hit(hit, output_index)
   end
+
+  ngx.update_time()
+  local benchmark_end = ngx.now()
+
+  print("Processed " .. count .. " records (" .. (count / (benchmark_end - benchmark_start)) .. " records/sec)\n")
 end
 
 local function search_day(date_start, date_end)
@@ -363,7 +393,7 @@ local function search_day(date_start, date_end)
   end
 
   local raw_results = res.body_json
-  process_hits(raw_results["hits"]["hits"], output_index)
+  process_hits(raw_results, output_index)
 
   local scroll_id
   while true do
@@ -386,7 +416,7 @@ local function search_day(date_start, date_end)
       break
     end
 
-    process_hits(raw_results["hits"]["hits"], output_index)
+    process_hits(raw_results, output_index)
   end
 
   flush_bulk_commands()
