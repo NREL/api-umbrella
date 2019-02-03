@@ -30,8 +30,8 @@ RUN make build-deps && make clean:dev
 COPY src/api-umbrella/admin-ui/.yarnrc /app/src/api-umbrella/admin-ui/.yarnrc
 COPY src/api-umbrella/admin-ui/package.json /app/src/api-umbrella/admin-ui/package.json
 COPY src/api-umbrella/admin-ui/yarn.lock /app/src/api-umbrella/admin-ui/yarn.lock
-COPY src/api-umbrella/web-app/Gemfile /app/src/api-umbrella/web-app/Gemfile
-COPY src/api-umbrella/web-app/Gemfile.lock /app/src/api-umbrella/web-app/Gemfile.lock
+COPY src/api-umbrella/web-app/package.json /app/src/api-umbrella/web-app/package.json
+COPY src/api-umbrella/web-app/yarn.lock /app/src/api-umbrella/web-app/yarn.lock
 COPY tasks/app-deps /app/tasks/app-deps
 RUN make app-deps && make clean:dev
 
