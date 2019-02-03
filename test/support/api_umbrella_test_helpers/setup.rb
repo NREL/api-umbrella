@@ -276,10 +276,19 @@ module ApiUmbrellaTestHelpers
     # test invalid configuration that the app may not allow (eg, to test how
     # existing data might be handled before extra validations were added), we
     # can use this method to directly override the published config JSON.
-    def force_publish_config(config)
+    def force_publish_config
       self.config_publish_lock.synchronize do
-        new_config = PublishedConfig.create!(:config => config)
-        new_config.wait_until_live
+        new_published_config = nil
+        PublishedConfig.transaction do
+          # Within the lock and transaction, find the current config, yield it
+          # to the block to allow for modifications, and then publish the
+          # resulting modified config.
+          config = PublishedConfig.active_config
+          new_config = yield config
+          new_published_config = PublishedConfig.create!(:config => new_config)
+        end
+
+        new_published_config.wait_until_live
       end
     end
 

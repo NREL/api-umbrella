@@ -292,11 +292,10 @@ local function set_settings_publish_timestamp(api_backend_ids, mode_column, time
 end
 
 PublishedConfig.publish_ids = function(api_backend_ids, website_backend_ids, current_admin)
+  local transaction_started = model_ext.start_transaction()
   local active_config = PublishedConfig.active_config() or {}
   local new_config = deepcopy(active_config)
   local published_config
-
-  local transaction_started = model_ext.start_transaction()
   model_ext.try_save(function()
     if not is_empty(api_backend_ids) then
       set_settings_publish_timestamp(api_backend_ids, "require_https", "require_https_transition_start_at")

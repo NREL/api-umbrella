@@ -66,10 +66,11 @@ class Test::Proxy::TestSubSettings < Minitest::Test
         ],
       },
     ]) do
-      config = PublishedConfig.active_config
-      api_config = config.fetch("apis").find { |a| a["name"] == unique_test_id }
-      api_config.fetch("sub_settings")[0]["regex"] = nil
-      force_publish_config(config)
+      force_publish_config do |config|
+        api_config = config.fetch("apis").find { |a| a["name"] == unique_test_id }
+        api_config.fetch("sub_settings")[0]["regex"] = nil
+        config
+      end
 
       response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/info/sub/", http_options)
       assert_response_code(200, response)

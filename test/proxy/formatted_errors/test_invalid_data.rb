@@ -69,11 +69,11 @@ class Test::Proxy::FormattedErrors::TestInvalidData < Minitest::Test
   private
 
   def force_set_error_data(key, value)
-    config = PublishedConfig.active_config
-    api_config = config.fetch("apis").find { |a| a["name"] == unique_test_id }
-    api_config.fetch("settings").fetch("error_data")[key] = value
-
-    force_publish_config(config)
+    force_publish_config do |config|
+      api_config = config.fetch("apis").find { |a| a["name"] == unique_test_id }
+      api_config.fetch("settings").fetch("error_data")[key] = value
+      config
+    end
   end
 
   def assert_json_internal_server_error(response)
