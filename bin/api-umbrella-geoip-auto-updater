@@ -22,7 +22,7 @@ if [ -z "${API_UMBRELLA_DB_DIR:-}" ]; then
   exit 1
 fi
 
-download_url="https://geolite.maxmind.com/download/geoip/database/GeoLite2-City.tar.gz"
+download_url="https://geolite.maxmind.com/download/geoip/database/GeoLiteCityv6-beta/GeoLiteCityv6.dat.gz"
 frequency=86400 # Sleep for 1 day between runs
 
 while true; do
