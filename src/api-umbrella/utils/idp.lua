@@ -59,9 +59,7 @@ function _M.first(dict)
                 for _, org in ipairs(result["organizations"]) do
                     for _, org_role in ipairs(org["roles"]) do
                         -- Generate organization role
-                        local role_name = string.lower(org["name"]) .. "."
-
-                        role_name = role_name:gsub("%s+", "-")
+                        local role_name = org["id"] .. "."
                         role_name = role_name .. org_role["name"]
 
                         ngx.log(ngx.INFO, "Generated org role: ", role_name)
