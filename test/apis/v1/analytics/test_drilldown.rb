@@ -84,6 +84,52 @@ class Test::Apis::V1::Analytics::TestDrilldown < Minitest::Test
     ] }, data["hits_over_time"]["rows"][1])
   end
 
+  def test_level2_prefix
+    FactoryBot.create_list(:log_item, 2, :request_hierarchy => ["0/127.0.0.1/", "1/127.0.0.1/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
+    FactoryBot.create_list(:log_item, 2, :request_hierarchy => ["0/example.com/", "1/example.com/hello/", "2/example.com/hello/foo"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
+    FactoryBot.create(:log_item, :request_hierarchy => ["0/example.com/", "1/example.com/hello/", "2/example.com/hello/foo/", "3/example.com/hello/foo/bar"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
+    LogItem.refresh_indices!
+
+    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/analytics/drilldown.json", http_options.deep_merge(admin_token).deep_merge({
+      :params => {
+        :search => "",
+        :start_at => "2015-01-13",
+        :end_at => "2015-01-18",
+        :interval => "day",
+        :prefix => "2/example.com/hello/",
+      },
+    }))
+
+    assert_response_code(200, response)
+    data = MultiJson.load(response.body)
+    assert_equal(2, data["results"].length)
+    assert_equal({
+      "depth" => 2,
+      "path" => "example.com/hello/foo",
+      "terminal" => true,
+      "descendent_prefix" => "3/example.com/hello/foo",
+      "hits" => 2,
+    }, data["results"][0])
+    assert_equal({
+      "depth" => 2,
+      "path" => "example.com/hello/foo/",
+      "terminal" => false,
+      "descendent_prefix" => "3/example.com/hello/foo/",
+      "hits" => 1,
+    }, data["results"][1])
+    assert_equal([
+      { "id" => "date", "label" => "Date", "type" => "datetime" },
+      { "id" => "2/example.com/hello/foo", "label" => "example.com/hello/foo", "type" => "number" },
+      { "id" => "2/example.com/hello/foo/", "label" => "example.com/hello/foo/", "type" => "number" },
+    ], data["hits_over_time"]["cols"])
+    assert_equal(6, data["hits_over_time"]["rows"].length)
+    assert_equal({ "c" => [
+      { "v" => 1421218800000, "f" => "Wed, Jan 14, 2015" },
+      { "v" => 2, "f" => "2" },
+      { "v" => 1, "f" => "1" },
+    ] }, data["hits_over_time"]["rows"][1])
+  end
+
   def test_prefix_not_contains
     FactoryBot.create_list(:log_item, 2, :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
     # Ensure that the second element in the array also contains "0/" to
@@ -542,9 +588,10 @@ class Test::Apis::V1::Analytics::TestDrilldown < Minitest::Test
 
   def test_csv_download
     FactoryBot.create_list(:log_item, 2, :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
-    FactoryBot.create(:log_item, :request_host => "example.com", :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
+    FactoryBot.create(:log_item, :request_host => "example.com", :request_path => "/hello/foo", :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
     LogItem.refresh_indices!
 
+    # Level 0 filter
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/analytics/drilldown.csv", http_options.deep_merge(admin_session).deep_merge({
       :params => {
         :search => "",
@@ -564,6 +611,46 @@ class Test::Apis::V1::Analytics::TestDrilldown < Minitest::Test
     assert_equal(["Path", "Hits"], csv[0])
     assert_equal(["127.0.0.1/", "2"], csv[1])
     assert_equal(["example.com/", "1"], csv[2])
+
+    # Level 1 filter
+    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/analytics/drilldown.csv", http_options.deep_merge(admin_session).deep_merge({
+      :params => {
+        :search => "",
+        :start_at => "2015-01-13",
+        :end_at => "2015-01-18",
+        :interval => "day",
+        :prefix => "1/example.com/",
+      },
+    }))
+
+    assert_response_code(200, response)
+    assert_equal("text/csv", response.headers["Content-Type"])
+    assert_match("attachment; filename=\"api_drilldown_#{Time.now.utc.strftime("%Y-%m-%d")}.csv\"", response.headers["Content-Disposition"])
+
+    csv = CSV.parse(response.body)
+    assert_equal(2, csv.length, csv)
+    assert_equal(["Path", "Hits"], csv[0])
+    assert_equal(["example.com/hello/", "1"], csv[1])
+
+    # Level 2 filter
+    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/analytics/drilldown.csv", http_options.deep_merge(admin_session).deep_merge({
+      :params => {
+        :search => "",
+        :start_at => "2015-01-13",
+        :end_at => "2015-01-18",
+        :interval => "day",
+        :prefix => "2/example.com/hello/",
+      },
+    }))
+
+    assert_response_code(200, response)
+    assert_equal("text/csv", response.headers["Content-Type"])
+    assert_match("attachment; filename=\"api_drilldown_#{Time.now.utc.strftime("%Y-%m-%d")}.csv\"", response.headers["Content-Disposition"])
+
+    csv = CSV.parse(response.body)
+    assert_equal(2, csv.length, csv)
+    assert_equal(["Path", "Hits"], csv[0])
+    assert_equal(["example.com/hello/foo", "1"], csv[1])
   end
 
   def test_no_results_non_existent_indices
