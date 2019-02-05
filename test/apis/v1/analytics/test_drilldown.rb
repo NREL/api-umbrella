@@ -85,9 +85,9 @@ class Test::Apis::V1::Analytics::TestDrilldown < Minitest::Test
   end
 
   def test_level2_prefix
-    FactoryBot.create_list(:log_item, 2, :request_hierarchy => ["0/127.0.0.1/", "1/127.0.0.1/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
-    FactoryBot.create_list(:log_item, 2, :request_hierarchy => ["0/example.com/", "1/example.com/hello/", "2/example.com/hello/foo"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
-    FactoryBot.create(:log_item, :request_hierarchy => ["0/example.com/", "1/example.com/hello/", "2/example.com/hello/foo/", "3/example.com/hello/foo/bar"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
+    FactoryBot.create_list(:log_item, 2, :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
+    FactoryBot.create_list(:log_item, 2, :request_host => "example.com", :request_path => "/hello/foo", :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
+    FactoryBot.create(:log_item, :request_host => "example.com", :request_path => "/hello/foo/bar", :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
     LogItem.refresh_indices!
 
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/analytics/drilldown.json", http_options.deep_merge(admin_token).deep_merge({
