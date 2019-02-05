@@ -376,6 +376,12 @@ function _M:aggregate_by_drilldown(prefix, size)
   }
 
   if config["elasticsearch"]["template_version"] < 2 then
+    table.insert(self.body["query"]["bool"]["filter"]["bool"]["must"], {
+      prefix = {
+        request_hierarchy = self.drilldown_prefix,
+      },
+    })
+
     self.body["aggregations"]["drilldown"]["terms"]["field"] = "request_hierarchy"
     self.body["aggregations"]["drilldown"]["terms"]["include"] = escape_regex(prefix) .. ".*"
   else
@@ -392,6 +398,11 @@ function _M:aggregate_by_drilldown(prefix, size)
 end
 
 function _M:aggregate_by_drilldown_over_time()
+  -- We assume aggregate_by_drilldown has been called first, to parse and set
+  -- some of the internal drilldown variables.
+  assert(self.drilldown_prefix)
+  assert(self.drilldown_depth)
+
   self.body["aggregations"]["top_path_hits_over_time"] = {
     terms = {
       size = 10,
@@ -413,12 +424,6 @@ function _M:aggregate_by_drilldown_over_time()
   }
 
   if config["elasticsearch"]["template_version"] < 2 then
-    table.insert(self.body["query"]["bool"]["filter"]["bool"]["must"], {
-      prefix = {
-        request_hierarchy = self.drilldown_prefix,
-      },
-    })
-
     self.body["aggregations"]["top_path_hits_over_time"]["terms"]["field"] = "request_hierarchy"
     self.body["aggregations"]["top_path_hits_over_time"]["terms"]["include"] = escape_regex(self.drilldown_prefix) .. ".*"
   else
