@@ -40,23 +40,28 @@ local function drilldown_breadcrumbs(self)
   return breadcrumbs
 end
 
-local function drilldown_results(raw_results)
+local function drilldown_results(raw_results, search)
   local results = {}
+
+  local depth = search.drilldown_depth
+  local descendent_depth = depth + 1
 
   if raw_results and raw_results["aggregations"] and raw_results["aggregations"]["drilldown"] then
     local buckets = raw_results["aggregations"]["drilldown"]["buckets"]
     for _, bucket in ipairs(buckets) do
-      local parts = split(bucket["key"], "/", "jo", nil, 2)
-      local depth = parts[1]
-      local path = parts[2]
+      local path
+      if config["elasticsearch"]["template_version"] < 2 then
+        local parts = split(bucket["key"], "/", "jo", nil, 2)
+        path = parts[2]
+      else
+        path = path_join(search.drilldown_parent, bucket["key"])
+      end
+
+      local descendent_prefix = path_join(descendent_depth, path)
       local terminal = true
       if endswith(path, "/") then
         terminal = false
       end
-
-      depth = tonumber(depth)
-      local descendent_depth = depth + 1
-      local descendent_prefix = path_join(descendent_depth, path)
 
       table.insert(results, {
         depth = depth,
@@ -82,9 +87,19 @@ local function drilldown_hits_over_time(raw_results, search)
   if raw_results["aggregations"] then
     local path_buckets = raw_results["aggregations"]["top_path_hits_over_time"]["buckets"]
     for _, bucket in ipairs(path_buckets) do
+      local id
+      local label
+      if config["elasticsearch"]["template_version"] < 2 then
+        id = bucket["key"]
+        label = split(bucket["key"], "/", "jo", nil, 2)[2]
+      else
+        id = path_join(search.drilldown_depth, search.drilldown_parent, bucket["key"])
+        label = path_join(search.drilldown_parent, bucket["key"])
+      end
+
       table.insert(hits_over_time["cols"], {
-        id = bucket["key"],
-        label = split(bucket["key"], "/", "jo", nil, 2)[2],
+        id = id,
+        label = label,
         type = "number",
       })
     end
@@ -157,11 +172,11 @@ function _M.drilldown(self)
   search:aggregate_by_drilldown(self.params["prefix"], drilldown_size)
 
   if self.params["format"] ~= "csv" then
-    search:aggregate_by_drilldown_over_time(self.params["prefix"])
+    search:aggregate_by_drilldown_over_time()
   end
 
   local raw_results = search:fetch_results()
-  local results = drilldown_results(raw_results)
+  local results = drilldown_results(raw_results, search)
 
   if self.params["format"] == "csv" then
     csv.set_response_headers(self, "api_drilldown_" .. os.date("!%Y-%m-%d", ngx.now()) .. ".csv")

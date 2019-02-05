@@ -91,9 +91,37 @@ class LogItem
   def serializable_hash
     hash = super
 
+    cleaned_path = hash["request_path"].gsub(%r{//+}, "/")
+    cleaned_path.gsub!(%r{/$}, "")
+    cleaned_path.gsub!(%r{^/}, "")
+    path_parts = cleaned_path.split("/", 6)
+
+    if !hash["request_hierarchy"] || $config["elasticsearch"]["template_version"] >= 2
+      hash["request_hierarchy"] = []
+      host_level = hash["request_host"]
+      if !path_parts.empty?
+        host_level += "/"
+      end
+      hash["request_url_hierarchy_level0"] = host_level
+      hash["request_hierarchy"] << "0/#{host_level}"
+
+      path_tree = "/"
+      path_parts.each_with_index do |path_level, index|
+        if index + 1 < path_parts.length
+          path_level += "/"
+        end
+
+        hash["request_url_hierarchy_level#{index + 1}"] = path_level
+
+        path_tree = "#{path_tree}#{path_level}"
+        path_token = "#{index + 1}/#{hash["request_host"]}#{path_tree}"
+        hash["request_hierarchy"] << path_token
+      end
+    end
+
     if($config["elasticsearch"]["template_version"] >= 2)
       hash.delete("request_query")
-      hash.delete("request_url")
+      hash.delete("request_hierarchy")
     end
 
     hash

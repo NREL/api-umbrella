@@ -1,3 +1,5 @@
+local flatten = require "api-umbrella.utils.flatten"
+
 local gsub = ngx.re.gsub
 
 -- Join parts of file paths by the "/" separator.
@@ -11,7 +13,7 @@ local gsub = ngx.re.gsub
 -- https://github.com/ruby/spec/blob/6bf1725bafd0393c1f031b62a7234fb76087fd46/core/file/join_spec.rb
 return function(...)
   local joined = ""
-  local parts = {...}
+  local parts = flatten({...})
   for index, part in ipairs(parts) do
     local part_first_char = string.sub(part, 1, 1)
     if part_first_char == "/" then

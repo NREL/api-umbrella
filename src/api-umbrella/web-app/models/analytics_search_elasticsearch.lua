@@ -4,6 +4,8 @@ local elasticsearch_query = require("api-umbrella.utils.elasticsearch").query
 local escape_regex = require "api-umbrella.utils.escape_regex"
 local icu_date = require "icu-date"
 local is_empty = require("pl.types").is_empty
+local path_join = require "api-umbrella.utils.path_join"
+local re_split = require("ngx.re").split
 local startswith = require("pl.stringx").startswith
 
 local date = icu_date.new()
@@ -341,31 +343,58 @@ function _M:aggregate_by_response_time_average()
 end
 
 function _M:aggregate_by_drilldown(prefix, size)
+  local prefix_parts = re_split(prefix, "/", "jo")
+  self.drilldown_prefix = prefix
+  self.drilldown_depth = tonumber(prefix_parts[1])
+  self.drilldown_parent = {}
+  self.drilldown_path_segments = {}
+  for index, value in ipairs(prefix_parts) do
+    if index > 1 then
+      table.insert(self.drilldown_path_segments, {
+        level = index - 2,
+        value = value,
+      })
+
+      if index <= self.drilldown_depth + 1 then
+        table.insert(self.drilldown_parent, value)
+      end
+    end
+  end
+  self.drilldown_parent = path_join(self.drilldown_parent)
+  if self.drilldown_parent == "" then
+    self.drilldown_parent = nil
+  end
+
   if not size then
     size = 100000000
   end
 
   self.body["aggregations"]["drilldown"] = {
     terms = {
-      field = "request_hierarchy",
       size = size,
-      include = escape_regex(prefix) .. ".*",
     },
   }
+
+  if config["elasticsearch"]["template_version"] < 2 then
+    self.body["aggregations"]["drilldown"]["terms"]["field"] = "request_hierarchy"
+    self.body["aggregations"]["drilldown"]["terms"]["include"] = escape_regex(prefix) .. ".*"
+  else
+    for _, segment in ipairs(self.drilldown_path_segments) do
+      table.insert(self.body["query"]["bool"]["filter"]["bool"]["must"], {
+        term = {
+          ["request_url_hierarchy_level" .. segment["level"]] = segment["value"] .. "/",
+        },
+      })
+    end
+
+    self.body["aggregations"]["drilldown"]["terms"]["field"] = "request_url_hierarchy_level" .. self.drilldown_depth
+  end
 end
 
-function _M:aggregate_by_drilldown_over_time(prefix)
-  table.insert(self.body["query"]["bool"]["filter"]["bool"]["must"], {
-    prefix = {
-      request_hierarchy = prefix,
-    },
-  })
-
+function _M:aggregate_by_drilldown_over_time()
   self.body["aggregations"]["top_path_hits_over_time"] = {
     terms = {
-      field = "request_hierarchy",
       size = 10,
-      include = escape_regex(prefix) .. ".*",
     },
     aggregations = {
       drilldown_over_time = {
@@ -382,6 +411,19 @@ function _M:aggregate_by_drilldown_over_time(prefix)
       },
     },
   }
+
+  if config["elasticsearch"]["template_version"] < 2 then
+    table.insert(self.body["query"]["bool"]["filter"]["bool"]["must"], {
+      prefix = {
+        request_hierarchy = self.drilldown_prefix,
+      },
+    })
+
+    self.body["aggregations"]["top_path_hits_over_time"]["terms"]["field"] = "request_hierarchy"
+    self.body["aggregations"]["top_path_hits_over_time"]["terms"]["include"] = escape_regex(self.drilldown_prefix) .. ".*"
+  else
+    self.body["aggregations"]["top_path_hits_over_time"]["terms"]["field"] = "request_url_hierarchy_level" .. self.drilldown_depth
+  end
 
   self.body["aggregations"]["hits_over_time"] = {
     date_histogram = {

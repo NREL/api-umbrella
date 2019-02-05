@@ -74,10 +74,6 @@
               "type": "keyword",
               "normalizer": "lowercase_normalizer"
             },
-            "request_hierarchy": {
-              "type": "keyword",
-              "normalizer": "lowercase_normalizer"
-            },
             "request_host": {
               "type": "keyword",
               "normalizer": "lowercase_normalizer"
@@ -87,8 +83,7 @@
               "normalizer": "lowercase_normalizer"
             },
             "request_ip_city": {
-              "type": "keyword",
-              "normalizer": "lowercase_normalizer"
+              "type": "keyword"
             },
             "request_ip_country": {
               "type": "keyword",

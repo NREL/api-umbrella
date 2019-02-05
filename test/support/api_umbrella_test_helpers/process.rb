@@ -46,6 +46,11 @@ module ApiUmbrellaTestHelpers
           elasticsearch_test_api_version = ENV["ELASTICSEARCH_TEST_API_VERSION"].to_i
         end
 
+        elasticsearch_test_template_version = nil
+        if ENV["ELASTICSEARCH_TEST_TEMPLATE_VERSION"]
+          elasticsearch_test_template_version = ENV["ELASTICSEARCH_TEST_TEMPLATE_VERSION"].to_i
+        end
+
         # Read the initial test config file.
         $config = YAML.load_file(DEFAULT_CONFIG_PATH)
         $config.deep_merge!(YAML.load_file(CONFIG_PATH))
@@ -64,14 +69,27 @@ module ApiUmbrellaTestHelpers
           computed.deep_merge!({
             "elasticsearch" => {
               "api_version" => elasticsearch_test_api_version,
+            },
+            "services" => $config["services"] - ["log_db"],
+          })
+        end
+        if elasticsearch_test_template_version
+          computed.deep_merge!({
+            "elasticsearch" => {
+              "template_version" => elasticsearch_test_template_version,
+            },
+          })
+        end
+        if elasticsearch_test_api_version || elasticsearch_test_template_version
+          computed.deep_merge!({
+            "elasticsearch" => {
               "embedded_server_config" => {
                 "path" => {
-                  "data" => File.join(TEST_RUN_API_UMBRELLA_ROOT, "var/db/elasticsearch#{elasticsearch_test_api_version}"),
-                  "logs" => File.join(TEST_RUN_API_UMBRELLA_ROOT, "var/log/elasticsearch#{elasticsearch_test_api_version}"),
+                  "data" => File.join(TEST_RUN_API_UMBRELLA_ROOT, "var/db/elasticsearch-#{elasticsearch_test_api_version}-#{elasticsearch_test_template_version}"),
+                  "logs" => File.join(TEST_RUN_API_UMBRELLA_ROOT, "var/log/elasticsearch-#{elasticsearch_test_api_version}-#{elasticsearch_test_template_version}"),
                 },
               },
             },
-            "services" => $config["services"] - ["log_db"],
           })
         end
         File.write(CONFIG_COMPUTED_PATH, YAML.dump(computed))
