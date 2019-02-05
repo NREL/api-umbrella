@@ -82,7 +82,7 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
         "request_url_hierarchy_level4",
       ]
     else
-      expected_fields += "request_hierarchy"
+      expected_fields += ["request_hierarchy"]
     end
     assert_equal(expected_fields.sort, record.keys.sort)
 
