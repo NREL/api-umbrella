@@ -71,14 +71,32 @@ class Test::Proxy::Logging::TestSpecialChars < Minitest::Test
 
     # URL
     assert_equal("/api/hello/#{url_encoded}/#{base64ed}/#{expected_raw_in_url}/", record["request_path"])
-    assert_equal([
-      "0/127.0.0.1:9080/",
-      "1/127.0.0.1:9080/api/",
-      "2/127.0.0.1:9080/api/hello/",
-      "3/127.0.0.1:9080/api/hello/#{url_encoded}/",
-      "4/127.0.0.1:9080/api/hello/#{url_encoded}/#{base64ed}/",
-      "5/127.0.0.1:9080/api/hello/#{url_encoded}/#{base64ed}/#{expected_raw_in_url}",
-    ], record["request_hierarchy"])
+    if $config["elasticsearch"]["template_version"] < 2
+      assert_equal([
+        "0/127.0.0.1:9080/",
+        "1/127.0.0.1:9080/api/",
+        "2/127.0.0.1:9080/api/hello/",
+        "3/127.0.0.1:9080/api/hello/#{url_encoded}/",
+        "4/127.0.0.1:9080/api/hello/#{url_encoded}/#{base64ed}/",
+        "5/127.0.0.1:9080/api/hello/#{url_encoded}/#{base64ed}/#{expected_raw_in_url}",
+      ], record["request_hierarchy"])
+      refute(record.key?("request_url_hierarchy_level0"))
+      refute(record.key?("request_url_hierarchy_level1"))
+      refute(record.key?("request_url_hierarchy_level2"))
+      refute(record.key?("request_url_hierarchy_level3"))
+      refute(record.key?("request_url_hierarchy_level4"))
+      refute(record.key?("request_url_hierarchy_level5"))
+      refute(record.key?("request_url_hierarchy_level6"))
+    else
+      assert_equal("127.0.0.1:9080/", record.fetch("request_url_hierarchy_level0"))
+      assert_equal("api/", record.fetch("request_url_hierarchy_level1"))
+      assert_equal("hello/", record.fetch("request_url_hierarchy_level2"))
+      assert_equal("#{url_encoded}/", record.fetch("request_url_hierarchy_level3"))
+      assert_equal("#{base64ed}/", record.fetch("request_url_hierarchy_level4"))
+      assert_equal(expected_raw_in_url, record.fetch("request_url_hierarchy_level5"))
+      refute(record.key?("request_url_hierarchy_level6"))
+      refute(record.key?("request_hierarchy"))
+    end
     assert_equal("url_encoded=#{url_encoded}&base64ed=#{base64ed}&raw=#{expected_raw_in_url}", record["request_url_query"])
 
     # HTTP headers
@@ -116,15 +134,33 @@ class Test::Proxy::Logging::TestSpecialChars < Minitest::Test
 
     # URL
     assert_equal("/api/hello/#{url_encoded}/#{base64ed}/#{expected_raw_in_url}/#{expected_raw_utf8_in_url}/", record["request_path"])
-    assert_equal([
-      "0/127.0.0.1:9080/",
-      "1/127.0.0.1:9080/api/",
-      "2/127.0.0.1:9080/api/hello/",
-      "3/127.0.0.1:9080/api/hello/#{url_encoded}/",
-      "4/127.0.0.1:9080/api/hello/#{url_encoded}/#{base64ed}/",
-      "5/127.0.0.1:9080/api/hello/#{url_encoded}/#{base64ed}/#{expected_raw_in_url}/",
-      "6/127.0.0.1:9080/api/hello/#{url_encoded}/#{base64ed}/#{expected_raw_in_url}/#{expected_raw_utf8_in_url}",
-    ], record["request_hierarchy"])
+    if $config["elasticsearch"]["template_version"] < 2
+      assert_equal([
+        "0/127.0.0.1:9080/",
+        "1/127.0.0.1:9080/api/",
+        "2/127.0.0.1:9080/api/hello/",
+        "3/127.0.0.1:9080/api/hello/#{url_encoded}/",
+        "4/127.0.0.1:9080/api/hello/#{url_encoded}/#{base64ed}/",
+        "5/127.0.0.1:9080/api/hello/#{url_encoded}/#{base64ed}/#{expected_raw_in_url}/",
+        "6/127.0.0.1:9080/api/hello/#{url_encoded}/#{base64ed}/#{expected_raw_in_url}/#{expected_raw_utf8_in_url}",
+      ], record["request_hierarchy"])
+      refute(record.key?("request_url_hierarchy_level0"))
+      refute(record.key?("request_url_hierarchy_level1"))
+      refute(record.key?("request_url_hierarchy_level2"))
+      refute(record.key?("request_url_hierarchy_level3"))
+      refute(record.key?("request_url_hierarchy_level4"))
+      refute(record.key?("request_url_hierarchy_level5"))
+      refute(record.key?("request_url_hierarchy_level6"))
+    else
+      assert_equal("127.0.0.1:9080/", record.fetch("request_url_hierarchy_level0"))
+      assert_equal("api/", record.fetch("request_url_hierarchy_level1"))
+      assert_equal("hello/", record.fetch("request_url_hierarchy_level2"))
+      assert_equal("#{url_encoded}/", record.fetch("request_url_hierarchy_level3"))
+      assert_equal("#{base64ed}/", record.fetch("request_url_hierarchy_level4"))
+      assert_equal("#{expected_raw_in_url}/", record.fetch("request_url_hierarchy_level5"))
+      assert_equal(expected_raw_utf8_in_url, record.fetch("request_url_hierarchy_level6"))
+      refute(record.key?("request_hierarchy"))
+    end
     assert_equal("url_encoded=#{url_encoded}&base64ed=#{base64ed}&raw=#{expected_raw_in_url}&raw_utf8=#{expected_raw_utf8_in_url}", record["request_url_query"])
 
     # HTTP headers
@@ -147,12 +183,30 @@ class Test::Proxy::Logging::TestSpecialChars < Minitest::Test
 
     # URL
     assert_equal("/api/hello/#{url_encoded}/", record["request_path"])
-    assert_equal([
-      "0/127.0.0.1:9080/",
-      "1/127.0.0.1:9080/api/",
-      "2/127.0.0.1:9080/api/hello/",
-      "3/127.0.0.1:9080/api/hello/#{url_encoded}",
-    ], record["request_hierarchy"])
+    if $config["elasticsearch"]["template_version"] < 2
+      assert_equal([
+        "0/127.0.0.1:9080/",
+        "1/127.0.0.1:9080/api/",
+        "2/127.0.0.1:9080/api/hello/",
+        "3/127.0.0.1:9080/api/hello/#{url_encoded}",
+      ], record["request_hierarchy"])
+      refute(record.key?("request_url_hierarchy_level0"))
+      refute(record.key?("request_url_hierarchy_level1"))
+      refute(record.key?("request_url_hierarchy_level2"))
+      refute(record.key?("request_url_hierarchy_level3"))
+      refute(record.key?("request_url_hierarchy_level4"))
+      refute(record.key?("request_url_hierarchy_level5"))
+      refute(record.key?("request_url_hierarchy_level6"))
+    else
+      assert_equal("127.0.0.1:9080/", record.fetch("request_url_hierarchy_level0"))
+      assert_equal("api/", record.fetch("request_url_hierarchy_level1"))
+      assert_equal("hello/", record.fetch("request_url_hierarchy_level2"))
+      assert_equal(url_encoded, record.fetch("request_url_hierarchy_level3"))
+      refute(record.key?("request_url_hierarchy_level4"))
+      refute(record.key?("request_url_hierarchy_level5"))
+      refute(record.key?("request_url_hierarchy_level6"))
+      refute(record.key?("request_hierarchy"))
+    end
     assert_equal("url_encoded=#{url_encoded}", record["request_url_query"])
 
     # HTTP headers
@@ -172,13 +226,32 @@ class Test::Proxy::Logging::TestSpecialChars < Minitest::Test
 
     # URL
     assert_equal("/api/hello/#{as_is}/", record["request_path"])
-    assert_equal([
-      "0/127.0.0.1:9080/",
-      "1/127.0.0.1:9080/api/",
-      "2/127.0.0.1:9080/api/hello/",
-      "3/127.0.0.1:9080/api/hello/-%2D ;%3B +%2B /",
-      "4/127.0.0.1:9080/api/hello/-%2D ;%3B +%2B /%2F :%3A 0%30 >%3E {%7B",
-    ], record["request_hierarchy"])
+    if $config["elasticsearch"]["template_version"] < 2
+      assert_equal([
+        "0/127.0.0.1:9080/",
+        "1/127.0.0.1:9080/api/",
+        "2/127.0.0.1:9080/api/hello/",
+        "3/127.0.0.1:9080/api/hello/-%2D ;%3B +%2B /",
+        "4/127.0.0.1:9080/api/hello/-%2D ;%3B +%2B /%2F :%3A 0%30 >%3E {%7B",
+      ], record["request_hierarchy"])
+      refute(record.key?("request_url_hierarchy_level0"))
+      refute(record.key?("request_url_hierarchy_level1"))
+      refute(record.key?("request_url_hierarchy_level2"))
+      refute(record.key?("request_url_hierarchy_level3"))
+      refute(record.key?("request_url_hierarchy_level4"))
+      refute(record.key?("request_url_hierarchy_level5"))
+      refute(record.key?("request_url_hierarchy_level6"))
+    else
+      assert_equal("127.0.0.1:9080/", record.fetch("request_url_hierarchy_level0"))
+      assert_equal("api/", record.fetch("request_url_hierarchy_level1"))
+      assert_equal("hello/", record.fetch("request_url_hierarchy_level2"))
+      assert_equal("-%2D ;%3B +%2B /", record.fetch("request_url_hierarchy_level3"))
+      assert_equal("%2F :%3A 0%30 >%3E {%7B", record.fetch("request_url_hierarchy_level4"))
+      refute(record.key?("request_url_hierarchy_level5"))
+      refute(record.key?("request_url_hierarchy_level6"))
+      refute(record.key?("request_hierarchy"))
+    end
+
     assert_equal("as_is=#{as_is}", record["request_url_query"])
 
     # HTTP headers

@@ -22,7 +22,7 @@ class Api::V1::AnalyticsController < Api::V1::BaseController
     @search.aggregate_by_drilldown!(params[:prefix], drilldown_size)
 
     if(request.format != "csv")
-      @search.aggregate_by_drilldown_over_time!(params[:prefix])
+      @search.aggregate_by_drilldown_over_time!
     end
 
     @result = @search.result
@@ -55,9 +55,17 @@ class Api::V1::AnalyticsController < Api::V1::BaseController
 
         if @result.aggregations
           @result.aggregations["top_path_hits_over_time"]["buckets"].each do |bucket|
+            if ApiUmbrellaConfig[:elasticsearch][:template_version] < 2
+              id = bucket["key"]
+              label = bucket["key"].split("/", 2).last
+            else
+              id = File.join([@search.drilldown_depth.to_s, @search.drilldown_parent, bucket["key"]].compact)
+              label = File.join([@search.drilldown_parent, bucket["key"]].compact)
+            end
+
             @hits_over_time[:cols] << {
-              :id => bucket["key"],
-              :label => bucket["key"].split("/", 2).last,
+              :id => id,
+              :label => label,
               :type => "number",
             }
           end

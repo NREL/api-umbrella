@@ -3,7 +3,6 @@ FactoryBot.define do
     api_key { "UfhkQUBgWQbJ0ZVqnJ4TvA7quGCZHYTFCXwSfOTQ" }
     request_accept_encoding { "*/*" }
     request_at { Time.now.utc }
-    request_hierarchy { ["0/127.0.0.1/", "1/127.0.0.1/hello"] }
     request_host { "127.0.0.1" }
     request_ip { "127.0.0.1" }
     request_ip_city { "Golden" }
@@ -48,7 +47,6 @@ FactoryBot.define do
     factory :google_log_item do
       request_host { "localhost" }
       request_path { "/google/hello/" }
-      request_hierarchy { ["0/localhost/", "1/localhost/google/", "2/localhost/google/hello"] }
     end
   end
 end

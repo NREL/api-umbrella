@@ -1,7 +1,7 @@
 require("json")
 
 class LogSearch::ElasticSearch < LogSearch::Base
-  attr_reader :client
+  attr_reader :client, :drilldown_depth, :drilldown_parent
 
   def initialize(options = {})
     super
@@ -294,28 +294,62 @@ class LogSearch::ElasticSearch < LogSearch::Base
   end
 
   def aggregate_by_drilldown!(prefix, size = nil)
+    prefix_parts = prefix.split("/")
+    @drilldown_prefix = prefix
+    @drilldown_depth = prefix[0].to_i
+    @drilldown_parent = []
+    @drilldown_path_segments = []
+
+    prefix_parts.each_with_index do |value, index|
+      if index > 0
+        @drilldown_path_segments << {
+          :level => index - 1,
+          :value => value,
+        }
+
+        if index <= @drilldown_depth
+          @drilldown_parent << value
+        end
+      end
+    end
+    @drilldown_parent = File.join(@drilldown_parent)
+    if @drilldown_parent == ""
+      @drilldown_parent = nil
+    end
+
     size ||= 1_000_000
     @query[:aggregations][:drilldown] = {
       :terms => {
-        :field => "request_hierarchy",
         :size => size,
-        :include => "#{Regexp.escape(prefix)}.*",
       },
     }
+
+    if ApiUmbrellaConfig[:elasticsearch][:template_version] < 2
+      @query[:query][:bool][:filter][:bool][:must] << {
+        :prefix => {
+          :request_hierarchy => @drilldown_prefix,
+        },
+      }
+
+      @query[:aggregations][:drilldown][:terms][:field] = "request_hierarchy"
+      @query[:aggregations][:drilldown][:terms][:include] = "#{Regexp.escape(@drilldown_prefix)}.*"
+    else
+      @drilldown_path_segments.each do |segment|
+        @query[:query][:bool][:filter][:bool][:must] << {
+          :term => {
+            "request_url_hierarchy_level#{segment[:level]}" => "#{segment[:value]}/",
+          },
+        }
+      end
+
+      @query[:aggregations][:drilldown][:terms][:field] = "request_url_hierarchy_level#{@drilldown_depth}"
+    end
   end
 
-  def aggregate_by_drilldown_over_time!(prefix)
-    @query[:query][:bool][:filter][:bool][:must] << {
-      :prefix => {
-        :request_hierarchy => prefix,
-      },
-    }
-
+  def aggregate_by_drilldown_over_time!
     @query[:aggregations][:top_path_hits_over_time] = {
       :terms => {
-        :field => "request_hierarchy",
         :size => 10,
-        :include => "#{Regexp.escape(prefix)}.*",
       },
       :aggregations => {
         :drilldown_over_time => {
@@ -333,6 +367,13 @@ class LogSearch::ElasticSearch < LogSearch::Base
         },
       },
     }
+
+    if ApiUmbrellaConfig[:elasticsearch][:template_version] < 2
+      @query[:aggregations][:top_path_hits_over_time][:terms][:field] = "request_hierarchy"
+      @query[:aggregations][:top_path_hits_over_time][:terms][:include] = "#{Regexp.escape(@drilldown_prefix)}.*"
+    else
+      @query[:aggregations][:top_path_hits_over_time][:terms][:field] = "request_url_hierarchy_level#{@drilldown_depth}"
+    end
 
     @query[:aggregations][:hits_over_time] = {
       :date_histogram => {

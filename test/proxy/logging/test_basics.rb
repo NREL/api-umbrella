@@ -47,7 +47,6 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
       "request_basic_auth_username",
       "request_connection",
       "request_content_type",
-      "request_hierarchy",
       "request_host",
       "request_ip",
       "request_method",
@@ -103,6 +102,7 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
     ]
     if($config["elasticsearch"]["template_version"] >= 2)
       expected_mapping_fields += [
+        "imported",
         "request_url_hierarchy_level5",
         "request_url_hierarchy_level6",
       ]
@@ -119,13 +119,6 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
     assert_equal("basic-auth-username-example", record["request_basic_auth_username"])
     assert_equal("close", record["request_connection"])
     assert_equal("application/x-www-form-urlencoded", record["request_content_type"])
-    assert_equal([
-      "0/127.0.0.1:9080/",
-      "1/127.0.0.1:9080/api/",
-      "2/127.0.0.1:9080/api/logging-example/",
-      "3/127.0.0.1:9080/api/logging-example/foo/",
-      "4/127.0.0.1:9080/api/logging-example/foo/bar",
-    ], record["request_hierarchy"])
     assert_equal("127.0.0.1:9080", record["request_host"])
     assert_equal("10.10.10.11", record["request_ip"])
     assert_equal("GET", record["request_method"])
@@ -556,13 +549,31 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
       assert_equal("CLOSE", record["request_connection"])
       assert_equal("BASIC-AUTH-USERNAME-EXAMPLE", record["request_basic_auth_username"])
       assert_equal("APPLICATION/X-WWW-FORM-URLENCODED", record["request_content_type"])
-      assert_equal([
-        "0/foobar.example/",
-        "1/foobar.example/#{unique_test_id}/",
-        "2/foobar.example/#{unique_test_id}/logging-example/",
-        "3/foobar.example/#{unique_test_id}/logging-example/FOO/",
-        "4/foobar.example/#{unique_test_id}/logging-example/FOO/BAR",
-      ], record["request_hierarchy"])
+      if($config["elasticsearch"]["template_version"] < 2)
+        assert_equal([
+          "0/foobar.example/",
+          "1/foobar.example/#{unique_test_id}/",
+          "2/foobar.example/#{unique_test_id}/logging-example/",
+          "3/foobar.example/#{unique_test_id}/logging-example/FOO/",
+          "4/foobar.example/#{unique_test_id}/logging-example/FOO/BAR",
+        ], record["request_hierarchy"])
+        refute(record.key?("request_url_hierarchy_level0"))
+        refute(record.key?("request_url_hierarchy_level1"))
+        refute(record.key?("request_url_hierarchy_level2"))
+        refute(record.key?("request_url_hierarchy_level3"))
+        refute(record.key?("request_url_hierarchy_level4"))
+        refute(record.key?("request_url_hierarchy_level5"))
+        refute(record.key?("request_url_hierarchy_level6"))
+      else
+        assert_equal("foobar.example/", record.fetch("request_url_hierarchy_level0"))
+        assert_equal("#{unique_test_id}/", record.fetch("request_url_hierarchy_level1"))
+        assert_equal("logging-example/", record.fetch("request_url_hierarchy_level2"))
+        assert_equal("FOO/", record.fetch("request_url_hierarchy_level3"))
+        assert_equal("BAR", record.fetch("request_url_hierarchy_level4"))
+        refute(record.key?("request_url_hierarchy_level5"))
+        refute(record.key?("request_url_hierarchy_level6"))
+        refute(record.key?("request_hierarchy"))
+      end
       assert_equal("San Jose", record["request_ip_city"])
       assert_equal("HTTP://FOO.EXAMPLE", record["request_origin"])
       assert_equal("/#{unique_test_id}/logging-example/FOO/BAR/", record["request_path"])

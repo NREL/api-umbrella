@@ -11,8 +11,8 @@ class Test::Apis::V1::Analytics::TestDrilldown < Minitest::Test
   end
 
   def test_level0_prefix
-    FactoryBot.create_list(:log_item, 2, :request_hierarchy => ["0/127.0.0.1/", "1/127.0.0.1/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
-    FactoryBot.create(:log_item, :request_hierarchy => ["0/example.com/", "1/example.com/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
+    FactoryBot.create_list(:log_item, 2, :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
+    FactoryBot.create(:log_item, :request_host => "example.com", :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
     LogItem.refresh_indices!
 
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/analytics/drilldown.json", http_options.deep_merge(admin_token).deep_merge({
@@ -49,8 +49,8 @@ class Test::Apis::V1::Analytics::TestDrilldown < Minitest::Test
   end
 
   def test_level1_prefix
-    FactoryBot.create_list(:log_item, 2, :request_hierarchy => ["0/127.0.0.1/", "1/127.0.0.1/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
-    FactoryBot.create(:log_item, :request_hierarchy => ["0/example.com/", "1/example.com/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
+    FactoryBot.create_list(:log_item, 2, :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
+    FactoryBot.create(:log_item, :request_host => "example.com", :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
     LogItem.refresh_indices!
 
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/analytics/drilldown.json", http_options.deep_merge(admin_token).deep_merge({
@@ -85,9 +85,9 @@ class Test::Apis::V1::Analytics::TestDrilldown < Minitest::Test
   end
 
   def test_level2_prefix
-    FactoryBot.create_list(:log_item, 2, :request_hierarchy => ["0/127.0.0.1/", "1/127.0.0.1/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
-    FactoryBot.create_list(:log_item, 2, :request_hierarchy => ["0/example.com/", "1/example.com/hello/", "2/example.com/hello/foo"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
-    FactoryBot.create(:log_item, :request_hierarchy => ["0/example.com/", "1/example.com/hello/", "2/example.com/hello/foo/", "3/example.com/hello/foo/bar"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
+    FactoryBot.create_list(:log_item, 2, :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
+    FactoryBot.create_list(:log_item, 2, :request_host => "example.com", :request_path => "/hello/foo", :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
+    FactoryBot.create(:log_item, :request_host => "example.com", :request_path => "/hello/foo/bar", :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
     LogItem.refresh_indices!
 
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/analytics/drilldown.json", http_options.deep_merge(admin_token).deep_merge({
@@ -131,12 +131,18 @@ class Test::Apis::V1::Analytics::TestDrilldown < Minitest::Test
   end
 
   def test_prefix_not_contains
-    FactoryBot.create_list(:log_item, 2, :request_hierarchy => ["0/127.0.0.1/", "1/127.0.0.1/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
+    FactoryBot.create_list(:log_item, 2, :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
     # Ensure that the second element in the array also contains "0/" to
     # ensure that the filtering and terms aggregations are both matching
     # based on prefix only.
-    FactoryBot.create(:log_item, :request_hierarchy => ["0/0/", "1/0/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
-    FactoryBot.create(:log_item, :request_hierarchy => ["foo/0/", "foo/0/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
+    log = FactoryBot.create(:log_item, :request_host => "0", :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
+    if($config["elasticsearch"]["template_version"] < 2)
+      assert_equal(["0/0/", "1/0/hello"], log.serializable_hash.fetch("request_hierarchy"))
+    end
+    if($config["elasticsearch"]["template_version"] < 2)
+      log = FactoryBot.create(:log_item, :request_hierarchy => ["foo/0/", "foo/0/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
+      assert_equal(["foo/0/", "foo/0/hello"], log.serializable_hash.fetch("request_hierarchy"))
+    end
     LogItem.refresh_indices!
 
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/analytics/drilldown.json", http_options.deep_merge(admin_token).deep_merge({
@@ -173,13 +179,27 @@ class Test::Apis::V1::Analytics::TestDrilldown < Minitest::Test
   end
 
   def test_prefix_regex_escaping
-    FactoryBot.create_list(:log_item, 2, :request_hierarchy => ["0/127.0.0.1/", "1/127.0.0.1/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
-    FactoryBot.create(:log_item, :request_hierarchy => ["0/example.com/", "1/example.com/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
+    FactoryBot.create_list(:log_item, 2, :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
+    FactoryBot.create(:log_item, :request_host => "example.com", :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
     # Add other items in the request_hierarchy array that would match "0/."
     # (even though this isn't really a valid hierarchy definition). This
     # ensures that we also test whether the terms aggregations are being
     # escaped (and not just the overall filter).
-    FactoryBot.create(:log_item, :request_hierarchy => ["0/.com/", "0/xcom", "0/ycom", "1/.com/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
+    #
+    # Note that in version 2 of the template, this matcher is based on
+    # equality, rather than a prefix match, so there is some subtly different
+    # behavior in version 2 (but in real practice, the app has always assumed
+    # the values are equal).
+    logs = FactoryBot.create_list(:log_item, 2, :request_host => ".", :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
+    if($config["elasticsearch"]["template_version"] < 2)
+      assert_equal(["0/./", "1/./hello"], logs[0].serializable_hash.fetch("request_hierarchy"))
+    end
+    log = FactoryBot.create(:log_item, :request_host => ".com", :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
+    if($config["elasticsearch"]["template_version"] < 2)
+      assert_equal(["0/.com/", "1/.com/hello"], log.serializable_hash.fetch("request_hierarchy"))
+    end
+    FactoryBot.create(:log_item, :request_host => "xcom", :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
+    FactoryBot.create(:log_item, :request_host => "ycom", :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
     LogItem.refresh_indices!
 
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/analytics/drilldown.json", http_options.deep_merge(admin_token).deep_merge({
@@ -194,39 +214,133 @@ class Test::Apis::V1::Analytics::TestDrilldown < Minitest::Test
 
     assert_response_code(200, response)
     data = MultiJson.load(response.body)
-    assert_equal(1, data["results"].length)
+    if($config["elasticsearch"]["template_version"] < 2)
+      assert_equal(2, data["results"].length)
+    else
+      assert_equal(1, data["results"].length)
+    end
     assert_equal({
       "depth" => 0,
-      "path" => ".com/",
+      "path" => "./",
       "terminal" => false,
-      "descendent_prefix" => "1/.com/",
-      "hits" => 1,
+      "descendent_prefix" => "1/./",
+      "hits" => 2,
     }, data["results"][0])
+    if($config["elasticsearch"]["template_version"] < 2)
+      assert_equal({
+        "depth" => 0,
+        "path" => ".com/",
+        "terminal" => false,
+        "descendent_prefix" => "1/.com/",
+        "hits" => 1,
+      }, data["results"][1])
+    end
     assert_equal([
       { "id" => "date", "label" => "Date", "type" => "datetime" },
-      { "id" => "0/.com/", "label" => ".com/", "type" => "number" },
-    ], data["hits_over_time"]["cols"])
+      { "id" => "0/./", "label" => "./", "type" => "number" },
+      $config["elasticsearch"]["template_version"] < 2 ? { "id" => "0/.com/", "label" => ".com/", "type" => "number" } : nil,
+    ].compact, data["hits_over_time"]["cols"])
     assert_equal(6, data["hits_over_time"]["rows"].length)
     assert_equal({ "c" => [
       { "v" => 1421218800000, "f" => "Wed, Jan 14, 2015" },
-      { "v" => 1, "f" => "1" },
-    ] }, data["hits_over_time"]["rows"][1])
+      { "v" => 2, "f" => "2" },
+      $config["elasticsearch"]["template_version"] < 2 ? { "v" => 1, "f" => "1" } : nil,
+    ].compact }, data["hits_over_time"]["rows"][1])
+
+    # Check for a more proper "1/." prefix (the correct depth to have a
+    # trailing host).
+    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/analytics/drilldown.json", http_options.deep_merge(admin_token).deep_merge({
+      :params => {
+        :search => "",
+        :start_at => "2015-01-13",
+        :end_at => "2015-01-18",
+        :interval => "day",
+        :prefix => "1/.",
+      },
+    }))
+
+    assert_response_code(200, response)
+    data = MultiJson.load(response.body)
+    if($config["elasticsearch"]["template_version"] < 2)
+      assert_equal(2, data["results"].length)
+    else
+      assert_equal(1, data["results"].length)
+    end
+    assert_equal({
+      "depth" => 1,
+      "path" => "./hello",
+      "terminal" => true,
+      "descendent_prefix" => "2/./hello",
+      "hits" => 2,
+    }, data["results"][0])
+    if($config["elasticsearch"]["template_version"] < 2)
+      assert_equal({
+        "depth" => 1,
+        "path" => ".com/hello",
+        "terminal" => true,
+        "descendent_prefix" => "2/.com/hello",
+        "hits" => 1,
+      }, data["results"][1])
+    end
+    assert_equal([
+      { "id" => "date", "label" => "Date", "type" => "datetime" },
+      { "id" => "1/./hello", "label" => "./hello", "type" => "number" },
+      $config["elasticsearch"]["template_version"] < 2 ? { "id" => "1/.com/hello", "label" => ".com/hello", "type" => "number" } : nil,
+    ].compact, data["hits_over_time"]["cols"])
+    assert_equal(6, data["hits_over_time"]["rows"].length)
+    assert_equal({ "c" => [
+      { "v" => 1421218800000, "f" => "Wed, Jan 14, 2015" },
+      { "v" => 2, "f" => "2" },
+      $config["elasticsearch"]["template_version"] < 2 ? { "v" => 1, "f" => "1" } : nil,
+    ].compact }, data["hits_over_time"]["rows"][1])
+
+    # Check for a more proper "1/./" prefix (the correct depth to have a
+    # trailing host, and with the expected trailing slash).
+    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/analytics/drilldown.json", http_options.deep_merge(admin_token).deep_merge({
+      :params => {
+        :search => "",
+        :start_at => "2015-01-13",
+        :end_at => "2015-01-18",
+        :interval => "day",
+        :prefix => "1/./",
+      },
+    }))
+
+    assert_response_code(200, response)
+    data = MultiJson.load(response.body)
+    assert_equal(1, data["results"].length)
+    assert_equal({
+      "depth" => 1,
+      "path" => "./hello",
+      "terminal" => true,
+      "descendent_prefix" => "2/./hello",
+      "hits" => 2,
+    }, data["results"][0])
+    assert_equal([
+      { "id" => "date", "label" => "Date", "type" => "datetime" },
+      { "id" => "1/./hello", "label" => "./hello", "type" => "number" },
+    ].compact, data["hits_over_time"]["cols"])
+    assert_equal(6, data["hits_over_time"]["rows"].length)
+    assert_equal({ "c" => [
+      { "v" => 1421218800000, "f" => "Wed, Jan 14, 2015" },
+      { "v" => 2, "f" => "2" },
+    ].compact }, data["hits_over_time"]["rows"][1])
   end
 
   def test_all_results_top_10_for_chart
-    FactoryBot.create_list(:log_item, 2, :request_hierarchy => ["0/127.0.0.1/", "1/127.0.0.1/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
-    FactoryBot.create_list(:log_item, 2, :request_hierarchy => ["0/127.0.0.2/", "1/127.0.0.2/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
-    FactoryBot.create_list(:log_item, 3, :request_hierarchy => ["0/127.0.0.3/", "1/127.0.0.3/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
-    FactoryBot.create_list(:log_item, 10, :request_hierarchy => ["0/127.0.0.4/", "1/127.0.0.4/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
-    FactoryBot.create_list(:log_item, 11, :request_hierarchy => ["0/127.0.0.5/", "1/127.0.0.5/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
-    FactoryBot.create_list(:log_item, 12, :request_hierarchy => ["0/127.0.0.6/", "1/127.0.0.6/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
-    FactoryBot.create_list(:log_item, 13, :request_hierarchy => ["0/127.0.0.7/", "1/127.0.0.7/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
-    FactoryBot.create_list(:log_item, 14, :request_hierarchy => ["0/127.0.0.8/", "1/127.0.0.8/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
-    FactoryBot.create_list(:log_item, 15, :request_hierarchy => ["0/127.0.0.9/", "1/127.0.0.9/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
-    FactoryBot.create_list(:log_item, 16, :request_hierarchy => ["0/127.0.0.10/", "1/127.0.0.10/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
-    FactoryBot.create_list(:log_item, 17, :request_hierarchy => ["0/127.0.0.11/", "1/127.0.0.11/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
-    FactoryBot.create_list(:log_item, 18, :request_hierarchy => ["0/127.0.0.12/", "1/127.0.0.12/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
-    FactoryBot.create_list(:log_item, 1, :request_hierarchy => ["0/127.0.0.13/", "1/127.0.0.13/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
+    FactoryBot.create_list(:log_item, 2, :request_host => "127.0.0.1", :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
+    FactoryBot.create_list(:log_item, 2, :request_host => "127.0.0.2", :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
+    FactoryBot.create_list(:log_item, 3, :request_host => "127.0.0.3", :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
+    FactoryBot.create_list(:log_item, 10, :request_host => "127.0.0.4", :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
+    FactoryBot.create_list(:log_item, 11, :request_host => "127.0.0.5", :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
+    FactoryBot.create_list(:log_item, 12, :request_host => "127.0.0.6", :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
+    FactoryBot.create_list(:log_item, 13, :request_host => "127.0.0.7", :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
+    FactoryBot.create_list(:log_item, 14, :request_host => "127.0.0.8", :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
+    FactoryBot.create_list(:log_item, 15, :request_host => "127.0.0.9", :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
+    FactoryBot.create_list(:log_item, 16, :request_host => "127.0.0.10", :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
+    FactoryBot.create_list(:log_item, 17, :request_host => "127.0.0.11", :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
+    FactoryBot.create_list(:log_item, 18, :request_host => "127.0.0.12", :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
+    FactoryBot.create_list(:log_item, 1, :request_host => "127.0.0.13", :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
     LogItem.refresh_indices!
 
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/analytics/drilldown.json", http_options.deep_merge(admin_token).deep_merge({
@@ -473,8 +587,8 @@ class Test::Apis::V1::Analytics::TestDrilldown < Minitest::Test
   end
 
   def test_csv_download
-    FactoryBot.create_list(:log_item, 2, :request_hierarchy => ["0/127.0.0.1/", "1/127.0.0.1/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
-    FactoryBot.create(:log_item, :request_hierarchy => ["0/example.com/", "1/example.com/hello/", "2/example.com/hello/foo"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
+    FactoryBot.create_list(:log_item, 2, :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
+    FactoryBot.create(:log_item, :request_host => "example.com", :request_path => "/hello/foo", :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
     LogItem.refresh_indices!
 
     # Level 0 filter
