@@ -152,6 +152,7 @@ class OutdatedPackages
     },
     "postgresql" => {
       :git => "https://github.com/postgres/postgres.git",
+      :constraint => "~> 10.6",
     },
     "ruby" => {
       :git => "https://github.com/ruby/ruby.git",
@@ -222,7 +223,7 @@ class OutdatedPackages
     when "openssl", "ruby"
       tag.tr!("_", ".")
     when "postgresql"
-      tag.gsub!(/^rel/, "")
+      tag.gsub!(/^rel_?/, "")
       tag.tr!("_", ".")
     end
 
