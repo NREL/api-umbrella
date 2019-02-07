@@ -13,7 +13,6 @@ FactoryBot.define do
     request_scheme { "http" }
     request_query { { "foo" => "bar" } }
     request_size { 140 }
-    request_url { "http://127.0.0.1/hello/?foo=bar" }
     request_url_query { "foo=bar" }
     request_user_agent { "ApacheBench/2.3" }
     request_user_agent_family { "AB (Apache Bench)" }
@@ -37,7 +36,6 @@ FactoryBot.define do
       request_ip_region { '"><script class="xss-test">alert("5");</script>' }
       request_path { '"><script class="xss-test">alert("6");</script>' }
       request_query { { "foo" => '"><script class="xss-test">alert("7");</script>' } }
-      request_url { '"><script class="xss-test">alert("8");</script>' }
       request_url_query { '"><script class="xss-test">alert("8");</script>' }
       request_user_agent { '"><script class="xss-test">alert("9");</script>' }
       response_content_type { '"><script class="xss-test">alert("10");</script>' }

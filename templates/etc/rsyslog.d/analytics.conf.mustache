@@ -100,9 +100,11 @@ if($!raw!request_url_scheme != "") then {
 if($!raw!request_size != "") then {
   set $!usr!es!request_size = $!raw!request_size;
 }
+{{#elasticsearch._template_version_v1?}}
 if($!raw!legacy_request_url != "") then {
   set $!usr!es!request_url = $!raw!legacy_request_url;
 }
+{{/elasticsearch._template_version_v1?}}
 if($!raw!request_url_query != "") then {
   set $!usr!es!request_url_query = $!raw!request_url_query;
 }

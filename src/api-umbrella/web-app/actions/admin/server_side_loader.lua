@@ -22,6 +22,9 @@ function _M.loader(self)
   end
 
   local web_config = {
+    elasticsearch = {
+      template_version = config["elasticsearch"]["template_version"],
+    },
     web = {
       admin = {
         username_is_email = config["web"]["admin"]["username_is_email"],

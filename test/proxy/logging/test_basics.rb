@@ -55,7 +55,6 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
       "request_referer",
       "request_scheme",
       "request_size",
-      "request_url",
       "request_url_query",
       "request_user_agent",
       "request_user_agent_family",
@@ -82,7 +81,10 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
         "request_url_hierarchy_level4",
       ]
     else
-      expected_fields += ["request_hierarchy"]
+      expected_fields += [
+        "request_hierarchy",
+        "request_url",
+      ]
     end
     assert_equal(expected_fields.sort, record.keys.sort)
 
@@ -125,9 +127,9 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
     assert_equal("http://example.com", record["request_referer"])
     assert_equal("http", record["request_scheme"])
     assert_kind_of(Numeric, record["request_size"])
-    assert_equal(url, record["request_url"])
     assert_equal("url1=#{param_url1}&url2=#{param_url2}&url3=#{param_url3}", record["request_url_query"])
     if($config["elasticsearch"]["template_version"] < 2)
+      assert_equal(url, record.fetch("request_url"))
       assert_equal([
         "0/127.0.0.1:9080/",
         "1/127.0.0.1:9080/api/",
@@ -143,6 +145,7 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
       refute(record.key?("request_url_hierarchy_level5"))
       refute(record.key?("request_url_hierarchy_level6"))
     else
+      refute(record.key?("request_url"))
       assert_equal("127.0.0.1:9080/", record.fetch("request_url_hierarchy_level0"))
       assert_equal("api/", record.fetch("request_url_hierarchy_level1"))
       assert_equal("logging-example/", record.fetch("request_url_hierarchy_level2"))

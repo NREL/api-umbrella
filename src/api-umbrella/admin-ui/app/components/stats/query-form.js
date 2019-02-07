@@ -139,17 +139,24 @@ export default Component.extend({
         {
           id: 'request_path',
           label: t('Request: URL Path'),
-          description: t('The path portion of the original request URL.\n*Example:* `/geocode/v1.json`'),
+          description: t('The path of the original request URL.\n*Example:* `/geocode/v1.json`'),
           type: 'string',
           operators: stringOperators,
         },
         {
+          id: 'request_url_query',
+          label: t('Request: Query String'),
+          description: t('The query string of the original request URL.\n*Example:* `address=1617+Cole+Blvd+Golden+CO&foo=bar`'),
+          type: 'string',
+          operators: stringOperators,
+        },
+        ...((window.apiUmbrellaConfig.elasticsearch.template_version < 2) ? [{
           id: 'request_url',
           label: t('Request: Full URL & Query String'),
           description: t('The original, complete request URL.\n*Example:* `http://example.com/geocode/v1.json?address=1617+Cole+Blvd+Golden+CO`\n*Note:* If you want to simply filter on the host or path portion of the URL, your queries will run better if you use the separate "Request: URL Path" or "Request: URL Host" fields.'),
           type: 'string',
           operators: stringOperators,
-        },
+        }] : []),
         {
           id: 'request_ip',
           label: t('Request: IP Address'),

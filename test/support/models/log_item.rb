@@ -19,7 +19,6 @@ class LogItem
   attribute :request_query
   attribute :request_scheme
   attribute :request_size
-  attribute :request_url
   attribute :request_url_query
   attribute :request_user_agent
   attribute :request_user_agent_family
@@ -96,6 +95,13 @@ class LogItem
     cleaned_path.gsub!(%r{^/}, "")
     path_parts = cleaned_path.split("/", 6)
 
+    if $config["elasticsearch"]["template_version"] < 2
+      hash["request_url"] = "#{hash.fetch("request_scheme")}://#{hash.fetch("request_host")}#{hash.fetch("request_path")}"
+      if hash["request_query"]
+        hash["request_url"] << "?#{hash.fetch("request_query")}"
+      end
+    end
+
     if !hash["request_hierarchy"] || $config["elasticsearch"]["template_version"] >= 2
       hash["request_hierarchy"] = []
       host_level = hash["request_host"]
@@ -120,8 +126,8 @@ class LogItem
     end
 
     if($config["elasticsearch"]["template_version"] >= 2)
-      hash.delete("request_query")
       hash.delete("request_hierarchy")
+      hash.delete("request_query")
     end
 
     hash
