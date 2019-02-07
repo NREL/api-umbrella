@@ -144,12 +144,19 @@ export default Component.extend({
           operators: stringOperators,
         },
         {
+          id: 'request_url_query',
+          label: I18n.t('admin.stats.fields.request_url_query.label'),
+          description: I18n.t('admin.stats.fields.request_url_query.description_markdown'),
+          type: 'string',
+          operators: stringOperators,
+        },
+        ...((this.get('session.data.authenticated.elasticsearch_template_version') < 2) ? [{
           id: 'request_url',
           label: I18n.t('admin.stats.fields.request_url.label'),
           description: I18n.t('admin.stats.fields.request_url.description_markdown'),
           type: 'string',
           operators: stringOperators,
-        },
+        }] : []),
         {
           id: 'request_ip',
           label: I18n.t('admin.stats.fields.request_ip.label'),

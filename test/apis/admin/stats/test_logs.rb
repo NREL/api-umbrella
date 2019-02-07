@@ -11,7 +11,7 @@ class Test::Apis::Admin::Stats::TestLogs < Minitest::Test
   end
 
   def test_strips_api_keys_from_request_url_in_json
-    FactoryBot.create(:log_item, :request_at => Time.parse("2015-01-16T06:06:28.816Z").utc, :request_url => "http://127.0.0.1/with_api_key/?foo=bar&api_key=my_secret_key", :request_path => "/with_api_key/", :request_url_query => "foo=bar&api_key=my_secret_key", :request_query => { "foo" => "bar", "api_key" => "my_secret_key" }, :request_user_agent => unique_test_id)
+    FactoryBot.create(:log_item, :request_at => Time.parse("2015-01-16T06:06:28.816Z").utc, :request_path => "/with_api_key/", :request_url_query => "foo=bar&api_key=my_secret_key", :request_query => { "foo" => "bar", "api_key" => "my_secret_key" }, :request_user_agent => unique_test_id)
     LogItem.refresh_indices!
 
     response = Typhoeus.get("https://127.0.0.1:9081/admin/stats/logs.json", http_options.deep_merge(admin_session).deep_merge({
@@ -37,7 +37,7 @@ class Test::Apis::Admin::Stats::TestLogs < Minitest::Test
   end
 
   def test_strips_api_keys_from_request_url_in_csv
-    FactoryBot.create(:log_item, :request_at => Time.parse("2015-01-16T06:06:28.816Z").utc, :request_url => "http://127.0.0.1/with_api_key/?api_key=my_secret_key&foo=bar", :request_path => "/with_api_key/", :request_url_query => "api_key=my_secret_key&foo=bar", :request_query => { "foo" => "bar", "api_key" => "my_secret_key" }, :request_user_agent => unique_test_id)
+    FactoryBot.create(:log_item, :request_at => Time.parse("2015-01-16T06:06:28.816Z").utc, :request_path => "/with_api_key/", :request_url_query => "api_key=my_secret_key&foo=bar", :request_query => { "foo" => "bar", "api_key" => "my_secret_key" }, :request_user_agent => unique_test_id)
     LogItem.refresh_indices!
 
     response = Typhoeus.get("https://127.0.0.1:9081/admin/stats/logs.csv", http_options.deep_merge(admin_session).deep_merge({

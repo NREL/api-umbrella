@@ -343,7 +343,7 @@ en:
         request_path:
           label: 'Request: URL Path'
           description_markdown: |-
-            The path portion of the original request URL.
+            The path of the original request URL.
             *Example:* `/geocode/v1.json`
         request_url:
           label: 'Request: Full URL & Query String'
@@ -351,6 +351,11 @@ en:
             The original, complete request URL.
             *Example:* `http://example.com/geocode/v1.json?address=1617+Cole+Blvd+Golden+CO`
             *Note:* If you want to simply filter on the host or path portion of the URL, your queries will run better if you use the separate "Request: URL Path" or "Request: URL Host" fields.
+        request_url_query:
+          label: 'Request: Query String'
+          description_markdown: |-
+            The query string of the original request URL.
+            *Example:* `address=1617+Cole+Blvd+Golden+CO&foo=bar`
         request_ip:
           label: 'Request: IP Address'
           description_markdown: |-

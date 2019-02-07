@@ -76,6 +76,8 @@ module ApiUmbrellaTestHelpers
       if($config["elasticsearch"]["template_version"] < 2)
         assert_kind_of(String, record["request_url"])
         assert_equal(true, record["request_url"].start_with?("http://127.0.0.1:9080/"), record["request_url"])
+        assert_kind_of(Array, record["request_hierarchy"])
+        assert_operator(record["request_hierarchy"].length, :>=, 1)
       else
         assert_kind_of(String, record["request_url_hierarchy_level0"])
       end
@@ -96,7 +98,9 @@ module ApiUmbrellaTestHelpers
       logged_url += "?#{record["request_url_query"]}" if(record["request_url_query"])
       assert_equal(expected_url, logged_url)
       if($config["elasticsearch"]["template_version"] < 2)
-        assert_equal(expected_url, record["request_url"])
+        assert_equal(expected_url, record.fetch("request_url"))
+      else
+        refute(record.key?("request_url"))
       end
     end
   end

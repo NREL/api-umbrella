@@ -17,6 +17,7 @@ class Admin::SessionsController < Devise::SessionsController
     if current_admin
       response.merge!({
         "analytics_timezone" => ApiUmbrellaConfig[:analytics][:timezone],
+        "elasticsearch_template_version" => ApiUmbrellaConfig[:elasticsearch][:template_version],
         "username_is_email" => ApiUmbrellaConfig[:web][:admin][:username_is_email],
         "local_auth_enabled" => ApiUmbrellaConfig[:web][:admin][:auth_strategies][:_enabled][:local],
         "password_length_min" => ApiUmbrellaConfig[:web][:admin][:password_length_min],

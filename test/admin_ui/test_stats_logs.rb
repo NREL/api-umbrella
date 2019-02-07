@@ -201,4 +201,42 @@ class Test::AdminUi::TestStatsLogs < Minitest::Capybara::Test
   def test_date_range_picker
     assert_date_range_picker("/stats/logs")
   end
+
+  def test_filter_options
+    admin_login
+    visit "/admin/#/stats/logs"
+    refute_selector(".busy-blocker")
+
+    assert_select "query_builder_rule_0_filter", :selected => "Response: API Umbrella Denied Code", :options => [
+      "------",
+      "Request: HTTP Method",
+      "Request: URL Scheme",
+      "Request: URL Host",
+      "Request: URL Path",
+      "Request: Query String",
+      ($config["elasticsearch"]["template_version"] < 2 ? "Request: Full URL & Query String" : nil),
+      "Request: IP Address",
+      "Request: IP Country",
+      "Request: IP State/Region",
+      "Request: IP City",
+      "Request: User Agent",
+      "Request: User Agent Family",
+      "Request: User Agent Type",
+      "Request: Referer",
+      "Request: Origin",
+      "User: API Key",
+      "User: E-mail",
+      "User: ID",
+      "Response: HTTP Status Code",
+      "Response: API Umbrella Denied Code",
+      "Response: Load Time",
+      "Response: Content Type",
+    ].compact
+    assert_select "query_builder_rule_0_operator", :selected => "is null", :options => [
+      "equal",
+      "not equal",
+      "is null",
+      "is not null",
+    ]
+  end
 end
