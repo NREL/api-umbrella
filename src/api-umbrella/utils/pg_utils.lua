@@ -6,7 +6,9 @@ local _escape_literal = pgmoon.Postgres.escape_literal
 local _escape_identifier = pgmoon.Postgres.escape_identifier
 local pg_null = pgmoon.Postgres.NULL
 
-local db_config = {
+local _M = {}
+
+_M.db_config = {
   host = config["postgresql"]["host"],
   port = config["postgresql"]["port"],
   database = config["postgresql"]["database"],
@@ -14,9 +16,8 @@ local db_config = {
   password = config["postgresql"]["password"],
 }
 
-local _M = {}
-
 local LIST_METATABLE = {}
+local RAW_METATABLE = {}
 
 local function encode_values(values)
   local escaped_columns = {}
@@ -38,12 +39,29 @@ local function encode_assigns(values)
   return table.concat(escaped_assigns, ", ")
 end
 
+local function encode_where(values)
+  local escaped_assigns = {}
+  for column, value in pairs(values) do
+    table.insert(escaped_assigns, _M.escape_identifier(column) .. " = " .. _M.escape_literal(value))
+  end
+
+  return table.concat(escaped_assigns, " AND ")
+end
+
 function _M.list(value)
   return setmetatable({ value }, LIST_METATABLE)
 end
 
 function _M.is_list(value)
   return getmetatable(value) == LIST_METATABLE
+end
+
+function _M.raw(value)
+  return setmetatable({ value }, RAW_METATABLE)
+end
+
+function _M.is_raw(value)
+  return getmetatable(value) == RAW_METATABLE
 end
 
 function _M.escape_literal(value)
@@ -55,6 +73,8 @@ function _M.escape_literal(value)
       table.insert(escaped, _escape_literal(nil, val))
     end
     return "(" .. table.concat(escaped, ", ") .. ")"
+  elseif _M.is_raw(value) then
+    return tostring(value[1])
   elseif int64.is_64bit(value) then
     return _escape_literal(nil, int64.to_string(value))
   else
@@ -92,7 +112,7 @@ function _M.connect()
   -- nil socket inside pgmoon's internals on the next retry.
   local pg, ok, err
   for _ = 1, 5 do
-    pg = pgmoon.new(db_config)
+    pg = pgmoon.new(_M.db_config)
     ok, err = pg:connect()
     if not ok then
       ngx.log(ngx.ERR, "failed to connect to database: ", err)
@@ -183,12 +203,12 @@ function _M.insert(table_name, values)
 end
 
 function _M.update(table_name, where, values)
-  local query = "UPDATE " .. _M.escape_identifier(table_name) .. " SET " .. encode_assigns(values) .. " WHERE " .. encode_assigns(where)
+  local query = "UPDATE " .. _M.escape_identifier(table_name) .. " SET " .. encode_assigns(values) .. " WHERE " .. encode_where(where)
   return _M.query(query)
 end
 
 function _M.delete(table_name, where)
-  local query = "DELETE FROM " .. _M.escape_identifier(table_name) .. " WHERE " .. encode_assigns(where)
+  local query = "DELETE FROM " .. _M.escape_identifier(table_name) .. " WHERE " .. encode_where(where)
   return _M.query(query)
 end
 

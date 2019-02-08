@@ -44,7 +44,7 @@ return {
       BEGIN
         -- Only perform stamping ON INSERT/DELETE or if the UPDATE actually
         -- changed any fields.
-        IF TG_OP != 'UPDATE' OR row(NEW.*) IS DISTINCT FROM row(OLD.*) THEN
+        IF (COALESCE(current_setting('api_umbrella.disable_stamping', true), 'off') != 'on' AND (TG_OP != 'UPDATE' OR row(NEW.*) IS DISTINCT FROM row(OLD.*))) THEN
           -- Update the updated_at timestamp on associated tables (which in
           -- turn will trigger this stamp_record() on that table if the
           -- timestamp changes to take care of any userstamping).
@@ -234,8 +234,8 @@ return {
 
     db.query([[
       CREATE TABLE admin_groups_admin_permissions(
-        admin_group_id uuid REFERENCES admin_groups ON DELETE CASCADE,
-        admin_permission_id varchar(50) REFERENCES admin_permissions ON DELETE CASCADE,
+        admin_group_id uuid REFERENCES admin_groups ON DELETE CASCADE DEFERRABLE INITIALLY IMMEDIATE,
+        admin_permission_id varchar(50) REFERENCES admin_permissions ON DELETE CASCADE DEFERRABLE INITIALLY IMMEDIATE,
         created_at timestamp with time zone NOT NULL,
         created_by_id uuid NOT NULL,
         created_by_username varchar(255) NOT NULL,
@@ -256,8 +256,8 @@ return {
 
     db.query([[
       CREATE TABLE admin_groups_admins(
-        admin_group_id uuid REFERENCES admin_groups ON DELETE CASCADE,
-        admin_id uuid REFERENCES admins ON DELETE CASCADE,
+        admin_group_id uuid REFERENCES admin_groups ON DELETE CASCADE DEFERRABLE INITIALLY IMMEDIATE,
+        admin_id uuid REFERENCES admins ON DELETE CASCADE DEFERRABLE INITIALLY IMMEDIATE,
         created_at timestamp with time zone NOT NULL,
         created_by_id uuid NOT NULL,
         created_by_username varchar(255) NOT NULL,
@@ -278,8 +278,8 @@ return {
 
     db.query([[
       CREATE TABLE admin_groups_api_scopes(
-        admin_group_id uuid REFERENCES admin_groups ON DELETE CASCADE,
-        api_scope_id uuid REFERENCES api_scopes ON DELETE CASCADE,
+        admin_group_id uuid REFERENCES admin_groups ON DELETE CASCADE DEFERRABLE INITIALLY IMMEDIATE,
+        api_scope_id uuid REFERENCES api_scopes ON DELETE CASCADE DEFERRABLE INITIALLY IMMEDIATE,
         created_at timestamp with time zone NOT NULL,
         created_by_id uuid NOT NULL,
         created_by_username varchar(255) NOT NULL,
@@ -337,7 +337,7 @@ return {
     db.query([[
       CREATE TABLE api_backend_rewrites(
         id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-        api_backend_id uuid NOT NULL REFERENCES api_backends ON DELETE CASCADE,
+        api_backend_id uuid NOT NULL REFERENCES api_backends ON DELETE CASCADE DEFERRABLE INITIALLY IMMEDIATE,
         matcher_type varchar(5) NOT NULL CHECK(matcher_type IN('route', 'regex')),
         http_method varchar(7) NOT NULL CHECK(http_method IN('any', 'GET', 'POST', 'PUT', 'DELETE', 'HEAD', 'TRACE', 'OPTIONS', 'CONNECT', 'PATCH')),
         frontend_matcher varchar(255) NOT NULL,
@@ -365,7 +365,7 @@ return {
     db.query([[
       CREATE TABLE api_backend_servers(
         id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-        api_backend_id uuid NOT NULL REFERENCES api_backends ON DELETE CASCADE,
+        api_backend_id uuid NOT NULL REFERENCES api_backends ON DELETE CASCADE DEFERRABLE INITIALLY IMMEDIATE,
         host varchar(255) NOT NULL,
         port int NOT NULL,
         created_at timestamp with time zone NOT NULL,
@@ -389,7 +389,7 @@ return {
     db.query([[
       CREATE TABLE api_backend_sub_url_settings(
         id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-        api_backend_id uuid NOT NULL REFERENCES api_backends ON DELETE CASCADE,
+        api_backend_id uuid NOT NULL REFERENCES api_backends ON DELETE CASCADE DEFERRABLE INITIALLY IMMEDIATE,
         http_method varchar(7) NOT NULL CHECK(http_method IN('any', 'GET', 'POST', 'PUT', 'DELETE', 'HEAD', 'TRACE', 'OPTIONS', 'CONNECT', 'PATCH')),
         regex varchar(255) NOT NULL,
         sort_order int NOT NULL DEFAULT 0,
@@ -415,7 +415,7 @@ return {
     db.query([[
       CREATE TABLE api_backend_url_matches(
         id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-        api_backend_id uuid NOT NULL REFERENCES api_backends ON DELETE CASCADE,
+        api_backend_id uuid NOT NULL REFERENCES api_backends ON DELETE CASCADE DEFERRABLE INITIALLY IMMEDIATE,
         frontend_prefix varchar(255) NOT NULL,
         backend_prefix varchar(255) NOT NULL,
         sort_order int NOT NULL DEFAULT 0,
@@ -441,8 +441,8 @@ return {
     db.query([[
       CREATE TABLE api_backend_settings(
         id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-        api_backend_id uuid REFERENCES api_backends ON DELETE CASCADE,
-        api_backend_sub_url_settings_id uuid REFERENCES api_backend_sub_url_settings ON DELETE CASCADE,
+        api_backend_id uuid REFERENCES api_backends ON DELETE CASCADE DEFERRABLE INITIALLY IMMEDIATE,
+        api_backend_sub_url_settings_id uuid REFERENCES api_backend_sub_url_settings ON DELETE CASCADE DEFERRABLE INITIALLY IMMEDIATE,
         append_query_string varchar(255),
         http_basic_auth varchar(255),
         require_https varchar(23) CHECK(require_https IN('required_return_error', 'transition_return_error', 'optional')),
@@ -489,8 +489,8 @@ return {
 
     db.query([[
       CREATE TABLE api_backend_settings_required_roles(
-        api_backend_settings_id uuid NOT NULL REFERENCES api_backend_settings ON DELETE CASCADE,
-        api_role_id varchar(255) NOT NULL REFERENCES api_roles ON DELETE NO ACTION,
+        api_backend_settings_id uuid NOT NULL REFERENCES api_backend_settings ON DELETE CASCADE DEFERRABLE INITIALLY IMMEDIATE,
+        api_role_id varchar(255) NOT NULL REFERENCES api_roles ON DELETE NO ACTION DEFERRABLE INITIALLY IMMEDIATE,
         created_at timestamp with time zone NOT NULL,
         created_by_id uuid NOT NULL,
         created_by_username varchar(255) NOT NULL,
@@ -513,7 +513,7 @@ return {
     db.query([[
       CREATE TABLE api_backend_http_headers(
         id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-        api_backend_settings_id uuid NOT NULL REFERENCES api_backend_settings ON DELETE CASCADE,
+        api_backend_settings_id uuid NOT NULL REFERENCES api_backend_settings ON DELETE CASCADE DEFERRABLE INITIALLY IMMEDIATE,
         header_type varchar(17) NOT NULL CHECK(header_type IN('request', 'response_default', 'response_override')),
         sort_order int NOT NULL,
         key varchar(255) NOT NULL,
@@ -596,8 +596,8 @@ return {
 
     db.query([[
       CREATE TABLE api_users_roles(
-        api_user_id uuid NOT NULL REFERENCES api_users ON DELETE CASCADE,
-        api_role_id varchar(255) NOT NULL REFERENCES api_roles ON DELETE NO ACTION,
+        api_user_id uuid NOT NULL REFERENCES api_users ON DELETE CASCADE DEFERRABLE INITIALLY IMMEDIATE,
+        api_role_id varchar(255) NOT NULL REFERENCES api_roles ON DELETE NO ACTION DEFERRABLE INITIALLY IMMEDIATE,
         created_at timestamp with time zone NOT NULL,
         created_by_id uuid NOT NULL,
         created_by_username varchar(255) NOT NULL,
@@ -620,7 +620,7 @@ return {
     db.query([[
       CREATE TABLE api_user_settings(
         id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-        api_user_id uuid NOT NULL REFERENCES api_users ON DELETE CASCADE,
+        api_user_id uuid NOT NULL REFERENCES api_users ON DELETE CASCADE DEFERRABLE INITIALLY IMMEDIATE,
         rate_limit_mode varchar(9) CHECK(rate_limit_mode IN('unlimited', 'custom')),
         allowed_ips inet ARRAY,
         allowed_referers varchar(500) ARRAY,
@@ -659,8 +659,8 @@ return {
     db.query([[
       CREATE TABLE rate_limits(
         id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-        api_backend_settings_id uuid REFERENCES api_backend_settings ON DELETE CASCADE,
-        api_user_settings_id uuid REFERENCES api_user_settings ON DELETE CASCADE,
+        api_backend_settings_id uuid REFERENCES api_backend_settings ON DELETE CASCADE DEFERRABLE INITIALLY IMMEDIATE,
+        api_user_settings_id uuid REFERENCES api_user_settings ON DELETE CASCADE DEFERRABLE INITIALLY IMMEDIATE,
         duration bigint NOT NULL,
         accuracy bigint NOT NULL,
         limit_by varchar(7) NOT NULL CHECK(limit_by IN('ip', 'api_key')),

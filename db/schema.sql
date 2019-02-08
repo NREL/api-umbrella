@@ -2,14 +2,15 @@
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 9.6.6
--- Dumped by pg_dump version 9.6.6
+-- Dumped from database version 10.6
+-- Dumped by pg_dump version 10.6
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
 SET idle_in_transaction_session_timeout = 0;
 SET client_encoding = 'SQL_ASCII';
 SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
 SET check_function_bodies = false;
 SET client_min_messages = warning;
 SET row_security = off;
@@ -56,13 +57,11 @@ CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA public;
 COMMENT ON EXTENSION pgcrypto IS 'cryptographic functions';
 
 
-SET search_path = audit, pg_catalog;
-
 --
 -- Name: audit_table(regclass); Type: FUNCTION; Schema: audit; Owner: -
 --
 
-CREATE FUNCTION audit_table(target_table regclass) RETURNS void
+CREATE FUNCTION audit.audit_table(target_table regclass) RETURNS void
     LANGUAGE sql
     AS $_$
   SELECT audit.audit_table($1, BOOLEAN 't', BOOLEAN 't');
@@ -73,7 +72,7 @@ $_$;
 -- Name: FUNCTION audit_table(target_table regclass); Type: COMMENT; Schema: audit; Owner: -
 --
 
-COMMENT ON FUNCTION audit_table(target_table regclass) IS '
+COMMENT ON FUNCTION audit.audit_table(target_table regclass) IS '
 Add auditing support to the given table. Row-level changes will be logged with
 full client query text. No cols are ignored.
 ';
@@ -83,7 +82,7 @@ full client query text. No cols are ignored.
 -- Name: audit_table(regclass, boolean, boolean); Type: FUNCTION; Schema: audit; Owner: -
 --
 
-CREATE FUNCTION audit_table(target_table regclass, audit_rows boolean, audit_query_text boolean) RETURNS void
+CREATE FUNCTION audit.audit_table(target_table regclass, audit_rows boolean, audit_query_text boolean) RETURNS void
     LANGUAGE sql
     AS $_$
   SELECT audit.audit_table($1, $2, $3, ARRAY[]::TEXT[]);
@@ -94,7 +93,7 @@ $_$;
 -- Name: audit_table(regclass, boolean, boolean, text[]); Type: FUNCTION; Schema: audit; Owner: -
 --
 
-CREATE FUNCTION audit_table(target_table regclass, audit_rows boolean, audit_query_text boolean, ignored_cols text[]) RETURNS void
+CREATE FUNCTION audit.audit_table(target_table regclass, audit_rows boolean, audit_query_text boolean, ignored_cols text[]) RETURNS void
     LANGUAGE plpgsql
     AS $$
 DECLARE
@@ -135,7 +134,7 @@ $$;
 -- Name: FUNCTION audit_table(target_table regclass, audit_rows boolean, audit_query_text boolean, ignored_cols text[]); Type: COMMENT; Schema: audit; Owner: -
 --
 
-COMMENT ON FUNCTION audit_table(target_table regclass, audit_rows boolean, audit_query_text boolean, ignored_cols text[]) IS '
+COMMENT ON FUNCTION audit.audit_table(target_table regclass, audit_rows boolean, audit_query_text boolean, ignored_cols text[]) IS '
 Add auditing support to a table.
 
 Arguments:
@@ -152,9 +151,9 @@ Arguments:
 -- Name: if_modified_func(); Type: FUNCTION; Schema: audit; Owner: -
 --
 
-CREATE FUNCTION if_modified_func() RETURNS trigger
+CREATE FUNCTION audit.if_modified_func() RETURNS trigger
     LANGUAGE plpgsql SECURITY DEFINER
-    SET search_path TO pg_catalog, public
+    SET search_path TO 'pg_catalog', 'public'
     AS $$
 DECLARE
     audit_row audit.log;
@@ -228,7 +227,7 @@ $$;
 -- Name: FUNCTION if_modified_func(); Type: COMMENT; Schema: audit; Owner: -
 --
 
-COMMENT ON FUNCTION if_modified_func() IS '
+COMMENT ON FUNCTION audit.if_modified_func() IS '
 Track changes to a table at the statement and/or row level.
 
 Optional parameters to trigger in CREATE TRIGGER call:
@@ -260,13 +259,11 @@ the SECURITY DEFINER invocation of the audit trigger its self.
 ';
 
 
-SET search_path = public, pg_catalog;
-
 --
 -- Name: api_users_increment_version(); Type: FUNCTION; Schema: public; Owner: -
 --
 
-CREATE FUNCTION api_users_increment_version() RETURNS trigger
+CREATE FUNCTION public.api_users_increment_version() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
       BEGIN
@@ -285,7 +282,7 @@ CREATE FUNCTION api_users_increment_version() RETURNS trigger
 -- Name: current_app_user_id(); Type: FUNCTION; Schema: public; Owner: -
 --
 
-CREATE FUNCTION current_app_user_id() RETURNS uuid
+CREATE FUNCTION public.current_app_user_id() RETURNS uuid
     LANGUAGE plpgsql
     AS $$
       BEGIN
@@ -298,7 +295,7 @@ CREATE FUNCTION current_app_user_id() RETURNS uuid
 -- Name: current_app_username(); Type: FUNCTION; Schema: public; Owner: -
 --
 
-CREATE FUNCTION current_app_username() RETURNS character varying
+CREATE FUNCTION public.current_app_username() RETURNS character varying
     LANGUAGE plpgsql
     AS $$
       BEGIN
@@ -311,7 +308,7 @@ CREATE FUNCTION current_app_username() RETURNS character varying
 -- Name: distributed_rate_limit_counters_increment_version(); Type: FUNCTION; Schema: public; Owner: -
 --
 
-CREATE FUNCTION distributed_rate_limit_counters_increment_version() RETURNS trigger
+CREATE FUNCTION public.distributed_rate_limit_counters_increment_version() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
       BEGIN
@@ -325,7 +322,7 @@ CREATE FUNCTION distributed_rate_limit_counters_increment_version() RETURNS trig
 -- Name: jsonb_minus(jsonb, text[]); Type: FUNCTION; Schema: public; Owner: -
 --
 
-CREATE FUNCTION jsonb_minus("left" jsonb, keys text[]) RETURNS jsonb
+CREATE FUNCTION public.jsonb_minus("left" jsonb, keys text[]) RETURNS jsonb
     LANGUAGE sql IMMUTABLE STRICT
     AS $$
   SELECT
@@ -348,14 +345,14 @@ $$;
 -- Name: FUNCTION jsonb_minus("left" jsonb, keys text[]); Type: COMMENT; Schema: public; Owner: -
 --
 
-COMMENT ON FUNCTION jsonb_minus("left" jsonb, keys text[]) IS 'Delete specificed keys';
+COMMENT ON FUNCTION public.jsonb_minus("left" jsonb, keys text[]) IS 'Delete specificed keys';
 
 
 --
 -- Name: jsonb_minus(jsonb, jsonb); Type: FUNCTION; Schema: public; Owner: -
 --
 
-CREATE FUNCTION jsonb_minus("left" jsonb, "right" jsonb) RETURNS jsonb
+CREATE FUNCTION public.jsonb_minus("left" jsonb, "right" jsonb) RETURNS jsonb
     LANGUAGE sql IMMUTABLE STRICT
     AS $$
   SELECT
@@ -382,14 +379,14 @@ $$;
 -- Name: FUNCTION jsonb_minus("left" jsonb, "right" jsonb); Type: COMMENT; Schema: public; Owner: -
 --
 
-COMMENT ON FUNCTION jsonb_minus("left" jsonb, "right" jsonb) IS 'Delete matching pairs in the right argument from the left argument';
+COMMENT ON FUNCTION public.jsonb_minus("left" jsonb, "right" jsonb) IS 'Delete matching pairs in the right argument from the left argument';
 
 
 --
 -- Name: next_api_backend_sort_order(); Type: FUNCTION; Schema: public; Owner: -
 --
 
-CREATE FUNCTION next_api_backend_sort_order() RETURNS integer
+CREATE FUNCTION public.next_api_backend_sort_order() RETURNS integer
     LANGUAGE plpgsql
     AS $$
       BEGIN
@@ -402,7 +399,7 @@ CREATE FUNCTION next_api_backend_sort_order() RETURNS integer
 -- Name: stamp_record(); Type: FUNCTION; Schema: public; Owner: -
 --
 
-CREATE FUNCTION stamp_record() RETURNS trigger
+CREATE FUNCTION public.stamp_record() RETURNS trigger
     LANGUAGE plpgsql
     AS $_$
       DECLARE
@@ -411,7 +408,7 @@ CREATE FUNCTION stamp_record() RETURNS trigger
       BEGIN
         -- Only perform stamping ON INSERT/DELETE or if the UPDATE actually
         -- changed any fields.
-        IF TG_OP != 'UPDATE' OR row(NEW.*) IS DISTINCT FROM row(OLD.*) THEN
+        IF (COALESCE(current_setting('api_umbrella.disable_stamping', true), 'off') != 'on' AND (TG_OP != 'UPDATE' OR row(NEW.*) IS DISTINCT FROM row(OLD.*))) THEN
           -- Update the updated_at timestamp on associated tables (which in
           -- turn will trigger this stamp_record() on that table if the
           -- timestamp changes to take care of any userstamping).
@@ -489,7 +486,7 @@ CREATE FUNCTION stamp_record() RETURNS trigger
 -- Name: update_timestamp(); Type: FUNCTION; Schema: public; Owner: -
 --
 
-CREATE FUNCTION update_timestamp() RETURNS trigger
+CREATE FUNCTION public.update_timestamp() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
       BEGIN
@@ -506,26 +503,19 @@ CREATE FUNCTION update_timestamp() RETURNS trigger
 -- Name: -; Type: OPERATOR; Schema: public; Owner: -
 --
 
-CREATE OPERATOR - (
-    PROCEDURE = jsonb_minus,
+CREATE OPERATOR public.- (
+    PROCEDURE = public.jsonb_minus,
     LEFTARG = jsonb,
     RIGHTARG = text[]
 );
 
 
 --
--- Name: OPERATOR - (jsonb, text[]); Type: COMMENT; Schema: public; Owner: -
---
-
-COMMENT ON OPERATOR - (jsonb, text[]) IS 'Delete specified keys';
-
-
---
 -- Name: -; Type: OPERATOR; Schema: public; Owner: -
 --
 
-CREATE OPERATOR - (
-    PROCEDURE = jsonb_minus,
+CREATE OPERATOR public.- (
+    PROCEDURE = public.jsonb_minus,
     LEFTARG = jsonb,
     RIGHTARG = jsonb
 );
@@ -535,10 +525,8 @@ CREATE OPERATOR - (
 -- Name: OPERATOR - (jsonb, jsonb); Type: COMMENT; Schema: public; Owner: -
 --
 
-COMMENT ON OPERATOR - (jsonb, jsonb) IS 'Delete matching pairs in the right argument from the left argument';
+COMMENT ON OPERATOR public.- (jsonb, jsonb) IS 'Delete matching pairs in the right argument from the left argument';
 
-
-SET search_path = audit, pg_catalog;
 
 SET default_tablespace = '';
 
@@ -548,7 +536,7 @@ SET default_with_oids = false;
 -- Name: log; Type: TABLE; Schema: audit; Owner: -
 --
 
-CREATE TABLE log (
+CREATE TABLE audit.log (
     id bigint NOT NULL,
     schema_name text NOT NULL,
     table_name text NOT NULL,
@@ -576,147 +564,147 @@ CREATE TABLE log (
 -- Name: TABLE log; Type: COMMENT; Schema: audit; Owner: -
 --
 
-COMMENT ON TABLE log IS 'History of auditable actions on audited tables';
+COMMENT ON TABLE audit.log IS 'History of auditable actions on audited tables';
 
 
 --
 -- Name: COLUMN log.id; Type: COMMENT; Schema: audit; Owner: -
 --
 
-COMMENT ON COLUMN log.id IS 'Unique identifier for each auditable event';
+COMMENT ON COLUMN audit.log.id IS 'Unique identifier for each auditable event';
 
 
 --
 -- Name: COLUMN log.schema_name; Type: COMMENT; Schema: audit; Owner: -
 --
 
-COMMENT ON COLUMN log.schema_name IS 'Database schema audited table for this event is in';
+COMMENT ON COLUMN audit.log.schema_name IS 'Database schema audited table for this event is in';
 
 
 --
 -- Name: COLUMN log.table_name; Type: COMMENT; Schema: audit; Owner: -
 --
 
-COMMENT ON COLUMN log.table_name IS 'Non-schema-qualified table name of table event occured in';
+COMMENT ON COLUMN audit.log.table_name IS 'Non-schema-qualified table name of table event occured in';
 
 
 --
 -- Name: COLUMN log.relid; Type: COMMENT; Schema: audit; Owner: -
 --
 
-COMMENT ON COLUMN log.relid IS 'Table OID. Changes with drop/create. Get with ''tablename''::REGCLASS';
+COMMENT ON COLUMN audit.log.relid IS 'Table OID. Changes with drop/create. Get with ''tablename''::REGCLASS';
 
 
 --
 -- Name: COLUMN log.session_user_name; Type: COMMENT; Schema: audit; Owner: -
 --
 
-COMMENT ON COLUMN log.session_user_name IS 'Login / session user whose statement caused the audited event';
+COMMENT ON COLUMN audit.log.session_user_name IS 'Login / session user whose statement caused the audited event';
 
 
 --
 -- Name: COLUMN log.current_user_name; Type: COMMENT; Schema: audit; Owner: -
 --
 
-COMMENT ON COLUMN log.current_user_name IS 'Effective user that cased audited event (if authorization level changed)';
+COMMENT ON COLUMN audit.log.current_user_name IS 'Effective user that cased audited event (if authorization level changed)';
 
 
 --
 -- Name: COLUMN log.action_tstamp_tx; Type: COMMENT; Schema: audit; Owner: -
 --
 
-COMMENT ON COLUMN log.action_tstamp_tx IS 'Transaction start timestamp for tx in which audited event occurred';
+COMMENT ON COLUMN audit.log.action_tstamp_tx IS 'Transaction start timestamp for tx in which audited event occurred';
 
 
 --
 -- Name: COLUMN log.action_tstamp_stm; Type: COMMENT; Schema: audit; Owner: -
 --
 
-COMMENT ON COLUMN log.action_tstamp_stm IS 'Statement start timestamp for tx in which audited event occurred';
+COMMENT ON COLUMN audit.log.action_tstamp_stm IS 'Statement start timestamp for tx in which audited event occurred';
 
 
 --
 -- Name: COLUMN log.action_tstamp_clk; Type: COMMENT; Schema: audit; Owner: -
 --
 
-COMMENT ON COLUMN log.action_tstamp_clk IS 'Wall clock time at which audited event''s trigger call occurred';
+COMMENT ON COLUMN audit.log.action_tstamp_clk IS 'Wall clock time at which audited event''s trigger call occurred';
 
 
 --
 -- Name: COLUMN log.transaction_id; Type: COMMENT; Schema: audit; Owner: -
 --
 
-COMMENT ON COLUMN log.transaction_id IS 'Identifier of transaction that made the change. Unique when paired with action_tstamp_tx.';
+COMMENT ON COLUMN audit.log.transaction_id IS 'Identifier of transaction that made the change. Unique when paired with action_tstamp_tx.';
 
 
 --
 -- Name: COLUMN log.application_name; Type: COMMENT; Schema: audit; Owner: -
 --
 
-COMMENT ON COLUMN log.application_name IS 'Client-set session application name when this audit event occurred.';
+COMMENT ON COLUMN audit.log.application_name IS 'Client-set session application name when this audit event occurred.';
 
 
 --
 -- Name: COLUMN log.application_user_name; Type: COMMENT; Schema: audit; Owner: -
 --
 
-COMMENT ON COLUMN log.application_user_name IS 'Client-set session application user when this audit event occurred.';
+COMMENT ON COLUMN audit.log.application_user_name IS 'Client-set session application user when this audit event occurred.';
 
 
 --
 -- Name: COLUMN log.client_addr; Type: COMMENT; Schema: audit; Owner: -
 --
 
-COMMENT ON COLUMN log.client_addr IS 'IP address of client that issued query. Null for unix domain socket.';
+COMMENT ON COLUMN audit.log.client_addr IS 'IP address of client that issued query. Null for unix domain socket.';
 
 
 --
 -- Name: COLUMN log.client_port; Type: COMMENT; Schema: audit; Owner: -
 --
 
-COMMENT ON COLUMN log.client_port IS 'Port address of client that issued query. Undefined for unix socket.';
+COMMENT ON COLUMN audit.log.client_port IS 'Port address of client that issued query. Undefined for unix socket.';
 
 
 --
 -- Name: COLUMN log.client_query; Type: COMMENT; Schema: audit; Owner: -
 --
 
-COMMENT ON COLUMN log.client_query IS 'Top-level query that caused this auditable event. May be more than one.';
+COMMENT ON COLUMN audit.log.client_query IS 'Top-level query that caused this auditable event. May be more than one.';
 
 
 --
 -- Name: COLUMN log.action; Type: COMMENT; Schema: audit; Owner: -
 --
 
-COMMENT ON COLUMN log.action IS 'Action type; I = insert, D = delete, U = update, T = truncate';
+COMMENT ON COLUMN audit.log.action IS 'Action type; I = insert, D = delete, U = update, T = truncate';
 
 
 --
 -- Name: COLUMN log.row_data; Type: COMMENT; Schema: audit; Owner: -
 --
 
-COMMENT ON COLUMN log.row_data IS 'Record value. Null for statement-level trigger. For INSERT this is null. For DELETE and UPDATE it is the old tuple.';
+COMMENT ON COLUMN audit.log.row_data IS 'Record value. Null for statement-level trigger. For INSERT this is null. For DELETE and UPDATE it is the old tuple.';
 
 
 --
 -- Name: COLUMN log.changed_fields; Type: COMMENT; Schema: audit; Owner: -
 --
 
-COMMENT ON COLUMN log.changed_fields IS 'New values of fields for INSERT or changed by UPDATE. Null for DELETE';
+COMMENT ON COLUMN audit.log.changed_fields IS 'New values of fields for INSERT or changed by UPDATE. Null for DELETE';
 
 
 --
 -- Name: COLUMN log.statement_only; Type: COMMENT; Schema: audit; Owner: -
 --
 
-COMMENT ON COLUMN log.statement_only IS '''t'' if audit event is from an FOR EACH STATEMENT trigger, ''f'' for FOR EACH ROW';
+COMMENT ON COLUMN audit.log.statement_only IS '''t'' if audit event is from an FOR EACH STATEMENT trigger, ''f'' for FOR EACH ROW';
 
 
 --
 -- Name: log_id_seq; Type: SEQUENCE; Schema: audit; Owner: -
 --
 
-CREATE SEQUENCE log_id_seq
+CREATE SEQUENCE audit.log_id_seq
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
@@ -728,17 +716,15 @@ CREATE SEQUENCE log_id_seq
 -- Name: log_id_seq; Type: SEQUENCE OWNED BY; Schema: audit; Owner: -
 --
 
-ALTER SEQUENCE log_id_seq OWNED BY log.id;
+ALTER SEQUENCE audit.log_id_seq OWNED BY audit.log.id;
 
-
-SET search_path = public, pg_catalog;
 
 --
 -- Name: admin_groups; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE admin_groups (
-    id uuid DEFAULT gen_random_uuid() NOT NULL,
+CREATE TABLE public.admin_groups (
+    id uuid DEFAULT public.gen_random_uuid() NOT NULL,
     name character varying(255) NOT NULL,
     created_at timestamp with time zone NOT NULL,
     created_by_id uuid NOT NULL,
@@ -753,7 +739,7 @@ CREATE TABLE admin_groups (
 -- Name: admin_groups_admin_permissions; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE admin_groups_admin_permissions (
+CREATE TABLE public.admin_groups_admin_permissions (
     admin_group_id uuid NOT NULL,
     admin_permission_id character varying(50) NOT NULL,
     created_at timestamp with time zone NOT NULL,
@@ -769,7 +755,7 @@ CREATE TABLE admin_groups_admin_permissions (
 -- Name: admin_groups_admins; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE admin_groups_admins (
+CREATE TABLE public.admin_groups_admins (
     admin_group_id uuid NOT NULL,
     admin_id uuid NOT NULL,
     created_at timestamp with time zone NOT NULL,
@@ -785,7 +771,7 @@ CREATE TABLE admin_groups_admins (
 -- Name: admin_groups_api_scopes; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE admin_groups_api_scopes (
+CREATE TABLE public.admin_groups_api_scopes (
     admin_group_id uuid NOT NULL,
     api_scope_id uuid NOT NULL,
     created_at timestamp with time zone NOT NULL,
@@ -801,7 +787,7 @@ CREATE TABLE admin_groups_api_scopes (
 -- Name: admin_permissions; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE admin_permissions (
+CREATE TABLE public.admin_permissions (
     id character varying(50) NOT NULL,
     name character varying(255) NOT NULL,
     display_order smallint NOT NULL,
@@ -818,8 +804,8 @@ CREATE TABLE admin_permissions (
 -- Name: admins; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE admins (
-    id uuid DEFAULT gen_random_uuid() NOT NULL,
+CREATE TABLE public.admins (
+    id uuid DEFAULT public.gen_random_uuid() NOT NULL,
     username character varying(255) NOT NULL,
     email character varying(255),
     name character varying(255),
@@ -855,7 +841,7 @@ CREATE TABLE admins (
 -- Name: analytics_cities; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE analytics_cities (
+CREATE TABLE public.analytics_cities (
     id integer NOT NULL,
     country character varying(2) NOT NULL,
     region character varying(2),
@@ -870,7 +856,8 @@ CREATE TABLE analytics_cities (
 -- Name: analytics_cities_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
-CREATE SEQUENCE analytics_cities_id_seq
+CREATE SEQUENCE public.analytics_cities_id_seq
+    AS integer
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
@@ -882,15 +869,15 @@ CREATE SEQUENCE analytics_cities_id_seq
 -- Name: analytics_cities_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
-ALTER SEQUENCE analytics_cities_id_seq OWNED BY analytics_cities.id;
+ALTER SEQUENCE public.analytics_cities_id_seq OWNED BY public.analytics_cities.id;
 
 
 --
 -- Name: api_backend_http_headers; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE api_backend_http_headers (
-    id uuid DEFAULT gen_random_uuid() NOT NULL,
+CREATE TABLE public.api_backend_http_headers (
+    id uuid DEFAULT public.gen_random_uuid() NOT NULL,
     api_backend_settings_id uuid NOT NULL,
     header_type character varying(17) NOT NULL,
     sort_order integer NOT NULL,
@@ -910,8 +897,8 @@ CREATE TABLE api_backend_http_headers (
 -- Name: api_backend_rewrites; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE api_backend_rewrites (
-    id uuid DEFAULT gen_random_uuid() NOT NULL,
+CREATE TABLE public.api_backend_rewrites (
+    id uuid DEFAULT public.gen_random_uuid() NOT NULL,
     api_backend_id uuid NOT NULL,
     matcher_type character varying(5) NOT NULL,
     http_method character varying(7) NOT NULL,
@@ -933,8 +920,8 @@ CREATE TABLE api_backend_rewrites (
 -- Name: api_backend_servers; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE api_backend_servers (
-    id uuid DEFAULT gen_random_uuid() NOT NULL,
+CREATE TABLE public.api_backend_servers (
+    id uuid DEFAULT public.gen_random_uuid() NOT NULL,
     api_backend_id uuid NOT NULL,
     host character varying(255) NOT NULL,
     port integer NOT NULL,
@@ -951,8 +938,8 @@ CREATE TABLE api_backend_servers (
 -- Name: api_backend_settings; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE api_backend_settings (
-    id uuid DEFAULT gen_random_uuid() NOT NULL,
+CREATE TABLE public.api_backend_settings (
+    id uuid DEFAULT public.gen_random_uuid() NOT NULL,
     api_backend_id uuid,
     api_backend_sub_url_settings_id uuid,
     append_query_string character varying(255),
@@ -993,7 +980,7 @@ CREATE TABLE api_backend_settings (
 -- Name: api_backend_settings_required_roles; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE api_backend_settings_required_roles (
+CREATE TABLE public.api_backend_settings_required_roles (
     api_backend_settings_id uuid NOT NULL,
     api_role_id character varying(255) NOT NULL,
     created_at timestamp with time zone NOT NULL,
@@ -1009,8 +996,8 @@ CREATE TABLE api_backend_settings_required_roles (
 -- Name: api_backend_sub_url_settings; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE api_backend_sub_url_settings (
-    id uuid DEFAULT gen_random_uuid() NOT NULL,
+CREATE TABLE public.api_backend_sub_url_settings (
+    id uuid DEFAULT public.gen_random_uuid() NOT NULL,
     api_backend_id uuid NOT NULL,
     http_method character varying(7) NOT NULL,
     regex character varying(255) NOT NULL,
@@ -1029,8 +1016,8 @@ CREATE TABLE api_backend_sub_url_settings (
 -- Name: api_backend_url_matches; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE api_backend_url_matches (
-    id uuid DEFAULT gen_random_uuid() NOT NULL,
+CREATE TABLE public.api_backend_url_matches (
+    id uuid DEFAULT public.gen_random_uuid() NOT NULL,
     api_backend_id uuid NOT NULL,
     frontend_prefix character varying(255) NOT NULL,
     backend_prefix character varying(255) NOT NULL,
@@ -1048,10 +1035,10 @@ CREATE TABLE api_backend_url_matches (
 -- Name: api_backends; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE api_backends (
-    id uuid DEFAULT gen_random_uuid() NOT NULL,
+CREATE TABLE public.api_backends (
+    id uuid DEFAULT public.gen_random_uuid() NOT NULL,
     name character varying(255) NOT NULL,
-    sort_order integer DEFAULT next_api_backend_sort_order() NOT NULL,
+    sort_order integer DEFAULT public.next_api_backend_sort_order() NOT NULL,
     backend_protocol character varying(5) NOT NULL,
     frontend_host character varying(255) NOT NULL,
     backend_host character varying(255),
@@ -1072,7 +1059,7 @@ CREATE TABLE api_backends (
 -- Name: api_roles; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE api_roles (
+CREATE TABLE public.api_roles (
     id character varying(255) NOT NULL,
     created_at timestamp with time zone NOT NULL,
     created_by_id uuid NOT NULL,
@@ -1087,8 +1074,8 @@ CREATE TABLE api_roles (
 -- Name: api_scopes; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE api_scopes (
-    id uuid DEFAULT gen_random_uuid() NOT NULL,
+CREATE TABLE public.api_scopes (
+    id uuid DEFAULT public.gen_random_uuid() NOT NULL,
     name character varying(255) NOT NULL,
     host character varying(255) NOT NULL,
     path_prefix character varying(255) NOT NULL,
@@ -1105,8 +1092,8 @@ CREATE TABLE api_scopes (
 -- Name: api_user_settings; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE api_user_settings (
-    id uuid DEFAULT gen_random_uuid() NOT NULL,
+CREATE TABLE public.api_user_settings (
+    id uuid DEFAULT public.gen_random_uuid() NOT NULL,
     api_user_id uuid NOT NULL,
     rate_limit_mode character varying(9),
     allowed_ips inet[],
@@ -1125,8 +1112,8 @@ CREATE TABLE api_user_settings (
 -- Name: api_users; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE api_users (
-    id uuid DEFAULT gen_random_uuid() NOT NULL,
+CREATE TABLE public.api_users (
+    id uuid DEFAULT public.gen_random_uuid() NOT NULL,
     version bigint NOT NULL,
     api_key_hash character varying(64) NOT NULL,
     api_key_encrypted character varying(76) NOT NULL,
@@ -1160,7 +1147,7 @@ CREATE TABLE api_users (
 -- Name: api_users_roles; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE api_users_roles (
+CREATE TABLE public.api_users_roles (
     api_user_id uuid NOT NULL,
     api_role_id character varying(255) NOT NULL,
     created_at timestamp with time zone NOT NULL,
@@ -1176,8 +1163,8 @@ CREATE TABLE api_users_roles (
 -- Name: rate_limits; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE rate_limits (
-    id uuid DEFAULT gen_random_uuid() NOT NULL,
+CREATE TABLE public.rate_limits (
+    id uuid DEFAULT public.gen_random_uuid() NOT NULL,
     api_backend_settings_id uuid,
     api_user_settings_id uuid,
     duration bigint NOT NULL,
@@ -1201,7 +1188,7 @@ CREATE TABLE rate_limits (
 -- Name: api_users_flattened; Type: VIEW; Schema: public; Owner: -
 --
 
-CREATE VIEW api_users_flattened AS
+CREATE VIEW public.api_users_flattened AS
  SELECT u.id,
     u.version,
     u.api_key_hash,
@@ -1220,20 +1207,20 @@ CREATE VIEW api_users_flattened AS
                     r.limit_to,
                     r.distributed,
                     r.response_headers
-                   FROM rate_limits r
+                   FROM public.rate_limits r
                   WHERE (r.api_user_settings_id = s.id)) r2)) AS settings,
     ARRAY( SELECT ar.api_role_id
-           FROM api_users_roles ar
+           FROM public.api_users_roles ar
           WHERE (ar.api_user_id = u.id)) AS roles
-   FROM (api_users u
-     LEFT JOIN api_user_settings s ON ((u.id = s.api_user_id)));
+   FROM (public.api_users u
+     LEFT JOIN public.api_user_settings s ON ((u.id = s.api_user_id)));
 
 
 --
 -- Name: api_users_version_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
-CREATE SEQUENCE api_users_version_seq
+CREATE SEQUENCE public.api_users_version_seq
     START WITH -9223372036854775807
     INCREMENT BY 1
     MINVALUE -9223372036854775807
@@ -1245,7 +1232,7 @@ CREATE SEQUENCE api_users_version_seq
 -- Name: cache; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE cache (
+CREATE TABLE public.cache (
     id character varying(255) NOT NULL,
     data bytea NOT NULL,
     expires_at timestamp with time zone,
@@ -1258,7 +1245,7 @@ CREATE TABLE cache (
 -- Name: distributed_rate_limit_counters; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE distributed_rate_limit_counters (
+CREATE TABLE public.distributed_rate_limit_counters (
     id character varying(500) NOT NULL,
     version bigint NOT NULL,
     value bigint NOT NULL,
@@ -1270,7 +1257,7 @@ CREATE TABLE distributed_rate_limit_counters (
 -- Name: distributed_rate_limit_counters_version_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
-CREATE SEQUENCE distributed_rate_limit_counters_version_seq
+CREATE SEQUENCE public.distributed_rate_limit_counters_version_seq
     START WITH -9223372036854775807
     INCREMENT BY 1
     MINVALUE -9223372036854775807
@@ -1283,7 +1270,7 @@ CREATE SEQUENCE distributed_rate_limit_counters_version_seq
 -- Name: lapis_migrations; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE lapis_migrations (
+CREATE TABLE public.lapis_migrations (
     name character varying(255) NOT NULL
 );
 
@@ -1292,7 +1279,7 @@ CREATE TABLE lapis_migrations (
 -- Name: published_config; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE published_config (
+CREATE TABLE public.published_config (
     id bigint NOT NULL,
     config jsonb NOT NULL,
     created_at timestamp with time zone NOT NULL,
@@ -1308,7 +1295,7 @@ CREATE TABLE published_config (
 -- Name: published_config_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
-CREATE SEQUENCE published_config_id_seq
+CREATE SEQUENCE public.published_config_id_seq
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
@@ -1320,14 +1307,14 @@ CREATE SEQUENCE published_config_id_seq
 -- Name: published_config_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
-ALTER SEQUENCE published_config_id_seq OWNED BY published_config.id;
+ALTER SEQUENCE public.published_config_id_seq OWNED BY public.published_config.id;
 
 
 --
 -- Name: sessions; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE sessions (
+CREATE TABLE public.sessions (
     id_hash character varying(64) NOT NULL,
     data_encrypted bytea NOT NULL,
     data_encrypted_iv character varying(12) NOT NULL,
@@ -1341,8 +1328,8 @@ CREATE TABLE sessions (
 -- Name: website_backends; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE website_backends (
-    id uuid DEFAULT gen_random_uuid() NOT NULL,
+CREATE TABLE public.website_backends (
+    id uuid DEFAULT public.gen_random_uuid() NOT NULL,
     frontend_host character varying(255) NOT NULL,
     backend_protocol character varying(5) NOT NULL,
     server_host character varying(255) NOT NULL,
@@ -1357,48 +1344,40 @@ CREATE TABLE website_backends (
 );
 
 
-SET search_path = audit, pg_catalog;
-
 --
 -- Name: log id; Type: DEFAULT; Schema: audit; Owner: -
 --
 
-ALTER TABLE ONLY log ALTER COLUMN id SET DEFAULT nextval('log_id_seq'::regclass);
+ALTER TABLE ONLY audit.log ALTER COLUMN id SET DEFAULT nextval('audit.log_id_seq'::regclass);
 
-
-SET search_path = public, pg_catalog;
 
 --
 -- Name: analytics_cities id; Type: DEFAULT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY analytics_cities ALTER COLUMN id SET DEFAULT nextval('analytics_cities_id_seq'::regclass);
+ALTER TABLE ONLY public.analytics_cities ALTER COLUMN id SET DEFAULT nextval('public.analytics_cities_id_seq'::regclass);
 
 
 --
 -- Name: published_config id; Type: DEFAULT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY published_config ALTER COLUMN id SET DEFAULT nextval('published_config_id_seq'::regclass);
+ALTER TABLE ONLY public.published_config ALTER COLUMN id SET DEFAULT nextval('public.published_config_id_seq'::regclass);
 
-
-SET search_path = audit, pg_catalog;
 
 --
 -- Name: log log_pkey; Type: CONSTRAINT; Schema: audit; Owner: -
 --
 
-ALTER TABLE ONLY log
+ALTER TABLE ONLY audit.log
     ADD CONSTRAINT log_pkey PRIMARY KEY (id);
 
-
-SET search_path = public, pg_catalog;
 
 --
 -- Name: admin_groups_admin_permissions admin_groups_admin_permissions_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY admin_groups_admin_permissions
+ALTER TABLE ONLY public.admin_groups_admin_permissions
     ADD CONSTRAINT admin_groups_admin_permissions_pkey PRIMARY KEY (admin_group_id, admin_permission_id);
 
 
@@ -1406,7 +1385,7 @@ ALTER TABLE ONLY admin_groups_admin_permissions
 -- Name: admin_groups_admins admin_groups_admins_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY admin_groups_admins
+ALTER TABLE ONLY public.admin_groups_admins
     ADD CONSTRAINT admin_groups_admins_pkey PRIMARY KEY (admin_group_id, admin_id);
 
 
@@ -1414,7 +1393,7 @@ ALTER TABLE ONLY admin_groups_admins
 -- Name: admin_groups_api_scopes admin_groups_api_scopes_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY admin_groups_api_scopes
+ALTER TABLE ONLY public.admin_groups_api_scopes
     ADD CONSTRAINT admin_groups_api_scopes_pkey PRIMARY KEY (admin_group_id, api_scope_id);
 
 
@@ -1422,7 +1401,7 @@ ALTER TABLE ONLY admin_groups_api_scopes
 -- Name: admin_groups admin_groups_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY admin_groups
+ALTER TABLE ONLY public.admin_groups
     ADD CONSTRAINT admin_groups_pkey PRIMARY KEY (id);
 
 
@@ -1430,7 +1409,7 @@ ALTER TABLE ONLY admin_groups
 -- Name: admin_permissions admin_permissions_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY admin_permissions
+ALTER TABLE ONLY public.admin_permissions
     ADD CONSTRAINT admin_permissions_pkey PRIMARY KEY (id);
 
 
@@ -1438,7 +1417,7 @@ ALTER TABLE ONLY admin_permissions
 -- Name: admins admins_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY admins
+ALTER TABLE ONLY public.admins
     ADD CONSTRAINT admins_pkey PRIMARY KEY (id);
 
 
@@ -1446,7 +1425,7 @@ ALTER TABLE ONLY admins
 -- Name: analytics_cities analytics_cities_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY analytics_cities
+ALTER TABLE ONLY public.analytics_cities
     ADD CONSTRAINT analytics_cities_pkey PRIMARY KEY (id);
 
 
@@ -1454,7 +1433,7 @@ ALTER TABLE ONLY analytics_cities
 -- Name: api_backend_http_headers api_backend_http_headers_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY api_backend_http_headers
+ALTER TABLE ONLY public.api_backend_http_headers
     ADD CONSTRAINT api_backend_http_headers_pkey PRIMARY KEY (id);
 
 
@@ -1462,7 +1441,7 @@ ALTER TABLE ONLY api_backend_http_headers
 -- Name: api_backend_rewrites api_backend_rewrites_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY api_backend_rewrites
+ALTER TABLE ONLY public.api_backend_rewrites
     ADD CONSTRAINT api_backend_rewrites_pkey PRIMARY KEY (id);
 
 
@@ -1470,7 +1449,7 @@ ALTER TABLE ONLY api_backend_rewrites
 -- Name: api_backend_servers api_backend_servers_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY api_backend_servers
+ALTER TABLE ONLY public.api_backend_servers
     ADD CONSTRAINT api_backend_servers_pkey PRIMARY KEY (id);
 
 
@@ -1478,7 +1457,7 @@ ALTER TABLE ONLY api_backend_servers
 -- Name: api_backend_settings api_backend_settings_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY api_backend_settings
+ALTER TABLE ONLY public.api_backend_settings
     ADD CONSTRAINT api_backend_settings_pkey PRIMARY KEY (id);
 
 
@@ -1486,7 +1465,7 @@ ALTER TABLE ONLY api_backend_settings
 -- Name: api_backend_settings_required_roles api_backend_settings_required_roles_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY api_backend_settings_required_roles
+ALTER TABLE ONLY public.api_backend_settings_required_roles
     ADD CONSTRAINT api_backend_settings_required_roles_pkey PRIMARY KEY (api_backend_settings_id, api_role_id);
 
 
@@ -1494,7 +1473,7 @@ ALTER TABLE ONLY api_backend_settings_required_roles
 -- Name: api_backend_sub_url_settings api_backend_sub_url_settings_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY api_backend_sub_url_settings
+ALTER TABLE ONLY public.api_backend_sub_url_settings
     ADD CONSTRAINT api_backend_sub_url_settings_pkey PRIMARY KEY (id);
 
 
@@ -1502,7 +1481,7 @@ ALTER TABLE ONLY api_backend_sub_url_settings
 -- Name: api_backend_url_matches api_backend_url_matches_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY api_backend_url_matches
+ALTER TABLE ONLY public.api_backend_url_matches
     ADD CONSTRAINT api_backend_url_matches_pkey PRIMARY KEY (id);
 
 
@@ -1510,7 +1489,7 @@ ALTER TABLE ONLY api_backend_url_matches
 -- Name: api_backends api_backends_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY api_backends
+ALTER TABLE ONLY public.api_backends
     ADD CONSTRAINT api_backends_pkey PRIMARY KEY (id);
 
 
@@ -1518,7 +1497,7 @@ ALTER TABLE ONLY api_backends
 -- Name: api_roles api_roles_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY api_roles
+ALTER TABLE ONLY public.api_roles
     ADD CONSTRAINT api_roles_pkey PRIMARY KEY (id);
 
 
@@ -1526,7 +1505,7 @@ ALTER TABLE ONLY api_roles
 -- Name: api_scopes api_scopes_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY api_scopes
+ALTER TABLE ONLY public.api_scopes
     ADD CONSTRAINT api_scopes_pkey PRIMARY KEY (id);
 
 
@@ -1534,7 +1513,7 @@ ALTER TABLE ONLY api_scopes
 -- Name: api_user_settings api_user_settings_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY api_user_settings
+ALTER TABLE ONLY public.api_user_settings
     ADD CONSTRAINT api_user_settings_pkey PRIMARY KEY (id);
 
 
@@ -1542,7 +1521,7 @@ ALTER TABLE ONLY api_user_settings
 -- Name: api_users api_users_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY api_users
+ALTER TABLE ONLY public.api_users
     ADD CONSTRAINT api_users_pkey PRIMARY KEY (id);
 
 
@@ -1550,7 +1529,7 @@ ALTER TABLE ONLY api_users
 -- Name: api_users_roles api_users_roles_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY api_users_roles
+ALTER TABLE ONLY public.api_users_roles
     ADD CONSTRAINT api_users_roles_pkey PRIMARY KEY (api_user_id, api_role_id);
 
 
@@ -1558,7 +1537,7 @@ ALTER TABLE ONLY api_users_roles
 -- Name: cache cache_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY cache
+ALTER TABLE ONLY public.cache
     ADD CONSTRAINT cache_pkey PRIMARY KEY (id);
 
 
@@ -1566,7 +1545,7 @@ ALTER TABLE ONLY cache
 -- Name: distributed_rate_limit_counters distributed_rate_limit_counters_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY distributed_rate_limit_counters
+ALTER TABLE ONLY public.distributed_rate_limit_counters
     ADD CONSTRAINT distributed_rate_limit_counters_pkey PRIMARY KEY (id);
 
 
@@ -1574,7 +1553,7 @@ ALTER TABLE ONLY distributed_rate_limit_counters
 -- Name: lapis_migrations lapis_migrations_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY lapis_migrations
+ALTER TABLE ONLY public.lapis_migrations
     ADD CONSTRAINT lapis_migrations_pkey PRIMARY KEY (name);
 
 
@@ -1582,7 +1561,7 @@ ALTER TABLE ONLY lapis_migrations
 -- Name: published_config published_config_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY published_config
+ALTER TABLE ONLY public.published_config
     ADD CONSTRAINT published_config_pkey PRIMARY KEY (id);
 
 
@@ -1590,7 +1569,7 @@ ALTER TABLE ONLY published_config
 -- Name: rate_limits rate_limits_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY rate_limits
+ALTER TABLE ONLY public.rate_limits
     ADD CONSTRAINT rate_limits_pkey PRIMARY KEY (id);
 
 
@@ -1598,7 +1577,7 @@ ALTER TABLE ONLY rate_limits
 -- Name: sessions sessions_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY sessions
+ALTER TABLE ONLY public.sessions
     ADD CONSTRAINT sessions_pkey PRIMARY KEY (id_hash);
 
 
@@ -1606,1152 +1585,1148 @@ ALTER TABLE ONLY sessions
 -- Name: website_backends website_backends_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY website_backends
+ALTER TABLE ONLY public.website_backends
     ADD CONSTRAINT website_backends_pkey PRIMARY KEY (id);
 
-
-SET search_path = audit, pg_catalog;
 
 --
 -- Name: log_action_idx; Type: INDEX; Schema: audit; Owner: -
 --
 
-CREATE INDEX log_action_idx ON log USING btree (action);
+CREATE INDEX log_action_idx ON audit.log USING btree (action);
 
 
 --
 -- Name: log_action_tstamp_tx_stm_idx; Type: INDEX; Schema: audit; Owner: -
 --
 
-CREATE INDEX log_action_tstamp_tx_stm_idx ON log USING btree (action_tstamp_stm);
+CREATE INDEX log_action_tstamp_tx_stm_idx ON audit.log USING btree (action_tstamp_stm);
 
 
 --
 -- Name: log_application_user_name_idx; Type: INDEX; Schema: audit; Owner: -
 --
 
-CREATE INDEX log_application_user_name_idx ON log USING btree (application_user_name);
+CREATE INDEX log_application_user_name_idx ON audit.log USING btree (application_user_name);
 
 
 --
 -- Name: log_expr_idx; Type: INDEX; Schema: audit; Owner: -
 --
 
-CREATE INDEX log_expr_idx ON log USING btree (((row_data ->> 'id'::text)));
+CREATE INDEX log_expr_idx ON audit.log USING btree (((row_data ->> 'id'::text)));
 
 
 --
 -- Name: log_relid_idx; Type: INDEX; Schema: audit; Owner: -
 --
 
-CREATE INDEX log_relid_idx ON log USING btree (relid);
+CREATE INDEX log_relid_idx ON audit.log USING btree (relid);
 
 
 --
 -- Name: log_schema_name_table_name_idx; Type: INDEX; Schema: audit; Owner: -
 --
 
-CREATE INDEX log_schema_name_table_name_idx ON log USING btree (schema_name, table_name);
+CREATE INDEX log_schema_name_table_name_idx ON audit.log USING btree (schema_name, table_name);
 
-
-SET search_path = public, pg_catalog;
 
 --
 -- Name: admin_groups_name_idx; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE UNIQUE INDEX admin_groups_name_idx ON admin_groups USING btree (name);
+CREATE UNIQUE INDEX admin_groups_name_idx ON public.admin_groups USING btree (name);
 
 
 --
 -- Name: admin_permissions_display_order_idx; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX admin_permissions_display_order_idx ON admin_permissions USING btree (display_order);
+CREATE INDEX admin_permissions_display_order_idx ON public.admin_permissions USING btree (display_order);
 
 
 --
 -- Name: admins_authentication_token_hash_idx; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE UNIQUE INDEX admins_authentication_token_hash_idx ON admins USING btree (authentication_token_hash);
+CREATE UNIQUE INDEX admins_authentication_token_hash_idx ON public.admins USING btree (authentication_token_hash);
 
 
 --
 -- Name: admins_reset_password_token_hash_idx; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE UNIQUE INDEX admins_reset_password_token_hash_idx ON admins USING btree (reset_password_token_hash);
+CREATE UNIQUE INDEX admins_reset_password_token_hash_idx ON public.admins USING btree (reset_password_token_hash);
 
 
 --
 -- Name: admins_unlock_token_hash_idx; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE UNIQUE INDEX admins_unlock_token_hash_idx ON admins USING btree (unlock_token_hash);
+CREATE UNIQUE INDEX admins_unlock_token_hash_idx ON public.admins USING btree (unlock_token_hash);
 
 
 --
 -- Name: admins_username_idx; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE UNIQUE INDEX admins_username_idx ON admins USING btree (username);
+CREATE UNIQUE INDEX admins_username_idx ON public.admins USING btree (username);
 
 
 --
 -- Name: analytics_cities_country_region_city_idx; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE UNIQUE INDEX analytics_cities_country_region_city_idx ON analytics_cities USING btree (country, region, city);
+CREATE UNIQUE INDEX analytics_cities_country_region_city_idx ON public.analytics_cities USING btree (country, region, city);
 
 
 --
 -- Name: api_backend_http_headers_api_backend_settings_id_header_typ_idx; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE UNIQUE INDEX api_backend_http_headers_api_backend_settings_id_header_typ_idx ON api_backend_http_headers USING btree (api_backend_settings_id, header_type, sort_order);
+CREATE UNIQUE INDEX api_backend_http_headers_api_backend_settings_id_header_typ_idx ON public.api_backend_http_headers USING btree (api_backend_settings_id, header_type, sort_order);
 
 
 --
 -- Name: api_backend_rewrites_api_backend_id_matcher_type_http_metho_idx; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE UNIQUE INDEX api_backend_rewrites_api_backend_id_matcher_type_http_metho_idx ON api_backend_rewrites USING btree (api_backend_id, matcher_type, http_method, frontend_matcher);
+CREATE UNIQUE INDEX api_backend_rewrites_api_backend_id_matcher_type_http_metho_idx ON public.api_backend_rewrites USING btree (api_backend_id, matcher_type, http_method, frontend_matcher);
 
 
 --
 -- Name: api_backend_rewrites_api_backend_id_sort_order_idx; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE UNIQUE INDEX api_backend_rewrites_api_backend_id_sort_order_idx ON api_backend_rewrites USING btree (api_backend_id, sort_order);
+CREATE UNIQUE INDEX api_backend_rewrites_api_backend_id_sort_order_idx ON public.api_backend_rewrites USING btree (api_backend_id, sort_order);
 
 
 --
 -- Name: api_backend_servers_api_backend_id_host_port_idx; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE UNIQUE INDEX api_backend_servers_api_backend_id_host_port_idx ON api_backend_servers USING btree (api_backend_id, host, port);
+CREATE UNIQUE INDEX api_backend_servers_api_backend_id_host_port_idx ON public.api_backend_servers USING btree (api_backend_id, host, port);
 
 
 --
 -- Name: api_backend_settings_api_backend_id_idx; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE UNIQUE INDEX api_backend_settings_api_backend_id_idx ON api_backend_settings USING btree (api_backend_id);
+CREATE UNIQUE INDEX api_backend_settings_api_backend_id_idx ON public.api_backend_settings USING btree (api_backend_id);
 
 
 --
 -- Name: api_backend_settings_api_backend_sub_url_settings_id_idx; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE UNIQUE INDEX api_backend_settings_api_backend_sub_url_settings_id_idx ON api_backend_settings USING btree (api_backend_sub_url_settings_id);
+CREATE UNIQUE INDEX api_backend_settings_api_backend_sub_url_settings_id_idx ON public.api_backend_settings USING btree (api_backend_sub_url_settings_id);
 
 
 --
 -- Name: api_backend_settings_required_api_backend_settings_id_api_r_idx; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE UNIQUE INDEX api_backend_settings_required_api_backend_settings_id_api_r_idx ON api_backend_settings_required_roles USING btree (api_backend_settings_id, api_role_id);
+CREATE UNIQUE INDEX api_backend_settings_required_api_backend_settings_id_api_r_idx ON public.api_backend_settings_required_roles USING btree (api_backend_settings_id, api_role_id);
 
 
 --
 -- Name: api_backend_sub_url_settings_api_backend_id_http_method_reg_idx; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE UNIQUE INDEX api_backend_sub_url_settings_api_backend_id_http_method_reg_idx ON api_backend_sub_url_settings USING btree (api_backend_id, http_method, regex);
+CREATE UNIQUE INDEX api_backend_sub_url_settings_api_backend_id_http_method_reg_idx ON public.api_backend_sub_url_settings USING btree (api_backend_id, http_method, regex);
 
 
 --
 -- Name: api_backend_sub_url_settings_api_backend_id_sort_order_idx; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE UNIQUE INDEX api_backend_sub_url_settings_api_backend_id_sort_order_idx ON api_backend_sub_url_settings USING btree (api_backend_id, sort_order);
+CREATE UNIQUE INDEX api_backend_sub_url_settings_api_backend_id_sort_order_idx ON public.api_backend_sub_url_settings USING btree (api_backend_id, sort_order);
 
 
 --
 -- Name: api_backend_url_matches_api_backend_id_frontend_prefix_idx; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE UNIQUE INDEX api_backend_url_matches_api_backend_id_frontend_prefix_idx ON api_backend_url_matches USING btree (api_backend_id, frontend_prefix);
+CREATE UNIQUE INDEX api_backend_url_matches_api_backend_id_frontend_prefix_idx ON public.api_backend_url_matches USING btree (api_backend_id, frontend_prefix);
 
 
 --
 -- Name: api_backend_url_matches_api_backend_id_sort_order_idx; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE UNIQUE INDEX api_backend_url_matches_api_backend_id_sort_order_idx ON api_backend_url_matches USING btree (api_backend_id, sort_order);
+CREATE UNIQUE INDEX api_backend_url_matches_api_backend_id_sort_order_idx ON public.api_backend_url_matches USING btree (api_backend_id, sort_order);
 
 
 --
 -- Name: api_backends_sort_order_idx; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX api_backends_sort_order_idx ON api_backends USING btree (sort_order);
+CREATE INDEX api_backends_sort_order_idx ON public.api_backends USING btree (sort_order);
 
 
 --
 -- Name: api_scopes_host_path_prefix_idx; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE UNIQUE INDEX api_scopes_host_path_prefix_idx ON api_scopes USING btree (host, path_prefix);
+CREATE UNIQUE INDEX api_scopes_host_path_prefix_idx ON public.api_scopes USING btree (host, path_prefix);
 
 
 --
 -- Name: api_users_api_key_hash_idx; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE UNIQUE INDEX api_users_api_key_hash_idx ON api_users USING btree (api_key_hash);
+CREATE UNIQUE INDEX api_users_api_key_hash_idx ON public.api_users USING btree (api_key_hash);
 
 
 --
 -- Name: api_users_api_key_prefix_idx; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE UNIQUE INDEX api_users_api_key_prefix_idx ON api_users USING btree (api_key_prefix);
+CREATE UNIQUE INDEX api_users_api_key_prefix_idx ON public.api_users USING btree (api_key_prefix);
 
 
 --
 -- Name: api_users_roles_api_user_id_api_role_id_idx; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE UNIQUE INDEX api_users_roles_api_user_id_api_role_id_idx ON api_users_roles USING btree (api_user_id, api_role_id);
+CREATE UNIQUE INDEX api_users_roles_api_user_id_api_role_id_idx ON public.api_users_roles USING btree (api_user_id, api_role_id);
 
 
 --
 -- Name: api_users_version_idx; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE UNIQUE INDEX api_users_version_idx ON api_users USING btree (version);
+CREATE UNIQUE INDEX api_users_version_idx ON public.api_users USING btree (version);
 
 
 --
 -- Name: cache_expires_at_idx; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX cache_expires_at_idx ON cache USING btree (expires_at);
+CREATE INDEX cache_expires_at_idx ON public.cache USING btree (expires_at);
 
 
 --
 -- Name: distributed_rate_limit_counters_expires_at_idx; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX distributed_rate_limit_counters_expires_at_idx ON distributed_rate_limit_counters USING btree (expires_at);
+CREATE INDEX distributed_rate_limit_counters_expires_at_idx ON public.distributed_rate_limit_counters USING btree (expires_at);
 
 
 --
 -- Name: distributed_rate_limit_counters_version_idx; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE UNIQUE INDEX distributed_rate_limit_counters_version_idx ON distributed_rate_limit_counters USING btree (version);
+CREATE UNIQUE INDEX distributed_rate_limit_counters_version_idx ON public.distributed_rate_limit_counters USING btree (version);
 
 
 --
 -- Name: rate_limits_api_backend_settings_id_api_user_settings_id_li_idx; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE UNIQUE INDEX rate_limits_api_backend_settings_id_api_user_settings_id_li_idx ON rate_limits USING btree (api_backend_settings_id, api_user_settings_id, limit_by, duration);
+CREATE UNIQUE INDEX rate_limits_api_backend_settings_id_api_user_settings_id_li_idx ON public.rate_limits USING btree (api_backend_settings_id, api_user_settings_id, limit_by, duration);
 
 
 --
 -- Name: sessions_expires_at_idx; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX sessions_expires_at_idx ON sessions USING btree (expires_at);
+CREATE INDEX sessions_expires_at_idx ON public.sessions USING btree (expires_at);
 
 
 --
 -- Name: website_backends_frontend_host_idx; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE UNIQUE INDEX website_backends_frontend_host_idx ON website_backends USING btree (frontend_host);
+CREATE UNIQUE INDEX website_backends_frontend_host_idx ON public.website_backends USING btree (frontend_host);
 
 
 --
 -- Name: admin_groups_admin_permissions admin_groups_admin_permissions_stamp_record; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER admin_groups_admin_permissions_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON admin_groups_admin_permissions FOR EACH ROW EXECUTE PROCEDURE stamp_record('[{"table_name":"admin_groups","primary_key":"id","foreign_key":"admin_group_id"}]');
+CREATE TRIGGER admin_groups_admin_permissions_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON public.admin_groups_admin_permissions FOR EACH ROW EXECUTE PROCEDURE public.stamp_record('[{"table_name":"admin_groups","primary_key":"id","foreign_key":"admin_group_id"}]');
 
 
 --
 -- Name: admin_groups_admins admin_groups_admins_stamp_record; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER admin_groups_admins_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON admin_groups_admins FOR EACH ROW EXECUTE PROCEDURE stamp_record('[{"table_name":"admins","primary_key":"id","foreign_key":"admin_id"}]');
+CREATE TRIGGER admin_groups_admins_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON public.admin_groups_admins FOR EACH ROW EXECUTE PROCEDURE public.stamp_record('[{"table_name":"admins","primary_key":"id","foreign_key":"admin_id"}]');
 
 
 --
 -- Name: admin_groups_api_scopes admin_groups_api_scopes_stamp_record; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER admin_groups_api_scopes_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON admin_groups_api_scopes FOR EACH ROW EXECUTE PROCEDURE stamp_record('[{"table_name":"admin_groups","primary_key":"id","foreign_key":"admin_group_id"}]');
+CREATE TRIGGER admin_groups_api_scopes_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON public.admin_groups_api_scopes FOR EACH ROW EXECUTE PROCEDURE public.stamp_record('[{"table_name":"admin_groups","primary_key":"id","foreign_key":"admin_group_id"}]');
 
 
 --
 -- Name: admin_groups admin_groups_stamp_record; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER admin_groups_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON admin_groups FOR EACH ROW EXECUTE PROCEDURE stamp_record();
+CREATE TRIGGER admin_groups_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON public.admin_groups FOR EACH ROW EXECUTE PROCEDURE public.stamp_record();
 
 
 --
 -- Name: admin_permissions admin_permissions_stamp_record; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER admin_permissions_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON admin_permissions FOR EACH ROW EXECUTE PROCEDURE stamp_record();
+CREATE TRIGGER admin_permissions_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON public.admin_permissions FOR EACH ROW EXECUTE PROCEDURE public.stamp_record();
 
 
 --
 -- Name: admins admins_stamp_record; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER admins_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON admins FOR EACH ROW EXECUTE PROCEDURE stamp_record();
+CREATE TRIGGER admins_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON public.admins FOR EACH ROW EXECUTE PROCEDURE public.stamp_record();
 
 
 --
 -- Name: analytics_cities analytics_cities_stamp_record; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER analytics_cities_stamp_record BEFORE UPDATE ON analytics_cities FOR EACH ROW EXECUTE PROCEDURE update_timestamp();
+CREATE TRIGGER analytics_cities_stamp_record BEFORE UPDATE ON public.analytics_cities FOR EACH ROW EXECUTE PROCEDURE public.update_timestamp();
 
 
 --
 -- Name: api_backend_http_headers api_backend_http_headers_stamp_record; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER api_backend_http_headers_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON api_backend_http_headers FOR EACH ROW EXECUTE PROCEDURE stamp_record('[{"table_name":"api_backend_settings","primary_key":"id","foreign_key":"api_backend_settings_id"}]');
+CREATE TRIGGER api_backend_http_headers_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON public.api_backend_http_headers FOR EACH ROW EXECUTE PROCEDURE public.stamp_record('[{"table_name":"api_backend_settings","primary_key":"id","foreign_key":"api_backend_settings_id"}]');
 
 
 --
 -- Name: api_backend_rewrites api_backend_rewrites_stamp_record; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER api_backend_rewrites_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON api_backend_rewrites FOR EACH ROW EXECUTE PROCEDURE stamp_record('[{"table_name":"api_backends","primary_key":"id","foreign_key":"api_backend_id"}]');
+CREATE TRIGGER api_backend_rewrites_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON public.api_backend_rewrites FOR EACH ROW EXECUTE PROCEDURE public.stamp_record('[{"table_name":"api_backends","primary_key":"id","foreign_key":"api_backend_id"}]');
 
 
 --
 -- Name: api_backend_servers api_backend_servers_stamp_record; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER api_backend_servers_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON api_backend_servers FOR EACH ROW EXECUTE PROCEDURE stamp_record('[{"table_name":"api_backends","primary_key":"id","foreign_key":"api_backend_id"}]');
+CREATE TRIGGER api_backend_servers_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON public.api_backend_servers FOR EACH ROW EXECUTE PROCEDURE public.stamp_record('[{"table_name":"api_backends","primary_key":"id","foreign_key":"api_backend_id"}]');
 
 
 --
 -- Name: api_backend_settings_required_roles api_backend_settings_required_roles_stamp_record; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER api_backend_settings_required_roles_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON api_backend_settings_required_roles FOR EACH ROW EXECUTE PROCEDURE stamp_record('[{"table_name":"api_backend_settings","primary_key":"id","foreign_key":"api_backend_settings_id"}]');
+CREATE TRIGGER api_backend_settings_required_roles_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON public.api_backend_settings_required_roles FOR EACH ROW EXECUTE PROCEDURE public.stamp_record('[{"table_name":"api_backend_settings","primary_key":"id","foreign_key":"api_backend_settings_id"}]');
 
 
 --
 -- Name: api_backend_settings api_backend_settings_stamp_record; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER api_backend_settings_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON api_backend_settings FOR EACH ROW EXECUTE PROCEDURE stamp_record('[{"table_name":"api_backends","primary_key":"id","foreign_key":"api_backend_id"},{"table_name":"api_backend_sub_url_settings","primary_key":"id","foreign_key":"api_backend_sub_url_settings_id"}]');
+CREATE TRIGGER api_backend_settings_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON public.api_backend_settings FOR EACH ROW EXECUTE PROCEDURE public.stamp_record('[{"table_name":"api_backends","primary_key":"id","foreign_key":"api_backend_id"},{"table_name":"api_backend_sub_url_settings","primary_key":"id","foreign_key":"api_backend_sub_url_settings_id"}]');
 
 
 --
 -- Name: api_backend_sub_url_settings api_backend_sub_url_settings_stamp_record; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER api_backend_sub_url_settings_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON api_backend_sub_url_settings FOR EACH ROW EXECUTE PROCEDURE stamp_record('[{"table_name":"api_backends","primary_key":"id","foreign_key":"api_backend_id"}]');
+CREATE TRIGGER api_backend_sub_url_settings_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON public.api_backend_sub_url_settings FOR EACH ROW EXECUTE PROCEDURE public.stamp_record('[{"table_name":"api_backends","primary_key":"id","foreign_key":"api_backend_id"}]');
 
 
 --
 -- Name: api_backend_url_matches api_backend_url_matches_stamp_record; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER api_backend_url_matches_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON api_backend_url_matches FOR EACH ROW EXECUTE PROCEDURE stamp_record('[{"table_name":"api_backends","primary_key":"id","foreign_key":"api_backend_id"}]');
+CREATE TRIGGER api_backend_url_matches_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON public.api_backend_url_matches FOR EACH ROW EXECUTE PROCEDURE public.stamp_record('[{"table_name":"api_backends","primary_key":"id","foreign_key":"api_backend_id"}]');
 
 
 --
 -- Name: api_backends api_backends_stamp_record; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER api_backends_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON api_backends FOR EACH ROW EXECUTE PROCEDURE stamp_record();
+CREATE TRIGGER api_backends_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON public.api_backends FOR EACH ROW EXECUTE PROCEDURE public.stamp_record();
 
 
 --
 -- Name: api_roles api_roles_stamp_record; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER api_roles_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON api_roles FOR EACH ROW EXECUTE PROCEDURE stamp_record();
+CREATE TRIGGER api_roles_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON public.api_roles FOR EACH ROW EXECUTE PROCEDURE public.stamp_record();
 
 
 --
 -- Name: api_scopes api_scopes_stamp_record; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER api_scopes_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON api_scopes FOR EACH ROW EXECUTE PROCEDURE stamp_record();
+CREATE TRIGGER api_scopes_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON public.api_scopes FOR EACH ROW EXECUTE PROCEDURE public.stamp_record();
 
 
 --
 -- Name: api_user_settings api_user_settings_stamp_record; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER api_user_settings_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON api_user_settings FOR EACH ROW EXECUTE PROCEDURE stamp_record('[{"table_name":"api_users","primary_key":"id","foreign_key":"api_user_id"}]');
+CREATE TRIGGER api_user_settings_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON public.api_user_settings FOR EACH ROW EXECUTE PROCEDURE public.stamp_record('[{"table_name":"api_users","primary_key":"id","foreign_key":"api_user_id"}]');
 
 
 --
 -- Name: api_users api_users_increment_version_trigger; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER api_users_increment_version_trigger BEFORE INSERT OR UPDATE ON api_users FOR EACH ROW EXECUTE PROCEDURE api_users_increment_version();
+CREATE TRIGGER api_users_increment_version_trigger BEFORE INSERT OR UPDATE ON public.api_users FOR EACH ROW EXECUTE PROCEDURE public.api_users_increment_version();
 
 
 --
 -- Name: api_users_roles api_users_roles_stamp_record; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER api_users_roles_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON api_users_roles FOR EACH ROW EXECUTE PROCEDURE stamp_record('[{"table_name":"api_users","primary_key":"id","foreign_key":"api_user_id"}]');
+CREATE TRIGGER api_users_roles_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON public.api_users_roles FOR EACH ROW EXECUTE PROCEDURE public.stamp_record('[{"table_name":"api_users","primary_key":"id","foreign_key":"api_user_id"}]');
 
 
 --
 -- Name: api_users api_users_stamp_record; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER api_users_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON api_users FOR EACH ROW EXECUTE PROCEDURE stamp_record();
+CREATE TRIGGER api_users_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON public.api_users FOR EACH ROW EXECUTE PROCEDURE public.stamp_record();
 
 
 --
 -- Name: admins audit_trigger_row; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON admins FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
+CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON public.admins FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
 
 
 --
 -- Name: admin_permissions audit_trigger_row; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON admin_permissions FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
+CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON public.admin_permissions FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
 
 
 --
 -- Name: api_scopes audit_trigger_row; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_scopes FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
+CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON public.api_scopes FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
 
 
 --
 -- Name: admin_groups audit_trigger_row; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON admin_groups FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
+CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON public.admin_groups FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
 
 
 --
 -- Name: admin_groups_admin_permissions audit_trigger_row; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON admin_groups_admin_permissions FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
+CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON public.admin_groups_admin_permissions FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
 
 
 --
 -- Name: admin_groups_admins audit_trigger_row; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON admin_groups_admins FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
+CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON public.admin_groups_admins FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
 
 
 --
 -- Name: admin_groups_api_scopes audit_trigger_row; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON admin_groups_api_scopes FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
+CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON public.admin_groups_api_scopes FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
 
 
 --
 -- Name: api_roles audit_trigger_row; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_roles FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
+CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON public.api_roles FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
 
 
 --
 -- Name: api_backends audit_trigger_row; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_backends FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
+CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON public.api_backends FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
 
 
 --
 -- Name: api_backend_rewrites audit_trigger_row; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_backend_rewrites FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
+CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON public.api_backend_rewrites FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
 
 
 --
 -- Name: api_backend_servers audit_trigger_row; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_backend_servers FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
+CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON public.api_backend_servers FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
 
 
 --
 -- Name: api_backend_sub_url_settings audit_trigger_row; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_backend_sub_url_settings FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
+CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON public.api_backend_sub_url_settings FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
 
 
 --
 -- Name: api_backend_url_matches audit_trigger_row; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_backend_url_matches FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
+CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON public.api_backend_url_matches FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
 
 
 --
 -- Name: api_backend_settings audit_trigger_row; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_backend_settings FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
+CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON public.api_backend_settings FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
 
 
 --
 -- Name: api_backend_settings_required_roles audit_trigger_row; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_backend_settings_required_roles FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
+CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON public.api_backend_settings_required_roles FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
 
 
 --
 -- Name: api_backend_http_headers audit_trigger_row; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_backend_http_headers FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
+CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON public.api_backend_http_headers FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
 
 
 --
 -- Name: api_users audit_trigger_row; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_users FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
+CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON public.api_users FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
 
 
 --
 -- Name: api_users_roles audit_trigger_row; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_users_roles FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
+CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON public.api_users_roles FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
 
 
 --
 -- Name: api_user_settings audit_trigger_row; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_user_settings FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
+CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON public.api_user_settings FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
 
 
 --
 -- Name: published_config audit_trigger_row; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON published_config FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
+CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON public.published_config FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
 
 
 --
 -- Name: rate_limits audit_trigger_row; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON rate_limits FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
+CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON public.rate_limits FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
 
 
 --
 -- Name: website_backends audit_trigger_row; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON website_backends FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
+CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON public.website_backends FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
 
 
 --
 -- Name: admins audit_trigger_stm; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON admins FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
+CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON public.admins FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
 
 
 --
 -- Name: admin_permissions audit_trigger_stm; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON admin_permissions FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
+CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON public.admin_permissions FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
 
 
 --
 -- Name: api_scopes audit_trigger_stm; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_scopes FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
+CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON public.api_scopes FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
 
 
 --
 -- Name: admin_groups audit_trigger_stm; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON admin_groups FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
+CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON public.admin_groups FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
 
 
 --
 -- Name: admin_groups_admin_permissions audit_trigger_stm; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON admin_groups_admin_permissions FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
+CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON public.admin_groups_admin_permissions FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
 
 
 --
 -- Name: admin_groups_admins audit_trigger_stm; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON admin_groups_admins FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
+CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON public.admin_groups_admins FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
 
 
 --
 -- Name: admin_groups_api_scopes audit_trigger_stm; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON admin_groups_api_scopes FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
+CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON public.admin_groups_api_scopes FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
 
 
 --
 -- Name: api_roles audit_trigger_stm; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_roles FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
+CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON public.api_roles FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
 
 
 --
 -- Name: api_backends audit_trigger_stm; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_backends FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
+CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON public.api_backends FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
 
 
 --
 -- Name: api_backend_rewrites audit_trigger_stm; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_backend_rewrites FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
+CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON public.api_backend_rewrites FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
 
 
 --
 -- Name: api_backend_servers audit_trigger_stm; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_backend_servers FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
+CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON public.api_backend_servers FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
 
 
 --
 -- Name: api_backend_sub_url_settings audit_trigger_stm; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_backend_sub_url_settings FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
+CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON public.api_backend_sub_url_settings FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
 
 
 --
 -- Name: api_backend_url_matches audit_trigger_stm; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_backend_url_matches FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
+CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON public.api_backend_url_matches FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
 
 
 --
 -- Name: api_backend_settings audit_trigger_stm; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_backend_settings FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
+CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON public.api_backend_settings FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
 
 
 --
 -- Name: api_backend_settings_required_roles audit_trigger_stm; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_backend_settings_required_roles FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
+CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON public.api_backend_settings_required_roles FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
 
 
 --
 -- Name: api_backend_http_headers audit_trigger_stm; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_backend_http_headers FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
+CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON public.api_backend_http_headers FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
 
 
 --
 -- Name: api_users audit_trigger_stm; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_users FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
+CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON public.api_users FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
 
 
 --
 -- Name: api_users_roles audit_trigger_stm; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_users_roles FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
+CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON public.api_users_roles FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
 
 
 --
 -- Name: api_user_settings audit_trigger_stm; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_user_settings FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
+CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON public.api_user_settings FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
 
 
 --
 -- Name: published_config audit_trigger_stm; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON published_config FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
+CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON public.published_config FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
 
 
 --
 -- Name: rate_limits audit_trigger_stm; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON rate_limits FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
+CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON public.rate_limits FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
 
 
 --
 -- Name: website_backends audit_trigger_stm; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON website_backends FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
+CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON public.website_backends FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
 
 
 --
 -- Name: cache cache_stamp_record; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER cache_stamp_record BEFORE UPDATE ON cache FOR EACH ROW EXECUTE PROCEDURE update_timestamp();
+CREATE TRIGGER cache_stamp_record BEFORE UPDATE ON public.cache FOR EACH ROW EXECUTE PROCEDURE public.update_timestamp();
 
 
 --
 -- Name: distributed_rate_limit_counters distributed_rate_limit_counters_increment_version_trigger; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER distributed_rate_limit_counters_increment_version_trigger BEFORE INSERT OR UPDATE ON distributed_rate_limit_counters FOR EACH ROW EXECUTE PROCEDURE distributed_rate_limit_counters_increment_version();
+CREATE TRIGGER distributed_rate_limit_counters_increment_version_trigger BEFORE INSERT OR UPDATE ON public.distributed_rate_limit_counters FOR EACH ROW EXECUTE PROCEDURE public.distributed_rate_limit_counters_increment_version();
 
 
 --
 -- Name: published_config published_config_stamp_record; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER published_config_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON published_config FOR EACH ROW EXECUTE PROCEDURE stamp_record();
+CREATE TRIGGER published_config_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON public.published_config FOR EACH ROW EXECUTE PROCEDURE public.stamp_record();
 
 
 --
 -- Name: rate_limits rate_limits_stamp_record; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER rate_limits_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON rate_limits FOR EACH ROW EXECUTE PROCEDURE stamp_record('[{"table_name":"api_backend_settings","primary_key":"id","foreign_key":"api_backend_settings_id"},{"table_name":"api_user_settings","primary_key":"id","foreign_key":"api_user_settings_id"}]');
+CREATE TRIGGER rate_limits_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON public.rate_limits FOR EACH ROW EXECUTE PROCEDURE public.stamp_record('[{"table_name":"api_backend_settings","primary_key":"id","foreign_key":"api_backend_settings_id"},{"table_name":"api_user_settings","primary_key":"id","foreign_key":"api_user_settings_id"}]');
 
 
 --
 -- Name: sessions sessions_stamp_record; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER sessions_stamp_record BEFORE UPDATE ON sessions FOR EACH ROW EXECUTE PROCEDURE update_timestamp();
+CREATE TRIGGER sessions_stamp_record BEFORE UPDATE ON public.sessions FOR EACH ROW EXECUTE PROCEDURE public.update_timestamp();
 
 
 --
 -- Name: website_backends website_backends_stamp_record; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER website_backends_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON website_backends FOR EACH ROW EXECUTE PROCEDURE stamp_record();
+CREATE TRIGGER website_backends_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON public.website_backends FOR EACH ROW EXECUTE PROCEDURE public.stamp_record();
 
 
 --
 -- Name: admin_groups_admin_permissions admin_groups_admin_permissions_admin_group_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY admin_groups_admin_permissions
-    ADD CONSTRAINT admin_groups_admin_permissions_admin_group_id_fkey FOREIGN KEY (admin_group_id) REFERENCES admin_groups(id) ON DELETE CASCADE;
+ALTER TABLE ONLY public.admin_groups_admin_permissions
+    ADD CONSTRAINT admin_groups_admin_permissions_admin_group_id_fkey FOREIGN KEY (admin_group_id) REFERENCES public.admin_groups(id) ON DELETE CASCADE DEFERRABLE;
 
 
 --
 -- Name: admin_groups_admin_permissions admin_groups_admin_permissions_admin_permission_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY admin_groups_admin_permissions
-    ADD CONSTRAINT admin_groups_admin_permissions_admin_permission_id_fkey FOREIGN KEY (admin_permission_id) REFERENCES admin_permissions(id) ON DELETE CASCADE;
+ALTER TABLE ONLY public.admin_groups_admin_permissions
+    ADD CONSTRAINT admin_groups_admin_permissions_admin_permission_id_fkey FOREIGN KEY (admin_permission_id) REFERENCES public.admin_permissions(id) ON DELETE CASCADE DEFERRABLE;
 
 
 --
 -- Name: admin_groups_admins admin_groups_admins_admin_group_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY admin_groups_admins
-    ADD CONSTRAINT admin_groups_admins_admin_group_id_fkey FOREIGN KEY (admin_group_id) REFERENCES admin_groups(id) ON DELETE CASCADE;
+ALTER TABLE ONLY public.admin_groups_admins
+    ADD CONSTRAINT admin_groups_admins_admin_group_id_fkey FOREIGN KEY (admin_group_id) REFERENCES public.admin_groups(id) ON DELETE CASCADE DEFERRABLE;
 
 
 --
 -- Name: admin_groups_admins admin_groups_admins_admin_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY admin_groups_admins
-    ADD CONSTRAINT admin_groups_admins_admin_id_fkey FOREIGN KEY (admin_id) REFERENCES admins(id) ON DELETE CASCADE;
+ALTER TABLE ONLY public.admin_groups_admins
+    ADD CONSTRAINT admin_groups_admins_admin_id_fkey FOREIGN KEY (admin_id) REFERENCES public.admins(id) ON DELETE CASCADE DEFERRABLE;
 
 
 --
 -- Name: admin_groups_api_scopes admin_groups_api_scopes_admin_group_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY admin_groups_api_scopes
-    ADD CONSTRAINT admin_groups_api_scopes_admin_group_id_fkey FOREIGN KEY (admin_group_id) REFERENCES admin_groups(id) ON DELETE CASCADE;
+ALTER TABLE ONLY public.admin_groups_api_scopes
+    ADD CONSTRAINT admin_groups_api_scopes_admin_group_id_fkey FOREIGN KEY (admin_group_id) REFERENCES public.admin_groups(id) ON DELETE CASCADE DEFERRABLE;
 
 
 --
 -- Name: admin_groups_api_scopes admin_groups_api_scopes_api_scope_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY admin_groups_api_scopes
-    ADD CONSTRAINT admin_groups_api_scopes_api_scope_id_fkey FOREIGN KEY (api_scope_id) REFERENCES api_scopes(id) ON DELETE CASCADE;
+ALTER TABLE ONLY public.admin_groups_api_scopes
+    ADD CONSTRAINT admin_groups_api_scopes_api_scope_id_fkey FOREIGN KEY (api_scope_id) REFERENCES public.api_scopes(id) ON DELETE CASCADE DEFERRABLE;
 
 
 --
 -- Name: api_backend_http_headers api_backend_http_headers_api_backend_settings_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY api_backend_http_headers
-    ADD CONSTRAINT api_backend_http_headers_api_backend_settings_id_fkey FOREIGN KEY (api_backend_settings_id) REFERENCES api_backend_settings(id) ON DELETE CASCADE;
+ALTER TABLE ONLY public.api_backend_http_headers
+    ADD CONSTRAINT api_backend_http_headers_api_backend_settings_id_fkey FOREIGN KEY (api_backend_settings_id) REFERENCES public.api_backend_settings(id) ON DELETE CASCADE DEFERRABLE;
 
 
 --
 -- Name: api_backend_rewrites api_backend_rewrites_api_backend_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY api_backend_rewrites
-    ADD CONSTRAINT api_backend_rewrites_api_backend_id_fkey FOREIGN KEY (api_backend_id) REFERENCES api_backends(id) ON DELETE CASCADE;
+ALTER TABLE ONLY public.api_backend_rewrites
+    ADD CONSTRAINT api_backend_rewrites_api_backend_id_fkey FOREIGN KEY (api_backend_id) REFERENCES public.api_backends(id) ON DELETE CASCADE DEFERRABLE;
 
 
 --
 -- Name: api_backend_servers api_backend_servers_api_backend_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY api_backend_servers
-    ADD CONSTRAINT api_backend_servers_api_backend_id_fkey FOREIGN KEY (api_backend_id) REFERENCES api_backends(id) ON DELETE CASCADE;
+ALTER TABLE ONLY public.api_backend_servers
+    ADD CONSTRAINT api_backend_servers_api_backend_id_fkey FOREIGN KEY (api_backend_id) REFERENCES public.api_backends(id) ON DELETE CASCADE DEFERRABLE;
 
 
 --
 -- Name: api_backend_settings api_backend_settings_api_backend_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY api_backend_settings
-    ADD CONSTRAINT api_backend_settings_api_backend_id_fkey FOREIGN KEY (api_backend_id) REFERENCES api_backends(id) ON DELETE CASCADE;
+ALTER TABLE ONLY public.api_backend_settings
+    ADD CONSTRAINT api_backend_settings_api_backend_id_fkey FOREIGN KEY (api_backend_id) REFERENCES public.api_backends(id) ON DELETE CASCADE DEFERRABLE;
 
 
 --
 -- Name: api_backend_settings api_backend_settings_api_backend_sub_url_settings_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY api_backend_settings
-    ADD CONSTRAINT api_backend_settings_api_backend_sub_url_settings_id_fkey FOREIGN KEY (api_backend_sub_url_settings_id) REFERENCES api_backend_sub_url_settings(id) ON DELETE CASCADE;
+ALTER TABLE ONLY public.api_backend_settings
+    ADD CONSTRAINT api_backend_settings_api_backend_sub_url_settings_id_fkey FOREIGN KEY (api_backend_sub_url_settings_id) REFERENCES public.api_backend_sub_url_settings(id) ON DELETE CASCADE DEFERRABLE;
 
 
 --
 -- Name: api_backend_settings_required_roles api_backend_settings_required_role_api_backend_settings_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY api_backend_settings_required_roles
-    ADD CONSTRAINT api_backend_settings_required_role_api_backend_settings_id_fkey FOREIGN KEY (api_backend_settings_id) REFERENCES api_backend_settings(id) ON DELETE CASCADE;
+ALTER TABLE ONLY public.api_backend_settings_required_roles
+    ADD CONSTRAINT api_backend_settings_required_role_api_backend_settings_id_fkey FOREIGN KEY (api_backend_settings_id) REFERENCES public.api_backend_settings(id) ON DELETE CASCADE DEFERRABLE;
 
 
 --
 -- Name: api_backend_settings_required_roles api_backend_settings_required_roles_api_role_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY api_backend_settings_required_roles
-    ADD CONSTRAINT api_backend_settings_required_roles_api_role_id_fkey FOREIGN KEY (api_role_id) REFERENCES api_roles(id);
+ALTER TABLE ONLY public.api_backend_settings_required_roles
+    ADD CONSTRAINT api_backend_settings_required_roles_api_role_id_fkey FOREIGN KEY (api_role_id) REFERENCES public.api_roles(id) DEFERRABLE;
 
 
 --
 -- Name: api_backend_sub_url_settings api_backend_sub_url_settings_api_backend_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY api_backend_sub_url_settings
-    ADD CONSTRAINT api_backend_sub_url_settings_api_backend_id_fkey FOREIGN KEY (api_backend_id) REFERENCES api_backends(id) ON DELETE CASCADE;
+ALTER TABLE ONLY public.api_backend_sub_url_settings
+    ADD CONSTRAINT api_backend_sub_url_settings_api_backend_id_fkey FOREIGN KEY (api_backend_id) REFERENCES public.api_backends(id) ON DELETE CASCADE DEFERRABLE;
 
 
 --
 -- Name: api_backend_url_matches api_backend_url_matches_api_backend_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY api_backend_url_matches
-    ADD CONSTRAINT api_backend_url_matches_api_backend_id_fkey FOREIGN KEY (api_backend_id) REFERENCES api_backends(id) ON DELETE CASCADE;
+ALTER TABLE ONLY public.api_backend_url_matches
+    ADD CONSTRAINT api_backend_url_matches_api_backend_id_fkey FOREIGN KEY (api_backend_id) REFERENCES public.api_backends(id) ON DELETE CASCADE DEFERRABLE;
 
 
 --
 -- Name: api_user_settings api_user_settings_api_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY api_user_settings
-    ADD CONSTRAINT api_user_settings_api_user_id_fkey FOREIGN KEY (api_user_id) REFERENCES api_users(id) ON DELETE CASCADE;
+ALTER TABLE ONLY public.api_user_settings
+    ADD CONSTRAINT api_user_settings_api_user_id_fkey FOREIGN KEY (api_user_id) REFERENCES public.api_users(id) ON DELETE CASCADE DEFERRABLE;
 
 
 --
 -- Name: api_users_roles api_users_roles_api_role_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY api_users_roles
-    ADD CONSTRAINT api_users_roles_api_role_id_fkey FOREIGN KEY (api_role_id) REFERENCES api_roles(id);
+ALTER TABLE ONLY public.api_users_roles
+    ADD CONSTRAINT api_users_roles_api_role_id_fkey FOREIGN KEY (api_role_id) REFERENCES public.api_roles(id) DEFERRABLE;
 
 
 --
 -- Name: api_users_roles api_users_roles_api_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY api_users_roles
-    ADD CONSTRAINT api_users_roles_api_user_id_fkey FOREIGN KEY (api_user_id) REFERENCES api_users(id) ON DELETE CASCADE;
+ALTER TABLE ONLY public.api_users_roles
+    ADD CONSTRAINT api_users_roles_api_user_id_fkey FOREIGN KEY (api_user_id) REFERENCES public.api_users(id) ON DELETE CASCADE DEFERRABLE;
 
 
 --
 -- Name: rate_limits rate_limits_api_backend_settings_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY rate_limits
-    ADD CONSTRAINT rate_limits_api_backend_settings_id_fkey FOREIGN KEY (api_backend_settings_id) REFERENCES api_backend_settings(id) ON DELETE CASCADE;
+ALTER TABLE ONLY public.rate_limits
+    ADD CONSTRAINT rate_limits_api_backend_settings_id_fkey FOREIGN KEY (api_backend_settings_id) REFERENCES public.api_backend_settings(id) ON DELETE CASCADE DEFERRABLE;
 
 
 --
 -- Name: rate_limits rate_limits_api_user_settings_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY rate_limits
-    ADD CONSTRAINT rate_limits_api_user_settings_id_fkey FOREIGN KEY (api_user_settings_id) REFERENCES api_user_settings(id) ON DELETE CASCADE;
+ALTER TABLE ONLY public.rate_limits
+    ADD CONSTRAINT rate_limits_api_user_settings_id_fkey FOREIGN KEY (api_user_settings_id) REFERENCES public.api_user_settings(id) ON DELETE CASCADE DEFERRABLE;
 
 
 --
--- Name: public; Type: ACL; Schema: -; Owner: -
+-- Name: SCHEMA public; Type: ACL; Schema: -; Owner: -
 --
 
 GRANT USAGE ON SCHEMA public TO api_umbrella_app_user;
 
 
 --
--- Name: admin_groups; Type: ACL; Schema: public; Owner: -
+-- Name: TABLE admin_groups; Type: ACL; Schema: public; Owner: -
 --
 
-GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE admin_groups TO api_umbrella_app_user;
-
-
---
--- Name: admin_groups_admin_permissions; Type: ACL; Schema: public; Owner: -
---
-
-GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE admin_groups_admin_permissions TO api_umbrella_app_user;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.admin_groups TO api_umbrella_app_user;
 
 
 --
--- Name: admin_groups_admins; Type: ACL; Schema: public; Owner: -
+-- Name: TABLE admin_groups_admin_permissions; Type: ACL; Schema: public; Owner: -
 --
 
-GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE admin_groups_admins TO api_umbrella_app_user;
-
-
---
--- Name: admin_groups_api_scopes; Type: ACL; Schema: public; Owner: -
---
-
-GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE admin_groups_api_scopes TO api_umbrella_app_user;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.admin_groups_admin_permissions TO api_umbrella_app_user;
 
 
 --
--- Name: admin_permissions; Type: ACL; Schema: public; Owner: -
+-- Name: TABLE admin_groups_admins; Type: ACL; Schema: public; Owner: -
 --
 
-GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE admin_permissions TO api_umbrella_app_user;
-
-
---
--- Name: admins; Type: ACL; Schema: public; Owner: -
---
-
-GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE admins TO api_umbrella_app_user;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.admin_groups_admins TO api_umbrella_app_user;
 
 
 --
--- Name: analytics_cities; Type: ACL; Schema: public; Owner: -
+-- Name: TABLE admin_groups_api_scopes; Type: ACL; Schema: public; Owner: -
 --
 
-GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE analytics_cities TO api_umbrella_app_user;
-
-
---
--- Name: analytics_cities_id_seq; Type: ACL; Schema: public; Owner: -
---
-
-GRANT SELECT,UPDATE ON SEQUENCE analytics_cities_id_seq TO api_umbrella_app_user;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.admin_groups_api_scopes TO api_umbrella_app_user;
 
 
 --
--- Name: api_backend_http_headers; Type: ACL; Schema: public; Owner: -
+-- Name: TABLE admin_permissions; Type: ACL; Schema: public; Owner: -
 --
 
-GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE api_backend_http_headers TO api_umbrella_app_user;
-
-
---
--- Name: api_backend_rewrites; Type: ACL; Schema: public; Owner: -
---
-
-GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE api_backend_rewrites TO api_umbrella_app_user;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.admin_permissions TO api_umbrella_app_user;
 
 
 --
--- Name: api_backend_servers; Type: ACL; Schema: public; Owner: -
+-- Name: TABLE admins; Type: ACL; Schema: public; Owner: -
 --
 
-GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE api_backend_servers TO api_umbrella_app_user;
-
-
---
--- Name: api_backend_settings; Type: ACL; Schema: public; Owner: -
---
-
-GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE api_backend_settings TO api_umbrella_app_user;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.admins TO api_umbrella_app_user;
 
 
 --
--- Name: api_backend_settings_required_roles; Type: ACL; Schema: public; Owner: -
+-- Name: TABLE analytics_cities; Type: ACL; Schema: public; Owner: -
 --
 
-GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE api_backend_settings_required_roles TO api_umbrella_app_user;
-
-
---
--- Name: api_backend_sub_url_settings; Type: ACL; Schema: public; Owner: -
---
-
-GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE api_backend_sub_url_settings TO api_umbrella_app_user;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.analytics_cities TO api_umbrella_app_user;
 
 
 --
--- Name: api_backend_url_matches; Type: ACL; Schema: public; Owner: -
+-- Name: SEQUENCE analytics_cities_id_seq; Type: ACL; Schema: public; Owner: -
 --
 
-GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE api_backend_url_matches TO api_umbrella_app_user;
-
-
---
--- Name: api_backends; Type: ACL; Schema: public; Owner: -
---
-
-GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE api_backends TO api_umbrella_app_user;
+GRANT SELECT,UPDATE ON SEQUENCE public.analytics_cities_id_seq TO api_umbrella_app_user;
 
 
 --
--- Name: api_roles; Type: ACL; Schema: public; Owner: -
+-- Name: TABLE api_backend_http_headers; Type: ACL; Schema: public; Owner: -
 --
 
-GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE api_roles TO api_umbrella_app_user;
-
-
---
--- Name: api_scopes; Type: ACL; Schema: public; Owner: -
---
-
-GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE api_scopes TO api_umbrella_app_user;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.api_backend_http_headers TO api_umbrella_app_user;
 
 
 --
--- Name: api_user_settings; Type: ACL; Schema: public; Owner: -
+-- Name: TABLE api_backend_rewrites; Type: ACL; Schema: public; Owner: -
 --
 
-GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE api_user_settings TO api_umbrella_app_user;
-
-
---
--- Name: api_users; Type: ACL; Schema: public; Owner: -
---
-
-GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE api_users TO api_umbrella_app_user;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.api_backend_rewrites TO api_umbrella_app_user;
 
 
 --
--- Name: api_users_roles; Type: ACL; Schema: public; Owner: -
+-- Name: TABLE api_backend_servers; Type: ACL; Schema: public; Owner: -
 --
 
-GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE api_users_roles TO api_umbrella_app_user;
-
-
---
--- Name: rate_limits; Type: ACL; Schema: public; Owner: -
---
-
-GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE rate_limits TO api_umbrella_app_user;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.api_backend_servers TO api_umbrella_app_user;
 
 
 --
--- Name: api_users_flattened; Type: ACL; Schema: public; Owner: -
+-- Name: TABLE api_backend_settings; Type: ACL; Schema: public; Owner: -
 --
 
-GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE api_users_flattened TO api_umbrella_app_user;
-
-
---
--- Name: api_users_version_seq; Type: ACL; Schema: public; Owner: -
---
-
-GRANT SELECT,UPDATE ON SEQUENCE api_users_version_seq TO api_umbrella_app_user;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.api_backend_settings TO api_umbrella_app_user;
 
 
 --
--- Name: cache; Type: ACL; Schema: public; Owner: -
+-- Name: TABLE api_backend_settings_required_roles; Type: ACL; Schema: public; Owner: -
 --
 
-GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE cache TO api_umbrella_app_user;
-
-
---
--- Name: distributed_rate_limit_counters; Type: ACL; Schema: public; Owner: -
---
-
-GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE distributed_rate_limit_counters TO api_umbrella_app_user;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.api_backend_settings_required_roles TO api_umbrella_app_user;
 
 
 --
--- Name: distributed_rate_limit_counters_version_seq; Type: ACL; Schema: public; Owner: -
+-- Name: TABLE api_backend_sub_url_settings; Type: ACL; Schema: public; Owner: -
 --
 
-GRANT SELECT,UPDATE ON SEQUENCE distributed_rate_limit_counters_version_seq TO api_umbrella_app_user;
-
-
---
--- Name: lapis_migrations; Type: ACL; Schema: public; Owner: -
---
-
-GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE lapis_migrations TO api_umbrella_app_user;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.api_backend_sub_url_settings TO api_umbrella_app_user;
 
 
 --
--- Name: published_config; Type: ACL; Schema: public; Owner: -
+-- Name: TABLE api_backend_url_matches; Type: ACL; Schema: public; Owner: -
 --
 
-GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE published_config TO api_umbrella_app_user;
-
-
---
--- Name: published_config_id_seq; Type: ACL; Schema: public; Owner: -
---
-
-GRANT SELECT,UPDATE ON SEQUENCE published_config_id_seq TO api_umbrella_app_user;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.api_backend_url_matches TO api_umbrella_app_user;
 
 
 --
--- Name: sessions; Type: ACL; Schema: public; Owner: -
+-- Name: TABLE api_backends; Type: ACL; Schema: public; Owner: -
 --
 
-GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE sessions TO api_umbrella_app_user;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.api_backends TO api_umbrella_app_user;
 
 
 --
--- Name: website_backends; Type: ACL; Schema: public; Owner: -
+-- Name: TABLE api_roles; Type: ACL; Schema: public; Owner: -
 --
 
-GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE website_backends TO api_umbrella_app_user;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.api_roles TO api_umbrella_app_user;
+
+
+--
+-- Name: TABLE api_scopes; Type: ACL; Schema: public; Owner: -
+--
+
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.api_scopes TO api_umbrella_app_user;
+
+
+--
+-- Name: TABLE api_user_settings; Type: ACL; Schema: public; Owner: -
+--
+
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.api_user_settings TO api_umbrella_app_user;
+
+
+--
+-- Name: TABLE api_users; Type: ACL; Schema: public; Owner: -
+--
+
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.api_users TO api_umbrella_app_user;
+
+
+--
+-- Name: TABLE api_users_roles; Type: ACL; Schema: public; Owner: -
+--
+
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.api_users_roles TO api_umbrella_app_user;
+
+
+--
+-- Name: TABLE rate_limits; Type: ACL; Schema: public; Owner: -
+--
+
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.rate_limits TO api_umbrella_app_user;
+
+
+--
+-- Name: TABLE api_users_flattened; Type: ACL; Schema: public; Owner: -
+--
+
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.api_users_flattened TO api_umbrella_app_user;
+
+
+--
+-- Name: SEQUENCE api_users_version_seq; Type: ACL; Schema: public; Owner: -
+--
+
+GRANT SELECT,UPDATE ON SEQUENCE public.api_users_version_seq TO api_umbrella_app_user;
+
+
+--
+-- Name: TABLE cache; Type: ACL; Schema: public; Owner: -
+--
+
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.cache TO api_umbrella_app_user;
+
+
+--
+-- Name: TABLE distributed_rate_limit_counters; Type: ACL; Schema: public; Owner: -
+--
+
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.distributed_rate_limit_counters TO api_umbrella_app_user;
+
+
+--
+-- Name: SEQUENCE distributed_rate_limit_counters_version_seq; Type: ACL; Schema: public; Owner: -
+--
+
+GRANT SELECT,UPDATE ON SEQUENCE public.distributed_rate_limit_counters_version_seq TO api_umbrella_app_user;
+
+
+--
+-- Name: TABLE lapis_migrations; Type: ACL; Schema: public; Owner: -
+--
+
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.lapis_migrations TO api_umbrella_app_user;
+
+
+--
+-- Name: TABLE published_config; Type: ACL; Schema: public; Owner: -
+--
+
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.published_config TO api_umbrella_app_user;
+
+
+--
+-- Name: SEQUENCE published_config_id_seq; Type: ACL; Schema: public; Owner: -
+--
+
+GRANT SELECT,UPDATE ON SEQUENCE public.published_config_id_seq TO api_umbrella_app_user;
+
+
+--
+-- Name: TABLE sessions; Type: ACL; Schema: public; Owner: -
+--
+
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.sessions TO api_umbrella_app_user;
+
+
+--
+-- Name: TABLE website_backends; Type: ACL; Schema: public; Owner: -
+--
+
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.website_backends TO api_umbrella_app_user;
 
 
 --

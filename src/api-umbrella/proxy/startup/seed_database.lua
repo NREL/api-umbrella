@@ -357,14 +357,18 @@ local function seed()
   seed_admin_permissions()
 end
 
-local function seed_once()
+local _M = {}
+
+function _M.seed_once()
   interval_lock.mutex_exec("seed_database", seed)
 end
 
-return function()
-  local ok, err = ngx.timer.at(0, seed_once)
+function _M.spawn()
+  local ok, err = ngx.timer.at(0, _M.seed_once)
   if not ok then
     ngx.log(ngx.ERR, "failed to create timer: ", err)
     return
   end
 end
+
+return _M

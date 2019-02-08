@@ -58,6 +58,16 @@ tasks:
       - ./build/work/stamp/deps/libcidr
     method: checksum
 
+  deps:libmongoc:
+    cmds:
+      - ./tasks/deps/libmongoc
+    sources:
+      - ./tasks/deps/libmongoc
+      - ./tasks/helpers.sh
+    generates:
+      - ./build/work/stamp/deps/libmongoc
+    method: checksum
+
   deps:libestr:
     cmds:
       - ./tasks/deps/libestr
@@ -184,6 +194,7 @@ tasks:
       - task: deps:elasticsearch
       - task: deps:geolitecity
       - task: deps:libcidr
+      - task: deps:libmongoc
       - task: deps:libpsl
       - task: deps:luarocks
       - task: deps:openresty
@@ -444,6 +455,21 @@ tasks:
       - ./build/work/stamp/app-deps/lua/lyaml
     method: checksum
 
+  app-deps:lua:mongo:
+    deps:
+      - deps:libmongoc
+      - deps:luarocks
+    cmds:
+      - ./tasks/app-deps/lua/mongo
+    sources:
+      - ./build/work/stamp/deps/libmongoc
+      - ./build/work/stamp/deps/luarocks
+      - ./tasks/app-deps/lua/mongo
+      - ./tasks/helpers.sh
+    generates:
+      - ./build/work/stamp/app-deps/lua/mongo
+    method: checksum
+
   app-deps:lua:penlight:
     deps:
       - deps:luarocks
@@ -633,6 +659,7 @@ tasks:
       - task: app-deps:lua:luasocket
       - task: app-deps:lua:lustache
       - task: app-deps:lua:lyaml
+      - task: app-deps:lua:mongo
       - task: app-deps:lua:penlight
       - task: app-deps:lua:psl
       - task: app-deps:lua:resty-auto-ssl
