@@ -12,24 +12,13 @@ local json_encode = require "api-umbrella.utils.json_encode"
 local log_utils = require "api-umbrella.proxy.log_utils"
 local nillify_json_nulls = require "api-umbrella.utils.nillify_json_nulls"
 local split = require("pl.utils").split
-local unistd = require "posix.unistd"
-local wait = require("posix.sys.wait").wait
 
 local format_date = icu_date.formats.pattern("yyyy-MM-dd")
 local format_iso8601 = icu_date.formats.iso8601()
 local hit_date = icu_date.new()
 
-local pid
 local bulk_size = 1000
 local args = {}
-
-local function log(message)
-  if args["parallel"] > 1 then
-    print("[pid " .. (pid or "") .. "] " .. message)
-  else
-    print(message)
-  end
-end
 
 local function table_difference(t1, t2)
   local res = {}
@@ -59,22 +48,21 @@ local function parse_args()
   parser:option("--output", "Output Elasticsearch database URL."):count(1)
   parser:option("--start-date", "Migrate data starting at this date (YYYY-MM-DD format). Defaults to earliest data available from the input database."):count("0-1")
   parser:option("--end-date", "Migrate data ending on this date (YYYY-MM-DD format). Defaults to current date."):count("0-1")
-  parser:option("--parallel", "Number of parallel workers to run.", "1"):count(1):convert(tonumber)
   parser:flag("--debug", "Debug")
 
   local parsed_args = parser:parse()
 
   local input_uri, input_err = http:parse_uri(parsed_args["input"], false)
   if not input_uri then
-    log("--input could not be parsed. Elasticsearch URL expected.")
-    log(input_err)
+    print("--input could not be parsed. Elasticsearch URL expected.")
+    print(input_err)
     os.exit(1)
   end
 
   local output_uri, _ = http:parse_uri(parsed_args["output"], false)
   if not output_uri then
-    log("--output could not be parsed. Elasticsearch URL expected.")
-    log(output_uri)
+    print("--output could not be parsed. Elasticsearch URL expected.")
+    print(output_uri)
     os.exit(1)
   end
 
@@ -95,7 +83,7 @@ local function parse_args()
   if parsed_args["start_date"] then
     parsed_args["_start_date"] = parse_date(parsed_args["start_date"])
     if not parsed_args["_start_date"] then
-      log("--start-date could not be parsed. YYYY-MM-DD format expected.")
+      print("--start-date could not be parsed. YYYY-MM-DD format expected.")
       os.exit(1)
     end
   end
@@ -103,7 +91,7 @@ local function parse_args()
   if parsed_args["end_date"] then
     parsed_args["_end_date"] = parse_date(parsed_args["end_date"])
     if not parsed_args["_end_date"] then
-      log("--start-date could not be parsed. YYYY-MM-DD format expected.")
+      print("--start-date could not be parsed. YYYY-MM-DD format expected.")
       os.exit(1)
     end
   end
@@ -116,7 +104,7 @@ local function v1_first_index_time()
     server = args["_input_server"],
   })
   if err then
-    log("failed to query elasticsearch: " .. err)
+    print("failed to query elasticsearch: " .. err)
     os.exit(1)
   end
 
@@ -146,7 +134,7 @@ local function flush_bulk_commands()
   ngx.update_time()
   local benchmark_start = ngx.now()
 
-  log("Indexing records from " .. os.date("!%Y-%m-%dT%TZ", last_bulk_commands_timestamp / 1000))
+  print("Indexing records from " .. os.date("!%Y-%m-%dT%TZ", last_bulk_commands_timestamp / 1000))
 
   local res, err = elasticsearch_query("/_bulk", {
     server = args["_output_server"],
@@ -157,7 +145,7 @@ local function flush_bulk_commands()
     body = table.concat(bulk_commands, "\n") .. "\n",
   })
   if err then
-    log("unexpected error: " .. err)
+    print("unexpected error: " .. err)
     os.exit(1)
   end
 
@@ -166,7 +154,7 @@ local function flush_bulk_commands()
 
   local raw_results = res.body_json
   if type(raw_results["items"]) ~= "table" then
-    log("unexpected error: " .. (raw_results["items"] or nil))
+    print("unexpected error: " .. (raw_results["items"] or nil))
     os.exit(1)
   end
 
@@ -192,20 +180,20 @@ local function flush_bulk_commands()
     end
   end
   if args["debug"] then
-    log("")
+    print("")
   end
   if created_count > 0 then
-    log("Created: " .. created_count)
+    print("Created: " .. created_count)
   end
   if skipped_count > 0 then
-    log("Skipped (already exists): " .. skipped_count)
+    print("Skipped (already exists): " .. skipped_count)
   end
   if error_count > 0 then
-    log("Errors: " .. error_count)
+    print("Errors: " .. error_count)
   end
 
   local count = #bulk_commands / 2
-  log("Indexed " .. count .. " records (" .. (count / (benchmark_end - benchmark_start)) .. " records/sec)")
+  print("Indexed " .. count .. " records (" .. (count / (benchmark_end - benchmark_start)) .. " records/sec)")
 
   bulk_commands = {}
   last_bulk_commands_timestamp = nil
@@ -331,8 +319,8 @@ local function process_hit(hit, output_index)
 
   if args["debug"] then
     if #bulk_commands % 1000 == 0 then
-      log("DIFF - " .. inspect(table_difference(source, new_source)))
-      log("DIFF + " .. inspect(table_difference(new_source, source)))
+      print("DIFF - " .. inspect(table_difference(source, new_source)))
+      print("DIFF + " .. inspect(table_difference(new_source, source)))
     end
   end
 
@@ -360,8 +348,8 @@ local function process_hits(results, output_index)
 
   local hits = results["hits"]["hits"]
   local count = #hits
-  log(os.date("!%Y-%m-%dT%TZ"))
-  log("Fetched " .. count .. " records in " .. results["took"] .. " ms (" .. (count / (results["took"] / 1000)) .. " records/sec)")
+  print(os.date("!%Y-%m-%dT%TZ"))
+  print("Fetched " .. count .. " records in " .. results["took"] .. " ms (" .. (count / (results["took"] / 1000)) .. " records/sec)")
 
   for _, hit in ipairs(hits) do
     process_hit(hit, output_index)
@@ -370,12 +358,10 @@ local function process_hits(results, output_index)
   ngx.update_time()
   local benchmark_end = ngx.now()
 
-  log("Processed " .. count .. " records (" .. (count / (benchmark_end - benchmark_start)) .. " records/sec)\n")
+  print("Processed " .. count .. " records (" .. (count / (benchmark_end - benchmark_start)) .. " records/sec)\n")
 end
 
 local function search_day(date_start, date_end)
-  log("Processing day: " .. date_start:format(format_date))
-
   local input_index = "api-umbrella-logs-v1-" .. date_start:format(icu_date.formats.pattern("yyyy-MM"))
   local output_index_date = date_start:format(icu_date.formats.pattern("yyyy-MM-dd"))
   local output_index = "api-umbrella-logs-v2-" .. output_index_date
@@ -400,7 +386,7 @@ local function search_day(date_start, date_end)
     }
   })
   if err then
-    log("failed to query elasticsearch: " .. err)
+    print("failed to query elasticsearch: " .. err)
     os.exit(1)
   end
 
@@ -419,7 +405,7 @@ local function search_day(date_start, date_end)
       },
     })
     if err then
-      log("failed to query elasticsearch: " .. err)
+      print("failed to query elasticsearch: " .. err)
       os.exit(1)
     end
 
@@ -433,7 +419,7 @@ local function search_day(date_start, date_end)
 
   flush_bulk_commands()
 
-  log("Optimizing '" .. output_index .. "' index...")
+  print("Optimizing '" .. output_index .. "' index...")
   elasticsearch_query("/" .. output_index .. "/_forcemerge", {
     server = args["_output_server"],
     method = "POST",
@@ -442,7 +428,7 @@ local function search_day(date_start, date_end)
     },
   })
 
-  log("Creating index aliases for '" .. output_index .. "'...")
+  print("Creating index aliases for '" .. output_index .. "'...")
   local aliases = {
     {
       alias = "api-umbrella-logs-" .. output_index_date,
@@ -460,7 +446,7 @@ local function search_day(date_start, date_end)
       method = "HEAD",
     })
     if exists_err then
-      log("failed to check elasticsearch index alias: " .. exists_err)
+      print("failed to check elasticsearch index alias: " .. exists_err)
       os.exit(1)
     elseif exists_res.status == 404 then
       -- Make sure the index exists.
@@ -475,16 +461,10 @@ local function search_day(date_start, date_end)
         method = "PUT",
       })
       if alias_err then
-        log("failed to create elasticsearch index alias: " .. alias_err)
+        print("failed to create elasticsearch index alias: " .. alias_err)
         os.exit(1)
       end
     end
-  end
-end
-
-local function process_days(days)
-  for _, day in ipairs(days) do
-    search_day(day["day"], day["next_day"])
   end
 end
 
@@ -499,58 +479,23 @@ local function search()
     end_date = icu_date:new()
   end
 
-  local worker_days = {}
-  local date = end_date
-  local worker_index = 1
-  while date:get_millis() >= start_date:get_millis() do
-    local prev_day = icu_date.new()
-    prev_day:set_millis(date:get_millis())
-    prev_day:add(icu_date.fields.DATE, -1)
+  local date = start_date
+  while date:get_millis() <= end_date:get_millis() do
+    local next_day = icu_date.new()
+    next_day:set_millis(date:get_millis())
+    next_day:add(icu_date.fields.DATE, 1)
 
-    if not worker_days[worker_index] then
-      worker_days[worker_index] = {}
-    end
-    table.insert(worker_days[worker_index], { day = prev_day, next_day = date })
+    search_day(date, next_day)
 
-    worker_index = worker_index + 1
-    if worker_index > args["parallel"] then
-      worker_index = 1
-    end
-
-    date = prev_day
-  end
-
-  if args["parallel"] == 1 then
-    process_days(worker_days[1])
-  else
-    local childpids = {}
-    for i = 1, args["parallel"] do
-      local childpid = unistd.fork()
-      if childpid == -1 then
-        log("Error forking worker process" .. i)
-        os.exit(0)
-      elseif childpid == 0 then
-        pid = unistd.getpid()
-        process_days(worker_days[i])
-        os.exit(0)
-      else
-        table.insert(childpids, childpid)
-      end
-    end
-
-    for _, childpid in ipairs(childpids) do
-      wait(childpid)
-    end
+    date = next_day
   end
 end
 
 local function create_templates()
-  -- local path = os.getenv("API_UMBRELLA_SRC_ROOT") .. "/config/elasticsearch_templates_v2_es5.json"
-  local path = "/srv/data/api-umbrella/config/elasticsearch_templates_v2_es5.json"
-  -- local path = "/srv/data/api-umbrella/config/elasticsearch_templates_v2_5shards.json"
+  local path = os.getenv("API_UMBRELLA_SRC_ROOT") .. "/config/elasticsearch_templates_v2_es5.json"
   local content, read_err = file.read(path)
   if read_err then
-    log(read_err)
+    print(read_err)
     os.exit(1)
   end
 
@@ -562,7 +507,7 @@ local function create_templates()
       body = template["template"],
     })
     if err then
-      log("failed to update elasticsearch template: " .. err)
+      print("failed to update elasticsearch template: " .. err)
       os.exit(1)
     end
   end
