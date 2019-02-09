@@ -6,6 +6,7 @@ local inspect = require "inspect"
 local is_empty = require("pl.types").is_empty
 local mongo = require "mongo"
 local pg_encode_array = require "api-umbrella.utils.pg_encode_array"
+local pg_encode_json = require("pgmoon.json").encode_json
 local pg_null = require("pgmoon").Postgres.NULL
 local pg_utils = require "api-umbrella.utils.pg_utils"
 local random_seed = require "api-umbrella.utils.random_seed"
@@ -18,6 +19,7 @@ local admin_usernames = {}
 local args = {}
 local date = icu_date.new()
 local deletes = {}
+local object_ids = {}
 local format_iso8601 = icu_date.formats.iso8601()
 local mongo_client
 local mongo_database
@@ -97,6 +99,7 @@ local function query(...)
 end
 
 local function delete(table_name, where)
+  print("DELETE: " .. table_name .. ": " .. inspect(where))
   local result, err = pg_utils.delete(table_name, where)
   if err then
     print("failed to perform postgresql delete: " .. err)
@@ -116,7 +119,11 @@ local function insert(table_name, row, after_insert)
   end
 
   if row["created_by"] then
-    row["created_by_id"] = row["created_by"]
+    if type(row["created_by"]) == "userdata" and row["created_by"].__name == "mongo.ObjectID" then
+      row["created_by_id"] = object_ids[row["created_by"]]
+    else
+      row["created_by_id"] = row["created_by"]
+    end
     row["created_by_username"] = admin_username(row["created_by"])
     row["created_by"] = nil
   end
@@ -128,7 +135,11 @@ local function insert(table_name, row, after_insert)
   end
 
   if row["updated_by"] then
-    row["updated_by_id"] = row["updated_by"]
+    if type(row["updated_by"]) == "userdata" and row["updated_by"].__name == "mongo.ObjectID" then
+      row["updated_by_id"] = object_ids[row["updated_by"]]
+    else
+      row["updated_by_id"] = row["updated_by"]
+    end
     row["updated_by_username"] = admin_username(row["updated_by"])
     row["updated_by"] = nil
   end
@@ -139,11 +150,12 @@ local function insert(table_name, row, after_insert)
     row["updated_by_username"] = "Unknown (Imported)"
   end
 
-  local deleted_at = row["deleted_at"]
-  if row["deleted_at"] then
+  local deleted_at
+  if row["deleted_at"] and row["deleted_at"] ~= pg_null then
+    deleted_at = row["deleted_at"]
     track_delete(table_name, row["id"])
-    row["deleted_at"] = nil
   end
+  row["deleted_at"] = nil
 
   print("INSERT: " .. table_name .. ": " .. inspect(row))
 
@@ -164,14 +176,21 @@ local function insert(table_name, row, after_insert)
   return result, err
 end
 
+local function upsert_role(row)
+  print("UPSERT: api_roles: " .. inspect(row))
+  return query("INSERT INTO api_roles (id, created_at, created_by_id, created_by_username, updated_at, updated_by_id, updated_by_username) VALUES ($1, $2, $3, $4, $5, $6, $7) ON CONFLICT (id) DO UPDATE SET updated_at = EXCLUDED.updated_at, updated_by_id = EXCLUDED.updated_by_id, updated_by_username = EXCLUDED.updated_by_username", row["id"], row["created_at"], row["created_by_id"], row["created_by_username"], row["updated_at"], row["updated_by_id"], row["updated_by_username"])
+end
+
 local function migrate_collection(name, callback)
   local collection = mongo_database:getCollection(name)
-  for row in collection:aggregate('[ { "$sort": { "updated_at": 1 } } ]', { allowDiskUse = true }):iterator() do
+  local agg = '[ { "$sort": { "updated_at": 1 } } ]'
+  for row in collection:aggregate(agg, { allowDiskUse = true }):iterator() do
     print(inspect(row))
 
     if type(row["_id"]) == "userdata" and row["_id"].__name == "mongo.ObjectID" then
-      local old_id = row["_id"]:hash()
+      local old_id = tostring(row["_id"])
       row["_id"] = uuid_generate()
+      object_ids[old_id] = row["_id"]
       print("Migrating ObjectID " .. inspect(old_id) .. " to UUID " .. inspect(row["_id"]))
     end
 
@@ -257,6 +276,250 @@ local function migrate_admin_groups()
   end)
 end
 
+local function insert_settings(table_name, row, settings)
+  settings["created_at"] = row["created_at"]
+  settings["created_by_id"] = row["created_by_id"]
+  settings["created_by_username"] = row["created_by_username"]
+  settings["updated_at"] = row["updated_at"]
+  settings["updated_by_id"] = row["updated_by_id"]
+  settings["updated_by_username"] = row["updated_by_username"]
+
+  if table_name == "api_user_settings" and is_empty(settings["error_data"]) then
+    settings["error_data"] = nil
+  elseif settings["error_data"] and settings["error_data"] ~= pg_null then
+    settings["error_data"] = pg_utils.raw(pg_encode_json(settings["error_data"]))
+  end
+
+  if table_name == "api_user_settings" and is_empty(settings["error_templates"]) then
+    settings["error_templates"] = nil
+  elseif settings["error_templates"] and settings["error_templates"] ~= pg_null then
+    settings["error_templates"] = pg_utils.raw(pg_encode_json(settings["error_templates"]))
+  end
+
+  if settings["allowed_referers"] and settings["allowed_referers"] ~= pg_null then
+    settings["allowed_referers"] = pg_utils.raw(pg_encode_array(settings["allowed_referers"]))
+  end
+
+  if settings["require_https"] == "required_return_redirect" then
+    settings["require_https"] = "required_return_error"
+  end
+
+  local rate_limits = settings["rate_limits"]
+  settings["rate_limits"] = nil
+
+  local required_roles = settings["required_roles"]
+  settings["required_roles"] = nil
+
+  local headers = settings["headers"]
+  settings["headers"] = nil
+
+  local default_response_headers = settings["default_response_headers"]
+  settings["default_response_headers"] = nil
+
+  local override_response_headers = settings["override_response_headers"]
+  settings["override_response_headers"] = nil
+
+  insert("api_backend_settings", settings, function()
+    if rate_limits then
+      for _, rate_limit in ipairs(rate_limits) do
+        if table_name == "api_user_settings" then
+          rate_limit["api_user_settings_id"] = settings["id"]
+        else
+          rate_limit["api_backend_settings_id"] = settings["id"]
+        end
+        if not rate_limit["limit_to"] then
+          rate_limit["limit_to"] = rate_limit["limit"]
+          rate_limit["limit"] = nil
+        end
+        if rate_limit["limit_by"] == "apiKey" then
+          rate_limit["limit_by"] = "api_key"
+        end
+        rate_limit["created_at"] = row["created_at"]
+        rate_limit["created_by_id"] = row["created_by_id"]
+        rate_limit["created_by_username"] = row["created_by_username"]
+        rate_limit["updated_at"] = row["updated_at"]
+        rate_limit["updated_by_id"] = row["updated_by_id"]
+        rate_limit["updated_by_username"] = row["updated_by_username"]
+
+        insert("rate_limits", rate_limit)
+      end
+    end
+
+    if required_roles then
+      for _, role in ipairs(required_roles) do
+        upsert_role({
+          id = role,
+          created_at = row["created_at"],
+          created_by_id = row["created_by_id"],
+          created_by_username = row["created_by_username"],
+          updated_at = row["updated_at"],
+          updated_by_id = row["updated_by_id"],
+          updated_by_username = row["updated_by_username"],
+        })
+
+        insert("api_backend_settings_required_roles", {
+          api_backend_settings_id = settings["id"],
+          api_role_id = role,
+          created_at = row["created_at"],
+          created_by_id = row["created_by_id"],
+          created_by_username = row["created_by_username"],
+          updated_at = row["updated_at"],
+          updated_by_id = row["updated_by_id"],
+          updated_by_username = row["updated_by_username"],
+        })
+      end
+    end
+
+    if headers then
+      for index, header in ipairs(headers) do
+        header["api_backend_settings_id"] = settings["id"]
+        header["header_type"] = "request"
+        header["sort_order"] = index
+        header["created_at"] = row["created_at"]
+        header["created_by_id"] = row["created_by_id"]
+        header["created_by_username"] = row["created_by_username"]
+        header["updated_at"] = row["updated_at"]
+        header["updated_by_id"] = row["updated_by_id"]
+        header["updated_by_username"] = row["updated_by_username"]
+
+        insert("api_backend_http_headers", header)
+      end
+    end
+
+    if default_response_headers then
+      for index, header in ipairs(default_response_headers) do
+        header["api_backend_settings_id"] = settings["id"]
+        header["header_type"] = "response_default"
+        header["sort_order"] = index
+        header["created_at"] = row["created_at"]
+        header["created_by_id"] = row["created_by_id"]
+        header["created_by_username"] = row["created_by_username"]
+        header["updated_at"] = row["updated_at"]
+        header["updated_by_id"] = row["updated_by_id"]
+        header["updated_by_username"] = row["updated_by_username"]
+
+        insert("api_backend_http_headers", header)
+      end
+    end
+
+    if override_response_headers then
+      for index, header in ipairs(override_response_headers) do
+        header["api_backend_settings_id"] = settings["id"]
+        header["header_type"] = "response_override"
+        header["sort_order"] = index
+        header["created_at"] = row["created_at"]
+        header["created_by_id"] = row["created_by_id"]
+        header["created_by_username"] = row["created_by_username"]
+        header["updated_at"] = row["updated_at"]
+        header["updated_by_id"] = row["updated_by_id"]
+        header["updated_by_username"] = row["updated_by_username"]
+
+        insert("api_backend_http_headers", header)
+      end
+    end
+  end)
+end
+
+local function migrate_api_backends()
+  migrate_collection("apis", function(row)
+    local settings = row["settings"]
+    row["settings"] = nil
+
+    local servers = row["servers"]
+    row["servers"] = nil
+
+    local url_matches = row["url_matches"]
+    row["url_matches"] = nil
+
+    local sub_settings = row["sub_settings"]
+    row["sub_settings"] = nil
+
+    local rewrites = row["rewrites"]
+    row["rewrites"] = nil
+
+    row["version"] = nil
+
+    insert("api_backends", row, function()
+      if servers then
+        for _, server in ipairs(servers) do
+          server["api_backend_id"] = row["id"]
+          server["created_at"] = row["created_at"]
+          server["created_by_id"] = row["created_by_id"]
+          server["created_by_username"] = row["created_by_username"]
+          server["updated_at"] = row["updated_at"]
+          server["updated_by_id"] = row["updated_by_id"]
+          server["updated_by_username"] = row["updated_by_username"]
+
+          insert("api_backend_servers", server)
+        end
+      end
+
+      if url_matches then
+        for index, url_match in ipairs(url_matches) do
+          url_match["api_backend_id"] = row["id"]
+          url_match["sort_order"] = index
+          url_match["created_at"] = row["created_at"]
+          url_match["created_by_id"] = row["created_by_id"]
+          url_match["created_by_username"] = row["created_by_username"]
+          url_match["updated_at"] = row["updated_at"]
+          url_match["updated_by_id"] = row["updated_by_id"]
+          url_match["updated_by_username"] = row["updated_by_username"]
+
+          insert("api_backend_url_matches", url_match)
+        end
+      end
+
+      if settings then
+        settings["api_backend_id"] = row["id"]
+        insert_settings("api_backend_settings", row, settings)
+      end
+
+      if sub_settings then
+        for index, sub_setting in ipairs(sub_settings) do
+          sub_setting["api_backend_id"] = row["id"]
+          sub_setting["sort_order"] = index
+          sub_setting["created_at"] = row["created_at"]
+          sub_setting["created_by_id"] = row["created_by_id"]
+          sub_setting["created_by_username"] = row["created_by_username"]
+          sub_setting["updated_at"] = row["updated_at"]
+          sub_setting["updated_by_id"] = row["updated_by_id"]
+          sub_setting["updated_by_username"] = row["updated_by_username"]
+
+          local sub_setting_settings = sub_setting["settings"]
+          sub_setting["settings"] = nil
+
+          if not sub_setting["regex"] and deletes["api_backends"] and deletes["api_backends"][row["id"]] then
+            sub_setting["regex"] = "^$"
+          end
+
+          insert("api_backend_sub_url_settings", sub_setting)
+
+          if sub_setting_settings then
+            sub_setting_settings["api_backend_sub_url_settings_id"] = sub_setting["id"]
+            insert_settings("api_backend_settings", row, sub_setting_settings)
+          end
+        end
+      end
+
+      if rewrites then
+        for index, rewrite in ipairs(rewrites) do
+          rewrite["api_backend_id"] = row["id"]
+          rewrite["sort_order"] = index
+          rewrite["created_at"] = row["created_at"]
+          rewrite["created_by_id"] = row["created_by_id"]
+          rewrite["created_by_username"] = row["created_by_username"]
+          rewrite["updated_at"] = row["updated_at"]
+          rewrite["updated_by_id"] = row["updated_by_id"]
+          rewrite["updated_by_username"] = row["updated_by_username"]
+
+          insert("api_backend_rewrites", rewrite)
+        end
+      end
+
+    end)
+  end)
+end
+
 local function migrate_api_users()
   migrate_collection("api_users", function(row)
     local api_key = row["api_key"]
@@ -324,67 +587,77 @@ local function migrate_api_users()
       row["registration_origin"] = string.sub(row["registration_origin"], 1, 1000)
     end
 
-    insert("api_users", row)
+    insert("api_users", row, function()
+      if roles then
+        for _, role in ipairs(roles) do
+          upsert_role({
+            id = role,
+            created_at = row["created_at"],
+            created_by_id = row["created_by_id"],
+            created_by_username = row["created_by_username"],
+            updated_at = row["updated_at"],
+            updated_by_id = row["updated_by_id"],
+            updated_by_username = row["updated_by_username"],
+          })
 
-    if roles then
-      for _, role in ipairs(roles) do
-        insert("api_users_roles", {
-          api_user_id = row["id"],
-          api_role_id = role,
-          created_at = row["created_at"],
-          created_by_id = row["created_by_id"],
-          created_by_username = row["created_by_username"],
-          updated_at = row["updated_at"],
-          updated_by_id = row["updated_by_id"],
-          updated_by_username = row["updated_by_username"],
-        })
-      end
-    end
-
-    if settings then
-      settings["api_user_id"] = row["id"]
-      settings["created_at"] = row["created_at"]
-      settings["created_by_id"] = row["created_by_id"]
-      settings["created_by_username"] = row["created_by_username"]
-      settings["updated_at"] = row["updated_at"]
-      settings["updated_by_id"] = row["updated_by_id"]
-      settings["updated_by_username"] = row["updated_by_username"]
-
-      if not is_empty(settings["allowed_referers"]) then
-        settings["allowed_referers"] = pg_utils.raw(pg_encode_array(settings["allowed_referers"]))
-      end
-
-      if not is_empty(settings["allowed_ips"]) then
-        settings["allowed_ips"] = pg_utils.raw(pg_encode_array(settings["allowed_ips"]) .. "::inet[]")
-      end
-
-      if is_empty(settings["error_data"]) then
-        settings["error_data"] = nil
-      end
-      if is_empty(settings["error_templates"]) then
-        settings["error_templates"] = nil
-      end
-      if is_empty(settings["rate_limit_mode"]) then
-        settings["rate_limit_mode"] = nil
-      end
-
-      local rate_limits = settings["rate_limits"]
-      settings["rate_limits"] = nil
-
-      insert("api_user_settings", settings)
-
-      if rate_limits then
-        for _, rate_limit in ipairs(rate_limits) do
-          rate_limit["api_user_settings_id"] = settings["id"]
-          rate_limit["created_at"] = row["created_at"]
-          rate_limit["created_by_id"] = row["created_by_id"]
-          rate_limit["created_by_username"] = row["created_by_username"]
-          rate_limit["updated_at"] = row["updated_at"]
-          rate_limit["updated_by_id"] = row["updated_by_id"]
-          rate_limit["updated_by_username"] = row["updated_by_username"]
+          insert("api_users_roles", {
+            api_user_id = row["id"],
+            api_role_id = role,
+            created_at = row["created_at"],
+            created_by_id = row["created_by_id"],
+            created_by_username = row["created_by_username"],
+            updated_at = row["updated_at"],
+            updated_by_id = row["updated_by_id"],
+            updated_by_username = row["updated_by_username"],
+          })
         end
       end
-    end
+
+      if settings then
+        settings["api_user_id"] = row["id"]
+        settings["created_at"] = row["created_at"]
+        settings["created_by_id"] = row["created_by_id"]
+        settings["created_by_username"] = row["created_by_username"]
+        settings["updated_at"] = row["updated_at"]
+        settings["updated_by_id"] = row["updated_by_id"]
+        settings["updated_by_username"] = row["updated_by_username"]
+
+        if not is_empty(settings["allowed_referers"]) then
+          settings["allowed_referers"] = pg_utils.raw(pg_encode_array(settings["allowed_referers"]))
+        end
+
+        if not is_empty(settings["allowed_ips"]) then
+          settings["allowed_ips"] = pg_utils.raw(pg_encode_array(settings["allowed_ips"]) .. "::inet[]")
+        end
+
+        if is_empty(settings["error_data"]) then
+          settings["error_data"] = nil
+        end
+        if is_empty(settings["error_templates"]) then
+          settings["error_templates"] = nil
+        end
+        if is_empty(settings["rate_limit_mode"]) then
+          settings["rate_limit_mode"] = nil
+        end
+
+        local rate_limits = settings["rate_limits"]
+        settings["rate_limits"] = nil
+
+        insert("api_user_settings", settings)
+
+        if rate_limits then
+          for _, rate_limit in ipairs(rate_limits) do
+            rate_limit["api_user_settings_id"] = settings["id"]
+            rate_limit["created_at"] = row["created_at"]
+            rate_limit["created_by_id"] = row["created_by_id"]
+            rate_limit["created_by_username"] = row["created_by_username"]
+            rate_limit["updated_at"] = row["updated_at"]
+            rate_limit["updated_by_id"] = row["updated_by_id"]
+            rate_limit["updated_by_username"] = row["updated_by_username"]
+          end
+        end
+      end
+    end)
   end)
 end
 
@@ -401,13 +674,14 @@ local function run()
   query("SET SESSION api_umbrella.disable_stamping = 'on'")
 
   if args["clean"] then
-    query("TRUNCATE TABLE admins, api_scopes, admin_groups, audit.log CASCADE")
+    query("TRUNCATE TABLE admins, api_backends, api_scopes, api_users, admin_groups, audit.log CASCADE")
   end
 
   build_admin_username_mappings()
   migrate_admins()
   migrate_api_scopes()
   migrate_admin_groups()
+  migrate_api_backends()
   migrate_api_users()
 
   query("COMMIT")
