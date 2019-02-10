@@ -135,6 +135,7 @@ local function flush_bulk_commands()
   local benchmark_start = ngx.now()
 
   print("Indexing records from " .. os.date("!%Y-%m-%dT%TZ", last_bulk_commands_timestamp / 1000))
+  io.flush()
 
   local res, err = elasticsearch_query("/_bulk", {
     server = args["_output_server"],
@@ -194,6 +195,7 @@ local function flush_bulk_commands()
 
   local count = #bulk_commands / 2
   print("Indexed " .. count .. " records (" .. (count / (benchmark_end - benchmark_start)) .. " records/sec)")
+  io.flush()
 
   bulk_commands = {}
   last_bulk_commands_timestamp = nil
@@ -350,15 +352,19 @@ local function process_hits(results, output_index)
   local count = #hits
   print(os.date("!%Y-%m-%dT%TZ"))
   print("Fetched " .. count .. " records in " .. results["took"] .. " ms (" .. (count / (results["took"] / 1000)) .. " records/sec)")
+  io.flush()
 
   for _, hit in ipairs(hits) do
     process_hit(hit, output_index)
   end
 
+  flush_bulk_commands()
+
   ngx.update_time()
   local benchmark_end = ngx.now()
 
   print("Processed " .. count .. " records (" .. (count / (benchmark_end - benchmark_start)) .. " records/sec)\n")
+  io.flush()
 end
 
 local function search_day(date_start, date_end)
@@ -417,9 +423,9 @@ local function search_day(date_start, date_end)
     process_hits(raw_results, output_index)
   end
 
-  flush_bulk_commands()
-
+  print(os.date("!%Y-%m-%dT%TZ"))
   print("Optimizing '" .. output_index .. "' index...")
+  io.flush()
   elasticsearch_query("/" .. output_index .. "/_forcemerge", {
     server = args["_output_server"],
     method = "POST",
@@ -429,6 +435,7 @@ local function search_day(date_start, date_end)
   })
 
   print("Creating index aliases for '" .. output_index .. "'...")
+  io.flush()
   local aliases = {
     {
       alias = "api-umbrella-logs-" .. output_index_date,
@@ -466,6 +473,8 @@ local function search_day(date_start, date_end)
       end
     end
   end
+  print("")
+  io.flush()
 end
 
 local function search()
