@@ -110,9 +110,6 @@ local function delete(table_name, where)
 end
 
 local function insert(table_name, row, after_insert)
-  nulls(row)
-  datetimes(row)
-
   if row["_id"] then
     row["id"] = row["_id"]
     row["_id"] = nil
@@ -193,6 +190,9 @@ local function migrate_collection(name, callback)
       object_ids[old_id] = row["_id"]
       print("Migrating ObjectID " .. inspect(old_id) .. " to UUID " .. inspect(row["_id"]))
     end
+
+    nulls(row)
+    datetimes(row)
 
     callback(row)
   end
@@ -302,6 +302,11 @@ local function insert_settings(table_name, row, settings)
 
   if settings["require_https"] == "required_return_redirect" then
     settings["require_https"] = "required_return_error"
+  end
+
+  print(inspect(settings["hourly_rate_limit"]))
+  if settings["hourly_rate_limit"] == pg_null then
+    settings["hourly_rate_limit"] = nil
   end
 
   local rate_limits = settings["rate_limits"]
@@ -438,6 +443,8 @@ local function migrate_api_backends()
     row["rewrites"] = nil
 
     row["version"] = nil
+    row["default_response_headers"] = nil
+    row["override_response_headers"] = nil
 
     insert("api_backends", row, function()
       if servers then
@@ -455,17 +462,25 @@ local function migrate_api_backends()
       end
 
       if url_matches then
-        for index, url_match in ipairs(url_matches) do
-          url_match["api_backend_id"] = row["id"]
-          url_match["sort_order"] = index
-          url_match["created_at"] = row["created_at"]
-          url_match["created_by_id"] = row["created_by_id"]
-          url_match["created_by_username"] = row["created_by_username"]
-          url_match["updated_at"] = row["updated_at"]
-          url_match["updated_by_id"] = row["updated_by_id"]
-          url_match["updated_by_username"] = row["updated_by_username"]
+        local seen_url_matches = {}
+        local index = 1
+        for _, url_match in ipairs(url_matches) do
+          local key = (url_match["frontend_prefix"] or "") .. (url_match["backend_prefix"] or "")
+          if not seen_url_matches[key] then
+            url_match["api_backend_id"] = row["id"]
+            url_match["sort_order"] = index
+            url_match["created_at"] = row["created_at"]
+            url_match["created_by_id"] = row["created_by_id"]
+            url_match["created_by_username"] = row["created_by_username"]
+            url_match["updated_at"] = row["updated_at"]
+            url_match["updated_by_id"] = row["updated_by_id"]
+            url_match["updated_by_username"] = row["updated_by_username"]
 
-          insert("api_backend_url_matches", url_match)
+            insert("api_backend_url_matches", url_match)
+
+            seen_url_matches[key] = true
+            index = index + 1
+          end
         end
       end
 
@@ -679,10 +694,10 @@ local function run()
 
   build_admin_username_mappings()
   migrate_admins()
-  migrate_api_scopes()
-  migrate_admin_groups()
+  -- migrate_api_scopes()
+  -- migrate_admin_groups()
   migrate_api_backends()
-  migrate_api_users()
+  -- migrate_api_users()
 
   query("COMMIT")
 end
