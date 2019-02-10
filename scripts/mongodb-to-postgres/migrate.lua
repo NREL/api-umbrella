@@ -7,6 +7,7 @@ local is_empty = require("pl.types").is_empty
 local mongo = require "mongo"
 local pg_encode_array = require "api-umbrella.utils.pg_encode_array"
 local pg_encode_json = require("pgmoon.json").encode_json
+local json_null = require("cjson").null
 local pg_null = require("pgmoon").Postgres.NULL
 local pg_utils = require "api-umbrella.utils.pg_utils"
 local random_seed = require "api-umbrella.utils.random_seed"
@@ -56,7 +57,7 @@ local function admin_username(id)
   end
 end
 
-local function nulls(table)
+local function convert_nulls(table)
   if not table then return end
 
   for key, value in pairs(table) do
@@ -66,14 +67,31 @@ local function nulls(table)
       -- Strip null byte characters that aren't allowed in Postgres.
       table[key] = ngx.re.gsub(value, [[\0]], "", "jo")
     elseif type(value) == "table" then
-      table[key] = nulls(value)
+      table[key] = convert_nulls(value)
     end
   end
 
   return table
 end
 
-local function datetimes(table)
+local function convert_json_nulls(table)
+  if not table then return end
+
+  local new_table = {}
+  for key, value in pairs(table) do
+    if value == mongo.Null or value == pg_null then
+      new_table[key] = json_null
+    elseif type(value) == "table" then
+      new_table[key] = convert_json_nulls(value)
+    else
+      new_table[key] = value
+    end
+  end
+
+  return new_table
+end
+
+local function convert_datetimes(table)
   if not table then return end
 
   for key, value in pairs(table) do
@@ -81,12 +99,35 @@ local function datetimes(table)
       date:set_millis(value:unpack())
       table[key] = date:format(format_iso8601)
     elseif type(value) == "table" then
-      table[key] = datetimes(value)
+      table[key] = convert_datetimes(value)
     end
   end
 
   return table
 end
+
+local function convert_object_ids(table)
+  if not table then return end
+
+  for key, value in pairs(table) do
+    if type(value) == "userdata" and value.__name == "mongo.ObjectID" then
+      local old_id = tostring(value)
+      if object_ids[old_id] then
+        table[key] = object_ids[old_id]
+        -- print("USING ObjectID " .. inspect(old_id) .. " to UUID " .. inspect(table[key]))
+      else
+        table[key] = uuid_generate()
+        object_ids[old_id] = table[key]
+        print("Migrating ObjectID " .. inspect(old_id) .. " to UUID " .. inspect(table[key]))
+      end
+    elseif type(value) == "table" then
+      table[key] = convert_object_ids(value)
+    end
+  end
+
+  return table
+end
+
 
 local function query(...)
   local result, err = pg_utils.query(...)
@@ -99,7 +140,7 @@ local function query(...)
 end
 
 local function delete(table_name, where)
-  print("DELETE: " .. table_name .. ": " .. inspect(where))
+  -- print("DELETE: " .. table_name .. ": " .. inspect(where))
   local result, err = pg_utils.delete(table_name, where)
   if err then
     print("failed to perform postgresql delete: " .. err)
@@ -116,11 +157,7 @@ local function insert(table_name, row, after_insert)
   end
 
   if row["created_by"] then
-    if type(row["created_by"]) == "userdata" and row["created_by"].__name == "mongo.ObjectID" then
-      row["created_by_id"] = object_ids[row["created_by"]]
-    else
-      row["created_by_id"] = row["created_by"]
-    end
+    row["created_by_id"] = row["created_by"]
     row["created_by_username"] = admin_username(row["created_by"])
     row["created_by"] = nil
   end
@@ -132,11 +169,7 @@ local function insert(table_name, row, after_insert)
   end
 
   if row["updated_by"] then
-    if type(row["updated_by"]) == "userdata" and row["updated_by"].__name == "mongo.ObjectID" then
-      row["updated_by_id"] = object_ids[row["updated_by"]]
-    else
-      row["updated_by_id"] = row["updated_by"]
-    end
+    row["updated_by_id"] = row["updated_by"]
     row["updated_by_username"] = admin_username(row["updated_by"])
     row["updated_by"] = nil
   end
@@ -153,6 +186,13 @@ local function insert(table_name, row, after_insert)
     track_delete(table_name, row["id"])
   end
   row["deleted_at"] = nil
+
+  if table_name == "analytics_cities" then
+    row["created_by_id"] = nil
+    row["created_by_username"] = nil
+    row["updated_by_id"] = nil
+    row["updated_by_username"] = nil
+  end
 
   print("INSERT: " .. table_name .. ": " .. inspect(row))
 
@@ -174,28 +214,30 @@ local function insert(table_name, row, after_insert)
 end
 
 local function upsert_role(row)
-  print("UPSERT: api_roles: " .. inspect(row))
+  -- print("UPSERT: api_roles: " .. inspect(row))
   return query("INSERT INTO api_roles (id, created_at, created_by_id, created_by_username, updated_at, updated_by_id, updated_by_username) VALUES ($1, $2, $3, $4, $5, $6, $7) ON CONFLICT (id) DO UPDATE SET updated_at = EXCLUDED.updated_at, updated_by_id = EXCLUDED.updated_by_id, updated_by_username = EXCLUDED.updated_by_username", row["id"], row["created_at"], row["created_by_id"], row["created_by_username"], row["updated_at"], row["updated_by_id"], row["updated_by_username"])
 end
 
 local function migrate_collection(name, callback)
+  print("Migrating collection " .. inspect(name) .. "...")
+
   local collection = mongo_database:getCollection(name)
   local agg = '[ { "$sort": { "updated_at": 1 } } ]'
+  if name == "config_versions" then
+    agg = '[ { "$sort": { "version": -1 } } ]'
+  end
   for row in collection:aggregate(agg, { allowDiskUse = true }):iterator() do
+    io.write(".")
+    io.flush()
     print(inspect(row))
 
-    if type(row["_id"]) == "userdata" and row["_id"].__name == "mongo.ObjectID" then
-      local old_id = tostring(row["_id"])
-      row["_id"] = uuid_generate()
-      object_ids[old_id] = row["_id"]
-      print("Migrating ObjectID " .. inspect(old_id) .. " to UUID " .. inspect(row["_id"]))
-    end
-
-    nulls(row)
-    datetimes(row)
+    convert_nulls(row)
+    convert_datetimes(row)
+    convert_object_ids(row)
 
     callback(row)
   end
+  print("")
 end
 
 local function build_admin_username_mappings()
@@ -287,13 +329,13 @@ local function insert_settings(table_name, row, settings)
   if table_name == "api_user_settings" and is_empty(settings["error_data"]) then
     settings["error_data"] = nil
   elseif settings["error_data"] and settings["error_data"] ~= pg_null then
-    settings["error_data"] = pg_utils.raw(pg_encode_json(settings["error_data"]))
+    settings["error_data"] = pg_utils.raw(pg_encode_json(convert_json_nulls(settings["error_data"])))
   end
 
   if table_name == "api_user_settings" and is_empty(settings["error_templates"]) then
     settings["error_templates"] = nil
   elseif settings["error_templates"] and settings["error_templates"] ~= pg_null then
-    settings["error_templates"] = pg_utils.raw(pg_encode_json(settings["error_templates"]))
+    settings["error_templates"] = pg_utils.raw(pg_encode_json(convert_json_nulls(settings["error_templates"])))
   end
 
   if settings["allowed_referers"] and settings["allowed_referers"] ~= pg_null then
@@ -304,7 +346,6 @@ local function insert_settings(table_name, row, settings)
     settings["require_https"] = "required_return_error"
   end
 
-  print(inspect(settings["hourly_rate_limit"]))
   if settings["hourly_rate_limit"] == pg_null then
     settings["hourly_rate_limit"] = nil
   end
@@ -553,16 +594,16 @@ local function migrate_api_users()
     row["__v"] = nil
     row["ts"] = nil
     row["terms_and_conditions"] = nil
-    if row["throttle_by_ip"] == mongo.Null then
+    if row["throttle_by_ip"] == pg_null then
       row["throttle_by_ip"] = nil
     end
-    if row["throttle_daily_limit"] == mongo.Null then
+    if row["throttle_daily_limit"] == pg_null then
       row["throttle_daily_limit"] = nil
     end
-    if row["throttle_hourly_limit"] == mongo.Null then
+    if row["throttle_hourly_limit"] == pg_null then
       row["throttle_hourly_limit"] = nil
     end
-    if row["unthrottled"] == mongo.Null or row["unthrottled"] == false then
+    if row["unthrottled"] == pg_null or row["unthrottled"] == false then
       row["unthrottled"] = nil
     end
     if type(row["email"]) == "table" then
@@ -676,6 +717,25 @@ local function migrate_api_users()
   end)
 end
 
+local function migrate_published_config()
+  migrate_collection("config_versions", function(row)
+    row["config"] = pg_utils.raw(pg_encode_json(convert_json_nulls(row["config"])))
+    row["_id"] = nil
+    row["version"] = nil
+
+    insert("published_config", row)
+  end)
+end
+
+local function migrate_analytics_cities()
+  migrate_collection("log_city_locations", function(row)
+    row["_id"] = nil
+    row["location"] = pg_utils.raw("point(" .. pg_utils.escape_literal(row["location"]["coordinates"][1]) .. "," .. pg_utils.escape_literal(row["location"]["coordinates"][2]) .. ")")
+
+    insert("analytics_cities", row)
+  end)
+end
+
 local function run()
   args = parse_args()
   seed_database.seed_once()
@@ -694,10 +754,12 @@ local function run()
 
   build_admin_username_mappings()
   migrate_admins()
-  -- migrate_api_scopes()
-  -- migrate_admin_groups()
+  migrate_api_scopes()
+  migrate_admin_groups()
   migrate_api_backends()
-  -- migrate_api_users()
+  migrate_api_users()
+  migrate_published_config()
+  migrate_analytics_cities()
 
   query("COMMIT")
 end
