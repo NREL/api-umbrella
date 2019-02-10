@@ -501,7 +501,8 @@ local function search()
 end
 
 local function create_templates()
-  local path = os.getenv("API_UMBRELLA_SRC_ROOT") .. "/config/elasticsearch_templates_v2_es5.json"
+  -- local path = os.getenv("API_UMBRELLA_SRC_ROOT") .. "/config/elasticsearch_templates_v2_es5.json"
+  local path = "/srv/data/api-umbrella/config/elasticsearch_templates_v2_es5.json"
   local content, read_err = file.read(path)
   if read_err then
     print(read_err)
