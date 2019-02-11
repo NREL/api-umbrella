@@ -118,7 +118,7 @@ local function convert_object_ids(table)
       else
         table[key] = uuid_generate()
         object_ids[old_id] = table[key]
-        print("Migrating ObjectID " .. inspect(old_id) .. " to UUID " .. inspect(table[key]))
+        -- print("Migrating ObjectID " .. inspect(old_id) .. " to UUID " .. inspect(table[key]))
       end
     elseif type(value) == "table" then
       table[key] = convert_object_ids(value)
@@ -133,6 +133,7 @@ local function query(...)
   local result, err = pg_utils.query(...)
   if err then
     print("failed to perform postgresql query: " .. err)
+    print(inspect(...))
     os.exit(1)
   end
 
@@ -144,6 +145,8 @@ local function delete(table_name, where)
   local result, err = pg_utils.delete(table_name, where)
   if err then
     print("failed to perform postgresql delete: " .. err)
+    print(inspect(table_name))
+    print(inspect(where))
     os.exit(1)
   end
 
@@ -194,11 +197,13 @@ local function insert(table_name, row, after_insert)
     row["updated_by_username"] = nil
   end
 
-  print("INSERT: " .. table_name .. ": " .. inspect(row))
+  -- print("INSERT: " .. table_name .. ": " .. inspect(row))
 
   local result, err = pg_utils.insert(table_name, row)
   if err then
     print("failed to perform postgresql insert: " .. err)
+    print(inspect(table_name))
+    print(inspect(row))
     os.exit(1)
   end
 
@@ -229,7 +234,7 @@ local function migrate_collection(name, callback)
   for row in collection:aggregate(agg, { allowDiskUse = true }):iterator() do
     io.write(".")
     io.flush()
-    print(inspect(row))
+    -- print(inspect(row))
 
     convert_nulls(row)
     convert_datetimes(row)
@@ -338,6 +343,10 @@ local function insert_settings(table_name, row, settings)
     settings["error_templates"] = pg_utils.raw(pg_encode_json(convert_json_nulls(settings["error_templates"])))
   end
 
+  if settings["allowed_ips"] and settings["allowed_ips"] ~= pg_null then
+    settings["allowed_ips"] = pg_utils.raw(pg_encode_array(settings["allowed_ips"]) .. "::inet[]")
+  end
+
   if settings["allowed_referers"] and settings["allowed_referers"] ~= pg_null then
     settings["allowed_referers"] = pg_utils.raw(pg_encode_array(settings["allowed_referers"]))
   end
@@ -350,22 +359,28 @@ local function insert_settings(table_name, row, settings)
     settings["hourly_rate_limit"] = nil
   end
 
+  if settings["rate_limit_mode"] == "" then
+    settings["rate_limit_mode"] = nil
+  end
+
   local rate_limits = settings["rate_limits"]
   settings["rate_limits"] = nil
 
   local required_roles = settings["required_roles"]
   settings["required_roles"] = nil
 
-  local headers = settings["headers"]
+  local headers = {}
+
+  headers["request"] = settings["headers"]
   settings["headers"] = nil
 
-  local default_response_headers = settings["default_response_headers"]
+  headers["response_default"] = settings["default_response_headers"]
   settings["default_response_headers"] = nil
 
-  local override_response_headers = settings["override_response_headers"]
+  headers["response_override"] = settings["override_response_headers"]
   settings["override_response_headers"] = nil
 
-  insert("api_backend_settings", settings, function()
+  insert(table_name, settings, function()
     if rate_limits then
       for _, rate_limit in ipairs(rate_limits) do
         if table_name == "api_user_settings" then
@@ -379,6 +394,9 @@ local function insert_settings(table_name, row, settings)
         end
         if rate_limit["limit_by"] == "apiKey" then
           rate_limit["limit_by"] = "api_key"
+        end
+        if rate_limit["response_headers"] == pg_null then
+          rate_limit["response_headers"] = false
         end
         rate_limit["created_at"] = row["created_at"]
         rate_limit["created_by_id"] = row["created_by_id"]
@@ -416,42 +434,10 @@ local function insert_settings(table_name, row, settings)
       end
     end
 
-    if headers then
-      for index, header in ipairs(headers) do
+    for header_type, type_headers in ipairs(headers) do
+      for index, header in ipairs(type_headers) do
         header["api_backend_settings_id"] = settings["id"]
-        header["header_type"] = "request"
-        header["sort_order"] = index
-        header["created_at"] = row["created_at"]
-        header["created_by_id"] = row["created_by_id"]
-        header["created_by_username"] = row["created_by_username"]
-        header["updated_at"] = row["updated_at"]
-        header["updated_by_id"] = row["updated_by_id"]
-        header["updated_by_username"] = row["updated_by_username"]
-
-        insert("api_backend_http_headers", header)
-      end
-    end
-
-    if default_response_headers then
-      for index, header in ipairs(default_response_headers) do
-        header["api_backend_settings_id"] = settings["id"]
-        header["header_type"] = "response_default"
-        header["sort_order"] = index
-        header["created_at"] = row["created_at"]
-        header["created_by_id"] = row["created_by_id"]
-        header["created_by_username"] = row["created_by_username"]
-        header["updated_at"] = row["updated_at"]
-        header["updated_by_id"] = row["updated_by_id"]
-        header["updated_by_username"] = row["updated_by_username"]
-
-        insert("api_backend_http_headers", header)
-      end
-    end
-
-    if override_response_headers then
-      for index, header in ipairs(override_response_headers) do
-        header["api_backend_settings_id"] = settings["id"]
-        header["header_type"] = "response_override"
+        header["header_type"] = header_type
         header["sort_order"] = index
         header["created_at"] = row["created_at"]
         header["created_by_id"] = row["created_by_id"]
@@ -671,47 +657,7 @@ local function migrate_api_users()
 
       if settings then
         settings["api_user_id"] = row["id"]
-        settings["created_at"] = row["created_at"]
-        settings["created_by_id"] = row["created_by_id"]
-        settings["created_by_username"] = row["created_by_username"]
-        settings["updated_at"] = row["updated_at"]
-        settings["updated_by_id"] = row["updated_by_id"]
-        settings["updated_by_username"] = row["updated_by_username"]
-
-        if not is_empty(settings["allowed_referers"]) then
-          settings["allowed_referers"] = pg_utils.raw(pg_encode_array(settings["allowed_referers"]))
-        end
-
-        if not is_empty(settings["allowed_ips"]) then
-          settings["allowed_ips"] = pg_utils.raw(pg_encode_array(settings["allowed_ips"]) .. "::inet[]")
-        end
-
-        if is_empty(settings["error_data"]) then
-          settings["error_data"] = nil
-        end
-        if is_empty(settings["error_templates"]) then
-          settings["error_templates"] = nil
-        end
-        if is_empty(settings["rate_limit_mode"]) then
-          settings["rate_limit_mode"] = nil
-        end
-
-        local rate_limits = settings["rate_limits"]
-        settings["rate_limits"] = nil
-
-        insert("api_user_settings", settings)
-
-        if rate_limits then
-          for _, rate_limit in ipairs(rate_limits) do
-            rate_limit["api_user_settings_id"] = settings["id"]
-            rate_limit["created_at"] = row["created_at"]
-            rate_limit["created_by_id"] = row["created_by_id"]
-            rate_limit["created_by_username"] = row["created_by_username"]
-            rate_limit["updated_at"] = row["updated_at"]
-            rate_limit["updated_by_id"] = row["updated_by_id"]
-            rate_limit["updated_by_username"] = row["updated_by_username"]
-          end
-        end
+        insert_settings("api_user_settings", row, settings)
       end
     end)
   end)
@@ -749,7 +695,7 @@ local function run()
   query("SET SESSION api_umbrella.disable_stamping = 'on'")
 
   if args["clean"] then
-    query("TRUNCATE TABLE admins, api_backends, api_scopes, api_users, admin_groups, audit.log CASCADE")
+    query("TRUNCATE TABLE admins, analytics_cities, api_backends, api_scopes, api_users, admin_groups, audit.log CASCADE")
   end
 
   build_admin_username_mappings()
