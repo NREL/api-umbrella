@@ -128,7 +128,6 @@ local function convert_object_ids(table)
   return table
 end
 
-
 local function query(...)
   local result, err = pg_utils.query(...)
   if err then
@@ -566,7 +565,7 @@ local function migrate_api_users()
   migrate_collection("api_users", function(row)
     local api_key = row["api_key"]
     row["api_key_hash"] = hmac(api_key)
-    local encrypted, iv = encryptor.encrypt(api_key, row["id"])
+    local encrypted, iv = encryptor.encrypt(api_key, row["_id"])
     row["api_key_encrypted"] = encrypted
     row["api_key_encrypted_iv"] = iv
     row["api_key_prefix"] = string.sub(api_key, 1, API_KEY_PREFIX_LENGTH)

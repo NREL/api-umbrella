@@ -27,6 +27,9 @@ local secret_key_sha256 = sha256:final()
 local _M = {}
 
 function _M.encrypt(value, auth_data, options)
+  assert(value)
+  assert(auth_data)
+
   local iv
   if options and options["iv"] then
     iv = options["iv"]
@@ -46,6 +49,10 @@ function _M.encrypt(value, auth_data, options)
 end
 
 function _M.decrypt(encrypted_value, iv, auth_data, options)
+  assert(encrypted_value)
+  assert(iv)
+  assert(auth_data)
+
   local binary = encrypted_value
   if not options or options["base64"] ~= false then
     binary = decode_base64(binary)
