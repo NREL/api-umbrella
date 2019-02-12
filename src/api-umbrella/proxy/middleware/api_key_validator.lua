@@ -10,7 +10,7 @@ local is_empty = types.is_empty
 
 local function resolve_api_key()
   local api_key_methods = config["gatekeeper"]["api_key_methods"]
-  local key = {key_value="", key_type="", idp=nil}
+  local key = {key_value=nil, key_type="", idp=nil}
 
   -- The api_key variable is a dictionary compose by three elements, the key_value which stores
   -- the api_key value or the user token value, the key_type field in where is stored

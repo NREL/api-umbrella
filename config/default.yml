@@ -69,7 +69,7 @@ gatekeeper:
     - google-oauth2
   default_idp:
     backend_name: fiware-oauth2
-    host: http://idm.docker:8000
+    host: http://idm.docker:3000
 trafficserver:
   host: 127.0.0.1
   port: 14009

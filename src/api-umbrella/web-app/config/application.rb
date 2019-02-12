@@ -14,6 +14,7 @@ module ApiUmbrella
   class Application < Rails::Application
     config.autoload_paths += ["#{config.root}/lib"]
     config.eager_load_paths += ["#{config.root}/lib"]
+    config.action_dispatch.ip_spoofing_check = false
 
     config.before_configuration do
       config_files = []

@@ -8,7 +8,7 @@ list(APPEND TRAFFICSERVER_CONFIGURE_CMD --enable-experimental-plugins)
 ExternalProject_Add(
   trafficserver
   URL http://mirror.olnevhost.net/pub/apache/trafficserver/trafficserver-${TRAFFICSERVER_VERSION}.tar.bz2
-  URL_HASH MD5=${TRAFFICSERVER_HASH}
+  URL_HASH SHA512=${TRAFFICSERVER_HASH}
   CONFIGURE_COMMAND rm -rf <BINARY_DIR> && mkdir -p <BINARY_DIR> # Clean across version upgrades
     COMMAND ${TRAFFICSERVER_CONFIGURE_CMD}
   INSTALL_COMMAND make install DESTDIR=${STAGE_DIR}
