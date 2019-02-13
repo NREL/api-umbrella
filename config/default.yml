@@ -171,13 +171,19 @@ dns_resolver:
   allow_ipv6: false
 postgresql:
   host: 127.0.0.1
-  port: 14006
+  port: 14011
   database: api_umbrella
   username: api_umbrella_app_user
   password:
+  migrations:
+    username: api_umbrella_owner
+    password:
+  auto_ssl:
+    username: api_umbrella_auto_ssl_user
+    password:
   embedded_server_config:
     listen_addresses: 127.0.0.1
-    port: 14006
+    port: 14011
 mongodb:
   url: "mongodb://127.0.0.1:14001/api_umbrella"
   read_preference: primaryPreferred

@@ -26,6 +26,10 @@ http {
   scgi_temp_path {{tmp_dir}}/nginx-web-app-scgi_temp;
   server_tokens off;
 
+  {{#_development_env?}}
+    lua_code_cache off;
+  {{/_development_env?}}
+
   # FIXME: Detect path/make configurable.
   lua_ssl_trusted_certificate /etc/ssl/certs/ca-certificates.crt;
   lua_ssl_verify_depth 5;
@@ -55,10 +59,6 @@ http {
     listen {{web.host}}:{{web.port}} so_keepalive=on;
 
     set $x_api_umbrella_request_id $http_x_api_umbrella_request_id;
-
-    {{#_development_env?}}
-      lua_code_cache off;
-    {{/_development_env?}}
 
     # Security headers
     # https://www.owasp.org/index.php/OWASP_Secure_Headers_Project#tab=Headers

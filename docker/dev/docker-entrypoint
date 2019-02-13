@@ -7,6 +7,16 @@ mkdir -p /etc/api-umbrella
   echo "app_env: development"
   echo "http_port: $HTTP_PORT"
   echo "https_port: $HTTPS_PORT"
+  echo "log:"
+  echo "  destination: console"
+  echo "postgresql:"
+  echo "  password: password"
+  echo "  migrations:"
+  echo "    password: password"
+  echo "  auto_ssl:"
+  echo "    password: password"
+  echo "  embedded_server_config:"
+  echo "    listen_addresses: 0.0.0.0"
 } > /etc/api-umbrella/api-umbrella.yml
 
 mkdir -p /build/.task

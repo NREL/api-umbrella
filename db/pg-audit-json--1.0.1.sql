@@ -39,15 +39,15 @@ AS $$
     END
 $$;
 
-CREATE OPERATOR - (
-  LEFTARG = JSONB,
-  RIGHTARG = TEXT[],
-  PROCEDURE = jsonb_minus
-);
+-- CREATE OPERATOR - (
+--   LEFTARG = JSONB,
+--   RIGHTARG = TEXT[],
+--   PROCEDURE = jsonb_minus
+-- );
 
 COMMENT ON FUNCTION jsonb_minus(JSONB, TEXT[]) IS 'Delete specificed keys';
 
-COMMENT ON OPERATOR - (JSONB, TEXT[]) IS 'Delete specified keys';
+-- COMMENT ON OPERATOR - (JSONB, TEXT[]) IS 'Delete specified keys';
 
 --
 -- Implements "JSONB- JSONB" operation to recursively delete matching pairs.
@@ -81,17 +81,17 @@ AS $$
     OR "right" -> "key" IS NULL
 $$;
 
-CREATE OPERATOR - (
-  LEFTARG   = JSONB,
-  RIGHTARG  = JSONB,
-  PROCEDURE = jsonb_minus
-);
+-- CREATE OPERATOR - (
+--   LEFTARG   = JSONB,
+--   RIGHTARG  = JSONB,
+--   PROCEDURE = jsonb_minus
+-- );
 
 COMMENT ON FUNCTION jsonb_minus(JSONB, JSONB)
   IS 'Delete matching pairs in the right argument from the left argument';
 
-COMMENT ON OPERATOR - (JSONB, JSONB)
-  IS 'Delete matching pairs in the right argument from the left argument';
+-- COMMENT ON OPERATOR - (JSONB, JSONB)
+--   IS 'Delete matching pairs in the right argument from the left argument';
 
 
 CREATE SCHEMA audit;
@@ -239,17 +239,17 @@ BEGIN
   END IF;
 
   IF (TG_OP = 'INSERT' AND TG_LEVEL = 'ROW') THEN
-    audit_row.changed_fields = to_jsonb(NEW.*) - excluded_cols;
+    audit_row.changed_fields = jsonb_minus(to_jsonb(NEW.*), excluded_cols);
   ELSIF (TG_OP = 'UPDATE' AND TG_LEVEL = 'ROW') THEN
-    audit_row.row_data = to_jsonb(OLD.*) - excluded_cols;
+    audit_row.row_data = jsonb_minus(to_jsonb(OLD.*), excluded_cols);
     audit_row.changed_fields =
-      (to_jsonb(NEW.*) - audit_row.row_data) - excluded_cols;
+      jsonb_minus(jsonb_minus(to_jsonb(NEW.*), audit_row.row_data), excluded_cols);
     IF audit_row.changed_fields = '{}'::JSONB THEN
       -- All changed fields are ignored. Skip this update.
       RETURN NULL;
     END IF;
   ELSIF (TG_OP = 'DELETE' AND TG_LEVEL = 'ROW') THEN
-    audit_row.row_data = to_jsonb(OLD.*) - excluded_cols;
+    audit_row.row_data = jsonb_minus(to_jsonb(OLD.*), excluded_cols);
   ELSIF (TG_LEVEL = 'STATEMENT' AND
          TG_OP IN ('INSERT','UPDATE','DELETE','TRUNCATE')) THEN
     audit_row.statement_only = 't';

@@ -2,5 +2,8 @@
 
 set -e -u -x
 
+# Clean files that may be left over if container doesn't shut down cleanly.
+rm -f /opt/api-umbrella/var/run/rsyslogd.pid /tmp/.s.PGSQL.*
+
 make
 api-umbrella run

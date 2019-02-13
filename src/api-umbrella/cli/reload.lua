@@ -35,6 +35,14 @@ local function reload_nginx_web_app(perp_base)
   end
 end
 
+local function reload_nginx_auto_ssl(perp_base)
+  local _, _, err = run_command({ "perpctl", "-b", perp_base, "hup", "nginx-auto-ssl" })
+  if err then
+    print("Failed to reload nginx\n" .. err)
+    os.exit(1)
+  end
+end
+
 local function reload_dev_env_ember_server(perp_base)
   local _, _, err = run_command({ "perpctl", "-b", perp_base, "term", "dev-env-ember-server" })
   if err then
@@ -64,6 +72,10 @@ return function(options)
   if config["_service_router_enabled?"] then
     reload_trafficserver(config)
     reload_nginx(perp_base)
+  end
+
+  if config["_service_auto_ssl_enabled?"] then
+    reload_nginx_auto_ssl(perp_base)
   end
 
   if config["app_env"] == "development" then

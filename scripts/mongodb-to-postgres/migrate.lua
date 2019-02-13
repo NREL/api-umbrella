@@ -1,13 +1,15 @@
+local aes = require "resty.aes"
 local argparse = require "argparse"
 local encryptor = require "api-umbrella.utils.encryptor"
 local hmac = require "api-umbrella.utils.hmac"
 local icu_date = require "icu-date"
 local inspect = require "inspect"
 local is_empty = require("pl.types").is_empty
+local json_null = require("cjson").null
 local mongo = require "mongo"
 local pg_encode_array = require "api-umbrella.utils.pg_encode_array"
+local pg_encode_bytea = require("pgmoon").Postgres.encode_bytea
 local pg_encode_json = require("pgmoon.json").encode_json
-local json_null = require("cjson").null
 local pg_null = require("pgmoon").Postgres.NULL
 local pg_utils = require "api-umbrella.utils.pg_utils"
 local random_seed = require "api-umbrella.utils.random_seed"
@@ -31,7 +33,12 @@ local function parse_args()
   local parser = argparse("api-umbrella", "Open source API management")
 
   parser:option("--mongodb-url", "Input MongoDB database URL."):count(1)
-  parser:option("--postgresql", "Output Elasticsearch database URL."):count(1)
+  parser:option("--pg-host", "Output PostgreSQL database host."):count(1)
+  parser:option("--pg-port", "Output PostgreSQL database port."):count(1)
+  parser:option("--pg-database", "Output PostgreSQL database name."):count(1)
+  parser:option("--pg-user", "Output PostgreSQL connection username."):count(1)
+  parser:option("--pg-password", "Output PostgreSQL connection password."):count(1)
+  parser:option("--auto-ssl-encryption-secret", "Output PostgreSQL connection password.")
   parser:flag("--clean", "Clean")
 
   local parsed_args = parser:parse()
@@ -189,7 +196,7 @@ local function insert(table_name, row, after_insert)
   end
   row["deleted_at"] = nil
 
-  if table_name == "analytics_cities" then
+  if table_name == "analytics_cities" or table_name == "auto_ssl_storage" then
     row["created_by_id"] = nil
     row["created_by_username"] = nil
     row["updated_by_id"] = nil
@@ -685,20 +692,48 @@ local function migrate_analytics_cities()
   end)
 end
 
+local function migrate_auto_ssl_storage()
+  migrate_collection("ssl_certs", function(row)
+    row["key"] = row["_id"]
+    row["_id"] = nil
+
+    local aes_instance = assert(aes:new(args["auto_ssl_encryption_secret"], nil, aes.cipher(256, "cbc"), { iv = row["encryption_iv"] }))
+    local value = aes_instance:decrypt(ngx.decode_base64(row["encrypted_value"]))
+    if not value then
+      error("decryption failed")
+    end
+
+    local encrypted, iv = encryptor.encrypt(value, row["key"], { base64 = false })
+    row["value_encrypted"] = pg_utils.raw(pg_encode_bytea(nil, encrypted))
+    row["value_encrypted_iv"] = iv
+    row["encrypted_value"] = nil
+    row["encryption_iv"] = nil
+    row["created_at"] = pg_utils.raw("now()")
+    row["updated_at"] = pg_utils.raw("now()")
+
+    insert("auto_ssl_storage", row)
+  end)
+end
+
+
 local function run()
   args = parse_args()
   seed_database.seed_once()
 
   mongo_client = mongo.Client(args["mongodb_url"])
   mongo_database = mongo_client:getDefaultDatabase()
-  pg_utils.db_config["user"] = "api-umbrella"
+  pg_utils.db_config["host"] = args["pg_host"]
+  pg_utils.db_config["port"] = args["pg_port"]
+  pg_utils.db_config["database"] = args["pg_database"]
+  pg_utils.db_config["user"] = args["pg_user"]
+  pg_utils.db_config["password"] = args["pg_password"]
 
   query("START TRANSACTION")
   query("SET CONSTRAINTS ALL DEFERRED")
   query("SET SESSION api_umbrella.disable_stamping = 'on'")
 
   if args["clean"] then
-    query("TRUNCATE TABLE admins, analytics_cities, api_backends, api_roles, api_scopes, api_users, admin_groups, audit.log CASCADE")
+    query("TRUNCATE TABLE admin_groups, admins, analytics_cities, api_backends, api_roles, api_scopes, api_users, auto_ssl_storage, audit.log CASCADE")
   end
 
   build_admin_username_mappings()
@@ -709,6 +744,7 @@ local function run()
   migrate_api_users()
   migrate_published_config()
   migrate_analytics_cities()
+  migrate_auto_ssl_storage()
 
   query("COMMIT")
 end

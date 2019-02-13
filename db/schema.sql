@@ -198,17 +198,17 @@ BEGIN
   END IF;
 
   IF (TG_OP = 'INSERT' AND TG_LEVEL = 'ROW') THEN
-    audit_row.changed_fields = to_jsonb(NEW.*) - excluded_cols;
+    audit_row.changed_fields = jsonb_minus(to_jsonb(NEW.*), excluded_cols);
   ELSIF (TG_OP = 'UPDATE' AND TG_LEVEL = 'ROW') THEN
-    audit_row.row_data = to_jsonb(OLD.*) - excluded_cols;
+    audit_row.row_data = jsonb_minus(to_jsonb(OLD.*), excluded_cols);
     audit_row.changed_fields =
-      (to_jsonb(NEW.*) - audit_row.row_data) - excluded_cols;
+      jsonb_minus(jsonb_minus(to_jsonb(NEW.*), audit_row.row_data), excluded_cols);
     IF audit_row.changed_fields = '{}'::JSONB THEN
       -- All changed fields are ignored. Skip this update.
       RETURN NULL;
     END IF;
   ELSIF (TG_OP = 'DELETE' AND TG_LEVEL = 'ROW') THEN
-    audit_row.row_data = to_jsonb(OLD.*) - excluded_cols;
+    audit_row.row_data = jsonb_minus(to_jsonb(OLD.*), excluded_cols);
   ELSIF (TG_LEVEL = 'STATEMENT' AND
          TG_OP IN ('INSERT','UPDATE','DELETE','TRUNCATE')) THEN
     audit_row.statement_only = 't';
@@ -497,35 +497,6 @@ CREATE FUNCTION public.update_timestamp() RETURNS trigger
         RETURN NEW;
       END;
       $$;
-
-
---
--- Name: -; Type: OPERATOR; Schema: public; Owner: -
---
-
-CREATE OPERATOR public.- (
-    PROCEDURE = public.jsonb_minus,
-    LEFTARG = jsonb,
-    RIGHTARG = text[]
-);
-
-
---
--- Name: -; Type: OPERATOR; Schema: public; Owner: -
---
-
-CREATE OPERATOR public.- (
-    PROCEDURE = public.jsonb_minus,
-    LEFTARG = jsonb,
-    RIGHTARG = jsonb
-);
-
-
---
--- Name: OPERATOR - (jsonb, jsonb); Type: COMMENT; Schema: public; Owner: -
---
-
-COMMENT ON OPERATOR public.- (jsonb, jsonb) IS 'Delete matching pairs in the right argument from the left argument';
 
 
 SET default_tablespace = '';
@@ -1229,6 +1200,20 @@ CREATE SEQUENCE public.api_users_version_seq
 
 
 --
+-- Name: auto_ssl_storage; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.auto_ssl_storage (
+    key text NOT NULL,
+    value_encrypted bytea NOT NULL,
+    value_encrypted_iv character varying(12) NOT NULL,
+    expires_at timestamp with time zone,
+    created_at timestamp with time zone DEFAULT transaction_timestamp() NOT NULL,
+    updated_at timestamp with time zone DEFAULT transaction_timestamp() NOT NULL
+);
+
+
+--
 -- Name: cache; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -1534,6 +1519,14 @@ ALTER TABLE ONLY public.api_users_roles
 
 
 --
+-- Name: auto_ssl_storage auto_ssl_storage_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.auto_ssl_storage
+    ADD CONSTRAINT auto_ssl_storage_pkey PRIMARY KEY (key);
+
+
+--
 -- Name: cache cache_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1797,6 +1790,13 @@ CREATE UNIQUE INDEX api_users_roles_api_user_id_api_role_id_idx ON public.api_us
 --
 
 CREATE UNIQUE INDEX api_users_version_idx ON public.api_users USING btree (version);
+
+
+--
+-- Name: auto_ssl_storage_expires_at_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX auto_ssl_storage_expires_at_idx ON public.auto_ssl_storage USING btree (expires_at);
 
 
 --
@@ -2297,6 +2297,13 @@ CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON public.website_backends FOR E
 
 
 --
+-- Name: auto_ssl_storage auto_ssl_storage_stamp_record; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER auto_ssl_storage_stamp_record BEFORE UPDATE ON public.auto_ssl_storage FOR EACH ROW EXECUTE PROCEDURE public.update_timestamp();
+
+
+--
 -- Name: cache cache_stamp_record; Type: TRIGGER; Schema: public; Owner: -
 --
 
@@ -2496,237 +2503,6 @@ ALTER TABLE ONLY public.rate_limits
 
 ALTER TABLE ONLY public.rate_limits
     ADD CONSTRAINT rate_limits_api_user_settings_id_fkey FOREIGN KEY (api_user_settings_id) REFERENCES public.api_user_settings(id) ON DELETE CASCADE DEFERRABLE;
-
-
---
--- Name: SCHEMA public; Type: ACL; Schema: -; Owner: -
---
-
-GRANT USAGE ON SCHEMA public TO api_umbrella_app_user;
-
-
---
--- Name: TABLE admin_groups; Type: ACL; Schema: public; Owner: -
---
-
-GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.admin_groups TO api_umbrella_app_user;
-
-
---
--- Name: TABLE admin_groups_admin_permissions; Type: ACL; Schema: public; Owner: -
---
-
-GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.admin_groups_admin_permissions TO api_umbrella_app_user;
-
-
---
--- Name: TABLE admin_groups_admins; Type: ACL; Schema: public; Owner: -
---
-
-GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.admin_groups_admins TO api_umbrella_app_user;
-
-
---
--- Name: TABLE admin_groups_api_scopes; Type: ACL; Schema: public; Owner: -
---
-
-GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.admin_groups_api_scopes TO api_umbrella_app_user;
-
-
---
--- Name: TABLE admin_permissions; Type: ACL; Schema: public; Owner: -
---
-
-GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.admin_permissions TO api_umbrella_app_user;
-
-
---
--- Name: TABLE admins; Type: ACL; Schema: public; Owner: -
---
-
-GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.admins TO api_umbrella_app_user;
-
-
---
--- Name: TABLE analytics_cities; Type: ACL; Schema: public; Owner: -
---
-
-GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.analytics_cities TO api_umbrella_app_user;
-
-
---
--- Name: SEQUENCE analytics_cities_id_seq; Type: ACL; Schema: public; Owner: -
---
-
-GRANT SELECT,UPDATE ON SEQUENCE public.analytics_cities_id_seq TO api_umbrella_app_user;
-
-
---
--- Name: TABLE api_backend_http_headers; Type: ACL; Schema: public; Owner: -
---
-
-GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.api_backend_http_headers TO api_umbrella_app_user;
-
-
---
--- Name: TABLE api_backend_rewrites; Type: ACL; Schema: public; Owner: -
---
-
-GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.api_backend_rewrites TO api_umbrella_app_user;
-
-
---
--- Name: TABLE api_backend_servers; Type: ACL; Schema: public; Owner: -
---
-
-GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.api_backend_servers TO api_umbrella_app_user;
-
-
---
--- Name: TABLE api_backend_settings; Type: ACL; Schema: public; Owner: -
---
-
-GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.api_backend_settings TO api_umbrella_app_user;
-
-
---
--- Name: TABLE api_backend_settings_required_roles; Type: ACL; Schema: public; Owner: -
---
-
-GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.api_backend_settings_required_roles TO api_umbrella_app_user;
-
-
---
--- Name: TABLE api_backend_sub_url_settings; Type: ACL; Schema: public; Owner: -
---
-
-GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.api_backend_sub_url_settings TO api_umbrella_app_user;
-
-
---
--- Name: TABLE api_backend_url_matches; Type: ACL; Schema: public; Owner: -
---
-
-GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.api_backend_url_matches TO api_umbrella_app_user;
-
-
---
--- Name: TABLE api_backends; Type: ACL; Schema: public; Owner: -
---
-
-GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.api_backends TO api_umbrella_app_user;
-
-
---
--- Name: TABLE api_roles; Type: ACL; Schema: public; Owner: -
---
-
-GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.api_roles TO api_umbrella_app_user;
-
-
---
--- Name: TABLE api_scopes; Type: ACL; Schema: public; Owner: -
---
-
-GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.api_scopes TO api_umbrella_app_user;
-
-
---
--- Name: TABLE api_user_settings; Type: ACL; Schema: public; Owner: -
---
-
-GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.api_user_settings TO api_umbrella_app_user;
-
-
---
--- Name: TABLE api_users; Type: ACL; Schema: public; Owner: -
---
-
-GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.api_users TO api_umbrella_app_user;
-
-
---
--- Name: TABLE api_users_roles; Type: ACL; Schema: public; Owner: -
---
-
-GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.api_users_roles TO api_umbrella_app_user;
-
-
---
--- Name: TABLE rate_limits; Type: ACL; Schema: public; Owner: -
---
-
-GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.rate_limits TO api_umbrella_app_user;
-
-
---
--- Name: TABLE api_users_flattened; Type: ACL; Schema: public; Owner: -
---
-
-GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.api_users_flattened TO api_umbrella_app_user;
-
-
---
--- Name: SEQUENCE api_users_version_seq; Type: ACL; Schema: public; Owner: -
---
-
-GRANT SELECT,UPDATE ON SEQUENCE public.api_users_version_seq TO api_umbrella_app_user;
-
-
---
--- Name: TABLE cache; Type: ACL; Schema: public; Owner: -
---
-
-GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.cache TO api_umbrella_app_user;
-
-
---
--- Name: TABLE distributed_rate_limit_counters; Type: ACL; Schema: public; Owner: -
---
-
-GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.distributed_rate_limit_counters TO api_umbrella_app_user;
-
-
---
--- Name: SEQUENCE distributed_rate_limit_counters_version_seq; Type: ACL; Schema: public; Owner: -
---
-
-GRANT SELECT,UPDATE ON SEQUENCE public.distributed_rate_limit_counters_version_seq TO api_umbrella_app_user;
-
-
---
--- Name: TABLE lapis_migrations; Type: ACL; Schema: public; Owner: -
---
-
-GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.lapis_migrations TO api_umbrella_app_user;
-
-
---
--- Name: TABLE published_config; Type: ACL; Schema: public; Owner: -
---
-
-GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.published_config TO api_umbrella_app_user;
-
-
---
--- Name: SEQUENCE published_config_id_seq; Type: ACL; Schema: public; Owner: -
---
-
-GRANT SELECT,UPDATE ON SEQUENCE public.published_config_id_seq TO api_umbrella_app_user;
-
-
---
--- Name: TABLE sessions; Type: ACL; Schema: public; Owner: -
---
-
-GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.sessions TO api_umbrella_app_user;
-
-
---
--- Name: TABLE website_backends; Type: ACL; Schema: public; Owner: -
---
-
-GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.website_backends TO api_umbrella_app_user;
 
 
 --

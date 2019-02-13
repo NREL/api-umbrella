@@ -64,6 +64,10 @@ function _M.is_raw(value)
   return getmetatable(value) == RAW_METATABLE
 end
 
+function _M.escape_like(value)
+  return ngx.re.gsub(value, "[\\\\%_]", "\\$0", "jo")
+end
+
 function _M.escape_literal(value)
   if value == nil or value == pg_null then
     return "NULL"
@@ -165,11 +169,7 @@ function _M.query(query, values, options)
     local _, gsub_err
     query, _, gsub_err = ngx.re.gsub(query, [[:(\w+)]], function(match)
       local key = match[1]
-      local escaped_value = escaped_values[key]
-      if not key or not escaped_value then
-        return nil, "bind variable not found for: " .. (key or "")
-      end
-
+      local escaped_value = escaped_values[key] or "NULL"
       return escaped_value
     end)
     if gsub_err then
@@ -178,12 +178,15 @@ function _M.query(query, values, options)
   end
 
   local app_env = config["app_env"]
-  if app_env == "development" or app_env == "test" then
+  if app_env == "development" or app_env == "test" or (options and options["verbose"]) then
     local level = ngx.NOTICE
     if options and options["quiet"] then
       level = ngx.DEBUG
     end
     ngx.log(level, query)
+    if options and options["verbose"] then
+      print(query)
+    end
   end
   local result, num_queries = pg:query(query)
   local err
@@ -195,6 +198,10 @@ function _M.query(query, values, options)
   local keepalive_ok, keepalive_err = pg:keepalive()
   if not keepalive_ok then
     ngx.log(ngx.ERR, "postgresql keepalive error: ", keepalive_err)
+  end
+
+  if options and options["fatal"] and err then
+    error(err)
   end
 
   return result, err
