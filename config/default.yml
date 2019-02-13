@@ -18,7 +18,7 @@ listen:
 nginx:
   workers: auto
   worker_connections: 8192
-  error_log_level: warn
+  error_log_level: notice
   access_log_filename: access.log
   access_log_options: buffer=256k flush=10s
   proxy_connect_timeout: 60

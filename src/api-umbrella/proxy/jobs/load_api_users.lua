@@ -11,7 +11,7 @@ local delay = 1 -- in seconds
 
 local function do_check()
   local last_fetched_version = api_users:get("last_fetched_version") or int64.MIN_VALUE_STRING
-  local results, err = pg_utils.query("SELECT id, version, api_key_encrypted, api_key_encrypted_iv FROM api_users_flattened WHERE version > $1 ORDER BY version DESC", last_fetched_version)
+  local results, err = pg_utils.query("SELECT id, version, api_key_encrypted, api_key_encrypted_iv FROM api_users_flattened WHERE version > :version ORDER BY version DESC", { version = last_fetched_version }, { quiet = true })
   if not results then
     ngx.log(ngx.ERR, "failed to fetch users from database: ", err)
     return nil

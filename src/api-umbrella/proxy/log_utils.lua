@@ -156,7 +156,13 @@ local function cache_city_geocode(premature, data)
     return
   end
 
-  local _, err = pg_utils.query("INSERT INTO analytics_cities(country, region, city, location) VALUES($1, $2, $3, point($4, $5)) ON CONFLICT (country, region, city) DO UPDATE SET location = EXCLUDED.location", data["request_ip_country"], data["request_ip_region"], data["request_ip_city"], data["request_ip_lon"], data["request_ip_lat"])
+  local _, err = pg_utils.query("INSERT INTO analytics_cities(country, region, city, location) VALUES(:country, :region, :city, point(:lon, :lat)) ON CONFLICT (country, region, city) DO UPDATE SET location = EXCLUDED.location", {
+    country = data["request_ip_country"],
+    region = data["request_ip_region"],
+    city = data["request_ip_city"],
+    lon = data["request_ip_lon"],
+    lat = data["request_ip_lat"],
+  })
   if err then
     ngx.log(ngx.ERR, "failed to cache city location: ", err)
   end

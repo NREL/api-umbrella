@@ -89,7 +89,7 @@ local function seed_api_keys()
     pg_utils.query("START TRANSACTION")
     set_stamping()
 
-    local result, user_err = pg_utils.query("SELECT * FROM api_users WHERE email = $1 ORDER BY created_at LIMIT 1", data["email"])
+    local result, user_err = pg_utils.query("SELECT * FROM api_users WHERE email = :email ORDER BY created_at LIMIT 1", { email = data["email"] })
     if not result then
       ngx.log(ngx.ERR, "failed to query api_users: ", user_err)
       break
@@ -143,26 +143,26 @@ local function seed_api_keys()
 
     if roles then
       for _, role in ipairs(roles) do
-        local insert_result, insert_err = pg_utils.query("INSERT INTO api_roles(id) VALUES($1) ON CONFLICT DO NOTHING", role)
+        local insert_result, insert_err = pg_utils.query("INSERT INTO api_roles(id) VALUES(:role) ON CONFLICT DO NOTHING", { role = role })
         if not insert_result then
           ngx.log(ngx.ERR, "failed to create record in api_roles: ", insert_err)
           break
         end
 
-        insert_result, insert_err = pg_utils.query("INSERT INTO api_users_roles(api_user_id, api_role_id) VALUES($1, $2) ON CONFLICT DO NOTHING", user["id"], role)
+        insert_result, insert_err = pg_utils.query("INSERT INTO api_users_roles(api_user_id, api_role_id) VALUES(:api_user_id, :api_role_id) ON CONFLICT DO NOTHING", { api_user_id = user["id"], api_role_id = role })
         if not insert_result then
           ngx.log(ngx.ERR, "failed to create record in api_users_roles: ", insert_err)
           break
         end
       end
 
-      local delete_result, delete_err = pg_utils.query("DELETE FROM api_users_roles WHERE api_user_id = $1 AND api_role_id NOT IN $2", user["id"], pg_utils.list(roles))
+      local delete_result, delete_err = pg_utils.query("DELETE FROM api_users_roles WHERE api_user_id = :api_user_id AND api_role_id NOT IN :api_role_ids", { api_user_id = user["id"], api_role_ids = pg_utils.list(roles) })
       if not delete_result then
         ngx.log(ngx.ERR, "failed to delete records in api_users_roles: ", delete_err)
         break
       end
     else
-      local delete_result, delete_err = pg_utils.query("DELETE FROM api_users_roles WHERE api_user_id = $1", user["id"])
+      local delete_result, delete_err = pg_utils.query("DELETE FROM api_users_roles WHERE api_user_id = :api_user_id", { api_user_id = user["id"] })
       if not delete_result then
         ngx.log(ngx.ERR, "failed to delete records in api_users_roles: ", delete_err)
         break
@@ -170,7 +170,7 @@ local function seed_api_keys()
     end
 
     if settings_data then
-      local settings_result, settings_err = pg_utils.query("SELECT * FROM api_user_settings WHERE api_user_id = $1", user["id"])
+      local settings_result, settings_err = pg_utils.query("SELECT * FROM api_user_settings WHERE api_user_id = :api_user_id", { api_user_id = user["id"] })
       if not settings_result then
         ngx.log(ngx.ERR, "failed to query api_user_settings: ", settings_err)
         break
@@ -232,7 +232,7 @@ local function seed_initial_superusers()
     pg_utils.query("START TRANSACTION")
     set_stamping()
 
-    local result, admin_err = pg_utils.query("SELECT * FROM admins WHERE username = $1 LIMIT 1", username)
+    local result, admin_err = pg_utils.query("SELECT * FROM admins WHERE username = :username LIMIT 1", { username = username })
     if not result then
       ngx.log(ngx.ERR, "failed to query admins: ", admin_err)
       break
@@ -315,7 +315,7 @@ local function seed_admin_permissions()
     pg_utils.query("START TRANSACTION")
     set_stamping()
 
-    local result, permission_err = pg_utils.query("SELECT * FROM admin_permissions WHERE id = $1 LIMIT 1", data["id"])
+    local result, permission_err = pg_utils.query("SELECT * FROM admin_permissions WHERE id = :id LIMIT 1", { id = data["id"] })
     if not result then
       ngx.log(ngx.ERR, "failed to query admin_permissions: ", permission_err)
       break

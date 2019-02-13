@@ -219,7 +219,7 @@ end
 
 local function upsert_role(row)
   -- print("UPSERT: api_roles: " .. inspect(row))
-  return query("INSERT INTO api_roles (id, created_at, created_by_id, created_by_username, updated_at, updated_by_id, updated_by_username) VALUES ($1, $2, $3, $4, $5, $6, $7) ON CONFLICT (id) DO UPDATE SET updated_at = EXCLUDED.updated_at, updated_by_id = EXCLUDED.updated_by_id, updated_by_username = EXCLUDED.updated_by_username", row["id"], row["created_at"], row["created_by_id"], row["created_by_username"], row["updated_at"], row["updated_by_id"], row["updated_by_username"])
+  return query("INSERT INTO api_roles (id, created_at, created_by_id, created_by_username, updated_at, updated_by_id, updated_by_username) VALUES (:id, :created_at, :created_by_id, :created_by_username, :updated_at, :updated_by_id, :updated_by_username) ON CONFLICT (id) DO UPDATE SET updated_at = EXCLUDED.updated_at, updated_by_id = EXCLUDED.updated_by_id, updated_by_username = EXCLUDED.updated_by_username", row)
 end
 
 local function migrate_collection(name, callback)
@@ -410,26 +410,28 @@ local function insert_settings(table_name, row, settings)
 
     if required_roles then
       for _, role in ipairs(required_roles) do
-        upsert_role({
-          id = role,
-          created_at = row["created_at"],
-          created_by_id = row["created_by_id"],
-          created_by_username = row["created_by_username"],
-          updated_at = row["updated_at"],
-          updated_by_id = row["updated_by_id"],
-          updated_by_username = row["updated_by_username"],
-        })
+        if role ~= "" then
+          upsert_role({
+            id = role,
+            created_at = row["created_at"],
+            created_by_id = row["created_by_id"],
+            created_by_username = row["created_by_username"],
+            updated_at = row["updated_at"],
+            updated_by_id = row["updated_by_id"],
+            updated_by_username = row["updated_by_username"],
+          })
 
-        insert("api_backend_settings_required_roles", {
-          api_backend_settings_id = settings["id"],
-          api_role_id = role,
-          created_at = row["created_at"],
-          created_by_id = row["created_by_id"],
-          created_by_username = row["created_by_username"],
-          updated_at = row["updated_at"],
-          updated_by_id = row["updated_by_id"],
-          updated_by_username = row["updated_by_username"],
-        })
+          insert("api_backend_settings_required_roles", {
+            api_backend_settings_id = settings["id"],
+            api_role_id = role,
+            created_at = row["created_at"],
+            created_by_id = row["created_by_id"],
+            created_by_username = row["created_by_username"],
+            updated_at = row["updated_at"],
+            updated_by_id = row["updated_by_id"],
+            updated_by_username = row["updated_by_username"],
+          })
+        end
       end
     end
 
@@ -631,26 +633,28 @@ local function migrate_api_users()
     insert("api_users", row, function()
       if roles then
         for _, role in ipairs(roles) do
-          upsert_role({
-            id = role,
-            created_at = row["created_at"],
-            created_by_id = row["created_by_id"],
-            created_by_username = row["created_by_username"],
-            updated_at = row["updated_at"],
-            updated_by_id = row["updated_by_id"],
-            updated_by_username = row["updated_by_username"],
-          })
+          if role ~= "" then
+            upsert_role({
+              id = role,
+              created_at = row["created_at"],
+              created_by_id = row["created_by_id"],
+              created_by_username = row["created_by_username"],
+              updated_at = row["updated_at"],
+              updated_by_id = row["updated_by_id"],
+              updated_by_username = row["updated_by_username"],
+            })
 
-          insert("api_users_roles", {
-            api_user_id = row["id"],
-            api_role_id = role,
-            created_at = row["created_at"],
-            created_by_id = row["created_by_id"],
-            created_by_username = row["created_by_username"],
-            updated_at = row["updated_at"],
-            updated_by_id = row["updated_by_id"],
-            updated_by_username = row["updated_by_username"],
-          })
+            insert("api_users_roles", {
+              api_user_id = row["id"],
+              api_role_id = role,
+              created_at = row["created_at"],
+              created_by_id = row["created_by_id"],
+              created_by_username = row["created_by_username"],
+              updated_at = row["updated_at"],
+              updated_by_id = row["updated_by_id"],
+              updated_by_username = row["updated_by_username"],
+            })
+          end
         end
       end
 
@@ -694,7 +698,7 @@ local function run()
   query("SET SESSION api_umbrella.disable_stamping = 'on'")
 
   if args["clean"] then
-    query("TRUNCATE TABLE admins, analytics_cities, api_backends, api_scopes, api_users, admin_groups, audit.log CASCADE")
+    query("TRUNCATE TABLE admins, analytics_cities, api_backends, api_roles, api_scopes, api_users, admin_groups, audit.log CASCADE")
   end
 
   build_admin_username_mappings()

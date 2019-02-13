@@ -28,7 +28,11 @@ local function do_check()
     local bucket_start_time = tonumber(array_last(key_parts))
     local expires_at = (bucket_start_time + duration + 60000) / 1000
 
-    local result, err = pg_utils.query("INSERT INTO distributed_rate_limit_counters(id, value, expires_at) VALUES($1, $2, to_timestamp($3)) ON CONFLICT (id) DO UPDATE SET value = distributed_rate_limit_counters.value + EXCLUDED.value", key, count, expires_at)
+    local result, err = pg_utils.query("INSERT INTO distributed_rate_limit_counters(id, value, expires_at) VALUES(:id, :value, to_timestamp(:expires_at)) ON CONFLICT (id) DO UPDATE SET value = distributed_rate_limit_counters.value + EXCLUDED.value", {
+      id = key,
+      value = count,
+      expires_at = expires_at,
+    }, { quiet = true })
     if not result then
       ngx.log(ngx.ERR, "failed to update rate limits in database: ", err)
       success = false

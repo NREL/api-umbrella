@@ -150,29 +150,28 @@ function _M.connect()
   return pg
 end
 
-function _M.query(query, ...)
+function _M.query(query, values, options)
   local pg = _M.connect()
   if not pg then
     return nil, "connection error"
   end
 
-  local num_values = select("#", ...)
-  if num_values > 0 then
-    if not ngx.re.match(query, [[\$]] .. num_values, "jo") then
-      return nil, "bind variables not found"
-    end
-
+  if values then
     local escaped_values = {}
-    for i = 1, num_values do
-      local value = select(i, ...)
-      table.insert(escaped_values, _M.escape_literal(value))
+    for key, value in pairs(values) do
+      escaped_values[key] = _M.escape_literal(value)
     end
 
     local _, gsub_err
-    query, _, gsub_err = ngx.re.gsub(query, [[\$(\d+)]], function(match)
-      local index = assert(tonumber(match[1]))
-      return escaped_values[index]
-    end, "jo")
+    query, _, gsub_err = ngx.re.gsub(query, [[:(\w+)]], function(match)
+      local key = match[1]
+      local escaped_value = escaped_values[key]
+      if not key or not escaped_value then
+        return nil, "bind variable not found for: " .. (key or "")
+      end
+
+      return escaped_value
+    end)
     if gsub_err then
       ngx.log(ngx.ERR, "regex error: ", gsub_err)
     end
@@ -180,7 +179,11 @@ function _M.query(query, ...)
 
   local app_env = config["app_env"]
   if app_env == "development" or app_env == "test" then
-    ngx.log(ngx.NOTICE, query)
+    local level = ngx.NOTICE
+    if options and options["quiet"] then
+      level = ngx.DEBUG
+    end
+    ngx.log(level, query)
   end
   local result, num_queries = pg:query(query)
   local err

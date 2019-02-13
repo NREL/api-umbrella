@@ -14,7 +14,7 @@ local _M = {}
 
 local function lookup_user(api_key)
   local api_key_hash = hmac(api_key)
-  local result, err = pg_utils.query("SELECT * FROM api_users_flattened WHERE api_key_hash = $1", api_key_hash)
+  local result, err = pg_utils.query("SELECT * FROM api_users_flattened WHERE api_key_hash = :api_key_hash", { api_key_hash = api_key_hash })
   if not result then
     ngx.log(ngx.ERR, "failed to fetch user from database: ", err)
     return nil
