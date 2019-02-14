@@ -22,11 +22,11 @@ if [ -z "${API_UMBRELLA_DB_DIR:-}" ]; then
   exit 1
 fi
 
-download_url="https://geolite.maxmind.com/download/geoip/database/GeoLiteCityv6-beta/GeoLiteCityv6.dat.gz"
+download_url="https://geolite.maxmind.com/download/geoip/database/GeoLite2-City.tar.gz"
 frequency=86400 # Sleep for 1 day between runs
 
 while true; do
-  current_path="$API_UMBRELLA_DB_DIR/geoip/city-v6.dat"
+  current_path="$API_UMBRELLA_DB_DIR/geoip/GeoLite2-City.mmdb"
 
   # Don't attempt to redownload if the current file has recently been updated
   # (within the last 22 hours).
@@ -38,15 +38,16 @@ while true; do
 
   # Download the data file to a temporary path.
   echo "Downloading new file..."
-  unzip_path=$(mktemp -t api-umbrella-geoip-auto-updater.XXXXXXXXXX)
-  download_path="$unzip_path.gz"
-  if ! curl --silent --show-error --fail --location --output "$download_path" "$download_url"; then
+  unzip_dir=$(mktemp -d -t api-umbrella-geoip-auto-updater.XXXXXXXXXX)
+  download_path="$unzip_dir.gz"
+  if ! curl --silent --show-error --fail --location --retry 3 --output "$download_path" "$download_url"; then
     echo "Error downloading $download_url"
   else
     # Un-gzip the downloaded file.
-    if ! gunzip -c "$download_path" > "$unzip_path"; then
+    if ! tar -xf "$download_path" -C "$unzip_dir" --strip-components 1; then
       echo "Error unzipping $download_path"
     else
+      unzip_path="$unzip_dir/GeoLite2-City.mmdb"
       unzip_md5=$(openssl md5 "$unzip_path" | awk '{print $2}')
       if [ -f "$current_path" ]; then
         current_md5=$(openssl md5 "$current_path" | awk '{print $2}')
