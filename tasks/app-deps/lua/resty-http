@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 
-lua_resty_http_version="0.12"
+lua_resty_http_version="0.13"
 
 set -e -u -x
 source ./tasks/helpers.sh
 
-opm_install "pintsized/lua-resty-http" "$lua_resty_http_version"
+opm_install "ledgetech/lua-resty-http" "$lua_resty_http_version"
 
 stamp

@@ -81,7 +81,7 @@ class OutdatedPackages
       :luarock => "lua-resty-auto-ssl",
     },
     "lua_resty_http" => {
-      :git => "https://github.com/pintsized/lua-resty-http.git",
+      :git => "https://github.com/ledgetech/lua-resty-http.git",
     },
     "lua_resty_logger_socket" => {
       :git => "https://github.com/cloudflare/lua-resty-logger-socket.git",

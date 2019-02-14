@@ -42,7 +42,7 @@ gem "mongoid_store", :git => "https://github.com/GUI/mongoid_store.git"
 gem "elasticsearch", "~> 6.1.0"
 
 # OmniAuth-based authentication
-gem "devise", "~> 4.5.0"
+gem "devise", "~> 4.6.1"
 gem "devise-i18n", "~> 1.7.0"
 gem "omniauth", "~> 1.9.0"
 gem "omniauth-cas", "~> 1.1.0", :git => "https://github.com/GUI/omniauth-cas.git", :branch => "rexml", :require => false
@@ -80,7 +80,8 @@ gem "nokogiri", "~> 1.10.0"
 gem "http_accept_language", "~> 2.1.1"
 
 # Markdown
-gem "kramdown", "~> 1.17.0"
+gem "kramdown", "~> 2.1.0"
+gem "kramdown-parser-gfm", "~> 1.0.1"
 
 # Lucene query parsing for translating into SQL.
 gem "lucene_query_parser", :git => "https://github.com/zerowidth/lucene_query_parser.git"
@@ -102,7 +103,7 @@ gem "simple_form", "~> 3.5"
 
 # Login stylesheets
 gem "sass-rails", "~> 5.0"
-gem "bootstrap", "~> 4.2.1", :require => false
+gem "bootstrap", "~> 4.3.1", :require => false
 gem "font-awesome-rails", "~> 4.7.0", :require => false
 
 # Table-less models
