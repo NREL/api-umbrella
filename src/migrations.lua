@@ -813,11 +813,6 @@ return {
           LEFT JOIN api_user_settings AS s ON u.id = s.api_user_id
     ]])
 
-    db.query("GRANT USAGE ON SCHEMA public TO api_umbrella_app_user")
-    db.query("GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO api_umbrella_app_user")
-    db.query("GRANT SELECT, UPDATE ON ALL SEQUENCES IN SCHEMA public TO api_umbrella_app_user")
-    db.query("GRANT api_umbrella_app_user TO api_umbrella_owner")
-
     db.query([[
       CREATE TABLE auto_ssl_storage (
         key text PRIMARY KEY,
@@ -830,11 +825,6 @@ return {
     ]])
     db.query("CREATE INDEX ON auto_ssl_storage (expires_at)")
     db.query("CREATE TRIGGER auto_ssl_storage_stamp_record BEFORE UPDATE ON auto_ssl_storage FOR EACH ROW EXECUTE PROCEDURE update_timestamp()")
-
-    db.query("GRANT USAGE ON SCHEMA public TO api_umbrella_auto_ssl_user")
-    db.query("GRANT SELECT, INSERT, UPDATE, DELETE ON auto_ssl_storage TO api_umbrella_auto_ssl_user")
-    db.query("REVOKE ALL ON auto_ssl_storage FROM api_umbrella_app_user")
-    db.query("GRANT api_umbrella_auto_ssl_user TO api_umbrella_owner")
 
     db.query("COMMIT")
   end

@@ -10,6 +10,7 @@ config = require "api-umbrella.proxy.models.file_config"
 config["postgresql"]["username"] = config["postgresql"]["migrations"]["username"]
 config["postgresql"]["password"] = config["postgresql"]["migrations"]["password"]
 
+local file = require "pl.file"
 local migrations = require("lapis.db.migrations")
 local path = require "pl.path"
 local pg_utils = require "api-umbrella.utils.pg_utils"
@@ -35,6 +36,13 @@ return function()
 
   migrations.create_migrations_table()
   migrations.run_migrations(require("migrations"))
+
+  pg_utils.db_config["user"] = config["postgresql"]["migrations"]["username"]
+  pg_utils.db_config["password"] = config["postgresql"]["migrations"]["password"]
+
+  local grants_sql_path = path.join(os.getenv("API_UMBRELLA_SRC_ROOT"), "db/grants.sql")
+  local grants_sql = file.read(grants_sql_path, true)
+  pg_utils.query(grants_sql, nil, { verbose = true, fatal = true })
 
   -- In development, dump the db/schema.sql file after migrations.
   if config["app_env"] == "development" then
