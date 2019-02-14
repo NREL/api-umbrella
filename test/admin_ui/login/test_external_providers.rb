@@ -192,7 +192,7 @@ class Test::AdminUi::Login::TestExternalProviders < Minitest::Capybara::Test
     {
       :provider => :cas,
       :login_button_text => "Sign in with MAX.gov",
-      :mock_userinfo => <<~EOS
+      :mock_userinfo => <<~EOS,
         <cas:serviceResponse xmlns:cas="http://www.yale.edu/tp/cas">
           <cas:authenticationSuccess>
             <cas:user>{{username}}</cas:user>
