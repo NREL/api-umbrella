@@ -80,13 +80,32 @@ class Test::Proxy::Logging::TestIpGeocoding < Minitest::Test
       :ip => "104.250.168.24",
       :country => "MC",
       :region => nil,
-      :city => "Monte-carlo",
+      :city => "Monte Carlo",
       :lat => 43.7333,
       :lon => 7.4167,
     })
   end
 
   def test_country_no_region_city
+    response = Typhoeus.get("http://127.0.0.1:9080/api/hello", log_http_options.deep_merge({
+      :headers => {
+        "X-Forwarded-For" => "1.1.1.1",
+      },
+    }))
+    assert_response_code(200, response)
+
+    record = wait_for_log(response)[:hit_source]
+    assert_geocode(record, {
+      :ip => "1.1.1.1",
+      :country => "AU",
+      :region => nil,
+      :city => nil,
+      :lat => -33.494,
+      :lon => 143.2104,
+    })
+  end
+
+  def test_no_country_region_city
     response = Typhoeus.get("http://127.0.0.1:9080/api/hello", log_http_options.deep_merge({
       :headers => {
         "X-Forwarded-For" => "67.43.156.1",
@@ -97,11 +116,11 @@ class Test::Proxy::Logging::TestIpGeocoding < Minitest::Test
     record = wait_for_log(response)[:hit_source]
     assert_geocode(record, {
       :ip => "67.43.156.1",
-      :country => "A1",
+      :country => nil,
       :region => nil,
       :city => nil,
-      :lat => 0.0,
-      :lon => 0.0,
+      :lat => nil,
+      :lon => nil,
     })
   end
 
@@ -118,7 +137,7 @@ class Test::Proxy::Logging::TestIpGeocoding < Minitest::Test
       :ip => "184.148.224.214",
       :country => "CA",
       :region => "QC",
-      :city => "Trois-rivières",
+      :city => "Trois-Rivières",
       :lat => 46.316,
       :lon => -72.6833,
     })
@@ -128,12 +147,19 @@ class Test::Proxy::Logging::TestIpGeocoding < Minitest::Test
 
   def assert_geocode(record, options)
     assert_geocode_log(record, options)
-    assert_geocode_cache(record, options)
+    if !options.fetch(:lat).nil? || !options.fetch(:lon).nil?
+      assert_geocode_cache(record, options)
+    end
   end
 
   def assert_geocode_log(record, options)
     assert_equal(options.fetch(:ip), record.fetch("request_ip"))
-    assert_equal(options.fetch(:country), record.fetch("request_ip_country"))
+    if(options.fetch(:country).nil?)
+      assert_nil(record["request_ip_country"])
+      refute(record.key?("request_ip_country"))
+    else
+      assert_equal(options.fetch(:country), record.fetch("request_ip_country"))
+    end
     if(options.fetch(:region).nil?)
       assert_nil(record["request_ip_region"])
       refute(record.key?("request_ip_region"))

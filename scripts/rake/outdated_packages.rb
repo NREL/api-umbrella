@@ -11,6 +11,8 @@ class OutdatedPackages
     },
     "bundler" => {
       :git => "https://github.com/bundler/bundler.git",
+      # Rails 4 not compatible with 2.0
+      :constraint => "~> 1.17",
     },
     "elasticsearch" => {
       :git => "https://github.com/elasticsearch/elasticsearch.git",
@@ -36,8 +38,8 @@ class OutdatedPackages
     "libfastjson" => {
       :git => "https://github.com/rsyslog/libfastjson.git",
     },
-    "libgeoip" => {
-      :git => "https://github.com/maxmind/geoip-api-c.git",
+    "libmaxminddb" => {
+      :git => "https://github.com/maxmind/libmaxminddb.git",
     },
     "libpsl" => {
       :git => "https://github.com/rockdaboot/libpsl.git",
@@ -50,9 +52,6 @@ class OutdatedPackages
     },
     "lua_cmsgpack" => {
       :luarock => "lua-cmsgpack",
-    },
-    "lua_iconv" => {
-      :luarock => "lua-iconv",
     },
     "lua_icu_date" => {
       :git => "https://github.com/GUI/lua-icu-date.git",
@@ -96,7 +95,7 @@ class OutdatedPackages
       :luarock => "lua-resty-auto-ssl",
     },
     "lua_resty_http" => {
-      :git => "https://github.com/pintsized/lua-resty-http.git",
+      :git => "https://github.com/ledgetech/lua-resty-http.git",
     },
     "lua_resty_logger_socket" => {
       :git => "https://github.com/cloudflare/lua-resty-logger-socket.git",
@@ -130,6 +129,9 @@ class OutdatedPackages
     "mailhog" => {
       :git => "https://github.com/mailhog/MailHog.git",
     },
+    "ngx_http_geoip2_module" => {
+      :git => "https://github.com/leev/ngx_http_geoip2_module.git",
+    },
     "nodejs" => {
       :git => "https://github.com/nodejs/node.git",
       :constraint => "~> 10.13",
@@ -160,6 +162,8 @@ class OutdatedPackages
     },
     "rubygems" => {
       :git => "https://github.com/rubygems/rubygems.git",
+      # Rails 4 not compatible with Bundler 2.0
+      :constraint => "~> 2.7",
     },
     "rsyslog" => {
       :git => "https://github.com/rsyslog/rsyslog.git",

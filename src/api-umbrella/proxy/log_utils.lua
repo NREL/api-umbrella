@@ -1,6 +1,5 @@
 local config = require "api-umbrella.proxy.models.file_config"
 local escape_uri_non_ascii = require "api-umbrella.utils.escape_uri_non_ascii"
-local iconv = require "iconv"
 local icu_date = require "icu-date"
 local json_encode = require "api-umbrella.utils.json_encode"
 local logger = require "resty.logger.socket"
@@ -217,34 +216,14 @@ function _M.cache_new_city_geocode(data)
 end
 
 function _M.set_request_ip_geo_fields(data, ngx_var)
-  -- The GeoIP module returns ISO-8859-1 encoded city names, but we need UTF-8
-  -- for inserting into ElasticSearch.
-  local geoip_city = ngx_var.geoip_city
-  if geoip_city then
-    local encoding_converter = iconv.new("utf-8//IGNORE", "iso-8859-1")
-    local geoip_city_encoding_err
-    geoip_city, geoip_city_encoding_err  = encoding_converter:iconv(geoip_city)
-    if geoip_city_encoding_err then
-      ngx.log(ngx.ERR, "encoding error for geoip city: ", geoip_city_encoding_err, geoip_city)
-    end
-  end
+  data["request_ip_city"] = ngx_var.geoip2_data_city_name
+  data["request_ip_country"] = ngx_var.geoip2_data_country_code
+  data["request_ip_region"] = ngx_var.geoip2_data_subdivision_code
 
-  -- The geoip database returns "00" for unknown regions sometimes:
-  -- http://maxmind.com/download/geoip/kml/index.html Remove these and treat
-  -- these as nil.
-  local geoip_region = ngx_var.geoip_region
-  if geoip_region == "00" then
-    geoip_region = nil
-  end
-
-  data["request_ip_city"] = geoip_city
-  data["request_ip_country"] = ngx_var.geoip_city_country_code
-  data["request_ip_region"] = geoip_region
-
-  local geoip_latitude = ngx_var.geoip_latitude
+  local geoip_latitude = ngx_var.geoip2_data_latitude
   if geoip_latitude then
     data["request_ip_lat"] = tonumber(geoip_latitude)
-    data["request_ip_lon"] = tonumber(ngx_var.geoip_longitude)
+    data["request_ip_lon"] = tonumber(ngx_var.geoip2_data_longitude)
   end
 end
 
