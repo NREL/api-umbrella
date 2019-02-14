@@ -36,17 +36,14 @@ class OutdatedPackages
     "libfastjson" => {
       :git => "https://github.com/rsyslog/libfastjson.git",
     },
-    "libgeoip" => {
-      :git => "https://github.com/maxmind/geoip-api-c.git",
+    "libmaxminddb" => {
+      :git => "https://github.com/maxmind/libmaxminddb.git",
     },
     "lua_argparse" => {
       :luarock => "argparse",
     },
     "lua_cmsgpack" => {
       :luarock => "lua-cmsgpack",
-    },
-    "lua_iconv" => {
-      :luarock => "lua-iconv",
     },
     "lua_icu_date" => {
       :git => "https://github.com/GUI/lua-icu-date.git",
@@ -113,6 +110,9 @@ class OutdatedPackages
     "mora" => {
       :git => "https://github.com/emicklei/mora.git",
       :git_ref => "master",
+    },
+    "ngx_http_geoip2_module" => {
+      :git => "https://github.com/leev/ngx_http_geoip2_module.git",
     },
     "nodejs" => {
       :git => "https://github.com/nodejs/node.git",

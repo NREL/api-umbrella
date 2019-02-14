@@ -15,9 +15,10 @@
 #   within the dependency chain. We use these stamp files so that the
 #   checksumming approach properly invalidates the entire chain of dependencies
 #   when build files change (whereas just using "deps" in go-task doesn't fully
-#   work for multiple levels of dependencies). So, for example, if the libgeoip
-#   dependency changes, rebuilding it properly cascades and triggers a rebuild
-#   of openresty (1st level dependency) and luarocks (2nd level dependency).
+#   work for multiple levels of dependencies). So, for example, if the
+#   libmaxminddb dependency changes, rebuilding it properly cascades and
+#   triggers a rebuild of openresty (1st level dependency) and luarocks (2nd
+#   level dependency).
 # - For colorized output we use the "unbuffer" tool to force color output on
 #   some commands, since Task doesn't easily support detecting colorized output
 #   (as of the output changes in 2.0.3):
@@ -91,14 +92,14 @@ tasks:
       - ./build/work/stamp/deps/libfastjson
     method: checksum
 
-  deps:libgeoip:
+  deps:libmaxminddb:
     cmds:
-      - ./tasks/deps/libgeoip
+      - ./tasks/deps/libmaxminddb
     sources:
-      - ./tasks/deps/libgeoip
+      - ./tasks/deps/libmaxminddb
       - ./tasks/helpers.sh
     generates:
-      - ./build/work/stamp/deps/libgeoip
+      - ./build/work/stamp/deps/libmaxminddb
     method: checksum
 
   deps:luarocks:
@@ -136,11 +137,11 @@ tasks:
 
   deps:openresty:
     deps:
-      - deps:libgeoip
+      - deps:libmaxminddb
     cmds:
       - ./tasks/deps/openresty
     sources:
-      - ./build/work/stamp/deps/libgeoip
+      - ./build/work/stamp/deps/libmaxminddb
       - ./tasks/deps/openresty
       - ./tasks/helpers.sh
     generates:
@@ -297,19 +298,6 @@ tasks:
       - ./tasks/helpers.sh
     generates:
       - ./build/work/stamp/app-deps/lua/cmsgpack
-    method: checksum
-
-  app-deps:lua:iconv:
-    deps:
-      - deps:luarocks
-    cmds:
-      - ./tasks/app-deps/lua/iconv
-    sources:
-      - ./build/work/stamp/deps/luarocks
-      - ./tasks/app-deps/lua/iconv
-      - ./tasks/helpers.sh
-    generates:
-      - ./build/work/stamp/app-deps/lua/iconv
     method: checksum
 
   app-deps:lua:icu-date:
@@ -517,7 +505,6 @@ tasks:
       - task: app-deps:admin-ui:yarn
       - task: app-deps:lua:argparse
       - task: app-deps:lua:cmsgpack
-      - task: app-deps:lua:iconv
       - task: app-deps:lua:icu-date
       - task: app-deps:lua:inspect
       - task: app-deps:lua:libcidr-ffi

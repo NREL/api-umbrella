@@ -71,7 +71,13 @@ http {
     resolver_timeout 12s;
   {{/dns_resolver._nameservers_nginx}}
 
-  geoip_city {{db_dir}}/geoip/city-v6.dat;
+  geoip2 {{db_dir}}/geoip/GeoLite2-City.mmdb {
+    $geoip2_data_country_code country iso_code;
+    $geoip2_data_subdivision_code subdivisions 0 iso_code;
+    $geoip2_data_city_name city names en;
+    $geoip2_data_latitude location latitude;
+    $geoip2_data_longitude location longitude;
+  }
 
   geo $banned_ip {
     default 0;

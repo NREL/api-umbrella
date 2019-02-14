@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+ngx_http_geoip2_module_version="3.2"
+ngx_http_geoip2_module_hash="2e60d26460d178068f7a4e9a4e64990a"
 openresty_version="1.13.6.2"
 openresty_hash="d95bc4bbe15e4b045a0593b4ecc0db38"
 openssl_version="1.0.2q"
@@ -21,6 +23,9 @@ extract_download "openssl-$openssl_version.tar.gz"
 download "https://openresty.org/download/openresty-$openresty_version.tar.gz" "md5" "$openresty_hash"
 extract_download "openresty-$openresty_version.tar.gz"
 
+download "https://github.com/leev/ngx_http_geoip2_module/archive/$ngx_http_geoip2_module_version.tar.gz" "md5" "$ngx_http_geoip2_module_hash"
+extract_download "$ngx_http_geoip2_module_version.tar.gz"
+
 cd "openresty-$openresty_version"
 patch -p1 < "$SOURCE_DIR/build/patches/openresty-opm.patch"
 patch -p1 < "$SOURCE_DIR/build/patches/openresty-cli.patch"
@@ -36,12 +41,12 @@ patch -p1 < "$SOURCE_DIR/build/patches/openresty-cli.patch"
   --with-pcre-opt=-g \
   --with-pcre-conf-opt=--enable-unicode-properties \
   --with-pcre-jit \
-  --with-http_geoip_module \
   --with-http_gunzip_module \
   --with-http_gzip_static_module \
   --with-http_realip_module \
   --with-http_ssl_module \
-  --with-http_stub_status_module
+  --with-http_stub_status_module \
+  --add-module="../ngx_http_geoip2_module-$ngx_http_geoip2_module_version"
 make -j"$NPROC"
 make install DESTDIR="$STAGE_DIR"
 chrpath -d "$STAGE_EMBEDDED_DIR/openresty/nginx/sbin/nginx"
