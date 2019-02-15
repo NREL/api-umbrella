@@ -107,10 +107,6 @@ if [ -f /etc/redhat-release ]; then
     # For "unbuffer" command for Taskfile.
     expect
 
-    # Building the static-site
-    ruby
-    rubygem-bundler
-
     # lualdap
     openldap-devel
 
@@ -118,10 +114,6 @@ if [ -f /etc/redhat-release ]; then
     cmake
   )
   test_build_dependencies=(
-    # Running tests
-    ruby
-    rubygem-bundler
-
     # Binary and readelf tests
     file
     binutils
@@ -145,6 +137,10 @@ if [ -f /etc/redhat-release ]; then
 
     # For running lsof tests in Docker as root
     sudo
+
+    # nokogiri test dependency
+    libxml2-devel
+    libxslt-devel
   )
 elif [ -f /etc/debian_version ]; then
   libcurl_version=3
@@ -265,10 +261,6 @@ elif [ -f /etc/debian_version ]; then
     # For "unbuffer" command for Taskfile.
     expect
 
-    # Building the static-site
-    ruby
-    bundler
-
     # lualdap
     libldap-dev
 
@@ -276,10 +268,6 @@ elif [ -f /etc/debian_version ]; then
     cmake
   )
   test_build_dependencies=(
-    # Running tests
-    ruby
-    bundler
-
     # Binary and readelf tests
     file
     binutils
@@ -303,6 +291,10 @@ elif [ -f /etc/debian_version ]; then
 
     # For running lsof tests in Docker as root
     sudo
+
+    # nokogiri test dependency
+    libxml2-dev
+    libxslt-dev
   )
 
   if [[ "$ID" != "ubuntu" || "$VERSION_ID" != "14.04" ]]; then
