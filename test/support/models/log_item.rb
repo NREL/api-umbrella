@@ -139,7 +139,7 @@ class LogItem
       index_time = Time.at(index_time / 1000.0).utc
     end
 
-    index_name = "api-umbrella-logs-write-#{index_time.utc.strftime("%Y-%m")}"
+    index_name = "#{$config.fetch("elasticsearch").fetch("index_name_prefix")}-logs-write-#{index_time.utc.strftime("%Y-%m")}"
 
     self.class.client.index({
       :index => index_name,

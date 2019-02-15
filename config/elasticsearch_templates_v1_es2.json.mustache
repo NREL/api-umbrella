@@ -1,8 +1,8 @@
 [
   {
-    "id": "api-umbrella-log-v1-template",
+    "id": "{{elasticsearch.index_name_prefix}}-log-v1-template",
     "template": {
-      "template": "api-umbrella-logs-v1-*",
+      "template": "{{elasticsearch.index_name_prefix}}-logs-v1-*",
       "settings": {
         "index": {
           "number_of_shards": 3,

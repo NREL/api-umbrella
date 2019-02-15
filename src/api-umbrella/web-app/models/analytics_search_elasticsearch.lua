@@ -39,7 +39,7 @@ local function index_names(start_time, end_time)
 
   local names = {}
   while date:get_millis() <= end_time_millis do
-    table.insert(names, "api-umbrella-logs-" .. date:format(format_month))
+    table.insert(names, config["elasticsearch"]["index_name_prefix"] .. "-logs-" .. date:format(format_month))
     date:add(icu_date.fields.MONTH, 1)
   end
 

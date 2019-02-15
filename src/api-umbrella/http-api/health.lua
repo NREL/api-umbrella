@@ -47,8 +47,8 @@ local function status_response(quick)
 
     -- Check to see if the ElasticSearch index aliases have been setup.
     local today = os.date("!%Y-%m", ngx.time())
-    local alias = "api-umbrella-logs-" .. today
-    local index = "api-umbrella-logs-v" .. config["elasticsearch"]["template_version"] .. "-" .. today
+    local alias = config["elasticsearch"]["index_name_prefix"] .. "-logs-" .. today
+    local index = config["elasticsearch"]["index_name_prefix"] .. "-logs-v" .. config["elasticsearch"]["template_version"] .. "-" .. today
     res, err = elasticsearch_query("/" .. index .. "/_alias/" .. alias)
     if err then
       ngx.log(ngx.ERR, "failed to fetch elasticsearch alias details: ", err)
