@@ -1,14 +1,16 @@
 local config = require "api-umbrella.proxy.models.file_config"
 local json_decode = require("cjson").decode
+local lustache = require "lustache"
+local mustache_unescape = require "api-umbrella.utils.mustache_unescape"
 local xpcall_error_handler = require "api-umbrella.utils.xpcall_error_handler"
 
 local elasticsearch_templates
 
 local path = os.getenv("API_UMBRELLA_SRC_ROOT") .. "/config/elasticsearch_templates_v" .. config["elasticsearch"]["template_version"]
 if config["elasticsearch"]["api_version"] >= 5 then
-  path = path .. "_es5.json"
+  path = path .. "_es5.json.mustache"
 elseif config["elasticsearch"]["api_version"] >= 2 then
-  path = path .. "_es2.json"
+  path = path .. "_es2.json.mustache"
 else
   error("Unsupported version of elasticsearch: " .. (config["elasticsearch"]["api_version"] or ""))
 end
@@ -19,6 +21,8 @@ if err then
 else
   local content = f:read("*all")
   if content then
+    content = lustache:render(mustache_unescape(content), config)
+
     local ok, data = xpcall(json_decode, xpcall_error_handler, content)
     if ok then
       elasticsearch_templates = data

@@ -187,6 +187,7 @@ elasticsearch:
     - "http://127.0.0.1:14002"
   embedded_server_env:
     heap_size: 512m
+  index_name_prefix: api-umbrella
   api_version: 2
   template_version: 1
   embedded_server_config:
