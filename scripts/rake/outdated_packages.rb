@@ -41,6 +41,9 @@ class OutdatedPackages
     "libmaxminddb" => {
       :git => "https://github.com/maxmind/libmaxminddb.git",
     },
+    "libmongoc" => {
+      :git => "https://github.com/mongodb/mongo-c-driver.git",
+    },
     "libpsl" => {
       :git => "https://github.com/rockdaboot/libpsl.git",
     },
@@ -84,6 +87,9 @@ class OutdatedPackages
     },
     "lua_lyaml" => {
       :luarock => "lyaml",
+    },
+    "lua_mongo" => {
+      :luarock => "lua-mongo",
     },
     "lua_penlight" => {
       :luarock => "penlight",
