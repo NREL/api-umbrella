@@ -173,13 +173,13 @@ postgresql:
   host: 127.0.0.1
   port: 14011
   database: api_umbrella
-  username: api_umbrella_app_user
+  username: api_umbrella_app
   password:
   migrations:
     username: api_umbrella_owner
     password:
   auto_ssl:
-    username: api_umbrella_auto_ssl_user
+    username: api_umbrella_auto_ssl
     password:
   embedded_server_config:
     listen_addresses: 127.0.0.1
