@@ -260,11 +260,10 @@ local function region_location_columns(region_field, code, name, city_locations)
 end
 
 function _M.search(self)
-  local search = AnalyticsSearch.factory(config["analytics"]["adapter"], {
-    start_time = self.params["start_at"],
-    end_time = self.params["end_at"],
-    interval = self.params["interval"],
-  })
+  local search = AnalyticsSearch.factory(config["analytics"]["adapter"])
+  search:set_start_time(self.params["start_at"])
+  search:set_end_time(self.params["end_at"])
+  search:set_interval(self.params["interval"])
   search:set_permission_scope(analytics_policy.authorized_query_scope(self.current_admin))
   search:set_search_query_string(self.params["search"])
   search:set_search_filters(self.params["query"])
@@ -301,21 +300,19 @@ function _M.search(self)
 end
 
 function _M.logs(self)
-  local offset = tonumber(self.params["start"]) or 0
-  local limit = tonumber(self.params["length"]) or 0
+  local limit = self.params["length"]
   if self.params["format"] == "csv" then
     limit = 500
   end
 
-  local search = AnalyticsSearch.factory(config["analytics"]["adapter"], {
-    start_time = self.params["start_at"],
-    end_time = self.params["end_at"],
-    interval = self.params["interval"],
-  })
+  local search = AnalyticsSearch.factory(config["analytics"]["adapter"])
+  search:set_start_time(self.params["start_at"])
+  search:set_end_time(self.params["end_at"])
+  search:set_interval(self.params["interval"])
   search:set_permission_scope(analytics_policy.authorized_query_scope(self.current_admin))
   search:set_search_query_string(self.params["search"])
   search:set_search_filters(self.params["query"])
-  search:set_offset(offset)
+  search:set_offset(self.params["start"])
   search:set_limit(limit)
 
   if self.params["format"] == "csv" then
@@ -402,8 +399,7 @@ function _M.logs(self)
 end
 
 function _M.users(self)
-  local offset = tonumber(self.params["start"]) or 0
-  local limit = tonumber(self.params["length"]) or 0
+  local limit = self.params["length"]
   if self.params["format"] == "csv" then
     limit = 100000
   end
@@ -428,15 +424,14 @@ function _M.users(self)
     end
   end
 
-  local search = AnalyticsSearch.factory(config["analytics"]["adapter"], {
-    start_time = self.params["start_at"],
-    end_time = self.params["end_at"],
-  })
+  local search = AnalyticsSearch.factory(config["analytics"]["adapter"])
+  search:set_start_time(self.params["start_at"])
+  search:set_end_time(self.params["end_at"])
   search:set_permission_scope(analytics_policy.authorized_query_scope(self.current_admin))
   search:set_search_query_string(self.params["search"])
   search:set_search_filters(self.params["query"])
   search:aggregate_by_user_stats(order)
-  search:set_offset(offset)
+  search:set_offset(self.params["start"])
 
   local results = search:fetch_results()
   local buckets
@@ -451,7 +446,7 @@ function _M.users(self)
   -- already been done by elasticsearch. We can improve the performance by
   -- going ahead and truncating the results to the specified page.
   if order then
-    buckets = table_sub(buckets, 1, limit)
+    buckets = table_sub(buckets, 1, tonumber(limit))
   end
 
   local user_ids = {}
@@ -544,10 +539,9 @@ function _M.users(self)
 end
 
 function _M.map(self)
-  local search = AnalyticsSearch.factory(config["analytics"]["adapter"], {
-    start_time = self.params["start_at"],
-    end_time = self.params["end_at"],
-  })
+  local search = AnalyticsSearch.factory(config["analytics"]["adapter"])
+  search:set_start_time(self.params["start_at"])
+  search:set_end_time(self.params["end_at"])
   search:set_permission_scope(analytics_policy.authorized_query_scope(self.current_admin))
   search:set_search_query_string(self.params["search"])
   search:set_search_filters(self.params["query"])

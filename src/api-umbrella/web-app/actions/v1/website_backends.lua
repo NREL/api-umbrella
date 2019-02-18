@@ -19,6 +19,11 @@ function _M.index(self)
       "frontend_host",
       "server_host",
     },
+    order_fields = {
+      "frontend_host",
+      "created_at",
+      "updated_at",
+    },
   })
 end
 

@@ -49,11 +49,10 @@ local function generate_summary_users(start_time, end_time)
 end
 
 local function generate_summary_hits(start_time, end_time)
-  local search = AnalyticsSearch.factory(config["analytics"]["adapter"], {
-    start_time = start_time,
-    end_time = end_time,
-    interval = "month",
-  })
+  local search = AnalyticsSearch.factory(config["analytics"]["adapter"])
+  search:set_start_time(start_time)
+  search:set_end_time(end_time)
+  search:set_interval("month")
   search:filter_exclude_imported()
   search:aggregate_by_interval()
 

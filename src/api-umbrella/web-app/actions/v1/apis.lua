@@ -33,6 +33,13 @@ function _M.index(self)
       db.raw("api_backend_url_matches.backend_prefix"),
       db.raw("api_backend_url_matches.frontend_prefix"),
     },
+    order_fields = {
+      "name",
+      "frontend_host",
+      "sort_order",
+      "created_at",
+      "updated_at",
+    },
     preload = {
       "rewrites",
       "servers",

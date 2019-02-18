@@ -88,6 +88,15 @@ function _M.index(self)
       "registration_source",
       db.raw("api_users_roles.api_role_id"),
     },
+    order_fields = {
+      "email",
+      "first_name",
+      "last_name",
+      "use_description",
+      "registration_source",
+      "created_at",
+      "updated_at",
+    },
     preload = {
       "settings",
       "roles",

@@ -15,7 +15,14 @@ function _M.index(self)
     where = {
       admin_group_policy.authorized_query_scope(self.current_admin),
     },
-    search_fields = { "name" },
+    search_fields = {
+      "name",
+    },
+    order_fields = {
+      "name",
+      "created_at",
+      "updated_at",
+    },
     preload = {
       "admins",
       "api_scopes",

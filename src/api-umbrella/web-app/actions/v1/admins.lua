@@ -54,6 +54,13 @@ function _M.index(self)
       "email",
       "username",
     },
+    order_fields = {
+      "username",
+      "email",
+      "current_sign_in_at",
+      "created_at",
+      "updated_at",
+    },
     preload = { "groups" },
   })
 end

@@ -156,11 +156,10 @@ local function drilldown_hits_over_time(raw_results, search)
 end
 
 function _M.drilldown(self)
-  local search = AnalyticsSearch.factory(config["analytics"]["adapter"], {
-    start_time = self.params["start_at"],
-    end_time = self.params["end_at"],
-    interval = self.params["interval"],
-  })
+  local search = AnalyticsSearch.factory(config["analytics"]["adapter"])
+  search:set_start_time(self.params["start_at"])
+  search:set_end_time(self.params["end_at"])
+  search:set_interval(self.params["interval"])
   search:set_permission_scope(analytics_policy.authorized_query_scope(self.current_admin))
   search:set_search_query_string(self.params["search"])
   search:set_search_filters(self.params["query"])

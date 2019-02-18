@@ -45,6 +45,7 @@ export default Component.extend({
           data: 'frontend_prefixes',
           title: 'Prefixes',
           defaultContent: '-',
+          orderable: false,
           render: DataTablesHelpers.renderEscaped,
         },
         {

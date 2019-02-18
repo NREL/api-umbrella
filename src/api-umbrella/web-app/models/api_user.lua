@@ -253,6 +253,21 @@ ApiUser = model_ext.new_class("api_users", {
       { validation_ext.db_null_optional.string:maxlen(255), string.format(t("is too long (maximum is %d characters)"), 255) },
       { validation_ext.db_null_optional:regex([[\w+\.\w+]], "jo"), t("Your website must be a valid URL in the form of http://example.com") },
     })
+    validate_field(errors, data, "use_description", t("How will you use the APIs?"), {
+      { validation_ext.db_null_optional.string:maxlen(2000), string.format(t("is too long (maximum is %d characters)"), 2000) },
+    })
+    validate_field(errors, data, "registration_source", t("Registration source"), {
+      { validation_ext.db_null_optional.string:maxlen(255), string.format(t("is too long (maximum is %d characters)"), 255) },
+    })
+    validate_field(errors, data, "registration_user_agent", t("Registration user agent"), {
+      { validation_ext.db_null_optional.string:maxlen(1000), string.format(t("is too long (maximum is %d characters)"), 1000) },
+    })
+    validate_field(errors, data, "registration_referer", t("Registration referer"), {
+      { validation_ext.db_null_optional.string:maxlen(1000), string.format(t("is too long (maximum is %d characters)"), 1000) },
+    })
+    validate_field(errors, data, "registration_origin", t("Registration origin"), {
+      { validation_ext.db_null_optional.string:maxlen(1000), string.format(t("is too long (maximum is %d characters)"), 1000) },
+    })
     if not self or not self.id then
       validate_field(errors, data, "terms_and_conditions", t("Terms and conditions"), {
         { validation_ext.boolean:equals(true), t("Check the box to agree to the terms and conditions.") },

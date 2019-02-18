@@ -2,12 +2,15 @@ local cjson = require "cjson"
 local db = require "lapis.db"
 local escape_db_like = require "api-umbrella.utils.escape_db_like"
 local int64_to_json_number = require("api-umbrella.utils.int64").to_json_number
+local is_empty = require("pl.types").is_empty
 local json_response = require "api-umbrella.web-app.utils.json_response"
-local tablex = require "pl.tablex"
-local types = require "pl.types"
+local model_ext = require "api-umbrella.web-app.utils.model_ext"
+local t = require("api-umbrella.web-app.utils.gettext").gettext
+local table_keys = require("pl.tablex").keys
+local validation_ext = require "api-umbrella.web-app.utils.validation_ext"
 
-local is_empty = types.is_empty
-local table_keys = tablex.keys
+local add_error = model_ext.add_error
+local validate_field = model_ext.validate_field
 
 local _M = {}
 
@@ -100,6 +103,60 @@ local function build_sql_offset(offset)
   end
 end
 
+local function validate(values, options)
+  local errors = {}
+  validate_field(errors, values, "length", "length", {
+    { validation_ext.optional.tonumber.number, t("is not a number") },
+  })
+  validate_field(errors, values, "start", "start", {
+    { validation_ext.optional.tonumber.number, t("is not a number") },
+  })
+  validate_field(errors, values, "draw", "draw", {
+    { validation_ext.optional.tonumber.number, t("is not a number") },
+  })
+  validate_field(errors, values, "columns", "columns", {
+    { validation_ext.optional.table, t("is not an object") },
+  })
+  validate_field(errors, values, "order", "order", {
+    { validation_ext.optional.table, t("is not an object") },
+  })
+  local column_indexes = {}
+  if not is_empty(values["columns"]) and type(values["columns"]) == "table" then
+    for index, _ in pairs(values["columns"]) do
+      local ok = validation_ext.tonumber.number(index)
+      if not ok then
+        add_error(errors, "columns", "columns[" .. index .. "]", t("is not a number"))
+      else
+        table.insert(column_indexes, tonumber(index))
+      end
+    end
+  end
+  if not is_empty(values["order"]) and type(values["order"]) == "table" then
+    for index, order in pairs(values["order"]) do
+      local ok = validation_ext.tonumber.number(index)
+      if not ok then
+        add_error(errors, "columns", "columns[" .. index .. "]", t("is not a number"))
+      else
+        validate_field(errors, order, "column", "order[" .. index .. "][column]", {
+          { validation_ext.optional.tonumber.number, t("is not a number") },
+          { validation_ext.optional.tonumber:oneof(unpack(column_indexes)), t("is not a valid column index") },
+        })
+        validate_field(errors, order, "dir", "order[" .. index .. "][dir]", {
+          { validation_ext.optional:oneof("asc", "desc"), t("must be 'asc' or 'desc'") },
+        })
+
+        local column_index = tonumber(order["column"])
+        if column_index then
+          validate_field(errors, values["columns"][column_index] or values["columns"][tostring(column_index)] or {}, "data", "columns[" .. column_index .. "][data]", {
+            { validation_ext:oneof(unpack(options["order_fields"] or {})), t("is not a valid orderable column name") },
+          })
+        end
+      end
+    end
+  end
+  return errors
+end
+
 function _M.parse_order(self)
   local order_fields = {}
   local orders = self.params["order"]
@@ -149,6 +206,11 @@ function _M.parse_order(self)
 end
 
 function _M.index(self, model, options)
+  local errors = validate(self.params, options)
+  if not is_empty(errors) then
+    return coroutine.yield("error", errors)
+  end
+
   local sql = ""
   local query = {
     where = {},

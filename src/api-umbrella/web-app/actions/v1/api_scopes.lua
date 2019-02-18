@@ -20,6 +20,13 @@ function _M.index(self)
       "host",
       "path_prefix",
     },
+    order_fields = {
+      "name",
+      "host",
+      "path_prefix",
+      "created_at",
+      "updated_at",
+    },
   })
 end
 

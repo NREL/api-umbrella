@@ -1,4 +1,5 @@
-local cjson = require "cjson"
+local add_error = require("api-umbrella.web-app.utils.model_ext").add_error
+local cjson = require "cjson.safe"
 local config = require "api-umbrella.proxy.models.file_config"
 local elasticsearch_query = require("api-umbrella.utils.elasticsearch").query
 local escape_regex = require "api-umbrella.utils.escape_regex"
@@ -7,9 +8,18 @@ local is_empty = require("pl.types").is_empty
 local path_join = require "api-umbrella.utils.path_join"
 local re_split = require("ngx.re").split
 local startswith = require("pl.stringx").startswith
+local t = require("api-umbrella.web-app.utils.gettext").gettext
+local validation_ext = require "api-umbrella.web-app.utils.validation_ext"
+local xpcall_error_handler = require "api-umbrella.utils.xpcall_error_handler"
 
-local date = icu_date.new()
+local date_utc = icu_date.new({
+  zone_id = "UTC"
+})
+local date_tz = icu_date.new({
+  zone_id = config["analytics"]["timezone"],
+})
 local format_month = icu_date.formats.pattern("yyyy-MM")
+local format_date = icu_date.formats.pattern("yyyy-MM-dd")
 local format_iso8601 = icu_date.formats.iso8601()
 
 local CASE_SENSITIVE_FIELDS = {
@@ -26,21 +36,25 @@ local _M = {}
 _M.__index = _M
 
 local function index_names(start_time, end_time)
-  date:parse(format_iso8601, end_time)
-  local end_time_millis = date:get_millis()
+  assert(start_time)
+  assert(end_time)
 
-  date:parse(format_iso8601, start_time)
-  date:set_time_zone_id("UTC")
-  date:set(icu_date.fields.DAY_OF_MONTH, 1)
-  date:set(icu_date.fields.HOUR_OF_DAY, 0)
-  date:set(icu_date.fields.MINUTE, 0)
-  date:set(icu_date.fields.SECOND, 0)
-  date:set(icu_date.fields.MILLISECOND, 0)
+  date_utc:parse(format_iso8601, end_time)
+  date_utc:set_time_zone_id("UTC")
+  local end_time_millis = date_utc:get_millis()
+
+  date_utc:parse(format_iso8601, start_time)
+  date_utc:set_time_zone_id("UTC")
+  date_utc:set(icu_date.fields.DAY_OF_MONTH, 1)
+  date_utc:set(icu_date.fields.HOUR_OF_DAY, 0)
+  date_utc:set(icu_date.fields.MINUTE, 0)
+  date_utc:set(icu_date.fields.SECOND, 0)
+  date_utc:set(icu_date.fields.MILLISECOND, 0)
 
   local names = {}
-  while date:get_millis() <= end_time_millis do
-    table.insert(names, config["elasticsearch"]["index_name_prefix"] .. "-logs-" .. date:format(format_month))
-    date:add(icu_date.fields.MONTH, 1)
+  while date_utc:get_millis() <= end_time_millis do
+    table.insert(names, config["elasticsearch"]["index_name_prefix"] .. "-logs-" .. date_utc:format(format_month))
+    date_utc:add(icu_date.fields.MONTH, 1)
   end
 
   return names
@@ -169,11 +183,9 @@ local function parse_query_builder(query)
   return query_filter
 end
 
-function _M.new(options)
+function _M.new()
   local self = {
-    start_time = assert(options["start_time"]),
-    end_time = assert(options["end_time"]),
-    interval = options["interval"],
+    errors = {},
     query = {
       ignore_unavailable = "true",
       allow_no_indices = "true",
@@ -201,18 +213,36 @@ function _M.new(options)
     },
   }
 
-  self.index_names = table.concat(index_names(self.start_time, self.end_time), ",")
-
-  table.insert(self.body["query"]["bool"]["filter"]["bool"]["must"], {
-    range = {
-      request_at = {
-        from = self.start_time,
-        to = self.end_time,
-      },
-    },
-  })
-
   return setmetatable(self, _M)
+end
+
+function _M:set_start_time(start_time)
+  local ok = xpcall(date_tz.parse, xpcall_error_handler, date_tz, format_date, start_time)
+  if not ok then
+    add_error(self.errors, "start_at", "start_at", t("is not valid date"))
+    return false
+  end
+
+  self.start_time = date_tz:format(format_iso8601)
+end
+
+function _M:set_end_time(end_time)
+  local ok = xpcall(date_tz.parse, xpcall_error_handler, date_tz, format_date, end_time)
+  if not ok then
+    add_error(self.errors, "end_at", "end_at", t("is not valid date"))
+    return false
+  end
+
+  date_tz:set(icu_date.fields.HOUR_OF_DAY, 23)
+  date_tz:set(icu_date.fields.MINUTE, 59)
+  date_tz:set(icu_date.fields.SECOND, 59)
+  date_tz:set(icu_date.fields.MILLISECOND, 999)
+
+  self.end_time = date_tz:format(format_iso8601)
+end
+
+function _M:set_interval(interval)
+  self.interval = interval
 end
 
 function _M:set_permission_scope(scopes)
@@ -253,7 +283,12 @@ end
 
 function _M:set_search_filters(query)
   if type(query) == "string" and query ~= "" then
-    query = cjson.decode(query)
+    local err
+    query, err = cjson.decode(query)
+    if err then
+      add_error(self.errors, "query", "query", t("is not valid JSON"))
+      return false
+    end
   end
 
   local filter = parse_query_builder(query)
@@ -263,11 +298,23 @@ function _M:set_search_filters(query)
 end
 
 function _M:set_offset(offset)
-  self.body["from"] = offset
+  local ok = validation_ext.optional.tonumber.number(offset)
+  if not ok then
+    add_error(self.errors, "start", "start", t("is not a number"))
+    return false
+  end
+
+  self.body["from"] = tonumber(offset) or 0
 end
 
 function _M:set_limit(limit)
-  self.body["size"] = limit
+  local ok = validation_ext.optional.tonumber.number(limit)
+  if not ok then
+    add_error(self.errors, "length", "length", t("is not a number"))
+    return false
+  end
+
+  self.body["size"] = tonumber(limit) or 0
 end
 
 function _M:set_timeout(timeout)
@@ -501,6 +548,19 @@ function _M:filter_by_ip_region(region)
 end
 
 function _M:fetch_results()
+  if not is_empty(self.errors) then
+    return coroutine.yield("error", self.errors)
+  end
+
+  table.insert(self.body["query"]["bool"]["filter"]["bool"]["must"], {
+    range = {
+      request_at = {
+        from = assert(self.start_time),
+        to = assert(self.end_time),
+      },
+    },
+  })
+
   setmetatable(self.body["query"]["bool"]["filter"]["bool"]["must_not"], cjson.empty_array_mt)
   setmetatable(self.body["query"]["bool"]["filter"]["bool"]["must"], cjson.empty_array_mt)
   setmetatable(self.body["sort"], cjson.empty_array_mt)
@@ -509,7 +569,8 @@ function _M:fetch_results()
     self.body["aggregations"] = nil
   end
 
-  local res, err = elasticsearch_query("/" .. self.index_names .. "/log/_search", {
+  local indices = table.concat(index_names(self.start_time, self.end_time), ",")
+  local res, err = elasticsearch_query("/" .. indices .. "/log/_search", {
     method = "POST",
     query = self.query,
     body = self.body,
