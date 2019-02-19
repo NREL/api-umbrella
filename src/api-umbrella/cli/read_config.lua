@@ -311,6 +311,10 @@ local function set_computed_config()
           end
         end
 
+        if parsed["scheme"] == "https" then
+          parsed["_https?"] = true
+        end
+
         table.insert(config["elasticsearch"]["_servers"], parsed)
       end
     end
