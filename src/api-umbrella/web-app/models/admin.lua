@@ -34,13 +34,16 @@ end
 local function validate_email(_, data, errors)
   validate_field(errors, data, "username", username_label(), {
     { validation_ext.string:minlen(1), t("can't be blank") },
+    { validation_ext.string:maxlen(255), string.format(t("is too long (maximum is %d characters)"), 255) },
   }, { error_field = username_field_name() })
+
   if config["web"]["admin"]["username_is_email"] then
     validate_field(errors, data, "username", username_label(), {
       { validation_ext.db_null_optional:regex(config["web"]["admin"]["email_regex"], "jo"), t("is invalid") },
     }, { error_field = username_field_name() })
   else
     validate_field(errors, data, "email", t("Email"), {
+      { validation_ext.db_null_optional.string:maxlen(255), string.format(t("is too long (maximum is %d characters)"), 255) },
       { validation_ext.db_null_optional:regex(config["web"]["admin"]["email_regex"], "jo"), t("is invalid") },
     })
   end
@@ -423,6 +426,9 @@ Admin = model_ext.new_class("admins", {
     validate_email(self, data, errors)
     validate_groups(self, data, errors)
     validate_password(self, data, errors)
+    validate_field(errors, data, "name", t("Name"), {
+      { validation_ext.db_null_optional.string:maxlen(255), string.format(t("is too long (maximum is %d characters)"), 255) },
+    })
     validate_field(errors, data, "superuser", t("Superuser"), {
       { validation_ext.db_null_optional.boolean, t("can't be blank") },
     })

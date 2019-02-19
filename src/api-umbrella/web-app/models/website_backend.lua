@@ -50,6 +50,7 @@ WebsiteBackend = model_ext.new_class("website_backends", {
     local errors = {}
     validate_field(errors, data, "frontend_host", t("Frontend host"), {
       { validation_ext.string:minlen(1), t("can't be blank") },
+      { validation_ext.string:maxlen(255), string.format(t("is too long (maximum is %d characters)"), 255) },
       { validation_ext.db_null_optional:regex(common_validations.host_format_with_wildcard, "jo"), t('must be in the format of "example.com"') },
     })
     validate_field(errors, data, "backend_protocol", t("Backend protocol"), {
@@ -57,6 +58,7 @@ WebsiteBackend = model_ext.new_class("website_backends", {
     })
     validate_field(errors, data, "server_host", t("Server host"), {
       { validation_ext.string:minlen(1), t("can't be blank") },
+      { validation_ext.string:maxlen(255), string.format(t("is too long (maximum is %d characters)"), 255) },
       { validation_ext.db_null_optional:regex(common_validations.host_format, "jo"), t('must be in the format of "example.com"') },
     })
     validate_field(errors, data, "server_port", t("Server port"), {

@@ -52,6 +52,7 @@ ApiBackendSubUrlSettings = model_ext.new_class("api_backend_sub_url_settings", {
     })
     validate_field(errors, data, "regex", t("Regex"), {
       { validation_ext.string:minlen(1), t("can't be blank") },
+      { validation_ext.string:maxlen(255), string.format(t("is too long (maximum is %d characters)"), 255) },
     })
     validate_field(errors, data, "sort_order", t("Sort order"), {
       { validation_ext.tonumber.number, t("can't be blank") },

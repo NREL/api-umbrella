@@ -1,6 +1,7 @@
 local AnalyticsCity = require "api-umbrella.web-app.models.analytics_city"
 local AnalyticsSearch = require "api-umbrella.web-app.models.analytics_search"
 local ApiUser = require "api-umbrella.web-app.models.api_user"
+local add_error = require("api-umbrella.web-app.utils.model_ext").add_error
 local analytics_policy = require "api-umbrella.web-app.policies.analytics_policy"
 local array_last = require "api-umbrella.utils.array_last"
 local capture_errors_json = require("api-umbrella.web-app.utils.capture_errors").json
@@ -21,6 +22,7 @@ local round = require "api-umbrella.utils.round"
 local t = require("api-umbrella.web-app.utils.gettext").gettext
 local table_sub = require("pl.tablex").sub
 local time = require "api-umbrella.utils.time"
+local validation_ext = require "api-umbrella.web-app.utils.validation_ext"
 
 local null = ngx.null
 local gsub = ngx.re.gsub
@@ -568,6 +570,11 @@ function _M.map(self)
       end
 
       filter_country = region_param
+    end
+
+    local ok = validation_ext.string:minlen(1)(filter_country)
+    if not ok then
+      add_error(search.errors, "region", "region", t("wrong format"))
     end
   end
 

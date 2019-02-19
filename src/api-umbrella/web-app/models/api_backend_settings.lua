@@ -265,11 +265,40 @@ local ApiBackendSettings = model_ext.new_class("api_backend_settings", {
 
   validate = function(_, data)
     local errors = {}
+    validate_field(errors, data, "append_query_string", t("Append Query String Parameters"), {
+      { validation_ext.db_null_optional.string:maxlen(255), string.format(t("is too long (maximum is %d characters)"), 255) },
+    })
+    validate_field(errors, data, "http_basic_auth", t("HTTP Basic Authentication"), {
+      { validation_ext.db_null_optional.string:maxlen(255), string.format(t("is too long (maximum is %d characters)"), 255) },
+    })
     validate_field(errors, data, "require_https", t("Require HTTPS"), {
       { validation_ext.db_null_optional:regex("^(required_return_error|transition_return_error|optional)$", "jo"), t("is not included in the list") },
     })
+    validate_field(errors, data, "redirect_https", t("Redirect HTTPS"), {
+      { validation_ext.db_null_optional.boolean, t("can't be blank") },
+    })
+    validate_field(errors, data, "disable_api_key", t("API Key Checks"), {
+      { validation_ext.db_null_optional.boolean, t("can't be blank") },
+    })
     validate_field(errors, data, "api_key_verification_level", t("API key verification level"), {
       { validation_ext.db_null_optional:regex("^(none|transition_email|required_email)$", "jo"), t("is not included in the list") },
+    })
+    validate_field(errors, data, "required_role_ids", t("Required Roles"), {
+      { validation_ext.db_null_optional.array_table, t("is not an array") },
+      { validation_ext.db_null_optional.array_strings, t("must be an array of strings") },
+      { validation_ext.db_null_optional:array_strings_maxlen(255), string.format(t("is too long (maximum is %d characters)"), 255) },
+    }, { error_field = "roles" })
+    validate_field(errors, data, "required_roles_override", t("Override required roles from \"Global Request Settings\""), {
+      { validation_ext.db_null_optional.boolean, t("can't be blank") },
+    })
+    validate_field(errors, data, "pass_api_key_header", t("Via HTTP header"), {
+      { validation_ext.db_null_optional.boolean, t("can't be blank") },
+    })
+    validate_field(errors, data, "pass_api_key_query_param", t("Via GET query parameter"), {
+      { validation_ext.db_null_optional.boolean, t("can't be blank") },
+    })
+    validate_field(errors, data, "rate_limit_bucket_name", t("Rate limit bucket"), {
+      { validation_ext.db_null_optional.string:maxlen(255), string.format(t("is too long (maximum is %d characters)"), 255) },
     })
     validate_field(errors, data, "rate_limit_mode", t("Rate limit mode"), {
       { validation_ext.db_null_optional:regex("^(unlimited|custom)$", "jo"), t("is not included in the list") },
@@ -279,6 +308,16 @@ local ApiBackendSettings = model_ext.new_class("api_backend_settings", {
     })
     validate_field(errors, data, "authenticated_rate_limit_behavior", t("Authenticated rate limit behavior"), {
       { validation_ext.db_null_optional:regex("^(all|api_key_only)$", "jo"), t("is not included in the list") },
+    })
+    validate_field(errors, data, "allowed_ips", t("Restrict Access to IPs"), {
+      { validation_ext.db_null_optional.array_table, t("is not an array") },
+      { validation_ext.db_null_optional.array_strings, t("must be an array of strings") },
+      { validation_ext.db_null_optional.array_strings_ips, t("invalid IP") },
+    })
+    validate_field(errors, data, "allowed_referers", t("Restrict Access to HTTP Referers"), {
+      { validation_ext.db_null_optional.array_table, t("is not an array") },
+      { validation_ext.db_null_optional.array_strings, t("must be an array of strings") },
+      { validation_ext.db_null_optional:array_strings_maxlen(500), string.format(t("is too long (maximum is %d characters)"), 500) },
     })
 
     if data["error_data"] then

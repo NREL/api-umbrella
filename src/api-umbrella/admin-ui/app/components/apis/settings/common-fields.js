@@ -6,7 +6,7 @@ export default Component.extend({
     this._super(...arguments);
 
     this.requireHttpsOptions = [
-      { id: null, name: t('admin.api.settings.require_https_options.inherit') },
+      { id: null, name: t('Inherit (default - required)') },
       { id: 'required_return_error', name: t('Required - HTTP requests will receive a message to use HTTPS') },
       { id: 'transition_return_error', name: t('Transitionary - Optional for existing API keys, required for new API keys') },
       { id: 'optional', name: t('Optional - HTTPS is optional') },

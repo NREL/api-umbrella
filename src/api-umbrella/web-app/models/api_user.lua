@@ -256,6 +256,11 @@ ApiUser = model_ext.new_class("api_users", {
     validate_field(errors, data, "use_description", t("How will you use the APIs?"), {
       { validation_ext.db_null_optional.string:maxlen(2000), string.format(t("is too long (maximum is %d characters)"), 2000) },
     })
+    validate_field(errors, data, "role_ids", t("Roles"), {
+      { validation_ext.db_null_optional.array_table, t("is not an array") },
+      { validation_ext.db_null_optional.array_strings, t("must be an array of strings") },
+      { validation_ext.db_null_optional:array_strings_maxlen(255), string.format(t("is too long (maximum is %d characters)"), 255) },
+    }, { error_field = "roles" })
     validate_field(errors, data, "registration_source", t("Registration source"), {
       { validation_ext.db_null_optional.string:maxlen(255), string.format(t("is too long (maximum is %d characters)"), 255) },
     })
@@ -273,6 +278,7 @@ ApiUser = model_ext.new_class("api_users", {
         { validation_ext.boolean:equals(true), t("Check the box to agree to the terms and conditions.") },
       })
     end
+
     return errors
   end,
 

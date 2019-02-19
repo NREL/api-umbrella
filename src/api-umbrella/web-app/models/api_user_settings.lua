@@ -55,6 +55,16 @@ local ApiUserSettings = model_ext.new_class("api_user_settings", {
 
   validate = function(_, data)
     local errors = {}
+    validate_field(errors, data, "allowed_ips", t("Restrict Access to IPs"), {
+      { validation_ext.db_null_optional.array_table, t("is not an array") },
+      { validation_ext.db_null_optional.array_strings, t("must be an array of strings") },
+      { validation_ext.db_null_optional.array_strings_ips, t("invalid IP") },
+    })
+    validate_field(errors, data, "allowed_referers", t("Restrict Access to HTTP Referers"), {
+      { validation_ext.db_null_optional.array_table, t("is not an array") },
+      { validation_ext.db_null_optional.array_strings, t("must be an array of strings") },
+      { validation_ext.db_null_optional:array_strings_maxlen(500), string.format(t("is too long (maximum is %d characters)"), 500) },
+    })
     validate_field(errors, data, "rate_limit_mode", t("Rate limit mode"), {
       { validation_ext.db_null_optional:regex("^(unlimited|custom)$", "jo"), t("is not included in the list") },
     })

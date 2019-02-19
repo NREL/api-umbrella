@@ -291,6 +291,13 @@ function _M:set_search_filters(query)
     end
   end
 
+  if not is_empty(query) then
+    if type(query) ~= "table" or type(query["rules"]) ~= "table" then
+      add_error(self.errors, "query", "query", t("wrong format"))
+      return false
+    end
+  end
+
   local filter = parse_query_builder(query)
   if filter then
     table.insert(self.body["query"]["bool"]["filter"]["bool"]["must"], filter)
@@ -395,6 +402,25 @@ function _M:aggregate_by_drilldown(prefix, size)
   self.drilldown_depth = tonumber(prefix_parts[1])
   self.drilldown_parent = {}
   self.drilldown_path_segments = {}
+
+  local ok = validation_ext.string:minlen(1)(self.drilldown_prefix)
+  if not ok then
+    add_error(self.errors, "prefix", "prefix", t("can't be blank"))
+    return false
+  end
+
+  ok = validation_ext.tonumber.number(self.drilldown_depth)
+  if not ok then
+    add_error(self.errors, "prefix", "prefix", t("wrong format"))
+    return false
+  end
+
+  ok = validation_ext.optional.tonumber.number(size)
+  if not ok then
+    add_error(self.errors, "size", "size", t("is not a number"))
+    return false
+  end
+
   for index, value in ipairs(prefix_parts) do
     if index > 1 then
       table.insert(self.drilldown_path_segments, {
@@ -418,7 +444,7 @@ function _M:aggregate_by_drilldown(prefix, size)
 
   self.body["aggregations"]["drilldown"] = {
     terms = {
-      size = size,
+      size = tonumber(size),
     },
   }
 
@@ -445,6 +471,10 @@ function _M:aggregate_by_drilldown(prefix, size)
 end
 
 function _M:aggregate_by_drilldown_over_time()
+  if not is_empty(self.errors) then
+    return false
+  end
+
   -- We assume aggregate_by_drilldown has been called first, to parse and set
   -- some of the internal drilldown variables.
   assert(self.drilldown_prefix)
@@ -577,7 +607,17 @@ function _M:fetch_results()
   })
   if err then
     ngx.log(ngx.ERR, "failed to query elasticsearch: ", err)
-    return false
+    ngx.ctx.error_status = 500
+    return coroutine.yield("error", {
+      _render = {
+        errors = {
+          {
+            code = "UNEXPECTED_ERROR",
+            message = t("An unexpected error occurred"),
+          },
+        },
+      },
+    })
   end
 
   return res.body_json
@@ -607,7 +647,17 @@ function _M:fetch_results_bulk(callback)
     })
     if err then
       ngx.log(ngx.ERR, "failed to query elasticsearch: ", err)
-      return false
+      ngx.ctx.error_status = 500
+      return coroutine.yield("error", {
+        _render = {
+          errors = {
+            {
+              code = "UNEXPECTED_ERROR",
+              message = t("An unexpected error occurred"),
+            },
+          },
+        },
+      })
     end
 
     raw_results = res.body_json

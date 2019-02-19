@@ -52,14 +52,17 @@ ApiScope = model_ext.new_class("api_scopes", {
   validate = function(_, data)
     local errors = {}
     validate_field(errors, data, "name", t("Name"), {
-      { validation_ext.string:minlen(1), t("can't be blank"), }
+      { validation_ext.string:minlen(1), t("can't be blank"), },
+      { validation_ext.string:maxlen(255), string.format(t("is too long (maximum is %d characters)"), 255) },
     })
     validate_field(errors, data, "host", t("Host"), {
       { validation_ext.string:minlen(1), t("can't be blank") },
+      { validation_ext.string:maxlen(255), string.format(t("is too long (maximum is %d characters)"), 255) },
       { validation_ext.db_null_optional:regex(common_validations.host_format_with_wildcard, "jo"), t('must be in the format of "example.com"') },
     })
     validate_field(errors, data, "path_prefix", t("Path prefix"), {
       { validation_ext.string:minlen(1), t("can't be blank") },
+      { validation_ext.string:maxlen(255), string.format(t("is too long (maximum is %d characters)"), 255) },
       { validation_ext.db_null_optional:regex(common_validations.url_prefix_format, "jo"), t('must start with "/"') },
     })
     validate_uniqueness(errors, data, "path_prefix", t("Path prefix"), ApiScope, {

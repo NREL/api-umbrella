@@ -32,6 +32,10 @@ local ApiBackendHttpHeader = model_ext.new_class("api_backend_http_headers", {
     })
     validate_field(errors, data, "key", t("Key"), {
       { validation_ext.string:minlen(1), t("can't be blank") },
+      { validation_ext.db_null_optional.string:maxlen(255), string.format(t("is too long (maximum is %d characters)"), 255) },
+    })
+    validate_field(errors, data, "value", t("Value"), {
+      { validation_ext.db_null_optional.string:maxlen(255), string.format(t("is too long (maximum is %d characters)"), 255) },
     })
     return errors
   end,

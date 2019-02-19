@@ -35,9 +35,11 @@ ApiBackendRewrite = model_ext.new_class("api_backend_rewrites", {
     })
     validate_field(errors, data, "frontend_matcher", t("Frontend matcher"), {
       { validation_ext.string:minlen(1), t("can't be blank") },
+      { validation_ext.db_null_optional.string:maxlen(255), string.format(t("is too long (maximum is %d characters)"), 255) },
     })
     validate_field(errors, data, "backend_replacement", t("Backend replacement"), {
       { validation_ext.string:minlen(1), t("can't be blank") },
+      { validation_ext.db_null_optional.string:maxlen(255), string.format(t("is too long (maximum is %d characters)"), 255) },
     })
     validate_field(errors, data, "sort_order", t("Sort order"), {
       { validation_ext.tonumber.number, t("can't be blank") },

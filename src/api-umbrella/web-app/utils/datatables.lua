@@ -57,10 +57,12 @@ local function build_order(self)
   for _, order_field in ipairs(order_fields) do
     local column_name = order_field[1]
     local dir = order_field[2]
-    table.insert(orders, db.escape_identifier(column_name) .. " " .. dir)
+    if not is_empty(column_name) and not is_empty(dir) then
+      table.insert(orders, db.escape_identifier(column_name) .. " " .. dir)
+    end
   end
 
-  return table.concat(orders, ", ")
+  return orders
 end
 
 local function build_sql_joins(joins)
@@ -214,7 +216,6 @@ function _M.index(self, model, options)
   local sql = ""
   local query = {
     where = {},
-    order = {},
   }
 
   local table_name = model:table_name()
@@ -239,7 +240,7 @@ function _M.index(self, model, options)
 
   -- Order
   if not is_empty(self.params["order"]) then
-    table.insert(query["order"], build_order(self))
+    query["order"] = build_order(self)
   end
 
   -- Limit

@@ -28,6 +28,7 @@ ApiBackendServer = model_ext.new_class("api_backend_servers", {
     })
     validate_field(errors, data, "host", t("Host"), {
       { validation_ext.string:minlen(1), t("can't be blank") },
+      { validation_ext.string:maxlen(255), string.format(t("is too long (maximum is %d characters)"), 255) },
       { validation_ext.db_null_optional:regex(common_validations.host_format, "jo"), t('must be in the format of "example.com"') },
     })
     validate_field(errors, data, "port", t("Port"), {

@@ -1,4 +1,7 @@
+local cidr = require "libcidr-ffi"
 local db_null = require("lapis.db").NULL
+local is_array = require "api-umbrella.utils.is_array"
+local is_hash = require "api-umbrella.utils.is_hash"
 local match = ngx.re.match
 local validation = require "resty.validation"
 
@@ -17,6 +20,65 @@ local function non_null_table()
   end
 end
 
+local function array_table()
+  return function(value)
+    return value ~= db_null and is_array(value)
+  end
+end
+
+local function hash_table()
+  return function(value)
+    return value ~= db_null and is_hash(value)
+  end
+end
+
+local function array_strings()
+  return function(value)
+    if validation.validators.array_table(value) then
+      for _, str in ipairs(value) do
+        if not validation.validators.string(str) then
+          return false
+        end
+      end
+    end
+
+    return true
+  end
+end
+
+local function array_strings_maxlen(length)
+  local length_validator = validation.validators.maxlen(length)
+  return function(value)
+    if validation.validators.array_table(value) then
+      for _, str in ipairs(value) do
+        if type(str) == "string" and not length_validator(str) then
+          return false
+        end
+      end
+    end
+
+    return true
+  end
+end
+
+local function array_strings_ips()
+  return function(value)
+    if validation.validators.array_table(value) then
+      for _, str in ipairs(value) do
+        if type(str) == "string" then
+          local _, err = cidr.from_str(str)
+          if err then
+            return false
+          end
+        end
+      end
+    end
+
+    return true
+  end
+end
+
+
 local function not_regex(regex, options)
   return function(value)
     return match(value, regex, options) == nil
@@ -31,6 +93,21 @@ validators_metatable.db_null_optional = db_null_optional
 
 validators.non_null_table = non_null_table()
 validators_metatable.non_null_table = non_null_table
+
+validators.array_table = array_table()
+validators_metatable.array_table = array_table
+
+validators.hash_table = hash_table()
+validators_metatable.hash_table = hash_table
+
+validators.array_strings = array_strings()
+validators_metatable.array_strings = array_strings
+
+validators.array_strings_maxlen = array_strings_maxlen()
+validators_metatable.array_strings_maxlen = array_strings_maxlen
+
+validators.array_strings_ips = array_strings_ips()
+validators_metatable.array_strings_ips = array_strings_ips
 
 validators.not_regex = not_regex()
 validators_metatable.not_regex = not_regex
