@@ -76,27 +76,16 @@ module ApiUmbrellaTestHelpers
             :hosts => $config["elasticsearch"]["hosts"],
           })
           LogItem.client = client
-          # Elasticsearch::Persistence.client = client
 
-          # For simplicity sake, we're assuming our tests only deal with a few explicit
-          # indexes currently.
-          ["2013-07", "2013-08", "2014-11", "2015-01", "2015-03"].each do |month|
-            # First delete any existing indexes.
-            ["#{$config.fetch("elasticsearch").fetch("index_name_prefix")}-logs-v#{$config["elasticsearch"]["template_version"]}-#{month}", "#{$config.fetch("elasticsearch").fetch("index_name_prefix")}-logs-#{month}", "#{$config.fetch("elasticsearch").fetch("index_name_prefix")}-logs-write-#{month}"].each do |index_name|
-              begin
-                client.indices.delete :index => index_name
-              rescue Elasticsearch::Transport::Transport::Errors::NotFound # rubocop:disable Lint/HandleExceptions
-              end
-            end
-
-            # Create the index with proper aliases setup.
-            client.indices.create(:index => "#{$config.fetch("elasticsearch").fetch("index_name_prefix")}-logs-v#{$config["elasticsearch"]["template_version"]}-#{month}", :body => {
-              :aliases => {
-                "#{$config.fetch("elasticsearch").fetch("index_name_prefix")}-logs-#{month}" => {},
-                "#{$config.fetch("elasticsearch").fetch("index_name_prefix")}-logs-write-#{month}" => {},
-              },
-            })
-          end
+          # Wipe elasticsearch indices before beginning.
+          #
+          # Note, that we don't want to wipe the current day's index that is
+          # setup as part of the API Umbrella startup. So we're only clearing
+          # these older indices for previous dates, which we'll assume our test
+          # suite will work with. We completely delete the indices here (rather
+          # than relying on LogItem.clean_indices!), so that we're sure each
+          # test gets fresh index template and mappings setup.
+          client.indices.delete :index => "api-umbrella*-2013-*,api-umbrella*-2014-*,api-umbrella*-2015-*"
 
           self.setup_complete = true
         end

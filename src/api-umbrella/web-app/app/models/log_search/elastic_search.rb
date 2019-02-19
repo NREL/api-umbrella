@@ -489,8 +489,17 @@ class LogSearch::ElasticSearch < LogSearch::Base
 
   def indexes
     unless @indexes
+      partition_date_format = case ApiUmbrellaConfig[:elasticsearch][:index_partition]
+      when "monthly"
+        "%Y-%m"
+      when "daily"
+        "%Y-%m-%d"
+      else
+        raise "Unknown elasticsearch.index_partition configuration value"
+      end
+
       date_range = @start_time.utc.to_date..@end_time.utc.to_date
-      @indexes = date_range.map { |date| "#{$config["elasticsearch"]["index_name_prefix"]}-logs-#{date.strftime("%Y-%m")}" }
+      @indexes = date_range.map { |date| "#{ApiUmbrellaConfig[:elasticsearch][:index_name_prefix]}-logs-#{date.strftime(partition_date_format)}" }
       @indexes.uniq!
     end
 

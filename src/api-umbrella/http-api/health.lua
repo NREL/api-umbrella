@@ -1,7 +1,10 @@
 local config = require "api-umbrella.proxy.models.file_config"
-local elasticsearch_query = require("api-umbrella.utils.elasticsearch").query
+local elasticsearch = require "api-umbrella.utils.elasticsearch"
 local http = require "resty.http"
+local icu_date = require "icu-date"
 local json_encode = require "api-umbrella.utils.json_encode"
+
+local elasticsearch_query = elasticsearch.query
 
 local function status_response(quick)
   local response = {
@@ -46,7 +49,8 @@ local function status_response(quick)
     response["details"]["analytics_db"] = elasticsearch_health["status"]
 
     -- Check to see if the ElasticSearch index aliases have been setup.
-    local today = os.date("!%Y-%m", ngx.time())
+    local date = icu_date.new({ zone_id = "UTC" })
+    local today = date:format(elasticsearch.partition_date_format)
     local alias = config["elasticsearch"]["index_name_prefix"] .. "-logs-" .. today
     local index = config["elasticsearch"]["index_name_prefix"] .. "-logs-v" .. config["elasticsearch"]["template_version"] .. "-" .. today
     res, err = elasticsearch_query("/" .. index .. "/_alias/" .. alias)
