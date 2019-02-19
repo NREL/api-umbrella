@@ -326,7 +326,7 @@ ApiBackend = model_ext.new_class("api_backends", {
     local errors = {}
     validate_field(errors, data, "name", t("Name"), {
       { validation_ext.string:minlen(1), t("can't be blank") },
-      { validation_ext.string:maxlen(255), string.format(t("is too long (maximum is %d characters)"), 255) },
+      { validation_ext.db_null_optional.string:maxlen(255), string.format(t("is too long (maximum is %d characters)"), 255) },
     })
     validate_field(errors, data, "sort_order", t("Sort order"), {
       { validation_ext.tonumber.number, t("can't be blank") },
@@ -336,13 +336,13 @@ ApiBackend = model_ext.new_class("api_backends", {
     })
     validate_field(errors, data, "frontend_host", t("Frontend host"), {
       { validation_ext.string:minlen(1), t("can't be blank") },
-      { validation_ext.string:maxlen(255), string.format(t("is too long (maximum is %d characters)"), 255) },
+      { validation_ext.db_null_optional.string:maxlen(255), string.format(t("is too long (maximum is %d characters)"), 255) },
       { validation_ext.db_null_optional:regex(common_validations.host_format_with_wildcard, "jo"), t('must be in the format of "example.com"') },
     })
     if not data["frontend_host"] or string.sub(data["frontend_host"], 1, 1) ~= "*" then
       validate_field(errors, data, "backend_host", t("Backend host"), {
         { validation_ext.string:minlen(1), t("can't be blank") },
-        { validation_ext.string:maxlen(255), string.format(t("is too long (maximum is %d characters)"), 255) },
+        { validation_ext.db_null_optional.string:maxlen(255), string.format(t("is too long (maximum is %d characters)"), 255) },
       })
     end
     if data["backend_host"] and data["backend_host"] ~= db_null then

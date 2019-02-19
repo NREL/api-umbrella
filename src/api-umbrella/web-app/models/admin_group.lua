@@ -168,7 +168,7 @@ AdminGroup = model_ext.new_class("admin_groups", {
     local errors = {}
     validate_field(errors, data, "name", t("Name"), {
       { validation_ext.string:minlen(1), t("can't be blank") },
-      { validation_ext.string:maxlen(255), string.format(t("is too long (maximum is %d characters)"), 255) },
+      { validation_ext.db_null_optional.string:maxlen(255), string.format(t("is too long (maximum is %d characters)"), 255) },
     })
     validate_field(errors, data, "api_scope_ids", t("API scopes"), {
       { validation_ext.non_null_table:minlen(1), t("can't be blank") },

@@ -34,7 +34,7 @@ end
 local function validate_email(_, data, errors)
   validate_field(errors, data, "username", username_label(), {
     { validation_ext.string:minlen(1), t("can't be blank") },
-    { validation_ext.string:maxlen(255), string.format(t("is too long (maximum is %d characters)"), 255) },
+    { validation_ext.db_null_optional.string:maxlen(255), string.format(t("is too long (maximum is %d characters)"), 255) },
   }, { error_field = username_field_name() })
 
   if config["web"]["admin"]["username_is_email"] then
