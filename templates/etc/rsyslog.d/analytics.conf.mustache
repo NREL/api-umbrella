@@ -164,9 +164,9 @@ action(
   type="omelasticsearch"
   server="{{elasticsearch._first_server.host}}"
   serverport="{{elasticsearch._first_server.port}}"
-  {{#elasticsearch._first_server.https?}}
+  {{#elasticsearch._first_server._https?}}
   usehttps="on"
-  {{/elasticsearch._first_server.https?}}
+  {{/elasticsearch._first_server._https?}}
   {{#elasticsearch._first_server.user}}
   uid="{{elasticsearch._first_server.user}}"
   {{/elasticsearch._first_server.user}}
