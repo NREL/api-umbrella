@@ -216,6 +216,19 @@ function _M.new()
   return setmetatable(self, _M)
 end
 
+function _M:set_sort(order_fields)
+  if not is_empty(order_fields) then
+    self.body["sort"] = {}
+    for _, order_field in ipairs(order_fields) do
+      local column_name = order_field[1]
+      local dir = order_field[2]
+      if not is_empty(column_name) and not is_empty(dir) then
+        table.insert(self.body["sort"], { [column_name] = string.lower(dir) })
+      end
+    end
+  end
+end
+
 function _M:set_start_time(start_time)
   local ok = xpcall(date_tz.parse, xpcall_error_handler, date_tz, format_date, start_time)
   if not ok then

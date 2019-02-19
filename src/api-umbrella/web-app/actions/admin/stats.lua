@@ -316,6 +316,7 @@ function _M.logs(self)
   search:set_search_filters(self.params["query"])
   search:set_offset(self.params["start"])
   search:set_limit(limit)
+  search:set_sort(datatables.parse_order(self))
 
   if self.params["format"] == "csv" then
     csv.set_response_headers(self, "api_logs_" .. os.date("!%Y-%m-%d", ngx.now()) .. ".csv")
