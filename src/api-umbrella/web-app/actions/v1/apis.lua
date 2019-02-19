@@ -11,6 +11,7 @@ local json_params = require("lapis.application").json_params
 local json_response = require "api-umbrella.web-app.utils.json_response"
 local require_admin = require "api-umbrella.web-app.utils.require_admin"
 local respond_to = require "api-umbrella.web-app.utils.respond_to"
+local validation_ext = require "api-umbrella.web-app.utils.validation_ext"
 
 local db_null = db.NULL
 
@@ -82,7 +83,11 @@ end
 function _M.move_after(self)
   self.api_backend:authorize()
   if self.params and not is_empty(self.params["move_after_id"]) then
-    local after_api = ApiBackend:find(self.params["move_after_id"])
+    local after_api
+    local ok = validation_ext.string.uuid(self.params["move_after_id"])
+    if ok then
+      after_api = ApiBackend:find(self.params["move_after_id"])
+    end
     if after_api then
       after_api:authorize()
       self.api_backend:move_after(after_api)
@@ -287,7 +292,10 @@ end
 
 return function(app)
   local function find_api_backend(self)
-    self.api_backend = ApiBackend:find(self.params["id"])
+    local ok = validation_ext.string.uuid(self.params["id"])
+    if ok then
+      self.api_backend = ApiBackend:find(self.params["id"])
+    end
     if not self.api_backend then
       return self.app.handle_404(self)
     end

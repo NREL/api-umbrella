@@ -1,4 +1,5 @@
 local cjson = require "cjson"
+local common_validations = require "api-umbrella.web-app.utils.common_validations"
 local db = require "lapis.db"
 local escape_db_like = require "api-umbrella.utils.escape_db_like"
 local int64_to_json_number = require("api-umbrella.utils.int64").to_json_number
@@ -18,7 +19,7 @@ local function build_search_where(escaped_table_name, search_fields, search_valu
   local where = {}
 
   -- Always search on the "id" field, but only for exact matches.
-  local uuid_matches, uuid_match_err = ngx.re.match(search_value, [[^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$]], "ijo")
+  local uuid_matches, uuid_match_err = ngx.re.match(search_value, common_validations.uuid, "ijo")
   if uuid_matches then
     table.insert(where, db.interpolate_query(escaped_table_name .. ".id = ?", string.lower(search_value)))
   elseif uuid_match_err then

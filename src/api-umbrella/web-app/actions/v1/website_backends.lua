@@ -6,6 +6,7 @@ local json_params = require("lapis.application").json_params
 local json_response = require "api-umbrella.web-app.utils.json_response"
 local require_admin = require "api-umbrella.web-app.utils.require_admin"
 local respond_to = require "api-umbrella.web-app.utils.respond_to"
+local validation_ext = require "api-umbrella.web-app.utils.validation_ext"
 local website_backend_policy = require "api-umbrella.web-app.policies.website_backend_policy"
 
 local _M = {}
@@ -76,7 +77,10 @@ end
 return function(app)
   app:match("/api-umbrella/v1/website_backends/:id(.:format)", respond_to({
     before = require_admin(function(self)
-      self.website_backend = WebsiteBackend:find(self.params["id"])
+      local ok = validation_ext.string.uuid(self.params["id"])
+      if ok then
+        self.website_backend = WebsiteBackend:find(self.params["id"])
+      end
       if not self.website_backend then
         return self.app.handle_404(self)
       end

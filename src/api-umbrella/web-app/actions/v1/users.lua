@@ -18,6 +18,7 @@ local known_domains = require "api-umbrella.utils.known_domains"
 local parse_post_for_pseudo_ie_cors = require "api-umbrella.web-app.utils.parse_post_for_pseudo_ie_cors"
 local require_admin = require "api-umbrella.web-app.utils.require_admin"
 local respond_to = require "api-umbrella.web-app.utils.respond_to"
+local validation_ext = require "api-umbrella.web-app.utils.validation_ext"
 
 local db_null = db.NULL
 
@@ -240,7 +241,10 @@ end
 return function(app)
   app:match("/api-umbrella/v1/users/:id(.:format)", respond_to({
     before = require_admin(function(self)
-      self.api_user = ApiUser:find(self.params["id"])
+      local ok = validation_ext.string.uuid(self.params["id"])
+      if ok then
+        self.api_user = ApiUser:find(self.params["id"])
+      end
       if not self.api_user then
         return self.app.handle_404(self)
       end

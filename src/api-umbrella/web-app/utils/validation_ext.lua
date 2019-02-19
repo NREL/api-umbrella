@@ -1,4 +1,5 @@
 local cidr = require "libcidr-ffi"
+local common_validations = require "api-umbrella.web-app.utils.common_validations"
 local db_null = require("lapis.db").NULL
 local is_array = require "api-umbrella.utils.is_array"
 local is_hash = require "api-umbrella.utils.is_hash"
@@ -78,12 +79,18 @@ local function array_strings_ips()
   end
 end
 
-
 local function not_regex(regex, options)
   return function(value)
     return match(value, regex, options) == nil
   end
 end
+
+local function uuid()
+  return function(value)
+    return match(value, common_validations.uuid, "ijo") ~= nil
+  end
+end
+
 
 local validators = validation.validators
 local validators_metatable = getmetatable(validators)
@@ -111,6 +118,9 @@ validators_metatable.array_strings_ips = array_strings_ips
 
 validators.not_regex = not_regex()
 validators_metatable.not_regex = not_regex
+
+validators.uuid = uuid()
+validators_metatable.uuid = uuid
 
 setmetatable(validators, validators_metatable)
 

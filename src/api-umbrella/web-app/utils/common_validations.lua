@@ -5,4 +5,5 @@ return {
   host_format = "^" .. base_host_format .. "$",
   host_format_with_wildcard = [[^(\*|(\*\.|\.)]] .. base_host_format .. "|" .. base_host_format .. ")$",
   url_prefix_format = "^/",
+  uuid = [[^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$]],
 }
