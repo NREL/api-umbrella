@@ -1,5 +1,6 @@
 local config = require "api-umbrella.proxy.models.file_config"
 local http = require "resty.http"
+local icu_date = require "icu-date"
 local is_empty = require("pl.types").is_empty
 local json_decode = require("cjson").decode
 local json_encode = require "api-umbrella.utils.json_encode"
@@ -7,6 +8,14 @@ local json_encode = require "api-umbrella.utils.json_encode"
 local server = config["elasticsearch"]["_first_server"]
 
 local _M = {}
+
+if config["elasticsearch"]["index_partition"] == "monthly" then
+  _M.partition_date_format = icu_date.formats.pattern("yyyy-MM")
+elseif config["elasticsearch"]["index_partition"] == "daily" then
+  _M.partition_date_format = icu_date.formats.pattern("yyyy-MM-dd")
+else
+  error("Unknown elasticsearch.index_partition configuration value")
+end
 
 function _M.query(path, options)
   local httpc = http.new()

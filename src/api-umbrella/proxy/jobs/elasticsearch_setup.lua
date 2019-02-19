@@ -1,11 +1,14 @@
-local _M = {}
-
 local config = require "api-umbrella.proxy.models.file_config"
-local elasticsearch_query = require("api-umbrella.utils.elasticsearch").query
+local elasticsearch = require "api-umbrella.utils.elasticsearch"
 local elasticsearch_templates = require "api-umbrella.proxy.elasticsearch_templates_data"
+local icu_date = require "icu-date"
 local interval_lock = require "api-umbrella.utils.interval_lock"
 
+local elasticsearch_query = elasticsearch.query
+
 local delay = 3600  -- in seconds
+
+local _M = {}
 
 function _M.wait_for_elasticsearch()
   local elasticsearch_alive = false
@@ -57,8 +60,11 @@ function _M.create_templates()
 end
 
 function _M.create_aliases()
-  local today = os.date("!%Y-%m", ngx.time())
-  local tomorrow = os.date("!%Y-%m", ngx.time() + 86400)
+  local date = icu_date.new({ zone_id = "UTC" })
+  local today = date:format(elasticsearch.partition_date_format)
+
+  date:add(icu_date.fields.DATE, 1)
+  local tomorrow = date:format(elasticsearch.partition_date_format)
 
   local aliases = {
     {

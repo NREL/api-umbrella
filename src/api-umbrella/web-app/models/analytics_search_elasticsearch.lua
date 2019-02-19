@@ -1,7 +1,7 @@
 local add_error = require("api-umbrella.web-app.utils.model_ext").add_error
 local cjson = require "cjson.safe"
 local config = require "api-umbrella.proxy.models.file_config"
-local elasticsearch_query = require("api-umbrella.utils.elasticsearch").query
+local elasticsearch = require "api-umbrella.utils.elasticsearch"
 local escape_regex = require "api-umbrella.utils.escape_regex"
 local icu_date = require "icu-date"
 local is_empty = require("pl.types").is_empty
@@ -12,13 +12,14 @@ local t = require("api-umbrella.web-app.utils.gettext").gettext
 local validation_ext = require "api-umbrella.web-app.utils.validation_ext"
 local xpcall_error_handler = require "api-umbrella.utils.xpcall_error_handler"
 
+local elasticsearch_query = elasticsearch.query
+
 local date_utc = icu_date.new({
   zone_id = "UTC"
 })
 local date_tz = icu_date.new({
   zone_id = config["analytics"]["timezone"],
 })
-local format_month = icu_date.formats.pattern("yyyy-MM")
 local format_date = icu_date.formats.pattern("yyyy-MM-dd")
 local format_iso8601 = icu_date.formats.iso8601()
 
@@ -40,12 +41,26 @@ local function index_names(start_time, end_time)
   assert(end_time)
 
   date_utc:parse(format_iso8601, end_time)
+  -- TODO: For some reason, set_time_zone_id doesn't work properly if format()
+  -- isn't called first, when changing between time zones. Need to debug why
+  -- this isn't working as expected with icu-date, but in the meantime, this
+  -- workaround seems to make set_time_zone_id work as expected.
+  --
+  -- The following test can reproduce this problem (it will break without this
+  -- format() call):
+  -- env ELASTICSEARCH_TEST_API_VERSION=5 ELASTICSEARCH_TEST_TEMPLATE_VERSION=2 ELASTICSEARCH_TEST_INDEX_PARTITION=daily bundle exec minitest test/apis/admin/stats/test_search.rb -n test_bins_results_by_day_with_time_zone_support
+  date_utc:format(format_iso8601)
   date_utc:set_time_zone_id("UTC")
   local end_time_millis = date_utc:get_millis()
 
   date_utc:parse(format_iso8601, start_time)
+  -- TODO: See above about why this format() call is here, but shouldn't be
+  -- necessary.
+  date_utc:format(format_iso8601)
   date_utc:set_time_zone_id("UTC")
-  date_utc:set(icu_date.fields.DAY_OF_MONTH, 1)
+  if config["elasticsearch"]["index_partition"] == "monthly" then
+    date_utc:set(icu_date.fields.DAY_OF_MONTH, 1)
+  end
   date_utc:set(icu_date.fields.HOUR_OF_DAY, 0)
   date_utc:set(icu_date.fields.MINUTE, 0)
   date_utc:set(icu_date.fields.SECOND, 0)
@@ -53,8 +68,12 @@ local function index_names(start_time, end_time)
 
   local names = {}
   while date_utc:get_millis() <= end_time_millis do
-    table.insert(names, config["elasticsearch"]["index_name_prefix"] .. "-logs-" .. date_utc:format(format_month))
-    date_utc:add(icu_date.fields.MONTH, 1)
+    table.insert(names, config["elasticsearch"]["index_name_prefix"] .. "-logs-" .. date_utc:format(elasticsearch.partition_date_format))
+    if config["elasticsearch"]["index_partition"] == "monthly" then
+      date_utc:add(icu_date.fields.MONTH, 1)
+    elseif config["elasticsearch"]["index_partition"] == "daily" then
+      date_utc:add(icu_date.fields.DATE, 1)
+    end
   end
 
   return names

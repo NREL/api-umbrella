@@ -17,7 +17,12 @@ module(load="omelasticsearch")
 {{/analytics._output_elasticsearch?}}
 
 # Define templates for ElasticSearch output.
-template(name="elasticsearch-index" type="string" string="{{elasticsearch.index_name_prefix}}-logs-write-%timereported:1:7:date-rfc3339%")
+{{#elasticsearch._index_partition_monthly?}}
+template(name="elasticsearch-index" type="string" string="{{elasticsearch.index_name_prefix}}-logs-write-%timereported:1:7:date-rfc3339,date-utc%")
+{{/elasticsearch._index_partition_monthly?}}
+{{#elasticsearch._index_partition_daily?}}
+template(name="elasticsearch-index" type="string" string="{{elasticsearch.index_name_prefix}}-logs-write-%timereported:1:10:date-rfc3339,date-utc%")
+{{/elasticsearch._index_partition_daily?}}
 template(name="elasticsearch-id" type="subtree" subtree="$!raw!id")
 template(name="elasticsearch-json-record" type="subtree" subtree="$!usr!es")
 template(name="all-json-record" type="list") {

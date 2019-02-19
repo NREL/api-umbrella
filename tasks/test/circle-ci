@@ -34,7 +34,9 @@ elasticsearch_tests=(test/admin_ui/**/test_stats_*.rb test/admin_ui/**/test_stat
 if [ "$CIRCLE_NODE_INDEX" -eq "1" ]; then
   env ELASTICSEARCH_TEST_API_VERSION=5 TESTS="${elasticsearch_tests[*]}" N=12 make test
   env ELASTICSEARCH_TEST_API_VERSION=5 ELASTICSEARCH_TEST_TEMPLATE_VERSION=2 TESTS="${elasticsearch_tests[*]}" N=12 make test
+  env ELASTICSEARCH_TEST_API_VERSION=5 ELASTICSEARCH_TEST_TEMPLATE_VERSION=2 ELASTICSEARCH_TEST_INDEX_PARTITION=daily TESTS="${elasticsearch_tests[*]}" N=12 make test
 elif [ "$CIRCLE_NODE_INDEX" -eq "2" ]; then
   env ELASTICSEARCH_TEST_API_VERSION=6 TESTS="${elasticsearch_tests[*]}" N=12 make test
   env ELASTICSEARCH_TEST_API_VERSION=6 ELASTICSEARCH_TEST_TEMPLATE_VERSION=2 TESTS="${elasticsearch_tests[*]}" N=12 make test
+  env ELASTICSEARCH_TEST_API_VERSION=6 ELASTICSEARCH_TEST_TEMPLATE_VERSION=2 ELASTICSEARCH_TEST_INDEX_PARTITION=daily TESTS="${elasticsearch_tests[*]}" N=12 make test
 fi

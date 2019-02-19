@@ -2,6 +2,8 @@ class LogItem
   include ActiveAttr::Model
 
   mattr_accessor :client
+  mattr_reader(:setup_indices) { Concurrent::Hash.new }
+  mattr_reader(:setup_indices_lock) { Monitor.new }
 
   attribute :_id
   attribute :api_key
@@ -139,9 +141,35 @@ class LogItem
       index_time = Time.at(index_time / 1000.0).utc
     end
 
-    index_name = "#{$config.fetch("elasticsearch").fetch("index_name_prefix")}-logs-write-#{index_time.utc.strftime("%Y-%m")}"
+    partition_date_format = case $config.fetch("elasticsearch").fetch("index_partition")
+    when "monthly"
+      "%Y-%m"
+    when "daily"
+      "%Y-%m-%d"
+    end
+    partition = index_time.utc.strftime(partition_date_format)
 
-    self.class.client.index({
+    prefix = "#{$config.fetch("elasticsearch").fetch("index_name_prefix")}-logs"
+    index_name = "#{prefix}-v#{$config["elasticsearch"]["template_version"]}-#{partition}"
+    index_name_read = "#{prefix}-#{partition}"
+    index_name_write = "#{prefix}-write-#{partition}"
+
+    unless self.setup_indices[index_name]
+      self.setup_indices_lock.synchronize do
+        unless self.setup_indices[index_name]
+          self.client.indices.create(:index => index_name, :body => {
+            :aliases => {
+              index_name_read => {},
+              index_name_write => {},
+            },
+          })
+
+          self.setup_indices[index_name] = true
+        end
+      end
+    end
+
+    self.client.index({
       :index => index_name,
       :type => "log",
       :id => self._id,

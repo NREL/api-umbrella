@@ -203,6 +203,7 @@ elasticsearch:
   embedded_server_env:
     heap_size: 512m
   index_name_prefix: api-umbrella
+  index_partition: monthly
   api_version: 2
   template_version: 1
   embedded_server_config:

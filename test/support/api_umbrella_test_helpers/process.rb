@@ -51,6 +51,11 @@ module ApiUmbrellaTestHelpers
           elasticsearch_test_template_version = ENV["ELASTICSEARCH_TEST_TEMPLATE_VERSION"].to_i
         end
 
+        elasticsearch_test_index_partition = nil
+        if ENV["ELASTICSEARCH_TEST_INDEX_PARTITION"]
+          elasticsearch_test_index_partition = ENV["ELASTICSEARCH_TEST_INDEX_PARTITION"]
+        end
+
         # Read the initial test config file.
         $config = YAML.load_file(DEFAULT_CONFIG_PATH)
         $config.deep_merge!(YAML.load_file(CONFIG_PATH))
@@ -80,13 +85,25 @@ module ApiUmbrellaTestHelpers
             },
           })
         end
-        if elasticsearch_test_api_version || elasticsearch_test_template_version
+        if elasticsearch_test_index_partition
+          computed.deep_merge!({
+            "elasticsearch" => {
+              "index_partition" => elasticsearch_test_index_partition,
+            },
+          })
+        end
+        if elasticsearch_test_api_version || elasticsearch_test_template_version || elasticsearch_test_index_partition
+          dir_suffix = [
+            elasticsearch_test_api_version,
+            elasticsearch_test_template_version,
+            elasticsearch_test_index_partition,
+          ].join("-")
           computed.deep_merge!({
             "elasticsearch" => {
               "embedded_server_config" => {
                 "path" => {
-                  "data" => File.join(TEST_RUN_API_UMBRELLA_ROOT, "var/db/elasticsearch-#{elasticsearch_test_api_version}-#{elasticsearch_test_template_version}"),
-                  "logs" => File.join(TEST_RUN_API_UMBRELLA_ROOT, "var/log/elasticsearch-#{elasticsearch_test_api_version}-#{elasticsearch_test_template_version}"),
+                  "data" => File.join(TEST_RUN_API_UMBRELLA_ROOT, "var/db/elasticsearch-#{dir_suffix}"),
+                  "logs" => File.join(TEST_RUN_API_UMBRELLA_ROOT, "var/log/elasticsearch-#{dir_suffix}"),
                 },
               },
             },
@@ -340,6 +357,7 @@ module ApiUmbrellaTestHelpers
       # for this full restart to handle DNS changes in the test suite (in real
       # live, DNS server changes shouldn't be likely, though, so this is mainly
       # a test environment issue).
+      response = nil
       begin
         Timeout.timeout(40) do
           loop do
@@ -353,7 +371,7 @@ module ApiUmbrellaTestHelpers
           end
         end
       rescue Timeout::Error
-        raise Timeout::Error, "API Umbrella configuration changes were not detected. Waiting for version #{version}. Last seen: #{state.inspect} #{health.inspect}"
+        raise Timeout::Error, "Trafficserver restart failed. Status: #{response&.code} Body: #{response&.body}"
       end
 
       # Sanity check to ensure Trafficserver was only restarted once, and isn't
@@ -382,7 +400,7 @@ module ApiUmbrellaTestHelpers
           end
         end
       rescue Timeout::Error
-        raise Timeout::Error, "API Umbrella configuration changes were not detected. Waiting for version #{version}. Last seen: #{state.inspect} #{health.inspect}"
+        raise Timeout::Error, "API Umbrella configuration changes were not detected. Waiting for version #{field}=#{version} and status=green. Last seen: #{state.inspect} #{health.inspect}"
       end
     end
 

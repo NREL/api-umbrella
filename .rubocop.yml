@@ -56,20 +56,32 @@ Naming/HeredocDelimiterNaming:
 Performance/RedundantMerge:
   Enabled: false
 
-Layout/AlignHash:
-  Enabled: false
-
 Layout/AlignParameters:
-  Enabled: false
+  EnforcedStyle: with_fixed_indentation
 
-Layout/EmptyLinesAroundArguments:
-  Enabled: false
+Layout/BlockAlignment:
+  EnforcedStyleAlignWith: start_of_line
+
+Layout/CaseIndentation:
+  EnforcedStyle: end
+
+Layout/EndAlignment:
+  EnforcedStyleAlignWith: start_of_line
+
+  #Layout/EmptyLinesAroundArguments:
+  #Enabled: false
+
+Layout/FirstParameterIndentation:
+  EnforcedStyle: consistent
 
 Layout/IndentArray:
   EnforcedStyle: consistent
 
 Layout/IndentHash:
   EnforcedStyle: consistent
+
+Layout/MultilineMethodCallIndentation:
+  EnforcedStyle: indented
 
 Layout/MultilineOperationIndentation:
   EnforcedStyle: indented
