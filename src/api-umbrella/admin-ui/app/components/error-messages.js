@@ -61,6 +61,9 @@ export default Component.extend({
       if(error.fullMessage) {
         message += error.fullMessage;
       } else {
+        if(error.attribute && error.attribute !== 'base') {
+          message += error.attribute + ': ';
+        }
         message += error.message || t('Unexpected error');
       }
 
