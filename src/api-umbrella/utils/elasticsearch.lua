@@ -85,6 +85,10 @@ function _M.query(path, options)
   else
     if res.headers["Content-Type"] and string.sub(res.headers["Content-Type"], 1, 16) == "application/json" and not is_empty(body) then
       res["body_json"] = json_decode(body)
+
+      if res["body_json"]["_shards"] and not is_empty(res["body_json"]["_shards"]["failures"]) then
+        return nil, "Unsuccessful response: " .. (body or "")
+      end
     end
 
     return res

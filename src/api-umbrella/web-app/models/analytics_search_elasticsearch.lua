@@ -1,10 +1,12 @@
 local add_error = require("api-umbrella.web-app.utils.model_ext").add_error
 local cjson = require "cjson.safe"
 local config = require "api-umbrella.proxy.models.file_config"
+local deepcopy = require("pl.tablex").deepcopy
 local elasticsearch = require "api-umbrella.utils.elasticsearch"
 local escape_regex = require "api-umbrella.utils.escape_regex"
 local icu_date = require "icu-date"
 local is_empty = require("pl.types").is_empty
+local json_encode = require "api-umbrella.utils.json_encode"
 local path_join = require "api-umbrella.utils.path_join"
 local re_split = require("ngx.re").split
 local startswith = require("pl.stringx").startswith
@@ -625,19 +627,73 @@ function _M:fetch_results()
 
   setmetatable(self.body["query"]["bool"]["filter"]["bool"]["must_not"], cjson.empty_array_mt)
   setmetatable(self.body["query"]["bool"]["filter"]["bool"]["must"], cjson.empty_array_mt)
-  setmetatable(self.body["sort"], cjson.empty_array_mt)
+  if self.body["sort"] then
+    setmetatable(self.body["sort"], cjson.empty_array_mt)
+  end
 
   if is_empty(self.body["aggregations"]) then
     self.body["aggregations"] = nil
   end
 
+  -- When querying many indices (particularly if partitioning by day), we can
+  -- run into URL length limits with the default search approach, which
+  -- requires the indices be in the URL:
+  -- https://github.com/elastic/elasticsearch/issues/26360
+  --
+  -- To sidestep this, we will perform most queries using the _msearch API,
+  -- which allows us to put the index names in the POST body, so it's not
+  -- subject to URL length limits.
+  --
+  -- However, for scroll queries, the msearch API doesn't support this
+  -- (https://github.com/elastic/elasticsearch-php/issues/478#issuecomment-254321873),
+  -- so we must revert back to normal search mode for these queries. In the
+  -- event the URL length is too long, then we handle these scroll queries by
+  -- querying all indices using a wildcard. While slightly less efficient, this
+  -- should be better optimized in Elasticsearch 5+
+  -- (https://www.elastic.co/blog/instant-aggregations-rewriting-queries-for-fun-and-profit).
   local indices = table.concat(index_names(self.start_time, self.end_time), ",")
-  local res, err = elasticsearch_query("/" .. indices .. "/log/_search", {
-    method = "POST",
-    query = self.query,
-    body = self.body,
-  })
-  if err then
+  local document_type = "log"
+  local body_json
+  local err
+  if self.query["scroll"] then
+    -- The default URL length limit for Elasticsearch is 4096 bytes, but reduce
+    -- the limit before truncating to the wildcard index name so there's still
+    -- room for other query params.
+    if string.len(indices) > 3700 then
+      indices = config["elasticsearch"]["index_name_prefix"] .. "-logs-*"
+    end
+
+    local res
+    res, err = elasticsearch_query("/" .. indices .. "/" .. document_type .. "/_search", {
+      method = "POST",
+      query = self.query,
+      body = self.body,
+    })
+    if not err and res and res.body_json then
+      body_json = res.body_json
+    end
+  else
+    local header = deepcopy(self.query)
+    header["index"] = indices
+    header["type"] = document_type
+
+    local res
+    res, err = elasticsearch_query("/_msearch", {
+      method = "POST",
+      headers = {
+        ["Content-Type"] = "application/x-ndjson",
+      },
+      body = json_encode(header) .. "\n" .. json_encode(self.body) .. "\n",
+    })
+    if not err and res and res.body_json and res.body_json["responses"] and res.body_json["responses"][1] then
+      body_json = res.body_json["responses"][1]
+      if body_json["_shards"] and not is_empty(body_json["_shards"]["failures"]) then
+        err = "Unsuccessful response: " .. (res.body or "")
+      end
+    end
+  end
+
+  if err or not body_json then
     ngx.log(ngx.ERR, "failed to query elasticsearch: ", err)
     ngx.ctx.error_status = 500
     return coroutine.yield("error", {
@@ -652,15 +708,15 @@ function _M:fetch_results()
     })
   end
 
-  return res.body_json
+  return body_json
 end
 
 function _M:fetch_results_bulk(callback)
   self.query["scroll"] = "10m"
 
-  self.query["sort"] = { "_doc" }
+  self.body["sort"] = { "_doc" }
   if config["elasticsearch"]["api_version"] < 2 then
-    self.query["sort"] = nil
+    self.body["sort"] = nil
     self.query["search_type"] = "scan"
   end
 
