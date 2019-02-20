@@ -18,6 +18,9 @@ export default Component.extend({
             errors.push({
               attribute: clientError.get('attribute'),
               message: message,
+              // Assume the client-side validators are setup with a
+              // "description" so they are suitable for full sentence display.
+              fullMessage: message,
             });
           } else {
             errors.push({ message: t('Unexpected error') });
@@ -61,6 +64,10 @@ export default Component.extend({
       if(error.fullMessage) {
         message += error.fullMessage;
       } else {
+        // If a full sentence error message isn't available, then fallback to
+        // showing the attribute name, plus the error message. While not ideal,
+        // since the attribute name won't be localized and may not be
+        // super-readable for humans, it's at least some context.
         if(error.attribute && error.attribute !== 'base') {
           message += error.attribute + ': ';
         }
