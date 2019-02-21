@@ -17,6 +17,7 @@ rsync -a \
   --exclude=/src/api-umbrella/web-app/app/assets \
   --include=/bin/*** \
   --include=/config/*** \
+  --include=/db/*** \
   --include=/LICENSE.txt \
   --include=/templates/*** \
   --include=/src/*** \
