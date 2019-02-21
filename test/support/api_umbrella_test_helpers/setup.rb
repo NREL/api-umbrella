@@ -63,6 +63,7 @@ module ApiUmbrellaTestHelpers
             :database => $config["postgresql"]["database"],
             :username => "api-umbrella",
             :pool => 50,
+            :schema_search_path => "api_umbrella, public",
             :variables => {
               "timezone" => "UTC",
               "audit.application_name" => "test_app_name",

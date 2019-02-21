@@ -136,6 +136,8 @@ function _M.connect()
   -- sockets), setup any session variables on the connection.
   if pg.sock:getreusedtimes() == 0 then
     local queries = {
+      "SET search_path = api_umbrella, public",
+
       -- Set an application name for connection details.
       "SET SESSION audit.application_name = 'api-umbrella'",
 

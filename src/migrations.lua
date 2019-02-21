@@ -6,16 +6,20 @@ local path = require "pl.path"
 return {
   [1498350289] = function()
     db.query("START TRANSACTION")
-    db.query("CREATE EXTENSION IF NOT EXISTS pgcrypto")
+    db.query("CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA public")
 
     local audit_sql_path = path.join(os.getenv("API_UMBRELLA_SRC_ROOT"), "db/pg-audit-json--1.0.1.sql")
     local audit_sql = file.read(audit_sql_path, true)
     audit_sql = ngx.re.sub(audit_sql, [[^(\\echo Use)]], "-- $1", "m")
     audit_sql = ngx.re.sub(audit_sql, [[^(SELECT pg_catalog.pg_extension_config_dump)]], "-- $1", "m")
+    db.query("SET search_path = public")
     db.query(audit_sql)
     db.query("CREATE INDEX ON audit.log(schema_name, table_name)")
     db.query("CREATE INDEX ON audit.log(application_user_name)")
     db.query("CREATE INDEX ON audit.log((row_data->>'id'))")
+
+    db.query("CREATE SCHEMA IF NOT EXISTS api_umbrella")
+    db.query("SET search_path = api_umbrella, public")
 
     db.query([[
       CREATE OR REPLACE FUNCTION current_app_user_id()

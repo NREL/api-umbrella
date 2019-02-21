@@ -10,6 +10,7 @@ config = require "api-umbrella.proxy.models.file_config"
 config["postgresql"]["username"] = config["postgresql"]["migrations"]["username"]
 config["postgresql"]["password"] = config["postgresql"]["migrations"]["password"]
 
+local db = require("lapis.db")
 local file = require "pl.file"
 local migrations = require("lapis.db.migrations")
 local path = require "pl.path"
@@ -29,11 +30,17 @@ return function()
     pg_utils.query("CREATE DATABASE api_umbrella WITH OWNER = " .. pg_utils.escape_identifier(config["postgresql"]["migrations"]["username"]), nil, { verbose = true, fatal = true })
 
     pg_utils.db_config["database"] = "api_umbrella"
+    pg_utils.query("CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA public", nil, { verbose = true, fatal = true })
+
     pg_utils.query("ALTER SCHEMA public OWNER TO " .. pg_utils.escape_identifier(config["postgresql"]["migrations"]["username"]), nil, { verbose = true, fatal = true })
     pg_utils.query("GRANT ALL ON SCHEMA public TO " .. pg_utils.escape_identifier(pg_utils.db_config["user"]), nil, { verbose = true, fatal = true })
-    pg_utils.query("CREATE EXTENSION IF NOT EXISTS pgcrypto", nil, { verbose = true, fatal = true })
+
+    pg_utils.query("CREATE SCHEMA IF NOT EXISTS api_umbrella", nil, { verbose = true, fatal = true })
+    pg_utils.query("ALTER SCHEMA api_umbrella OWNER TO " .. pg_utils.escape_identifier(config["postgresql"]["migrations"]["username"]), nil, { verbose = true, fatal = true })
+    pg_utils.query("GRANT ALL ON SCHEMA api_umbrella TO " .. pg_utils.escape_identifier(pg_utils.db_config["user"]), nil, { verbose = true, fatal = true })
   end
 
+  db.query("SET search_path = api_umbrella, public")
   migrations.create_migrations_table()
   migrations.run_migrations(require("migrations"))
 
