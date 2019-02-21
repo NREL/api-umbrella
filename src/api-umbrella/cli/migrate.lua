@@ -58,6 +58,9 @@ return function()
     setenv("PGDATABASE", config["postgresql"]["database"])
     setenv("PGUSER", config["postgresql"]["migrations"]["username"])
     setenv("PGPASSWORD", config["postgresql"]["migrations"]["password"])
-    os.execute("pg_dump --schema-only --no-privileges --no-owner --file=" .. path.join(os.getenv("API_UMBRELLA_SRC_ROOT"), "db/schema.sql"))
+    local schema_path = path.join(os.getenv("API_UMBRELLA_SRC_ROOT"), "db/schema.sql")
+    os.execute("pg_dump --schema-only --no-privileges --no-owner --file=" .. schema_path)
+
+    os.execute([[sed -e 's/^\(COMMENT ON EXTENSION\)/-- \1/g' -i ]] .. schema_path)
   end
 end

@@ -47,7 +47,7 @@ CREATE EXTENSION IF NOT EXISTS plpgsql WITH SCHEMA pg_catalog;
 -- Name: EXTENSION plpgsql; Type: COMMENT; Schema: -; Owner: -
 --
 
-COMMENT ON EXTENSION plpgsql IS 'PL/pgSQL procedural language';
+-- COMMENT ON EXTENSION plpgsql IS 'PL/pgSQL procedural language';
 
 
 --
@@ -61,7 +61,7 @@ CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA public;
 -- Name: EXTENSION pgcrypto; Type: COMMENT; Schema: -; Owner: -
 --
 
-COMMENT ON EXTENSION pgcrypto IS 'cryptographic functions';
+-- COMMENT ON EXTENSION pgcrypto IS 'cryptographic functions';
 
 
 --
