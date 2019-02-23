@@ -118,7 +118,7 @@ local function seed_api_keys()
       local encrypted, iv = encryptor.encrypt(api_key, user["id"])
       user["api_key_encrypted"] = encrypted
       user["api_key_encrypted_iv"] = iv
-      user["api_key_prefix"] = string.sub(api_key, 1, 10)
+      user["api_key_prefix"] = string.sub(api_key, 1, 16)
     end
 
     local roles = user["roles"]
