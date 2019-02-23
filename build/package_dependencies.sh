@@ -110,7 +110,7 @@ if [ -f /etc/redhat-release ]; then
     # lualdap
     openldap-devel
 
-    # libmongoc
+    # libbson
     cmake
   )
   test_build_dependencies=(
@@ -264,7 +264,7 @@ elif [ -f /etc/debian_version ]; then
     # lualdap
     libldap-dev
 
-    # libmongoc
+    # libbson
     cmake
   )
   test_build_dependencies=(

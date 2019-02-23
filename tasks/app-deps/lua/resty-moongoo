@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+
+lua_cbson_version="da12060816b3bd470e657b91155f80e03f2f0791"
+lua_cbson_hash="0bd48791af9521af7cd5c08a9da2d6f1"
+
+lua_resty_moongoo_version="ca544d1ba0dda0c705bfe1123733bff2cd43633a"
+lua_resty_moongoo_hash="93199a85516fdce614e2b9c25936453a"
+
+set -e -u -x
+source ./tasks/helpers.sh
+
+task_working_dir
+
+# lua-cbson dependency
+download "https://github.com/isage/lua-cbson/archive/$lua_cbson_version.tar.gz" "md5" "$lua_cbson_hash"
+extract_download "$lua_cbson_version.tar.gz"
+cd "lua-cbson-$lua_cbson_version"
+mkdir cmake-build
+cd cmake-build
+LUA_DIR="$STAGE_EMBEDDED_DIR/openresty/luajit" CMAKE_PREFIX_PATH="$INSTALL_PREFIX_EMBEDDED" cmake ..
+make -j"$NPROC"
+chrpath -d cbson.so
+install -D -m 644 cbson.so "$APP_CORE_VENDOR_LUA_DIR/lib/lua/5.1/cbson.so"
+
+# lua-resty-moongoo
+download "https://github.com/isage/lua-resty-moongoo/archive/$lua_resty_moongoo_version.tar.gz" "md5" "$lua_resty_moongoo_hash"
+extract_download "$lua_resty_moongoo_version.tar.gz"
+cd "lua-resty-moongoo-$lua_resty_moongoo_version"
+mkdir -p "$APP_CORE_VENDOR_LUA_SHARE_DIR/resty/moongoo"
+rsync -a -v --checksum --delete-after ./lib/resty/moongoo.lua "$APP_CORE_VENDOR_LUA_SHARE_DIR/resty/moongoo.lua"
+rsync -a -v --checksum --delete-after ./lib/resty/moongoo/ "$APP_CORE_VENDOR_LUA_SHARE_DIR/resty/moongoo/"
+
+stamp

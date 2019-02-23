@@ -29,6 +29,9 @@ class OutdatedPackages
     "golang" => {
       :git => "https://go.googlesource.com/go",
     },
+    "libbson" => {
+      :git => "https://github.com/mongodb/mongo-c-driver.git",
+    },
     "libcidr" => {
       :http => "https://www.over-yonder.net/~fullermd/projects/libcidr",
     },
@@ -41,9 +44,6 @@ class OutdatedPackages
     "libmaxminddb" => {
       :git => "https://github.com/maxmind/libmaxminddb.git",
     },
-    "libmongoc" => {
-      :git => "https://github.com/mongodb/mongo-c-driver.git",
-    },
     "libpsl" => {
       :git => "https://github.com/rockdaboot/libpsl.git",
     },
@@ -52,6 +52,10 @@ class OutdatedPackages
     },
     "lua_bcrypt" => {
       :luarock => "bcrypt",
+    },
+    "lua_cbson" => {
+      :git => "https://github.com/isage/lua-cbson.git",
+      :git_ref => "master",
     },
     "lua_cmsgpack" => {
       :luarock => "lua-cmsgpack",
@@ -88,9 +92,6 @@ class OutdatedPackages
     "lua_lyaml" => {
       :luarock => "lyaml",
     },
-    "lua_mongo" => {
-      :luarock => "lua-mongo",
-    },
     "lua_penlight" => {
       :luarock => "penlight",
     },
@@ -109,6 +110,10 @@ class OutdatedPackages
     },
     "lua_resty_mail" => {
       :git => "https://github.com/GUI/lua-resty-mail.git",
+    },
+    "lua_resty_moongoo" => {
+      :git => "https://github.com/isage/lua-resty-moongoo.git",
+      :git_ref => "master",
     },
     "lua_resty_nettle" => {
       :git => "https://github.com/bungle/lua-resty-nettle.git",

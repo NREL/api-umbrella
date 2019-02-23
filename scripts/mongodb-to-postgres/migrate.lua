@@ -1,12 +1,13 @@
 local aes = require "resty.aes"
 local argparse = require "argparse"
+local cbson = require "cbson"
+local cjson = require "cjson"
 local encryptor = require "api-umbrella.utils.encryptor"
 local hmac = require "api-umbrella.utils.hmac"
 local icu_date = require "icu-date"
 local inspect = require "inspect"
 local is_empty = require("pl.types").is_empty
-local json_null = require("cjson").null
-local mongo = require "mongo"
+local moongoo = require "resty.moongoo"
 local pg_encode_array = require "api-umbrella.utils.pg_encode_array"
 local pg_encode_bytea = require("pgmoon").Postgres.encode_bytea
 local pg_encode_json = require("pgmoon.json").encode_json
@@ -24,6 +25,8 @@ local date = icu_date.new()
 local deletes = {}
 local object_ids = {}
 local format_iso8601 = icu_date.formats.iso8601()
+local json_decode = cjson.decode
+local json_null = cjson.null
 local mongo_client
 local mongo_database
 
@@ -64,17 +67,49 @@ local function admin_username(id)
   end
 end
 
-local function convert_nulls(table)
+local function convert_mongo_types(table)
   if not table then return end
 
   for key, value in pairs(table) do
-    if value == mongo.Null then
+    if value == json_null then
       table[key] = pg_null
-    elseif type(value) == "string" then
+    elseif type(value) == "table" and #value == 0 then
+      local bson_index = 1
+      for bson_key, bson_value in pairs(value) do
+        if bson_index > 1 then
+          break
+        end
+
+        if bson_key == "$oid" then
+          local old_id = bson_value
+          if object_ids[old_id] then
+            table[key] = object_ids[old_id]
+            -- print("USING ObjectID " .. inspect(old_id) .. " to UUID " .. inspect(table[key]))
+          else
+            table[key] = uuid_generate()
+            object_ids[old_id] = table[key]
+            -- print("Migrating ObjectID " .. inspect(old_id) .. " to UUID " .. inspect(table[key]))
+          end
+        elseif bson_key == "$date" then
+          date:set_millis(bson_value)
+          table[key] = date:format(format_iso8601)
+        elseif bson_key == "$timestamp" then
+          date:set_millis(bson_value["t"] * 1000)
+          table[key] = date:format(format_iso8601)
+        elseif string.sub(bson_key, 1, 1) == "$" then
+          print(inspect(table))
+          error("Unknown handling for BSON type: " .. bson_key .. " " .. key .. "=" .. inspect(value))
+        end
+
+        bson_index = bson_index + 1
+      end
+    end
+
+    if type(table[key]) == "string" then
       -- Strip null byte characters that aren't allowed in Postgres.
-      table[key] = ngx.re.gsub(value, [[\0]], "", "jo")
-    elseif type(value) == "table" then
-      table[key] = convert_nulls(value)
+      table[key] = ngx.re.gsub(table[key], [[\0]], "", "jo")
+    elseif type(table[key]) == "table" then
+      table[key] = convert_mongo_types(table[key])
     end
   end
 
@@ -86,7 +121,7 @@ local function convert_json_nulls(table)
 
   local new_table = {}
   for key, value in pairs(table) do
-    if value == mongo.Null or value == pg_null then
+    if value == pg_null then
       new_table[key] = json_null
     elseif type(value) == "table" then
       new_table[key] = convert_json_nulls(value)
@@ -96,43 +131,6 @@ local function convert_json_nulls(table)
   end
 
   return new_table
-end
-
-local function convert_datetimes(table)
-  if not table then return end
-
-  for key, value in pairs(table) do
-    if type(value) == "table" and value.__name == "mongo.DateTime" then
-      date:set_millis(value:unpack())
-      table[key] = date:format(format_iso8601)
-    elseif type(value) == "table" then
-      table[key] = convert_datetimes(value)
-    end
-  end
-
-  return table
-end
-
-local function convert_object_ids(table)
-  if not table then return end
-
-  for key, value in pairs(table) do
-    if type(value) == "userdata" and value.__name == "mongo.ObjectID" then
-      local old_id = tostring(value)
-      if object_ids[old_id] then
-        table[key] = object_ids[old_id]
-        -- print("USING ObjectID " .. inspect(old_id) .. " to UUID " .. inspect(table[key]))
-      else
-        table[key] = uuid_generate()
-        object_ids[old_id] = table[key]
-        -- print("Migrating ObjectID " .. inspect(old_id) .. " to UUID " .. inspect(table[key]))
-      end
-    elseif type(value) == "table" then
-      table[key] = convert_object_ids(value)
-    end
-  end
-
-  return table
 end
 
 local function query(...)
@@ -232,21 +230,35 @@ end
 local function migrate_collection(name, callback)
   print("Migrating collection " .. inspect(name) .. "...")
 
-  local collection = mongo_database:getCollection(name)
-  local agg = '[ { "$sort": { "updated_at": 1 } } ]'
+  local collection = mongo_database:collection(name)
+  local agg = {
+    {
+      ["$sort"] = {
+        updated_at = 1,
+      },
+    },
+  }
   if name == "config_versions" then
-    agg = '[ { "$sort": { "version": -1 } } ]'
+    agg[1]["$sort"] = {
+      version = -1,
+    }
   end
-  for row in collection:aggregate(agg, { allowDiskUse = true }):iterator() do
+  local cursor, err = collection:aggregate(agg, { allowDiskUse = true })
+  if err then
+    error(err)
+  end
+  local row = cursor:next()
+  while row do
     io.write(".")
     io.flush()
+    row = json_decode(cbson.to_json(cbson.encode(row)))
     -- print(inspect(row))
 
-    convert_nulls(row)
-    convert_datetimes(row)
-    convert_object_ids(row)
+    convert_mongo_types(row)
 
     callback(row)
+
+    row = cursor:next()
   end
   print("")
 end
@@ -720,8 +732,12 @@ local function run()
   args = parse_args()
   seed_database.seed_once()
 
-  mongo_client = mongo.Client(args["mongodb_url"])
-  mongo_database = mongo_client:getDefaultDatabase()
+  local err
+  mongo_client, err = moongoo.new(args["mongodb_url"])
+  if not mongo_client then
+    error(err)
+  end
+  mongo_database = mongo_client:db("api_umbrella_production")
   pg_utils.db_config["host"] = args["pg_host"]
   pg_utils.db_config["port"] = args["pg_port"]
   pg_utils.db_config["database"] = args["pg_database"]
