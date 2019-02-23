@@ -16,6 +16,5 @@ cd cmake-build
 cmake -DENABLE_AUTOMATIC_INIT_AND_CLEANUP=OFF -DENABLE_MONGOC=OFF -DCMAKE_INSTALL_PREFIX="$INSTALL_PREFIX_EMBEDDED" ..
 make -j"$NPROC"
 DESTDIR="$STAGE_DIR" make install
-find "$STAGE_EMBEDDED_DIR/bin/" -name "mongoc*" -exec chrpath -d {} \;
 
 stamp
