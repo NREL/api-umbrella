@@ -1,13 +1,21 @@
+local read_config = require "api-umbrella.cli.read_config"
+read_config({ write = true })
+
+local config = require "api-umbrella.proxy.models.file_config"
+config["elasticsearch"]["template_version"] = 2
+if config["elasticsearch"]["api_version"] < 5 then
+  config["elasticsearch"]["api_version"] = 5
+end
+
 local argparse = require "argparse"
 local deepcompare = require("pl.tablex").deepcompare
 local elasticsearch_query = require("api-umbrella.utils.elasticsearch").query
+local elasticsearch_templates = require "api-umbrella.proxy.elasticsearch_templates_data"
 local escape_uri_non_ascii = require "api-umbrella.utils.escape_uri_non_ascii"
-local file = require "pl.file"
 local http = require "resty.http"
 local icu_date = require "icu-date"
 local inspect = require "inspect"
 local is_empty = require("pl.types").is_empty
-local json_decode = require("cjson").decode
 local json_encode = require "api-umbrella.utils.json_encode"
 local log_utils = require "api-umbrella.proxy.log_utils"
 local nillify_json_nulls = require "api-umbrella.utils.nillify_json_nulls"
@@ -501,15 +509,6 @@ local function search()
 end
 
 local function create_templates()
-  -- local path = os.getenv("API_UMBRELLA_SRC_ROOT") .. "/config/elasticsearch_templates_v2_es5.json"
-  local path = "/srv/data/api-umbrella/config/elasticsearch_templates_v2_es5.json"
-  local content, read_err = file.read(path)
-  if read_err then
-    print(read_err)
-    os.exit(1)
-  end
-
-  local elasticsearch_templates = json_decode(content)
   for _, template in ipairs(elasticsearch_templates) do
     local _, err = elasticsearch_query("/_template/" .. template["id"], {
       server = args["_output_server"],

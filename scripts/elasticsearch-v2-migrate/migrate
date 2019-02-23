@@ -4,6 +4,10 @@ set -e -u
 
 dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-export API_UMBRELLA_RUNTIME_CONFIG="/opt/api-umbrella/var/run/runtime_config.yml"
+API_UMBRELLA_SRC_ROOT="$(dirname "$(dirname "$dir")" )"
+export API_UMBRELLA_SRC_ROOT
+export API_UMBRELLA_RUNTIME_CONFIG="/tmp/api-umbrella-elasticsearch-v2-migrate-runtime_config.yml"
 
 api-umbrella-exec resty --http-include "$dir/migrate.conf" "$dir/migrate.lua" "$@"
+
+rm -f "$API_UMBRELLA_RUNTIME_CONFIG"

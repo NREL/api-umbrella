@@ -402,7 +402,7 @@ local function set_computed_config()
   deep_merge_overwrite_arrays(config, {
     _embedded_root_dir = embedded_root_dir,
     _src_root_dir = src_root_dir,
-    _api_umbrella_config_runtime_file = path.join(config["run_dir"], "runtime_config.yml"),
+    _api_umbrella_config_runtime_file = os.getenv("API_UMBRELLA_RUNTIME_CONFIG") or path.join(config["run_dir"], "runtime_config.yml"),
     _package_path = package.path,
     _package_cpath = package.cpath,
     ["_test_env?"] = (config["app_env"] == "test"),
@@ -551,8 +551,8 @@ end
 -- be used by other API Umbrella processes for reading the config (without
 -- having to actually merge and combine again).
 local function write_runtime_config()
-  local runtime_config_path = path.join(config["run_dir"], "runtime_config.yml")
-  dir.makepath(config["run_dir"])
+  local runtime_config_path = config["_api_umbrella_config_runtime_file"]
+  dir.makepath(path.dirname(runtime_config_path))
   file.write(runtime_config_path, lyaml.dump({config}))
   chmod(runtime_config_path, tonumber("0640", 8))
   if config["group"] then
@@ -563,7 +563,7 @@ end
 return function(options)
   -- If fetching config for the first time in this process, try to load the
   -- runtime file for the existing combined/merged config.
-  if not config then
+  if not config and (not options or not options["write"]) then
     read_runtime_config()
   end
 

@@ -1,3 +1,6 @@
+local read_config = require "api-umbrella.cli.read_config"
+read_config({ write = true })
+
 local aes = require "resty.aes"
 local argparse = require "argparse"
 local cbson = require "cbson"
