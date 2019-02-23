@@ -27,7 +27,7 @@ function _M:open(cookie, lifetime)
     local hmac_data = self.decode(parts[3])
 
     local data
-    local res = db.query("SELECT data_encrypted FROM sessions WHERE id_hash = ? AND expires_at > now()", hmac(id))
+    local res = db.query("SELECT data_encrypted FROM sessions WHERE id_hash = ? AND expires_at >= now()", hmac(id))
     if res and res[1] and res[1]["data_encrypted"] then
       data = res[1]["data_encrypted"]
       db.query("UPDATE sessions SET expires_at = now() + interval ? WHERE id_hash = ?", lifetime .. " seconds", hmac(id))

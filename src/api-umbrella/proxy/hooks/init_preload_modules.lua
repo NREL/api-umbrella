@@ -2,6 +2,7 @@
 require "api-umbrella.proxy.distributed_rate_limit_queue"
 require "api-umbrella.proxy.elasticsearch_templates_data"
 require "api-umbrella.proxy.error_handler"
+require "api-umbrella.proxy.jobs.db_expirations"
 require "api-umbrella.proxy.jobs.distributed_rate_limit_puller"
 require "api-umbrella.proxy.jobs.distributed_rate_limit_pusher"
 require "api-umbrella.proxy.jobs.elasticsearch_setup"

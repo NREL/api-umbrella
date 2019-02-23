@@ -1,3 +1,4 @@
+local db_expirations = require "api-umbrella.proxy.jobs.db_expirations"
 local distributed_rate_limit_puller = require "api-umbrella.proxy.jobs.distributed_rate_limit_puller"
 local distributed_rate_limit_pusher = require "api-umbrella.proxy.jobs.distributed_rate_limit_pusher"
 local elasticsearch_setup = require "api-umbrella.proxy.jobs.elasticsearch_setup"
@@ -13,6 +14,7 @@ random_seed()
 
 load_db_config.spawn()
 load_api_users.spawn()
+db_expirations.spawn()
 distributed_rate_limit_puller.spawn()
 distributed_rate_limit_pusher.spawn()
 elasticsearch_setup.spawn()

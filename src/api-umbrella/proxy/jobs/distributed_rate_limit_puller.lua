@@ -18,7 +18,7 @@ local function do_check()
   -- cycle and start over with negative values. Since the data in this table
   -- expires, there shouldn't be any duplicate version numbers by the time the
   -- sequence cycles.
-  local results, err = pg_utils.query("SELECT id, version, value, extract(epoch FROM expires_at) AS expires_at FROM distributed_rate_limit_counters WHERE version > LEAST(:version, (SELECT last_value - 1 FROM distributed_rate_limit_counters_version_seq)) ORDER BY version DESC", { version = last_fetched_version }, { quiet = true })
+  local results, err = pg_utils.query("SELECT id, version, value, extract(epoch FROM expires_at) AS expires_at FROM distributed_rate_limit_counters WHERE version > LEAST(:version, (SELECT last_value - 1 FROM distributed_rate_limit_counters_version_seq)) AND expires_at >= now() ORDER BY version DESC", { version = last_fetched_version }, { quiet = true })
   if not results then
     ngx.log(ngx.ERR, "failed to fetch rate limits from database: ", err)
     return nil
