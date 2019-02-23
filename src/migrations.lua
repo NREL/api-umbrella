@@ -830,6 +830,19 @@ return {
     db.query("CREATE INDEX ON auto_ssl_storage (expires_at)")
     db.query("CREATE TRIGGER auto_ssl_storage_stamp_record BEFORE UPDATE ON auto_ssl_storage FOR EACH ROW EXECUTE PROCEDURE update_timestamp()")
 
+    db.query([[
+      CREATE TABLE audit.legacy_log(
+        id bigserial PRIMARY KEY,
+        version bigint NOT NULL,
+        original_class varchar(255) NOT NULL,
+        original_class_id varchar(36) NOT NULL,
+        altered_attributes jsonb NOT NULL,
+        full_attributes jsonb NOT NULL,
+        created_at timestamp with time zone NOT NULL,
+        updated_at timestamp with time zone NOT NULL
+      )
+    ]])
+
     db.query("COMMIT")
   end
 }

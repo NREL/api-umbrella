@@ -194,7 +194,7 @@ local function insert(table_name, row, after_insert)
   end
   row["deleted_at"] = nil
 
-  if table_name == "analytics_cities" or table_name == "auto_ssl_storage" then
+  if table_name == "analytics_cities" or table_name == "distributed_rate_limit_counters" or table_name == "auto_ssl_storage" or table_name == "legacy_log" then
     row["created_by_id"] = nil
     row["created_by_username"] = nil
     row["updated_by_id"] = nil
@@ -695,6 +695,35 @@ local function migrate_published_config()
   end)
 end
 
+local function migrate_distributed_rate_limit_counters()
+  migrate_collection("rate_limits", function(row)
+    row["expires_at"] = row["expire_at"]
+    row["expire_at"] = nil
+    row["value"] = row["count"]
+    row["count"] = nil
+    row["ts"] = nil
+    insert("distributed_rate_limit_counters", row)
+  end)
+end
+
+local function migrate_audit_legacy_log()
+  query("SET search_path = audit, public")
+  migrate_collection("mongoid_delorean_histories", function(row)
+    row["_id"] = nil
+
+    if row["altered_attributes"] and row["altered_attributes"] ~= pg_null then
+      row["altered_attributes"] = pg_utils.raw(pg_encode_json(convert_json_nulls(row["altered_attributes"])))
+    end
+
+    if row["full_attributes"] and row["full_attributes"] ~= pg_null then
+      row["full_attributes"] = pg_utils.raw(pg_encode_json(convert_json_nulls(row["full_attributes"])))
+    end
+
+    insert("legacy_log", row)
+  end)
+  query("SET search_path = api_umbrella, public")
+end
+
 local function migrate_analytics_cities()
   migrate_collection("log_city_locations", function(row)
     row["_id"] = nil
@@ -727,7 +756,6 @@ local function migrate_auto_ssl_storage()
   end)
 end
 
-
 local function run()
   args = parse_args()
   seed_database.seed_once()
@@ -749,10 +777,12 @@ local function run()
   query("SET SESSION api_umbrella.disable_stamping = 'on'")
 
   if args["clean"] then
-    query("TRUNCATE TABLE admin_groups, admins, analytics_cities, api_backends, api_roles, api_scopes, api_users, auto_ssl_storage, audit.log CASCADE")
+    query("TRUNCATE TABLE admin_groups, admins, analytics_cities, api_backends, api_roles, api_scopes, api_users, auto_ssl_storage, distributed_rate_limit_counters, audit.log CASCADE")
   end
 
   build_admin_username_mappings()
+  migrate_audit_legacy_log()
+  migrate_distributed_rate_limit_counters()
   migrate_admins()
   migrate_api_scopes()
   migrate_admin_groups()

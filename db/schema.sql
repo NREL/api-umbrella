@@ -1150,6 +1150,41 @@ CREATE TABLE api_umbrella.website_backends (
 
 
 --
+-- Name: legacy_log; Type: TABLE; Schema: audit; Owner: -
+--
+
+CREATE TABLE audit.legacy_log (
+    id bigint NOT NULL,
+    version bigint NOT NULL,
+    original_class character varying(255) NOT NULL,
+    original_class_id character varying(36) NOT NULL,
+    altered_attributes jsonb NOT NULL,
+    full_attributes jsonb NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL
+);
+
+
+--
+-- Name: legacy_log_id_seq; Type: SEQUENCE; Schema: audit; Owner: -
+--
+
+CREATE SEQUENCE audit.legacy_log_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: legacy_log_id_seq; Type: SEQUENCE OWNED BY; Schema: audit; Owner: -
+--
+
+ALTER SEQUENCE audit.legacy_log_id_seq OWNED BY audit.legacy_log.id;
+
+
+--
 -- Name: log; Type: TABLE; Schema: audit; Owner: -
 --
 
@@ -1348,6 +1383,13 @@ ALTER TABLE ONLY api_umbrella.analytics_cities ALTER COLUMN id SET DEFAULT nextv
 --
 
 ALTER TABLE ONLY api_umbrella.published_config ALTER COLUMN id SET DEFAULT nextval('api_umbrella.published_config_id_seq'::regclass);
+
+
+--
+-- Name: legacy_log id; Type: DEFAULT; Schema: audit; Owner: -
+--
+
+ALTER TABLE ONLY audit.legacy_log ALTER COLUMN id SET DEFAULT nextval('audit.legacy_log_id_seq'::regclass);
 
 
 --
@@ -1579,6 +1621,14 @@ ALTER TABLE ONLY api_umbrella.sessions
 
 ALTER TABLE ONLY api_umbrella.website_backends
     ADD CONSTRAINT website_backends_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: legacy_log legacy_log_pkey; Type: CONSTRAINT; Schema: audit; Owner: -
+--
+
+ALTER TABLE ONLY audit.legacy_log
+    ADD CONSTRAINT legacy_log_pkey PRIMARY KEY (id);
 
 
 --
