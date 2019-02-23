@@ -11,7 +11,7 @@ local function bucket_keys(settings, user, limit, current_time)
   end
 
   if limit_by == "api_key" then
-    key_base = key_base .. user["api_key"]
+    key_base = key_base .. user["id"]
   elseif limit_by == "ip" then
     key_base = key_base .. ngx.ctx.remote_addr
   else

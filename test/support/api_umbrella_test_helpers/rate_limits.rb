@@ -98,7 +98,9 @@ module ApiUmbrellaTestHelpers
       http_opts = keyless_http_options.deep_merge({
         :headers => {},
       })
-      if(options[:api_key])
+      if(options[:api_user])
+        http_opts[:headers]["X-Api-Key"] = options[:api_user].api_key
+      elsif(options[:api_key])
         http_opts[:headers]["X-Api-Key"] = options[:api_key]
       end
       if(options[:ip])
