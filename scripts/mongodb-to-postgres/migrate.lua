@@ -19,10 +19,12 @@ local pg_utils = require "api-umbrella.utils.pg_utils"
 local random_seed = require "api-umbrella.utils.random_seed"
 local random_token = require "api-umbrella.utils.random_token"
 local seed_database = require "api-umbrella.proxy.startup.seed_database"
+local split = require("ngx.re").split
 local uuid_generate = require("resty.uuid").generate_random
 
 local API_KEY_PREFIX_LENGTH = 16
 local admin_usernames = {}
+local api_key_user_ids = {}
 local args = {}
 local date = icu_date.new()
 local deletes = {}
@@ -587,6 +589,8 @@ end
 
 local function migrate_api_users()
   migrate_collection("api_users", function(row)
+    api_key_user_ids[row["api_key"]] = row["_id"]
+
     local api_key = row["api_key"]
     row["api_key_hash"] = hmac(api_key)
     local encrypted, iv = encryptor.encrypt(api_key, row["_id"])
@@ -700,6 +704,15 @@ end
 
 local function migrate_distributed_rate_limit_counters()
   migrate_collection("rate_limits", function(row)
+    local id_parts = split(row["_id"], ":", "jo")
+    if id_parts[1] == "apiKey" then
+      id_parts[1] = "api_key"
+      local user_id = api_key_user_ids[id_parts[3]]
+      if user_id then
+        id_parts[3] = user_id
+      end
+    end
+    row["_id"] = table.concat(id_parts, ":")
     row["expires_at"] = row["expire_at"]
     row["expire_at"] = nil
     row["value"] = row["count"]
@@ -784,8 +797,6 @@ local function run()
   end
 
   build_admin_username_mappings()
-  migrate_audit_legacy_log()
-  migrate_distributed_rate_limit_counters()
   migrate_admins()
   migrate_api_scopes()
   migrate_admin_groups()
@@ -793,7 +804,9 @@ local function run()
   migrate_api_users()
   migrate_published_config()
   migrate_analytics_cities()
+  migrate_distributed_rate_limit_counters()
   migrate_auto_ssl_storage()
+  migrate_audit_legacy_log()
 
   query("COMMIT")
 end
