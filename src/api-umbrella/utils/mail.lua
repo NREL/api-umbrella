@@ -3,7 +3,7 @@ local mail = require "resty.mail"
 
 return function()
   return mail.new({
-    host = config["web"]["mailer"]["smtp_settings"]["host"],
+    host = config["web"]["mailer"]["smtp_settings"]["address"],
     port = config["web"]["mailer"]["smtp_settings"]["port"],
     username = config["web"]["mailer"]["smtp_settings"]["user_name"],
     password = config["web"]["mailer"]["smtp_settings"]["password"],
