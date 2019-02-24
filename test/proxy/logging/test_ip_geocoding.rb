@@ -108,14 +108,14 @@ class Test::Proxy::Logging::TestIpGeocoding < Minitest::Test
   def test_no_country_region_city
     response = Typhoeus.get("http://127.0.0.1:9080/api/hello", log_http_options.deep_merge({
       :headers => {
-        "X-Forwarded-For" => "67.43.156.1",
+        "X-Forwarded-For" => "127.0.0.1",
       },
     }))
     assert_response_code(200, response)
 
     record = wait_for_log(response)[:hit_source]
     assert_geocode(record, {
-      :ip => "67.43.156.1",
+      :ip => "127.0.0.1",
       :country => nil,
       :region => nil,
       :city => nil,
@@ -140,6 +140,82 @@ class Test::Proxy::Logging::TestIpGeocoding < Minitest::Test
       :city => "Trois-Rivières",
       :lat => 46.316,
       :lon => -72.6833,
+    })
+  end
+
+  def test_custom_country_asia
+    response = Typhoeus.get("http://127.0.0.1:9080/api/hello", log_http_options.deep_merge({
+      :headers => {
+        "X-Forwarded-For" => "169.145.197.0",
+      },
+    }))
+    assert_response_code(200, response)
+
+    record = wait_for_log(response)[:hit_source]
+    assert_geocode(record, {
+      :ip => "169.145.197.0",
+      :country => "AP",
+      :region => nil,
+      :city => nil,
+      :lat => 35.0,
+      :lon => 105.0,
+    })
+  end
+
+  def test_custom_country_europe
+    response = Typhoeus.get("http://127.0.0.1:9080/api/hello", log_http_options.deep_merge({
+      :headers => {
+        "X-Forwarded-For" => "165.225.72.0",
+      },
+    }))
+    assert_response_code(200, response)
+
+    record = wait_for_log(response)[:hit_source]
+    assert_geocode(record, {
+      :ip => "165.225.72.0",
+      :country => "EU",
+      :region => nil,
+      :city => nil,
+      :lat => 47.0,
+      :lon => 8.0,
+    })
+  end
+
+  def test_custom_country_anonymous_proxy
+    response = Typhoeus.get("http://127.0.0.1:9080/api/hello", log_http_options.deep_merge({
+      :headers => {
+        "X-Forwarded-For" => "67.43.156.0",
+      },
+    }))
+    assert_response_code(200, response)
+
+    record = wait_for_log(response)[:hit_source]
+    assert_geocode(record, {
+      :ip => "67.43.156.0",
+      :country => "A1",
+      :region => nil,
+      :city => nil,
+      :lat => nil,
+      :lon => nil,
+    })
+  end
+
+  def test_custom_country_satellite
+    response = Typhoeus.get("http://127.0.0.1:9080/api/hello", log_http_options.deep_merge({
+      :headers => {
+        "X-Forwarded-For" => "196.201.135.0",
+      },
+    }))
+    assert_response_code(200, response)
+
+    record = wait_for_log(response)[:hit_source]
+    assert_geocode(record, {
+      :ip => "196.201.135.0",
+      :country => "A2",
+      :region => nil,
+      :city => nil,
+      :lat => nil,
+      :lon => nil,
     })
   end
 

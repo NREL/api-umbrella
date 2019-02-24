@@ -157,6 +157,11 @@ local function cache_city_geocode(premature, id, data)
     return
   end
 
+  if not data["request_ip_country"] or not data["request_ip_lon"] or not data["request_ip_lat"] then
+    ngx.log(ngx.WARN, "Skipping city location caching for empty location")
+    return
+  end
+
   local id_hash = sha256:new()
   id_hash:update(id)
   id_hash = id_hash:final()
@@ -231,9 +236,26 @@ function _M.cache_new_city_geocode(data)
 end
 
 function _M.set_request_ip_geo_fields(data, ngx_var)
-  data["request_ip_city"] = ngx_var.geoip2_data_city_name
   data["request_ip_country"] = ngx_var.geoip2_data_country_code
   data["request_ip_region"] = ngx_var.geoip2_data_subdivision_code
+  data["request_ip_city"] = ngx_var.geoip2_data_city_name
+
+  -- Compatibility with the GeoIP v1 way to store country-less results, by
+  -- mapping certain situations into custom country codes:
+  -- https://dev.maxmind.com/geoip/geoip2/whats-new-in-geoip2/#Custom_Country_Codes
+  -- https://dev.maxmind.com/geoip/legacy/codes/iso3166/
+  if not data["request_ip_country"] then
+    local continent_code = ngx_var.geoip2_data_continent_code
+    if continent_code == "AS" then
+      data["request_ip_country"] = "AP"
+    elseif continent_code == "EU" then
+      data["request_ip_country"] = "EU"
+    elseif ngx_var.geoip2_data_is_anonymous_proxy == "1" then
+      data["request_ip_country"] = "A1"
+    elseif ngx_var.geoip2_data_is_satellite_provider == "1" then
+      data["request_ip_country"] = "A2"
+    end
+  end
 
   local geoip_latitude = ngx_var.geoip2_data_latitude
   if geoip_latitude then
