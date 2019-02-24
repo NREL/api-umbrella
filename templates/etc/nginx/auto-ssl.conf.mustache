@@ -56,6 +56,9 @@ http {
   # like the secret used by the hook server. Do not change or omit it.
   lua_shared_dict auto_ssl_settings 64k;
 
+  lua_shared_dict interval_locks {{nginx.shared_dicts.interval_locks.size}};
+  lua_shared_dict locks {{nginx.shared_dicts.locks.size}};
+
   {{#dns_resolver._nameservers_nginx}}
     resolver {{dns_resolver._nameservers_nginx}};
     resolver_timeout 12s;
