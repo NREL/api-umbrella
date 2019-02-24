@@ -746,7 +746,9 @@ local function migrate_analytics_cities()
     row["_id"] = nil
     row["location"] = pg_utils.raw("point(" .. pg_utils.escape_literal(row["location"]["coordinates"][1]) .. "," .. pg_utils.escape_literal(row["location"]["coordinates"][2]) .. ")")
 
-    insert("analytics_cities", row)
+    if row["country"] then
+      insert("analytics_cities", row)
+    end
   end)
 end
 
