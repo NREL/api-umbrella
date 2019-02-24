@@ -417,6 +417,19 @@ tasks:
       - ./build/work/stamp/app-deps/lua/luasocket
     method: checksum
 
+  app-deps:lua:luautf8:
+    deps:
+      - deps:luarocks
+    cmds:
+      - ./tasks/app-deps/lua/luautf8
+    sources:
+      - ./build/work/stamp/deps/luarocks
+      - ./tasks/app-deps/lua/luautf8
+      - ./tasks/helpers.sh
+    generates:
+      - ./build/work/stamp/app-deps/lua/luautf8
+    method: checksum
+
   app-deps:lua:lustache:
     deps:
       - deps:luarocks
@@ -644,6 +657,7 @@ tasks:
       - task: app-deps:lua:lualdap
       - task: app-deps:lua:luaposix
       - task: app-deps:lua:luasocket
+      - task: app-deps:lua:luautf8
       - task: app-deps:lua:lustache
       - task: app-deps:lua:lyaml
       - task: app-deps:lua:penlight

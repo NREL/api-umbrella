@@ -61,6 +61,7 @@ if [ -f /etc/redhat-release ]; then
     # Postgresql
     readline
     tzdata
+    glibc-common
 
     # lua-icu-date
     libicu-devel
@@ -213,6 +214,7 @@ elif [ -f /etc/debian_version ]; then
     # Postgresql
     "libreadline$libreadline_version"
     tzdata
+    locales-all
 
     # lua-icu-date
     libicu-dev

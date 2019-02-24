@@ -27,7 +27,7 @@ return function()
 
     pg_utils.query("SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = 'api_umbrella' AND pid != pg_backend_pid()", nil, { verbose = true, fatal = true })
     pg_utils.query("DROP DATABASE IF EXISTS api_umbrella", nil, { verbose = true, fatal = true })
-    pg_utils.query("CREATE DATABASE api_umbrella WITH OWNER = " .. pg_utils.escape_identifier(config["postgresql"]["migrations"]["username"]), nil, { verbose = true, fatal = true })
+    pg_utils.query("CREATE DATABASE api_umbrella WITH OWNER = " .. pg_utils.escape_identifier(config["postgresql"]["migrations"]["username"]) .. " ENCODING = 'UTF8'", nil, { verbose = true, fatal = true })
 
     pg_utils.db_config["database"] = "api_umbrella"
     pg_utils.query("CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA public", nil, { verbose = true, fatal = true })

@@ -20,6 +20,7 @@ local random_seed = require "api-umbrella.utils.random_seed"
 local random_token = require "api-umbrella.utils.random_token"
 local seed_database = require "api-umbrella.proxy.startup.seed_database"
 local split = require("ngx.re").split
+local utf8 = require "lua-utf8"
 local uuid_generate = require("resty.uuid").generate_random
 
 local API_KEY_PREFIX_LENGTH = 16
@@ -629,31 +630,31 @@ local function migrate_api_users()
     end
 
     if type(row["email"]) == "string" and string.len(row["email"]) > 255 then
-      row["email"] = string.sub(row["email"], 1, 255)
+      row["email"] = utf8.sub(row["email"], 1, 255)
     end
     if type(row["first_name"]) == "string" and string.len(row["first_name"]) > 80 then
-      row["first_name"] = string.sub(row["first_name"], 1, 80)
+      row["first_name"] = utf8.sub(row["first_name"], 1, 80)
     end
     if type(row["last_name"]) == "string" and string.len(row["last_name"]) > 80 then
-      row["last_name"] = string.sub(row["last_name"], 1, 80)
+      row["last_name"] = utf8.sub(row["last_name"], 1, 80)
     end
     if type(row["use_description"]) == "string" and string.len(row["use_description"]) > 2000 then
-      row["use_description"] = string.sub(row["use_description"], 1, 2000)
+      row["use_description"] = utf8.sub(row["use_description"], 1, 2000)
     end
     if type(row["website"]) == "string" and string.len(row["website"]) > 255 then
-      row["website"] = string.sub(row["website"], 1, 255)
+      row["website"] = utf8.sub(row["website"], 1, 255)
     end
     if type(row["registration_source"]) == "string" and string.len(row["registration_source"]) > 255 then
-      row["registration_source"] = string.sub(row["registration_source"], 1, 255)
+      row["registration_source"] = utf8.sub(row["registration_source"], 1, 255)
     end
     if type(row["registration_user_agent"]) == "string" and string.len(row["registration_user_agent"]) > 1000 then
-      row["registration_user_agent"] = string.sub(row["registration_user_agent"], 1, 1000)
+      row["registration_user_agent"] = utf8.sub(row["registration_user_agent"], 1, 1000)
     end
     if type(row["registration_referer"]) == "string" and string.len(row["registration_referer"]) > 1000 then
-      row["registration_referer"] = string.sub(row["registration_referer"], 1, 1000)
+      row["registration_referer"] = utf8.sub(row["registration_referer"], 1, 1000)
     end
     if type(row["registration_origin"]) == "string" and string.len(row["registration_origin"]) > 1000 then
-      row["registration_origin"] = string.sub(row["registration_origin"], 1, 1000)
+      row["registration_origin"] = utf8.sub(row["registration_origin"], 1, 1000)
     end
 
     insert("api_users", row, function()
@@ -774,7 +775,6 @@ end
 
 local function run()
   args = parse_args()
-  seed_database.seed_once()
 
   local err
   mongo_client, err = moongoo.new(args["mongodb_url"])
@@ -787,6 +787,8 @@ local function run()
   pg_utils.db_config["database"] = args["pg_database"]
   pg_utils.db_config["user"] = args["pg_user"]
   pg_utils.db_config["password"] = args["pg_password"]
+
+  seed_database.seed_once()
 
   query("START TRANSACTION")
   query("SET CONSTRAINTS ALL DEFERRED")
