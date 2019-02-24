@@ -122,7 +122,7 @@ web:
           ssl: true
   mailer:
     smtp_settings:
-      host: 127.0.0.1
+      address: 127.0.0.1
       port: 25
 static_site:
   host: 127.0.0.1

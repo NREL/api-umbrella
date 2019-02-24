@@ -1,4 +1,5 @@
 local get_packed = require("api-umbrella.utils.packed_shared_dict").get_packed
+local is_empty = require("pl.types").is_empty
 local psl = require "api-umbrella.utils.psl"
 local url_parse = require("socket.url").parse
 
@@ -69,6 +70,10 @@ function _M.is_allowed_api_domain(domain)
 end
 
 function _M.sanitized_url(url)
+  if is_empty(url) then
+    return nil
+  end
+
   local domain = url_domain(url)
   if _M.is_allowed_domain(domain) then
     return url
@@ -79,6 +84,10 @@ function _M.sanitized_url(url)
 end
 
 function _M.sanitized_api_url(url)
+  if is_empty(url) then
+    return nil
+  end
+
   local domain = url_domain(url)
   if _M.is_allowed_api_domain(domain) then
     return url
@@ -89,6 +98,10 @@ function _M.sanitized_api_url(url)
 end
 
 function _M.sanitized_email(email)
+  if is_empty(url) then
+    return nil
+  end
+
   local domain = email_domain(email)
   if _M.is_allowed_domain(domain) then
     return email

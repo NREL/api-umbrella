@@ -63,15 +63,9 @@ local function send_welcome_email(self, api_user)
   end
 
   local options = deepcopy(self.params["options"]) or {}
-  if options["example_api_url"] then
-    options["example_api_url"] = known_domains.sanitized_api_url(options["example_api_url"])
-  end
-  if options["contact_url"] then
-    options["contact_url"] = known_domains.sanitized_url(options["contact_url"])
-  end
-  if options["email_from_address"] then
-    options["email_from_address"] = known_domains.sanitized_email(options["email_from_address"])
-  end
+  options["example_api_url"] = known_domains.sanitized_api_url(options["example_api_url"])
+  options["contact_url"] = known_domains.sanitized_url(options["contact_url"])
+  options["email_from_address"] = known_domains.sanitized_email(options["email_from_address"])
 
   local ok, err = api_user_welcome_mailer(api_user, options)
   if not ok then

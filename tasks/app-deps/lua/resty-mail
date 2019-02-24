@@ -1,10 +1,15 @@
 #!/usr/bin/env bash
 
-lua_resty_mail_version="1.0.1"
+lua_resty_mail_version="1.0.2"
 
 set -e -u -x
 source ./tasks/helpers.sh
 
-opm_install "GUI/lua-resty-mail" "$lua_resty_mail_version"
+# FIXME: Switch back to OPM once v1.0.2 is available from there:
+# https://github.com/openresty/opm/issues/70
+# opm_install "GUI/lua-resty-mail" "$lua_resty_mail_version"
+rm -rf "$APP_CORE_VENDOR_LUA_DIR/resty_modules/lualib/resty/mail"* "$APP_CORE_VENDOR_LUA_DIR/resty_modules/pod/lua-resty-mail-"* "$APP_CORE_VENDOR_LUA_DIR/resty_modules/manifest/lua-resty-mail"*
+luarocks_install "lua-resty-mail" "$lua_resty_mail_version"
+
 
 stamp
