@@ -136,7 +136,7 @@ local ApiBackendSettings = model_ext.new_class("api_backend_settings", {
       allowed_referers = json_null_default(self.allowed_referers),
       anonymous_rate_limit_behavior = json_null_default(self.anonymous_rate_limit_behavior),
       api_key_verification_level = json_null_default(self.api_key_verification_level),
-      api_key_verification_transition_start_at = json_null_default(time.postgres_to_iso8601(self.api_key_verification_transition_start_at)),
+      api_key_verification_transition_start_at = json_null_default(time.postgres_to_iso8601_ms(self.api_key_verification_transition_start_at)),
       append_query_string = json_null_default(self.append_query_string),
       authenticated_rate_limit_behavior = json_null_default(self.authenticated_rate_limit_behavior),
       default_response_headers = {},
@@ -157,7 +157,7 @@ local ApiBackendSettings = model_ext.new_class("api_backend_settings", {
       rate_limits = {},
       redirect_https = json_null_default(self.redirect_https),
       require_https = json_null_default(self.require_https),
-      require_https_transition_start_at = json_null_default(time.postgres_to_iso8601(self.require_https_transition_start_at)),
+      require_https_transition_start_at = json_null_default(time.postgres_to_iso8601_ms(self.require_https_transition_start_at)),
       required_roles = json_null_default(self:required_role_ids()),
       required_roles_override = json_null_default(self.required_roles_override),
     }
@@ -185,6 +185,13 @@ local ApiBackendSettings = model_ext.new_class("api_backend_settings", {
       "rate_limits",
       "required_roles",
     }, options)
+
+    if options and options["for_publishing"] then
+      data["default_response_headers_string"] = nil
+      data["error_data_yaml_strings"] = nil
+      data["headers_string"] = nil
+      data["override_response_headers_string"] = nil
+    end
 
     return data
   end,

@@ -29,6 +29,10 @@ local as_json_options = {
   -- API backend an empty list of custom rate limits should not override the
   -- default rate limits).
   nullify_empty_arrays = true,
+
+  -- Customize the as_json output to exclude some computed fields that
+  -- shouldn't be part of the published json.
+  for_publishing = true,
 }
 
 local PublishedConfig = model_ext.new_class("published_config", {

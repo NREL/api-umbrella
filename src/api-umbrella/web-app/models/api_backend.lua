@@ -193,6 +193,10 @@ ApiBackend = model_ext.new_class("api_backends", {
       "url_matches",
     }, options)
 
+    if options and options["for_publishing"] then
+      data["frontend_prefixes"] = nil
+    end
+
     return data
   end,
 

@@ -65,6 +65,15 @@ function _M.postgres_to_iso8601(string)
   return date:format(format_iso8601)
 end
 
+function _M.postgres_to_iso8601_ms(string)
+  if not string or string == null or string == json_null then
+    return nil
+  end
+
+  parse_postgres(string)
+  return date:format(format_iso8601_ms)
+end
+
 function _M.timestamp_ms_to_csv(timestamp)
   if not timestamp or timestamp == null or timestamp == json_null then
     return nil

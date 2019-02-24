@@ -246,7 +246,7 @@ local function migrate_collection(name, callback)
   }
   if name == "config_versions" then
     agg[1]["$sort"] = {
-      version = -1,
+      version = 1,
     }
   end
   local cursor, err = collection:aggregate(agg, { allowDiskUse = true })
@@ -453,9 +453,9 @@ local function insert_settings(table_name, row, settings)
       end
     end
 
-    if required_roles then
+    if required_roles and required_roles ~= pg_null then
       for _, role in ipairs(required_roles) do
-        if role ~= "" then
+        if role ~= "" and role ~= pg_null then
           upsert_role({
             id = role,
             created_at = row["created_at"],
@@ -480,7 +480,7 @@ local function insert_settings(table_name, row, settings)
       end
     end
 
-    for header_type, type_headers in ipairs(headers) do
+    for header_type, type_headers in pairs(headers) do
       for index, header in ipairs(type_headers) do
         header["api_backend_settings_id"] = settings["id"]
         header["header_type"] = header_type
@@ -678,9 +678,9 @@ local function migrate_api_users()
     end
 
     insert("api_users", row, function()
-      if roles then
+      if roles and roles ~= pg_null then
         for _, role in ipairs(roles) do
-          if role ~= "" then
+          if role ~= "" and role ~= pg_null then
             upsert_role({
               id = role,
               created_at = row["created_at"],
@@ -731,8 +731,73 @@ local function migrate_website_backends()
   end)
 end
 
+local function convert_published_settings(settings)
+  if not settings then
+    return
+  end
+
+  if settings["pass_api_key_header"] == nil then
+    settings["pass_api_key_header"] = false
+  end
+
+  if settings["pass_api_key_query_param"] == nil then
+    settings["pass_api_key_query_param"] = false
+  end
+
+  if settings["redirect_https"] == nil then
+    settings["redirect_https"] = false
+  end
+
+  if settings["required_roles_override"] == nil then
+    settings["required_roles_override"] = false
+  end
+
+  if settings["rate_limits"] then
+    for _, rate_limit in ipairs(settings["rate_limits"]) do
+      if rate_limit["response_headers"] == nil then
+        rate_limit["response_headers"] = false
+      end
+    end
+
+    table.sort(settings["rate_limits"], function(a, b)
+      if a["duration"] == b["duration"] then
+        return a["limit_by"] < b["limit_by"]
+      else
+        return a["duration"] < b["duration"]
+      end
+    end)
+
+    if #settings["rate_limits"] == 0 then
+      settings["rate_limits"] = nil
+    end
+  end
+end
+
 local function migrate_published_config()
   migrate_collection("config_versions", function(row)
+    if row["config"]["apis"] then
+      for _, api in ipairs(row["config"]["apis"]) do
+        api["default_response_headers"] = nil
+        api["override_response_headers"] = nil
+
+        convert_published_settings(api["settings"])
+
+        if api["sub_settings"] then
+          for _, sub_setting in ipairs(api["sub_settings"]) do
+            convert_published_settings(sub_setting["settings"])
+          end
+
+          if #api["sub_settings"] == 0 then
+            api["sub_settings"] = nil
+          end
+        end
+
+        if api["rewrites"] and #api["rewrites"] == 0 then
+          api["rewrites"] = nil
+        end
+      end
+    end
+
     row["config"] = pg_utils.raw(pg_encode_json(convert_json_nulls(row["config"])))
     row["id"] = nil
     row["version"] = nil
@@ -835,7 +900,7 @@ local function run()
   query("SET SESSION api_umbrella.disable_stamping = 'on'")
 
   if args["clean"] then
-    query("TRUNCATE TABLE admin_groups, admins, analytics_cities, api_backends, api_roles, api_scopes, api_users, website_backends, auto_ssl_storage, distributed_rate_limit_counters, audit.log, audit.legacy_log CASCADE")
+    query("TRUNCATE TABLE admin_groups, admins, analytics_cities, api_backends, api_roles, api_scopes, api_users, website_backends, published_config, auto_ssl_storage, distributed_rate_limit_counters, audit.log, audit.legacy_log CASCADE")
   end
 
   build_admin_username_mappings()
