@@ -48,7 +48,7 @@ class Test::Apis::V1::Config::TestPublishTransitionaryHttps < Minitest::Test
       api.reload
       time = api.settings.require_https_transition_start_at
       assert_kind_of(Time, time)
-      assert_equal(time.iso8601, active_config["apis"][0]["settings"]["require_https_transition_start_at"])
+      assert_equal(time.iso8601(3), active_config["apis"][0]["settings"]["require_https_transition_start_at"])
     end
 
     define_method("test_#{mode}_sub_settings_set_timestamp") do
@@ -81,7 +81,7 @@ class Test::Apis::V1::Config::TestPublishTransitionaryHttps < Minitest::Test
       api.reload
       time = api.sub_settings[0].settings.require_https_transition_start_at
       assert_kind_of(Time, time)
-      assert_equal(time.iso8601, active_config["apis"][0]["sub_settings"][0]["settings"]["require_https_transition_start_at"])
+      assert_equal(time.iso8601(3), active_config["apis"][0]["sub_settings"][0]["settings"]["require_https_transition_start_at"])
     end
 
     define_method("test_#{mode}_does_not_touch_existing_timestamp") do
@@ -111,7 +111,7 @@ class Test::Apis::V1::Config::TestPublishTransitionaryHttps < Minitest::Test
 
       api.reload
       assert_equal(timestamp, api.settings.require_https_transition_start_at)
-      assert_equal(timestamp.iso8601, active_config["apis"][0]["settings"]["require_https_transition_start_at"])
+      assert_equal(timestamp.iso8601(3), active_config["apis"][0]["settings"]["require_https_transition_start_at"])
     end
 
     define_method("test_#{mode}_mode_changes_without_publishing_does_not_touch_existing_timestamp") do
@@ -162,7 +162,7 @@ class Test::Apis::V1::Config::TestPublishTransitionaryHttps < Minitest::Test
 
       api.reload
       assert_equal(timestamp, api.settings.require_https_transition_start_at)
-      assert_equal(timestamp.iso8601, active_config["apis"][0]["settings"]["require_https_transition_start_at"])
+      assert_equal(timestamp.iso8601(3), active_config["apis"][0]["settings"]["require_https_transition_start_at"])
     end
   end
 

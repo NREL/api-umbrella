@@ -92,6 +92,15 @@ function _M.iso8601_to_timestamp(string)
   return date:get_millis() / 1000
 end
 
+function _M.iso8601_ms_to_timestamp(string)
+  if not string or string == null or string == json_null then
+    return nil
+  end
+
+  date:parse(format_iso8601_ms, string)
+  return date:get_millis() / 1000
+end
+
 function _M.iso8601_to_timestamp_ms(string)
   if not string or string == null or string == json_null then
     return nil

@@ -2,7 +2,7 @@ local _M = {}
 
 local escape = require("pl.utils").escape
 local is_empty = require("pl.types").is_empty
-local iso8601_to_timestamp = require("api-umbrella.utils.time").iso8601_to_timestamp
+local iso8601_ms_to_timestamp = require("api-umbrella.utils.time").iso8601_ms_to_timestamp
 local json_null = require("cjson").null
 local table_keys = require("pl.tablex").keys
 
@@ -109,12 +109,12 @@ function _M.cache_computed_settings(settings)
   settings["http_basic_auth"] = nil
 
   if settings["api_key_verification_transition_start_at"] then
-    settings["_api_key_verification_transition_start_at"] = iso8601_to_timestamp(settings["api_key_verification_transition_start_at"])
+    settings["_api_key_verification_transition_start_at"] = iso8601_ms_to_timestamp(settings["api_key_verification_transition_start_at"])
   end
   settings["api_key_verification_transition_start_at"] = nil
 
   if settings["require_https_transition_start_at"] and settings["require_https_transition_start_at"] then
-    settings["_require_https_transition_start_at"] = iso8601_to_timestamp(settings["require_https_transition_start_at"])
+    settings["_require_https_transition_start_at"] = iso8601_ms_to_timestamp(settings["require_https_transition_start_at"])
   end
   settings["require_https_transition_start_at"] = nil
 
