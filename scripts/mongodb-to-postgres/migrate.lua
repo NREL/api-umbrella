@@ -76,6 +76,11 @@ end
 local function convert_mongo_types(table)
   if not table then return end
 
+  if table["_id"] then
+    table["id"] = table["_id"]
+    table["_id"] = nil
+  end
+
   for key, value in pairs(table) do
     if value == json_null then
       table[key] = pg_null
@@ -164,11 +169,6 @@ local function delete(table_name, where)
 end
 
 local function insert(table_name, row, after_insert)
-  if row["_id"] then
-    row["id"] = row["_id"]
-    row["_id"] = nil
-  end
-
   if row["created_by"] then
     row["created_by_id"] = row["created_by"]
     row["created_by_username"] = admin_username(row["created_by"])
@@ -271,17 +271,18 @@ end
 
 local function build_admin_username_mappings()
   migrate_collection("admins", function(row)
-    admin_usernames[row["_id"]] = row["username"]
+    admin_usernames[row["id"]] = row["username"]
   end)
 end
 
 local function migrate_admins()
   migrate_collection("admins", function(row)
+    local group_ids = row["group_ids"]
     row["group_ids"] = nil
 
     local authentication_token = row["authentication_token"] or random_token(40)
     row["authentication_token_hash"] = hmac(authentication_token)
-    local encrypted, iv = encryptor.encrypt(authentication_token, row["_id"])
+    local encrypted, iv = encryptor.encrypt(authentication_token, row["id"])
     row["authentication_token_encrypted"] = encrypted
     row["authentication_token_encrypted_iv"] = iv
     row["authentication_token"] = nil
@@ -289,7 +290,26 @@ local function migrate_admins()
     row["version"] = nil
     row["registration_source"] = nil
 
-    insert("admins", row)
+    insert("admins", row, function()
+      if group_ids then
+        for _, group_id in ipairs(group_ids) do
+          insert("admin_groups_admins", {
+            admin_group_id = group_id,
+            admin_id = row["id"],
+            created_at = row["created_at"],
+            created_by_id = row["created_by_id"],
+            created_by_username = row["created_by_username"],
+            updated_at = row["updated_at"],
+            updated_by_id = row["updated_by_id"],
+            updated_by_username = row["updated_by_username"],
+          })
+
+          if deletes["admin_groups"] and deletes["admin_groups"][group_id] then
+            delete("admin_groups_admins", { admin_group_id = group_id, admin_id = row["id"] })
+          end
+        end
+      end
+    end)
   end)
 end
 
@@ -590,11 +610,11 @@ end
 
 local function migrate_api_users()
   migrate_collection("api_users", function(row)
-    api_key_user_ids[row["api_key"]] = row["_id"]
+    api_key_user_ids[row["api_key"]] = row["id"]
 
     local api_key = row["api_key"]
     row["api_key_hash"] = hmac(api_key)
-    local encrypted, iv = encryptor.encrypt(api_key, row["_id"])
+    local encrypted, iv = encryptor.encrypt(api_key, row["id"])
     row["api_key_encrypted"] = encrypted
     row["api_key_encrypted_iv"] = iv
     row["api_key_prefix"] = string.sub(api_key, 1, API_KEY_PREFIX_LENGTH)
@@ -693,10 +713,28 @@ local function migrate_api_users()
   end)
 end
 
+local function migrate_website_backends()
+  local hosts = {}
+  migrate_collection("website_backends", function(row)
+    row["version"] = nil
+
+    -- The old system allowed duplicates (which wasn't really valid), while the
+    -- postgres database does not. So let the last website backend win during
+    -- import.
+    if hosts[row["frontend_host"]] then
+      delete("website_backends", { frontend_host = row["frontend_host"] })
+    end
+    hosts[row["frontend_host"]] = true
+
+
+    insert("website_backends", row)
+  end)
+end
+
 local function migrate_published_config()
   migrate_collection("config_versions", function(row)
     row["config"] = pg_utils.raw(pg_encode_json(convert_json_nulls(row["config"])))
-    row["_id"] = nil
+    row["id"] = nil
     row["version"] = nil
 
     insert("published_config", row)
@@ -705,7 +743,7 @@ end
 
 local function migrate_distributed_rate_limit_counters()
   migrate_collection("rate_limits", function(row)
-    local id_parts = split(row["_id"], ":", "jo")
+    local id_parts = split(row["id"], ":", "jo")
     if id_parts[1] == "apiKey" then
       id_parts[1] = "api_key"
       local user_id = api_key_user_ids[id_parts[3]]
@@ -713,7 +751,7 @@ local function migrate_distributed_rate_limit_counters()
         id_parts[3] = user_id
       end
     end
-    row["_id"] = table.concat(id_parts, ":")
+    row["id"] = table.concat(id_parts, ":")
     row["expires_at"] = row["expire_at"]
     row["expire_at"] = nil
     row["value"] = row["count"]
@@ -726,7 +764,7 @@ end
 local function migrate_audit_legacy_log()
   query("SET search_path = audit, public")
   migrate_collection("mongoid_delorean_histories", function(row)
-    row["_id"] = nil
+    row["id"] = nil
 
     if row["altered_attributes"] and row["altered_attributes"] ~= pg_null then
       row["altered_attributes"] = pg_utils.raw(pg_encode_json(convert_json_nulls(row["altered_attributes"])))
@@ -743,7 +781,7 @@ end
 
 local function migrate_analytics_cities()
   migrate_collection("log_city_locations", function(row)
-    row["_id"] = nil
+    row["id"] = nil
     row["location"] = pg_utils.raw("point(" .. pg_utils.escape_literal(row["location"]["coordinates"][1]) .. "," .. pg_utils.escape_literal(row["location"]["coordinates"][2]) .. ")")
 
     if row["country"] then
@@ -754,8 +792,8 @@ end
 
 local function migrate_auto_ssl_storage()
   migrate_collection("ssl_certs", function(row)
-    row["key"] = row["_id"]
-    row["_id"] = nil
+    row["key"] = row["id"]
+    row["id"] = nil
 
     local aes_instance = assert(aes:new(args["auto_ssl_encryption_secret"], nil, aes.cipher(256, "cbc"), { iv = row["encryption_iv"] }))
     local value = aes_instance:decrypt(ngx.decode_base64(row["encrypted_value"]))
@@ -797,14 +835,15 @@ local function run()
   query("SET SESSION api_umbrella.disable_stamping = 'on'")
 
   if args["clean"] then
-    query("TRUNCATE TABLE admin_groups, admins, analytics_cities, api_backends, api_roles, api_scopes, api_users, auto_ssl_storage, distributed_rate_limit_counters, audit.log CASCADE")
+    query("TRUNCATE TABLE admin_groups, admins, analytics_cities, api_backends, api_roles, api_scopes, api_users, website_backends, auto_ssl_storage, distributed_rate_limit_counters, audit.log, audit.legacy_log CASCADE")
   end
 
   build_admin_username_mappings()
-  migrate_admins()
   migrate_api_scopes()
   migrate_admin_groups()
+  migrate_admins()
   migrate_api_backends()
+  migrate_website_backends()
   migrate_api_users()
   migrate_published_config()
   migrate_analytics_cities()
