@@ -48,7 +48,12 @@ return {
       BEGIN
         -- Only perform stamping ON INSERT/DELETE or if the UPDATE actually
         -- changed any fields.
-        IF (COALESCE(current_setting('api_umbrella.disable_stamping', true), 'off') != 'on' AND (TG_OP != 'UPDATE' OR row(NEW.*) IS DISTINCT FROM row(OLD.*))) THEN
+        --
+        -- Detect changes using *<> operator which is compatible with "point"
+        -- types that "DISTINCT FROM" is not:
+        -- https://www.mail-archive.com/pgsql-general@postgresql.org/msg198866.html
+        -- https://www.postgresql.org/docs/10/functions-comparisons.html#COMPOSITE-TYPE-COMPARISON
+        IF (COALESCE(current_setting('api_umbrella.disable_stamping', true), 'off') != 'on' AND (TG_OP != 'UPDATE' OR NEW *<> OLD)) THEN
           -- Update the updated_at timestamp on associated tables (which in
           -- turn will trigger this stamp_record() on that table if the
           -- timestamp changes to take care of any userstamping).
@@ -126,7 +131,11 @@ return {
       CREATE OR REPLACE FUNCTION update_timestamp()
       RETURNS TRIGGER AS $$
       BEGIN
-        IF row(NEW.*) IS DISTINCT FROM row(OLD.*) THEN
+        -- Detect changes using *<> operator which is compatible with "point"
+        -- types that "DISTINCT FROM" is not:
+        -- https://www.mail-archive.com/pgsql-general@postgresql.org/msg198866.html
+        -- https://www.postgresql.org/docs/10/functions-comparisons.html#COMPOSITE-TYPE-COMPARISON
+        IF NEW *<> OLD THEN
           NEW.updated_at := transaction_timestamp();
         END IF;
 
@@ -586,7 +595,12 @@ return {
       BEGIN
         -- Only increment the version on INSERT or if the UPDATE actually
         -- changed any fields.
-        IF TG_OP != 'UPDATE' OR row(NEW.*) IS DISTINCT FROM row(OLD.*) THEN
+        --
+        -- Detect changes using *<> operator which is compatible with "point"
+        -- types that "DISTINCT FROM" is not:
+        -- https://www.mail-archive.com/pgsql-general@postgresql.org/msg198866.html
+        -- https://www.postgresql.org/docs/10/functions-comparisons.html#COMPOSITE-TYPE-COMPARISON
+        IF TG_OP != 'UPDATE' OR NEW *<> OLD THEN
           NEW.version := nextval('api_users_version_seq');
         END IF;
 

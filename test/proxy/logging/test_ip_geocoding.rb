@@ -219,6 +219,39 @@ class Test::Proxy::Logging::TestIpGeocoding < Minitest::Test
     })
   end
 
+  # Since this table involves a "point" type column, ensure some of the SQL
+  # triggers doing comparisons on changes work as expected. See:
+  # https://www.mail-archive.com/pgsql-general@postgresql.org/msg198563.html
+  # https://www.mail-archive.com/pgsql-general@postgresql.org/msg198866.html
+  def test_cache_upsert_timestamp_tracking
+    AnalyticsCity.connection.execute("INSERT INTO analytics_cities(country, region, city, location) VALUES('US', 'CO', #{AnalyticsCity.connection.quote(unique_test_id)}, point(1, 2)) ON CONFLICT (country, region, city) DO UPDATE SET location = EXCLUDED.location")
+    city = AnalyticsCity.find_by!(:country => "US", :region => "CO", :city => unique_test_id)
+    orig_created_at = city.created_at
+    prev_updated_at = city.updated_at
+    assert_equal(prev_updated_at.iso8601(10), city.created_at.iso8601(10))
+
+    # Ensure a change triggers updated_at to change.
+    AnalyticsCity.connection.execute("INSERT INTO analytics_cities(country, region, city, location) VALUES('US', 'CO', #{AnalyticsCity.connection.quote(unique_test_id)}, point(1, 3)) ON CONFLICT (country, region, city) DO UPDATE SET location = EXCLUDED.location")
+    city.reload
+    assert_equal(orig_created_at.iso8601(10), city.created_at.iso8601(10))
+    refute_equal(prev_updated_at.iso8601(10), city.updated_at.iso8601(10))
+    prev_updated_at = city.updated_at
+
+    # If an update is performed without actually changing the values, then
+    # updated_at should remain the same.
+    AnalyticsCity.connection.execute("INSERT INTO analytics_cities(country, region, city, location) VALUES('US', 'CO', #{AnalyticsCity.connection.quote(unique_test_id)}, point(1, 3)) ON CONFLICT (country, region, city) DO UPDATE SET location = EXCLUDED.location")
+    city.reload
+    assert_equal(orig_created_at.iso8601(10), city.created_at.iso8601(10))
+    assert_equal(prev_updated_at.iso8601(10), city.updated_at.iso8601(10))
+    prev_updated_at = city.updated_at
+
+    # Another change test.
+    AnalyticsCity.connection.execute("INSERT INTO analytics_cities(country, region, city, location) VALUES('US', 'CO', #{AnalyticsCity.connection.quote(unique_test_id)}, point(1, 4)) ON CONFLICT (country, region, city) DO UPDATE SET location = EXCLUDED.location")
+    city.reload
+    assert_equal(orig_created_at.iso8601(10), city.created_at.iso8601(10))
+    refute_equal(prev_updated_at.iso8601(10), city.updated_at.iso8601(10))
+  end
+
   private
 
   def assert_geocode(record, options)
