@@ -11,13 +11,19 @@ local _M = {}
 _M.mutex_exec = function(name, fn)
   local check_lock, new_err = lock:new("locks", { timeout = 0 })
   if new_err then
-    ngx.log(ngx.ERR, "failed to create lock: ", new_err)
+    ngx.log(ngx.ERR, "failed to create lock (" .. (name or "") .. "): ", new_err)
     return
   end
 
   local _, lock_err = check_lock:lock("mutex_exec:" .. name)
   if lock_err then
-    ngx.log(ngx.ERR, "failed to obtain lock: ", lock_err)
+    -- Since we don't wait to obtain a lock (timeout=0), timeout errors are
+    -- expected, so don't log those (this should just mean that another worker
+    -- is occupying this lock, so the work is being performed, just not by this
+    -- worker).
+    if lock_err ~= "timeout" then
+      ngx.log(ngx.ERR, "failed to obtain lock (" .. (name or "") .. "): ", lock_err)
+    end
     return
   end
 
