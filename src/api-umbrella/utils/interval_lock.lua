@@ -9,18 +9,26 @@ local _M = {}
 -- @param name - a unique identifier for this lock (automatically namespaced)
 -- @param fn - function to execute if the lock can be held
 _M.mutex_exec = function(name, fn)
-  local check_lock = lock:new("locks", {["timeout"] = 0})
+  local check_lock, new_err = lock:new("locks", { timeout = 0 })
+  if new_err then
+    ngx.log(ngx.ERR, "failed to create lock: ", new_err)
+    return
+  end
+
   local _, lock_err = check_lock:lock("mutex_exec:" .. name)
-  if not lock_err then
-    local pcall_ok, pcall_err = xpcall(fn, xpcall_error_handler)
-    -- always attempt to unlock, even if the call failed
-    local unlock_ok, unlock_err = check_lock:unlock()
-    if not pcall_ok then
-      ngx.log(ngx.ERR, "mutex exec pcall failed: ", pcall_err)
-    end
-    if not unlock_ok then
-      ngx.log(ngx.ERR, "failed to unlock: ", unlock_err)
-    end
+  if lock_err then
+    ngx.log(ngx.ERR, "failed to obtain lock: ", lock_err)
+    return
+  end
+
+  local pcall_ok, pcall_err = xpcall(fn, xpcall_error_handler)
+  -- always attempt to unlock, even if the call failed
+  local unlock_ok, unlock_err = check_lock:unlock()
+  if not pcall_ok then
+    ngx.log(ngx.ERR, "mutex exec pcall failed: ", pcall_err)
+  end
+  if not unlock_ok then
+    ngx.log(ngx.ERR, "failed to unlock: ", unlock_err)
   end
 end
 

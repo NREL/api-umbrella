@@ -56,6 +56,7 @@ http {
   # like the secret used by the hook server. Do not change or omit it.
   lua_shared_dict auto_ssl_settings 64k;
 
+  # Shared dicts for running background expiration job.
   lua_shared_dict interval_locks {{nginx.shared_dicts.interval_locks.size}};
   lua_shared_dict locks {{nginx.shared_dicts.locks.size}};
 
