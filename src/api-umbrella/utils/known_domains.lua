@@ -98,7 +98,7 @@ function _M.sanitized_api_url(url)
 end
 
 function _M.sanitized_email(email)
-  if is_empty(url) then
+  if is_empty(email) then
     return nil
   end
 
