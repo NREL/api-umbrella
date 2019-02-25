@@ -168,7 +168,7 @@ local function delete(table_name, where)
   return result, err
 end
 
-local function insert(table_name, row, after_insert)
+local function insert(table_name, row, last_imported_at, after_insert)
   if row["created_by"] then
     row["created_by_id"] = row["created_by"]
     row["created_by_username"] = admin_username(row["created_by"])
@@ -209,6 +209,33 @@ local function insert(table_name, row, after_insert)
 
   -- print("INSERT: " .. table_name .. ": " .. inspect(row))
 
+  if last_imported_at then
+    local result, err = query("SELECT * FROM " .. pg_utils.escape_identifier(table_name) .. " WHERE id = :id", { id = row["id"] })
+    if err then
+      error(err)
+    elseif result and result[1] then
+      local old_row = result[1]
+      local old_json = cjson.encode(old_row)
+      local new_json = cjson.encode(row)
+
+      date:parse(format_iso8601, old_row["updated_at"])
+      local old_row_updated_at = date:get_millis()
+      if old_row_updated_at > last_imported_at then
+        print("\nERROR: Row in PostgreSQL has a newer updated_at timestamp than row in Mongo")
+        print("Old Row: " .. old_json)
+        print("New Row: " .. new_json)
+        return
+      else
+        print("\nReplacing row: " .. row["id"])
+        print("Old Row: " .. old_json)
+        print("New Row: " .. new_json)
+        delete(table_name, { id = row["id"] })
+      end
+    else
+      print("\nAppending row: " .. (row["id"] or row["updated_at"]))
+    end
+  end
+
   local result, err = pg_utils.insert(table_name, row)
   if err then
     print("failed to perform postgresql insert: " .. err)
@@ -233,10 +260,9 @@ local function upsert_role(row)
   return query("INSERT INTO api_roles (id, created_at, created_by_id, created_by_username, updated_at, updated_by_id, updated_by_username) VALUES (:id, :created_at, :created_by_id, :created_by_username, :updated_at, :updated_by_id, :updated_by_username) ON CONFLICT (id) DO UPDATE SET updated_at = EXCLUDED.updated_at, updated_by_id = EXCLUDED.updated_by_id, updated_by_username = EXCLUDED.updated_by_username", row)
 end
 
-local function migrate_collection(name, callback)
-  print("Migrating collection " .. inspect(name) .. "...")
-
+local function loop_collection(name, callback)
   local collection = mongo_database:collection(name)
+
   local agg = {
     {
       ["$sort"] = {
@@ -244,15 +270,68 @@ local function migrate_collection(name, callback)
       },
     },
   }
-  if name == "config_versions" then
-    agg[1]["$sort"] = {
-      version = 1,
-    }
-  end
   local cursor, err = collection:aggregate(agg, { allowDiskUse = true })
   if err then
     error(err)
   end
+  local row = cursor:next()
+  while row do
+    row = json_decode(cbson.to_json(cbson.encode(row)))
+
+    convert_mongo_types(row)
+
+    callback(row)
+
+    row = cursor:next()
+  end
+end
+
+local function migrate_collection(name, callback)
+  print("Migrating collection " .. inspect(name) .. "...")
+
+  local cache_last_imported_key = "mongodb_last_imported_timestamp:" .. name
+  local last_imported_results, last_imported_err = query("SELECT data FROM api_umbrella.cache WHERE id = :id", { id = cache_last_imported_key })
+  if last_imported_err then
+    error(last_imported_err)
+  end
+
+  local collection = mongo_database:collection(name)
+
+  local agg = {}
+  local last_imported_at
+  if last_imported_results and last_imported_results[1] then
+    date:parse(format_iso8601, last_imported_results[1]["data"])
+    last_imported_at = date:get_millis()
+    table.insert(agg, {
+      ["$match"] = {
+        updated_at = {
+          ["$gt"] = cbson.date(last_imported_at),
+        },
+      },
+    })
+  end
+
+  local sort_field = "updated_at"
+  if name == "config_versions" then
+    sort_field = "version"
+  end
+  table.insert(agg, {
+    ["$sort"] = {
+      [sort_field] = 1,
+    },
+  })
+
+  -- if name == "mongoid_delorean_histories" then
+  --   table.insert(agg, {
+  --     ["$limit"] = 1000,
+  --   })
+  -- end
+
+  local cursor, err = collection:aggregate(agg, { allowDiskUse = true })
+  if err then
+    error(err)
+  end
+  local last_imported_timestamp
   local row = cursor:next()
   while row do
     io.write(".")
@@ -262,21 +341,30 @@ local function migrate_collection(name, callback)
 
     convert_mongo_types(row)
 
-    callback(row)
+    last_imported_timestamp = row["updated_at"]
+
+    callback(row, last_imported_at)
 
     row = cursor:next()
   end
   print("")
+
+  if last_imported_timestamp then
+    query("INSERT INTO api_umbrella.cache (id, data) VALUES (:id, :data) ON CONFLICT (id) DO UPDATE SET data = EXCLUDED.data", {
+      id = cache_last_imported_key,
+      data = last_imported_timestamp,
+    })
+  end
 end
 
 local function build_admin_username_mappings()
-  migrate_collection("admins", function(row)
+  loop_collection("admins", function(row)
     admin_usernames[row["id"]] = row["username"]
   end)
 end
 
 local function migrate_admins()
-  migrate_collection("admins", function(row)
+  migrate_collection("admins", function(row, last_imported_at)
     local group_ids = row["group_ids"]
     row["group_ids"] = nil
 
@@ -290,7 +378,7 @@ local function migrate_admins()
     row["version"] = nil
     row["registration_source"] = nil
 
-    insert("admins", row, function()
+    insert("admins", row, last_imported_at, function()
       if group_ids then
         for _, group_id in ipairs(group_ids) do
           insert("admin_groups_admins", {
@@ -314,22 +402,22 @@ local function migrate_admins()
 end
 
 local function migrate_api_scopes()
-  migrate_collection("api_scopes", function(row)
+  migrate_collection("api_scopes", function(row, last_imported_at)
     row["version"] = nil
 
-    insert("api_scopes", row)
+    insert("api_scopes", row, last_imported_at)
   end)
 end
 
 local function migrate_admin_groups()
-  migrate_collection("admin_groups", function(row)
+  migrate_collection("admin_groups", function(row, last_imported_at)
     local api_scope_ids = row["api_scope_ids"]
     local permission_ids = row["permission_ids"]
     row["api_scope_ids"] = nil
     row["permission_ids"] = nil
     row["version"] = nil
 
-    insert("admin_groups", row, function()
+    insert("admin_groups", row, last_imported_at, function()
       if api_scope_ids then
         for _, api_scope_id in ipairs(api_scope_ids) do
           insert("admin_groups_api_scopes", {
@@ -424,7 +512,7 @@ local function insert_settings(table_name, row, settings)
   headers["response_override"] = settings["override_response_headers"]
   settings["override_response_headers"] = nil
 
-  insert(table_name, settings, function()
+  insert(table_name, settings, nil, function()
     if rate_limits then
       for _, rate_limit in ipairs(rate_limits) do
         if table_name == "api_user_settings" then
@@ -499,7 +587,7 @@ local function insert_settings(table_name, row, settings)
 end
 
 local function migrate_api_backends()
-  migrate_collection("apis", function(row)
+  migrate_collection("apis", function(row, last_imported_at)
     local settings = row["settings"]
     row["settings"] = nil
 
@@ -519,7 +607,7 @@ local function migrate_api_backends()
     row["default_response_headers"] = nil
     row["override_response_headers"] = nil
 
-    insert("api_backends", row, function()
+    insert("api_backends", row, last_imported_at, function()
       if servers then
         for _, server in ipairs(servers) do
           server["api_backend_id"] = row["id"]
@@ -609,7 +697,7 @@ local function migrate_api_backends()
 end
 
 local function migrate_api_users()
-  migrate_collection("api_users", function(row)
+  migrate_collection("api_users", function(row, last_imported_at)
     api_key_user_ids[row["api_key"]] = row["id"]
 
     local api_key = row["api_key"]
@@ -677,7 +765,7 @@ local function migrate_api_users()
       row["registration_origin"] = utf8.sub(row["registration_origin"], 1, 1000)
     end
 
-    insert("api_users", row, function()
+    insert("api_users", row, last_imported_at, function()
       if roles and roles ~= pg_null then
         for _, role in ipairs(roles) do
           if role ~= "" and role ~= pg_null then
@@ -715,7 +803,7 @@ end
 
 local function migrate_website_backends()
   local hosts = {}
-  migrate_collection("website_backends", function(row)
+  migrate_collection("website_backends", function(row, last_imported_at)
     row["version"] = nil
 
     -- The old system allowed duplicates (which wasn't really valid), while the
@@ -727,7 +815,7 @@ local function migrate_website_backends()
     hosts[row["frontend_host"]] = true
 
 
-    insert("website_backends", row)
+    insert("website_backends", row, last_imported_at)
   end)
 end
 
@@ -774,7 +862,7 @@ local function convert_published_settings(settings)
 end
 
 local function migrate_published_config()
-  migrate_collection("config_versions", function(row)
+  migrate_collection("config_versions", function(row, last_imported_at)
     if row["config"]["apis"] then
       for _, api in ipairs(row["config"]["apis"]) do
         api["default_response_headers"] = nil
@@ -802,12 +890,12 @@ local function migrate_published_config()
     row["id"] = nil
     row["version"] = nil
 
-    insert("published_config", row)
+    insert("published_config", row, last_imported_at)
   end)
 end
 
 local function migrate_distributed_rate_limit_counters()
-  migrate_collection("rate_limits", function(row)
+  migrate_collection("rate_limits", function(row, last_imported_at)
     local id_parts = split(row["id"], ":", "jo")
     if id_parts[1] == "apiKey" then
       id_parts[1] = "api_key"
@@ -822,13 +910,13 @@ local function migrate_distributed_rate_limit_counters()
     row["value"] = row["count"]
     row["count"] = nil
     row["ts"] = nil
-    insert("distributed_rate_limit_counters", row)
+    insert("distributed_rate_limit_counters", row, last_imported_at)
   end)
 end
 
 local function migrate_audit_legacy_log()
   query("SET search_path = audit, public")
-  migrate_collection("mongoid_delorean_histories", function(row)
+  migrate_collection("mongoid_delorean_histories", function(row, last_imported_at)
     row["id"] = nil
 
     if row["altered_attributes"] and row["altered_attributes"] ~= pg_null then
@@ -839,24 +927,24 @@ local function migrate_audit_legacy_log()
       row["full_attributes"] = pg_utils.raw(pg_encode_json(convert_json_nulls(row["full_attributes"])))
     end
 
-    insert("legacy_log", row)
+    insert("legacy_log", row, last_imported_at)
   end)
   query("SET search_path = api_umbrella, public")
 end
 
 local function migrate_analytics_cities()
-  migrate_collection("log_city_locations", function(row)
+  migrate_collection("log_city_locations", function(row, last_imported_at)
     row["id"] = nil
     row["location"] = pg_utils.raw("point(" .. pg_utils.escape_literal(row["location"]["coordinates"][1]) .. "," .. pg_utils.escape_literal(row["location"]["coordinates"][2]) .. ")")
 
     if row["country"] then
-      insert("analytics_cities", row)
+      insert("analytics_cities", row, last_imported_at)
     end
   end)
 end
 
 local function migrate_auto_ssl_storage()
-  migrate_collection("ssl_certs", function(row)
+  migrate_collection("ssl_certs", function(row, last_imported_at)
     row["key"] = row["id"]
     row["id"] = nil
 
@@ -874,7 +962,7 @@ local function migrate_auto_ssl_storage()
     row["created_at"] = pg_utils.raw("now()")
     row["updated_at"] = pg_utils.raw("now()")
 
-    insert("auto_ssl_storage", row)
+    insert("auto_ssl_storage", row, last_imported_at)
   end)
 end
 
@@ -900,7 +988,7 @@ local function run()
   query("SET SESSION api_umbrella.disable_stamping = 'on'")
 
   if args["clean"] then
-    query("TRUNCATE TABLE admin_groups, admins, analytics_cities, api_backends, api_roles, api_scopes, api_users, website_backends, published_config, auto_ssl_storage, distributed_rate_limit_counters, audit.log, audit.legacy_log CASCADE")
+    query("TRUNCATE TABLE admin_groups, admins, analytics_cities, api_backends, api_roles, api_scopes, api_users, website_backends, published_config, cache, auto_ssl_storage, distributed_rate_limit_counters, audit.log, audit.legacy_log CASCADE")
   end
 
   build_admin_username_mappings()
@@ -910,10 +998,12 @@ local function run()
   migrate_api_backends()
   migrate_website_backends()
   migrate_api_users()
-  migrate_published_config()
-  migrate_analytics_cities()
-  migrate_distributed_rate_limit_counters()
-  migrate_auto_ssl_storage()
+  if args["clean"] then
+    migrate_published_config()
+    migrate_analytics_cities()
+    migrate_distributed_rate_limit_counters()
+    migrate_auto_ssl_storage()
+  end
   migrate_audit_legacy_log()
 
   query("COMMIT")
