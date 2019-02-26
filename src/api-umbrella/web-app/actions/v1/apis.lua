@@ -7,11 +7,11 @@ local dbify_json_nulls = require "api-umbrella.web-app.utils.dbify_json_nulls"
 local is_array = require "api-umbrella.utils.is_array"
 local is_empty = require("pl.types").is_empty
 local is_hash = require "api-umbrella.utils.is_hash"
-local json_params = require("lapis.application").json_params
 local json_response = require "api-umbrella.web-app.utils.json_response"
 local require_admin = require "api-umbrella.web-app.utils.require_admin"
 local respond_to = require "api-umbrella.web-app.utils.respond_to"
 local validation_ext = require "api-umbrella.web-app.utils.validation_ext"
+local wrapped_json_params = require "api-umbrella.web-app.utils.wrapped_json_params"
 
 local db_null = db.NULL
 
@@ -304,19 +304,19 @@ return function(app)
   app:match("/api-umbrella/v1/apis/:id(.:format)", respond_to({
     before = require_admin(find_api_backend),
     GET = capture_errors_json(_M.show),
-    POST = capture_errors_json(json_params(_M.update)),
-    PUT = capture_errors_json(json_params(_M.update)),
+    POST = capture_errors_json(wrapped_json_params(_M.update, "api")),
+    PUT = capture_errors_json(wrapped_json_params(_M.update, "api")),
     DELETE = capture_errors_json(_M.destroy),
   }))
 
   app:match("/api-umbrella/v1/apis/:id/move_after(.:format)", respond_to({
     before = require_admin(find_api_backend),
-    PUT = capture_errors_json(json_params(_M.move_after)),
+    PUT = capture_errors_json(wrapped_json_params(_M.move_after, "api")),
   }))
 
   app:match("/api-umbrella/v1/apis(.:format)", respond_to({
     before = require_admin(),
     GET = capture_errors_json(_M.index),
-    POST = capture_errors_json(json_params(_M.create)),
+    POST = capture_errors_json(wrapped_json_params(_M.create, "api")),
   }))
 end

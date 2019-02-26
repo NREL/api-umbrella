@@ -12,13 +12,13 @@ local deepcopy = require("pl.tablex").deepcopy
 local flatten_headers = require "api-umbrella.utils.flatten_headers"
 local is_array = require "api-umbrella.utils.is_array"
 local is_hash = require "api-umbrella.utils.is_hash"
-local json_params = require("lapis.application").json_params
 local json_response = require "api-umbrella.web-app.utils.json_response"
 local known_domains = require "api-umbrella.utils.known_domains"
 local parse_post_for_pseudo_ie_cors = require "api-umbrella.web-app.utils.parse_post_for_pseudo_ie_cors"
 local require_admin = require "api-umbrella.web-app.utils.require_admin"
 local respond_to = require "api-umbrella.web-app.utils.respond_to"
 local validation_ext = require "api-umbrella.web-app.utils.validation_ext"
+local wrapped_json_params = require "api-umbrella.web-app.utils.wrapped_json_params"
 
 local db_null = db.NULL
 
@@ -250,12 +250,12 @@ return function(app)
       end
     end),
     GET = capture_errors_json_full(_M.show),
-    POST = capture_errors_json_full(json_params(_M.update)),
-    PUT = capture_errors_json_full(json_params(_M.update)),
+    POST = capture_errors_json_full(wrapped_json_params(_M.update, "user")),
+    PUT = capture_errors_json_full(wrapped_json_params(_M.update, "user")),
   }))
 
   app:match("/api-umbrella/v1/users(.:format)", respond_to({
     GET = require_admin(capture_errors_json_full(_M.index)),
-    POST = capture_errors_json_full(parse_post_for_pseudo_ie_cors(json_params(_M.create))),
+    POST = capture_errors_json_full(parse_post_for_pseudo_ie_cors(wrapped_json_params(_M.create, "user"))),
   }))
 end

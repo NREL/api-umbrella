@@ -3,11 +3,11 @@ local api_scope_policy = require "api-umbrella.web-app.policies.api_scope_policy
 local capture_errors_json = require("api-umbrella.web-app.utils.capture_errors").json
 local datatables = require "api-umbrella.web-app.utils.datatables"
 local dbify_json_nulls = require "api-umbrella.web-app.utils.dbify_json_nulls"
-local json_params = require("lapis.application").json_params
 local json_response = require "api-umbrella.web-app.utils.json_response"
 local require_admin = require "api-umbrella.web-app.utils.require_admin"
 local respond_to = require "api-umbrella.web-app.utils.respond_to"
 local validation_ext = require "api-umbrella.web-app.utils.validation_ext"
+local wrapped_json_params = require "api-umbrella.web-app.utils.wrapped_json_params"
 
 local _M = {}
 
@@ -88,14 +88,14 @@ return function(app)
       end
     end),
     GET = capture_errors_json(_M.show),
-    POST = capture_errors_json(json_params(_M.update)),
-    PUT = capture_errors_json(json_params(_M.update)),
+    POST = capture_errors_json(wrapped_json_params(_M.update, "api_scope")),
+    PUT = capture_errors_json(wrapped_json_params(_M.update, "api_scope")),
     DELETE = capture_errors_json(_M.destroy),
   }))
 
   app:match("/api-umbrella/v1/api_scopes(.:format)", respond_to({
     before = require_admin(),
     GET = capture_errors_json(_M.index),
-    POST = capture_errors_json(json_params(_M.create)),
+    POST = capture_errors_json(wrapped_json_params(_M.create, "api_scope")),
   }))
 end
