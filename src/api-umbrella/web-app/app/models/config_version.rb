@@ -44,7 +44,7 @@ class ConfigVersion
 
   def self.active_config
     active = self.active
-    if(active) then active.config else nil end
+    if(active) then active.config else {} end
   end
 
   def self.pending_config
