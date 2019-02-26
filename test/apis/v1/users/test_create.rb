@@ -384,6 +384,32 @@ class Test::Apis::V1::Users::TestCreate < Minitest::Test
     }, data)
   end
 
+  def test_json_body
+    attributes = FactoryBot.attributes_for(:api_user)
+    response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(non_admin_key_creator_api_key).deep_merge({
+      :headers => { "Content-Type" => "application/json" },
+      :body => MultiJson.dump(:user => attributes),
+    }))
+    assert_response_code(201, response)
+
+    data = MultiJson.load(response.body)
+    assert_equal(attributes[:last_name], data["user"]["last_name"])
+  end
+
+  # Test behavior that the Rails "wrap_parameters" feature has on accepting
+  # JSON params.
+  def test_non_wrapped_json_body
+    attributes = FactoryBot.attributes_for(:api_user)
+    response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(non_admin_key_creator_api_key).deep_merge({
+      :headers => { "Content-Type" => "application/json" },
+      :body => MultiJson.dump(attributes),
+    }))
+    assert_response_code(201, response)
+
+    data = MultiJson.load(response.body)
+    assert_equal(attributes[:last_name], data["user"]["last_name"])
+  end
+
   private
 
   def non_admin_key_creator_api_key
