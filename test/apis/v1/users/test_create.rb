@@ -394,7 +394,7 @@ class Test::Apis::V1::Users::TestCreate < Minitest::Test
     assert_response_code(201, response)
 
     data = MultiJson.load(response.body)
-    assert_equal(attributes[:last_name], data["user"]["last_name"])
+    assert_equal(attributes[:email], data["user"]["email"])
   end
 
   # Test behavior that the Rails "wrap_parameters" feature has on accepting
@@ -408,7 +408,93 @@ class Test::Apis::V1::Users::TestCreate < Minitest::Test
     assert_response_code(201, response)
 
     data = MultiJson.load(response.body)
-    assert_equal(attributes[:last_name], data["user"]["last_name"])
+    assert_equal(attributes[:email], data["user"]["email"])
+  end
+
+  def test_non_wrapped_json_body_null_wrapper
+    attributes = FactoryBot.attributes_for(:api_user)
+    response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(non_admin_key_creator_api_key).deep_merge({
+      :headers => { "Content-Type" => "application/json" },
+      :body => MultiJson.dump(attributes.deep_merge("user" => nil)),
+    }))
+    assert_response_code(201, response)
+
+    data = MultiJson.load(response.body)
+    assert_equal(attributes[:email], data["user"]["email"])
+  end
+
+  def test_non_wrapped_json_body_false_wrapper
+    attributes = FactoryBot.attributes_for(:api_user)
+    response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(non_admin_key_creator_api_key).deep_merge({
+      :headers => { "Content-Type" => "application/json" },
+      :body => MultiJson.dump(attributes.deep_merge("user" => false)),
+    }))
+    assert_response_code(201, response)
+
+    data = MultiJson.load(response.body)
+    assert_equal(attributes[:email], data["user"]["email"])
+  end
+
+  def test_non_wrapped_json_body_empty_string_wrapper
+    attributes = FactoryBot.attributes_for(:api_user)
+    response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(non_admin_key_creator_api_key).deep_merge({
+      :headers => { "Content-Type" => "application/json" },
+      :body => MultiJson.dump(attributes.deep_merge(:user => "")),
+    }))
+    assert_response_code(422, response)
+  end
+
+  def test_non_wrapped_json_body_empty_hash_wrapper
+    attributes = FactoryBot.attributes_for(:api_user)
+    response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(non_admin_key_creator_api_key).deep_merge({
+      :headers => { "Content-Type" => "application/json" },
+      :body => MultiJson.dump(attributes.deep_merge(:user => {})),
+    }))
+    assert_response_code(422, response)
+  end
+
+  def test_non_wrapped_json_body_invalid_type_wrapper
+    attributes = FactoryBot.attributes_for(:api_user)
+    response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(non_admin_key_creator_api_key).deep_merge({
+      :headers => { "Content-Type" => "application/json" },
+      :body => MultiJson.dump(attributes.deep_merge(:user => 0)),
+    }))
+    assert_response_code(422, response)
+  end
+
+  def test_non_wrapped_json_body_invalid_values_wrapper
+    attributes = FactoryBot.attributes_for(:api_user)
+    response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(non_admin_key_creator_api_key).deep_merge({
+      :headers => { "Content-Type" => "application/json" },
+      :body => MultiJson.dump(attributes.deep_merge(:user => { :name => "" })),
+    }))
+    assert_response_code(422, response)
+  end
+
+  def test_conflicting_wrapped_and_non_wrapped_json_body
+    attributes1 = FactoryBot.attributes_for(:api_user)
+    attributes2 = FactoryBot.attributes_for(:api_user)
+    refute_equal(attributes1[:email], attributes2[:email])
+
+    response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(non_admin_key_creator_api_key).deep_merge({
+      :headers => { "Content-Type" => "application/json" },
+      :body => MultiJson.dump(attributes1.deep_merge(:user => attributes2)),
+    }))
+    assert_response_code(201, response)
+
+    # Pre-wrapped item should win, ignoring root attributes.
+    data = MultiJson.load(response.body)
+    assert_equal(attributes2[:email], data["user"]["email"])
+  end
+
+  # Wrapping only happens for JSON bodies.
+  def test_non_wrapped_form_encoded_body
+    attributes = FactoryBot.attributes_for(:api_user)
+    response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(non_admin_key_creator_api_key).deep_merge({
+      :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
+      :body => attributes,
+    }))
+    assert_response_code(422, response)
   end
 
   private
