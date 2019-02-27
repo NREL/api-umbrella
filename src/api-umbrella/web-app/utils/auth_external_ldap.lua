@@ -11,7 +11,7 @@ function _M.userinfo(admin_params, options)
     return json_decode(mock_userinfo())
   end
 
-  if not admin_params or is_empty(admin_params["username"]) or is_empty(admin_params["password"]) then
+  if type(admin_params) ~= "table" or is_empty(admin_params["username"]) or is_empty(admin_params["password"]) then
     return nil
   end
 

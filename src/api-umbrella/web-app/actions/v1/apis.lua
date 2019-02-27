@@ -215,7 +215,7 @@ end
 
 function _M.api_backend_params(self)
   local params = {}
-  if self.params and self.params["api"] then
+  if self.params and type(self.params["api"]) == "table" then
     local input = self.params["api"]
     params = dbify_json_nulls({
       name = input["name"],

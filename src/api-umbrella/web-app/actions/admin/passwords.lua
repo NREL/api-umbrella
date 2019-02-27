@@ -84,7 +84,7 @@ end
 
 function _M.admin_params_create(self)
   local params = {}
-  if self.params and self.params["admin"] then
+  if self.params and type(self.params["admin"]) == "table"  then
     local input = self.params["admin"]
     params = {
       email = input["email"],
@@ -96,7 +96,7 @@ end
 
 function _M.admin_params_update(self)
   local params = {}
-  if self.params and self.params["admin"] then
+  if self.params and type(self.params["admin"]) == "table" then
     local input = self.params["admin"]
     params = {
       password = input["password"],

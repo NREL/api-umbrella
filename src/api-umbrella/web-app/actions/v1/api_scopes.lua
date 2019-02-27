@@ -64,7 +64,7 @@ end
 
 function _M.api_scope_params(self)
   local params = {}
-  if self.params and self.params["api_scope"] then
+  if self.params and type(self.params["api_scope"]) == "table" then
     local input = self.params["api_scope"]
     params = dbify_json_nulls({
       name = input["name"],

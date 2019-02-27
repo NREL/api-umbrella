@@ -61,7 +61,7 @@ end
 
 function _M.website_backend_params(self)
   local params = {}
-  if self.params and self.params["website_backend"] then
+  if self.params and type(self.params["website_backend"]) == "table" then
     local input = self.params["website_backend"]
     params = dbify_json_nulls({
       frontend_host = input["frontend_host"],

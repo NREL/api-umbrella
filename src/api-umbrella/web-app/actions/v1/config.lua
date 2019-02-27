@@ -27,7 +27,7 @@ end
 function _M.publish(self)
   local api_backend_ids = {}
   local website_backend_ids = {}
-  if self.params["config"] then
+  if type(self.params["config"]) == "table" then
     get_publish_ids(self.params["config"]["apis"], api_backend_ids)
     get_publish_ids(self.params["config"]["website_backends"], website_backend_ids)
   end

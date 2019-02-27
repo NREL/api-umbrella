@@ -15,13 +15,13 @@ local _M = {}
 
 local function send_invite_email(self, admin)
   local send_email = false
-  if self.params and self.params["options"] and tostring(self.params["options"]["send_invite_email"]) == "true" then
+  if self.params and type(self.params["options"]) == "table" and tostring(self.params["options"]["send_invite_email"]) == "true" then
     send_email = true
   end
 
   -- For the admin tool, it's easier to have this attribute on the user model,
   -- rather than options.
-  if not send_email and self.params and self.params["admin"] and tostring(self.params["admin"]["send_invite_email"]) == "true" then
+  if not send_email and self.params and type(self.params["admin"]) == "table" and tostring(self.params["admin"]["send_invite_email"]) == "true" then
     send_email = true
   end
 
@@ -107,7 +107,7 @@ end
 
 function _M.admin_params(self)
   local params = {}
-  if self.params and self.params["admin"] then
+  if self.params and type(self.params["admin"]) == "table" then
     local input = self.params["admin"]
     params = dbify_json_nulls({
       username = input["username"],

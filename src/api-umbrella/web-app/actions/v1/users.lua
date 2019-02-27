@@ -26,7 +26,7 @@ local _M = {}
 
 local function send_admin_notification_email(self, api_user)
   local send_email = false
-  if self.params and self.params["options"] and self.params["options"]["send_notify_email"] == "true" then
+  if self.params and type(self.params["options"]) == "table" and self.params["options"]["send_notify_email"] == "true" then
     send_email = true
   end
 
@@ -46,7 +46,7 @@ end
 
 local function send_welcome_email(self, api_user)
   local send_email = false
-  if self.params and self.params["options"] and tostring(self.params["options"]["send_welcome_email"]) == "true" then
+  if self.params and type(self.params["options"]) == "table" and tostring(self.params["options"]["send_welcome_email"]) == "true" then
     send_email = true
   end
 
@@ -54,7 +54,7 @@ local function send_welcome_email(self, api_user)
   -- rather than options, so check there for whether we should send e-mail.
   -- Also note that for backwards compatibility, we only check for the presence
   -- of this attribute, and not it's actual value.
-  if not send_email and self.params and self.params["user"] and self.params["user"]["send_welcome_email"] then
+  if not send_email and self.params and type(self.params["user"]) == "table" and self.params["user"]["send_welcome_email"] then
     send_email = true
   end
 
@@ -125,14 +125,14 @@ function _M.create(self)
   user_params["registration_user_agent"] = request_headers["user-agent"]
   user_params["registration_referer"] = request_headers["referer"]
   user_params["registration_origin"] = request_headers["origin"]
-  if self.params and self.params["user"] and type(self.params["user"]["registration_source"]) == "string" and self.params["user"]["registration_source"] ~= "" then
+  if self.params and type(self.params["user"]) == "table" and type(self.params["user"]["registration_source"]) == "string" and self.params["user"]["registration_source"] ~= "" then
     user_params["registration_source"] = self.params["user"]["registration_source"]
   else
     user_params["registration_source"] = "api"
   end
 
   local verify_email = false
-  if self.params and self.params["options"] and tostring(self.params["options"]["verify_email"]) == "true" then
+  if self.params and type(self.params["options"]) == "table" and tostring(self.params["options"]["verify_email"]) == "true" then
     verify_email = true
   end
 
@@ -211,7 +211,7 @@ end
 
 function _M.api_user_params(self)
   local params = {}
-  if self.params and self.params["user"] then
+  if self.params and type(self.params["user"]) == "table" then
     local input = self.params["user"]
     params = dbify_json_nulls({
       email = input["email"],

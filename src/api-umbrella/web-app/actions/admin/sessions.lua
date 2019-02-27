@@ -184,7 +184,7 @@ end
 
 function _M.admin_params(self)
   local params = {}
-  if self.params and self.params["admin"] then
+  if self.params and type(self.params["admin"]) == "table" then
     local input = self.params["admin"]
     params = {
       username = input["username"],

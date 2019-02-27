@@ -65,7 +65,7 @@ end
 
 function _M.admin_group_params(self)
   local params = {}
-  if self.params and self.params["admin_group"] then
+  if self.params and type(self.params["admin_group"]) == "table" then
     local input = self.params["admin_group"]
     params = dbify_json_nulls({
       name = input["name"],

@@ -18,7 +18,7 @@ end
 
 function _M.contact_params(self)
   local params = {}
-  if self.params and self.params["contact"] then
+  if self.params and type(self.params["contact"]) == "table" then
     local input = self.params["contact"]
     params = nillify_json_nulls({
       name = input["name"],
