@@ -185,6 +185,7 @@ local function flush_bulk_commands()
       if args["debug"] then
         io.write(string.char(27) .. "[31m" .. string.char(27) .. "[1m✖" .. string.char(27) .. "[0m")
       end
+      print(inspect(item))
       error_count = error_count + 1
     end
   end
@@ -379,6 +380,18 @@ local function search_day(date_start, date_end)
   local input_index = "api-umbrella-logs-v1-" .. date_start:format(icu_date.formats.pattern("yyyy-MM"))
   local output_index_date = date_start:format(icu_date.formats.pattern("yyyy-MM-dd"))
   local output_index = "api-umbrella-logs-v2-" .. output_index_date
+
+  -- Also query the index for the day before and after to deal with some legacy
+  -- data, where the data wasn't in the right date-based index (around month
+  -- changes).
+  local date_buffer = icu_date.new()
+  date_buffer:set_millis(date_start:get_millis())
+  date_buffer:add(icu_date.fields.DATE, -1)
+  input_index = input_index .. ",api-umbrella-logs-v1-" .. date_buffer:format(icu_date.formats.pattern("yyyy-MM"))
+
+  date_buffer:set_millis(date_start:get_millis())
+  date_buffer:add(icu_date.fields.DATE, 1)
+  input_index = input_index .. ",api-umbrella-logs-v1-" .. date_buffer:format(icu_date.formats.pattern("yyyy-MM"))
 
   local res, err = elasticsearch_query("/" .. input_index .. "/log/_search", {
     server = args["_input_server"],
