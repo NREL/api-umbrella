@@ -24,22 +24,22 @@ class Test::Apis::V1::Apis::TestIndex < Minitest::Test
   end
 
   def test_search_server_hosts
-    assert_data_tables_search(:servers, [FactoryBot.build(:api_server, :host => "/#{unique_test_id}-server-host")], "#{unique_test_id}-server")
+    assert_data_tables_search(:servers, [FactoryBot.build(:api_backend_server, :host => "/#{unique_test_id}-server-host")], "#{unique_test_id}-server")
   end
 
   def test_search_url_match_frontend_prefixes
-    assert_data_tables_search(:url_matches, [FactoryBot.build(:api_url_match, :frontend_prefix => "/#{unique_test_id}-frontend-host")], "#{unique_test_id}-frontend")
+    assert_data_tables_search(:url_matches, [FactoryBot.build(:api_backend_url_match, :frontend_prefix => "/#{unique_test_id}-frontend-host")], "#{unique_test_id}-frontend")
   end
 
   def test_search_url_match_backend_prefixes
-    assert_data_tables_search(:url_matches, [FactoryBot.build(:api_url_match, :backend_prefix => "/#{unique_test_id}-backend-prefix")], "#{unique_test_id}-backend")
+    assert_data_tables_search(:url_matches, [FactoryBot.build(:api_backend_url_match, :backend_prefix => "/#{unique_test_id}-backend-prefix")], "#{unique_test_id}-backend")
   end
 
   def test_search_counts_with_url_match_joins
     assert_data_tables_search(:url_matches, [
-      FactoryBot.build(:api_url_match, :frontend_prefix => "/#{unique_test_id}-prefix1"),
-      FactoryBot.build(:api_url_match, :frontend_prefix => "/#{unique_test_id}-prefix2"),
-      FactoryBot.build(:api_url_match, :frontend_prefix => "/#{unique_test_id}-prefix3"),
+      FactoryBot.build(:api_backend_url_match, :frontend_prefix => "/#{unique_test_id}-prefix1"),
+      FactoryBot.build(:api_backend_url_match, :frontend_prefix => "/#{unique_test_id}-prefix2"),
+      FactoryBot.build(:api_backend_url_match, :frontend_prefix => "/#{unique_test_id}-prefix3"),
     ], "#{unique_test_id}-prefix")
   end
 

@@ -237,7 +237,7 @@ function _M.index(self, model, options)
 
   -- Total count before applying limits.
   sql = sql .. build_sql_where(query["where"])
-  local total_count = model:select(sql, { fields = "COUNT(*) AS c", load = false })[1]["c"]
+  local total_count = model:select(sql, { fields = "COUNT(DISTINCT " .. escaped_table_name .. ".id) AS c", load = false })[1]["c"]
 
   -- Order
   if not is_empty(self.params["order"]) then

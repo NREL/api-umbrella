@@ -175,7 +175,7 @@ module ApiUmbrellaSharedTests
 
       # Ensure the full value can be found.
       first_value = if(value.kind_of?(Array)) then value.first else value end
-      unless first_value.kind_of?(Mongoid::Document)
+      unless first_value.kind_of?(ActiveRecord::Base)
         assert_wildcard_search_match(field, value, first_value, record)
       end
 
