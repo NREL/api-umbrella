@@ -12,6 +12,21 @@ local wrapped_json_params = require "api-umbrella.web-app.utils.wrapped_json_par
 local _M = {}
 
 function _M.index(self)
+  if not self.params["order"] and not self.params["columns"] then
+    self.params["columns"] = {
+      ["0"] = {
+        data = "name",
+      }
+    }
+
+    self.params["order"] = {
+      ["0"] = {
+        column = "0",
+        dir = "asc",
+      },
+    }
+  end
+
   return datatables.index(self, ApiScope, {
     where = {
       api_scope_policy.authorized_query_scope(self.current_admin),
