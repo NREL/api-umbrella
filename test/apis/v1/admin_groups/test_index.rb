@@ -123,6 +123,22 @@ class Test::Apis::V1::AdminGroups::TestIndex < Minitest::Test
     assert_data_tables_order(:name, ["A", "B"])
   end
 
+  def test_default_order_by_name
+    admin_group1 = FactoryBot.create(:admin_group, :name => "A")
+    admin_group4 = FactoryBot.create(:admin_group, :name => "Z")
+    admin_group2 = FactoryBot.create(:admin_group, :name => "B")
+    admin_group3 = FactoryBot.create(:admin_group, :name => "Y")
+
+    response = Typhoeus.get(data_tables_api_url, http_options.deep_merge(admin_token))
+    assert_response_code(200, response)
+    data = MultiJson.load(response.body)
+
+    assert_equal(admin_group1.name, data.fetch("data")[0].fetch("name"))
+    assert_equal(admin_group2.name, data.fetch("data")[1].fetch("name"))
+    assert_equal(admin_group3.name, data.fetch("data")[2].fetch("name"))
+    assert_equal(admin_group4.name, data.fetch("data")[3].fetch("name"))
+  end
+
   private
 
   def data_tables_api_url
