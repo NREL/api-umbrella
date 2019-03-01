@@ -174,10 +174,9 @@ module ApiUmbrellaSharedTests
       assert_wildcard_search_match(field, value, search.upcase, record)
 
       # Ensure the full value can be found.
-      if(value.kind_of?(Array))
-        assert_wildcard_search_match(field, value, value.first, record)
-      else
-        assert_wildcard_search_match(field, value, value, record)
+      first_value = if(value.kind_of?(Array)) then value.first else value end
+      unless first_value.kind_of?(Mongoid::Document)
+        assert_wildcard_search_match(field, value, first_value, record)
       end
 
       # Ensure that extra characters surrounding the search lead to no results.

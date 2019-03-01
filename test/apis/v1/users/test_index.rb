@@ -191,6 +191,10 @@ class Test::Apis::V1::Users::TestIndex < Minitest::Test
     assert_data_tables_search(:roles, ["RoleSearchTest1", "RoleSearchTest2", "RoleSearchTest33"], "olesearchtest3")
   end
 
+  def test_search_counts_with_role_joins
+    assert_data_tables_search(:roles, ["#{unique_test_id}-role1", "#{unique_test_id}-role2", "#{unique_test_id}-role3"], "#{unique_test_id}-role")
+  end
+
   def test_order_email
     assert_data_tables_order(:email, ["a@example.com", "b@example.com"])
   end

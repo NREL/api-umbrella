@@ -90,6 +90,22 @@ class Test::Apis::V1::ApiScopes::TestIndex < Minitest::Test
     assert_data_tables_order(:path_prefix, ["/a", "/b"])
   end
 
+  def test_default_order_by_name
+    api_scope1 = FactoryBot.create(:api_scope, :name => "A")
+    api_scope4 = FactoryBot.create(:api_scope, :name => "Z")
+    api_scope2 = FactoryBot.create(:api_scope, :name => "B")
+    api_scope3 = FactoryBot.create(:api_scope, :name => "Y")
+
+    response = Typhoeus.get(data_tables_api_url, http_options.deep_merge(admin_token))
+    assert_response_code(200, response)
+    data = MultiJson.load(response.body)
+
+    assert_equal(api_scope1.name, data.fetch("data")[0].fetch("name"))
+    assert_equal(api_scope2.name, data.fetch("data")[1].fetch("name"))
+    assert_equal(api_scope3.name, data.fetch("data")[2].fetch("name"))
+    assert_equal(api_scope4.name, data.fetch("data")[3].fetch("name"))
+  end
+
   private
 
   def data_tables_api_url
