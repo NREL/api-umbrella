@@ -48,6 +48,7 @@ ruleset(name="analytics-ruleset" queue.type="FixedArray" queue.size="5000") {
 
   input(type="imfile" file="{{log_dir}}/trafficserver/access.log" tag="trafficserver-access" ruleset="logs-ruleset")
   input(type="imfile" file="{{log_dir}}/trafficserver/diags.log" tag="trafficserver-diags" ruleset="logs-ruleset")
+  input(type="imfile" file="{{log_dir}}/trafficserver/error.log" tag="trafficserver-error" ruleset="logs-ruleset")
   input(type="imfile" file="{{log_dir}}/trafficserver/manager.log" tag="trafficserver-manager" ruleset="logs-ruleset")
   input(type="imfile" file="{{log_dir}}/trafficserver/traffic.out" tag="trafficserver-out" ruleset="logs-ruleset")
 {{/log._destination_console?}}
