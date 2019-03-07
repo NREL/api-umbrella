@@ -10,6 +10,8 @@ pipeline {
 
   environment {
     CI = "true"
+    HTTP_PORT = 9080
+    HTTPS_PORT = 9081
   }
 
   stages {
