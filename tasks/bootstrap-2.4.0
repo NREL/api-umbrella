@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-task_version="2.3.0"
-task_hash="734507e36ab6c03fa3a10560d1fc7d4d5d943650acbd4635b35a40bd05821b13"
+task_version="2.4.0"
+task_hash="ddc7261f55d3059d0e7d0c0a2b9be7fb5023532cf6c897f9dcf1fdf090c7cc28"
 
 set -e -u -x
 source ./tasks/helpers.sh
