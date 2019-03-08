@@ -39,7 +39,7 @@ patch -p1 < "$SOURCE_DIR/build/patches/openresty-cli.patch"
   --with-openssl="../openssl-$openssl_version" \
   --with-pcre="../pcre-$pcre_version" \
   --with-pcre-opt=-g \
-  --with-pcre-conf-opt=--enable-unicode-properties \
+  --with-pcre-conf-opt="--disable-cpp --enable-jit --enable-utf --enable-unicode-properties" \
   --with-pcre-jit \
   --with-http_gunzip_module \
   --with-http_gzip_static_module \
