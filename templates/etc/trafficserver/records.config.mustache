@@ -53,8 +53,8 @@ CONFIG proxy.config.diags.output.emergency STRING E
 # Rotate log files with logrotate to be consistent with all the other API
 # Umbrella components.
 CONFIG proxy.config.log.rolling_enabled INT 0
-CONFIG proxy.config.diags.rolling_enabled INT 0
-CONFIG proxy.config.output.rolling_enabled INT 0
+CONFIG proxy.config.diags.logfile.rolling_enabled INT 0
+CONFIG proxy.config.output.logfile.rolling_enabled INT 0
 {{/log._destination_console?}}
 {{#log._destination_console?}}
 # If outputting to stdout, Trafficserver logs are some we can't easily output
