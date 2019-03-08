@@ -1,10 +1,10 @@
 [![CircleCI](https://circleci.com/gh/NREL/api-umbrella.svg?style=svg)](https://circleci.com/gh/NREL/api-umbrella) [![Dependency Status](https://gemnasium.com/badges/github.com/NREL/api-umbrella.svg)](https://gemnasium.com/github.com/NREL/api-umbrella)
 
-# API Umbrella
+# APInf Umbrella
 
-## What Is API Umbrella?
+## What Is APnfI Umbrella?
 
-API Umbrella is an open source API management platform for exposing web service APIs. The basic goal of API Umbrella is to make life easier for both API creators and API consumers. How?
+APInf Umbrella is an open source API management platform (forked from NREL api umbrella) for exposing web service APIs. The basic goal of API Umbrella is to make life easier for both API creators and API consumers. How?
 
 * **Make life easier for API creators:** Allow API creators to focus on building APIs.
   * **Standardize the boring stuff:** APIs can assume the boring stuff (access control, rate limiting, analytics, etc.) is already taken care if the API is being accessed, so common functionality doesn't need to be implemented in the API code.
@@ -21,9 +21,9 @@ Binary packages are available for [download](https://apiumbrella.io/install/). F
 
 ## Getting Started
 
-Once you have API Umbrella up and running, there are a variety of things you can do to start using the platform. For a quick tutorial, see [getting started](https://api-umbrella.readthedocs.org/en/latest/getting-started.html).
+Once you have APInf Umbrella up and running, there are a variety of things you can do to start using the platform. For a quick tutorial, see [getting started](https://api-umbrella.readthedocs.org/en/latest/getting-started.html).
 
-## API Umbrella Development
+## APInf Umbrella Development
 
 Are you interested in working on the code behind API Umbrella? See our [development setup guide](https://api-umbrella.readthedocs.org/en/latest/developer/dev-setup.html) to see how you can get a local development environment setup.
 
@@ -36,4 +36,4 @@ Are you using API Umbrella? [Edit this file](https://github.com/NREL/api-umbrell
 
 ## License
 
-API Umbrella is open sourced under the [MIT license](https://github.com/NREL/api-umbrella/blob/master/LICENSE.txt).
+APInf Umbrella is open sourced under the [MIT license](https://github.com/apinf/api-umbrella/blob/master/LICENSE.txt).
