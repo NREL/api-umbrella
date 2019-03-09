@@ -22,9 +22,6 @@ Layout/AlignHash:
 Layout/AlignParameters:
   EnforcedStyle: with_fixed_indentation
 
-Layout/BlockAlignment:
-  EnforcedStyleAlignWith: start_of_line
-
 Layout/CaseIndentation:
   EnforcedStyle: end
 
