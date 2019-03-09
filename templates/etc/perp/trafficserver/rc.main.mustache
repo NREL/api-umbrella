@@ -23,7 +23,7 @@ if [ "${1}" = "start" ]; then
     chown $api_umbrella_user:$api_umbrella_group "${dirs[@]}" "{{etc_dir}}/trafficserver/"*
   fi
 
-  exec runtool ${run_args[@]+"${run_args[@]}"} traffic_cop --stdout
+  exec runtool ${run_args[@]+"${run_args[@]}"} traffic_manager --nosyslog
 fi
 
 exit 0

@@ -159,7 +159,6 @@ class OutdatedPackages
     },
     "trafficserver" => {
       :git => "https://github.com/apache/trafficserver.git",
-      :constraint => "~> 7.1",
     },
     "unbound" => {
       :http => "https://nlnetlabs.nl/projects/unbound/download/",

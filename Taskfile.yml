@@ -207,9 +207,12 @@ tasks:
     method: checksum
 
   deps:trafficserver:
+    deps:
+      - deps:openresty
     cmds:
       - ./tasks/deps/trafficserver
     sources:
+      - ./build/work/stamp/deps/openresty
       - ./tasks/deps/trafficserver
       - ./tasks/helpers.sh
     generates:
