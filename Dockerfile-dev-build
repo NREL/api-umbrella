@@ -1,4 +1,4 @@
-FROM ubuntu:16.04 AS build
+FROM ubuntu:18.04 AS build
 
 RUN mkdir -p /app/build /build/.task /build/build/work
 RUN ln -snf /build/.task /app/.task
@@ -45,7 +45,7 @@ RUN make && make clean:dev
 
 RUN rm -rf build/work/tasks
 
-FROM ubuntu:16.04
+FROM ubuntu:18.04
 
 COPY --from=build /app /app
 COPY --from=build /build /build

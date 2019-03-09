@@ -1,4 +1,4 @@
-FROM ubuntu:16.04 AS build
+FROM ubuntu:18.04 AS build
 
 RUN mkdir -p /app/build /build/.task /build/build/work
 RUN ln -snf /build/.task /app/.task
@@ -39,7 +39,7 @@ COPY . /app
 RUN make && make clean:dev
 RUN make install DESTDIR="/build/install-destdir"
 
-FROM ubuntu:16.04
+FROM ubuntu:18.04
 
 COPY --from=build /build/install-destdir /
 COPY --from=build /app/build/package_dependencies.sh /tmp/install/package_dependencies.sh
