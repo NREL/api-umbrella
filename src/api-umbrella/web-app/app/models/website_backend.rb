@@ -22,7 +22,7 @@ class WebsiteBackend
       :message => :invalid_host_format,
     }
   validates :backend_protocol,
-    :inclusion => { :in => %w(http https) }
+    :inclusion => { :in => ["http", "https"] }
   validates :server_host,
     :presence => true,
     :format => {

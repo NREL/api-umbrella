@@ -1,10 +1,10 @@
 object @api_scope
 attributes :id,
-           :name,
-           :host,
-           :path_prefix,
-           :created_at,
-           :updated_at
+  :name,
+  :host,
+  :path_prefix,
+  :created_at,
+  :updated_at
 
 child :creator => :creator do
   attributes :username

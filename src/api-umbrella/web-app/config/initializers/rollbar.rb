@@ -9,7 +9,7 @@ if(ApiUmbrellaConfig[:rollbar] && ApiUmbrellaConfig[:rollbar][:web_token].presen
     config.access_token = ApiUmbrellaConfig[:rollbar][:web_token]
 
     # Here we'll disable in 'test':
-    if(%w(test development).include?(Rails.env))
+    if(["test", "development"].include?(Rails.env))
       config.enabled = false
     end
 
@@ -60,6 +60,6 @@ if(ApiUmbrellaConfig[:rollbar] && ApiUmbrellaConfig[:rollbar][:web_token].presen
     # environment variable like this: `ROLLBAR_ENV=staging`. This is a recommended
     # setup for Heroku. See:
     # https://devcenter.heroku.com/articles/deploying-to-a-custom-rails-environment
-    config.environment = ENV['ROLLBAR_ENV'] || Rails.env
+    config.environment = ENV["ROLLBAR_ENV"] || Rails.env
   end
 end

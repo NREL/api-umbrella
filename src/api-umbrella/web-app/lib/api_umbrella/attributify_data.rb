@@ -46,7 +46,7 @@ module ApiUmbrella
       attributify_settings!(data, old_data)
 
       if(self.class == ::Api)
-        %w(servers url_matches sub_settings rewrites).each do |collection_name|
+        ["servers", "url_matches", "sub_settings", "rewrites"].each do |collection_name|
           attributify_embeds_many!(data, collection_name, old_data)
         end
       end
@@ -62,7 +62,7 @@ module ApiUmbrella
 
       attributify_embeds_many!(settings_data, "rate_limits", old_settings_data)
       if(self.class == ::Api)
-        %w(headers default_response_headers override_response_headers).each do |collection_name|
+        ["headers", "default_response_headers", "override_response_headers"].each do |collection_name|
           # The header associations are a bit different, since they accept
           # either an array of nested attributes (like other nested object
           # types), or a new-line delimited string. However, both cannot be set

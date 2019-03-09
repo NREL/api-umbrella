@@ -12,7 +12,7 @@ class Api::SubSettings
 
   # Validations
   validates :http_method,
-    :inclusion => { :in => %w(any GET POST PUT DELETE HEAD TRACE OPTIONS CONNECT PATCH) }
+    :inclusion => { :in => ["any", "GET", "POST", "PUT", "DELETE", "HEAD", "TRACE", "OPTIONS", "CONNECT", "PATCH"] }
   validates :regex,
     :presence => true
 

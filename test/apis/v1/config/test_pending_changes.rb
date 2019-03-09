@@ -48,7 +48,7 @@ class Test::Apis::V1::Config::TestPendingChanges < Minitest::Test
     assert_response_code(200, response)
     data = MultiJson.load(response.body)
     api_data = data["config"]["apis"]["new"].first
-    %w(_id version created_by created_at updated_at updated_by).each do |field|
+    ["_id", "version", "created_by", "created_at", "updated_at", "updated_by"].each do |field|
       assert_equal(true, api_data["pending"][field].present?)
       refute_includes(api_data["pending_yaml"], field)
     end

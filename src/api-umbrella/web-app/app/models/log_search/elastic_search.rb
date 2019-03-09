@@ -1,4 +1,4 @@
-require('json')
+require("json")
 
 class LogSearch::ElasticSearch < LogSearch::Base
   attr_reader :client

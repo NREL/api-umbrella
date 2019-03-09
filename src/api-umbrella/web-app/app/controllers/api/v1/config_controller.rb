@@ -20,11 +20,11 @@ class Api::V1::ConfigController < Api::V1::BaseController
         next unless(record_params[:publish].to_s == "1")
 
         record = case(category)
-                 when "apis"
-                   Api.unscoped.find(record_id)
-                 when "website_backends"
-                   WebsiteBackend.unscoped.find(record_id)
-                 end
+        when "apis"
+          Api.unscoped.find(record_id)
+        when "website_backends"
+          WebsiteBackend.unscoped.find(record_id)
+        end
 
         authorize(record, :publish?)
         changes = true

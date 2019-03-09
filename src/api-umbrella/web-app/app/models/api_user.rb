@@ -150,7 +150,7 @@ class ApiUser
   def normalize_terms_and_conditions
     # Handle the acceptance validation regardless of if it comes from the JSON
     # api (true values) or from an HTML form ('1' values).
-    self.terms_and_conditions = (self.terms_and_conditions == true || self.terms_and_conditions == '1')
+    self.terms_and_conditions = (self.terms_and_conditions == true || self.terms_and_conditions == "1")
     true
   end
 

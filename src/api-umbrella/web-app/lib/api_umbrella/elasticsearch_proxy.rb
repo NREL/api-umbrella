@@ -19,7 +19,7 @@ module ApiUmbrella
 
     def rewrite_env(env)
       # Rewrite /admin/elasticsearch to /
-      %w(SCRIPT_NAME REQUEST_PATH REQUEST_URI).each do |key|
+      ["SCRIPT_NAME", "REQUEST_PATH", "REQUEST_URI"].each do |key|
         if(env[key].present?)
           env[key].gsub!(/^#{PREFIX}/, "")
         end

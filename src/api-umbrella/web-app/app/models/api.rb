@@ -34,7 +34,7 @@ class Api
   validates :name,
     :presence => true
   validates :backend_protocol,
-    :inclusion => { :in => %w(http https) }
+    :inclusion => { :in => ["http", "https"] }
   validates :frontend_host,
     :presence => true,
     :format => {
@@ -51,7 +51,7 @@ class Api
     },
     :if => proc { |record| record.backend_host.present? }
   validates :balance_algorithm,
-    :inclusion => { :in => %w(round_robin least_conn ip_hash) }
+    :inclusion => { :in => ["round_robin", "least_conn", "ip_hash"] }
   validates_each :servers, :url_matches do |record, attr, value|
     if(value.blank? || (value && value.reject(&:marked_for_destruction?).blank?))
       record.errors.add(:base, "must have at least one #{attr}")

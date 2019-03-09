@@ -33,15 +33,15 @@ class Api::Settings
 
   # Validations
   validates :require_https,
-    :inclusion => { :in => %w(required_return_error transition_return_error optional), :allow_blank => true }
+    :inclusion => { :in => ["required_return_error", "transition_return_error", "optional"], :allow_blank => true }
   validates :api_key_verification_level,
-    :inclusion => { :in => %w(none transition_email required_email), :allow_blank => true }
+    :inclusion => { :in => ["none", "transition_email", "required_email"], :allow_blank => true }
   validates :rate_limit_mode,
-    :inclusion => { :in => %w(unlimited custom), :allow_blank => true }
+    :inclusion => { :in => ["unlimited", "custom"], :allow_blank => true }
   validates :anonymous_rate_limit_behavior,
-    :inclusion => { :in => %w(ip_fallback ip_only), :allow_blank => true }
+    :inclusion => { :in => ["ip_fallback", "ip_only"], :allow_blank => true }
   validates :authenticated_rate_limit_behavior,
-    :inclusion => { :in => %w(all api_key_only), :allow_blank => true }
+    :inclusion => { :in => ["all", "api_key_only"], :allow_blank => true }
   validate :validate_error_data_yaml_strings
   validate :validate_error_data
 

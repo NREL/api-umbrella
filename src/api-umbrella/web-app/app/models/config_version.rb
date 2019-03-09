@@ -63,11 +63,11 @@ class ConfigVersion
       # Grab all APIs, including "deleted" ones so we can determine what API
       # deletions still need to be published.
       pending_records = case(category)
-                        when "apis"
-                          Api.unscoped
-                        when "website_backends"
-                          WebsiteBackend.unscoped
-                        end
+      when "apis"
+        Api.unscoped
+      when "website_backends"
+        WebsiteBackend.unscoped
+      end
 
       if(current_admin)
         if(category == "website_backends")
@@ -135,11 +135,11 @@ class ConfigVersion
         mode_changes.each do |change|
           change["id"] = if(change["pending"]) then change["pending"]["_id"] else change["active"]["_id"] end
           change["name"] = case(category)
-                           when "apis"
-                             if(change["pending"]) then change["pending"]["name"] else change["active"]["name"] end
-                           when "website_backends"
-                             if(change["pending"]) then change["pending"]["frontend_host"] else change["active"]["frontend_host"] end
-                           end
+          when "apis"
+            if(change["pending"]) then change["pending"]["name"] else change["active"]["name"] end
+          when "website_backends"
+            if(change["pending"]) then change["pending"]["frontend_host"] else change["active"]["frontend_host"] end
+          end
           change["active_yaml"] = pretty_dump(change["active"])
           change["pending_yaml"] = pretty_dump(change["pending"])
         end
@@ -208,9 +208,8 @@ class ConfigVersion
 
   def self.sort_hash_by_keys(object)
     if(object.kind_of?(Hash))
-      object.keys.sort_by(&:to_s).reduce({}) do |sorted, key|
+      object.keys.sort_by(&:to_s).each_with_object({}) do |key, sorted|
         sorted[key] = sort_hash_by_keys(object[key])
-        sorted
       end
     elsif(object.kind_of?(Array))
       object.map do |item|

@@ -9,9 +9,9 @@
 # https://middlemanapp.com/basics/layouts/
 
 # Per-page layout changes
-page '/*.xml', :layout => false
-page '/*.json', :layout => false
-page '/*.txt', :layout => false
+page "/*.xml", :layout => false
+page "/*.json", :layout => false
+page "/*.txt", :layout => false
 
 # With alternative layout
 # page '/path/to/file.html', layout: 'other_layout'
@@ -45,10 +45,10 @@ page '/*.txt', :layout => false
 #   activate :minify_javascript
 # end
 
-set :css_dir, 'stylesheets'
-set :js_dir, 'javascripts'
-set :fonts_dir, 'fonts'
-set :images_dir, 'images'
+set :css_dir, "stylesheets"
+set :js_dir, "javascripts"
+set :fonts_dir, "fonts"
+set :images_dir, "images"
 
 # Build-specific configuration
 configure :build do
@@ -74,8 +74,8 @@ activate :directory_indexes
 
 set :markdown_engine, :kramdown
 set :markdown, {
-  :input => 'GFM',
-  :smart_quotes => ['apos', 'apos', 'quot', 'quot'],
+  :input => "GFM",
+  :smart_quotes => ["apos", "apos", "quot", "quot"],
 }
 
 redirect "docs/admin-api.html", :to => "https://api-umbrella.readthedocs.org/en/latest/admin/api.html"

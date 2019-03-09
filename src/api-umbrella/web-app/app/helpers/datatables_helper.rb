@@ -21,9 +21,9 @@ module DatatablesHelper
   # convert from ?param[0]=a&param[1]=b to ?param[]=a&param[]=b
   def param_index_array(key)
     as_array = []
-    if params[key].is_a?(Array)
+    if params[key].kind_of?(Array)
       as_array = params[key]
-    elsif params[key].is_a?(Hash)
+    elsif params[key].kind_of?(Hash)
       indexes = params[key].keys.sort_by { |k| k.to_i }
       indexes.each do |index|
         as_array << params[key][index]
@@ -40,7 +40,7 @@ module DatatablesHelper
     columns = columns.select { |col| col[:data] }
     columns.map do |col|
       {
-        :name => (col[:name] || '-').to_s,
+        :name => (col[:name] || "-").to_s,
         :field => col[:data].to_s,
       }
     end
@@ -53,7 +53,7 @@ module DatatablesHelper
       csv << columns.map { |c| c[:name] }
       results.each do |result|
         result = requested_fields.map { |field| result[field] }
-        result = result.map { |cell| cell.is_a?(Array) ? cell.join(",") : cell }
+        result = result.map { |cell| cell.kind_of?(Array) ? cell.join(",") : cell }
         csv << result
       end
     end

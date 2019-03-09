@@ -5,7 +5,7 @@ Rails.application.routes.draw do
   get "/_web-app-health", :to => proc { [200, {}, ["OK"]] }
 
   # Mount the API at both /api/ and /api-umbrella/ for backwards compatibility.
-  %w(api api-umbrella).each do |path|
+  ["api", "api-umbrella"].each do |path|
     namespace(:api, :path => path) do
       resources :api_users, :path => "api-users" do
         member do
@@ -107,7 +107,7 @@ Rails.application.routes.draw do
   # Add an endpoint for admin-ui to hit to return server-side data to share
   # with the client side. This consists of shared locale data, locale
   # detection, and some shared validations.
-  get "/admin/server_side_loader.js", :to => proc { |env|
+  get "/admin/server_side_loader.js", :to => proc do |env|
     # Detect the user's language based on their Accept-Language HTTP header.
     locale = (env["http_accept_language.parser"].language_region_compatible_from(I18n.available_locales) || I18n.default_locale).to_s
 
@@ -155,7 +155,7 @@ Rails.application.routes.draw do
         script,
       ],
     ]
-  }
+  end
 
   # Add a dummy /admin/ route. This URL actually gets routed to the Ember.js
   # app, not the Rails app, but we create this dummy route so we have the Rails

@@ -1,4 +1,4 @@
-require File.expand_path('boot', __dir__)
+require File.expand_path("boot", __dir__)
 
 require "action_controller/railtie"
 require "action_view/railtie"
@@ -45,13 +45,13 @@ module ApiUmbrella
       # default runtime config file, then fall back to the default.yml file at
       # the top-level of the api-umbrella repo.
       if(config_files.blank?)
-        config_files << File.expand_path('../../../../config/default.yml', __dir__)
+        config_files << File.expand_path("../../../../config/default.yml", __dir__)
 
         if(Rails.env.test?)
           if(ENV["API_UMBRELLA_CONFIG"].present?)
             config_files += ENV["API_UMBRELLA_CONFIG"].split(":")
           else
-            config_files << File.expand_path('../../../../test/config/test.yml', __dir__)
+            config_files << File.expand_path("../../../../test/config/test.yml", __dir__)
           end
         end
       end

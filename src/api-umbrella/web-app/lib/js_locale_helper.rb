@@ -5,7 +5,7 @@ module JsLocaleHelper
         if(value.kind_of?(String))
           if(key =~ /_markdown$/)
             # Parse as github-flavored markdown.
-            data[key] = Kramdown::Document.new(value, :input => 'GFM').to_html
+            data[key] = Kramdown::Document.new(value, :input => "GFM").to_html
           end
         else
           data[key] = markdown!(value)
