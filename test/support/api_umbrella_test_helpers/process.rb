@@ -242,11 +242,25 @@ module ApiUmbrellaTestHelpers
     end
 
     def perp_pid(service_name)
-      output, _status = run_shell("perpstat", "-b", File.join($config["root_dir"], "etc/perp"), service_name)
-      matches = output.match(/^\s*main: up .*\(pid (\d+)\)\s*$/)
       pid = nil
-      if matches
-        pid = matches[1]
+      begin
+        # If api-umbrella is actively being reloaded, then the "perphup" signal
+        # sent to perp may temporarily result in perpstat not thinking services
+        # are activated until the reload has finished (so no pids will be
+        # returned). So retry fetching the pids for a while to account for this
+        # timing edge-case while reloads are being tested.
+        Timeout.timeout(5) do
+          loop do
+            output, _status = run_shell("perpstat", "-b", File.join($config["root_dir"], "etc/perp"), service_name)
+            matches = output.match(/^\s*main: up .*\(pid (\d+)\)\s*$/)
+            if matches
+              pid = matches[1]
+              break
+            end
+          end
+        end
+      rescue Timeout::Error # rubocop:disable Lint/HandleExceptions
+        # Ignore and return nil pid.
       end
 
       pid

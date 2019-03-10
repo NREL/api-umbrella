@@ -10,6 +10,7 @@ local run_command = require "api-umbrella.utils.run_command"
 local stat = require "posix.sys.stat"
 local tablex = require "pl.tablex"
 local unistd = require "posix.unistd"
+local xpcall_error_handler = require "api-umbrella.utils.xpcall_error_handler"
 
 local chmod = stat.chmod
 local chown = unistd.chown
@@ -142,6 +143,18 @@ local function ensure_geoip_db()
   end
 end
 
+local function set_template_permissions(file_path, install_filename)
+  if config["group"] then
+    chown(file_path, nil, config["group"])
+  end
+
+  if install_filename == "rc.log" or install_filename == "rc.main" or install_filename == "rc.perp" then
+    chmod(file_path, tonumber("0750", 8))
+  else
+    chmod(file_path, tonumber("0640", 8))
+  end
+end
+
 local function write_templates()
   local template_root = path.join(config["_src_root_dir"], "templates/etc")
   for root, _, files in dir.walk(template_root) do
@@ -176,17 +189,27 @@ local function write_templates()
           content = lustache:render(mustache_unescape(content), config)
         end
 
-        dir.makepath(path.dirname(install_path))
-        file.write(install_path, content)
-        if config["group"] then
-          chown(install_path, nil, config["group"])
-        end
-
         local install_filename = path.basename(install_path)
-        if install_filename == "rc.log" or install_filename == "rc.main" or install_filename == "rc.perp" then
-          chmod(install_path, tonumber("0750", 8))
+
+        -- Only write the file if it differs from the existing file. This helps
+        -- prevents some processes, like Trafficserver, from thinking there are
+        -- config file updates to process on reloads if the file timestamps
+        -- change (even if there aren't actually any changes).
+        local _, existing_content = xpcall(file.read, xpcall_error_handler, install_path, true)
+        if content ~= existing_content then
+          -- Write the config file in an atomic fashion (by writing to a temp
+          -- file and then moving into place), so that during reloads the
+          -- processes never read a half-written file.
+          local install_dir = path.dirname(install_path)
+          local temp_path = path.tmpname()
+          file.write(temp_path, "")
+          set_template_permissions(temp_path, install_filename)
+          file.write(temp_path, content)
+
+          dir.makepath(install_dir)
+          file.move(temp_path, install_path)
         else
-          chmod(install_path, tonumber("0640", 8))
+          set_template_permissions(install_path, install_filename)
         end
       end
     end
