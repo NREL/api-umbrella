@@ -1,7 +1,11 @@
 AllCops:
-  TargetRubyVersion: 2.3
+  TargetRubyVersion: 2.4
   Exclude:
     - bin/**/*
+    - scripts/**/*
+    - src/api-umbrella/web-app/bin/**/*
+    - src/api-umbrella/web-app/tmp/**/*
+    - src/api-umbrella/web-app/vendor/**/*
     - tmp/**/*
     - vendor/**/*
 
@@ -9,6 +13,37 @@ Rails:
   Enabled: true
 
 Bundler/OrderedGems:
+  Enabled: false
+
+Layout/AlignHash:
+  # https://github.com/rubocop-hq/rubocop/issues/6291
+  EnforcedLastArgumentHashStyle: ignore_implicit
+
+Layout/AlignParameters:
+  EnforcedStyle: with_fixed_indentation
+
+Layout/CaseIndentation:
+  EnforcedStyle: end
+
+Layout/EndAlignment:
+  EnforcedStyleAlignWith: start_of_line
+
+Layout/FirstParameterIndentation:
+  EnforcedStyle: consistent
+
+Layout/IndentArray:
+  EnforcedStyle: consistent
+
+Layout/IndentHash:
+  EnforcedStyle: consistent
+
+Layout/MultilineMethodCallIndentation:
+  EnforcedStyle: indented
+
+Layout/MultilineOperationIndentation:
+  EnforcedStyle: indented
+
+Layout/SpaceAroundKeyword:
   Enabled: false
 
 Lint/AssignmentInCondition:
@@ -56,39 +91,6 @@ Naming/HeredocDelimiterNaming:
 Performance/RedundantMerge:
   Enabled: false
 
-Layout/AlignParameters:
-  EnforcedStyle: with_fixed_indentation
-
-Layout/BlockAlignment:
-  EnforcedStyleAlignWith: start_of_line
-
-Layout/CaseIndentation:
-  EnforcedStyle: end
-
-Layout/EndAlignment:
-  EnforcedStyleAlignWith: start_of_line
-
-  #Layout/EmptyLinesAroundArguments:
-  #Enabled: false
-
-Layout/FirstParameterIndentation:
-  EnforcedStyle: consistent
-
-Layout/IndentArray:
-  EnforcedStyle: consistent
-
-Layout/IndentHash:
-  EnforcedStyle: consistent
-
-Layout/MultilineMethodCallIndentation:
-  EnforcedStyle: indented
-
-Layout/MultilineOperationIndentation:
-  EnforcedStyle: indented
-
-Layout/SpaceAroundKeyword:
-  Enabled: false
-
 Style/AsciiComments:
   Enabled: false
 
@@ -99,11 +101,11 @@ Style/ClassAndModuleChildren:
   Enabled: false
 
 Style/ClassCheck:
-  Enabled: false
+  EnforcedStyle: kind_of?
 
 Style/CollectionMethods:
   PreferredMethods:
-    find: 'detect'
+    find: detect
 
 Style/ConditionalAssignment:
   Enabled: false
@@ -111,16 +113,10 @@ Style/ConditionalAssignment:
 Style/Documentation:
   Enabled: false
 
-Style/EachWithObject:
-  Enabled: false
-
 Style/EmptyElse:
   EnforcedStyle: empty
 
 Style/EmptyMethod:
-  Enabled: false
-
-Style/Encoding:
   Enabled: false
 
 Style/FrozenStringLiteralComment:
@@ -151,7 +147,7 @@ Style/NumericLiterals:
   Enabled: false
 
 Style/NumericPredicate:
-  Enabled: false
+  EnforcedStyle: comparison
 
 Style/OneLineConditional:
   Enabled: false
@@ -181,10 +177,10 @@ Style/SignalException:
   Enabled: false
 
 Style/StringLiterals:
-  Enabled: false
+  EnforcedStyle: double_quotes
 
 Style/StringLiteralsInInterpolation:
-  Enabled: false
+  EnforcedStyle: double_quotes
 
 Style/SymbolArray:
   Enabled: false
@@ -205,17 +201,4 @@ Style/WhileUntilModifier:
   Enabled: false
 
 Style/WordArray:
-  Enabled: false
-
-Rails/Delegate:
-  Enabled: false
-
-Rails/FindBy:
-  Enabled: false
-
-Rails/HasAndBelongsToMany:
-  Enabled: false
-
-Rails/Output:
-  Exclude:
-    - db/migrate/**
+  EnforcedStyle: brackets

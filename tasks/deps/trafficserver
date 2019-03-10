@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-trafficserver_version="7.1.4"
-trafficserver_hash="117fec0c48fb47ed841a8931703e440800ca0eac6817a258893a1c629181bc4355a84c0f0bb1b45207fa8e5aa75a0e63f1013a34095656c96e2ba6aa528b16bc"
+trafficserver_version="8.0.2"
+trafficserver_hash="950a3dbac81451bd37576c4fd49db6dba5aca5db20d5d60af5b9ae364a05c1dca09fffd021f56f43536b0599c105f9e8ff0e8cebedb38af28a2129b35cc81fc5"
 
 set -e -u -x
 source ./tasks/helpers.sh
@@ -13,9 +13,10 @@ extract_download "trafficserver-$trafficserver_version.tar.bz2"
 cd "trafficserver-$trafficserver_version"
 SPHINXBUILD=false ./configure \
   --prefix="$INSTALL_PREFIX_EMBEDDED" \
-  --enable-experimental-plugins
+  --with-luajit="$STAGE_EMBEDDED_DIR/openresty/luajit"
 make -j"$NPROC"
 make install DESTDIR="$STAGE_DIR"
+chrpath -d "$STAGE_EMBEDDED_DIR/lib/libtscore.so"
 chrpath -d "$STAGE_EMBEDDED_DIR/lib/libtsmgmt.so"
 find "$STAGE_EMBEDDED_DIR/libexec/trafficserver/" -name "*.so" -exec chrpath -d {} \;
 find "$STAGE_EMBEDDED_DIR/bin/" -name "traffic_*" -exec chrpath -d {} \;

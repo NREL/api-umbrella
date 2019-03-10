@@ -35,7 +35,7 @@ class Test::Processes::TestRpaths < Minitest::Test
     [
       "/embedded/sbin/rsyslogd",
       "/embedded/openresty/nginx/sbin/nginx",
-      "/embedded/libexec/trafficserver/ssl_cert_loader.so",
+      "/embedded/libexec/trafficserver/header_rewrite.so",
       # LuaRock
       "/embedded/apps/core/shared/vendor/lua/lib/lua/5.1/yaml.so",
     ].each do |expected_path_end|

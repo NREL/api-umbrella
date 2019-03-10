@@ -61,7 +61,6 @@ gatekeeper:
 trafficserver:
   host: 127.0.0.1
   port: 14009
-  management_port: 14008
   storage:
     size: 256M
   embedded_server_config:

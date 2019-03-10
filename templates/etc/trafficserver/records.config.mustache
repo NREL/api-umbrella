@@ -2,7 +2,6 @@
 
 LOCAL proxy.local.incoming_ip_to_bind STRING {{trafficserver.host}}
 CONFIG proxy.config.http.server_ports STRING {{trafficserver.port}}
-CONFIG proxy.config.process_manager.mgmt_port INT {{trafficserver.management_port}}
 
 # Disable Trafficserver's ability to modify config files and keep backups. This
 # ensures the live configuration doesn't stray from our installed templates.
@@ -11,11 +10,6 @@ CONFIG proxy.config.process_manager.mgmt_port INT {{trafficserver.management_por
 # configuration.
 CONFIG proxy.config.disable_configuration_modification INT 1
 CONFIG proxy.config.admin.number_config_bak INT 0
-
-# Disable traffic_cop's health checks, since it seems like these aren't favored
-# and will be removed in Traffic Server 8:
-# https://www.mail-archive.com/dev@trafficserver.apache.org/msg13821.html
-CONFIG proxy.config.cop.active_health_checks INT 0
 
 # Use the special "#-1" value to keep running as the current user (perp will
 # handle switching the user).
@@ -94,7 +88,6 @@ CONFIG proxy.config.http.transaction_no_activity_timeout_out INT {{trafficserver
 # brief connectivity issues (where the connect failed quickly).
 CONFIG proxy.config.http.connect_attempts_max_retries INT 5
 CONFIG proxy.config.http.connect_attempts_max_retries_dead_server INT 3
-CONFIG proxy.config.http.safe_requests_retryable INT 1
 
 # Don't use keepalive connections for POST requests, since those can't safely be retried.
 #
