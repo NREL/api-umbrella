@@ -19,7 +19,7 @@ APInf Umbrella is an open source API management platform (forked from NREL api u
 
 ## Getting Started
 
-We are updating documentation. Please see [Installation] in APInf platform documentation (https://github.com/apinf/platform/blob/develop/INSTALL.md)
+We are updating documentation. Please see [Installation](https://github.com/apinf/platform/blob/develop/INSTALL.md) in APInf platform documentation. The idea is to use APInf Umbrella together with APInf platform to have a complete package, not just the proxy features.
 
 ## License
 
