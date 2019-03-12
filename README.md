@@ -1,10 +1,12 @@
 [![CircleCI](https://circleci.com/gh/NREL/api-umbrella.svg?style=svg)](https://circleci.com/gh/NREL/api-umbrella) [![Dependency Status](https://gemnasium.com/badges/github.com/NREL/api-umbrella.svg)](https://gemnasium.com/github.com/NREL/api-umbrella)
 
-# API Umbrella
+# APInf Umbrella
 
-## What Is API Umbrella?
+## What Is APInf Umbrella?
 
-API Umbrella is an open source API management platform for exposing web service APIs. The basic goal of API Umbrella is to make life easier for both API creators and API consumers. How?
+APInf Umbrella is an open source API management platform (forked from NREL api umbrella) for exposing web service APIs. The basic goal of API Umbrella is to make life easier for both API creators and API consumers. How?
+
+* **Easy integration:** APInf Umbrella is integrated with APInf platform. It also has additional features, like IDM integration (keyrock)
 
 * **Make life easier for API creators:** Allow API creators to focus on building APIs.
   * **Standardize the boring stuff:** APIs can assume the boring stuff (access control, rate limiting, analytics, etc.) is already taken care if the API is being accessed, so common functionality doesn't need to be implemented in the API code.
@@ -12,28 +14,13 @@ API Umbrella is an open source API management platform for exposing web service 
   * **Scalability:** Make it easier to scale your APIs.
 * **Make life easier for API consumers:** Let API consumers easily explore and use your APIs.
   * **Unify disparate APIs:** Present separate APIs as a cohesive offering to API consumers. APIs running on different servers or written in different programming languages can be exposed at a single endpoint for the API consumer.
-  * **Standardize access:** All your APIs are can be accessed using the same API key credentials.
+  * **Standardize access:** All your APIs are can be accessed using the same API key or OAuth credentials.
   * **Standardize documentation:** All your APIs are documented in a single place and in a similar fashion.
-
-## Download
-
-Binary packages are available for [download](https://apiumbrella.io/install/). Follow the quick setup instructions on the download page to begin running API Umbrella.
 
 ## Getting Started
 
-Once you have API Umbrella up and running, there are a variety of things you can do to start using the platform. For a quick tutorial, see [getting started](https://api-umbrella.readthedocs.org/en/latest/getting-started.html).
-
-## API Umbrella Development
-
-Are you interested in working on the code behind API Umbrella? See our [development setup guide](https://api-umbrella.readthedocs.org/en/latest/developer/dev-setup.html) to see how you can get a local development environment setup.
-
-## Who's using API Umbrella?
-
-* [api.data.gov](http://api.data.gov/)
-* [NREL Developer Network](http://developer.nrel.gov/)
-
-Are you using API Umbrella? [Edit this file](https://github.com/NREL/api-umbrella/blob/master/README.md) and let us know.
+We are updating documentation. Please see [Installation](https://github.com/apinf/platform/blob/develop/INSTALL.md) in APInf platform documentation. The idea is to use APInf Umbrella together with APInf platform to have a complete package, not just the proxy features.
 
 ## License
 
-API Umbrella is open sourced under the [MIT license](https://github.com/NREL/api-umbrella/blob/master/LICENSE.txt).
+APInf Umbrella is open sourced under the [MIT license](https://github.com/apinf/api-umbrella/blob/master/LICENSE.txt).
