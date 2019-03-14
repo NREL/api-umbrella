@@ -1,6 +1,6 @@
 source "https://rubygems.org"
 
-gem "rails", "~> 4.2.10"
+gem "rails", "~> 4.2.11", ">= 4.2.11.1"
 
 # Rails app server
 gem "puma", "~> 3.12.0"
@@ -31,7 +31,7 @@ gem "mongoid_delorean", "~> 1.3.0"
 gem "mongoid-embedded-errors", "~> 2.1.1"
 
 # Data migrations
-gem "mongoid_rails_migrations", "~> 1.2.0"
+gem "mongoid_rails_migrations", "~> 1.2.1"
 
 # Rails cache store using mongo.
 #
@@ -99,12 +99,12 @@ gem "i18n-js", "~> 3.2.0"
 gem "rails_stdout_logging", :git => "https://github.com/heroku/rails_stdout_logging.git"
 
 # Login forms
-gem "simple_form", "~> 3.5"
+gem "simple_form", "~> 3.5", ">= 3.5.1"
 
 # Login stylesheets
-gem "sass-rails", "~> 5.0"
+gem "sass-rails", "~> 5.0", ">= 5.0.7"
 gem "bootstrap", "~> 4.3.1", :require => false
-gem "font-awesome-rails", "~> 4.7.0", :require => false
+gem "font-awesome-rails", "~> 4.7.0", ">= 4.7.0.4", :require => false
 
 # Table-less models
 gem "active_attr", "~> 0.12.0"
