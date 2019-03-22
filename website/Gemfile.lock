@@ -1,14 +1,14 @@
 GEM
   remote: https://rubygems.org/
   specs:
-    activesupport (5.0.7.1)
+    activesupport (5.0.7.2)
       concurrent-ruby (~> 1.0, >= 1.0.2)
       i18n (>= 0.7, < 2)
       minitest (~> 5.1)
       tzinfo (~> 1.1)
     addressable (2.6.0)
       public_suffix (>= 2.0.2, < 4.0)
-    autoprefixer-rails (9.4.10.2)
+    autoprefixer-rails (9.5.0)
       execjs
     backports (3.12.0)
     bootstrap-sass (3.4.1)
@@ -18,7 +18,7 @@ GEM
       coffee-script-source
       execjs
     coffee-script-source (1.12.2)
-    concurrent-ruby (1.1.4)
+    concurrent-ruby (1.1.5)
     contracts (0.13.0)
     dotenv (2.7.1)
     erubis (2.7.0)
