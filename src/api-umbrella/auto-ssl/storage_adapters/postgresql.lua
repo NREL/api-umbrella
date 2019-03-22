@@ -42,7 +42,7 @@ function _M.delete(_, key)
 end
 
 function _M.keys_with_suffix(_, suffix)
-  local result, err = pg_utils.query("SELECT key FROM auto_ssl_storage WHERE key LIKE :suffix || '%' AND (expires_at IS NULL or expires_at < NOW())", { suffix = pg_utils.escape_like(suffix) })
+  local result, err = pg_utils.query("SELECT key FROM auto_ssl_storage WHERE key LIKE '%' || :suffix AND (expires_at IS NULL or expires_at < NOW())", { suffix = pg_utils.escape_like(suffix) })
 
   local keys = nil
   if not err and result then
