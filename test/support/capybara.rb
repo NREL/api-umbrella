@@ -9,7 +9,7 @@ require "support/api_umbrella_test_helpers/process"
 
 def capybara_register_driver(driver_name, options = {})
   ::Capybara.register_driver(driver_name) do |app|
-    path, stderr, status = Open3.capture3("which", "chromedriver")
+    path, _stderr, status = Open3.capture3("which", "chromedriver")
     if status.success?
       Selenium::WebDriver::Chrome.driver_path = path.strip
     else
