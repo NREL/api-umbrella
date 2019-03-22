@@ -86,6 +86,9 @@ class OutdatedPackages
       :git => "https://github.com/diegonehab/luasocket.git",
       :git_ref => "master",
     },
+    "lua_luautf8" => {
+      :luarock => "luautf8",
+    },
     "lua_lustache" => {
       :luarock => "lustache",
     },
