@@ -61,6 +61,17 @@ RUN set -x && \
   rm -f /tmp/google-chrome-stable_current_amd64.deb && \
   sed -i 's|HERE/chrome"|HERE/chrome" --disable-setuid-sandbox --no-sandbox|g' /opt/google/chrome/google-chrome && \
   google-chrome --version
+RUN set -x && \
+  CHROME_VERSION="$(google-chrome --version)" && \
+  export CHROMEDRIVER_RELEASE="$(echo $CHROME_VERSION | sed 's/^Google Chrome //')" && export CHROMEDRIVER_RELEASE=${CHROMEDRIVER_RELEASE%%.*} && \
+  CHROMEDRIVER_VERSION=$(curl --location --fail --retry 3 http://chromedriver.storage.googleapis.com/LATEST_RELEASE_${CHROMEDRIVER_RELEASE}) && \
+  curl --silent --show-error --location --fail --retry 3 --output /tmp/chromedriver_linux64.zip "http://chromedriver.storage.googleapis.com/$CHROMEDRIVER_VERSION/chromedriver_linux64.zip" && \
+  cd /tmp && \
+  unzip chromedriver_linux64.zip && \
+  rm -rf chromedriver_linux64.zip && \
+  mv chromedriver /usr/local/bin/chromedriver && \
+  chmod +x /usr/local/bin/chromedriver && \
+  chromedriver --version
 
 RUN groupadd -r api-umbrella && \
   useradd -r -g api-umbrella -s /sbin/nologin -d /opt/api-umbrella -c "API Umbrella user" api-umbrella
