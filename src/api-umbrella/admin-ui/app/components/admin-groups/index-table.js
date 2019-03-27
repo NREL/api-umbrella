@@ -24,10 +24,14 @@ export default Component.extend({
           },
         },
         {
-          data: 'api_scope_display_names',
+          data: 'api_scopes',
           title: 'API Scopes',
+          defaultContent: '-',
           orderable: false,
-          render: DataTablesHelpers.renderListEscaped,
+          render: DataTablesHelpers.renderLinkedListEscaped({
+            editLink: '#/api_scopes/',
+            nameField: 'name',
+          }),
         },
         {
           data: 'permission_display_names',
@@ -37,11 +41,14 @@ export default Component.extend({
           render: DataTablesHelpers.renderListEscaped,
         },
         {
-          data: 'admin_usernames',
+          data: 'admins',
           title: 'Admins',
           defaultContent: '-',
           orderable: false,
-          render: DataTablesHelpers.renderListEscaped,
+          render: DataTablesHelpers.renderLinkedListEscaped({
+            editLink: '#/admins/',
+            nameField: 'username',
+          }),
         },
       ],
     });

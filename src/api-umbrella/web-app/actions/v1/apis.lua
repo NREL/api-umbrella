@@ -45,6 +45,20 @@ function _M.index(self)
       "rewrites",
       "servers",
       "url_matches",
+      "api_scopes",
+      "root_api_scope",
+      settings = {
+        "http_headers",
+        "rate_limits",
+        "required_roles",
+      },
+      sub_settings = {
+        settings = {
+          "http_headers",
+          "rate_limits",
+          "required_roles",
+        },
+      },
     },
   })
 end

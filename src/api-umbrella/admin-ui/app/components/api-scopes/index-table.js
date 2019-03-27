@@ -35,6 +35,24 @@ export default Component.extend({
           defaultContent: '-',
           render: DataTablesHelpers.renderEscaped,
         },
+        {
+          data: 'admin_groups',
+          title: 'Admin Groups',
+          defaultContent: '-',
+          render: DataTablesHelpers.renderLinkedListEscaped({
+            editLink: '#/admin_group/',
+            nameField: 'name',
+          }),
+        },
+        {
+          data: 'apis',
+          title: 'API Backends',
+          defaultContent: '-',
+          render: DataTablesHelpers.renderLinkedListEscaped({
+            editLink: '#/apis/',
+            nameField: 'name',
+          }),
+        },
       ],
     });
   },

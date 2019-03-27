@@ -6,6 +6,7 @@ local int64_to_json_number = require("api-umbrella.utils.int64").to_json_number
 local is_empty = require("pl.types").is_empty
 local json_response = require "api-umbrella.web-app.utils.json_response"
 local model_ext = require "api-umbrella.web-app.utils.model_ext"
+local preload = require("lapis.db.model").preload
 local t = require("api-umbrella.web-app.utils.gettext").gettext
 local table_keys = require("pl.tablex").keys
 local validation_ext = require "api-umbrella.web-app.utils.validation_ext"
@@ -269,7 +270,7 @@ function _M.index(self, model, options)
     fields = "DISTINCT " .. escaped_table_name .. ".*",
   })
   if options and options["preload"] then
-    model:preload_relations(records, unpack(options["preload"]))
+    preload(records, options["preload"])
   end
 
   for _, record in ipairs(records) do

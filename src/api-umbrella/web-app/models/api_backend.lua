@@ -96,6 +96,94 @@ ApiBackend = model_ext.new_class("api_backends", {
       has_many = "ApiBackendUrlMatch",
       order = "sort_order",
     },
+    {
+      "api_scopes",
+      fetch = function(self)
+        local ApiScope = require "api-umbrella.web-app.models.api_scope"
+
+        local sql = "INNER JOIN api_backends ON api_scopes.host = api_backends.frontend_host" ..
+          " INNER JOIN api_backend_url_matches ON api_backends.id = api_backend_url_matches.api_backend_id AND api_backend_url_matches.frontend_prefix LIKE api_scopes.path_prefix || '%' " ..
+          " WHERE api_backends.id = ?" ..
+          " GROUP BY api_scopes.id" ..
+          " ORDER BY api_scopes.name"
+        return ApiScope:select(sql, self.id, {
+          fields = "api_scopes.id, api_scopes.name",
+        })
+      end,
+      preload = function(api_backends)
+        local ApiScope = require "api-umbrella.web-app.models.api_scope"
+
+        local api_backend_ids = {}
+        for _, api_backend in ipairs(api_backends) do
+          api_backend["api_scopes"] = {}
+          table.insert(api_backend_ids, api_backend.id)
+        end
+
+        if #api_backend_ids > 0 then
+          local sql = "INNER JOIN api_backends ON api_scopes.host = api_backends.frontend_host" ..
+            " INNER JOIN api_backend_url_matches ON api_backends.id = api_backend_url_matches.api_backend_id AND api_backend_url_matches.frontend_prefix LIKE api_scopes.path_prefix || '%' " ..
+            " WHERE api_backends.id IN ?" ..
+            " GROUP BY api_scopes.id, api_backends.id" ..
+            " ORDER BY api_scopes.name"
+          local api_scopes = ApiScope:select(sql, db.list(api_backend_ids), {
+            fields = "api_scopes.id, api_scopes.name, api_backends.id AS _api_backend_id",
+          })
+
+          for _, api_scope in ipairs(api_scopes) do
+            for _, api_backend in ipairs(api_backends) do
+              if api_backend.id == api_scope["_api_backend_id"] then
+                api_backend["_api_backend_id"] = nil
+                table.insert(api_backend["api_scopes"], api_scope)
+              end
+            end
+          end
+        end
+      end,
+    },
+    {
+      "root_api_scope",
+      fetch = function(self)
+        local ApiScope = require "api-umbrella.web-app.models.api_scope"
+
+        local sql = "INNER JOIN api_backends ON api_scopes.host = api_backends.frontend_host" ..
+          " INNER JOIN api_backend_url_matches ON api_backends.id = api_backend_url_matches.api_backend_id AND api_backend_url_matches.frontend_prefix LIKE api_scopes.path_prefix || '%' " ..
+          " WHERE api_backends.id = ?" ..
+          " GROUP BY api_scopes.id" ..
+          " ORDER BY length(api_scopes.path_prefix)" ..
+          " LIMIT 1"
+        return ApiScope:select(sql, self.id, {
+          fields = "api_scopes.id, api_scopes.name",
+        })[1]
+      end,
+      preload = function(api_backends)
+        local ApiScope = require "api-umbrella.web-app.models.api_scope"
+
+        local api_backend_ids = {}
+        for _, api_backend in ipairs(api_backends) do
+          table.insert(api_backend_ids, api_backend.id)
+        end
+
+        if #api_backend_ids > 0 then
+          local sql = "INNER JOIN api_backends ON api_scopes.host = api_backends.frontend_host" ..
+            " INNER JOIN api_backend_url_matches ON api_backends.id = api_backend_url_matches.api_backend_id AND api_backend_url_matches.frontend_prefix LIKE api_scopes.path_prefix || '%' " ..
+            " WHERE api_backends.id IN ?" ..
+            " GROUP BY api_scopes.id, api_backends.id" ..
+            " ORDER BY api_backends.id, length(api_scopes.path_prefix)"
+          local api_scopes = ApiScope:select(sql, db.list(api_backend_ids), {
+            fields = "DISTINCT ON (api_backends.id) api_scopes.id, api_scopes.name, api_backends.id AS _api_backend_id",
+          })
+
+          for _, api_scope in ipairs(api_scopes) do
+            for _, api_backend in ipairs(api_backends) do
+              if api_backend.id == api_scope["_api_backend_id"] then
+                api_backend["_api_backend_id"] = nil
+                api_backend["root_api_scope"] = api_scope
+              end
+            end
+          end
+        end
+      end,
+    },
   },
 
   attributes = function(self, options)
@@ -129,6 +217,30 @@ ApiBackend = model_ext.new_class("api_backends", {
     api_backend_policy.authorize_show(ngx.ctx.current_admin, self:attributes())
   end,
 
+  api_scopes_as_json = function(self)
+    local api_scopes = {}
+    for _, api_scope in ipairs(self:get_api_scopes()) do
+      table.insert(api_scopes, {
+        id = api_scope.id,
+        name = api_scope.name,
+      })
+    end
+
+    return api_scopes
+  end,
+
+  root_api_scope_as_json = function(self)
+    local root_api_scope = self:get_root_api_scope()
+    if root_api_scope then
+      return {
+        id = root_api_scope.id,
+        name = root_api_scope.name,
+      }
+    else
+      return nil
+    end
+  end,
+
   as_json = function(self, options)
     local data = {
       id = json_null_default(self.id),
@@ -145,6 +257,8 @@ ApiBackend = model_ext.new_class("api_backends", {
       settings = json_null,
       sub_settings = {},
       url_matches = {},
+      api_scopes = json_null_default(self:api_scopes_as_json()),
+      root_api_scope = json_null_default(self:root_api_scope_as_json()),
       created_at = json_null_default(time.postgres_to_iso8601(self.created_at)),
       created_by = json_null_default(self.created_by_id),
       creator = {
@@ -191,6 +305,7 @@ ApiBackend = model_ext.new_class("api_backends", {
       "servers",
       "sub_settings",
       "url_matches",
+      "api_scopes",
     }, options)
 
     if options and options["for_publishing"] then

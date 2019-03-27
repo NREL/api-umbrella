@@ -76,6 +76,18 @@ AdminGroup = model_ext.new_class("admin_groups", {
     return admin_usernames
   end,
 
+  api_scopes_as_json = function(self)
+    local api_scopes = {}
+    for _, api_scope in ipairs(self:get_api_scopes()) do
+      table.insert(api_scopes, {
+        id = api_scope.id,
+        name = api_scope.name,
+      })
+    end
+
+    return api_scopes
+  end,
+
   api_scope_ids = function(self)
     local api_scope_ids = {}
     for _, api_scope in ipairs(self:get_api_scopes()) do
@@ -138,6 +150,7 @@ AdminGroup = model_ext.new_class("admin_groups", {
       updater = {
         username = json_null_default(self.updated_by_username),
       },
+      api_scopes = json_null_default(self:api_scopes_as_json()),
       api_scope_ids = json_null_default(self:api_scope_ids()),
       api_scope_display_names = json_null_default(self:api_scope_display_names()),
       permission_ids = json_null_default(self:permission_ids()),

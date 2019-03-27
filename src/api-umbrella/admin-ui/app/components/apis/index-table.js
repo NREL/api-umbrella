@@ -42,11 +42,31 @@ export default Component.extend({
           render: DataTablesHelpers.renderEscaped,
         },
         {
-          data: 'frontend_prefixes',
+          data: 'url_matches',
           title: 'Prefixes',
           defaultContent: '-',
           orderable: false,
-          render: DataTablesHelpers.renderEscaped,
+          render: DataTablesHelpers.renderListEscaped({
+            field: 'frontend_prefix',
+          }),
+        },
+        {
+          data: 'api_scopes',
+          title: 'API Scopes',
+          defaultContent: '-',
+          render: DataTablesHelpers.renderLinkedListEscaped({
+            editLink: '#/api_scopes/',
+            nameField: 'name',
+          }),
+        },
+        {
+          data: 'root_api_scope',
+          title: 'Root API Scope',
+          defaultContent: '-',
+          render: DataTablesHelpers.renderLink({
+            editLink: '#/api_scopes/',
+            nameField: 'name',
+          }),
         },
         {
           data: 'sort_order',

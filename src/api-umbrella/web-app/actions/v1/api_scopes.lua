@@ -43,6 +43,10 @@ function _M.index(self)
       "created_at",
       "updated_at",
     },
+    preload = {
+      "admin_groups",
+      "api_backends",
+    },
   })
 end
 
