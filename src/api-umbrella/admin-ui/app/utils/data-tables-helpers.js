@@ -1,7 +1,20 @@
 import escape from 'lodash-es/escape';
-import isArray from 'lodash-es/isArray';
+import get from 'lodash-es/get';
 import map from 'lodash-es/map';
 import moment from 'moment-timezone';
+
+function getName(value, options) {
+  let name = value;
+  if(options && options.nameField) {
+    if(typeof options.nameField === 'function') {
+      name = options.nameField(value);
+    } else {
+      name = get(value, options.nameField);
+    }
+  }
+
+  return name;
+}
 
 export default {
   renderEscaped(value, type) {
@@ -17,52 +30,46 @@ export default {
   },
 
   renderLink(options) {
-    return function(value, type) {
+    return function(value, type, row) {
       if(type === 'display') {
         if(!value) {
           return '-';
         }
 
-        const link = options.editLink + encodeURIComponent(value.id) + '/edit';
-        return '<a href="' + link + '">' + escape(value[options.nameField]) + '</a>';
+        const link = options.editLink + encodeURIComponent(get(row, options.idField)) + '/edit';
+        return '<a href="' + link + '">' + escape(value) + '</a>';
       }
 
       return value;
     }
   },
 
-  renderListEscaped(options) {
+  renderList(options) {
     return function(value, type) {
       if(type === 'display') {
         if(!value || value.length === 0) {
           return '-';
         }
 
-        if(!isArray(value)) {
-          value = [value];
-        }
-
-        return '<ul>' + map(value, function(v) { return '<li>' + escape(v[options.field]) + '</li>'; }).join('') + '</ul>';
+        return '<ul>' + map(value, function(v) {
+          return '<li>' + escape(getName(v, options)) + '</a></li>';
+        }).join('') + '</ul>';
       }
 
       return value;
     }
   },
 
-  renderLinkedListEscaped(options) {
+  renderLinkedList(options) {
     return function(value, type) {
       if(type === 'display') {
         if(!value || value.length === 0) {
           return '-';
-        }
-
-        if(!isArray(value)) {
-          value = [value];
         }
 
         return '<ul>' + map(value, function(v) {
           const link = options.editLink + encodeURIComponent(v.id) + '/edit';
-          return '<li><a href="' + link + '">' + escape(v[options.nameField]) + '</a></li>';
+          return '<li><a href="' + link + '">' + escape(getName(v, options)) + '</a></li>';
         }).join('') + '</ul>';
       }
 

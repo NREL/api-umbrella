@@ -33,7 +33,7 @@ ApiScope = model_ext.new_class("api_scopes", {
           " GROUP BY api_backends.id" ..
           " ORDER BY api_backends.name"
         return ApiBackend:select(sql, self.host, escape_db_like(self.path_prefix), {
-          fields = "api_backends.id, api_backends.name",
+          fields = "api_backends.*",
         })
       end,
       preload = function(api_scopes)
@@ -52,7 +52,7 @@ ApiScope = model_ext.new_class("api_scopes", {
             " GROUP BY api_backends.id, api_scopes.id" ..
             " ORDER BY api_backends.name"
           local api_backends = ApiBackend:select(sql, db.list(api_scope_ids), {
-            fields = "api_backends.id, api_backends.name, api_scopes.id AS _api_scope_id",
+            fields = "api_backends.*, api_scopes.id AS _api_scope_id",
           })
 
           for _, api_backend in ipairs(api_backends) do
@@ -79,10 +79,7 @@ ApiScope = model_ext.new_class("api_scopes", {
   admin_groups_as_json = function(self)
     local admin_groups = {}
     for _, admin_group in ipairs(self:get_admin_groups()) do
-      table.insert(admin_groups, {
-        id = admin_group.id,
-        name = admin_group.name,
-      })
+      table.insert(admin_groups, admin_group:embedded_json())
     end
 
     return admin_groups
@@ -91,10 +88,7 @@ ApiScope = model_ext.new_class("api_scopes", {
   api_backends_as_json = function(self)
     local api_backends = {}
     for _, api_backend in ipairs(self:get_api_backends()) do
-      table.insert(api_backends, {
-        id = api_backend.id,
-        name = api_backend.name,
-      })
+      table.insert(api_backends, api_backend:embedded_json())
     end
 
     return api_backends
@@ -106,8 +100,6 @@ ApiScope = model_ext.new_class("api_scopes", {
       name = json_null_default(self.name),
       host = json_null_default(self.host),
       path_prefix = json_null_default(self.path_prefix),
-      admin_groups = json_null_default(self:admin_groups_as_json()),
-      apis = json_null_default(self:api_backends_as_json()),
       created_at = json_null_default(time.postgres_to_iso8601(self.created_at)),
       created_by = json_null_default(self.created_by_id),
       creator = {
@@ -122,12 +114,26 @@ ApiScope = model_ext.new_class("api_scopes", {
       version = 1,
     }
 
-    json_array_fields(data, {
-      "admin_groups",
-      "apis",
-    })
+    if ngx.ctx.current_admin.superuser then
+      data["admin_groups"] = json_null_default(self:admin_groups_as_json())
+      data["apis"] = json_null_default(self:api_backends_as_json())
+
+      json_array_fields(data, {
+        "admin_groups",
+        "apis",
+      })
+    end
 
     return data
+  end,
+
+  embedded_json = function(self)
+    return {
+      id = json_null_default(self.id),
+      name = json_null_default(self.name),
+      host = json_null_default(self.host),
+      path_prefix = json_null_default(self.path_prefix),
+    }
   end,
 
   is_root = function(self)

@@ -50,6 +50,9 @@ export default DS.Model.extend(Validations, {
   updatedAt: DS.attr(),
   creator: DS.attr(),
   updater: DS.attr(),
+  rootApiScope: DS.attr(),
+  apiScopes: DS.attr(),
+  adminGroups: DS.attr(),
 
   servers: DS.hasMany('api/server', { async: false }),
   urlMatches: DS.hasMany('api/url-match', { async: false }),

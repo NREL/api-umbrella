@@ -10,9 +10,12 @@ import { observer } from '@ember/object';
 
 export default Component.extend({
   busy: inject('busy'),
+  session: inject('session'),
   reorderActive: false,
 
   didInsertElement() {
+    const currentAdmin = this.get('session.data.authenticated.admin');
+
     this.set('table', this.$().find('table').DataTable({
       serverSide: true,
       ajax: '/api-umbrella/v1/apis.json',
@@ -46,28 +49,41 @@ export default Component.extend({
           title: 'Prefixes',
           defaultContent: '-',
           orderable: false,
-          render: DataTablesHelpers.renderListEscaped({
-            field: 'frontend_prefix',
+          render: DataTablesHelpers.renderList({
+            nameField: 'frontend_prefix',
           }),
         },
-        {
-          data: 'api_scopes',
-          title: 'API Scopes',
-          defaultContent: '-',
-          render: DataTablesHelpers.renderLinkedListEscaped({
-            editLink: '#/api_scopes/',
-            nameField: 'name',
-          }),
-        },
-        {
-          data: 'root_api_scope',
-          title: 'Root API Scope',
-          defaultContent: '-',
-          render: DataTablesHelpers.renderLink({
-            editLink: '#/api_scopes/',
-            nameField: 'name',
-          }),
-        },
+        ...(currentAdmin.superuser ? [
+          {
+            data: 'root_api_scope.name',
+            title: 'Root API Scope',
+            defaultContent: '-',
+            render: DataTablesHelpers.renderLink({
+              editLink: '#/api_scopes/',
+              idField: 'root_api_scope.id',
+            }),
+          },
+          {
+            data: 'api_scopes',
+            title: 'API Scopes',
+            defaultContent: '-',
+            orderable: false,
+            render: DataTablesHelpers.renderLinkedList({
+              editLink: '#/api_scopes/',
+              nameField: 'name',
+            }),
+          },
+          {
+            data: 'admin_groups',
+            title: 'Admin Groups',
+            defaultContent: '-',
+            orderable: false,
+            render: DataTablesHelpers.renderLinkedList({
+              editLink: '#/admin_groups/',
+              nameField: 'name',
+            }),
+          },
+        ] : []),
         {
           data: 'sort_order',
           title: 'Matching Order',

@@ -32,11 +32,14 @@ export default Component.extend({
           },
         },
         {
-          data: 'group_names',
+          data: 'groups',
           name: 'Groups',
           title: t('Groups'),
           orderable: false,
-          render: DataTablesHelpers.renderListEscaped,
+          render: DataTablesHelpers.renderLinkedList({
+            editLink: '#/admin_groups/',
+            nameField: 'name',
+          }),
         },
         {
           data: 'current_sign_in_at',

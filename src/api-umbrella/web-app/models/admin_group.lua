@@ -79,10 +79,7 @@ AdminGroup = model_ext.new_class("admin_groups", {
   api_scopes_as_json = function(self)
     local api_scopes = {}
     for _, api_scope in ipairs(self:get_api_scopes()) do
-      table.insert(api_scopes, {
-        id = api_scope.id,
-        name = api_scope.name,
-      })
+      table.insert(api_scopes, api_scope:embedded_json())
     end
 
     return api_scopes
@@ -162,6 +159,7 @@ AdminGroup = model_ext.new_class("admin_groups", {
     }
 
     json_array_fields(data, {
+      "api_scopes",
       "api_scope_ids",
       "api_scope_display_names",
       "permission_ids",
@@ -171,6 +169,13 @@ AdminGroup = model_ext.new_class("admin_groups", {
     }, options)
 
     return data
+  end,
+
+  embedded_json = function(self)
+    return {
+      id = json_null_default(self.id),
+      name = json_null_default(self.name),
+    }
   end,
 }, {
   authorize = function(data)

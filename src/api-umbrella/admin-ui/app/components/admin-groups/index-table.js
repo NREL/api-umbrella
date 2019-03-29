@@ -28,9 +28,11 @@ export default Component.extend({
           title: 'API Scopes',
           defaultContent: '-',
           orderable: false,
-          render: DataTablesHelpers.renderLinkedListEscaped({
+          render: DataTablesHelpers.renderLinkedList({
             editLink: '#/api_scopes/',
-            nameField: 'name',
+            nameField: (value) => {
+              return `${value.name} - ${value.host}${value.path_prefix}`;
+            },
           }),
         },
         {
@@ -38,14 +40,14 @@ export default Component.extend({
           title: 'Access',
           defaultContent: '-',
           orderable: false,
-          render: DataTablesHelpers.renderListEscaped,
+          render: DataTablesHelpers.renderList(),
         },
         {
           data: 'admins',
           title: 'Admins',
           defaultContent: '-',
           orderable: false,
-          render: DataTablesHelpers.renderLinkedListEscaped({
+          render: DataTablesHelpers.renderLinkedList({
             editLink: '#/admins/',
             nameField: 'username',
           }),

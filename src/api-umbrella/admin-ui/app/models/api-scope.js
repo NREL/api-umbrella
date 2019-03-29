@@ -37,7 +37,7 @@ export default DS.Model.extend(Validations, {
   name: DS.attr(),
   host: DS.attr(),
   pathPrefix: DS.attr(),
-  admin_groups: DS.attr(),
+  adminGroups: DS.attr(),
   apis: DS.attr(),
   createdAt: DS.attr(),
   updatedAt: DS.attr(),

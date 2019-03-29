@@ -18,7 +18,7 @@ local db_null = db.NULL
 local _M = {}
 
 function _M.index(self)
-  return datatables.index(self, ApiBackend, {
+  local options = {
     where = {
       api_backend_policy.authorized_query_scope(self.current_admin),
     },
@@ -27,12 +27,22 @@ function _M.index(self)
       "LEFT JOIN api_backend_url_matches ON api_backends.id = api_backend_url_matches.api_backend_id",
     },
     search_fields = {
-      "name",
-      "frontend_host",
-      "backend_host",
+      db.raw("api_backends.name"),
+      db.raw("api_backends.frontend_host"),
+      db.raw("api_backends.backend_host"),
       db.raw("api_backend_servers.host"),
       db.raw("api_backend_url_matches.backend_prefix"),
       db.raw("api_backend_url_matches.frontend_prefix"),
+    },
+    order_joins = {
+      ["root_api_scope.name"] = " CROSS JOIN LATERAL (" ..
+        " SELECT api_scopes.*" ..
+        " FROM api_scopes" ..
+        " INNER JOIN api_backend_url_matches ON api_backends.id = api_backend_url_matches.api_backend_id AND api_backend_url_matches.frontend_prefix LIKE api_scopes.path_prefix || '%' " ..
+        " WHERE api_scopes.host = api_backends.frontend_host" ..
+        " ORDER BY length(api_scopes.path_prefix)" ..
+        " LIMIT 1" ..
+        ") AS root_api_scope",
     },
     order_fields = {
       "name",
@@ -45,8 +55,6 @@ function _M.index(self)
       "rewrites",
       "servers",
       "url_matches",
-      "api_scopes",
-      "root_api_scope",
       settings = {
         "http_headers",
         "rate_limits",
@@ -60,7 +68,24 @@ function _M.index(self)
         },
       },
     },
-  })
+  }
+
+  if self.current_admin.superuser then
+    table.insert(options["search_joins"], "LEFT JOIN api_scopes ON api_backends.frontend_host = api_scopes.host AND api_backend_url_matches.frontend_prefix LIKE api_scopes.path_prefix || '%'")
+    table.insert(options["search_joins"], "LEFT JOIN admin_groups_api_scopes ON api_scopes.id = admin_groups_api_scopes.api_scope_id")
+    table.insert(options["search_joins"], "LEFT JOIN admin_groups ON admin_groups_api_scopes.admin_group_id = admin_groups.id")
+
+    table.insert(options["search_fields"], db.raw("api_scopes.name"))
+    table.insert(options["search_fields"], db.raw("admin_groups.name"))
+
+    table.insert(options["order_fields"], "root_api_scope.name")
+
+    table.insert(options["preload"], "api_scopes")
+    table.insert(options["preload"], "root_api_scope")
+    table.insert(options["preload"], "admin_groups")
+  end
+
+  return datatables.index(self, ApiBackend, options)
 end
 
 function _M.show(self)

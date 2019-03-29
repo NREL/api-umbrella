@@ -7,6 +7,7 @@ local is_empty = require("pl.types").is_empty
 local json_response = require "api-umbrella.web-app.utils.json_response"
 local model_ext = require "api-umbrella.web-app.utils.model_ext"
 local preload = require("lapis.db.model").preload
+local split = require("ngx.re").split
 local t = require("api-umbrella.web-app.utils.gettext").gettext
 local table_keys = require("pl.tablex").keys
 local validation_ext = require "api-umbrella.web-app.utils.validation_ext"
@@ -53,18 +54,35 @@ local function build_search_where(escaped_table_name, search_fields, search_valu
   return "(" .. table.concat(where, " OR ") .. ")"
 end
 
-local function build_order(self)
+local function build_order(self, options)
   local orders = {}
+  local order_selects = {}
+  local order_joins = {}
   local order_fields = _M.parse_order(self)
   for _, order_field in ipairs(order_fields) do
     local column_name = order_field[1]
     local dir = order_field[2]
     if not is_empty(column_name) and not is_empty(dir) then
-      table.insert(orders, db.escape_identifier(column_name) .. " " .. dir)
+      local parts = split(column_name, "\\.", "jo", nil, 2)
+      local quoted_parts = { db.escape_identifier(parts[1]) }
+      if parts[2] then
+        table.insert(quoted_parts, db.escape_identifier(parts[2]))
+      end
+      local quoted_column = table.concat(quoted_parts, ".")
+
+      table.insert(orders, quoted_column .. " " .. dir)
+
+      if parts[2] then
+        table.insert(order_selects, quoted_column)
+      end
+
+      if options["order_joins"] and options["order_joins"][column_name] then
+        table.insert(order_joins, options["order_joins"][column_name])
+      end
     end
   end
 
-  return orders
+  return orders, order_selects, order_joins
 end
 
 local function build_sql_joins(joins)
@@ -236,14 +254,20 @@ function _M.index(self, model, options)
     sql = sql .. build_sql_joins(options["search_joins"])
   end
 
+  -- Order
+  local order_selects
+  local order_joins
+  if not is_empty(self.params["order"]) then
+    query["order"], order_selects, order_joins = build_order(self, options)
+  end
+
+  if not is_empty(order_joins) then
+    sql = sql .. build_sql_joins(order_joins)
+  end
+
   -- Total count before applying limits.
   sql = sql .. build_sql_where(query["where"])
   local total_count = model:select(sql, { fields = "COUNT(DISTINCT " .. escaped_table_name .. ".id) AS c", load = false })[1]["c"]
-
-  -- Order
-  if not is_empty(self.params["order"]) then
-    query["order"] = build_order(self)
-  end
 
   -- Limit
   if not is_empty(self.params["length"]) then
@@ -266,8 +290,13 @@ function _M.index(self, model, options)
     data = {},
   }
 
+  local fields = "DISTINCT " .. escaped_table_name .. ".*"
+  if not is_empty(order_selects) then
+    fields = fields .. ", " .. table.concat(order_selects, ", ")
+  end
+
   local records = model:select(sql, {
-    fields = "DISTINCT " .. escaped_table_name .. ".*",
+    fields = fields,
   })
   if options and options["preload"] then
     preload(records, options["preload"])

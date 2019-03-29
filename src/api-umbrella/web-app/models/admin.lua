@@ -231,6 +231,15 @@ Admin = model_ext.new_class("admins", {
     return false
   end,
 
+  groups_as_json = function(self)
+    local admin_groups = {}
+    for _, admin_group in ipairs(self:get_groups()) do
+      table.insert(admin_groups, admin_group:embedded_json())
+    end
+
+    return admin_groups
+  end,
+
   as_json = function(self, options)
     local data = {
       id = json_null_default(self.id),
@@ -259,6 +268,7 @@ Admin = model_ext.new_class("admins", {
       updater = {
         username = json_null_default(self.updated_by_username),
       },
+      groups = json_null_default(self:groups_as_json()),
       group_ids = json_null_default(self:group_ids()),
       group_names = json_null_default(self:group_names()),
       deleted_at = json_null,
@@ -270,6 +280,7 @@ Admin = model_ext.new_class("admins", {
     end
 
     json_array_fields(data, {
+      "groups",
       "group_ids",
       "group_names",
     }, options)

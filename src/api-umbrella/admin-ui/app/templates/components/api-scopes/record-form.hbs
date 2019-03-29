@@ -7,30 +7,32 @@
       {{f.text-field "host" label="Host"}}
       {{f.text-field "pathPrefix" label="Path Prefix"}}
 
-      {{#if model.id}}
-        {{#f.static-field "admin_groups" label="Admin Groups"}}
-          {{#if model.admin_groups}}
-            <ul>
-              {{#each model.admin_groups as |admin_group|}}
-                <li>{{#link-to "admin_groups.edit" admin_group.id}}{{admin_group.name}}{{/link-to}}</li>
-              {{/each}}
-            </ul>
-          {{else}}
-            None
-          {{/if}}
-        {{/f.static-field}}
+      {{#if currentAdmin.superuser}}
+        {{#if model.id}}
+          {{#f.static-field "admin_groups" label="Admin Groups"}}
+            {{#if model.adminGroups}}
+              <ul>
+                {{#each model.adminGroups as |adminGroup|}}
+                  <li>{{#link-to "admin_groups.edit" adminGroup.id}}{{adminGroup.name}}{{/link-to}}</li>
+                {{/each}}
+              </ul>
+            {{else}}
+              None
+            {{/if}}
+          {{/f.static-field}}
 
-        {{#f.static-field "apis" label="API Backends"}}
-          {{#if model.apis}}
-            <ul>
-              {{#each model.apis as |api_backend|}}
-                <li>{{#link-to "apis.edit" api_backend.id}}{{api_backend.name}}{{/link-to}}</li>
-              {{/each}}
-            </ul>
-          {{else}}
-            None
-          {{/if}}
-        {{/f.static-field}}
+          {{#f.static-field "apis" label="API Backends"}}
+            {{#if model.apis}}
+              <ul>
+                {{#each model.apis as |apiBackend|}}
+                  <li>{{#link-to "apis.edit" apiBackend.id}}{{apiBackend.name}}{{/link-to}}</li>
+                {{/each}}
+              </ul>
+            {{else}}
+              None
+            {{/if}}
+          {{/f.static-field}}
+        {{/if}}
       {{/if}}
     </fieldset>
 

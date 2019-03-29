@@ -107,7 +107,7 @@ ApiBackend = model_ext.new_class("api_backends", {
           " GROUP BY api_scopes.id" ..
           " ORDER BY api_scopes.name"
         return ApiScope:select(sql, self.id, {
-          fields = "api_scopes.id, api_scopes.name",
+          fields = "api_scopes.*",
         })
       end,
       preload = function(api_backends)
@@ -126,7 +126,7 @@ ApiBackend = model_ext.new_class("api_backends", {
             " GROUP BY api_scopes.id, api_backends.id" ..
             " ORDER BY api_scopes.name"
           local api_scopes = ApiScope:select(sql, db.list(api_backend_ids), {
-            fields = "api_scopes.id, api_scopes.name, api_backends.id AS _api_backend_id",
+            fields = "api_scopes.*, api_backends.id AS _api_backend_id",
           })
 
           for _, api_scope in ipairs(api_scopes) do
@@ -152,7 +152,7 @@ ApiBackend = model_ext.new_class("api_backends", {
           " ORDER BY length(api_scopes.path_prefix)" ..
           " LIMIT 1"
         return ApiScope:select(sql, self.id, {
-          fields = "api_scopes.id, api_scopes.name",
+          fields = "api_scopes.*",
         })[1]
       end,
       preload = function(api_backends)
@@ -170,7 +170,7 @@ ApiBackend = model_ext.new_class("api_backends", {
             " GROUP BY api_scopes.id, api_backends.id" ..
             " ORDER BY api_backends.id, length(api_scopes.path_prefix)"
           local api_scopes = ApiScope:select(sql, db.list(api_backend_ids), {
-            fields = "DISTINCT ON (api_backends.id) api_scopes.id, api_scopes.name, api_backends.id AS _api_backend_id",
+            fields = "DISTINCT ON (api_backends.id) api_scopes.*, api_backends.id AS _api_backend_id",
           })
 
           for _, api_scope in ipairs(api_scopes) do
@@ -178,6 +178,54 @@ ApiBackend = model_ext.new_class("api_backends", {
               if api_backend.id == api_scope["_api_backend_id"] then
                 api_backend["_api_backend_id"] = nil
                 api_backend["root_api_scope"] = api_scope
+              end
+            end
+          end
+        end
+      end,
+    },
+    {
+      "admin_groups",
+      fetch = function(self)
+        local AdminGroup = require "api-umbrella.web-app.models.admin_group"
+
+        local sql = "INNER JOIN admin_groups_api_scopes ON admin_groups.id = admin_groups_api_scopes.admin_group_id" ..
+          " INNER JOIN api_scopes ON admin_groups_api_scopes.api_scope_id = api_scopes.id" ..
+          " INNER JOIN api_backends ON api_scopes.host = api_backends.frontend_host" ..
+          " INNER JOIN api_backend_url_matches ON api_backends.id = api_backend_url_matches.api_backend_id AND api_backend_url_matches.frontend_prefix LIKE api_scopes.path_prefix || '%' " ..
+          " WHERE api_backends.id = ?" ..
+          " GROUP BY admin_groups.id" ..
+          " ORDER BY admin_groups.name"
+        return AdminGroup:select(sql, self.id, {
+          fields = "admin_groups.*",
+        })
+      end,
+      preload = function(api_backends)
+        local AdminGroup = require "api-umbrella.web-app.models.admin_group"
+
+        local api_backend_ids = {}
+        for _, api_backend in ipairs(api_backends) do
+          api_backend["admin_groups"] = {}
+          table.insert(api_backend_ids, api_backend.id)
+        end
+
+        if #api_backend_ids > 0 then
+          local sql = "INNER JOIN admin_groups_api_scopes ON admin_groups.id = admin_groups_api_scopes.admin_group_id" ..
+            " INNER JOIN api_scopes ON admin_groups_api_scopes.api_scope_id = api_scopes.id" ..
+            " INNER JOIN api_backends ON api_scopes.host = api_backends.frontend_host" ..
+            " INNER JOIN api_backend_url_matches ON api_backends.id = api_backend_url_matches.api_backend_id AND api_backend_url_matches.frontend_prefix LIKE api_scopes.path_prefix || '%' " ..
+            " WHERE api_backends.id IN ?" ..
+            " GROUP BY admin_groups.id, api_backends.id" ..
+            " ORDER BY admin_groups.name"
+          local admin_groups = AdminGroup:select(sql, db.list(api_backend_ids), {
+            fields = "admin_groups.*, api_backends.id AS _api_backend_id",
+          })
+
+          for _, admin_group in ipairs(admin_groups) do
+            for _, api_backend in ipairs(api_backends) do
+              if api_backend.id == admin_group["_api_backend_id"] then
+                api_backend["_api_backend_id"] = nil
+                table.insert(api_backend["admin_groups"], admin_group)
               end
             end
           end
@@ -220,10 +268,7 @@ ApiBackend = model_ext.new_class("api_backends", {
   api_scopes_as_json = function(self)
     local api_scopes = {}
     for _, api_scope in ipairs(self:get_api_scopes()) do
-      table.insert(api_scopes, {
-        id = api_scope.id,
-        name = api_scope.name,
-      })
+      table.insert(api_scopes, api_scope:embedded_json())
     end
 
     return api_scopes
@@ -232,13 +277,19 @@ ApiBackend = model_ext.new_class("api_backends", {
   root_api_scope_as_json = function(self)
     local root_api_scope = self:get_root_api_scope()
     if root_api_scope then
-      return {
-        id = root_api_scope.id,
-        name = root_api_scope.name,
-      }
+      return root_api_scope:embedded_json()
     else
       return nil
     end
+  end,
+
+  admin_groups_as_json = function(self)
+    local admin_groups = {}
+    for _, admin_group in ipairs(self:get_admin_groups()) do
+      table.insert(admin_groups, admin_group:embedded_json())
+    end
+
+    return admin_groups
   end,
 
   as_json = function(self, options)
@@ -257,8 +308,6 @@ ApiBackend = model_ext.new_class("api_backends", {
       settings = json_null,
       sub_settings = {},
       url_matches = {},
-      api_scopes = json_null_default(self:api_scopes_as_json()),
-      root_api_scope = json_null_default(self:root_api_scope_as_json()),
       created_at = json_null_default(time.postgres_to_iso8601(self.created_at)),
       created_by = json_null_default(self.created_by_id),
       creator = {
@@ -305,14 +354,31 @@ ApiBackend = model_ext.new_class("api_backends", {
       "servers",
       "sub_settings",
       "url_matches",
-      "api_scopes",
     }, options)
+
+    if ngx.ctx.current_admin.superuser then
+      data["api_scopes"] = json_null_default(self:api_scopes_as_json())
+      data["root_api_scope"] = json_null_default(self:root_api_scope_as_json())
+      data["admin_groups"] = json_null_default(self:admin_groups_as_json())
+
+      json_array_fields(data, {
+        "api_scopes",
+        "admin_groups",
+      }, options)
+    end
 
     if options and options["for_publishing"] then
       data["frontend_prefixes"] = nil
     end
 
     return data
+  end,
+
+  embedded_json = function(self)
+    return {
+      id = json_null_default(self.id),
+      name = json_null_default(self.name),
+    }
   end,
 
   move_to_beginning = function(self)

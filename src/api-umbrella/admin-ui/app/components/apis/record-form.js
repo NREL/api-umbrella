@@ -1,9 +1,13 @@
 import Component from '@ember/component';
 import Save from 'api-umbrella-admin-ui/mixins/save';
 import bootbox from 'bootbox';
+import { computed } from '@ember/object';
 import escape from 'lodash-es/escape';
+import { inject } from '@ember/service';
 
 export default Component.extend(Save, {
+  session: inject(),
+
   init() {
     this._super(...arguments);
 
@@ -18,6 +22,10 @@ export default Component.extend(Save, {
       { id: 'ip_hash', name: 'Source IP Hash' },
     ];
   },
+
+  currentAdmin: computed(function() {
+    return this.get('session.data.authenticated.admin');
+  }),
 
   actions: {
     submit() {

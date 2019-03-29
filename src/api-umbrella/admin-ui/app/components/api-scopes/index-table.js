@@ -1,9 +1,14 @@
 import Component from '@ember/component';
 import DataTablesHelpers from 'api-umbrella-admin-ui/utils/data-tables-helpers';
 import escape from 'lodash-es/escape';
+import { inject } from '@ember/service';
 
 export default Component.extend({
+  session: inject('session'),
+
   didInsertElement() {
+    const currentAdmin = this.get('session.data.authenticated.admin');
+
     this.$().find('table').DataTable({
       serverSide: true,
       ajax: '/api-umbrella/v1/api_scopes.json',
@@ -35,24 +40,26 @@ export default Component.extend({
           defaultContent: '-',
           render: DataTablesHelpers.renderEscaped,
         },
-        {
-          data: 'admin_groups',
-          title: 'Admin Groups',
-          defaultContent: '-',
-          render: DataTablesHelpers.renderLinkedListEscaped({
-            editLink: '#/admin_group/',
-            nameField: 'name',
-          }),
-        },
-        {
-          data: 'apis',
-          title: 'API Backends',
-          defaultContent: '-',
-          render: DataTablesHelpers.renderLinkedListEscaped({
-            editLink: '#/apis/',
-            nameField: 'name',
-          }),
-        },
+        ...(currentAdmin.superuser ? [
+          {
+            data: 'admin_groups',
+            title: 'Admin Groups',
+            defaultContent: '-',
+            render: DataTablesHelpers.renderLinkedList({
+              editLink: '#/admin_groups/',
+              nameField: 'name',
+            }),
+          },
+          {
+            data: 'apis',
+            title: 'API Backends',
+            defaultContent: '-',
+            render: DataTablesHelpers.renderLinkedList({
+              editLink: '#/apis/',
+              nameField: 'name',
+            }),
+          },
+        ] : []),
       ],
     });
   },

@@ -92,6 +92,48 @@
     </div>
   </fieldset>
 
+  {{#if currentAdmin.superuser}}
+    {{#if model.id}}
+      {{#fields-for model=model style="horizontal" as |f|}}
+        <fieldset class="form-horizontal condensed">
+          <legend>{{t "Details"}}</legend>
+
+          {{#f.static-field "rootApiScope" label="Root API Scope"}}
+            {{#if model.rootApiScope}}
+              {{#link-to "api_scopes.edit" model.rootApiScope.id}}{{model.rootApiScope.name}} - {{model.rootApiScope.host}}{{model.rootApiScope.path_prefix}}{{/link-to}}
+            {{else}}
+              None
+            {{/if}}
+          {{/f.static-field}}
+
+          {{#f.static-field "apiScopes" label="API Scopes"}}
+            {{#if model.apiScopes}}
+              <ul>
+                {{#each model.apiScopes as |apiScope|}}
+                  <li>{{#link-to "api_scopes.edit" apiScope.id}}{{apiScope.name}} - {{apiScope.host}}{{apiScope.path_prefix}}{{/link-to}}</li>
+                {{/each}}
+              </ul>
+            {{else}}
+              None
+            {{/if}}
+          {{/f.static-field}}
+
+          {{#f.static-field "adminGroups" label="Admin Groups"}}
+            {{#if model.adminGroups}}
+              <ul>
+                {{#each model.adminGroups as |admin_group|}}
+                  <li>{{#link-to "admin_groups.edit" admin_group.id}}{{admin_group.name}}{{/link-to}}</li>
+                {{/each}}
+              </ul>
+            {{else}}
+              None
+            {{/if}}
+          {{/f.static-field}}
+        </fieldset>
+      {{/fields-for}}
+    {{/if}}
+  {{/if}}
+
   <div class="row">
     <div class="col-sm-6">
       <button type="submit" class="btn btn-lg btn-primary save-button"><span class="btn-label">Save</span><span class="btn-loading-label">{{fa-icon "sync-alt" spin=true}}Saving...</span></button>
