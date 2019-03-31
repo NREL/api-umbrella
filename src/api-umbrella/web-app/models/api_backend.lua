@@ -368,7 +368,10 @@ ApiBackend = model_ext.new_class("api_backends", {
     end
 
     if options and options["for_publishing"] then
+      data["admin_groups"] = nil
+      data["api_scopes"] = nil
       data["frontend_prefixes"] = nil
+      data["root_api_scope"] = nil
     end
 
     return data
