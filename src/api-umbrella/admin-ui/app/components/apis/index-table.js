@@ -85,6 +85,7 @@ export default Component.extend({
           },
         ] : []),
         {
+          name: 'sort_order',
           data: 'sort_order',
           title: 'Matching Order',
           defaultContent: '-',
@@ -118,7 +119,7 @@ export default Component.extend({
         // other than the sort order (otherwise, our reordering logic won't
         // work, since it relies on the neighboring rows).
         if(this.reorderActive) {
-          if(settings.aaSorting && !isEqual(settings.aaSorting, [[3, 'asc']])) {
+          if(settings.aaSorting && !isEqual(settings.aaSorting, [[this.table.column('sort_order:name').index(), 'asc']])) {
             this.set('reorderActive', false);
           }
         }
@@ -150,7 +151,7 @@ export default Component.extend({
     if(this.reorderActive) {
       this.$().find('table').addClass('reorder-active');
       this.table
-        .order([[3, 'asc']])
+        .order([[this.table.column('sort_order:name').index(), 'asc']])
         .search('')
         .draw();
     } else {

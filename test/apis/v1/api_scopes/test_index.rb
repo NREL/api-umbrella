@@ -35,6 +35,8 @@ class Test::Apis::V1::ApiScopes::TestIndex < Minitest::Test
     record_data = data.fetch("data").first
     assert_base_record_fields(record_data)
 
+    assert_equal([], record_data.fetch("admin_groups"))
+    assert_equal([], record_data.fetch("apis"))
     assert_equal("2017-01-01T00:00:00Z", record_data.fetch("created_at"))
     assert_match_uuid(record_data.fetch("created_by"))
     assert_equal(record.created_by_id, record_data.fetch("created_by"))
@@ -122,6 +124,8 @@ class Test::Apis::V1::ApiScopes::TestIndex < Minitest::Test
 
   def assert_base_record_fields(record_data)
     assert_equal([
+      "admin_groups",
+      "apis",
       "created_at",
       "created_by",
       "creator",
@@ -135,6 +139,8 @@ class Test::Apis::V1::ApiScopes::TestIndex < Minitest::Test
       "updater",
       "version",
     ].sort, record_data.keys.sort)
+    assert_kind_of(Array, record_data.fetch("admin_groups"))
+    assert_kind_of(Array, record_data.fetch("apis"))
     assert_match_iso8601(record_data.fetch("created_at"))
     assert_match_uuid(record_data.fetch("created_by"))
     assert_kind_of(Hash, record_data.fetch("creator"))

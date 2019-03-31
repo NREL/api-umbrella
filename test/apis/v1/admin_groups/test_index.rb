@@ -83,6 +83,18 @@ class Test::Apis::V1::AdminGroups::TestIndex < Minitest::Test
     assert_match("- localhost/example", record_data.fetch("api_scope_display_names").first)
     assert_equal(1, record_data.fetch("api_scope_ids").length)
     assert_match_uuid(record_data.fetch("api_scope_ids").first)
+    assert_equal(1, record_data.fetch("api_scopes").length)
+    assert_kind_of(Hash, record_data.fetch("api_scopes").first)
+    assert_equal([
+      "host",
+      "id",
+      "name",
+      "path_prefix",
+    ].sort, record_data.fetch("api_scopes").first.keys.sort)
+    assert_equal("localhost", record_data.fetch("api_scopes").first.fetch("host"))
+    assert_match_uuid(record_data.fetch("api_scopes").first.fetch("id"))
+    assert_match(%r{^Example \d+$}, record_data.fetch("api_scopes").first.fetch("name"))
+    assert_match(%r{^/example/\d+/$}, record_data.fetch("api_scopes").first.fetch("path_prefix"))
     assert_equal("2017-01-01T00:00:00Z", record_data.fetch("created_at"))
     assert_match_uuid(record_data.fetch("created_by"))
     assert_equal(record.created_by_id, record_data.fetch("created_by"))
@@ -157,6 +169,7 @@ class Test::Apis::V1::AdminGroups::TestIndex < Minitest::Test
       "admins",
       "api_scope_display_names",
       "api_scope_ids",
+      "api_scopes",
       "created_at",
       "created_by",
       "creator",
@@ -174,6 +187,7 @@ class Test::Apis::V1::AdminGroups::TestIndex < Minitest::Test
     assert_kind_of(Array, record_data.fetch("admin_usernames"))
     assert_kind_of(Array, record_data.fetch("api_scope_display_names"))
     assert_kind_of(Array, record_data.fetch("api_scope_ids"))
+    assert_kind_of(Array, record_data.fetch("api_scopes"))
     assert_match_iso8601(record_data.fetch("created_at"))
     assert_match_uuid(record_data.fetch("created_by"))
     assert_kind_of(Hash, record_data.fetch("creator"))

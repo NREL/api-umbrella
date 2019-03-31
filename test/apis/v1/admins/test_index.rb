@@ -42,6 +42,14 @@ class Test::Apis::V1::Admins::TestIndex < Minitest::Test
       "ExampleFilledGroup",
       "Superuser",
     ], record_data.fetch("group_names").sort)
+    assert_equal(1, record_data.fetch("groups").length)
+    assert_kind_of(Hash, record_data.fetch("groups").first)
+    assert_equal([
+      "id",
+      "name",
+    ].sort, record_data.fetch("groups").first.keys.sort)
+    assert_match_uuid(record_data.fetch("groups").first.fetch("id"))
+    assert_equal("ExampleFilledGroup", record_data.fetch("groups").first.fetch("name"))
     assert_equal("2017-01-06T00:00:00Z", record_data.fetch("last_sign_in_at"))
     assert_equal("10.11.2.4", record_data.fetch("last_sign_in_ip"))
     assert_equal("Provider2", record_data.fetch("last_sign_in_provider"))
@@ -75,6 +83,7 @@ class Test::Apis::V1::Admins::TestIndex < Minitest::Test
     assert_equal("00000000-1111-2222-3333-444444444444", record_data.fetch("updated_by"))
     assert_equal([], record_data.fetch("group_ids"))
     assert_equal(["Superuser"], record_data.fetch("group_names"))
+    assert_equal([], record_data.fetch("groups"))
   end
 
   def test_search_name
@@ -128,6 +137,7 @@ class Test::Apis::V1::Admins::TestIndex < Minitest::Test
       "failed_attempts",
       "group_ids",
       "group_names",
+      "groups",
       "id",
       "last_sign_in_at",
       "last_sign_in_ip",
@@ -154,6 +164,7 @@ class Test::Apis::V1::Admins::TestIndex < Minitest::Test
     assert_kind_of(Integer, record_data.fetch("failed_attempts"))
     assert_kind_of(Array, record_data.fetch("group_ids"))
     assert_kind_of(Array, record_data.fetch("group_names"))
+    assert_kind_of(Array, record_data.fetch("groups"))
     assert_match_uuid(record_data.fetch("id"))
     assert_kind_of(Integer, record_data.fetch("sign_in_count"))
     assert_includes([true, false], record_data.fetch("superuser"))
