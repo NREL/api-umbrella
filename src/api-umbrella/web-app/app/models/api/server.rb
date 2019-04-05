@@ -30,8 +30,8 @@ class Api::Server
     if(self.host.present?)
       begin
         Resolv.getaddress(self.host)
-      rescue => error
-        self.errors.add(:host, "Could not resolve host: #{error.message}")
+      rescue => e
+        self.errors.add(:host, "Could not resolve host: #{e.message}")
       end
     end
   end

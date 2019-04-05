@@ -105,10 +105,10 @@ class Api::Settings
       end
 
       self.error_data = data
-    rescue Psych::SyntaxError => error
+    rescue Psych::SyntaxError => e
       # Ignore YAML errors, we'll deal with validating during
       # validate_error_data_yaml_strings.
-      logger.info("YAML parsing error: #{error.message}")
+      logger.info("YAML parsing error: #{e.message}")
     end
   end
 
