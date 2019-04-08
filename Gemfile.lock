@@ -10,7 +10,7 @@ GIT
 GEM
   remote: https://rubygems.org/
   specs:
-    active_attr (0.12.0)
+    active_attr (0.13.0)
       activemodel (>= 3.0.2, < 6.0)
       activesupport (>= 3.0.2, < 6.0)
     activemodel (5.2.3)
@@ -44,12 +44,12 @@ GEM
     colorize (0.8.1)
     concurrent-ruby (1.1.5)
     database_cleaner (1.7.0)
-    elasticsearch (6.2.0)
-      elasticsearch-api (= 6.2.0)
-      elasticsearch-transport (= 6.2.0)
-    elasticsearch-api (6.2.0)
+    elasticsearch (6.3.0)
+      elasticsearch-api (= 6.3.0)
+      elasticsearch-transport (= 6.3.0)
+    elasticsearch-api (6.3.0)
       multi_json
-    elasticsearch-transport (6.2.0)
+    elasticsearch-transport (6.3.0)
       faraday
       multi_json
     ethon (0.12.0)
@@ -137,7 +137,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  active_attr (~> 0.12.0)
+  active_attr (~> 0.13.0)
   activesupport (~> 5.2.0)
   addressable (~> 2.6.0)
   awesome_print (~> 1.8.0)
@@ -148,7 +148,7 @@ DEPENDENCIES
   childprocess (~> 0.9.0)
   concurrent-ruby (~> 1.1.1)
   database_cleaner (~> 1.7.0)
-  elasticsearch (~> 6.2.0)
+  elasticsearch (~> 6.3.0)
   factory_bot (~> 5.0.0)
   faker (~> 1.9.1)
   lazyhash (~> 0.1.1)
