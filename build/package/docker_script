@@ -4,11 +4,49 @@ set -e -u -x
 
 source_dir="$(dirname "$(dirname "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)")")"
 
+if [ -f /etc/os-release ]; then
+  # shellcheck disable=SC1091
+  source /etc/os-release
+fi
+
 if [ -f /etc/redhat-release ]; then
   yum -y install git rsync
+
+  if [[ "${VERSION_ID:-}" == "" ]]; then
+    VERSION_ID=$(grep -oP '(?<= )[0-9]+(?=\.)' /etc/redhat-release)
+  fi
+
+  # Install GCC 7+ for compiling TrafficServer (C++17 required).
+  if [[ "$VERSION_ID" == "6" || "$VERSION_ID" == "7" ]]; then
+    yum -y install centos-release-scl
+    yum -y install devtoolset-7
+    set +u
+    # shellcheck disable=SC1091
+    source /opt/rh/devtoolset-7/enable
+    set -u
+  fi
 elif [ -f /etc/debian_version ]; then
   apt-get update
   DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends install git rsync
+
+  # Install GCC 7+ for compiling TrafficServer (C++17 required).
+  if [[ "$ID" == "ubuntu" && "$VERSION_ID" == "16.04" ]]; then
+    DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends install software-properties-common
+    add-apt-repository -y ppa:ubuntu-toolchain-r/test
+    apt-get update
+    DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends install gcc-7 g++-7
+
+    export CC=/usr/bin/gcc-7
+    export CXX=/usr/bin/g++-7
+  elif [[ "$ID" == "debian" && ( "$VERSION_ID" == "8" || "$VERSION_ID" == "9" ) ]]; then
+    printf "Package: *\nPin: release a=testing\nPin-Priority: 50" > /etc/apt/preferences.d/testing
+    echo "deb http://deb.debian.org/debian testing main" > /etc/apt/sources.list.d/testing.list
+    apt-get update
+    DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends install gcc-7 g++-7
+
+    export CC=/usr/bin/gcc-7
+    export CXX=/usr/bin/g++-7
+  fi
 fi
 
 # Create a clean copy of the source directory.
@@ -24,8 +62,8 @@ git clean -d -f -x
 # Install any system dependencies for building.
 "$clean_source_dir/tasks/install-system-build-dependencies"
 
-# shellcheck disable=SC1091
 if [ -f /etc/os-release ]; then
+  # shellcheck disable=SC1091
   source /etc/os-release
 fi
 
