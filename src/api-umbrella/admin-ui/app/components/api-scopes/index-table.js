@@ -45,6 +45,7 @@ export default Component.extend({
             data: 'admin_groups',
             title: 'Admin Groups',
             defaultContent: '-',
+            orderable: false,
             render: DataTablesHelpers.renderLinkedList({
               editLink: '#/admin_groups/',
               nameField: 'name',
@@ -54,6 +55,7 @@ export default Component.extend({
             data: 'apis',
             title: 'API Backends',
             defaultContent: '-',
+            orderable: false,
             render: DataTablesHelpers.renderLinkedList({
               editLink: '#/apis/',
               nameField: 'name',
