@@ -42,7 +42,7 @@ elif [ -f /etc/debian_version ]; then
     printf "Package: *\nPin: release a=testing\nPin-Priority: 50" > /etc/apt/preferences.d/testing
     echo "deb http://deb.debian.org/debian testing main" > /etc/apt/sources.list.d/testing.list
     apt-get update
-    DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends install gcc-7 g++-7
+    DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends -t testing install gcc-7 g++-7
 
     export CC=/usr/bin/gcc-7
     export CXX=/usr/bin/g++-7

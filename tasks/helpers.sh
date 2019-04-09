@@ -25,11 +25,8 @@ TEST_VENDOR_DIR="$TEST_INSTALL_PREFIX/vendor"
 TEST_VENDOR_LUA_SHARE_DIR="$TEST_VENDOR_DIR/share/lua/5.1"
 TEST_VENDOR_LUA_LIB_DIR="$TEST_VENDOR_DIR/lib/lua/5.1"
 
-# PATH variables to use when executing other commands. Note that we use a
-# hard-coded base default path (instead of $ENV{PATH}), since using $ENV{PATH}
-# makes cmake think there have been PATH changes which trigger rebuilds, even
-# when the path hasn't changed.
-DEFAULT_PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+# PATH variables to use when executing other commands.
+DEFAULT_PATH="$PATH"
 STAGE_EMBEDDED_PATH="$STAGE_EMBEDDED_DIR/bin:$DEFAULT_PATH"
 DEV_PATH="$DEV_INSTALL_PREFIX/bin:$STAGE_EMBEDDED_PATH"
 

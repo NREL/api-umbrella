@@ -3,8 +3,8 @@
 set -e -u -x
 source ./tasks/helpers.sh
 
+build_dir=$(pwd)
 task_working_dir
-
 
 export PATH="$STAGE_EMBEDDED_PATH"
 export BUNDLE_GEMFILE="$SOURCE_DIR/build/package/Gemfile"
@@ -28,7 +28,7 @@ export BUNDLE_APP_CONFIG
 work_destdir="$(pwd)/destdir"
 rm -rf "$work_destdir"
 (
-  cd "$SOURCE_DIR"
+  cd "$build_dir"
   make
   make install DESTDIR="$work_destdir"
 )
