@@ -17,31 +17,7 @@ local path = require "pl.path"
 local pg_utils = require "api-umbrella.utils.pg_utils"
 
 return function()
-  -- FIXME: Don't drop the database on every migrate... Obviously. Just for
-  -- testing/development purposes now.
-  if config["app_env"] == "development" then
-    -- Connect as superuser to drop/create database.
-    pg_utils.db_config["user"] = "api-umbrella"
-    pg_utils.db_config["password"] = nil
-    pg_utils.db_config["database"] = "postgres"
-
-    pg_utils.query("SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = 'api_umbrella' AND pid != pg_backend_pid()", nil, { verbose = true, fatal = true })
-    pg_utils.query("DROP DATABASE IF EXISTS api_umbrella", nil, { verbose = true, fatal = true })
-    pg_utils.query("CREATE DATABASE api_umbrella WITH OWNER = " .. pg_utils.escape_identifier(config["postgresql"]["migrations"]["username"]) .. " ENCODING = 'UTF8'", nil, { verbose = true, fatal = true })
-
-    pg_utils.db_config["database"] = "api_umbrella"
-    pg_utils.query("CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA public", nil, { verbose = true, fatal = true })
-
-    pg_utils.query("ALTER SCHEMA public OWNER TO " .. pg_utils.escape_identifier(config["postgresql"]["migrations"]["username"]), nil, { verbose = true, fatal = true })
-    pg_utils.query("GRANT ALL ON SCHEMA public TO " .. pg_utils.escape_identifier(pg_utils.db_config["user"]), nil, { verbose = true, fatal = true })
-
-    pg_utils.query("CREATE SCHEMA IF NOT EXISTS api_umbrella", nil, { verbose = true, fatal = true })
-    pg_utils.query("ALTER SCHEMA api_umbrella OWNER TO " .. pg_utils.escape_identifier(config["postgresql"]["migrations"]["username"]), nil, { verbose = true, fatal = true })
-    pg_utils.query("GRANT ALL ON SCHEMA api_umbrella TO " .. pg_utils.escape_identifier(pg_utils.db_config["user"]), nil, { verbose = true, fatal = true })
-  end
-
   db.query("SET search_path = api_umbrella, public")
-  migrations.create_migrations_table()
   migrations.run_migrations(require("migrations"))
 
   pg_utils.db_config["user"] = config["postgresql"]["migrations"]["username"]
