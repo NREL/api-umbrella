@@ -60,6 +60,7 @@ AdminGroup = model_ext.new_class("admin_groups", {
       table.insert(admins, {
         id = admin.id,
         username = admin.username,
+        current_sign_in_at = json_null_default(time.postgres_to_iso8601(admin.current_sign_in_at)),
         last_sign_in_at = json_null_default(time.postgres_to_iso8601(admin.last_sign_in_at)),
       })
     end
