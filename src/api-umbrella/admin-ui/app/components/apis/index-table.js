@@ -61,8 +61,8 @@ export default Component.extend({
             render: DataTablesHelpers.renderEscaped,
           },
           {
-            data: 'environment_name',
-            title: 'Environment Name',
+            data: 'status_description',
+            title: 'Status',
             defaultContent: '-',
             render: DataTablesHelpers.renderEscaped,
           },

@@ -358,7 +358,7 @@ ApiBackend = model_ext.new_class("api_backends", {
 
     if ngx.ctx.current_admin.superuser then
       data["organization_name"] = json_null_default(self.organization_name)
-      data["environment_name"] = json_null_default(self.environment_name)
+      data["status_description"] = json_null_default(self.status_description)
       data["api_scopes"] = json_null_default(self:api_scopes_as_json())
       data["root_api_scope"] = json_null_default(self:root_api_scope_as_json())
       data["admin_groups"] = json_null_default(self:admin_groups_as_json())
@@ -371,7 +371,7 @@ ApiBackend = model_ext.new_class("api_backends", {
 
     if options and options["for_publishing"] then
       data["organization_name"] = nil
-      data["environment_name"] = nil
+      data["status_description"] = nil
       data["admin_groups"] = nil
       data["api_scopes"] = nil
       data["frontend_prefixes"] = nil
@@ -554,10 +554,10 @@ ApiBackend = model_ext.new_class("api_backends", {
     validate_field(errors, data, "url_matches", t("URL matches"), {
       { validation_ext.non_null_table:minlen(1), t("Must have at least one url_matches") },
     }, { error_field = "base" })
-    validate_field(errors, data, "organization_name", t("Organization"), {
+    validate_field(errors, data, "organization_name", t("Organization Name"), {
       { validation_ext.db_null_optional.string:maxlen(255), string.format(t("is too long (maximum is %d characters)"), 255) },
     })
-    validate_field(errors, data, "environment_name", t("Environment"), {
+    validate_field(errors, data, "status_description", t("Status"), {
       { validation_ext.db_null_optional.string:maxlen(255), string.format(t("is too long (maximum is %d characters)"), 255) },
     })
     return errors

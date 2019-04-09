@@ -93,10 +93,10 @@ local function generate_summary_api_backends()
   local organization_count = db.query("SELECT COUNT(DISTINCT organization_name) AS organization_count FROM api_backends WHERE organization_name IS NOT NULL AND organization_name != ''")
   data["organization_count"] = int64_to_json_number(organization_count[1]["organization_count"])
 
-  local environment_counts = db.query("SELECT environment_name, COUNT(environment_name) AS environment_count FROM api_backends WHERE environment_name IS NOT NULL AND environment_name != '' GROUP BY environment_name")
-  data["environment_counts"] = {}
-  for _, row in ipairs(environment_counts) do
-    data["environment_counts"][row["environment_name"]] = int64_to_json_number(row["environment_count"])
+  local status_counts = db.query("SELECT status_description, COUNT(status_description) AS status_count FROM api_backends WHERE status_description IS NOT NULL AND status_description != '' GROUP BY status_description")
+  data["status_counts"] = {}
+  for _, row in ipairs(status_counts) do
+    data["status_counts"][row["status_description"]] = int64_to_json_number(row["status_count"])
   end
 
   return data

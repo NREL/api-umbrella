@@ -51,7 +51,7 @@ export default DS.Model.extend(Validations, {
   creator: DS.attr(),
   updater: DS.attr(),
   organizationName: DS.attr(),
-  environmentName: DS.attr(),
+  statusDescription: DS.attr(),
   rootApiScope: DS.attr(),
   apiScopes: DS.attr(),
   adminGroups: DS.attr(),

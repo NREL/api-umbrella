@@ -77,12 +77,12 @@ function _M.index(self)
     table.insert(options["search_joins"], "LEFT JOIN admin_groups ON admin_groups_api_scopes.admin_group_id = admin_groups.id")
 
     table.insert(options["search_fields"], db.raw("api_backends.organization_name"))
-    table.insert(options["search_fields"], db.raw("api_backends.environment_name"))
+    table.insert(options["search_fields"], db.raw("api_backends.status_description"))
     table.insert(options["search_fields"], db.raw("api_scopes.name"))
     table.insert(options["search_fields"], db.raw("admin_groups.name"))
 
     table.insert(options["order_fields"], "organization_name")
-    table.insert(options["order_fields"], "environment_name")
+    table.insert(options["order_fields"], "status_description")
     table.insert(options["order_fields"], "root_api_scope.name")
 
     table.insert(options["preload"], "api_scopes")
@@ -333,7 +333,7 @@ function _M.api_backend_params(self)
     if self.current_admin.superuser then
       deep_merge_overwrite_arrays(params, dbify_json_nulls({
         organization_name = input["organization_name"],
-        environment_name = input["environment_name"],
+        status_description = input["status_description"],
       }))
     end
   end
