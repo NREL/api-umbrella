@@ -55,6 +55,18 @@ export default Component.extend({
         },
         ...(currentAdmin.superuser ? [
           {
+            data: 'organization_name',
+            title: 'Organization Name',
+            defaultContent: '-',
+            render: DataTablesHelpers.renderEscaped,
+          },
+          {
+            data: 'environment_name',
+            title: 'Environment Name',
+            defaultContent: '-',
+            render: DataTablesHelpers.renderEscaped,
+          },
+          {
             data: 'root_api_scope.name',
             title: 'Root API Scope',
             defaultContent: '-',

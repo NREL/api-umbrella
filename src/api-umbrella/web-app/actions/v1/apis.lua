@@ -4,6 +4,7 @@ local capture_errors_json = require("api-umbrella.web-app.utils.capture_errors")
 local datatables = require "api-umbrella.web-app.utils.datatables"
 local db = require "lapis.db"
 local dbify_json_nulls = require "api-umbrella.web-app.utils.dbify_json_nulls"
+local deep_merge_overwrite_arrays = require "api-umbrella.utils.deep_merge_overwrite_arrays"
 local is_array = require "api-umbrella.utils.is_array"
 local is_empty = require("pl.types").is_empty
 local is_hash = require "api-umbrella.utils.is_hash"
@@ -75,9 +76,13 @@ function _M.index(self)
     table.insert(options["search_joins"], "LEFT JOIN admin_groups_api_scopes ON api_scopes.id = admin_groups_api_scopes.api_scope_id")
     table.insert(options["search_joins"], "LEFT JOIN admin_groups ON admin_groups_api_scopes.admin_group_id = admin_groups.id")
 
+    table.insert(options["search_fields"], db.raw("api_backends.organization_name"))
+    table.insert(options["search_fields"], db.raw("api_backends.environment_name"))
     table.insert(options["search_fields"], db.raw("api_scopes.name"))
     table.insert(options["search_fields"], db.raw("admin_groups.name"))
 
+    table.insert(options["order_fields"], "organization_name")
+    table.insert(options["order_fields"], "environment_name")
     table.insert(options["order_fields"], "root_api_scope.name")
 
     table.insert(options["preload"], "api_scopes")
@@ -323,6 +328,13 @@ function _M.api_backend_params(self)
 
     if input["settings"] then
       params["settings"] = api_backend_settings_params(input["settings"])
+    end
+
+    if self.current_admin.superuser then
+      deep_merge_overwrite_arrays(params, dbify_json_nulls({
+        organization_name = input["organization_name"],
+        environment_name = input["environment_name"],
+      }))
     end
   end
 

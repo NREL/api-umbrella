@@ -855,6 +855,8 @@ CREATE TABLE api_umbrella.api_backends (
     updated_at timestamp with time zone NOT NULL,
     updated_by_id uuid NOT NULL,
     updated_by_username character varying(255) NOT NULL,
+    organization_name character varying(255),
+    environment_name character varying(255),
     CONSTRAINT api_backends_backend_protocol_check CHECK (((backend_protocol)::text = ANY ((ARRAY['http'::character varying, 'https'::character varying])::text[]))),
     CONSTRAINT api_backends_balance_algorithm_check CHECK (((balance_algorithm)::text = ANY ((ARRAY['round_robin'::character varying, 'least_conn'::character varying, 'ip_hash'::character varying])::text[])))
 );

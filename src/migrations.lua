@@ -858,5 +858,10 @@ return {
     ]])
 
     db.query("COMMIT")
-  end
+  end,
+
+  [1554823736] = function()
+    db.query("ALTER TABLE api_umbrella.api_backends ADD COLUMN organization_name varchar(255)")
+    db.query("ALTER TABLE api_umbrella.api_backends ADD COLUMN environment_name varchar(255)")
+  end,
 }

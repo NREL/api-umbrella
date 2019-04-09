@@ -7,6 +7,7 @@ local db = require "lapis.db"
 local int64_to_json_number = require("api-umbrella.utils.int64").to_json_number
 local interval_lock = require "api-umbrella.utils.interval_lock"
 local json_encode = require "api-umbrella.utils.json_encode"
+local json_decode = require("cjson").decode
 local json_response = require "api-umbrella.web-app.utils.json_response"
 local time = require "api-umbrella.utils.time"
 
@@ -87,6 +88,20 @@ local function generate_summary_hits(start_time, end_time)
   }
 end
 
+local function generate_summary_api_backends()
+  local data = {}
+  local organization_count = db.query("SELECT COUNT(DISTINCT organization_name) AS organization_count FROM api_backends WHERE organization_name IS NOT NULL AND organization_name != ''")
+  data["organization_count"] = int64_to_json_number(organization_count[1]["organization_count"])
+
+  local environment_counts = db.query("SELECT environment_name, COUNT(environment_name) AS environment_count FROM api_backends WHERE environment_name IS NOT NULL AND environment_name != '' GROUP BY environment_name")
+  data["environment_counts"] = {}
+  for _, row in ipairs(environment_counts) do
+    data["environment_counts"][row["environment_name"]] = int64_to_json_number(row["environment_count"])
+  end
+
+  return data
+end
+
 local function generate_summary()
   local start_time = "2013-07-01T00:00:00"
   local end_time = time.timestamp_to_iso8601(ngx.now())
@@ -138,7 +153,13 @@ function _M.summary(self)
     response_json = generate_summary()
   end
 
-  return json_response(self, response_json)
+  -- TODO: Shift this into the cached response for better consistency once our
+  -- data settles down and we prove this out. But since it's a quick query,
+  -- make it on each request (uncached) for now.
+  local response = json_decode(response_json)
+  response["api_backends"] = generate_summary_api_backends()
+
+  return json_response(self, response)
 end
 
 return function(app)
