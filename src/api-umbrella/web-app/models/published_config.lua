@@ -72,6 +72,7 @@ local compare_exclude_keys = {
   created_by_username = 1,
   creator = 1,
   id = 1,
+  name = 1,
   updated_at = 1,
   updated_by = 1,
   updated_by_id = 1,
