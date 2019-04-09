@@ -36,7 +36,7 @@ export default Component.extend({
           name: 'Groups',
           title: t('Groups'),
           orderable: false,
-          render: function(value, type, row) {
+          render: (value, type, row) => {
             if(row.superuser === true) {
               // For superusers, append this to the list of groups for display
               // purposes (even though it isn't really a group and can't be
