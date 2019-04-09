@@ -68,8 +68,12 @@ export default {
         }
 
         return '<ul>' + map(value, function(v) {
-          const link = options.editLink + encodeURIComponent(v.id) + '/edit';
-          return '<li><a href="' + link + '">' + escape(getName(v, options)) + '</a></li>';
+          if(v.id) {
+            const link = options.editLink + encodeURIComponent(v.id) + '/edit';
+            return '<li><a href="' + link + '">' + escape(getName(v, options)) + '</a></li>';
+          } else {
+            return '<li>' + escape(getName(v, options)) + '</li>';
+          }
         }).join('') + '</ul>';
       }
 

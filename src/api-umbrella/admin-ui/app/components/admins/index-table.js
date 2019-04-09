@@ -36,10 +36,21 @@ export default Component.extend({
           name: 'Groups',
           title: t('Groups'),
           orderable: false,
-          render: DataTablesHelpers.renderLinkedList({
-            editLink: '#/admin_groups/',
-            nameField: 'name',
-          }),
+          render: function(value, type, row) {
+            if(row.superuser === true) {
+              // For superusers, append this to the list of groups for display
+              // purposes (even though it isn't really a group and can't be
+              // linked, like the other admin groups).
+              value.push({
+                name: t('Superuser'),
+              });
+            }
+
+            return DataTablesHelpers.renderLinkedList({
+              editLink: '#/admin_groups/',
+              nameField: 'name',
+            })(value, type);
+          },
         },
         {
           data: 'current_sign_in_at',
