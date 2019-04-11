@@ -90,6 +90,8 @@ Rails.application.routes.draw do
     resources :stats, :only => [:index] do
       collection do
         get "search"
+        get "logs"
+        post "logs"
         get "users"
         get "map"
       end
