@@ -23,4 +23,4 @@ We are updating documentation. Please see [Installation](https://github.com/apin
 
 ## License
 
-APInf Umbrella is open sourced under the [MIT license](https://github.com/apinf/api-umbrella/blob/master/LICENSE.txt).
+APInf Umbrella is open sourced under the [MIT license](https://github.com/apinf/api-umbrella/blob/master/LICENSE.txt). 
