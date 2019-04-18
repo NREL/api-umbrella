@@ -21,7 +21,7 @@ gem "minitest-ci", "~> 3.4.0"
 gem "rubocop", "~> 0.67.1", :require => false
 
 # Running background processes
-gem "childprocess", "~> 0.9.0"
+gem "childprocess", "~> 1.0.1"
 
 # Making HTTP requests
 gem "typhoeus", "~> 1.3.0"
@@ -48,9 +48,9 @@ gem "rails_compatible_cookies_utils", "~> 0.1.0"
 gem "addressable", "~> 2.6.0"
 
 # Browser/JavaScript integration tests
-gem "capybara", "~> 3.16.1"
+gem "capybara", "~> 3.17.0"
 gem "selenium-webdriver", "~> 3.141"
-gem "webdrivers", "~> 3.7.2", :require => false
+gem "webdrivers", "~> 3.8.0", :require => false
 # https://github.com/dbalatero/capybara-chromedriver-logger/pull/7
 gem "capybara-chromedriver-logger", "~> 0.3.0", :git => "https://github.com/ThriveTRM/capybara-chromedriver-logger.git", :branch => "do-not-raise-on-filtered-errors"
 
