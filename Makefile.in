@@ -2,8 +2,11 @@
 # that tool for executing (so "make all" actually becomes "task all"). See
 # Taskfile.yml for more detail.
 
-SOURCE_DIR:=@root_dir@
-WORK_DIR:=$(SOURCE_DIR)/build/work
+source_dir:=@source_dir@
+
+build_dir:=@build_dir@
+export BUILD_DIR=$(build_dir)
+work_dir:=$(build_dir)/build/work
 
 prefix:=@prefix@
 export PREFIX=$(prefix)
@@ -12,13 +15,13 @@ export PREFIX=$(prefix)
 default: all
 
 # Download and locally install the "task" tool.
-TASK_VERSION:=2.5.0
-$(SOURCE_DIR)/tasks/bootstrap-$(TASK_VERSION): ;
-$(WORK_DIR)/stamp/bootstrap-$(TASK_VERSION): $(SOURCE_DIR)/tasks/bootstrap-$(TASK_VERSION)
-	$(SOURCE_DIR)/tasks/bootstrap-$(TASK_VERSION)
+task_version:=2.5.0
+$(source_dir)/tasks/bootstrap-$(task_version): ;
+$(work_dir)/stamp/bootstrap-$(task_version): $(source_dir)/tasks/bootstrap-$(task_version)
+	$(source_dir)/tasks/bootstrap-$(task_version)
 
-task-passthrough: $(WORK_DIR)/stamp/bootstrap-$(TASK_VERSION)
-	$(WORK_DIR)/task --dir "$(SOURCE_DIR)" $(MAKECMDGOALS)
+task-passthrough: $(work_dir)/stamp/bootstrap-$(task_version)
+	$(work_dir)/task --dir "$(source_dir)" $(MAKECMDGOALS)
 
 # Match all commands sent to "make" and send them to "task" instead.
 %: task-passthrough

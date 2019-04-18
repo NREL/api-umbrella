@@ -3,7 +3,8 @@
 set -e -u
 
 prefix="/opt/api-umbrella"
-root_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+build_dir="$(pwd)"
 
 usage() {
   cat <<EOS
@@ -46,4 +47,4 @@ if [ -z "$prefix" ]; then
 fi
 
 echo "configure: creating Makefile"
-< "$root_dir/Makefile.in" sed -e "s|@prefix@|$prefix|g" | sed -e "s|@root_dir@|$root_dir|g" > Makefile
+< "$source_dir/Makefile.in" sed -e "s|@prefix@|$prefix|g" | sed -e "s|@source_dir@|$source_dir|g" | sed -e "s|@build_dir@|$build_dir|g" > Makefile

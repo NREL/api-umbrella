@@ -5,10 +5,14 @@ set +x
 
 SOURCE_DIR="$(cd "$(dirname "$(dirname "${BASH_SOURCE[0]}")")" && pwd)"
 
+if [ -z "${BUILD_DIR:-}" ]; then
+  BUILD_DIR="$SOURCE_DIR"
+fi
+
 INSTALL_PREFIX=/opt/api-umbrella
 INSTALL_PREFIX_EMBEDDED="$INSTALL_PREFIX/embedded"
-WORK_DIR="$SOURCE_DIR/build/work"
-PACKAGE_WORK_DIR="$SOURCE_DIR/build/package/work"
+WORK_DIR="$BUILD_DIR/build/work"
+PACKAGE_WORK_DIR="$BUILD_DIR/build/package/work"
 
 # Where to stage installations during "make" phase.
 STAGE_DIR="$WORK_DIR/stage"
