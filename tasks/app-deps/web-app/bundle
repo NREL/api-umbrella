@@ -15,11 +15,11 @@ export PATH="$STAGE_EMBEDDED_PATH"
 export BUNDLE_GEMFILE="$SOURCE_DIR/src/api-umbrella/web-app/Gemfile"
 BUNDLE_APP_CONFIG="$(pwd)/.bundle"
 export BUNDLE_APP_CONFIG
-bundle update --bundler
 bundle config --local build.nokogiri --use-system-libraries
 bundle config --local path "$(pwd)/bundle"
 bundle config --local clean true
 bundle install
+bundle update --bundler
 
 # Make a copy of the gems in the release directory for production purposes, and
 # then remove all non-production gems.
