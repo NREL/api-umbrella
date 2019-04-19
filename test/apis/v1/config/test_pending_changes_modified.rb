@@ -10,9 +10,9 @@ class Test::Apis::V1::Config::TestPendingChangesModified < Minitest::Test
     setup_server
 
     publish_default_config_version
-    @api = FactoryBot.create(:api_backend, :name => "Before")
+    @api = FactoryBot.create(:api_backend, :frontend_host => "before.#{unique_test_hostname}")
     publish_api_backends([@api.id])
-    @api.update(:name => "After")
+    @api.update(:frontend_host => "after.#{unique_test_hostname}")
   end
 
   def after_all
@@ -39,10 +39,10 @@ class Test::Apis::V1::Config::TestPendingChangesModified < Minitest::Test
     api_data = data["config"]["apis"]["modified"].first
     assert_equal("modified", api_data["mode"])
     assert_equal(@api.id, api_data["id"])
-    assert_equal("After", api_data["name"])
-    assert_equal("Before", api_data["active"]["name"])
-    assert_includes(api_data["active_yaml"], "name: Before")
-    assert_equal("After", api_data["pending"]["name"])
-    assert_includes(api_data["pending_yaml"], "name: After")
+    assert_equal(@api.name, api_data["name"])
+    assert_equal("before.#{unique_test_hostname}", api_data["active"]["frontend_host"])
+    assert_includes(api_data["active_yaml"], "frontend_host: before.#{unique_test_hostname}")
+    assert_equal("after.#{unique_test_hostname}", api_data["pending"]["frontend_host"])
+    assert_includes(api_data["pending_yaml"], "frontend_host: after.#{unique_test_hostname}")
   end
 end

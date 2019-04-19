@@ -21,14 +21,14 @@ class Test::AdminUi::TestConfigPublishPending < Minitest::Capybara::Test
   def test_pending_changes_grouped_into_categories
     new_api = FactoryBot.create(:api_backend)
     deleted_api = FactoryBot.create(:api_backend)
-    modified_api = FactoryBot.create(:api_backend, :name => "Before")
+    modified_api = FactoryBot.create(:api_backend, :frontend_host => "before.#{unique_test_hostname}")
     publish_api_backends([
       new_api.id,
       deleted_api.id,
       modified_api.id,
     ])
     deleted_api.delete
-    modified_api.update(:name => "After")
+    modified_api.update(:frontend_host => "after.#{unique_test_hostname}")
     FactoryBot.create(:api_backend)
 
     admin_login
@@ -58,17 +58,17 @@ class Test::AdminUi::TestConfigPublishPending < Minitest::Capybara::Test
   end
 
   def test_diff_of_config_changes
-    api = FactoryBot.create(:api_backend, :name => "Before")
+    api = FactoryBot.create(:api_backend, :frontend_host => "before.#{unique_test_hostname}")
     publish_api_backends([api.id])
-    api.update(:name => "After")
+    api.update(:frontend_host => "after.#{unique_test_hostname}")
 
     admin_login
     visit "/admin/#/config/publish"
     assert_selector(".config-diff", :visible => :hidden)
     click_link("View Config Differences")
     assert_selector(".config-diff", :visible => :visible)
-    assert_selector(".config-diff del", :text => "Before")
-    assert_selector(".config-diff ins", :text => "After")
+    assert_selector(".config-diff del", :text => "before")
+    assert_selector(".config-diff ins", :text => "after")
   end
 
   def test_auto_selection_for_single_change

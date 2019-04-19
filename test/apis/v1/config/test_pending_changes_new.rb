@@ -55,6 +55,7 @@ class Test::Apis::V1::Config::TestPendingChangesNew < Minitest::Test
     assert_nil(api_data["active"])
     assert_equal("", api_data["active_yaml"])
     assert_equal(@api.id, api_data["pending"]["id"])
-    assert_includes(api_data["pending_yaml"], "name: #{@api.name}")
+    assert_includes(api_data["pending_yaml"], "frontend_host: #{@api.frontend_host}")
+    refute_includes(api_data["pending_yaml"], "name: ")
   end
 end
