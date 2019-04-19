@@ -69,6 +69,7 @@ function _M.index(self)
         },
       },
     },
+    csv_filename = "apis",
   }
 
   if self.current_admin.superuser then

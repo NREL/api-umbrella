@@ -99,9 +99,12 @@ function _M.index(self)
       "updated_at",
     },
     preload = {
-      "settings",
       "roles",
+      settings = {
+        "rate_limits",
+      },
     },
+    csv_filename = "users",
   })
 end
 

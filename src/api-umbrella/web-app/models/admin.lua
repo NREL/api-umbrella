@@ -288,6 +288,24 @@ Admin = model_ext.new_class("admins", {
     return data
   end,
 
+  csv_headers = function()
+    return {
+      username_label(),
+      t("Groups"),
+      t("Last Signed In"),
+      t("Created"),
+    }
+  end,
+
+  as_csv = function(self)
+    return {
+      json_null_default(self.username),
+      json_null_default(table.concat(self:group_names(), "\n")),
+      json_null_default(time.postgres_to_iso8601(self.current_sign_in_at)),
+      json_null_default(time.postgres_to_iso8601(self.created_at)),
+    }
+  end,
+
   set_reset_password_token = function(self, override_sent_at)
     local token = random_token(24)
     local token_hash = hmac(token)

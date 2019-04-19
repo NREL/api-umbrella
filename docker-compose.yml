@@ -17,5 +17,7 @@ services:
       - "14011:14011"
     sysctls:
       - net.ipv6.conf.all.disable_ipv6=0
+  # mongo:
+  #   image: mongo:3.2
 volumes:
   build_cache:

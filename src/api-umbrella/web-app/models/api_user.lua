@@ -191,6 +191,40 @@ ApiUser = model_ext.new_class("api_users", {
     return data
   end,
 
+  csv_headers = function()
+    local headers = {
+      t("E-mail"),
+      t("First Name"),
+      t("Last Name"),
+      t("Purpose"),
+      t("Created"),
+      t("Registration Source"),
+    }
+
+    if ngx.ctx.current_admin then
+      table.insert(headers, t("API Key"))
+    end
+
+    return headers
+  end,
+
+  as_csv = function(self)
+    local data = {
+      json_null_default(self.email),
+      json_null_default(self.first_name),
+      json_null_default(self.last_name),
+      json_null_default(self.use_description),
+      json_null_default(time.postgres_to_iso8601(self.created_at)),
+      json_null_default(self.registration_source),
+    }
+
+    if ngx.ctx.current_admin then
+      table.insert(data, json_null_default(self:api_key_preview()))
+    end
+
+    return data
+  end,
+
   settings_update_or_create = function(self, settings_values)
     return model_ext.has_one_update_or_create(self, ApiUserSettings, "api_user_id", settings_values)
   end,

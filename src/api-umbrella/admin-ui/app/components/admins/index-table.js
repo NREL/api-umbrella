@@ -11,7 +11,7 @@ export default Component.extend({
   session: inject('session'),
 
   didInsertElement() {
-    let dataTable = this.$().find('table').DataTable({
+    const dataTable = this.$().find('table').DataTable({
       serverSide: true,
       ajax: '/api-umbrella/v1/admins.json',
       pageLength: 50,
@@ -71,20 +71,20 @@ export default Component.extend({
       ],
     });
 
-    dataTable.on('draw.dt', function() {
+    dataTable.on('draw.dt', () => {
       let params = dataTable.ajax.params();
       delete params.start;
       delete params.length;
-      this.set('queryParams', params);
-    }.bind(this));
+      this.set('csvQueryParams', params);
+    });
   },
 
-  downloadUrl: computed('queryParams', function() {
-    let params = this.queryParams;
-    if(params) {
-      params = $.param(params);
-    }
+  downloadUrl: computed('csvQueryParams', function() {
+    const params = $.param({
+      ...(this.csvQueryParams || {}),
+      api_key: this.get('session.data.authenticated.api_key'),
+    });
 
-    return '/api-umbrella/v1/admins.csv?api_key=' + this.get('session.data.authenticated.api_key') + '&' + params;
+    return `/api-umbrella/v1/admins.csv?${params}`;
   }),
 });

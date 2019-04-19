@@ -1,8 +1,10 @@
 local cjson = require "cjson"
 local common_validations = require "api-umbrella.web-app.utils.common_validations"
+local csv = require "api-umbrella.web-app.utils.csv"
 local db = require "lapis.db"
 local escape_db_like = require "api-umbrella.utils.escape_db_like"
 local int64_to_json_number = require("api-umbrella.utils.int64").to_json_number
+local is_array = require "api-umbrella.utils.is_array"
 local is_empty = require("pl.types").is_empty
 local json_response = require "api-umbrella.web-app.utils.json_response"
 local model_ext = require "api-umbrella.web-app.utils.model_ext"
@@ -295,19 +297,51 @@ function _M.index(self, model, options)
     fields = fields .. ", " .. table.concat(order_selects, ", ")
   end
 
-  local records = model:select(sql, {
+  -- local model2 = model:extend(db.raw("(SELECT " .. fields .. " FROM " .. escaped_table_name .. " " .. sql .. ") AS all_records"))
+
+  local paginated_records = model:paginated(sql, {
     fields = fields,
+    per_page = 1000,
+    prepare_results = function(records)
+      if options and options["preload"] then
+        preload(records, options["preload"])
+      end
+      return records
+    end,
   })
-  if options and options["preload"] then
-    preload(records, options["preload"])
+
+  paginated_records.get_page = function(self, page)
+    page = (math.max(1, tonumber(page) or 0)) - 1
+    local limit = self.db.interpolate_query(" LIMIT ? OFFSET ?", self.per_page, self.per_page * page, self.opts)
+    local res = self.db.select("_all_records.* FROM (SELECT " .. fields .. " FROM " .. escaped_table_name .. " " .. sql .. ") AS _all_records" .. limit)
+    if res then
+      return self:prepare_results(model:load_all(res))
+    end
   end
 
-  for _, record in ipairs(records) do
-    table.insert(response["data"], record:as_json())
-  end
-  setmetatable(response["data"], cjson.empty_array_mt)
+  if self.params["format"] == "csv" then
+    csv.set_response_headers(self, options["csv_filename"] .. "_" .. os.date("!%Y-%m-%d", ngx.now()) .. ".csv")
+    ngx.say(csv.row_to_csv(model:csv_headers()))
+    ngx.flush(true)
 
-  return json_response(self, response)
+    for page_records, _ in paginated_records:each_page() do
+      for _, record in ipairs(page_records) do
+        ngx.say(csv.row_to_csv(record:as_csv()))
+      end
+      ngx.flush(true)
+    end
+
+    return { layout = false }
+  else
+    for page_records, _ in paginated_records:each_page() do
+      for _, record in ipairs(page_records) do
+        table.insert(response["data"], record:as_json())
+      end
+    end
+    setmetatable(response["data"], cjson.empty_array_mt)
+
+    return json_response(self, response)
+  end
 end
 
 return _M

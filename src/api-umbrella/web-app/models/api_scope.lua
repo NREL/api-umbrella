@@ -85,6 +85,15 @@ ApiScope = model_ext.new_class("api_scopes", {
     return admin_groups
   end,
 
+  admin_group_names = function(self)
+    local admin_group_names = {}
+    for _, admin_group in ipairs(self:get_admin_groups()) do
+      table.insert(admin_group_names, admin_group.name)
+    end
+
+    return admin_group_names
+  end,
+
   api_backends_as_json = function(self)
     local api_backends = {}
     for _, api_backend in ipairs(self:get_api_backends()) do
@@ -92,6 +101,15 @@ ApiScope = model_ext.new_class("api_scopes", {
     end
 
     return api_backends
+  end,
+
+  api_backend_names = function(self)
+    local api_backend_names = {}
+    for _, api_backend in ipairs(self:get_api_backends()) do
+      table.insert(api_backend_names, api_backend.name)
+    end
+
+    return api_backend_names
   end,
 
   as_json = function(self)
@@ -134,6 +152,36 @@ ApiScope = model_ext.new_class("api_scopes", {
       host = json_null_default(self.host),
       path_prefix = json_null_default(self.path_prefix),
     }
+  end,
+
+  csv_headers = function()
+    local headers = {
+      t("Name"),
+      t("Host"),
+      t("Path Prefix"),
+    }
+
+    if ngx.ctx.current_admin then
+      table.insert(headers, t("Admin Groups"))
+      table.insert(headers, t("API Backends"))
+    end
+
+    return headers
+  end,
+
+  as_csv = function(self)
+    local data = {
+      json_null_default(self.name),
+      json_null_default(self.host),
+      json_null_default(self.path_prefix),
+    }
+
+    if ngx.ctx.current_admin.superuser then
+      table.insert(data, json_null_default(table.concat(self:admin_group_names(), "\n")))
+      table.insert(data, json_null_default(table.concat(self:api_backend_names(), "\n")))
+    end
+
+    return data
   end,
 
   is_root = function(self)

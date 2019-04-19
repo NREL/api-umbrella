@@ -178,6 +178,24 @@ AdminGroup = model_ext.new_class("admin_groups", {
       name = json_null_default(self.name),
     }
   end,
+
+  csv_headers = function()
+    return {
+      t("Name"),
+      t("API Scopes"),
+      t("Access"),
+      t("Admins"),
+    }
+  end,
+
+  as_csv = function(self)
+    return {
+      json_null_default(self.name),
+      json_null_default(table.concat(self:api_scope_display_names(), "\n")),
+      json_null_default(table.concat(self:permission_names(), "\n")),
+      json_null_default(table.concat(self:admin_usernames(), "\n")),
+    }
+  end,
 }, {
   authorize = function(data)
     admin_group_policy.authorize_modify(ngx.ctx.current_admin, data)

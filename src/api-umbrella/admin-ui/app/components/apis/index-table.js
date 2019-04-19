@@ -3,6 +3,7 @@ import $ from 'jquery';
 import Component from '@ember/component';
 import DataTablesHelpers from 'api-umbrella-admin-ui/utils/data-tables-helpers';
 import bootbox from 'bootbox';
+import { computed } from '@ember/object';
 import escape from 'lodash-es/escape';
 import { inject } from '@ember/service';
 import isEqual from 'lodash-es/isEqual';
@@ -16,7 +17,7 @@ export default Component.extend({
   didInsertElement() {
     const currentAdmin = this.get('session.data.authenticated.admin');
 
-    this.set('table', this.$().find('table').DataTable({
+    const dataTable = this.$().find('table').DataTable({
       serverSide: true,
       ajax: '/api-umbrella/v1/apis.json',
       pageLength: 50,
@@ -113,7 +114,15 @@ export default Component.extend({
           },
         },
       ],
-    }));
+    });
+    this.set('table', dataTable);
+
+    dataTable.on('draw.dt', () => {
+      let params = dataTable.ajax.params();
+      delete params.start;
+      delete params.length;
+      this.set('csvQueryParams', params);
+    });
 
     this.table
       .on('search', (event, settings) => {
@@ -158,6 +167,15 @@ export default Component.extend({
       },
     });
   },
+
+  downloadUrl: computed('csvQueryParams', function() {
+    const params = $.param({
+      ...(this.csvQueryParams || {}),
+      api_key: this.get('session.data.authenticated.api_key'),
+    });
+
+    return `/api-umbrella/v1/apis.csv?${params}`;
+  }),
 
   handleReorderChange: observer('reorderActive', function() {
     if(this.reorderActive) {

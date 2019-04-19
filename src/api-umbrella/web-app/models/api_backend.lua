@@ -265,6 +265,15 @@ ApiBackend = model_ext.new_class("api_backends", {
     api_backend_policy.authorize_show(ngx.ctx.current_admin, self:attributes())
   end,
 
+  url_match_frontend_prefixes = function(self)
+    local url_match_frontend_prefixes = {}
+    for _, url_match in ipairs(self:get_url_matches()) do
+      table.insert(url_match_frontend_prefixes, url_match.frontend_prefix)
+    end
+
+    return url_match_frontend_prefixes
+  end,
+
   api_scopes_as_json = function(self)
     local api_scopes = {}
     for _, api_scope in ipairs(self:get_api_scopes()) do
@@ -274,10 +283,28 @@ ApiBackend = model_ext.new_class("api_backends", {
     return api_scopes
   end,
 
+  api_scope_names = function(self)
+    local api_scope_names = {}
+    for _, api_scope in ipairs(self:get_api_scopes()) do
+      table.insert(api_scope_names, api_scope.name)
+    end
+
+    return api_scope_names
+  end,
+
   root_api_scope_as_json = function(self)
     local root_api_scope = self:get_root_api_scope()
     if root_api_scope then
       return root_api_scope:embedded_json()
+    else
+      return nil
+    end
+  end,
+
+  root_api_scope_name = function(self)
+    local root_api_scope = self:get_root_api_scope()
+    if root_api_scope then
+      return root_api_scope.name
     else
       return nil
     end
@@ -290,6 +317,15 @@ ApiBackend = model_ext.new_class("api_backends", {
     end
 
     return admin_groups
+  end,
+
+  admin_group_names = function(self)
+    local admin_group_names = {}
+    for _, admin_group in ipairs(self:get_admin_groups()) do
+      table.insert(admin_group_names, admin_group.name)
+    end
+
+    return admin_group_names
   end,
 
   as_json = function(self, options)
@@ -386,6 +422,46 @@ ApiBackend = model_ext.new_class("api_backends", {
       id = json_null_default(self.id),
       name = json_null_default(self.name),
     }
+  end,
+
+  csv_headers = function()
+    local headers = {
+      t("Name"),
+      t("Host"),
+      t("Prefixes"),
+    }
+
+    if ngx.ctx.current_admin.superuser then
+      table.insert(headers, t("Organization Name"))
+      table.insert(headers, t("Status"))
+      table.insert(headers, t("Root API Scope"))
+      table.insert(headers, t("API Scopes"))
+      table.insert(headers, t("Admin Groups"))
+    end
+
+    table.insert(headers, t("Matching Order"))
+
+    return headers
+  end,
+
+  as_csv = function(self)
+    local data = {
+      json_null_default(self.name),
+      json_null_default(self.frontend_host),
+      json_null_default(table.concat(self:url_match_frontend_prefixes(), "\n")),
+    }
+
+    if ngx.ctx.current_admin.superuser then
+      table.insert(data, json_null_default(self.organization_name))
+      table.insert(data, json_null_default(self.status_description))
+      table.insert(data, json_null_default(self:root_api_scope_name()))
+      table.insert(data, json_null_default(table.concat(self:api_scope_names(), "\n")))
+      table.insert(data, json_null_default(table.concat(self:admin_group_names(), "\n")))
+    end
+
+    table.insert(data, json_null_default(self.sort_order))
+
+    return data
   end,
 
   move_to_beginning = function(self)

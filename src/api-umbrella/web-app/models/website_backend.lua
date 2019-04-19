@@ -41,6 +41,18 @@ WebsiteBackend = model_ext.new_class("website_backends", {
       version = 1,
     }
   end,
+
+  csv_headers = function()
+    return {
+      t("Host"),
+    }
+  end,
+
+  as_csv = function(self)
+    return {
+      json_null_default(self.frontend_host),
+    }
+  end,
 }, {
   authorize = function(data)
     website_backend_policy.authorize_modify(ngx.ctx.current_admin, data)

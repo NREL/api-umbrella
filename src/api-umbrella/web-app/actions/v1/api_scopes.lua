@@ -47,6 +47,7 @@ function _M.index(self)
       "admin_groups",
       "api_backends",
     },
+    csv_filename = "api_scopes",
   })
 end
 

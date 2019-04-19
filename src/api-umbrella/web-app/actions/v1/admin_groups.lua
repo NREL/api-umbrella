@@ -44,6 +44,7 @@ function _M.index(self)
       "api_scopes",
       "permissions",
     },
+    csv_filename = "admin_groups",
   })
 end
 

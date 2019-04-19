@@ -1,5 +1,5 @@
 local read_config = require "api-umbrella.cli.read_config"
-local config = read_config()
+local config = read_config({ write = true })
 
 local setenv = require("posix.stdlib").setenv
 setenv("API_UMBRELLA_RUNTIME_CONFIG", config["_api_umbrella_config_runtime_file"])
