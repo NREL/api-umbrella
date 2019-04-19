@@ -12,7 +12,7 @@ class Test::Apis::V1::AdminGroups::TestShow < Minitest::Test
 
   def test_admins_in_group_metadata
     group = FactoryBot.create(:admin_group)
-    admin_in_group = FactoryBot.create(:limited_admin, :last_sign_in_at => Time.now.utc, :groups => [
+    admin_in_group = FactoryBot.create(:limited_admin, :last_sign_in_at => Time.now.utc, :current_sign_in_at => Time.now.utc, :groups => [
       group,
     ])
 
@@ -25,6 +25,7 @@ class Test::Apis::V1::AdminGroups::TestShow < Minitest::Test
         "id" => admin_in_group.id,
         "username" => admin_in_group.username,
         "last_sign_in_at" => admin_in_group.last_sign_in_at.utc.iso8601,
+        "current_sign_in_at" => admin_in_group.current_sign_in_at.utc.iso8601,
       },
     ], data["admin_group"]["admins"])
   end
