@@ -11,17 +11,18 @@ if command -v yum > /dev/null 2>&1; then
 elif command -v dpkg > /dev/null 2>&1; then
   apt-get update
   dpkg -i "$current_package_dir"/*.deb || apt-get install -y -f
+  apt-get install -y libc++1 libc++abi1
 else
   echo "Unknown build system"
   exit 1
 fi
 
 # Start the service
-/etc/init.d/api-umbrella start
+/etc/init.d/api-umbrella start || (systemctl status api-umbrella.service | cat; journalctl -xe; exit 1)
 
 # Make sure API Umbrella starts successfully and wait for a "green" status
 # indicating everything is spun up
-api-umbrella health --wait-for-status green
+api-umbrella health --wait-for-status green || (systemctl status api-umbrella.service | cat; journalctl -xe | cat; cat /var/log/api-umbrella/*/current; exit 1;)
 
 # Install the test package dependencies.
 #

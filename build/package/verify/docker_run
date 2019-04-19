@@ -27,6 +27,8 @@ if [ "$DIST" == "centos-6" ]; then
   # CentOS 6 docker image no longer has /sbin/init pre-installed:
   # https://github.com/CentOS/sig-cloud-instance-images/issues/28#issuecomment-306801650
   install_init_cmd="yum -y install initscripts"
+elif [ "$DIST" == "debian-9" ]; then
+  install_init_cmd="apt-get update && DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends install systemd-sysv"
 fi
 
 # Run inside a privileged container for systemd things to work. First install

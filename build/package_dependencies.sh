@@ -131,6 +131,14 @@ if [ -f /etc/redhat-release ]; then
     # For running lsof tests in Docker as root
     sudo
   )
+
+  # Install GCC 7+ for compiling TrafficServer (C++17 required).
+  if [[ "$VERSION_ID" == "6" || "$VERSION_ID" == "7" ]]; then
+    core_build_dependencies+=(
+      centos-release-scl
+      devtoolset-7
+    )
+  fi
 elif [ -f /etc/debian_version ]; then
   libcurl_version=3
   libtool_bin_package="libtool-bin"
@@ -258,6 +266,20 @@ elif [ -f /etc/debian_version ]; then
 
   if [[ "$ID" != "ubuntu" ]]; then
     test_build_dependencies+=("virtualenv")
+  fi
+
+  # Install GCC 7+ for compiling TrafficServer (C++17 required).
+  if [[ "$ID" == "ubuntu" && "$VERSION_ID" == "16.04" ]]; then
+    core_build_dependencies+=(
+      gcc-7
+      g++-7
+    )
+  elif [[ "$ID" == "debian" && ( "$VERSION_ID" == "8" || "$VERSION_ID" == "9" ) ]]; then
+    core_build_dependencies+=(
+      clang-7
+      libc++-7-dev
+      libc++abi-7-dev
+    )
   fi
 else
   echo "Unknown build system"
