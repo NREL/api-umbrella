@@ -1,3 +1,4 @@
+import $ from 'jquery';
 import Component from '@ember/component';
 import DataTablesHelpers from 'api-umbrella-admin-ui/utils/data-tables-helpers';
 import { computed } from '@ember/object';

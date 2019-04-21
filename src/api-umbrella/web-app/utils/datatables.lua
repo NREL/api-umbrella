@@ -4,7 +4,6 @@ local csv = require "api-umbrella.web-app.utils.csv"
 local db = require "lapis.db"
 local escape_db_like = require "api-umbrella.utils.escape_db_like"
 local int64_to_json_number = require("api-umbrella.utils.int64").to_json_number
-local is_array = require "api-umbrella.utils.is_array"
 local is_empty = require("pl.types").is_empty
 local json_response = require "api-umbrella.web-app.utils.json_response"
 local model_ext = require "api-umbrella.web-app.utils.model_ext"
@@ -297,8 +296,6 @@ function _M.index(self, model, options)
     fields = fields .. ", " .. table.concat(order_selects, ", ")
   end
 
-  -- local model2 = model:extend(db.raw("(SELECT " .. fields .. " FROM " .. escaped_table_name .. " " .. sql .. ") AS all_records"))
-
   local paginated_records = model:paginated(sql, {
     fields = fields,
     per_page = 1000,
@@ -310,12 +307,12 @@ function _M.index(self, model, options)
     end,
   })
 
-  paginated_records.get_page = function(self, page)
+  paginated_records.get_page = function(self_page, page)
     page = (math.max(1, tonumber(page) or 0)) - 1
-    local limit = self.db.interpolate_query(" LIMIT ? OFFSET ?", self.per_page, self.per_page * page, self.opts)
-    local res = self.db.select("_all_records.* FROM (SELECT " .. fields .. " FROM " .. escaped_table_name .. " " .. sql .. ") AS _all_records" .. limit)
+    local limit = self_page.db.interpolate_query(" LIMIT ? OFFSET ?", self_page.per_page, self_page.per_page * page, self_page.opts)
+    local res = self_page.db.select("_all_records.* FROM (SELECT " .. fields .. " FROM " .. escaped_table_name .. " " .. sql .. ") AS _all_records" .. limit)
     if res then
-      return self:prepare_results(model:load_all(res))
+      return self_page:prepare_results(model:load_all(res))
     end
   end
 

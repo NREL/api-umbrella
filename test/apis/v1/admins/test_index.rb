@@ -110,6 +110,34 @@ class Test::Apis::V1::Admins::TestIndex < Minitest::Test
     assert_data_tables_order(:created_at, [Time.utc(2017, 1, 1), Time.utc(2017, 1, 2)])
   end
 
+  def test_csv
+    admin = FactoryBot.create(:admin, :current_sign_in_at => Time.now)
+
+    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/admins.csv", http_options.deep_merge(admin_token).deep_merge({
+      :params => {
+        :search => { :value => admin.id },
+      },
+    }))
+    assert_response_code(200, response)
+    assert_equal("text/csv", response.headers["Content-Type"])
+    assert_match("attachment; filename=\"admins_#{Time.now.utc.strftime("%Y-%m-%d")}.csv\"", response.headers["Content-Disposition"])
+
+    csv = CSV.parse(response.body)
+    assert_equal(2, csv.length, csv)
+    assert_equal([
+      "Email",
+      "Groups",
+      "Last Signed In",
+      "Created",
+    ], csv[0])
+    assert_equal([
+      admin.username,
+      "Superuser",
+      admin.current_sign_in_at.iso8601,
+      admin.created_at.iso8601,
+    ], csv[1])
+  end
+
   private
 
   def data_tables_api_url

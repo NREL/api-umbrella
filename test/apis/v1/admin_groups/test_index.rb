@@ -149,6 +149,42 @@ class Test::Apis::V1::AdminGroups::TestIndex < Minitest::Test
     assert_equal(admin_group4.name, data.fetch("data")[3].fetch("name"))
   end
 
+  def test_csv
+    admin_group = FactoryBot.create(:admin_group, {
+      :created_at => Time.utc(2017, 1, 1),
+      :created_by_id => SecureRandom.uuid,
+      :name => "Example",
+      :permission_ids => ["analytics", "user_view"],
+      :updated_at => Time.utc(2017, 1, 2),
+      :updated_by_id => SecureRandom.uuid,
+    })
+    admin = FactoryBot.create(:admin, :groups => [admin_group])
+
+    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/admin_groups.csv", http_options.deep_merge(admin_token).deep_merge({
+      :params => {
+        :search => { :value => admin_group.id },
+      },
+    }))
+    assert_response_code(200, response)
+    assert_equal("text/csv", response.headers["Content-Type"])
+    assert_match("attachment; filename=\"admin_groups_#{Time.now.utc.strftime("%Y-%m-%d")}.csv\"", response.headers["Content-Disposition"])
+
+    csv = CSV.parse(response.body)
+    assert_equal(2, csv.length, csv)
+    assert_equal([
+      "Name",
+      "API Scopes",
+      "Access",
+      "Admins",
+    ], csv[0])
+    assert_equal([
+      admin_group.name,
+      admin_group.api_scopes.map { |scope| "#{scope.name} - #{scope.host}#{scope.path_prefix}" }.join("\n"),
+      "Analytics\nAPI Users - View",
+      admin.username,
+    ], csv[1])
+  end
+
   private
 
   def data_tables_api_url
