@@ -24,8 +24,8 @@ git clean -d -f -x
 # Install any system dependencies for building.
 "$clean_source_dir/tasks/install-system-build-dependencies"
 
-# shellcheck disable=SC1091
 if [ -f /etc/os-release ]; then
+  # shellcheck disable=SC1091
   source /etc/os-release
 fi
 

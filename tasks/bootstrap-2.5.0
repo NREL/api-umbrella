@@ -4,7 +4,9 @@ task_version="2.5.0"
 task_hash="c455bd46813ac4b962eda87695f0de1624f1ff1aa13c7bbfb45fc1372d4ba89c"
 
 set -e -u -x
-source ./tasks/helpers.sh
+root_dir="$(cd "$(dirname "$(dirname "${BASH_SOURCE[0]}")")" && pwd)"
+# shellcheck source=tasks/helpers.sh
+source "$root_dir/tasks/helpers.sh"
 
 task_working_dir
 download "https://github.com/go-task/task/releases/download/v$task_version/task_linux_amd64.tar.gz" "sha256" "$task_hash"

@@ -24,7 +24,7 @@ ln -s "$node_modules_dir" ./node_modules
 # these dependencies for the tasks/app/core task are still present if core
 # needs to be re-run, but not this task.
 mkdir -p ../_persist
-PATH="$DEV_INSTALL_PREFIX/bin:$DEFAULT_PATH" ./node_modules/.bin/ember build \
+PATH="$DEV_PATH" ./node_modules/.bin/ember build \
   --environment=production \
   --output-path=../_persist/dist
 

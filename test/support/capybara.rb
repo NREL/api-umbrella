@@ -14,7 +14,7 @@ def capybara_register_driver(driver_name, options = {})
     if status.success?
       Selenium::WebDriver::Chrome.driver_path = path.strip
     else
-      require "chromedriver-helper"
+      require "webdrivers"
     end
 
     root_dir = File.join(ApiUmbrellaTestHelpers::Process::TEST_RUN_ROOT, "capybara")

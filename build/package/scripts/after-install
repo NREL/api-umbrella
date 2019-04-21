@@ -87,18 +87,25 @@ if [ "$configure" = "true" ]; then
 
   # Create an empty .ssh/authorized_keys file with proper permissions if it
   # doesn't already exist.
-  if [ ! -f "$destdir/home/$deploy_user/.ssh/authorized_keys" ]; then
-    mkdir -p "$destdir/home/$deploy_user/.ssh"
-    touch "$destdir/home/$deploy_user/.ssh/authorized_keys"
-    chown -R "$deploy_user:$deploy_group" "$destdir/home/$deploy_user"
+  if [ ! -d "$destdir/home/$deploy_user" ]; then
+    mkdir -p "$destdir/home/$deploy_user"
     chmod 700 "$destdir/home/$deploy_user"
+  fi
+  if [ ! -d "$destdir/home/$deploy_user/.ssh" ]; then
+    mkdir -p "$destdir/home/$deploy_user/.ssh"
     chmod 700 "$destdir/home/$deploy_user/.ssh"
+  fi
+  if [ ! -f "$destdir/home/$deploy_user/.ssh/authorized_keys" ]; then
+    touch "$destdir/home/$deploy_user/.ssh/authorized_keys"
     chmod 600 "$destdir/home/$deploy_user/.ssh/authorized_keys"
   fi
 
   # Set file permissions
   chown -R "$user:$group" "$prefix_dir/etc" "$prefix_dir/var"
   chown -R "$deploy_user:$deploy_group" "$embedded_dir/apps"
+  chown "$deploy_user:$deploy_group" "$destdir/home/$deploy_user"
+  chown "$deploy_user:$deploy_group" "$destdir/home/$deploy_user/.ssh"
+  chown "$deploy_user:$deploy_group" "$destdir/home/$deploy_user/.ssh/authorized_keys"
 
   # Re-create symlinks that may have inadvertently been cleaned up by the API
   # Umbrella v0.8 and v0.9 after-remove scripts during upgrades (this should be
@@ -123,5 +130,5 @@ fi
 
 if [ "$restart_service" = "true" ]; then
   # On upgrades, restart the service if it's currently running.
-  /etc/init.d/api-umbrella condrestart
+  "$destdir/etc/init.d/api-umbrella" condrestart
 fi

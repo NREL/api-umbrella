@@ -25,7 +25,6 @@ previous_versions=(
 distros=(
   centos-6
   centos-7
-  ubuntu-14.04
   ubuntu-16.04
   ubuntu-18.04
   debian-8
@@ -53,10 +52,6 @@ for dist in "${distros[@]}"; do
       centos-7)
         filename="api-umbrella-${version}.el7.x86_64.rpm"
         url_prefix="$bintray_url_root/api-umbrella-el7"
-        ;;
-      ubuntu-14.04)
-        filename="api-umbrella_${version}~trusty_amd64.deb"
-        url_prefix="$bintray_url_root/api-umbrella-ubuntu/pool/main/a/api-umbrella"
         ;;
       ubuntu-16.04)
         filename="api-umbrella_${version}~xenial_amd64.deb"

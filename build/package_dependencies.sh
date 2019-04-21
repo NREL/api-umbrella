@@ -2,16 +2,22 @@
 
 set -e -u
 
-# shellcheck disable=SC1091
 if [ -f /etc/os-release ]; then
+  # shellcheck disable=SC1091
   source /etc/os-release
 fi
 
+core_package_non_build_dependencies=()
+
 if [ -f /etc/redhat-release ]; then
+  if [[ "${VERSION_ID:-}" == "" ]]; then
+    VERSION_ID=$(grep -oP '(?<= )[0-9]+(?=\.)' /etc/redhat-release)
+  fi
+
   util_linux_package="util-linux"
   procps_package="procps-ng"
 
-  if [[ "${VERSION_ID:-}" == "6" ]]; then
+  if [[ "$VERSION_ID" == "6" ]]; then
     util_linux_package="util-linux-ng"
     procps_package="procps"
   fi
@@ -143,30 +149,33 @@ if [ -f /etc/redhat-release ]; then
     libxml2-devel
     libxslt-devel
   )
+
+  # Install GCC 7+ for compiling TrafficServer (C++17 required).
+  if [[ "$VERSION_ID" == "6" || "$VERSION_ID" == "7" ]]; then
+    core_build_dependencies+=(
+      centos-release-scl
+      devtoolset-7
+    )
+  fi
 elif [ -f /etc/debian_version ]; then
   libcurl_version=3
   libnettle_version=6
   libreadline_version=7
-  libtool_bin_package="libtool-bin"
   openjdk_version=8
 
   if [[ "$ID" == "ubuntu" && "$VERSION_ID" == "18.04" ]]; then
     libcurl_version=4
   fi
 
-  if [[ "$ID" == "debian" && "$VERSION_ID" == "8" ]] || [[ "$ID" == "ubuntu" && "$VERSION_ID" == "14.04" ]]; then
+  if [[ "$ID" == "debian" && "$VERSION_ID" == "8" ]]; then
     libnettle_version=4
   fi
 
-  if [[ "$ID" == "debian" && "$VERSION_ID" == "8" ]] || [[ "$ID" == "ubuntu" && "$VERSION_ID" == "14.04" ]] || [[ "$ID" == "ubuntu" && "$VERSION_ID" == "16.04" ]]; then
+  if [[ "$ID" == "debian" && "$VERSION_ID" == "8" ]] || [[ "$ID" == "ubuntu" && "$VERSION_ID" == "16.04" ]]; then
     libreadline_version=6
   fi
 
-  if [[ "$ID" == "ubuntu" && "$VERSION_ID" == "14.04" ]]; then
-    libtool_bin_package="libtool"
-  fi
-
-  if [[ "$ID" == "debian" && "$VERSION_ID" == "8" ]] || [[ "$ID" == "ubuntu" && "$VERSION_ID" == "14.04" ]]; then
+  if [[ "$ID" == "debian" && "$VERSION_ID" == "8" ]]; then
     openjdk_version=7
   fi
 
@@ -245,7 +254,7 @@ elif [ -f /etc/debian_version ]; then
     libreadline-dev
     libssl-dev
     libtool
-    "$libtool_bin_package"
+    libtool-bin
     libxml2-dev
     libyaml-dev
     lsb-release
@@ -299,8 +308,23 @@ elif [ -f /etc/debian_version ]; then
     libxslt-dev
   )
 
-  if [[ "$ID" != "ubuntu" || "$VERSION_ID" != "14.04" ]]; then
-    test_build_dependencies+=("virtualenv")
+  # Install GCC 7+ for compiling TrafficServer (C++17 required).
+  if [[ "$ID" == "ubuntu" && "$VERSION_ID" == "16.04" ]]; then
+    core_build_dependencies+=(
+      gcc-7
+      g++-7
+    )
+  elif [[ "$ID" == "debian" && ( "$VERSION_ID" == "8" || "$VERSION_ID" == "9" ) ]]; then
+    core_build_dependencies+=(
+      clang-7
+      libc++-7-dev
+      libc++abi-7-dev
+    )
+
+    core_package_non_build_dependencies+=(
+      libc++1
+      libc++abi1
+    )
   fi
 else
   echo "Unknown build system"
@@ -316,4 +340,8 @@ all_build_dependencies=(
 all_dependencies=(
   "${all_build_dependencies[@]}"
   "${test_build_dependencies[@]}"
+)
+
+core_package_dependencies+=(
+  "${core_package_non_build_dependencies[@]}"
 )

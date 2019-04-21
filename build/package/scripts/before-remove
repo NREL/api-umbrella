@@ -22,8 +22,10 @@ case "$1" in
     ;;
 esac
 
+destdir="${DESTDIR:-}"
+
 if [ "$stop_service" = "true" ]; then
-  /etc/init.d/api-umbrella stop || true
+  "$destdir/etc/init.d/api-umbrella" stop || true
 fi
 
 if [ "$remove_service" = "true" ]; then

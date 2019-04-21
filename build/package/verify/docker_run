@@ -9,17 +9,20 @@ container_name=${container_name//[^a-zA-Z0-9_.-]/}
 init_container_name="${container_name}-init"
 
 # Wipe any previous build attempts.
-existing=$(docker ps -a -q --filter="name=$init_container_name")
-if [ "$existing" != "" ]; then
-  docker rm -f "$existing"
+existing=()
+while IFS='' read -r line; do existing+=("$line"); done < <(docker ps -a -q --filter="name=$init_container_name")
+if [ ${#existing[@]} -gt 0 ]; then
+  docker rm -f "${existing[@]}"
 fi
-existing=$(docker ps -a -q --filter="name=$container_name")
-if [ "$existing" != "" ]; then
-  docker rm -f "$existing"
+existing=()
+while IFS='' read -r line; do existing+=("$line"); done < <(docker ps -a -q --filter="name=$container_name")
+if [ ${#existing[@]} -gt 0 ]; then
+  docker rm -f "${existing[@]}"
 fi
-existing=$(docker images -a -q --filter="reference=$init_container_name")
-if [ "$existing" != "" ]; then
-  docker rmi -f "$existing"
+existing=()
+while IFS='' read -r line; do existing+=("$line"); done < <(docker images -a -q --filter="reference=$init_container_name")
+if [ ${#existing[@]} -gt 0 ]; then
+  docker rmi -f "${existing[@]}"
 fi
 
 install_init_cmd=""
@@ -27,6 +30,8 @@ if [ "$DIST" == "centos-6" ]; then
   # CentOS 6 docker image no longer has /sbin/init pre-installed:
   # https://github.com/CentOS/sig-cloud-instance-images/issues/28#issuecomment-306801650
   install_init_cmd="yum -y install initscripts"
+elif [ "$DIST" == "debian-9" ]; then
+  install_init_cmd="apt-get update && DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends install systemd-sysv"
 fi
 
 # Run inside a privileged container for systemd things to work. First install

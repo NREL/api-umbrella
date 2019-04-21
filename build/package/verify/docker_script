@@ -17,11 +17,11 @@ else
 fi
 
 # Start the service
-/etc/init.d/api-umbrella start
+/etc/init.d/api-umbrella start || (systemctl status api-umbrella.service | cat; journalctl -xe; exit 1)
 
 # Make sure API Umbrella starts successfully and wait for a "green" status
 # indicating everything is spun up
-api-umbrella health --wait-for-status green
+api-umbrella health --wait-for-status green || (systemctl status api-umbrella.service | cat; journalctl -xe | cat; cat /var/log/api-umbrella/*/current; exit 1;)
 
 # Install the test package dependencies.
 #
@@ -41,7 +41,7 @@ elif [ -f /etc/debian_version ]; then
     socat \
     sudo
 fi
-gem install bundler --no-rdoc --no-ri
+gem install bundler --no-document --version "< 2.0"
 
 # Perform an out-of-source build (so the same source directory can be used for
 # multiple parallel docker builds).

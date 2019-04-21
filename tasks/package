@@ -5,7 +5,6 @@ source ./tasks/helpers.sh
 
 task_working_dir
 
-
 export PATH="$STAGE_EMBEDDED_PATH"
 export BUNDLE_GEMFILE="$SOURCE_DIR/build/package/Gemfile"
 BUNDLE_APP_CONFIG="$(pwd)/_persist/.bundle"
@@ -18,17 +17,17 @@ export BUNDLE_APP_CONFIG
   cd _persist
 
   # Install all the gems for use in packaging.
-  bundle update --bundler
   bundle config --local build.nokogiri --use-system-libraries
   bundle config --local path "$(pwd)/bundle"
   bundle config --local clean true
   bundle install
+  bundle update --bundler
 )
 
 work_destdir="$(pwd)/destdir"
 rm -rf "$work_destdir"
 (
-  cd "$SOURCE_DIR"
+  cd "$BUILD_DIR"
   make
   make install DESTDIR="$work_destdir"
 )

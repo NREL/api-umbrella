@@ -18,10 +18,10 @@ gem "minitest-hooks", "~> 1.5.0"
 gem "minitest-ci", "~> 3.4.0"
 
 # Ruby lint/style checker
-gem "rubocop", "~> 0.66.0", :require => false
+gem "rubocop", "~> 0.67.1", :require => false
 
 # Running background processes
-gem "childprocess", "~> 0.9.0"
+gem "childprocess", "~> 1.0.1"
 
 # Making HTTP requests
 gem "typhoeus", "~> 1.3.0"
@@ -33,8 +33,8 @@ gem "oj", "~> 3.7.0"
 # Database libraries
 gem "activerecord", "~> 5.2.0", :require => "active_record"
 gem "pg", "~> 1.1.4"
-gem "elasticsearch", "~> 6.2.0"
-gem "active_attr", "~> 0.12.0"
+gem "elasticsearch", "~> 6.3.0"
+gem "active_attr", "~> 0.13.0"
 
 # Factories for test database data
 gem "factory_bot", "~> 5.0.0"
@@ -49,9 +49,9 @@ gem "rails_compatible_cookies_utils", "~> 0.1.0"
 gem "addressable", "~> 2.6.0"
 
 # Browser/JavaScript integration tests
-gem "capybara", "~> 3.15.0"
+gem "capybara", "~> 3.17.0"
 gem "selenium-webdriver", "~> 3.141"
-gem "chromedriver-helper", "~> 2.1.0", :require => false
+gem "webdrivers", "~> 3.8.0", :require => false
 # https://github.com/dbalatero/capybara-chromedriver-logger/pull/7
 gem "capybara-chromedriver-logger", "~> 0.3.0", :git => "https://github.com/ThriveTRM/capybara-chromedriver-logger.git", :branch => "do-not-raise-on-filtered-errors"
 

@@ -11,12 +11,43 @@ if [ "${INSTALL_TEST_DEPENDENCIES:-}" == "true" ]; then
   install_dependencies=("${all_dependencies[@]}")
 fi
 
+if [ -f /etc/os-release ]; then
+  # shellcheck disable=SC1091
+  source /etc/os-release
+fi
+
+
 if [ -f /etc/redhat-release ]; then
+  if [[ "${VERSION_ID:-}" == "" ]]; then
+    VERSION_ID=$(grep -oP '(?<= )[0-9]+(?=\.)' /etc/redhat-release)
+  fi
+
+  # Dependencies for GCC 7+ for compiling TrafficServer (C++17 required).
+  if [[ "$VERSION_ID" == "6" || "$VERSION_ID" == "7" ]]; then
+    yum -y install centos-release-scl
+  fi
+
   yum -y install "${install_dependencies[@]}"
   # Ensure the packages got installed, since yum's exit code isn't always
   # useful: http://stackoverflow.com/a/22393088
   rpm --query --queryformat "" "${install_dependencies[@]}"
 elif [ -f /etc/debian_version ]; then
+  # Dependencies for GCC 7+ or Clang 5+ for compiling TrafficServer (C++17
+  # required).
+  if [[ "$ID" == "ubuntu" && "$VERSION_ID" == "16.04" ]]; then
+    DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends install software-properties-common
+    add-apt-repository -y ppa:ubuntu-toolchain-r/test
+  elif [[ "$ID" == "debian" && ( "$VERSION_ID" == "8" || "$VERSION_ID" == "9" ) ]]; then
+    apt-get update
+    DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends install curl ca-certificates gnupg
+    curl -sS https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add -
+    if [[ "$ID" == "debian" && "$VERSION_ID" == "8" ]]; then
+      echo "deb http://apt.llvm.org/jessie/ llvm-toolchain-jessie-7 main" > /etc/apt/sources.list.d/api-umbrella-llvm.list
+    else
+      echo "deb http://apt.llvm.org/stretch/ llvm-toolchain-stretch-7 main" > /etc/apt/sources.list.d/api-umbrella-llvm.list
+    fi
+  fi
+
   apt-get update
   DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends install "${install_dependencies[@]}"
 else
