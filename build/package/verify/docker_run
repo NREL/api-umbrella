@@ -9,17 +9,20 @@ container_name=${container_name//[^a-zA-Z0-9_.-]/}
 init_container_name="${container_name}-init"
 
 # Wipe any previous build attempts.
-existing=$(docker ps -a -q --filter="name=$init_container_name")
-if [ "$existing" != "" ]; then
-  docker rm -f "$existing"
+existing=()
+while IFS='' read -r line; do existing+=("$line"); done < <(docker ps -a -q --filter="name=$init_container_name")
+if [ ${#existing[@]} -gt 0 ]; then
+  docker rm -f "${existing[@]}"
 fi
-existing=$(docker ps -a -q --filter="name=$container_name")
-if [ "$existing" != "" ]; then
-  docker rm -f "$existing"
+existing=()
+while IFS='' read -r line; do existing+=("$line"); done < <(docker ps -a -q --filter="name=$container_name")
+if [ ${#existing[@]} -gt 0 ]; then
+  docker rm -f "${existing[@]}"
 fi
-existing=$(docker images -a -q --filter="reference=$init_container_name")
-if [ "$existing" != "" ]; then
-  docker rmi -f "$existing"
+existing=()
+while IFS='' read -r line; do existing+=("$line"); done < <(docker images -a -q --filter="reference=$init_container_name")
+if [ ${#existing[@]} -gt 0 ]; then
+  docker rmi -f "${existing[@]}"
 fi
 
 install_init_cmd=""

@@ -11,9 +11,10 @@ container_name=${container_name//[^a-zA-Z0-9_.-]/}
 docker pull "$docker_image"
 
 # Wipe any previous build attempts.
-existing=$(docker ps -a -q --filter="name=$container_name")
-if [ "$existing" != "" ]; then
-  docker rm -f "$existing"
+existing=()
+while IFS='' read -r line; do existing+=("$line"); done < <(docker ps -a -q --filter="name=$container_name")
+if [ ${#existing[@]} -gt 0 ]; then
+  docker rm -f "${existing[@]}"
 fi
 
 # Create the package inside the docker container for this distro.
