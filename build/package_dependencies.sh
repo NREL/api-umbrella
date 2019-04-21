@@ -7,6 +7,8 @@ if [ -f /etc/os-release ]; then
   source /etc/os-release
 fi
 
+core_package_non_build_dependencies=()
+
 if [ -f /etc/redhat-release ]; then
   if [[ "${VERSION_ID:-}" == "" ]]; then
     VERSION_ID=$(grep -oP '(?<= )[0-9]+(?=\.)' /etc/redhat-release)
@@ -280,6 +282,11 @@ elif [ -f /etc/debian_version ]; then
       libc++-7-dev
       libc++abi-7-dev
     )
+
+    core_package_non_build_dependencies+=(
+      libc++1
+      libc++abi1
+    )
   fi
 else
   echo "Unknown build system"
@@ -295,4 +302,8 @@ all_build_dependencies=(
 all_dependencies=(
   "${all_build_dependencies[@]}"
   "${test_build_dependencies[@]}"
+)
+
+core_package_dependencies+=(
+  "${core_package_non_build_dependencies[@]}"
 )

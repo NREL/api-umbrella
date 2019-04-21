@@ -104,9 +104,19 @@ RSpec.shared_examples("package upgrade") do |package_version|
   # Skip testing upgrades if we don't have binary packages for certain distro
   # and version combinations.
   case(ENV["DIST"])
+  when "debian-9"
+    # No Debian 9 packages until v0.15
+    if(Gem::Version.new(package_version) < Gem::Version.new("0.15.0-1"))
+      next
+    end
   when "ubuntu-16.04"
     # No Ubuntu 16.04 packages until v0.12
     if(Gem::Version.new(package_version) < Gem::Version.new("0.12.0-1"))
+      next
+    end
+  when "ubuntu-18.04"
+    # No Ubuntu 16.04 packages until v0.15
+    if(Gem::Version.new(package_version) < Gem::Version.new("0.15.0-1"))
       next
     end
   end
@@ -281,7 +291,9 @@ describe "api-umbrella" do
       expect(content).to_not include("dlopen")
       expect(content).to_not include("could not load module")
       expect(content).to_not include("cannot open shared object file")
-      expect(content).to_not include("No such file or directory")
+      unless log.include?("trafficserver")
+        expect(content).to_not include("No such file or directory")
+      end
       expect(content).to_not match(/module name .+ is unknown/)
     end
   end
@@ -313,10 +325,10 @@ describe "api-umbrella" do
       command_result = command("env HOME=#{home} /etc/init.d/api-umbrella status")
       expect(command_result.exit_status).to eql(0)
       case(ENV["DIST"])
-      when "debian-8", "ubuntu-16.04"
-        expect(command_result.stdout).to include("Active: active (running)")
-      else
+      when "centos-6", "centos-7"
         expect(command_result.stdout).to include("is running")
+      else
+        expect(command_result.stdout).to include("Active: active (running)")
       end
     end
   end
@@ -377,14 +389,14 @@ describe "api-umbrella" do
     command_result = command("sudo -u api-umbrella-deploy /etc/init.d/api-umbrella start")
     expect(command_result.exit_status).to_not eql(0)
     case(ENV["DIST"])
+    when "centos-6"
+      expect(command_result.stdout).to include("Must be started with super-user privileges")
     when "centos-7"
       expect(command_result.stdout).to include("Starting api-umbrella (via systemctl)")
       expect(command_result.stdout).to include("FAILED")
-    when "debian-8", "ubuntu-16.04"
+    else
       expect(command_result.stdout).to include("Starting api-umbrella (via systemctl)")
       expect(command_result.stdout).to include("failed")
-    else
-      expect(command_result.stdout).to include("Must be started with super-user privileges")
     end
   end
 
@@ -392,10 +404,10 @@ describe "api-umbrella" do
     expect(command("sudo -u api-umbrella-deploy sudo -n api-umbrella status").stdout).to include("is running")
     command_result = command("sudo -u api-umbrella-deploy sudo -n /etc/init.d/api-umbrella status")
     case(ENV["DIST"])
-    when "debian-8", "ubuntu-16.04"
-      expect(command_result.stdout).to include("Active: active (running)")
-    else
+    when "centos-6", "centos-7"
       expect(command_result.stdout).to include("is running")
+    else
+      expect(command_result.stdout).to include("Active: active (running)")
     end
   end
 
@@ -403,14 +415,14 @@ describe "api-umbrella" do
     command_result = command("/etc/init.d/api-umbrella start")
     expect(command_result.exit_status).to eql(0)
     case(ENV["DIST"])
+    when "centos-6"
+      expect(command_result.stdout).to include("api-umbrella is already running")
     when "centos-7"
       expect(command_result.stdout).to include("Starting api-umbrella (via systemctl)")
       expect(command_result.stdout).to include("OK")
-    when "debian-8", "ubuntu-16.04"
+    else
       expect(command_result.stdout).to include("Starting api-umbrella (via systemctl)")
       expect(command_result.stdout).to_not include("failed")
-    else
-      expect(command_result.stdout).to include("api-umbrella is already running")
     end
     expect(command_result.stderr).to eql("")
   end
@@ -462,10 +474,10 @@ describe "api-umbrella" do
     command_result = command("/etc/init.d/api-umbrella status")
     expect(command_result.exit_status).to eql(3)
     case(ENV["DIST"])
-    when "debian-8", "ubuntu-16.04"
-      expect(command_result.stdout).to include("Active: inactive (dead)")
-    else
+    when "centos-6", "centos-7"
       expect(command_result.stdout).to include("api-umbrella is stopped")
+    else
+      expect(command_result.stdout).to include("Active: inactive (dead)")
     end
     expect(command_result.stderr).to eql("")
 
@@ -475,32 +487,32 @@ describe "api-umbrella" do
     command_result = command("/etc/init.d/api-umbrella stop")
     expect(command_result.exit_status).to eql(0)
     case(ENV["DIST"])
+    when "centos-6"
+      expect(command_result.stdout).to include("api-umbrella is already stopped")
     when "centos-7"
       expect(command_result.stdout).to include("Stopping api-umbrella (via systemctl)")
       expect(command_result.stdout).to include("OK")
-    when "debian-8", "ubuntu-16.04"
+    else
       expect(command_result.stdout).to include("Stopping api-umbrella (via systemctl)")
       expect(command_result.stdout).to_not include("failed")
-    else
-      expect(command_result.stdout).to include("api-umbrella is already stopped")
     end
     expect(command_result.stderr).to eql("")
 
     # Verify behavior of reload command when stopped.
     command_result = command("/etc/init.d/api-umbrella reload")
     case(ENV["DIST"])
+    when "centos-6"
+      expect(command_result.exit_status).to eql(7)
+      expect(command_result.stdout).to include("api-umbrella is stopped")
+      expect(command_result.stderr).to eql("")
     when "centos-7"
       expect(command_result.exit_status).to eql(1)
       expect(command_result.stdout).to include("Reloading api-umbrella configuration (via systemctl)")
       expect(command_result.stdout).to include("FAILED")
-    when "debian-8", "ubuntu-16.04"
+    else
       expect(command_result.exit_status).to eql(1)
       expect(command_result.stdout).to include("Reloading api-umbrella configuration (via systemctl)")
       expect(command_result.stdout).to include("failed")
-    else
-      expect(command_result.exit_status).to eql(7)
-      expect(command_result.stdout).to include("api-umbrella is stopped")
-      expect(command_result.stderr).to eql("")
     end
 
     # Verify behavior of condrestart command when stopped.

@@ -31,9 +31,7 @@ elif [ -f /etc/debian_version ]; then
   elif [[ "$ID" == "debian" && ( "$VERSION_ID" == "8" || "$VERSION_ID" == "9" ) ]]; then
     export CC=clang-7
     export CXX=clang++-7
-    export CPPFLAGS=-I/usr/lib/llvm-7/include/c++/v1
-    export LDFLAGS=-L/usr/lib/llvm-7/lib
-    export CXXFLAGS=-stdlib=libc++
+    export CXXFLAGS="-I/usr/lib/llvm-7/include/c++/v1 -stdlib=libc++"
   fi
 fi
 

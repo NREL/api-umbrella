@@ -11,7 +11,6 @@ if command -v yum > /dev/null 2>&1; then
 elif command -v dpkg > /dev/null 2>&1; then
   apt-get update
   dpkg -i "$current_package_dir"/*.deb || apt-get install -y -f
-  apt-get install -y libc++1 libc++abi1
 else
   echo "Unknown build system"
   exit 1
@@ -42,7 +41,7 @@ elif [ -f /etc/debian_version ]; then
     socat \
     sudo
 fi
-gem install bundler --no-rdoc --no-ri
+gem install bundler --no-document --version "< 2.0"
 
 # Perform an out-of-source build (so the same source directory can be used for
 # multiple parallel docker builds).
