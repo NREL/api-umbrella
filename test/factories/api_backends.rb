@@ -5,6 +5,8 @@ FactoryBot.define do
     frontend_host { "localhost" }
     backend_host { "example.com" }
     balance_algorithm { "least_conn" }
+    organization_name { "Example Org" }
+    status_description { "Production" }
 
     servers do
       [FactoryBot.attributes_or_build(@build_strategy, :api_backend_server, :host => "example.com")]

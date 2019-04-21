@@ -108,6 +108,38 @@ class Test::Apis::V1::ApiScopes::TestIndex < Minitest::Test
     assert_equal(api_scope4.name, data.fetch("data")[3].fetch("name"))
   end
 
+  def test_csv
+    api_scope = FactoryBot.create(:api_scope)
+    admin_group = FactoryBot.create(:admin_group, :api_scopes => [api_scope])
+    api_backend = FactoryBot.create(:api_backend, :frontend_host => api_scope.host, :url_matches => [FactoryBot.build(:api_backend_url_match, :frontend_prefix => api_scope.path_prefix)])
+
+    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/api_scopes.csv", http_options.deep_merge(admin_token).deep_merge({
+      :params => {
+        :search => { :value => api_scope.id },
+      },
+    }))
+    assert_response_code(200, response)
+    assert_equal("text/csv", response.headers["Content-Type"])
+    assert_match("attachment; filename=\"api_scopes_#{Time.now.utc.strftime("%Y-%m-%d")}.csv\"", response.headers["Content-Disposition"])
+
+    csv = CSV.parse(response.body)
+    assert_equal(2, csv.length, csv)
+    assert_equal([
+      "Name",
+      "Host",
+      "Path Prefix",
+      "Admin Groups",
+      "API Backends",
+    ], csv[0])
+    assert_equal([
+      api_scope.name,
+      api_scope.host,
+      api_scope.path_prefix,
+      admin_group.name,
+      api_backend.name,
+    ], csv[1])
+  end
+
   private
 
   def data_tables_api_url

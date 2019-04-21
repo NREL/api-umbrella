@@ -111,7 +111,7 @@ class Test::Apis::V1::Admins::TestIndex < Minitest::Test
   end
 
   def test_csv
-    admin = FactoryBot.create(:admin, :current_sign_in_at => Time.now)
+    admin = FactoryBot.create(:admin, :current_sign_in_at => Time.now.utc)
 
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/admins.csv", http_options.deep_merge(admin_token).deep_merge({
       :params => {

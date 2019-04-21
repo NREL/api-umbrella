@@ -215,6 +215,40 @@ class Test::Apis::V1::Users::TestIndex < Minitest::Test
     assert_data_tables_order(:registration_source, ["A", "B"])
   end
 
+  def test_csv
+    api_user = FactoryBot.create(:api_user)
+
+    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/users.csv", http_options.deep_merge(admin_token).deep_merge({
+      :params => {
+        :search => { :value => api_user.id },
+      },
+    }))
+    assert_response_code(200, response)
+    assert_equal("text/csv", response.headers["Content-Type"])
+    assert_match("attachment; filename=\"users_#{Time.now.utc.strftime("%Y-%m-%d")}.csv\"", response.headers["Content-Disposition"])
+
+    csv = CSV.parse(response.body)
+    assert_equal(2, csv.length, csv)
+    assert_equal([
+      "E-mail",
+      "First Name",
+      "Last Name",
+      "Purpose",
+      "Created",
+      "Registration Source",
+      "API Key",
+    ], csv[0])
+    assert_equal([
+      api_user.email,
+      api_user.first_name,
+      api_user.last_name,
+      api_user.use_description,
+      api_user.created_at.iso8601,
+      api_user.registration_source,
+      api_user.api_key_preview,
+    ], csv[1])
+  end
+
   private
 
   def data_tables_api_url
