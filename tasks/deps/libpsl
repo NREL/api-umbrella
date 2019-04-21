@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-libpsl_version="0.20.2"
-libpsl_hash="f604f7d30d64bc673870ecf84b860a1e"
+libpsl_version="0.21.0"
+libpsl_hash="171e96d887709e36a57f4ee627bf82d2"
 
 set -e -u -x
 source ./tasks/helpers.sh
