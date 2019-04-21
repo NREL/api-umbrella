@@ -244,6 +244,7 @@ elif [ -f /etc/debian_version ]; then
 
     # For installing the mongo-orchestration test dependency.
     python-virtualenv
+    virtualenv
 
     # For checking for file descriptor leaks during the tests.
     lsof
@@ -265,10 +266,6 @@ elif [ -f /etc/debian_version ]; then
     # For running lsof tests in Docker as root
     sudo
   )
-
-  if [[ "$ID" != "ubuntu" ]]; then
-    test_build_dependencies+=("virtualenv")
-  fi
 
   # Install GCC 7+ for compiling TrafficServer (C++17 required).
   if [[ "$ID" == "ubuntu" && "$VERSION_ID" == "16.04" ]]; then
