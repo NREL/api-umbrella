@@ -149,7 +149,7 @@ RSpec.shared_examples("package upgrade") do |package_version|
     when "redhat"
       command_result = command("yum -y install #{package_path}")
     when "ubuntu", "debian"
-      command_result = command("dpkg -i #{package_path} || apt-get install -y -f")
+      command_result = command("dpkg -i #{package_path} || DEBIAN_FRONTEND=noninteractive apt-get install -y -f")
     end
     expect(command_result.exit_status).to eql(0)
 

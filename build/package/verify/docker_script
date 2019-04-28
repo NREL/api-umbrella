@@ -4,13 +4,17 @@ set -e -u -x
 
 source_dir="$(dirname "$(dirname "$(dirname "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)")")")"
 
+# shellcheck source=tasks/helpers/detect_os_release.sh
+source "$source_dir/tasks/helpers/detect_os_release.sh"
+detect_os_release
+
 # Install the local package that just got built.
 current_package_dir="$source_dir/build/package/work/current/$DIST/core"
 if command -v yum > /dev/null 2>&1; then
   yum -y install "$current_package_dir"/*.rpm
 elif command -v dpkg > /dev/null 2>&1; then
   apt-get update
-  dpkg -i "$current_package_dir"/*.deb || apt-get install -y -f
+  dpkg -i "$current_package_dir"/*.deb || DEBIAN_FRONTEND=noninteractive apt-get install -y -f
 else
   echo "Unknown build system"
   exit 1
@@ -28,20 +32,24 @@ api-umbrella health --wait-for-status green || (systemctl status api-umbrella.se
 # Note: We do this after installing and starting API Umbrella to ensure that
 # API Umbrella can start on its own (and we're not accidentally depending on
 # any of these test dependencies).
-if [ -f /etc/redhat-release ]; then
+if [[ "$ID_NORMALIZED" == "rhel" ]]; then
   yum -y install epel-release
   yum -y install \
     rubygems \
     socat \
     sudo
-elif [ -f /etc/debian_version ]; then
+elif [[ "$ID_NORMALIZED" == "debian" ]]; then
   DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends install \
     net-tools \
     ruby \
     socat \
     sudo
 fi
-gem install bundler --no-document --version "< 2.0"
+if [[ "$ID_NORMALIZED" == "rhel" && "$VERSION_ID" == "6" ]]; then
+  gem install bundler --no-rdoc --no-ri --version "< 2.0"
+else
+  gem install bundler --no-document --version "< 2.0"
+fi
 
 # Perform an out-of-source build (so the same source directory can be used for
 # multiple parallel docker builds).

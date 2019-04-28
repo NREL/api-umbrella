@@ -10,10 +10,14 @@ source "$source_dir/build/package/parse_version"
 # shellcheck source=build/package_dependencies.sh
 source "$source_dir/build/package_dependencies.sh"
 
-if [ -f /etc/redhat-release ]; then
+# shellcheck source=tasks/helpers/detect_os_release.sh
+source "$source_dir/tasks/helpers/detect_os_release.sh"
+detect_os_release
+
+if [[ "$ID_NORMALIZED" == "rhel" ]]; then
   package_type="rpm"
   rpm_dist=$(rpm --query centos-release | grep -o "el[0-9]")
-elif [ -f /etc/debian_version ]; then
+elif [[ "$ID_NORMALIZED" == "debian" ]]; then
   package_type="deb"
   package_iteration="$package_iteration~$(lsb_release --codename --short)"
 else
