@@ -9,15 +9,23 @@ require "support/api_umbrella_test_helpers/process"
 
 def capybara_register_driver(driver_name, options = {})
   ::Capybara.register_driver(driver_name) do |app|
+    service_options = {}
     path, _stderr, status = Open3.capture3("which", "chromedriver")
     if status.success?
-      Selenium::WebDriver::Chrome.driver_path = path.strip
+      service_options[:path] = path.strip
     else
       require "webdrivers"
     end
 
     root_dir = File.join(ApiUmbrellaTestHelpers::Process::TEST_RUN_ROOT, "capybara")
     FileUtils.mkdir_p(root_dir)
+
+    service = ::Selenium::WebDriver::Service.chrome(service_options.merge({
+      :args => [
+        "--log_path=#{File.join(root_dir, "#{driver_name}.log")}",
+        "--verbose",
+      ],
+    }))
 
     driver_options = ::Selenium::WebDriver::Chrome::Options.new
     driver_options.args << "--headless"
@@ -48,12 +56,9 @@ def capybara_register_driver(driver_name, options = {})
 
     driver = ::Capybara::Selenium::Driver.new(app, {
       :browser => :chrome,
+      :service => service,
       :options => driver_options,
       :desired_capabilities => capabilities,
-      :driver_opts => {
-        :log_path => File.join(root_dir, "#{driver_name}.log"),
-        :verbose => true,
-      },
     })
     driver.resize_window_to(driver.current_window_handle, 1200, 4000)
     driver.browser.download_path = ApiUmbrellaTestHelpers::Downloads::DOWNLOADS_ROOT
