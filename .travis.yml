@@ -1,1 +1,15 @@
+services:
+  - docker
 
+before_install:
+  - ls -la
+  - sudo apt-get update
+  - sudo apt-get install g++ build-essential
+  
+script:
+  - pwd
+  - cd /docker
+  - pwd
+  - docker build -t nrel/api-umbrella:test .
+  - docker tag nrel/api-umbrella:test nrel/api-umbrella:latest
+  
