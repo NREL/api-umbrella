@@ -19,10 +19,6 @@
 #   libmaxminddb dependency changes, rebuilding it properly cascades and
 #   triggers a rebuild of openresty (1st level dependency) and luarocks (2nd
 #   level dependency).
-# - For colorized output we use the "unbuffer" tool to force color output on
-#   some commands, since Task doesn't easily support detecting colorized output
-#   (as of the output changes in 2.0.3):
-#   https://github.com/go-task/task/issues/136
 
 version: "2"
 
@@ -733,31 +729,31 @@ tasks:
     deps:
       - app-deps:admin-ui:yarn
     cmds:
-      - unbuffer ./tasks/lint/js
+      - ./tasks/lint/js
 
   lint:lua:
     deps:
       - test-deps:lua:luacheck
     cmds:
-      - unbuffer ./tasks/lint/lua
+      - ./tasks/lint/lua
 
   lint:resty:
     deps:
       - test-deps:lua:penlight
     cmds:
-      - unbuffer ./tasks/lint/resty/run
+      - ./tasks/lint/resty/run
 
   lint:ruby:
     deps:
       - test-deps:bundle
     cmds:
-      - unbuffer ./tasks/lint/ruby
+      - ./tasks/lint/ruby
 
   lint:shell:
     deps:
       - test-deps:shellcheck
     cmds:
-      - unbuffer ./tasks/lint/shell
+      - ./tasks/lint/shell
 
   lint:
     cmds:
@@ -769,14 +765,14 @@ tasks:
 
   outdated:
     cmds:
-      - unbuffer ./tasks/outdated
+      - ./tasks/outdated
 
   test:
     deps:
       - all
       - test-deps
     cmds:
-      - unbuffer ./tasks/test/default
+      - ./tasks/test/default
 
   test:circle-ci:
     deps:

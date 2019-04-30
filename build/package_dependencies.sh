@@ -103,9 +103,6 @@ if [[ "$ID_NORMALIZED" == "rhel" ]]; then
 
     # For OpenResty's "opm" CLI.
     "$perl_digest_md5_package"
-
-    # For "unbuffer" command for Taskfile.
-    expect
   )
   test_build_dependencies=(
     # Binary and readelf tests
@@ -234,9 +231,6 @@ elif [[ "$ID_NORMALIZED" == "debian" ]]; then
     unzip
     uuid-dev
     xz-utils
-
-    # For "unbuffer" command for Taskfile.
-    expect
   )
   test_build_dependencies=(
     # Binary and readelf tests
