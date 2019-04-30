@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-api_umbrella_static_site_version="7e05444717a194f016df41d9a012cc2e393412bf"
-api_umbrella_static_site_hash="61e12ab7fb935bbbdf9a340c984b9c0b"
+api_umbrella_static_site_version="877259993342633e116e5f8ed59ae987867e90b2"
+api_umbrella_static_site_hash="98a9667afd59b79377ebd29503f6ab0f"
 
 set -e -u -x
 source ./tasks/helpers.sh
