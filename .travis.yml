@@ -13,3 +13,9 @@ script:
   - docker build -t nrel/api-umbrella:test .
   - docker tag nrel/api-umbrella:test nrel/api-umbrella:latest
   
+if [ "${TRAVIS_PULL_REQUEST}" = "false" -a "${TRAVIS_REPO_SLUG}" = "apinf/apinf-umbrella" ]
+then
+docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
+#docker push apinf/apinf-umbrella:$DOCKER_TAG
+echo "echo"
+fi
