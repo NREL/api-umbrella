@@ -192,8 +192,8 @@ class Api::Settings
         if value.present?
           begin
             SafeYAML.load(value)
-          rescue Psych::SyntaxError => error
-            self.errors.add("error_data_yaml_strings.#{key}", "YAML parsing error: #{error.message}")
+          rescue Psych::SyntaxError => e
+            self.errors.add("error_data_yaml_strings.#{key}", "YAML parsing error: #{e.message}")
           end
         end
       end

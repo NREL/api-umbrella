@@ -226,7 +226,7 @@ GEM
     pundit (2.0.1)
       activesupport (>= 3.0.0)
     pyu-ruby-sasl (0.0.3.3)
-    rabl (0.14.0)
+    rabl (0.14.1)
       activesupport (>= 2.3.14)
     rack (1.6.11)
     rack-proxy (0.6.5)
