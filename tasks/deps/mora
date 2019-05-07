@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-golang_version="1.12.4"
-golang_hash="d7d1f1f88ddfe55840712dc1747f37a790cbcaa448f6c9cf51bbe10aa65442f5"
+golang_version="1.12.5"
+golang_hash="aea86e3c73495f205929cfebba0d63f1382c8ac59be081b6351681415f4063cf"
 mora_version="8127901857cf88d3f0902708b25ad930354973a3"
 mora_hash="b86cea913596370cd58fce89b23acd97"
 
