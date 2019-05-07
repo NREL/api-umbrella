@@ -5,6 +5,10 @@ lua_resty_auto_ssl_version="0.12.0-1"
 set -e -u -x
 source ./tasks/helpers.sh
 
+# lua-resty-auto-ssl's Makefile also uses the BUILD_DIR environment variable,
+# so unset our own to avoid potential conflicts.
+unset BUILD_DIR
+
 luarocks_install "lua-resty-auto-ssl" "$lua_resty_auto_ssl_version"
 
 stamp
