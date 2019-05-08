@@ -144,7 +144,7 @@ if [[ "$ID_NORMALIZED" == "rhel" ]]; then
     # For running lsof tests in Docker as root
     sudo
 
-    # nokogiri test dependency
+    # For nokogiri dependency (for static-site and tests)
     libxml2-devel
     libxslt-devel
   )
@@ -273,6 +273,10 @@ elif [[ "$ID_NORMALIZED" == "debian" ]]; then
 
     # libbson
     cmake
+
+    # For nokogiri dependency (for static-site and tests)
+    libxml2-dev
+    libxslt-dev
   )
   test_build_dependencies=(
     # Binary and readelf tests
@@ -298,10 +302,6 @@ elif [[ "$ID_NORMALIZED" == "debian" ]]; then
 
     # For running lsof tests in Docker as root
     sudo
-
-    # nokogiri test dependency
-    libxml2-dev
-    libxslt-dev
   )
 
   # Install GCC 7+ for compiling TrafficServer (C++17 required).
