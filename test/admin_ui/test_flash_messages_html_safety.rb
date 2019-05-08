@@ -43,21 +43,22 @@ class Test::AdminUi::TestFlashMessagesHtmlSafety < Minitest::Capybara::Test
   # un-encoded, which makes it trickier to verify the HTML escaping that's
   # going on.
   def test_raw_html
-    omniauth_data = {
-      "provider" => "google_oauth2",
-      "info" => {
-        "email" => "unverified@example.com",
-      },
-      "extra" => {
-        "raw_info" => {
-          "email_verified" => false,
-        },
-      },
-    }
+    data = MultiJson.dump({
+      "email" => "unverified@example.com",
+      "email_verified" => false,
+    })
 
-    response = Typhoeus.get("https://127.0.0.1:9081/admins/auth/google_oauth2/callback", keyless_http_options.deep_merge({
+    response = Typhoeus.get("https://127.0.0.1:9081/admins/auth/google_oauth2", keyless_http_options.deep_merge({
       :headers => {
-        "Cookie" => "test_mock_omniauth=#{Base64.urlsafe_encode64(MultiJson.dump(omniauth_data))}",
+        "Cookie" => "test_mock_userinfo=#{CGI.escape(Base64.strict_encode64(data))}",
+      },
+    }))
+    assert_response_code(302, response)
+    assert_match(%r{\Ahttps://127.0.0.1:9081/admins/auth/google_oauth2/callback\?state=\w{64}&code=mock_test_code\z}, response.headers["Location"])
+
+    response = Typhoeus.get(response.headers.fetch("Location"), keyless_http_options.deep_merge({
+      :headers => {
+        "Cookie" => "test_mock_userinfo=#{CGI.escape(Base64.strict_encode64(data))}; #{response.headers.fetch("Set-Cookie")}",
       },
     }))
     assert_response_code(302, response)
@@ -69,7 +70,7 @@ class Test::AdminUi::TestFlashMessagesHtmlSafety < Minitest::Capybara::Test
       },
     }))
     assert_response_code(200, response)
-    assert_match("The email address &#39;unverified@example.com&#39; is not verified. Please <a href=\"https://example.com/contact/?q=&#39;&quot;&gt;&lt;script&gt;alert(&#39;hello&#39;)&lt;/script&gt;\">contact us</a> for further assistance.", response.body)
+    assert_match("The email address 'unverified@example.com' is not verified. Please <a href=\"https://example.com/contact/?q=&#039;&quot;&gt;&lt;script&gt;alert(&#039;hello&#039;)&lt;/script&gt;\">contact us</a> for further assistance.", response.body)
   end
 
   def test_unverified_html_message
