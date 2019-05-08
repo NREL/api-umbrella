@@ -8,9 +8,10 @@ WORKDIR /app
 ENV DOCKER_DEV true
 ENV NOKOGIRI_USE_SYSTEM_LIBRARIES 1
 
-COPY tasks/install-system-build-dependencies /app/tasks/install-system-build-dependencies
 COPY build/package_dependencies.sh /app/build/package_dependencies.sh
 COPY tasks/helpers.sh /app/tasks/helpers.sh
+COPY tasks/helpers/detect_os_release.sh /app/tasks/helpers/detect_os_release.sh
+COPY tasks/install-system-build-dependencies /app/tasks/install-system-build-dependencies
 RUN env INSTALL_TEST_DEPENDENCIES=true /app/tasks/install-system-build-dependencies
 
 COPY Makefile.in /app/Makefile.in
