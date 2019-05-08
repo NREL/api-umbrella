@@ -81,6 +81,7 @@ class Test::Apis::V0::TestAnalytics < Minitest::Test
     assert_equal([
       "users_by_month",
       "hits_by_month",
+      "production_apis",
       "total_users",
       "total_hits",
       "cached_at",
