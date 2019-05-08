@@ -8,9 +8,10 @@ WORKDIR /app
 ENV DOCKER_DEV true
 ENV NOKOGIRI_USE_SYSTEM_LIBRARIES 1
 
-COPY tasks/install-system-build-dependencies /app/tasks/install-system-build-dependencies
 COPY build/package_dependencies.sh /app/build/package_dependencies.sh
 COPY tasks/helpers.sh /app/tasks/helpers.sh
+COPY tasks/helpers/detect_os_release.sh /app/tasks/helpers/detect_os_release.sh
+COPY tasks/install-system-build-dependencies /app/tasks/install-system-build-dependencies
 RUN /app/tasks/install-system-build-dependencies
 
 COPY Makefile.in /app/Makefile.in
@@ -42,12 +43,13 @@ RUN make install DESTDIR="/build/install-destdir"
 FROM ubuntu:18.04
 
 COPY --from=build /build/install-destdir /
-COPY --from=build /app/build/package_dependencies.sh /tmp/install/package_dependencies.sh
-COPY --from=build /app/build/package/scripts/after-install /tmp/install/after-install
+COPY --from=build /app/build/package/scripts/after-install /tmp/install/build/package/scripts/after-install
+COPY --from=build /app/build/package_dependencies.sh /tmp/install/build/package_dependencies.sh
+COPY --from=build /app/tasks/helpers/detect_os_release.sh /tmp/install/tasks/helpers/detect_os_release.sh
 RUN set -x && \
   apt-get update && \
-  bash -c 'source /tmp/install/package_dependencies.sh && DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends install "${core_package_dependencies[@]}"' && \
-  /tmp/install/after-install 1 && \
+  bash -c 'source /tmp/install/build/package_dependencies.sh && DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends install "${core_package_dependencies[@]}"' && \
+  /tmp/install/build/package/scripts/after-install 1 && \
   rm -rf /tmp/install /var/lib/apt/lists/*
 
 CMD ["api-umbrella", "run"]
