@@ -4,12 +4,11 @@ local analytics_policy = require "api-umbrella.web-app.policies.analytics_policy
 local capture_errors_json = require("api-umbrella.web-app.utils.capture_errors").json
 local config = require "api-umbrella.proxy.models.file_config"
 local db = require "lapis.db"
+local icu_date = require "icu-date"
 local int64_to_json_number = require("api-umbrella.utils.int64").to_json_number
 local interval_lock = require "api-umbrella.utils.interval_lock"
 local json_encode = require "api-umbrella.utils.json_encode"
-local json_decode = require("cjson").decode
 local json_response = require "api-umbrella.web-app.utils.json_response"
-local time = require "api-umbrella.utils.time"
 
 local _M = {}
 
@@ -88,23 +87,154 @@ local function generate_summary_hits(start_time, end_time)
   }
 end
 
-local function generate_summary_api_backends()
-  local data = {}
-  local organization_count = db.query("SELECT COUNT(DISTINCT organization_name) AS organization_count FROM api_backends WHERE organization_name IS NOT NULL AND organization_name != ''")
-  data["organization_count"] = int64_to_json_number(organization_count[1]["organization_count"])
-
-  local status_counts = db.query("SELECT status_description, COUNT(status_description) AS status_count FROM api_backends WHERE status_description IS NOT NULL AND status_description != '' GROUP BY status_description")
-  data["status_counts"] = {}
-  for _, row in ipairs(status_counts) do
-    data["status_counts"][row["status_description"]] = int64_to_json_number(row["status_count"])
+local function generate_organization_summary(start_time, end_time, recent_start_time, filters)
+  local search = AnalyticsSearch.factory(config["analytics"]["adapter"])
+  search:set_start_time(start_time)
+  search:set_end_time(end_time)
+  search:set_interval("month")
+  search:filter_exclude_imported()
+  search:aggregate_by_interval_for_summary()
+  search:aggregate_by_cardinality("user_id")
+  search:aggregate_by_response_time_average()
+  if config["web"]["analytics_v0_summary_filter"] then
+    search:set_search_query_string(config["web"]["analytics_v0_summary_filter"])
   end
+  search:set_timeout(20 * 60) -- 20 minutes
+  search:set_permission_scope(filters)
+
+  local results = search:fetch_results()
+
+  local hits_monthly = {}
+  local active_api_keys_monthly = {}
+  local average_response_times_monthly = {}
+  for _, month_data in ipairs(results["aggregations"]["hits_over_time"]["buckets"]) do
+    local key = string.sub(month_data["key_as_string"], 1, 7)
+    table.insert(hits_monthly, { key, month_data["doc_count"] })
+    table.insert(active_api_keys_monthly, { key, month_data["unique_user_id"]["value"] })
+    table.insert(average_response_times_monthly, { key, month_data["response_time_average"]["value"] })
+  end
+
+  search:set_start_time(recent_start_time)
+  search:set_interval("day")
+  search:aggregate_by_interval_for_summary()
+  local recent_results = search:fetch_results()
+
+  local recent_hits_daily = {}
+  local recent_active_api_keys_daily = {}
+  local recent_average_response_times_daily = {}
+  for _, day_data in ipairs(recent_results["aggregations"]["hits_over_time"]["buckets"]) do
+    local key = string.sub(day_data["key_as_string"], 1, 10)
+    table.insert(recent_hits_daily, { key, day_data["doc_count"] })
+    table.insert(recent_active_api_keys_daily, { key, day_data["unique_user_id"]["value"] })
+    table.insert(recent_average_response_times_daily, { key, day_data["response_time_average"]["value"] })
+  end
+
+  return {
+    hits = {
+      monthly = hits_monthly,
+      total = results["hits"]["total"],
+      recent = {
+        daily = recent_hits_daily,
+        total = recent_results["hits"]["total"],
+      },
+    },
+    active_api_keys = {
+      monthly = active_api_keys_monthly,
+      total = results["aggregations"]["unique_user_id"]["value"],
+      recent = {
+        daily = recent_active_api_keys_daily,
+        total = recent_results["aggregations"]["unique_user_id"]["value"],
+      },
+    },
+    average_response_times = {
+      monthly = average_response_times_monthly,
+      average = results["aggregations"]["response_time_average"]["value"],
+      recent = {
+        daily = recent_average_response_times_daily,
+        average = recent_results["aggregations"]["response_time_average"]["value"],
+      },
+    },
+  }
+end
+
+local function generate_production_apis_summary(start_time, end_time, recent_start_time)
+  local data = {
+    organizations = {},
+  }
+  local counts = db.query([[SELECT COUNT(DISTINCT api_backends.organization_name) AS organization_count,
+      COUNT(DISTINCT api_backends.id) AS api_backend_count,
+      COUNT(DISTINCT api_backend_url_matches.id) AS api_backend_url_match_count
+    FROM api_backends
+      LEFT JOIN api_backend_url_matches ON api_backends.id = api_backend_url_matches.api_backend_id
+    WHERE api_backends.status_description = 'Production']])
+  data["organization_count"] = int64_to_json_number(counts[1]["organization_count"])
+  data["api_backend_count"] = int64_to_json_number(counts[1]["api_backend_count"])
+  data["api_backend_url_match_count"] = int64_to_json_number(counts[1]["api_backend_url_match_count"])
+
+  local all_filters = {
+    condition = "OR",
+    rules = {},
+  }
+
+  local organizations = db.query([[SELECT api_backends.organization_name,
+      json_agg(json_build_object('frontend_host', api_backends.frontend_host, 'frontend_prefix', api_backend_url_matches.frontend_prefix)) AS url_prefixes
+    FROM api_backends
+      LEFT JOIN api_backend_url_matches ON api_backends.id = api_backend_url_matches.api_backend_id
+    WHERE api_backends.status_description = 'Production'
+    GROUP BY api_backends.organization_name
+    ORDER BY api_backends.organization_name]])
+  for _, organization in ipairs(organizations) do
+    local filters = {
+      condition = "OR",
+      rules = {},
+    }
+    for _, url_prefix in ipairs(organization["url_prefixes"]) do
+      local rule = {
+        condition = "AND",
+        rules = {
+          {
+            field = "request_host",
+            operator = "equal",
+            value = string.lower(url_prefix["frontend_host"]),
+          },
+          {
+            field = "request_path",
+            operator = "begins_with",
+            value = string.lower(url_prefix["frontend_prefix"]),
+          },
+        },
+      }
+      table.insert(filters["rules"], rule)
+      table.insert(all_filters["rules"], rule)
+    end
+
+    local organization_data = generate_organization_summary(start_time, end_time, recent_start_time, filters)
+    organization_data["name"] = organization["organization_name"]
+    table.insert(data["organizations"], organization_data)
+  end
+
+  local all_data = generate_organization_summary(start_time, end_time, recent_start_time, all_filters)
+  data["all"] = all_data
 
   return data
 end
 
 local function generate_summary()
+  local date = icu_date.new({
+    zone_id = config["analytics"]["timezone"],
+  })
+  local format_iso8601 = icu_date.formats.pattern("yyyy-MM-dd'T'HH:mm:ssZZZZZ")
+
   local start_time = "2013-07-01T00:00:00"
-  local end_time = time.timestamp_to_iso8601(ngx.now())
+  local end_time = date:format(format_iso8601)
+
+  date:add(icu_date.fields.DATE, -30)
+  date:set(icu_date.fields.HOUR_OF_DAY, 0)
+  date:set(icu_date.fields.MINUTE, 0)
+  date:set(icu_date.fields.SECOND, 0)
+  date:set(icu_date.fields.MILLISECOND, 0)
+  local recent_start_time = date:format(format_iso8601)
+
   local users = generate_summary_users(start_time, end_time)
   local hits = generate_summary_hits(start_time, end_time)
 
@@ -113,6 +243,7 @@ local function generate_summary()
     hits_by_month = hits["hits_by_month"],
     total_users = users["total_users"],
     total_hits = hits["total_hits"],
+    production_apis = generate_production_apis_summary(start_time, end_time, recent_start_time),
     cached_at = end_time,
   }
 
@@ -153,13 +284,7 @@ function _M.summary(self)
     response_json = generate_summary()
   end
 
-  -- TODO: Shift this into the cached response for better consistency once our
-  -- data settles down and we prove this out. But since it's a quick query,
-  -- make it on each request (uncached) for now.
-  local response = json_decode(response_json)
-  response["api_backends"] = generate_summary_api_backends()
-
-  return json_response(self, response)
+  return json_response(self, response_json)
 end
 
 return function(app)

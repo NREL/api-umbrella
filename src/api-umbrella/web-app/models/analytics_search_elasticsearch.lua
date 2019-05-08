@@ -381,6 +381,24 @@ function _M:aggregate_by_interval()
   end
 end
 
+function _M:aggregate_by_interval_for_summary()
+  self:aggregate_by_interval()
+
+  self.body["aggregations"]["hits_over_time"]["aggregations"] = {
+    unique_user_id = {
+      cardinality = {
+        field = "user_id",
+        precision_threshold = 100,
+      },
+    },
+    response_time_average = {
+      avg = {
+        field = "response_time",
+      },
+    },
+  }
+end
+
 function _M:aggregate_by_term(field, size)
   self.body["aggregations"]["top_" .. field] = {
     terms = {
@@ -616,7 +634,9 @@ function _M:fetch_results()
     return coroutine.yield("error", self.errors)
   end
 
-  table.insert(self.body["query"]["bool"]["filter"]["bool"]["must"], {
+  local body = deepcopy(self.body)
+
+  table.insert(body["query"]["bool"]["filter"]["bool"]["must"], {
     range = {
       request_at = {
         from = assert(self.start_time),
@@ -625,14 +645,14 @@ function _M:fetch_results()
     },
   })
 
-  setmetatable(self.body["query"]["bool"]["filter"]["bool"]["must_not"], cjson.empty_array_mt)
-  setmetatable(self.body["query"]["bool"]["filter"]["bool"]["must"], cjson.empty_array_mt)
-  if self.body["sort"] then
-    setmetatable(self.body["sort"], cjson.empty_array_mt)
+  setmetatable(body["query"]["bool"]["filter"]["bool"]["must_not"], cjson.empty_array_mt)
+  setmetatable(body["query"]["bool"]["filter"]["bool"]["must"], cjson.empty_array_mt)
+  if body["sort"] then
+    setmetatable(body["sort"], cjson.empty_array_mt)
   end
 
-  if is_empty(self.body["aggregations"]) then
-    self.body["aggregations"] = nil
+  if is_empty(body["aggregations"]) then
+    body["aggregations"] = nil
   end
 
   -- When querying many indices (particularly if partitioning by day), we can
@@ -667,7 +687,7 @@ function _M:fetch_results()
     res, err = elasticsearch_query("/" .. indices .. "/" .. document_type .. "/_search", {
       method = "POST",
       query = self.query,
-      body = self.body,
+      body = body,
     })
     if not err and res and res.body_json then
       body_json = res.body_json
@@ -683,7 +703,7 @@ function _M:fetch_results()
       headers = {
         ["Content-Type"] = "application/x-ndjson",
       },
-      body = json_encode(header) .. "\n" .. json_encode(self.body) .. "\n",
+      body = json_encode(header) .. "\n" .. json_encode(body) .. "\n",
     })
     if not err and res and res.body_json and res.body_json["responses"] and res.body_json["responses"][1] then
       body_json = res.body_json["responses"][1]
