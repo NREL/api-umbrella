@@ -181,7 +181,7 @@ GEM
       railties (>= 4.2.0)
     multi_json (1.13.1)
     multi_xml (0.6.0)
-    multipart-post (2.0.0)
+    multipart-post (2.1.0)
     net-ldap (0.16.1)
     nokogiri (1.10.3)
       mini_portile2 (~> 2.4.0)
