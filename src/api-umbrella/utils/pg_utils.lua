@@ -2,8 +2,9 @@ local config = require "api-umbrella.proxy.models.file_config"
 local int64 = require "api-umbrella.utils.int64"
 local pgmoon = require "pgmoon"
 
-local _escape_literal = pgmoon.Postgres.escape_literal
+local _encode_bytea = pgmoon.Postgres.encode_bytea
 local _escape_identifier = pgmoon.Postgres.escape_identifier
+local _escape_literal = pgmoon.Postgres.escape_literal
 local pg_null = pgmoon.Postgres.NULL
 
 local _M = {}
@@ -18,6 +19,7 @@ _M.db_config = {
 
 local LIST_METATABLE = {}
 local RAW_METATABLE = {}
+local BYTEA_METATABLE = {}
 
 local function encode_values(values)
   local escaped_columns = {}
@@ -64,6 +66,14 @@ function _M.is_raw(value)
   return getmetatable(value) == RAW_METATABLE
 end
 
+function _M.bytea(value)
+  return setmetatable({ value }, BYTEA_METATABLE)
+end
+
+function _M.is_bytea(value)
+  return getmetatable(value) == BYTEA_METATABLE
+end
+
 function _M.escape_like(value)
   return ngx.re.gsub(value, "[\\\\%_]", "\\$0", "jo")
 end
@@ -81,6 +91,8 @@ function _M.escape_literal(value)
     return tostring(value[1])
   elseif int64.is_64bit(value) then
     return _escape_literal(nil, int64.to_string(value))
+  elseif _M.is_bytea(value) then
+    return _encode_bytea(nil, value[1])
   else
     return _escape_literal(nil, value)
   end

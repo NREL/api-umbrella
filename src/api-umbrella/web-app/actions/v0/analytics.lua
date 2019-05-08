@@ -3,12 +3,12 @@ local Cache = require "api-umbrella.web-app.models.cache"
 local analytics_policy = require "api-umbrella.web-app.policies.analytics_policy"
 local capture_errors_json = require("api-umbrella.web-app.utils.capture_errors").json
 local config = require "api-umbrella.proxy.models.file_config"
-local db = require "lapis.db"
 local icu_date = require "icu-date"
 local int64_to_json_number = require("api-umbrella.utils.int64").to_json_number
 local interval_lock = require "api-umbrella.utils.interval_lock"
 local json_encode = require "api-umbrella.utils.json_encode"
 local json_response = require "api-umbrella.web-app.utils.json_response"
+local pg_utils = require "api-umbrella.utils.pg_utils"
 
 local _M = {}
 
@@ -16,11 +16,11 @@ local function generate_summary_users(start_time, end_time)
   -- Fetch the user signups by month, trying to remove duplicate signups for
   -- the same e-mail address (each e-mail address only gets counted for the
   -- first month it signed up). Also fill in 0s for missing months of no data.
-  local users_by_month = db.query([[
+  local users_by_month = pg_utils.query([[
     SELECT extract(year FROM all_months.month) AS year, extract(month FROM all_months.month) AS month, COALESCE(counts_by_month.users_count, 0) AS "count"
     FROM (
       SELECT month
-      FROM generate_series(timestamp ?, timestamp ?, interval '1 month') AS month
+      FROM generate_series(timestamp :start_time, timestamp :end_time, interval '1 month') AS month
     ) AS all_months
     LEFT JOIN (
       SELECT date_trunc('month', first_created_at) as created_at_month, COUNT(email) AS users_count
@@ -34,7 +34,10 @@ local function generate_summary_users(start_time, end_time)
       GROUP BY created_at_month
     ) AS counts_by_month ON all_months.month = counts_by_month.created_at_month
     ORDER BY all_months.month
-  ]], start_time, end_time)
+  ]], {
+    start_time = start_time,
+    end_time = end_time,
+  }, { fatal = true })
 
   local total_users = 0
   for _, month in ipairs(users_by_month) do
@@ -161,12 +164,12 @@ local function generate_production_apis_summary(start_time, end_time, recent_sta
   local data = {
     organizations = {},
   }
-  local counts = db.query([[SELECT COUNT(DISTINCT api_backends.organization_name) AS organization_count,
+  local counts = pg_utils.query([[SELECT COUNT(DISTINCT api_backends.organization_name) AS organization_count,
       COUNT(DISTINCT api_backends.id) AS api_backend_count,
       COUNT(DISTINCT api_backend_url_matches.id) AS api_backend_url_match_count
     FROM api_backends
       LEFT JOIN api_backend_url_matches ON api_backends.id = api_backend_url_matches.api_backend_id
-    WHERE api_backends.status_description = 'Production']])
+    WHERE api_backends.status_description = 'Production']], nil, { fatal = true })
   data["organization_count"] = int64_to_json_number(counts[1]["organization_count"])
   data["api_backend_count"] = int64_to_json_number(counts[1]["api_backend_count"])
   data["api_backend_url_match_count"] = int64_to_json_number(counts[1]["api_backend_url_match_count"])
@@ -176,13 +179,13 @@ local function generate_production_apis_summary(start_time, end_time, recent_sta
     rules = {},
   }
 
-  local organizations = db.query([[SELECT api_backends.organization_name,
+  local organizations = pg_utils.query([[SELECT api_backends.organization_name,
       json_agg(json_build_object('frontend_host', api_backends.frontend_host, 'frontend_prefix', api_backend_url_matches.frontend_prefix)) AS url_prefixes
     FROM api_backends
       LEFT JOIN api_backend_url_matches ON api_backends.id = api_backend_url_matches.api_backend_id
     WHERE api_backends.status_description = 'Production'
     GROUP BY api_backends.organization_name
-    ORDER BY api_backends.organization_name]])
+    ORDER BY api_backends.organization_name]], nil, { fatal = true })
   for _, organization in ipairs(organizations) do
     local filters = {
       condition = "OR",
@@ -271,7 +274,7 @@ function _M.summary(self)
     -- while to generate, we want ensure we always have valid cached data (so
     -- users don't get a super slow response and we don't overwhelm the server
     -- when it's uncached).
-    if cache:created_at_timestamp() < ngx.now() - 60 * 60 * 6 then
+    if cache:updated_at_timestamp() < ngx.now() - 60 * 60 * 6 then
       ngx.timer.at(0, function()
         -- Ensure only one pre-seed is happening at a time (at least per
         -- server).
