@@ -4,9 +4,12 @@ set -e -u -x
 
 source_dir="$(dirname "$(dirname "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)")")"
 
-if [ -f /etc/redhat-release ]; then
+# shellcheck source=tasks/helpers/detect_os_release.sh
+source "$source_dir/tasks/helpers/detect_os_release.sh"
+detect_os_release
+if [[ "$ID_NORMALIZED" == "rhel" ]]; then
   yum -y install git rsync
-elif [ -f /etc/debian_version ]; then
+elif [[ "$ID_NORMALIZED" == "debian" ]]; then
   apt-get update
   DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends install git rsync
 fi
@@ -23,11 +26,6 @@ git clean -d -f -x
 
 # Install any system dependencies for building.
 "$clean_source_dir/tasks/install-system-build-dependencies"
-
-if [ -f /etc/os-release ]; then
-  # shellcheck disable=SC1091
-  source /etc/os-release
-fi
 
 # Perform an out-of-source build.
 build_dir="/tmp/api-umbrella-build-$DIST"

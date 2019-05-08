@@ -68,7 +68,7 @@ if [ "$configure" = "true" ]; then
   fi
   if ! getent passwd "$deploy_user" > /dev/null; then
     useradd -r -g "$deploy_group" -s /bin/bash \
-      -d "$destdir/home/$deploy_user" -c "API Umbrella deployment user" "$deploy_user"
+      -d "/home/$deploy_user" -c "API Umbrella deployment user" "$deploy_user"
   fi
 
   # Add the auto-ssl and deploy users to the app group, so these users can read
@@ -85,22 +85,14 @@ if [ "$configure" = "true" ]; then
     usermod -d "$destdir/home/$deploy_user" -s /bin/bash "$deploy_user"
   fi
 
-  # Create an empty .ssh/authorized_keys file with proper permissions if it
-  # doesn't already exist.
-  if [ ! -d "$destdir/home/$deploy_user" ]; then
-    mkdir -p "$destdir/home/$deploy_user"
-    chmod 700 "$destdir/home/$deploy_user"
-  fi
-  if [ ! -d "$destdir/home/$deploy_user/.ssh" ]; then
-    mkdir -p "$destdir/home/$deploy_user/.ssh"
-    chmod 700 "$destdir/home/$deploy_user/.ssh"
-  fi
-  if [ ! -f "$destdir/home/$deploy_user/.ssh/authorized_keys" ]; then
-    touch "$destdir/home/$deploy_user/.ssh/authorized_keys"
-    chmod 600 "$destdir/home/$deploy_user/.ssh/authorized_keys"
-  fi
+  # Create an empty .ssh/authorized_keys file if it doesn't already exist.
+  mkdir -p "$destdir/home/$deploy_user/.ssh"
+  touch "$destdir/home/$deploy_user/.ssh/authorized_keys"
 
   # Set file permissions
+  chmod 700 "$destdir/home/$deploy_user"
+  chmod 700 "$destdir/home/$deploy_user/.ssh"
+  chmod 600 "$destdir/home/$deploy_user/.ssh/authorized_keys"
   chown -R "$user:$group" "$prefix_dir/etc" "$prefix_dir/var"
   chown -R "$deploy_user:$deploy_group" "$embedded_dir/apps"
   chown "$deploy_user:$deploy_group" "$destdir/home/$deploy_user"

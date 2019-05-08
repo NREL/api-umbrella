@@ -2,24 +2,23 @@
 
 set -e -u
 
-if [ -f /etc/os-release ]; then
-  # shellcheck disable=SC1091
-  source /etc/os-release
-fi
+source_dir="$(dirname "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)")"
+
+# shellcheck source=tasks/helpers/detect_os_release.sh
+source "$source_dir/tasks/helpers/detect_os_release.sh"
+detect_os_release
 
 core_package_non_build_dependencies=()
 
-if [ -f /etc/redhat-release ]; then
-  if [[ "${VERSION_ID:-}" == "" ]]; then
-    VERSION_ID=$(grep -oP '(?<= )[0-9]+(?=\.)' /etc/redhat-release)
-  fi
-
-  util_linux_package="util-linux"
+if [[ "$ID_NORMALIZED" == "rhel" ]]; then
+  perl_digest_md5_package="perl-Digest-MD5"
   procps_package="procps-ng"
+  util_linux_package="util-linux"
 
   if [[ "$VERSION_ID" == "6" ]]; then
-    util_linux_package="util-linux-ng"
+    perl_digest_md5_package="perl"
     procps_package="procps"
+    util_linux_package="util-linux-ng"
   fi
 
   core_package_dependencies=(
@@ -111,8 +110,8 @@ if [ -f /etc/redhat-release ]; then
     unzip
     xz
 
-    # For "unbuffer" command for Taskfile.
-    expect
+    # For OpenResty's "opm" CLI.
+    "$perl_digest_md5_package"
 
     # lualdap
     openldap-devel
@@ -157,7 +156,7 @@ if [ -f /etc/redhat-release ]; then
       devtoolset-7
     )
   fi
-elif [ -f /etc/debian_version ]; then
+elif [[ "$ID_NORMALIZED" == "debian" ]]; then
   libcurl_version=3
   libnettle_version=6
   libreadline_version=7
@@ -269,9 +268,6 @@ elif [ -f /etc/debian_version ]; then
     uuid-dev
     xz-utils
 
-    # For "unbuffer" command for Taskfile.
-    expect
-
     # lualdap
     libldap-dev
 
@@ -342,6 +338,8 @@ all_dependencies=(
   "${test_build_dependencies[@]}"
 )
 
-core_package_dependencies+=(
-  "${core_package_non_build_dependencies[@]}"
-)
+if [ "${#core_package_non_build_dependencies[@]}" != 0 ]; then
+  core_package_dependencies+=(
+    "${core_package_non_build_dependencies[@]}"
+  )
+fi

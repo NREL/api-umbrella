@@ -1,14 +1,22 @@
 #!/usr/bin/env bash
 
-api_umbrella_static_site_version="c34e7ee72e1b3e895861f14a5ead0f55ae30661c"
-api_umbrella_static_site_hash="3adbca358604fbaad51e8947407d8569"
+api_umbrella_static_site_version="877259993342633e116e5f8ed59ae987867e90b2"
+api_umbrella_static_site_hash="98a9667afd59b79377ebd29503f6ab0f"
 
 set -e -u -x
 source ./tasks/helpers.sh
+source ./tasks/helpers/detect_os_release.sh
 
 task_working_dir
 download "https://github.com/NREL/api-umbrella-static-site/archive/$api_umbrella_static_site_version.tar.gz" "md5" "$api_umbrella_static_site_hash"
 extract_download "$api_umbrella_static_site_version.tar.gz"
+
+detect_os_release
+if [[ "$ID_NORMALIZED" == "rhel" && "$VERSION_ID" == "6" ]]; then
+  # GCC 4.6+ for compiling libsass/sassc
+  export CC=/opt/rh/devtoolset-7/root/usr/bin/gcc
+  export CXX=/opt/rh/devtoolset-7/root/usr/bin/g++
+fi
 
 cd "api-umbrella-static-site-$api_umbrella_static_site_version"
 export PATH="$DEV_PATH"

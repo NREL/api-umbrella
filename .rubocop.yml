@@ -19,6 +19,9 @@ Layout/AlignHash:
   # https://github.com/rubocop-hq/rubocop/issues/6291
   EnforcedLastArgumentHashStyle: ignore_implicit
 
+Layout/AlignArguments:
+  EnforcedStyle: with_fixed_indentation
+
 Layout/AlignParameters:
   EnforcedStyle: with_fixed_indentation
 
@@ -28,13 +31,16 @@ Layout/CaseIndentation:
 Layout/EndAlignment:
   EnforcedStyleAlignWith: start_of_line
 
-Layout/FirstParameterIndentation:
+Layout/IndentFirstArgument:
   EnforcedStyle: consistent
 
-Layout/IndentArray:
+Layout/IndentFirstArrayElement:
   EnforcedStyle: consistent
 
-Layout/IndentHash:
+Layout/IndentFirstHashElement:
+  EnforcedStyle: consistent
+
+Layout/IndentFirstParameter:
   EnforcedStyle: consistent
 
 Layout/MultilineMethodCallIndentation:
@@ -86,9 +92,6 @@ Metrics/PerceivedComplexity:
   Enabled: false
 
 Naming/HeredocDelimiterNaming:
-  Enabled: false
-
-Performance/RedundantMerge:
   Enabled: false
 
 Style/AsciiComments:

@@ -5,34 +5,23 @@ trafficserver_hash="a458a12f4ba2e7f9e01e81c1bed8afc95a1195fbbea643cde7ceca0af692
 
 set -e -u -x
 source ./tasks/helpers.sh
+source ./tasks/helpers/detect_os_release.sh
 
 task_working_dir
 download "https://archive.apache.org/dist/trafficserver/trafficserver-$trafficserver_version.tar.bz2" "sha512" "$trafficserver_hash"
 extract_download "trafficserver-$trafficserver_version.tar.bz2"
 
-if [ -f /etc/os-release ]; then
-  # shellcheck disable=SC1091
-  source /etc/os-release
-fi
-
-if [ -f /etc/redhat-release ]; then
-  if [[ "${VERSION_ID:-}" == "" ]]; then
-    VERSION_ID=$(grep -oP '(?<= )[0-9]+(?=\.)' /etc/redhat-release)
-  fi
-
-  if [[ "$VERSION_ID" == "6" || "$VERSION_ID" == "7" ]]; then
-    export CC=/opt/rh/devtoolset-7/root/usr/bin/gcc
-    export CXX=/opt/rh/devtoolset-7/root/usr/bin/g++
-  fi
-elif [ -f /etc/debian_version ]; then
-  if [[ "$ID" == "ubuntu" && "$VERSION_ID" == "16.04" ]]; then
-    export CC=gcc-7
-    export CXX=g++-7
-  elif [[ "$ID" == "debian" && ( "$VERSION_ID" == "8" || "$VERSION_ID" == "9" ) ]]; then
-    export CC=clang-7
-    export CXX=clang++-7
-    export CXXFLAGS="-I/usr/lib/llvm-7/include/c++/v1 -stdlib=libc++"
-  fi
+detect_os_release
+if [[ "$ID_NORMALIZED" == "rhel" && ( "$VERSION_ID" == "6" || "$VERSION_ID" == "7" ) ]]; then
+  export CC=/opt/rh/devtoolset-7/root/usr/bin/gcc
+  export CXX=/opt/rh/devtoolset-7/root/usr/bin/g++
+elif [[ "$ID" == "ubuntu" && "$VERSION_ID" == "16.04" ]]; then
+  export CC=gcc-7
+  export CXX=g++-7
+elif [[ "$ID" == "debian" && ( "$VERSION_ID" == "8" || "$VERSION_ID" == "9" ) ]]; then
+  export CC=clang-7
+  export CXX=clang++-7
+  export CXXFLAGS="-I/usr/lib/llvm-7/include/c++/v1 -stdlib=libc++"
 fi
 
 cd "trafficserver-$trafficserver_version"

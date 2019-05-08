@@ -83,7 +83,16 @@ $API_UMBRELLA_EMBEDDED_ROOT/openresty/luajit/lib/lua/5.1/?.so"
 # another Gemfile if the process calling api-umbrella has its own bundler
 # environment set (while probably rare, this happens in some of our
 # build/package/verify scripts, since they use Ruby to perform tests).
+unset BUNDLER_ORIG_BUNDLER_VERSION
+unset BUNDLER_ORIG_BUNDLE_APP_CONFIG
+unset BUNDLER_ORIG_BUNDLE_BIN_PATH
+unset BUNDLER_ORIG_BUNDLE_GEMFILE
+unset BUNDLER_ORIG_GEM_HOME
+unset BUNDLER_ORIG_GEM_PATH
 unset BUNDLER_ORIG_PATH
+unset BUNDLER_ORIG_RUBYLIB
+unset BUNDLER_ORIG_RUBYOPT
+unset BUNDLER_ORIG_RUBY_ROOT
 unset BUNDLER_VERSION
 unset BUNDLE_APP_CONFIG
 unset BUNDLE_BIN_PATH
