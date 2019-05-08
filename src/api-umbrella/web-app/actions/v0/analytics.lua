@@ -6,6 +6,7 @@ local config = require "api-umbrella.proxy.models.file_config"
 local icu_date = require "icu-date"
 local int64_to_json_number = require("api-umbrella.utils.int64").to_json_number
 local interval_lock = require "api-umbrella.utils.interval_lock"
+local json_decode = require("cjson").decode
 local json_encode = require "api-umbrella.utils.json_encode"
 local json_response = require "api-umbrella.web-app.utils.json_response"
 local pg_utils = require "api-umbrella.utils.pg_utils"
@@ -52,6 +53,14 @@ local function generate_summary_users(start_time, end_time)
 end
 
 local function generate_summary_hits(start_time, end_time)
+  local cache_id = "analytics_summary:hits:" .. start_time .. ":" .. end_time
+  local cache = Cache:find(cache_id)
+  if cache then
+    ngx.log(ngx.NOTICE, "Using cached analytics response for " .. cache_id)
+    return json_decode(cache.data)
+  end
+  ngx.log(ngx.NOTICE, "Fetching new analytics response for " .. cache_id)
+
   local search = AnalyticsSearch.factory(config["analytics"]["adapter"])
   search:set_start_time(start_time)
   search:set_end_time(end_time)
@@ -84,13 +93,27 @@ local function generate_summary_hits(start_time, end_time)
     total_hits = total_hits + month["doc_count"]
   end
 
-  return {
+  local response = {
     hits_by_month = hits_by_month,
     total_hits = total_hits,
   }
+
+  local response_json = json_encode(response)
+  local expires_at = ngx.now() + 60 * 60 * 24 * 2 -- 2 days
+  Cache:upsert(cache_id, response_json, expires_at)
+
+  return response
 end
 
 local function generate_organization_summary(start_time, end_time, recent_start_time, filters)
+  local cache_id = "analytics_summary:organization:" .. start_time .. ":" .. end_time .. ":" .. recent_start_time .. ":" .. ngx.md5(json_encode(filters))
+  local cache = Cache:find(cache_id)
+  if cache then
+    ngx.log(ngx.NOTICE, "Using cached analytics response for " .. cache_id)
+    return json_decode(cache.data)
+  end
+  ngx.log(ngx.NOTICE, "Fetching new analytics response for " .. cache_id)
+
   local search = AnalyticsSearch.factory(config["analytics"]["adapter"])
   search:set_start_time(start_time)
   search:set_end_time(end_time)
@@ -132,7 +155,7 @@ local function generate_organization_summary(start_time, end_time, recent_start_
     table.insert(recent_average_response_times_daily, { key, day_data["response_time_average"]["value"] })
   end
 
-  return {
+  local response = {
     hits = {
       monthly = hits_monthly,
       total = results["hits"]["total"],
@@ -158,6 +181,12 @@ local function generate_organization_summary(start_time, end_time, recent_start_
       },
     },
   }
+
+  local response_json = json_encode(response)
+  local expires_at = ngx.now() + 60 * 60 * 24 * 2 -- 2 days
+  Cache:upsert(cache_id, response_json, expires_at)
+
+  return response
 end
 
 local function generate_production_apis_summary(start_time, end_time, recent_start_time)
@@ -211,11 +240,13 @@ local function generate_production_apis_summary(start_time, end_time, recent_sta
       table.insert(all_filters["rules"], rule)
     end
 
+    ngx.log(ngx.NOTICE, 'Fetching analytics for organization "' .. organization["organization_name"] .. '"')
     local organization_data = generate_organization_summary(start_time, end_time, recent_start_time, filters)
     organization_data["name"] = organization["organization_name"]
     table.insert(data["organizations"], organization_data)
   end
 
+  ngx.log(ngx.NOTICE, "Fetching analytics for all organizations")
   local all_data = generate_organization_summary(start_time, end_time, recent_start_time, all_filters)
   data["all"] = all_data
 
@@ -223,20 +254,36 @@ local function generate_production_apis_summary(start_time, end_time, recent_sta
 end
 
 local function generate_summary()
-  local date = icu_date.new({
+  local date_tz = icu_date.new({
     zone_id = config["analytics"]["timezone"],
   })
-  local format_iso8601 = icu_date.formats.pattern("yyyy-MM-dd'T'HH:mm:ssZZZZZ")
+  local format_iso8601 = icu_date.formats.iso8601()
 
-  local start_time = "2013-07-01T00:00:00"
-  local end_time = date:format(format_iso8601)
+  date_tz:set(icu_date.fields.YEAR, 2013)
+  date_tz:set(icu_date.fields.MONTH, 6)
+  date_tz:set(icu_date.fields.DATE, 1)
+  date_tz:set(icu_date.fields.HOUR_OF_DAY, 0)
+  date_tz:set(icu_date.fields.MINUTE, 0)
+  date_tz:set(icu_date.fields.SECOND, 0)
+  date_tz:set(icu_date.fields.MILLISECOND, 0)
+  local start_time = date_tz:format(format_iso8601)
 
-  date:add(icu_date.fields.DATE, -30)
-  date:set(icu_date.fields.HOUR_OF_DAY, 0)
-  date:set(icu_date.fields.MINUTE, 0)
-  date:set(icu_date.fields.SECOND, 0)
-  date:set(icu_date.fields.MILLISECOND, 0)
-  local recent_start_time = date:format(format_iso8601)
+  local now_ms = ngx.now() * 1000
+  date_tz:set_millis(now_ms)
+  date_tz:add(icu_date.fields.DATE, -1)
+  date_tz:set(icu_date.fields.HOUR_OF_DAY, 23)
+  date_tz:set(icu_date.fields.MINUTE, 59)
+  date_tz:set(icu_date.fields.SECOND, 59)
+  date_tz:set(icu_date.fields.MILLISECOND, 999)
+  local end_time = date_tz:format(format_iso8601)
+
+  date_tz:set_millis(now_ms)
+  date_tz:add(icu_date.fields.DATE, -30)
+  date_tz:set(icu_date.fields.HOUR_OF_DAY, 0)
+  date_tz:set(icu_date.fields.MINUTE, 0)
+  date_tz:set(icu_date.fields.SECOND, 0)
+  date_tz:set(icu_date.fields.MILLISECOND, 0)
+  local recent_start_time = date_tz:format(format_iso8601)
 
   local users = generate_summary_users(start_time, end_time)
   local hits = generate_summary_hits(start_time, end_time)
@@ -252,7 +299,7 @@ local function generate_summary()
 
   local cache_id = "analytics_summary"
   local response_json = json_encode(response)
-  local expires_at = ngx.now() + 60 * 60 * 24 * 2
+  local expires_at = ngx.now() + 60 * 60 * 24 * 2 -- 2 days
   Cache:upsert(cache_id, response_json, expires_at)
 
   return response_json
