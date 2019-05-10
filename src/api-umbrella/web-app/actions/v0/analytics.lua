@@ -294,8 +294,12 @@ local function generate_summary()
     total_users = users["total_users"],
     total_hits = hits["total_hits"],
     production_apis = generate_production_apis_summary(start_time, end_time, recent_start_time),
-    cached_at = end_time,
+    start_time = start_time,
+    end_time = end_time,
   }
+
+  date_tz:set_millis(ngx.now() * 1000)
+  response["cached_at"] = date_tz:format(format_iso8601)
 
   local cache_id = "analytics_summary"
   local response_json = json_encode(response)
@@ -334,6 +338,7 @@ function _M.summary(self)
     response_json = generate_summary()
   end
 
+  self.res.headers["Access-Control-Allow-Origin"] = "*"
   return json_response(self, response_json)
 end
 
