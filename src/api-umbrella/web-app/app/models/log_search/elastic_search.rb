@@ -37,6 +37,10 @@ class LogSearch::ElasticSearch < LogSearch::Base
       :allow_no_indices => true,
     }
 
+    if ApiUmbrellaConfig[:elasticsearch][:api_version] >= 7
+      @query[:track_total_hits] = true
+    end
+
     if(@options[:query_timeout])
       @query[:timeout] = "#{@options[:query_timeout]}s"
     end
@@ -56,6 +60,11 @@ class LogSearch::ElasticSearch < LogSearch::Base
         raw_result["aggregations"][aggregation_name.to_s]["buckets"] = []
         raw_result["aggregations"][aggregation_name.to_s]["doc_count"] = 0
       end
+
+      if ApiUmbrellaConfig[:elasticsearch][:api_version] >= 7
+        raw_result["hits"]["total"] = { "value" => 0, "relation" => "eq" }
+      end
+
       @result = LogResult.factory(self, raw_result)
       return @result
     end

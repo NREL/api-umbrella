@@ -55,7 +55,7 @@ class LogItem
     bulk_request = []
     opts = {
       :index => "_all",
-      :type => "log",
+      :type => $config["elasticsearch"]["index_mapping_type"],
       :sort => "_doc",
       :scroll => "2m",
       :size => 1000,
@@ -171,7 +171,7 @@ class LogItem
 
     self.client.index({
       :index => index_name,
-      :type => "log",
+      :type => $config["elasticsearch"]["index_mapping_type"],
       :id => self._id,
       :body => self.serializable_hash.except("_id"),
     })

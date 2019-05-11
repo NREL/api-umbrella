@@ -7,7 +7,11 @@ class LogResult::Base
   end
 
   def total
-    raw_result["hits"]["total"]
+    if ApiUmbrellaConfig[:elasticsearch][:api_version] >= 7
+      raw_result["hits"]["total"]["value"]
+    else
+      raw_result["hits"]["total"]
+    end
   end
 
   def documents
