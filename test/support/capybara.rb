@@ -16,6 +16,7 @@ def capybara_register_driver(driver_name, options = {})
       service_options[:path] = path.strip
     else
       require "webdrivers"
+      Webdrivers.cache_time = 86_400
     end
 
     root_dir = File.join(ApiUmbrellaTestHelpers::Process::TEST_RUN_ROOT, "capybara")

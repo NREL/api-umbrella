@@ -7,7 +7,9 @@ local xpcall_error_handler = require "api-umbrella.utils.xpcall_error_handler"
 local elasticsearch_templates
 
 local path = os.getenv("API_UMBRELLA_SRC_ROOT") .. "/config/elasticsearch_templates_v" .. config["elasticsearch"]["template_version"]
-if config["elasticsearch"]["api_version"] >= 5 then
+if config["elasticsearch"]["api_version"] >= 7 then
+  path = path .. "_es7.json.mustache"
+elseif config["elasticsearch"]["api_version"] >= 5 then
   path = path .. "_es5.json.mustache"
 elseif config["elasticsearch"]["api_version"] >= 2 then
   path = path .. "_es2.json.mustache"

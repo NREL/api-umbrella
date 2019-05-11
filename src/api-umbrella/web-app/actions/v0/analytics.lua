@@ -158,10 +158,10 @@ local function generate_organization_summary(start_time, end_time, recent_start_
   local response = {
     hits = {
       monthly = hits_monthly,
-      total = results["hits"]["total"],
+      total = results["hits"]["_total_value"],
       recent = {
         daily = recent_hits_daily,
-        total = recent_results["hits"]["total"],
+        total = recent_results["hits"]["_total_value"],
       },
     },
     active_api_keys = {

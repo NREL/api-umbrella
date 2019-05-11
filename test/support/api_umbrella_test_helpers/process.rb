@@ -141,6 +141,9 @@ module ApiUmbrellaTestHelpers
           FileUtils.mkdir_p($config["elasticsearch"]["embedded_server_config"]["path"]["data"])
           FileUtils.mkdir_p(File.join(elasticsearch_config_dir, "scripts"))
           if(::Process.euid == 0)
+            if elasticsearch_test_api_version >= 7
+              FileUtils.chown($config["user"], nil, File.join(API_UMBRELLA_SRC_ROOT, "build/work/test-env/elasticsearch#{elasticsearch_test_api_version}/logs"))
+            end
             FileUtils.chown($config["user"], nil, $config["elasticsearch"]["embedded_server_config"]["path"]["logs"])
             FileUtils.chown($config["user"], nil, $config["elasticsearch"]["embedded_server_config"]["path"]["data"])
             FileUtils.chmod_R("o+r", elasticsearch_config_dir)

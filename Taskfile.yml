@@ -802,6 +802,16 @@ tasks:
       - ./build/work/stamp/test-deps/elasticsearch6
     method: checksum
 
+  test-deps:elasticsearch7:
+    cmds:
+      - ./tasks/test-deps/elasticsearch7
+    sources:
+      - ./tasks/test-deps/elasticsearch7
+      - ./tasks/helpers.sh
+    generates:
+      - ./build/work/stamp/test-deps/elasticsearch7
+    method: checksum
+
   test-deps:lua:luacheck:
     deps:
       - deps:luarocks
@@ -873,6 +883,7 @@ tasks:
       - task: test-deps:bundle
       - task: test-deps:elasticsearch5
       - task: test-deps:elasticsearch6
+      - task: test-deps:elasticsearch7
       - task: test-deps:lua:luacheck
       - task: test-deps:lua:penlight
       - task: test-deps:mailhog

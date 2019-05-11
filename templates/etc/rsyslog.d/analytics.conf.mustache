@@ -175,7 +175,7 @@ action(
   {{/elasticsearch._first_server.password}}
   searchIndex="elasticsearch-index"
   dynSearchIndex="on"
-  searchType="log"
+  searchType="{{elasticsearch.index_mapping_type}}"
   template="elasticsearch-json-record"
 
   # Enable bulk indexing, so batches of records are sent as a single HTTP

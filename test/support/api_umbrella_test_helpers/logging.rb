@@ -35,22 +35,29 @@ module ApiUmbrellaTestHelpers
           loop do
             result = LogItem.client.search({
               :index => "_all",
-              :type => "log",
               :body => {
                 :query => query,
               },
             })
 
-            if(result && result["hits"] && result["hits"]["total"] >= 1)
-              if(result["hits"]["total"] > 1)
-                raise "Found more than 1 log result for query. This should not happen. Query: #{query.inspect} Result: #{result.inspect}"
+            if(result && result["hits"] && result["hits"]["total"])
+              if $config["elasticsearch"]["api_version"] >= 7
+                total = result["hits"]["total"]["value"]
+              else
+                total = result["hits"]["total"]
               end
 
-              return {
-                :result => result,
-                :hit => result["hits"]["hits"][0],
-                :hit_source => result["hits"]["hits"][0]["_source"],
-              }
+              if total >= 1
+                if total > 1
+                  raise "Found more than 1 log result for query. This should not happen. Query: #{query.inspect} Result: #{result.inspect}"
+                end
+
+                return {
+                  :result => result,
+                  :hit => result["hits"]["hits"][0],
+                  :hit_source => result["hits"]["hits"][0]["_source"],
+                }
+              end
             end
 
             sleep 0.1

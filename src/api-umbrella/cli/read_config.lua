@@ -320,6 +320,10 @@ local function set_computed_config()
     end
   end
 
+  if config["elasticsearch"]["api_version"] >= 7 then
+    config["elasticsearch"]["index_mapping_type"] = "_doc"
+  end
+
   if not config["analytics"]["outputs"] then
     config["analytics"]["outputs"] = { config["analytics"]["adapter"] }
   end

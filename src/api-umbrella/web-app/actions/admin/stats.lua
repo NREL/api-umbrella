@@ -277,7 +277,7 @@ function _M.search(self)
   local results = search:fetch_results()
   local response = {
     stats = {
-      total_hits = results["hits"]["total"],
+      total_hits = results["hits"]["_total_value"],
       total_users = 0,
       total_ips = 0,
       average_response_time = json_null,
@@ -376,8 +376,8 @@ function _M.logs(self)
     local results = search:fetch_results()
     local response = {
       draw = tonumber(self.params["draw"]) or 0,
-      recordsTotal = results["hits"]["total"],
-      recordsFiltered = results["hits"]["total"],
+      recordsTotal = results["hits"]["_total_value"],
+      recordsFiltered = results["hits"]["_total_value"],
       data = {}
     }
 

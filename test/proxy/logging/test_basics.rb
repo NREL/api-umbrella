@@ -88,10 +88,13 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
     end
     assert_equal(expected_fields.sort, record.keys.sort)
 
-    mapping = LogItem.client.indices.get_mapping({
+    mapping_options = {
       :index => hit["_index"],
-      :type => hit["_type"],
-    })
+    }
+    if $config["elasticsearch"]["api_version"] < 7
+      mapping_options[:type] = hit["_type"]
+    end
+    mapping = LogItem.client.indices.get_mapping(mapping_options)
     expected_mapping_fields = expected_fields + [
       "gatekeeper_denied_code",
       "request_ip_city",
@@ -107,7 +110,12 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
         "request_url_hierarchy_level6",
       ]
     end
-    assert_equal(expected_mapping_fields.sort, mapping[hit["_index"]]["mappings"][hit["_type"]]["properties"].keys.sort)
+    if $config["elasticsearch"]["api_version"] < 7
+      properties = mapping[hit["_index"]]["mappings"][hit["_type"]]["properties"]
+    else
+      properties = mapping[hit["_index"]]["mappings"]["properties"]
+    end
+    assert_equal(expected_mapping_fields.sort, properties.keys.sort)
 
     assert_kind_of(String, record["api_backend_id"])
     assert_kind_of(String, record["api_backend_url_match_id"])
@@ -277,12 +285,20 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
     assert_response_code(200, response)
 
     hit = wait_for_log(response)[:hit]
-    result = LogItem.client.indices.get_mapping({
-      :index => hit["_index"],
-      :type => hit["_type"],
-    })
 
-    property = result[hit["_index"]]["mappings"][hit["_type"]]["properties"]["request_at"]
+    mapping_options = {
+      :index => hit["_index"],
+    }
+    if $config["elasticsearch"]["api_version"] < 7
+      mapping_options[:type] = hit["_type"]
+    end
+    result = LogItem.client.indices.get_mapping(mapping_options)
+
+    if $config["elasticsearch"]["api_version"] < 7
+      property = result[hit["_index"]]["mappings"][hit["_type"]]["properties"]["request_at"]
+    else
+      property = result[hit["_index"]]["mappings"]["properties"]["request_at"]
+    end
     if($config["elasticsearch"]["api_version"] >= 5)
       assert_equal({
         "type" => "date",

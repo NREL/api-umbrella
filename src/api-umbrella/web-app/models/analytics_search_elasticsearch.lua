@@ -234,6 +234,10 @@ function _M.new()
     },
   }
 
+  if config["elasticsearch"]["api_version"] >= 7 then
+    self.body["track_total_hits"] = true
+  end
+
   return setmetatable(self, _M)
 end
 
@@ -672,7 +676,6 @@ function _M:fetch_results()
   -- should be better optimized in Elasticsearch 5+
   -- (https://www.elastic.co/blog/instant-aggregations-rewriting-queries-for-fun-and-profit).
   local indices = table.concat(index_names(self.start_time, self.end_time), ",")
-  local document_type = "log"
   local body_json
   local err
   if self.query["scroll"] then
@@ -684,7 +687,7 @@ function _M:fetch_results()
     end
 
     local res
-    res, err = elasticsearch_query("/" .. indices .. "/" .. document_type .. "/_search", {
+    res, err = elasticsearch_query("/" .. indices .. "/_search", {
       method = "POST",
       query = self.query,
       body = body,
@@ -695,7 +698,6 @@ function _M:fetch_results()
   else
     local header = deepcopy(self.query)
     header["index"] = indices
-    header["type"] = document_type
 
     local res
     res, err = elasticsearch_query("/_msearch", {
@@ -726,6 +728,14 @@ function _M:fetch_results()
         },
       },
     })
+  end
+
+  if body_json and body_json["hits"] and body_json["hits"]["total"] then
+    if config["elasticsearch"]["api_version"] >= 7 then
+      body_json["hits"]["_total_value"] = body_json["hits"]["total"]["value"]
+    else
+      body_json["hits"]["_total_value"] = body_json["hits"]["total"]
+    end
   end
 
   return body_json
