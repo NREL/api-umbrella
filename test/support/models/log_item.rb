@@ -81,6 +81,8 @@ class LogItem
       result = self.client.scroll(:scroll_id => result["_scroll_id"], :scroll => "2m")
     end
 
+    self.client.clear_scroll(:scroll_id => result["_scroll_id"])
+
     # Perform the bulk delete of all records in this index.
     unless bulk_request.empty?
       self.client.bulk :body => bulk_request
