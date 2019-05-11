@@ -49,7 +49,7 @@ gem "rails_compatible_cookies_utils", "~> 0.1.0"
 gem "addressable", "~> 2.6.0"
 
 # Browser/JavaScript integration tests
-gem "capybara", "~> 3.18.0"
+gem "capybara", "~> 3.19.1"
 gem "selenium-webdriver", "~> 3.141"
 gem "webdrivers", "~> 3.9.0", :require => false
 # https://github.com/dbalatero/capybara-chromedriver-logger/pull/7
