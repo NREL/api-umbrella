@@ -1,11 +1,14 @@
 module Admin::StatsHelper
   def aggregation_result(aggregation_name)
-    name = aggregation_name.to_s.pluralize
-
     buckets = []
-    top_buckets = @result.aggregations["top_#{name}"]["buckets"]
-    with_value_count = @result.aggregations["value_count_#{name}"]["value"]
-    missing_count = @result.aggregations["missing_#{name}"]["doc_count"]
+    if @result.aggregations.blank?
+      return buckets
+    end
+
+    name = aggregation_name.to_s.pluralize
+    top_buckets = @result.aggregations.fetch("top_#{name}").fetch("buckets")
+    with_value_count = @result.aggregations.fetch("value_count_#{name}").fetch("value")
+    missing_count = @result.aggregations.fetch("missing_#{name}").fetch("doc_count")
 
     other_hits = with_value_count
     top_buckets.each do |bucket|

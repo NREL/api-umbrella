@@ -5,9 +5,9 @@ extends "admin/stats/_hits_over_time"
 node :stats do
   {
     :total_hits => @result.total,
-    :total_users => @result.aggregations["unique_user_emails"]["value"],
-    :total_ips => @result.aggregations["unique_request_ips"]["value"],
-    :average_response_time => @result.aggregations["response_time_average"]["value"],
+    :total_users => @result.aggregations ? @result.aggregations.fetch("unique_user_emails").fetch("value") : 0,
+    :total_ips => @result.aggregations ? @result.aggregations.fetch("unique_request_ips").fetch("value") : 0,
+    :average_response_time => @result.aggregations ? @result.aggregations.fetch("response_time_average").fetch("value") : nil,
   }
 end
 
