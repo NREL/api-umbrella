@@ -47,28 +47,6 @@ class LogSearch::ElasticSearch < LogSearch::Base
   end
 
   def result
-    if @none
-      raw_result = {
-        "hits" => {
-          "total" => 0,
-          "hits" => [],
-        },
-        "aggregations" => {},
-      }
-      @query[:aggregations].each_key do |aggregation_name|
-        raw_result["aggregations"][aggregation_name.to_s] ||= {}
-        raw_result["aggregations"][aggregation_name.to_s]["buckets"] = []
-        raw_result["aggregations"][aggregation_name.to_s]["doc_count"] = 0
-      end
-
-      if ApiUmbrellaConfig[:elasticsearch][:api_version] >= 7
-        raw_result["hits"]["total"] = { "value" => 0, "relation" => "eq" }
-      end
-
-      @result = LogResult.factory(self, raw_result)
-      return @result
-    end
-
     # Starting in ElasticSearch 1.4, we need to explicitly remove the
     # aggregations if there aren't actually any present for scroll queries to
     # work.
@@ -570,6 +548,16 @@ class LogSearch::ElasticSearch < LogSearch::Base
 
   def select_records!
     # no-op: Method needed for SQL adapters only.
+  end
+
+  def none!
+    @query[:query][:bool][:filter][:bool][:must] << {
+      :bool => {
+        :must_not => {
+          :match_all => {},
+        },
+      },
+    }
   end
 
   private

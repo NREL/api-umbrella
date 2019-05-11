@@ -62,8 +62,4 @@ class LogSearch::Base
   def aggregate_by_country!
     aggregate_by_region_field!(:request_ip_country)
   end
-
-  def none!
-    @none = true
-  end
 end
