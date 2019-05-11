@@ -66,25 +66,27 @@ class Test::Apis::V0::TestAnalytics < Minitest::Test
 
     response = make_request
     assert_equal("MISS", response.headers["X-Cache"])
-    assert_equal(1, Cache.count)
+    assert_equal(3, Cache.count)
 
     response = make_request
     assert_equal("HIT", response.headers["X-Cache"])
-    assert_equal(1, Cache.count)
+    assert_equal(3, Cache.count)
 
-    cache = Cache.first
+    cache = Cache.find_by!(:id => "analytics_summary")
     assert_equal("analytics_summary", cache.id)
     assert_in_delta(Time.now.to_i, cache.created_at.to_i, 10)
     assert_in_delta(Time.now.to_i + 60 * 60 * 24 * 2, cache.expires_at.to_i, 10)
     assert(cache.data)
     data = MultiJson.load(cache.data)
     assert_equal([
-      "users_by_month",
+      "cached_at",
+      "end_time",
       "hits_by_month",
       "production_apis",
-      "total_users",
+      "start_time",
       "total_hits",
-      "cached_at",
+      "total_users",
+      "users_by_month",
     ].sort, data.keys.sort)
   end
 

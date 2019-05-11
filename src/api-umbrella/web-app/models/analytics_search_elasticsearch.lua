@@ -291,11 +291,13 @@ function _M:set_permission_scope(scopes)
       },
     }
 
-    for _, rule in ipairs(scopes["rules"]) do
-      table.insert(filter["bool"]["should"], parse_query_builder(rule))
-    end
+    if not is_empty(scopes["rules"]) then
+      for _, rule in ipairs(scopes["rules"]) do
+        table.insert(filter["bool"]["should"], parse_query_builder(rule))
+      end
 
-    table.insert(self.body["query"]["bool"]["filter"]["bool"]["must"], filter)
+      table.insert(self.body["query"]["bool"]["filter"]["bool"]["must"], filter)
+    end
   elseif scopes then
     table.insert(self.body["query"]["bool"]["filter"]["bool"]["must"], scopes)
   end
