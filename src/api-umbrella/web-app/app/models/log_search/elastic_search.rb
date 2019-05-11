@@ -29,16 +29,16 @@ class LogSearch::ElasticSearch < LogSearch::Base
         { :request_at => :desc },
       ],
       :aggregations => {},
+      :size => 0,
     }
 
     @query_options = {
-      :size => 0,
       :ignore_unavailable => true,
       :allow_no_indices => true,
     }
 
     if(@options[:query_timeout])
-      @query_options[:timeout] = "#{@options[:query_timeout]}s"
+      @query[:timeout] = "#{@options[:query_timeout]}s"
     end
   end
 
@@ -60,18 +60,55 @@ class LogSearch::ElasticSearch < LogSearch::Base
       return @result
     end
 
-    query_options = @query_options.merge({
-      :index => indexes.join(","),
-      :body => @query,
-    })
-
     # Starting in ElasticSearch 1.4, we need to explicitly remove the
     # aggregations if there aren't actually any present for scroll queries to
     # work.
-    if query_options[:body][:aggregations] && query_options[:body][:aggregations].blank?
-      query_options[:body].delete(:aggregations)
+    if @query[:aggregations] && @query[:aggregations].blank?
+      @query.delete(:aggregations)
     end
-    raw_result = @client.search(query_options)
+
+    # When querying many indices (particularly if partitioning by day), we can
+    # run into URL length limits with the default search approach, which
+    # requires the indices be in the URL:
+    # https://github.com/elastic/elasticsearch/issues/26360
+    #
+    # To sidestep this, we will perform most queries using the _msearch API,
+    # which allows us to put the index names in the POST body, so it's not
+    # subject to URL length limits.
+    #
+    # However, for scroll queries, the msearch API doesn't support this
+    # (https://github.com/elastic/elasticsearch-php/issues/478#issuecomment-254321873),
+    # so we must revert back to normal search mode for these queries. In the
+    # event the URL length is too long, then we handle these scroll queries by
+    # querying all indices using a wildcard. While slightly less efficient, this
+    # should be better optimized in Elasticsearch 5+
+    # (https://www.elastic.co/blog/instant-aggregations-rewriting-queries-for-fun-and-profit).
+    indices = indexes.join(",")
+    if @query_options[:scroll]
+      # The default URL length limit for Elasticsearch is 4096 bytes, but
+      # reduce the limit before truncating to the wildcard index name so
+      # there's still room for other query params.
+      if indices.length > 3700
+        indices = "#{ApiUmbrellaConfig[:elasticsearch][:index_name_prefix]}-logs-*"
+      end
+
+      raw_result = @client.search(@query_options.merge({
+        :index => indices,
+        :body => @query,
+      }))
+    else
+      query_options = @query_options.deep_dup.merge({
+        :index => indices,
+      })
+      raw_result = @client.msearch(:body => [query_options, @query])
+      if raw_result["responses"] && raw_result["responses"][0]
+        raw_result = raw_result["responses"][0]
+        if raw_result["_shards"] && raw_result["_shards"]["failures"].present?
+          raise "Unsuccessful response"
+        end
+      end
+    end
+
     if(raw_result["timed_out"])
       # Don't return partial results.
       raise "Elasticsearch request timed out"
@@ -96,7 +133,7 @@ class LogSearch::ElasticSearch < LogSearch::Base
 
   def search_type!(search_type)
     if(search_type == "count")
-      @query_options[:size] = 0
+      @query[:size] = 0
     end
   end
 
@@ -229,11 +266,11 @@ class LogSearch::ElasticSearch < LogSearch::Base
   end
 
   def offset!(from)
-    @query_options[:from] = from
+    @query[:from] = from
   end
 
   def limit!(size)
-    @query_options[:size] = size
+    @query[:size] = size
   end
 
   def sort!(sort)
