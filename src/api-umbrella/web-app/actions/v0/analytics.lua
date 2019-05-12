@@ -2,14 +2,17 @@ local AnalyticsSearch = require "api-umbrella.web-app.models.analytics_search"
 local Cache = require "api-umbrella.web-app.models.cache"
 local analytics_policy = require "api-umbrella.web-app.policies.analytics_policy"
 local capture_errors_json = require("api-umbrella.web-app.utils.capture_errors").json
+local cjson = require "cjson"
 local config = require "api-umbrella.proxy.models.file_config"
 local icu_date = require "icu-date"
 local int64_to_json_number = require("api-umbrella.utils.int64").to_json_number
 local interval_lock = require "api-umbrella.utils.interval_lock"
-local json_decode = require("cjson").decode
 local json_encode = require "api-umbrella.utils.json_encode"
 local json_response = require "api-umbrella.web-app.utils.json_response"
 local pg_utils = require "api-umbrella.utils.pg_utils"
+
+local json_decode = cjson.decode
+local json_null = cjson.null
 
 local _M = {}
 
@@ -83,14 +86,16 @@ local function generate_summary_hits(start_time, end_time)
 
   local total_hits = 0
   local hits_by_month = {}
-  for _, month in ipairs(results["aggregations"]["hits_over_time"]["buckets"]) do
-    table.insert(hits_by_month, {
-      year = tonumber(string.sub(month["key_as_string"], 1, 4)),
-      month = tonumber(string.sub(month["key_as_string"], 6, 7)),
-      count = month["doc_count"],
-    })
+  if results["aggregations"] then
+    for _, month in ipairs(results["aggregations"]["hits_over_time"]["buckets"]) do
+      table.insert(hits_by_month, {
+        year = tonumber(string.sub(month["key_as_string"], 1, 4)),
+        month = tonumber(string.sub(month["key_as_string"], 6, 7)),
+        count = month["doc_count"],
+      })
 
-    total_hits = total_hits + month["doc_count"]
+      total_hits = total_hits + month["doc_count"]
+    end
   end
 
   local response = {
@@ -132,12 +137,19 @@ local function generate_organization_summary(start_time, end_time, recent_start_
 
   local hits_monthly = {}
   local active_api_keys_monthly = {}
+  local active_api_keys_total = 0
   local average_response_times_monthly = {}
-  for _, month_data in ipairs(results["aggregations"]["hits_over_time"]["buckets"]) do
-    local key = string.sub(month_data["key_as_string"], 1, 7)
-    table.insert(hits_monthly, { key, month_data["doc_count"] })
-    table.insert(active_api_keys_monthly, { key, month_data["unique_user_id"]["value"] })
-    table.insert(average_response_times_monthly, { key, month_data["response_time_average"]["value"] })
+  local average_response_times_total = json_null
+  if results["aggregations"] then
+    active_api_keys_total = results["aggregations"]["unique_user_id"]["value"]
+    average_response_times_total = results["aggregations"]["response_time_average"]["value"]
+
+    for _, month_data in ipairs(results["aggregations"]["hits_over_time"]["buckets"]) do
+      local key = string.sub(month_data["key_as_string"], 1, 7)
+      table.insert(hits_monthly, { key, month_data["doc_count"] })
+      table.insert(active_api_keys_monthly, { key, month_data["unique_user_id"]["value"] })
+      table.insert(average_response_times_monthly, { key, month_data["response_time_average"]["value"] })
+    end
   end
 
   search:set_start_time(recent_start_time)
@@ -147,12 +159,19 @@ local function generate_organization_summary(start_time, end_time, recent_start_
 
   local recent_hits_daily = {}
   local recent_active_api_keys_daily = {}
+  local recent_active_api_keys_total = 0
   local recent_average_response_times_daily = {}
-  for _, day_data in ipairs(recent_results["aggregations"]["hits_over_time"]["buckets"]) do
-    local key = string.sub(day_data["key_as_string"], 1, 10)
-    table.insert(recent_hits_daily, { key, day_data["doc_count"] })
-    table.insert(recent_active_api_keys_daily, { key, day_data["unique_user_id"]["value"] })
-    table.insert(recent_average_response_times_daily, { key, day_data["response_time_average"]["value"] })
+  local recent_average_response_times_total = json_null
+  if recent_results["aggregations"] then
+    recent_active_api_keys_total = recent_results["aggregations"]["unique_user_id"]["value"]
+    recent_average_response_times_total = recent_results["aggregations"]["response_time_average"]["value"]
+
+    for _, day_data in ipairs(recent_results["aggregations"]["hits_over_time"]["buckets"]) do
+      local key = string.sub(day_data["key_as_string"], 1, 10)
+      table.insert(recent_hits_daily, { key, day_data["doc_count"] })
+      table.insert(recent_active_api_keys_daily, { key, day_data["unique_user_id"]["value"] })
+      table.insert(recent_average_response_times_daily, { key, day_data["response_time_average"]["value"] })
+    end
   end
 
   local response = {
@@ -166,18 +185,18 @@ local function generate_organization_summary(start_time, end_time, recent_start_
     },
     active_api_keys = {
       monthly = active_api_keys_monthly,
-      total = results["aggregations"]["unique_user_id"]["value"],
+      total = active_api_keys_total,
       recent = {
         daily = recent_active_api_keys_daily,
-        total = recent_results["aggregations"]["unique_user_id"]["value"],
+        total = recent_active_api_keys_total,
       },
     },
     average_response_times = {
       monthly = average_response_times_monthly,
-      average = results["aggregations"]["response_time_average"]["value"],
+      average = average_response_times_total,
       recent = {
         daily = recent_average_response_times_daily,
-        average = recent_results["aggregations"]["response_time_average"]["value"],
+        average = recent_average_response_times_total,
       },
     },
   }

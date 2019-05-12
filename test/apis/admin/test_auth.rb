@@ -36,7 +36,6 @@ class Test::Apis::Admin::TestAuth < Minitest::Test
       "api_key",
       "api_umbrella_version",
       "authenticated",
-      "elasticsearch_template_version",
       "local_auth_enabled",
       "password_length_min",
       "username_is_email",
