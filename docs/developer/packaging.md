@@ -9,12 +9,12 @@
 
 Currently we build 64bit binary packages for the following distributions:
 
-- Debian 7 (Wheezy)
 - Debian 8 (Jessie)
+- Debian 9 (Stretch)
 - Enterprise Linux 6 (CentOS/RedHat/Oracle/Scientific Linux)
 - Enterprise Linux 7 (CentOS/RedHat/Oracle/Scientific Linux)
-- Ubuntu 12.04 (Precise)
-- Ubuntu 14.04 (Trusty)
+- Ubuntu 16.04 (Xenial)
+- Ubuntu 18.04 (Bionic)
 
 ## Building Packages 
 

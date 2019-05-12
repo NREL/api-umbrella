@@ -1,6 +1,12 @@
 # API Umbrella Change Log
 
-## 0.15.0 (Unreleased)
+## 0.15.0 (2019-05-13)
+
+👋 Long time no release! Sorry for the long gap since our last formal release, but we have a sizable upgrade ready that fixes various bugs, and makes a lot of internal improvements. Upgrading is recommended.
+
+### Upgrade Instructions
+
+If you're upgrading a previous API Umbrella version, you may upgrade the `api-umbrella` package using your package manager.
 
 ### Fixed
 

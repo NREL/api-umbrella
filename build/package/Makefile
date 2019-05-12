@@ -104,11 +104,13 @@ docker_all: docker_centos6 \
 docker_all_build: docker_centos6_build \
 	docker_centos7_build \
 	docker_ubuntu1604_build \
+	docker_ubuntu1804_build \
 	docker_debian8_build \
 	docker_debian9_build
 
 docker_all_verify: docker_centos6_verify \
 	docker_centos7_verify \
 	docker_ubuntu1604_verify \
+	docker_ubuntu1804_verify \
 	docker_debian8_verify \
 	docker_debian9_verify
