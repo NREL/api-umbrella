@@ -695,11 +695,10 @@ tasks:
     method: checksum
 
   app:core:
-    deps:
-      - app:admin-ui:build
-      - app:locale
-      - app:web-app:precompile
     cmds:
+      - task: app:admin-ui:build
+      - task: app:locale
+      - task: app:web-app:precompile
       - ./tasks/app/core
     sources:
       - ./build/work/stamp/app/admin-ui/build
@@ -726,10 +725,9 @@ tasks:
     method: checksum
 
   app:static-site:
-    deps:
-      - build-deps:nodejs
-      - build-deps:bundler
     cmds:
+      - task: build-deps:nodejs
+      - task: build-deps:bundler
       - ./tasks/app/static-site
     sources:
       - ./build/work/stamp/build-deps/nodejs
@@ -892,10 +890,9 @@ tasks:
       - task: test-deps:unbound
 
   lint:js:
-    deps:
-      - app-deps:admin-ui:yarn
-      - app-deps:web-app:yarn
     cmds:
+      - task: app-deps:admin-ui:yarn
+      - task: app-deps:web-app:yarn
       - ./tasks/lint/js
 
   lint:lua:
@@ -935,17 +932,15 @@ tasks:
       - ./tasks/outdated
 
   test:
-    deps:
-      - all
-      - test-deps
     cmds:
+      - task: all
+      - task: test-deps
       - ./tasks/test/default
 
   test:circle-ci:
-    deps:
-      - all
-      - test-deps
     cmds:
+      - task: all
+      - task: test-deps
       - ./tasks/test/circle-ci
 
   clean:dev:
