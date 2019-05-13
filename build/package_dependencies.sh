@@ -137,6 +137,14 @@ if [[ "$ID_NORMALIZED" == "rhel" ]]; then
       devtoolset-7
     )
   fi
+
+  # Install Python 2.7 for compiling ICU.
+  if [[ "$VERSION_ID" == "6" ]]; then
+    core_build_dependencies+=(
+      centos-release-scl
+      python27
+    )
+  fi
 elif [[ "$ID_NORMALIZED" == "debian" ]]; then
   libcurl_version=3
   openjdk_version=8
