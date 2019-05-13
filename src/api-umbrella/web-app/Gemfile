@@ -57,7 +57,7 @@ gem "pundit", "~> 2.0.0"
 
 # Views/templates for APIs
 gem "rabl", "~> 0.14.0"
-gem "jbuilder", "~> 2.8.0"
+gem "jbuilder", "~> 2.9.0"
 gem "csv_builder", "~> 2.1.1"
 
 # Country and state name lookups
