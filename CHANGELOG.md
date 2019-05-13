@@ -1,6 +1,6 @@
 # API Umbrella Change Log
 
-## 0.15.0 (2019-05-13)
+## 0.15.0 (2019-05-14)
 
 👋 Long time no release! Sorry for the long gap since our last formal release, but we have a sizable upgrade ready that fixes various bugs, and makes a lot of internal improvements. Upgrading is recommended.
 
