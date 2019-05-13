@@ -58,6 +58,16 @@ tasks:
       - ./build/work/stamp/deps/geolitecity
     method: none
 
+  deps:icu4c:
+    cmds:
+      - ./tasks/deps/icu4c
+    sources:
+      - ./tasks/deps/icu4c
+      - ./tasks/helpers.sh
+    generates:
+      - ./build/work/stamp/deps/icu4c
+    method: checksum
+
   deps:libcidr:
     cmds:
       - ./tasks/deps/libcidr
@@ -220,6 +230,7 @@ tasks:
       - task: deps:bundler
       - task: deps:elasticsearch
       - task: deps:geolitecity
+      - task: deps:icu4c
       - task: deps:libcidr
       - task: deps:luarocks
       - task: deps:mongodb
@@ -299,17 +310,18 @@ tasks:
       - ./build/work/stamp/app-deps/lua/cmsgpack
     method: checksum
 
-  app-deps:lua:icu-date:
-    deps:
-      - deps:luarocks
+  app-deps:lua:icu-date-ffi:
     cmds:
-      - ./tasks/app-deps/lua/icu-date
+      - task: deps:icu4c
+      - task: deps:luarocks
+      - ./tasks/app-deps/lua/icu-date-ffi
     sources:
+      - ./build/work/stamp/deps/icu4c
       - ./build/work/stamp/deps/luarocks
-      - ./tasks/app-deps/lua/icu-date
+      - ./tasks/app-deps/lua/icu-date-ffi
       - ./tasks/helpers.sh
     generates:
-      - ./build/work/stamp/app-deps/lua/icu-date
+      - ./build/work/stamp/app-deps/lua/icu-date-ffi
     method: checksum
 
   app-deps:lua:inspect:
@@ -504,7 +516,7 @@ tasks:
       - task: app-deps:admin-ui:yarn
       - task: app-deps:lua:argparse
       - task: app-deps:lua:cmsgpack
-      - task: app-deps:lua:icu-date
+      - task: app-deps:lua:icu-date-ffi
       - task: app-deps:lua:inspect
       - task: app-deps:lua:libcidr-ffi
       - task: app-deps:lua:luaposix

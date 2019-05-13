@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+
+# Build newer version of icu than relying on system libicu packages, since
+# lua-icu-date-ffi needs ICU v55 or higher for "udat_formatCalendar" support.
+
+icu4c_version="64.2"
+icu4c_hash="a3d18213beec454e3cdec9a3116d6b05"
+
+set -e -u -x
+source ./tasks/helpers.sh
+
+task_working_dir
+download "https://github.com/unicode-org/icu/releases/download/release-${icu4c_version//./-}/icu4c-${icu4c_version//./_}-src.tgz" "md5" "$icu4c_hash"
+extract_download "icu4c-${icu4c_version//./_}-src.tgz"
+
+cd "icu/source"
+./configure --prefix="$INSTALL_PREFIX_EMBEDDED"
+make -j"$NPROC"
+make install DESTDIR="$STAGE_DIR"
+
+stamp

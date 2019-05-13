@@ -63,9 +63,6 @@ if [[ "$ID_NORMALIZED" == "rhel" ]]; then
     perl
     perl-Time-HiRes
 
-    # lua-icu-date
-    libicu-devel
-
     # nokogiri
     libxml2-devel
     libxslt-devel
@@ -192,9 +189,6 @@ elif [[ "$ID_NORMALIZED" == "debian" ]]; then
 
     # For OpenResty's "resty" CLI.
     perl
-
-    # lua-icu-date
-    libicu-dev
 
     # nokogiri
     libxml2-dev

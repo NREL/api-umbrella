@@ -33,6 +33,9 @@ class OutdatedPackages
     "golang" => {
       :git => "https://go.googlesource.com/go",
     },
+    "icu4c" => {
+      :git => "https://github.com/unicode-org/icu.git",
+    },
     "libcidr" => {
       :http => "https://www.over-yonder.net/~fullermd/projects/libcidr",
     },
@@ -51,8 +54,8 @@ class OutdatedPackages
     "lua_cmsgpack" => {
       :luarock => "lua-cmsgpack",
     },
-    "lua_icu_date" => {
-      :git => "https://github.com/GUI/lua-icu-date.git",
+    "lua_icu_date_ffi" => {
+      :git => "https://github.com/GUI/lua-icu-date-ffi.git",
       :git_ref => "master",
     },
     "lua_inspect" => {
@@ -211,6 +214,8 @@ class OutdatedPackages
       tag.tr!("_", ".")
     when "openssl", "ruby"
       tag.tr!("_", ".")
+    when "icu4c"
+      tag.tr!("-", ".")
     end
 
     tag
