@@ -16,7 +16,7 @@ Currently we build 64bit binary packages for the following distributions:
 - Ubuntu 16.04 (Xenial)
 - Ubuntu 18.04 (Bionic)
 
-## Building Packages 
+## Building Packages
 
 To build packages for the current API Umbrella version for all distributions:
 
@@ -33,5 +33,5 @@ Packages for each distribution will be created inside an isolated docker contain
 To publish the new binary packages to our [BinTray repositories](https://bintray.com/nrel) (which provide yum and apt repos):
 
 ```sh
-$ BINTRAY_USERNAME=username BINTRAY_API_KEY=api_key ./build/package/publish
+$ BINTRAY_USERNAME=username BINTRAY_API_KEY=api_key GPG_PASSPHRASE=passphrase ./build/package/publish
 ```
