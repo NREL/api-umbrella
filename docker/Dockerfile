@@ -1,6 +1,6 @@
 FROM debian:stretch
 
-ENV API_UMBRELLA_VERSION 0.15.0-1~stretch
+ENV API_UMBRELLA_VERSION 0.15.1-1~stretch
 
 # Install API Umbrella
 RUN echo "deb http://dl.bintray.com/nrel/api-umbrella-debian stretch main" >> /etc/apt/sources.list.d/api-umbrella.list

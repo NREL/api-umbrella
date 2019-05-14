@@ -1,6 +1,6 @@
 # API Umbrella Change Log
 
-## 0.15.0 (2019-05-14)
+## 0.15.1 (2019-05-14)
 
 👋 Long time no release! Sorry for the long gap since our last formal release, but we have a sizable upgrade ready that fixes various bugs, and makes a lot of internal improvements. Upgrading is recommended.
 
@@ -83,6 +83,10 @@ If you're upgrading a previous API Umbrella version, you may upgrade the `api-um
 - **Removed references to request_ip_location:** Removed defunct references to the analytics `request_ip_location` field that was removed in v0.14.0. ([c783e1c](https://github.com/NREL/api-umbrella/commit/c783e1c47658af628a11893282c5040d30638dc9))
 - **Removed experimental analytics:** Removed code related to experimental analytics backend. ([77d50d0](https://github.com/NREL/api-umbrella/commit/77d50d00397d7b7d00c50fbb3dca9ed2b8a55335))
 - **Removed Vagrant development environment:** Removed the Vagrant-based development environment in favor of the Docker-based development environment.
+
+## 0.15.0 (Unreleased)
+
+Due to some packaging issues, version 0.15.0 was never released. See [version 0.15.1](#0150-2019-05-14).
 
 ## 0.14.4 (2017-07-15)
 
