@@ -8,7 +8,7 @@
 
 ```sh
 $ sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 367404D553B42995
-$ echo "deb https://dl.bintray.com/nrel/api-umbrella-debian stretch main" | sudo tee /etc/apt/sources.list.d/api-umbrella.list
+$ echo "deb http://dl.bintray.com/nrel/api-umbrella-debian stretch main" | sudo tee /etc/apt/sources.list.d/api-umbrella.list
 $ sudo apt-get update
 $ sudo apt-get install api-umbrella
 ```
@@ -17,7 +17,7 @@ $ sudo apt-get install api-umbrella
 
 ```sh
 $ sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 367404D553B42995
-$ echo "deb https://dl.bintray.com/nrel/api-umbrella-debian jessie main" | sudo tee /etc/apt/sources.list.d/api-umbrella.list
+$ echo "deb http://dl.bintray.com/nrel/api-umbrella-debian jessie main" | sudo tee /etc/apt/sources.list.d/api-umbrella.list
 $ sudo apt-get update
 $ sudo apt-get install api-umbrella
 ```
@@ -40,7 +40,7 @@ $ sudo yum install api-umbrella
 
 ```sh
 $ sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 367404D553B42995
-$ echo "deb https://dl.bintray.com/nrel/api-umbrella-ubuntu bionic main" | sudo tee /etc/apt/sources.list.d/api-umbrella.list
+$ echo "deb http://dl.bintray.com/nrel/api-umbrella-ubuntu bionic main" | sudo tee /etc/apt/sources.list.d/api-umbrella.list
 $ sudo apt-get update
 $ sudo apt-get install api-umbrella
 ```
@@ -49,7 +49,7 @@ $ sudo apt-get install api-umbrella
 
 ```sh
 $ sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 367404D553B42995
-$ echo "deb https://dl.bintray.com/nrel/api-umbrella-ubuntu xenial main" | sudo tee /etc/apt/sources.list.d/api-umbrella.list
+$ echo "deb http://dl.bintray.com/nrel/api-umbrella-ubuntu xenial main" | sudo tee /etc/apt/sources.list.d/api-umbrella.list
 $ sudo apt-get update
 $ sudo apt-get install api-umbrella
 ```
