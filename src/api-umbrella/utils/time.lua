@@ -1,4 +1,4 @@
-local icu_date = require "icu-date"
+local icu_date = require "icu-date-ffi"
 local json_null = require("cjson").null
 local xpcall_error_handler = require "api-umbrella.utils.xpcall_error_handler"
 
