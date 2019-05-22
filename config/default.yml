@@ -103,14 +103,33 @@ web:
       gitlab:
         client_id:
         client_secret:
+        discovery: https://gitlab.com/.well-known/openid-configuration
+        token_signing_alg_values_expected: RS256
+        token_endpoint_auth_method: client_secret_post
+        scope: openid email
       google:
         client_id:
         client_secret:
+        discovery: https://accounts.google.com/.well-known/openid-configuration
+        token_signing_alg_values_expected: RS256
+        token_endpoint_auth_method: client_secret_post
+        scope: openid email
+        authorization_params:
+          prompt: select_account
       ldap:
         options:
           port: 389
           method: plain
           uid: sAMAccountName
+      login.gov:
+        client_id:
+        client_rsa_private_key:
+        discovery: https://idp.int.identitysandbox.gov/.well-known/openid-configuration
+        token_signing_alg_values_expected: RS256
+        token_endpoint_auth_method: private_key_jwt
+        scope: openid email
+        authorization_params:
+          acr_values: http://idmanagement.gov/ns/assurance/loa/1
       max.gov:
         require_mfa: true
         options:

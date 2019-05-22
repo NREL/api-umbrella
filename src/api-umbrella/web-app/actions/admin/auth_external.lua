@@ -2,16 +2,20 @@ local Admin = require "api-umbrella.web-app.models.admin"
 local build_url = require "api-umbrella.utils.build_url"
 local cas = require "api-umbrella.web-app.utils.auth_external_cas"
 local config = require "api-umbrella.proxy.models.file_config"
+local deep_merge_overwrite_arrays = require "api-umbrella.utils.deep_merge_overwrite_arrays"
 local escape_html = require("lapis.html").escape
 local flash = require "api-umbrella.web-app.utils.flash"
 local is_empty = require("pl.types").is_empty
 local ldap = require "api-umbrella.web-app.utils.auth_external_ldap"
 local login_admin = require "api-umbrella.web-app.utils.login_admin"
 local oauth2 = require "api-umbrella.web-app.utils.auth_external_oauth2"
+local openidc = require "resty.openidc"
 local t = require("api-umbrella.web-app.utils.gettext").gettext
 local username_label = require "api-umbrella.web-app.utils.username_label"
 
 local _M = {}
+
+openidc.set_logging(nil, { DEBUG = ngx.NOTICE })
 
 local function email_unverified_error(self)
   flash.session(self, "danger", string.format(t([[The email address '%s' is not verified. Please <a href="%s">contact us</a> for further assistance.]]), escape_html(self.username or ""), escape_html(config["contact_url"] or "")), { html_safe = true })
@@ -24,6 +28,21 @@ local function mfa_required_error(self)
 end
 
 local function login(self, strategy_name, err)
+  self:init_session_cookie()
+  self.session_cookie:start()
+  self.session_cookie.data["access_token"] = nil
+  self.session_cookie.data["access_token_expiration"] = nil
+  self.session_cookie.data["authenticated"] = nil
+  self.session_cookie.data["enc_id_token"] = nil
+  self.session_cookie.data["id_token"] = nil
+  self.session_cookie.data["last_authenticated"] = nil
+  self.session_cookie.data["nonce"] = nil
+  self.session_cookie.data["original_url"] = nil
+  self.session_cookie.data["refresh_token"] = nil
+  self.session_cookie.data["state"] = nil
+  self.session_cookie.data["user"] = nil
+  self.session_cookie:save()
+
   if err then
     flash.session(self, "danger", string.format(t([[Could not authenticate you because "%s".]]), err))
     return { redirect_to = build_url("/admin/login") }
@@ -157,46 +176,58 @@ function _M.github_callback(self)
 end
 
 function _M.gitlab_login(self)
-  return oauth2.authorize(self, "gitlab", "https://gitlab.com/oauth/authorize", {
-    scope = "read_user",
-  })
-end
+  local res, err = openidc.authenticate(deep_merge_overwrite_arrays(config["web"]["admin"]["auth_strategies"]["gitlab"], {
+    redirect_uri = build_url("/admins/auth/gitlab/callback"),
+    session_contents = {
+      id_token = true,
+      user = true,
+    },
+  }), nil, nil, self.session_cookie_options)
 
-function _M.gitlab_callback(self)
-  local userinfo, err = oauth2.userinfo(self, "gitlab", {
-    token_endpoint = "https://gitlab.com/oauth/token",
-    userinfo_endpoint = "https://gitlab.com/api/v4/user",
-  })
-
-  if userinfo then
-    -- GitLab only appears to return verified email addresses (so there's not
-    -- an explicit email verification attribute or check needed).
-    self.username = userinfo["email"]
+  if not err and res and res["user"] then
+    self.username = res["user"]["email"]
+    if not res["user"]["email_verified"] then
+      return email_unverified_error(self)
+    end
   end
+
   return login(self, "gitlab", err)
 end
 
 function _M.google_login(self)
-  return oauth2.authorize(self, "google", "https://accounts.google.com/o/oauth2/v2/auth", {
-    scope = "openid email",
-    prompt = "select_account",
-  })
-end
+  local res, err = openidc.authenticate(deep_merge_overwrite_arrays(config["web"]["admin"]["auth_strategies"]["google"], {
+    redirect_uri = build_url("/admins/auth/google_oauth2/callback"),
+    session_contents = {
+      id_token = true,
+    },
+  }), nil, nil, self.session_cookie_options)
 
-function _M.google_callback(self)
-  local userinfo, err = oauth2.userinfo(self, "google", {
-    token_endpoint = "https://www.googleapis.com/oauth2/v4/token",
-    userinfo_endpoint = "https://www.googleapis.com/oauth2/v3/userinfo",
-  })
-
-  if userinfo then
-    self.username = userinfo["email"]
-    if not userinfo["email_verified"] then
+  if not err and res and res["id_token"] then
+    self.username = res["id_token"]["email"]
+    if not res["id_token"]["email_verified"] then
       return email_unverified_error(self)
     end
   end
 
   return login(self, "google", err)
+end
+
+function _M.login_gov_login(self)
+  local res, err = openidc.authenticate(deep_merge_overwrite_arrays(config["web"]["admin"]["auth_strategies"]["login.gov"], {
+    redirect_uri = build_url("/admins/auth/login.gov/callback"),
+    session_contents = {
+      id_token = true,
+    },
+  }), nil, nil, self.session_cookie_options)
+
+  if not err and res and res["id_token"] then
+    self.username = res["id_token"]["email"]
+    if not res["id_token"]["email_verified"] then
+      return email_unverified_error(self)
+    end
+  end
+
+  return login(self, "login.gov", err)
 end
 
 function _M.ldap_login(self)
@@ -282,15 +313,19 @@ return function(app)
   end
   if config["web"]["admin"]["auth_strategies"]["_enabled"]["gitlab"] then
     app:get("/admins/auth/gitlab(.:format)", _M.gitlab_login)
-    app:get("/admins/auth/gitlab/callback(.:format)", _M.gitlab_callback)
+    app:get("/admins/auth/gitlab/callback(.:format)", _M.gitlab_login)
   end
   if config["web"]["admin"]["auth_strategies"]["_enabled"]["google"] then
     app:get("/admins/auth/google_oauth2(.:format)", _M.google_login)
-    app:get("/admins/auth/google_oauth2/callback(.:format)", _M.google_callback)
+    app:get("/admins/auth/google_oauth2/callback(.:format)", _M.google_login)
   end
   if config["web"]["admin"]["auth_strategies"]["_enabled"]["ldap"] then
     app:get("/admins/auth/ldap(.:format)", _M.ldap_login)
     app:post("/admins/auth/ldap/callback(.:format)", _M.ldap_callback)
+  end
+  if config["web"]["admin"]["auth_strategies"]["_enabled"]["login.gov"] then
+    app:get("/admins/auth/login.gov(.:format)", _M.login_gov_login)
+    app:get("/admins/auth/login.gov/callback(.:format)", _M.login_gov_login)
   end
   if config["web"]["admin"]["auth_strategies"]["_enabled"]["max.gov"] then
     app:get("/admins/auth/max.gov(.:format)", _M.max_gov_login)

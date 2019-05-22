@@ -563,6 +563,19 @@ tasks:
       - ./build/work/stamp/app-deps/lua/resty-nettle
     method: checksum
 
+  app-deps:lua:resty-openidc:
+    deps:
+      - deps:luarocks
+    cmds:
+      - ./tasks/app-deps/lua/resty-openidc
+    sources:
+      - ./build/work/stamp/deps/luarocks
+      - ./tasks/app-deps/lua/resty-openidc
+      - ./tasks/helpers.sh
+    generates:
+      - ./build/work/stamp/app-deps/lua/resty-openidc
+    method: checksum
+
   app-deps:lua:resty-session:
     deps:
       - deps:luarocks
@@ -667,6 +680,7 @@ tasks:
       - task: app-deps:lua:resty-mail
       - task: app-deps:lua:resty-moongoo
       - task: app-deps:lua:resty-nettle
+      - task: app-deps:lua:resty-openidc
       - task: app-deps:lua:resty-session
       - task: app-deps:lua:resty-shcache
       - task: app-deps:lua:resty-txid

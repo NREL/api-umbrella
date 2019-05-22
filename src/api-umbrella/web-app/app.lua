@@ -12,12 +12,13 @@ local lapis = require "lapis"
 local lapis_config = require("lapis.config").get()
 local pg_utils = require "api-umbrella.utils.pg_utils"
 local resty_session = require "resty.session"
-local session_cipher = require "api-umbrella.web-app.utils.session_cipher"
-local session_hmac = require "api-umbrella.web-app.utils.session_hmac"
-local session_identifier = require "api-umbrella.web-app.utils.session_identifier"
-local session_postgresql_storage = require "api-umbrella.web-app.utils.session_postgresql_storage"
 local t = require("api-umbrella.web-app.utils.gettext").gettext
 local table_keys = require("pl.tablex").keys
+
+require "resty.session.ciphers.api_umbrella"
+require "resty.session.hmac.api_umbrella"
+require "resty.session.identifiers.api_umbrella"
+require "resty.session.storage.api_umbrella_db"
 
 local supported_languages = table_keys(LOCALE_DATA)
 
@@ -74,26 +75,27 @@ end
 -- logged in. This session is backed by the database, so we have better
 -- server-side control on expiring sessions, and it can't be spoofed even with
 -- knowledge of the encryption secret key.
+local session_db_options = {
+  storage = "api_umbrella_db",
+  cipher = "api_umbrella",
+  hmac = "api_umbrella",
+  identifier = "api_umbrella",
+  name = "_api_umbrella_session",
+  secret = assert(config["secret_key"]),
+  random = {
+    length = 40,
+  },
+  cookie = {
+    samesite = "Lax",
+    secure = true,
+    httponly = true,
+    renew = 60 * 60, -- 1 hour
+    lifetime = 12 * 60 * 60, -- 12 hours
+  },
+}
 local function init_session_db(self)
   if not self.session_db then
-    self.session_db = resty_session.new({
-      name = "_api_umbrella_session",
-      secret = assert(config["secret_key"]),
-      random = {
-        length = 40,
-      },
-      cookie = {
-        samesite = "Lax",
-        secure = true,
-        httponly = true,
-        renew = 60 * 60, -- 1 hour
-        lifetime = 12 * 60 * 60, -- 12 hours
-      },
-    })
-    self.session_db.cipher = session_cipher.new(self.session_db)
-    self.session_db.hmac = session_hmac
-    self.session_db.identifier = session_identifier
-    self.session_db.storage = session_postgresql_storage.new(self.session_db)
+    self.session_db = resty_session.new(session_db_options)
   end
 end
 
@@ -105,26 +107,27 @@ end
 -- use this prior to login to simplify maintenance of the database-backed store
 -- (so random, unauthenticated visits to the login page by bots don't generate
 -- session records in the database for the CSRF token).
+local session_cookie_options = {
+  storage = "cookie",
+  cipher = "api_umbrella",
+  hmac = "api_umbrella",
+  identifier = "api_umbrella",
+  name = "_api_umbrella_session_client",
+  secret = assert(config["secret_key"]),
+  random = {
+    length = 40,
+  },
+  cookie = {
+    samesite = "Lax",
+    secure = true,
+    httponly = true,
+    renew = 60 * 60, -- 1 hour
+    lifetime = 12 * 60 * 60, -- 12 hours
+  },
+}
 local function init_session_cookie(self)
   if not self.session_cookie then
-    self.session_cookie = resty_session.new({
-      storage = "cookie",
-      name = "_api_umbrella_session_client",
-      secret = assert(config["secret_key"]),
-      random = {
-        length = 40,
-      },
-      cookie = {
-        samesite = "Lax",
-        secure = true,
-        httponly = true,
-        renew = 60 * 60, -- 1 hour
-        lifetime = 12 * 60 * 60, -- 12 hours
-      },
-    })
-    self.session_cookie.cipher = session_cipher.new(self.session_cookie)
-    self.session_cookie.hmac = session_hmac
-    self.session_cookie.identifier = session_identifier
+    self.session_cookie = resty_session.new(self.session_cookie_options)
   end
 end
 
@@ -211,7 +214,9 @@ local function before_filter(self)
     return csrf.generate_token(self)
   end
 
+  self.session_db_options = session_db_options
   self.init_session_db = init_session_db
+  self.session_cookie_options = session_cookie_options
   self.init_session_cookie = init_session_cookie
   local current_admin = current_admin_from_token()
   if not current_admin then
