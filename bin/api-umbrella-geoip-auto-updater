@@ -44,7 +44,7 @@ while true; do
     echo "Error downloading $download_url"
   else
     # Un-gzip the downloaded file.
-    if ! tar -xf "$download_path" -C "$unzip_dir" --strip-components 1; then
+    if ! tar -xof "$download_path" -C "$unzip_dir" --strip-components 1; then
       echo "Error unzipping $download_path"
     else
       unzip_path="$unzip_dir/GeoLite2-City.mmdb"
