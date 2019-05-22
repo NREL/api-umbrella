@@ -4,20 +4,20 @@
 
 ### Installing From Binary Packages
 
-**Debian 8 (Jessie)**
+**Debian 9 (Stretch)**
 
 ```sh
-$ sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 379CE192D401AB61
-$ echo "deb https://dl.bintray.com/nrel/api-umbrella-debian jessie main" | sudo tee /etc/apt/sources.list.d/api-umbrella.list
+$ sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 367404D553B42995
+$ echo "deb http://dl.bintray.com/nrel/api-umbrella-debian stretch main" | sudo tee /etc/apt/sources.list.d/api-umbrella.list
 $ sudo apt-get update
 $ sudo apt-get install api-umbrella
 ```
 
-**Debian 7 (Wheezy)**
+**Debian 8 (Jessie)**
 
 ```sh
-$ sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 379CE192D401AB61
-$ echo "deb https://dl.bintray.com/nrel/api-umbrella-debian wheezy main" | sudo tee /etc/apt/sources.list.d/api-umbrella.list
+$ sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 367404D553B42995
+$ echo "deb http://dl.bintray.com/nrel/api-umbrella-debian jessie main" | sudo tee /etc/apt/sources.list.d/api-umbrella.list
 $ sudo apt-get update
 $ sudo apt-get install api-umbrella
 ```
@@ -36,29 +36,20 @@ $ curl https://bintray.com/nrel/api-umbrella-el6/rpm | sudo tee /etc/yum.repos.d
 $ sudo yum install api-umbrella
 ```
 
+**Ubuntu 18.04 (Bionic)**
+
+```sh
+$ sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 367404D553B42995
+$ echo "deb http://dl.bintray.com/nrel/api-umbrella-ubuntu bionic main" | sudo tee /etc/apt/sources.list.d/api-umbrella.list
+$ sudo apt-get update
+$ sudo apt-get install api-umbrella
+```
+
 **Ubuntu 16.04 (Xenial)**
 
 ```sh
-$ sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 379CE192D401AB61
-$ echo "deb https://dl.bintray.com/nrel/api-umbrella-ubuntu xenial main" | sudo tee /etc/apt/sources.list.d/api-umbrella.list
-$ sudo apt-get update
-$ sudo apt-get install api-umbrella
-```
-
-**Ubuntu 14.04 (Trusty)**
-
-```sh
-$ sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 379CE192D401AB61
-$ echo "deb https://dl.bintray.com/nrel/api-umbrella-ubuntu trusty main" | sudo tee /etc/apt/sources.list.d/api-umbrella.list
-$ sudo apt-get update
-$ sudo apt-get install api-umbrella
-```
-
-**Ubuntu 12.04 (Precise)**
-
-```sh
-$ sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 379CE192D401AB61
-$ echo "deb https://dl.bintray.com/nrel/api-umbrella-ubuntu precise main" | sudo tee /etc/apt/sources.list.d/api-umbrella.list
+$ sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 367404D553B42995
+$ echo "deb http://dl.bintray.com/nrel/api-umbrella-ubuntu xenial main" | sudo tee /etc/apt/sources.list.d/api-umbrella.list
 $ sudo apt-get update
 $ sudo apt-get install api-umbrella
 ```

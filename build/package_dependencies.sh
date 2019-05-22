@@ -68,9 +68,6 @@ if [[ "$ID_NORMALIZED" == "rhel" ]]; then
     tzdata
     glibc-common
 
-    # lua-icu-date
-    libicu-devel
-
     # For prefixed console output (gnu version for strftime support).
     gawk
 
@@ -156,6 +153,14 @@ if [[ "$ID_NORMALIZED" == "rhel" ]]; then
       devtoolset-7
     )
   fi
+
+  # Install Python 2.7 for compiling ICU.
+  if [[ "$VERSION_ID" == "6" ]]; then
+    core_build_dependencies+=(
+      centos-release-scl
+      python27
+    )
+  fi
 elif [[ "$ID_NORMALIZED" == "debian" ]]; then
   libcurl_version=3
   libnettle_version=6
@@ -223,9 +228,6 @@ elif [[ "$ID_NORMALIZED" == "debian" ]]; then
     "libreadline$libreadline_version"
     tzdata
     locales-all
-
-    # lua-icu-date
-    libicu-dev
 
     # For prefixed console output (gnu version for strftime support).
     gawk

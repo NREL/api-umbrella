@@ -40,6 +40,7 @@ for package in "${packages[@]}"; do
   curl_args+=("--user" "$BINTRAY_USERNAME:$BINTRAY_API_KEY")
   curl_args+=("--upload-file" "$package")
   curl_args+=("--fail")
+  curl_args+=("-H" "X-GPG-PASSPHRASE: $GPG_PASSPHRASE")
   if [[ "$package" == *"debian"* || "$package" == *"ubuntu"* ]]; then
     [[ "$file_path" =~ ~([a-z]+)_ ]]
     curl_args+=("-H" "X-Bintray-Debian-Distribution: ${BASH_REMATCH[1]}")
@@ -51,3 +52,19 @@ for package in "${packages[@]}"; do
 
   curl -X PUT "${curl_args[@]}" "https://api.bintray.com/content/nrel/$repo/api-umbrella/$version/$file_path"
 done
+
+# Publish packages
+curl_args=()
+curl_args+=("--user" "$BINTRAY_USERNAME:$BINTRAY_API_KEY")
+curl_args+=("--fail")
+curl_args+=("-H" "X-GPG-PASSPHRASE: $GPG_PASSPHRASE")
+curl -X POST "${curl_args[@]}" "https://api.bintray.com/content/nrel/api-umbrella-debian/api-umbrella/$version/publish?publish_wait_for_secs=-1"
+curl -X POST "${curl_args[@]}" "https://api.bintray.com/content/nrel/api-umbrella-el6/api-umbrella/$version/publish?publish_wait_for_secs=-1"
+curl -X POST "${curl_args[@]}" "https://api.bintray.com/content/nrel/api-umbrella-el7/api-umbrella/$version/publish?publish_wait_for_secs=-1"
+curl -X POST "${curl_args[@]}" "https://api.bintray.com/content/nrel/api-umbrella-ubuntu/api-umbrella/$version/publish?publish_wait_for_secs=-1"
+
+# Trigger metadata calculations with GPG passphrase.
+curl -X POST "${curl_args[@]}" "https://api.bintray.com/calc_metadata/nrel/api-umbrella-debian/"
+curl -X POST "${curl_args[@]}" "https://api.bintray.com/calc_metadata/nrel/api-umbrella-el6/"
+curl -X POST "${curl_args[@]}" "https://api.bintray.com/calc_metadata/nrel/api-umbrella-el7/"
+curl -X POST "${curl_args[@]}" "https://api.bintray.com/calc_metadata/nrel/api-umbrella-ubuntu/"

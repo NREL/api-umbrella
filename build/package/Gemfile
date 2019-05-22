@@ -1,3 +1,5 @@
 source "https://rubygems.org"
 
-gem "fpm", "~> 1.8.0"
+# Pin to 1.10 due to xz compression being broken in 1.11.0:
+# https://github.com/jordansissel/fpm/issues/1612
+gem "fpm", "~> 1.10.2"

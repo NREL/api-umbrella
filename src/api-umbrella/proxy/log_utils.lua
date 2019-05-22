@@ -1,6 +1,6 @@
 local config = require "api-umbrella.proxy.models.file_config"
 local escape_uri_non_ascii = require "api-umbrella.utils.escape_uri_non_ascii"
-local icu_date = require "icu-date"
+local icu_date = require "icu-date-ffi"
 local json_encode = require "api-umbrella.utils.json_encode"
 local logger = require "resty.logger.socket"
 local pg_utils = require "api-umbrella.utils.pg_utils"

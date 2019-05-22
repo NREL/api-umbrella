@@ -673,4 +673,5 @@ describe "api-umbrella" do
   it_behaves_like "package upgrade", "0.14.1-1"
   it_behaves_like "package upgrade", "0.14.2-1"
   it_behaves_like "package upgrade", "0.14.3-1"
+  it_behaves_like "package upgrade", "0.14.4-1"
 end

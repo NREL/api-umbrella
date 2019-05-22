@@ -1,7 +1,7 @@
 local config = require "api-umbrella.proxy.models.file_config"
 local elasticsearch = require "api-umbrella.utils.elasticsearch"
 local elasticsearch_templates = require "api-umbrella.proxy.elasticsearch_templates_data"
-local icu_date = require "icu-date"
+local icu_date = require "icu-date-ffi"
 local interval_lock = require "api-umbrella.utils.interval_lock"
 
 local elasticsearch_query = elasticsearch.query

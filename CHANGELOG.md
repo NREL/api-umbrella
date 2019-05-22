@@ -1,11 +1,92 @@
 # API Umbrella Change Log
 
-## Unreleased
+## 0.15.1 (2019-05-14)
+
+👋 Long time no release! Sorry for the long gap since our last formal release, but we have a sizable upgrade ready that fixes various bugs, and makes a lot of internal improvements. Upgrading is recommended.
+
+### Upgrade Instructions
+
+If you're upgrading a previous API Umbrella version, you may upgrade the `api-umbrella` package using your package manager.
 
 ### Fixed
 
-- **Fix URL handling for query strings containing "api\_key":** It was possible that API Umbrella was stripping the string "api\_key" from inside URLs before passing requests to the API backend in some unexpected cases. The `api_key` query parameter should still be stripped, but other instances of "api\_key" elsewhere in the URL (for example as a value, like `?foo=api_key`), are now retained.
-- **Fix redirect rewriting when operating on custom ports:** If API Umbrella was running on custom HTTP or HTTP ports, redirects from API backends may not have been to the correct port.
+- **Fix filtering admin analytics on the "HTTP Method" field:** Analytics filters for the "HTTP Method" field were not working. ([api.data.gov#401](https://github.com/18F/api.data.gov/issues/401), [#389](https://github.com/NREL/api-umbrella/issues/389))
+- **Fix admins without admin management permissions accessing their own account page:** If an admin account didn't also have "Admin Accounts - View & Manage" permissions, the admin wasn't able to access their own admin account page. ([api.data.gov#451](https://github.com/18F/api.data.gov/issues/451), [api.data.gov#443](https://github.com/18F/api.data.gov/issues/443))
+- **Fix admin navigation links not hiding based on admin account permissions:** Admin accounts with limited permissions were still being shown links to all the possible admin pages, even if they didn't have permissions to those pages. This is fixed so there are only navigation links to the permitted admin areas now. ([api.data.gov#432](https://github.com/18F/api.data.gov/issues/432), [api.data.gov#394](https://github.com/18F/api.data.gov/issues/394))
+- **Fix admins with limited permissions not able to publish website backends:** Only superuser admins were able to publish website backend changes. ([9091de9](https://github.com/NREL/api-umbrella/commit/9091de98edf40920733cfc91e7101456a9d604fd), [0356c6b](https://github.com/NREL/api-umbrella/commit/0356c6badb30ada82300d0ed6651604ff7ec3f13))
+- **Fix CSV download for admin drilldown analytics:** The CSV download link in the API Drilldown part of the admin analytics wasn't working. ([api.data.gov#410](https://github.com/18F/api.data.gov/issues/410))
+- **Fix missing column headers in admin analytics "Filter Logs" CSVs:** Some of the last columns of data in this CSV were missing the associated column headers. ([api.data.gov#480](https://github.com/18F/api.data.gov/issues/480))
+- **Fix out-of-memory issues potentially leading to outage:** In the event the API backend configuration exceeds the allocated memory for this configuration in nginx (configured via `nginx.shared_dicts.active_config.size`), the API backend configuration could become unloaded leading to an API outage. This is now fixed so that the new API backend configuration will only get published if there's enough available memory (otherwise, the old configuration will remain in place, and a warning will be logged). The default memory size for this configuration has also been increased to allow for 750-1000 API backends by default (up from the previous default allowing 150-300 API backends). ([cb5e2c1](https://github.com/NREL/api-umbrella/commit/cb5e2c1876d59dde947ad635cada955683c5afa5), [3af5700](https://github.com/NREL/api-umbrella/commit/3af5700f5b2b47d4cbac60794bed2a02758d95cd), [api.data.gov#385](https://github.com/18F/api.data.gov/issues/385))
+- **Fix URL handling for query strings containing "api\_key":** It was possible that API Umbrella was stripping the string "api\_key" from inside URLs before passing requests to the API backend in some unexpected cases. The `api_key` query parameter should still be stripped, but other instances of "api\_key" elsewhere in the URL (for example as a value, like `?foo=api_key`), are now retained. ([de3e207](https://github.com/NREL/api-umbrella/commit/de3e207d07a65664abc38a9374df1e9611ffee31))
+- **Fix behavior of drilldown chart in admin analtyics:** The behavior of the drilldown chart in the analtyics area could sporadically be incorrect and render the wrong data in the chart. ([api.data.gov#433](https://github.com/18F/api.data.gov/issues/433))
+- **Fix redirect rewriting from API backends:** When an API backend returns a redirect, there were some situations where the rewritten redirect would be incorrect (if API Umbrella was running on a custom HTTP or HTTPS port, or in situations where the API backend has multiple URL prefix matches, or if the API backend returns an already rewritten path). ([735212b](https://github.com/NREL/api-umbrella/commit/735212b1dd77dab104541f53521a47e76c6ef063), [4d5cc3f](https://github.com/NREL/api-umbrella/commit/4d5cc3fcb6838e0d804ad9d7c80d40e83c78b045))
+- **Fix configuration settings to extend the default HTTP timeout:** Fix the `nginx.proxy_read_timeout` and `nginx.proxy_connect_timeout` settings for use with API backends that are slower to respond. ([#441](https://github.com/NREL/api-umbrella/issues/441), [17bc65c](https://github.com/NREL/api-umbrella/commit/17bc65c8e35b1d950b11adb4847da9a201e24889))
+- **Fix empty 404 and 500 error pages served from web-app:** If the web-app returned 404 or 500 errors, these were returned with an empty response body in v0.14.0+. ([a6fb68e](https://github.com/NREL/api-umbrella/commit/a6fb68edabb30670d18c63f68e0f590e52d70b7d))
+- **Fix memory leaks:** Remove background task to periodically reload nginx due to unexpected memory growth which is now fixed. ([09b3f74](https://github.com/NREL/api-umbrella/commit/09b3f74423588d44cb0c6486a54ff5ce2edc21f4))
+- **Fix admin logouts when API Umbrella is restarted:** The randomized secret token used for session encryption could be regenerated on API Umbrella restarts, which could lead to admins needing to login again. ([c65ea2f](https://github.com/NREL/api-umbrella/commit/c65ea2f746cbe5a015b03dadcd3d63034659be73), [f88a2c0](https://github.com/NREL/api-umbrella/commit/f88a2c020a0a341fc7dc5c2f6d3460df570a3f5b))
+- **Fix admin analytics when no indices for the date range are present:** If querying the analytics for date ranges where no analytics indices were present, ensure that the API still responds successfully (with 0 values). ([c743e79](https://github.com/NREL/api-umbrella/commit/c743e79ad904a140cc7427cacf4fddf51bb9c1a4))
+- **Fix nginx warnings:** Fix warnings generated in the nginx log files. ([04e8c9c](https://github.com/NREL/api-umbrella/commit/04e8c9cec84eaa4b2f3b8d8691de0b1899f9adc9), [08b59e7](https://github.com/NREL/api-umbrella/commit/08b59e7a3da587670850da0cd75f2a5cc55a3360))
+- **Fix edge case with seeded API keys having the same key:** It was possible that the API keys created during startup for internal usage could end up having duplicate, colliding API key values. This likely only affected the test environment when repeated, rapid reload were performed. ([a725342](https://github.com/NREL/api-umbrella/commit/a7253421d8eebb160b23c1bd75b278d00f5d9dc3), [8fd99e3](https://github.com/NREL/api-umbrella/commit/8fd99e3b24db683ad129d89dfe266becf77f2ef2))
+- **Fix edge cases to handle MongoDB replicaset changes more gracefully:** Better handle errors during MongoDB replicaset changes to retry queries. ([a808feb](https://github.com/NREL/api-umbrella/commit/a808febef494358985f8c518ee0938a1520cec3f))
+- **Improve keepalive handling:** Fix possibility of 502 Bad Gateway responses in cases where an API backend closes a keepalive connection to API Umbrella. ([833e3de](https://github.com/NREL/api-umbrella/commit/833e3de24a5068e1ed57aa044d12b8df68f529f3), [api.data.gov#446](https://github.com/18F/api.data.gov/issues/446))
+- **Fix edge case with rapid reloads causing config data to go missing:** If rapidly reloading the API Umbrella process, the config could go missing. This likely only affected our test suite which performs rapid reloads. ([e274d86](https://github.com/NREL/api-umbrella/commit/e274d8697b8d377d40f73bcde5a5aca721546740))
+
+### Security
+
+- **Prevent API URLs and contact URLs from linking to unknown domains in API key signup e-mails:** Someone could trigger an API key signup e-mail to a user with links to unexpected locations for the example API URL or "contact us" link. Thanks to [@nuke11](https://hackerone.com/nuke11) for the bug bounty report. ([api.data.gov#460](https://github.com/18F/api.data.gov/issues/460))
+- **XSS issue in flash error messages from external login providers:** Error messages from external login providers (eg, Google) could contain a cross-site scripting (XSS) vulnerability. ([469572c](https://github.com/NREL/api-umbrella/commit/469572c73991975b7d90b86e98eeb5a0e1b8528e))
+- **Prevent admin groups from having analytics permissions:** If an admin account belonged to only admin groups that didn't have any analytics permissions, then it was possible they admin could inadvertently view all analytics data. ([a4569a6](https://github.com/NREL/api-umbrella/commit/a4569a623380f7d1ecc897ff3078a721cfd51642))
+
+### Added
+- **Added packages for Ubuntu 18.04 and Debian 9:** Pre-packaged binaries are now available for the latest Debian and Ubuntu LTS releases. ([#432](https://github.com/NREL/api-umbrella/issues/432), [#444](https://github.com/NREL/api-umbrella/issues/444))
+- **Elasticsearch V5, V6, and V7 compatibility:** If using an external Elasticsearch database, API Umbrella now support Elasticsearch versions 5, 6, and 7. The `elasticsearch.api_version` must be adjusted accordingly. ([#393](https://github.com/NREL/api-umbrella/issues/393))
+- **Elasticsearch SSL support:** You can now point to an Elasticsearch URL over HTTPS. ([a201220](https://github.com/NREL/api-umbrella/commit/a201220ec1736c3db1cb94190b3e7fd6faffee24), [a5a403f](https://github.com/NREL/api-umbrella/commit/a5a403fb0690cb2484d37466cd5e5efcb6494642), [d89960f](https://github.com/NREL/api-umbrella/commit/d89960fbc5be7f6fa6ef12e4dbd9e94d72920285))
+- **AWS Elasticsearch signing for IAM access control:** There is an extra proxy layer to support using AWS Elasticsearch when using IAM for access control. ([9ddce5e](https://github.com/NREL/api-umbrella/commit/9ddce5e92627390afb42c127d951776b6041c23a))
+- **Option to log all output to stdout/stderr:** The `log.destination: console` option can be used to log all output to stdout/stderr instead of log files. This makes API Umbrella easier to run in containerized environments. ([#376](https://github.com/NREL/api-umbrella/issues/376))
+- **Options to parse client IPs from different HTTP headers:** If other proxies are present in front of API Umbrella, additional options have been added to parse the original client's IP address from a different HTTP header. ([api.data.gov#429](https://github.com/18F/api.data.gov/issues/429), [#431](https://github.com/NREL/api-umbrella/issues/431))
+- **Option to perform HTTPS redirects on specific API URLs:** The `router.api_backend_required_https_regex_default` configuration option can be used to force certain API URLs to redirect to HTTPS based on a regex. ([api.data.gov#457](https://github.com/18F/api.data.gov/issues/457))
+- **Configurable API user validation regexes:** Regexes to validate e-mail addresses, first names, and last names for API key signups are now configurable (`web.api_user.email_regex`, `web.api_user.first_name_exclude_regex`, `web.api_user.last_name_exclude_regex`). ([15f14f3](https://github.com/NREL/api-umbrella/commit/15f14f3cad9bb4857b630a7f8e932258d84240ff), [1566eef](https://github.com/NREL/api-umbrella/commit/1566eeff4034dcb2cb8600b9788479c2b1126063))
+- **Configurable nginx log levels:** Allow the log level of the nginx processes to be configurable (`nginx.error_log_level`). ([2b0c8ac](https://github.com/NREL/api-umbrella/commit/2b0c8acf857d0654783218690c1d5fd5ab5c7735))
+- **Configurable log levels for nginx rate limiting:** Allow the log level used for nginx rate limit messages to be configurable (`router.global_rate_limits.ip_connections_log_level` and `router.global_rate_limits.ip_rate_log_level`, [a804e0c](https://github.com/NREL/api-umbrella/commit/a804e0cab6cb83221d48072b4494fea0aad22c94))
+- **Docker development environment:** Add a Docker-based development environment for easier development setup.
+- **Experimental support for integrating automatic SSL certificate registration:** Integrate [lua-resty-auto-ssl](https://github.com/GUI/lua-resty-auto-ssl) for automatically handling SSL certificates. ([2f6c5b5](https://github.com/NREL/api-umbrella/commit/2f6c5b5805a5b50075c02478223f9a3c2ad1171b))
+
+### Changed
+
+- **Route API backend requests directly from Traffic Server:** Routing to API backends has been simplified so it occurs directly from Traffic Server, instead of routing back through an extra nginx hop. This should improve efficiency, simplifies routing, and eliminates DNS-related code. ([#410](https://github.com/NREL/api-umbrella/pull/410))
+- **Admin UI Upgrades:** Upgrade the admin UI project from Ember 2.8 to Ember 3.9 and Bootstrap 3 to Bootstrap 4. This switch also moves all dependencies into NPM instead of Bower, and better uses ES6 syntax throughout the admin UI code. Integration tests have also been switched from PhantomJS to Selenium tests using headless Chrome. ([#429](https://github.com/NREL/api-umbrella/pull/429), [api.data.gov#434](https://github.com/18F/api.data.gov/issues/434))
+- **Upgrade to GeoIP2 database:** The legacy GeoIP data previously being used has been discontinued, so GeoIP2 is now being used for geo-locating IP addresses. ([8f17dae](https://github.com/NREL/api-umbrella/commit/8f17dae991de7553cb67ee319392bf53c17a5083), [#440](https://github.com/NREL/api-umbrella/issues/440))
+- **Redirect all website content to HTTPS by default:** All website requests now redirect to HTTPS by default. ([b3a8abc](https://github.com/NREL/api-umbrella/commit/b3a8abc81347cbeb274e00f40fcfccea3af1b546), [#407](https://github.com/NREL/api-umbrella/issues/407), [api.data.gov#430](https://github.com/18F/api.data.gov/issues/430))
+- **Improve HTTPS requirements for API requests to error earlier:** When making an insecure API request, return an error about HTTPS being required before the API key requirement error. ([api.data.gov#454](https://github.com/18F/api.data.gov/issues/454))
+- **Improve filesystem permissions and use more restrictive umask:** Ensure that the files generated by API Umbrella are only readable by the needed users, and not readable by other users that may have access to the server. ([2e595ce](https://github.com/NREL/api-umbrella/commit/2e595cec2dd748af2638f37e6729b7525f0e3572))
+- **Increase size of allowed HTTP response header lengths:** If an API backend returned very long HTTP headers, it could generate 502 errors. This increases the default size of allowed HTTP headers, and also makes this length configurable. ([api.data.gov#461](https://github.com/18F/api.data.gov/issues/461), [#398](https://github.com/NREL/api-umbrella/issues/398))
+- **Improve the build process for better caching:** The build process has been revamped to allow for better caching of the dependencies. ([#409](https://github.com/NREL/api-umbrella/pull/409)) https://github.com/NREL/api-umbrella/pull/414
+- **Output Traffic Server logs as text logs:** Output Traffic Server's access log as a text log file, instead of a binary log. ([bd7f9fa](https://github.com/NREL/api-umbrella/commit/bd7f9fafb4c0345a37fa7428b6055c73744c3b4e))
+- **Preload Lua modules in nginx to improve memory usage:** Lua modules are now preloaded in the nginx master process to improve memory usage by the nginx workers. ([031620a](https://github.com/NREL/api-umbrella/commit/031620a2022886cff1f57a70052d4c84fe34adf3))
+- **Add more validations on API user names:** Add additional validations to ensure a valid first and last name have been entered to help prevent signup spam.
+- **Improve Cache-Control responses for admin content:** Use stricter Cache-Control settings for admin responses that should not be cached, and improve caching of asset files. ([api.data.gov#425](https://github.com/18F/api.data.gov/issues/425))
+- **Disable animations of admin analytics charts:** Disable the animations of the charts in the admin analytics to improve responsiveness. ([92c9351](https://github.com/NREL/api-umbrella/commit/92c9351ae99f2ebce961f31e8c33de40e8764d62))
+- **Switch to Lua code for generating request IDs:**  Switch from ngx_txid to [lua-resty-txid](https://github.com/GUI/lua-resty-txid) for generating the request IDs to reduce need for custom nginx modules. ([9d2ebd4](https://github.com/NREL/api-umbrella/commit/9d2ebd475058b3505b236a52d4d3a6f06a9ae722))
+- **Require multi-factor authentication for MAX.gov admin logins:** If using MAX.gov for admin logins, multi-factor authentication is required by default. ([api.data.gov#435](https://github.com/18F/api.data.gov/issues/435))
+- **Upgrade bundled software dependencies:**
+  - Elasticsearch 2.4.5 -\> 2.4.6
+  - MongoDB 3.2.15 -\> 3.2.22
+  - OpenResty 1.11.2.4 -\> 1.13.6.2
+  - OpenSSL 1.0.2l -\> 1.0.2r
+  - Rails 4.2.9 -\> 4.2.11.1
+  - Rsyslog 8.27.0 -\> 8.1904.0
+  - Ruby 2.3.4 -\> 2.4.6
+  - Traffic Server 5.3.2 -\> 8.0.3
+
+### Removed
+- **Removed Ubuntu 12.04, Ubuntu 14.014 and Debian 7 packages:** Removed packages for unsupported distributions.
+- **Removed references to request_ip_location:** Removed defunct references to the analytics `request_ip_location` field that was removed in v0.14.0. ([c783e1c](https://github.com/NREL/api-umbrella/commit/c783e1c47658af628a11893282c5040d30638dc9))
+- **Removed experimental analytics:** Removed code related to experimental analytics backend. ([77d50d0](https://github.com/NREL/api-umbrella/commit/77d50d00397d7b7d00c50fbb3dca9ed2b8a55335))
+- **Removed Vagrant development environment:** Removed the Vagrant-based development environment in favor of the Docker-based development environment.
+
+## 0.15.0 (Unreleased)
+
+Due to some packaging issues, version 0.15.0 was never released. See [version 0.15.1](#0150-2019-05-14).
 
 ## 0.14.4 (2017-07-15)
 
