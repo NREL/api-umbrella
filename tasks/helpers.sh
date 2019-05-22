@@ -169,7 +169,7 @@ download() {
 }
 
 extract_download() {
-  tar -xf "_persist/downloads/$1"
+  tar -xof "_persist/downloads/$1"
 }
 
 _luarocks_install() {

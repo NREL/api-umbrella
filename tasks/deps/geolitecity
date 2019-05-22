@@ -18,7 +18,7 @@ curl --location --retry 3 --fail --remote-name https://geolite.maxmind.com/downl
 dir="GeoLite2-City"
 rm -rf "$dir"
 mkdir -p "$dir"
-tar -xf GeoLite2-City.tar.gz -C "$dir" --strip-components 1
+tar -xof GeoLite2-City.tar.gz -C "$dir" --strip-components 1
 install -D -m 644 ./GeoLite2-City/GeoLite2-City.mmdb "$STAGE_EMBEDDED_DIR/var/db/geoip/GeoLite2-City.mmdb"
 
 stamp
