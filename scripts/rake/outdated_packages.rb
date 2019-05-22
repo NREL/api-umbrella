@@ -128,6 +128,9 @@ class OutdatedPackages
     "lua_resty_nettle" => {
       :git => "https://github.com/bungle/lua-resty-nettle.git",
     },
+    "lua_resty_openidc" => {
+      :git => "https://github.com/zmartzone/lua-resty-openidc.git",
+    },
     "lua_resty_session" => {
       :git => "https://github.com/bungle/lua-resty-session.git",
     },
