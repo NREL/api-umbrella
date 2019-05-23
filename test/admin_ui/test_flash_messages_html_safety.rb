@@ -20,6 +20,7 @@ class Test::AdminUi::TestFlashMessagesHtmlSafety < Minitest::Capybara::Test
           "admin" => {
             "auth_strategies" => {
               "enabled" => [
+                "github",
                 "google",
                 "max.gov",
               ],
@@ -44,8 +45,10 @@ class Test::AdminUi::TestFlashMessagesHtmlSafety < Minitest::Capybara::Test
   # going on.
   def test_raw_html
     data = MultiJson.dump({
-      "email" => "unverified@example.com",
-      "email_verified" => false,
+      "id_token" => {
+        "email" => "unverified@example.com",
+        "email_verified" => false,
+      },
     })
 
     response = Typhoeus.get("https://127.0.0.1:9081/admins/auth/google_oauth2", keyless_http_options.deep_merge({
@@ -54,11 +57,11 @@ class Test::AdminUi::TestFlashMessagesHtmlSafety < Minitest::Capybara::Test
       },
     }))
     assert_response_code(302, response)
-    assert_match(%r{\Ahttps://127.0.0.1:9081/admins/auth/google_oauth2/callback\?state=\w{64}&code=mock_test_code\z}, response.headers["Location"])
+    assert_equal("https://127.0.0.1:9081/admins/auth/google_oauth2/callback", response.headers["Location"])
 
     response = Typhoeus.get(response.headers.fetch("Location"), keyless_http_options.deep_merge({
       :headers => {
-        "Cookie" => "test_mock_userinfo=#{CGI.escape(Base64.strict_encode64(data))}; #{response.headers.fetch("Set-Cookie")}",
+        "Cookie" => "test_mock_userinfo=#{CGI.escape(Base64.strict_encode64(data))}",
       },
     }))
     assert_response_code(302, response)
@@ -75,8 +78,10 @@ class Test::AdminUi::TestFlashMessagesHtmlSafety < Minitest::Capybara::Test
 
   def test_unverified_html_message
     data = MultiJson.dump({
-      "email" => "unverified@example.com",
-      "email_verified" => false,
+      "id_token" => {
+        "email" => "unverified@example.com",
+        "email_verified" => false,
+      },
     })
 
     mock_userinfo(data) do
@@ -87,8 +92,10 @@ class Test::AdminUi::TestFlashMessagesHtmlSafety < Minitest::Capybara::Test
 
   def test_unverified_html_message_with_xss_email
     data = MultiJson.dump({
-      "email" => "'\"><script>alert('hello')</script>",
-      "email_verified" => false,
+      "id_token" => {
+        "email" => "'\"><script>alert('hello')</script>",
+        "email_verified" => false,
+      },
     })
 
     mock_userinfo(data) do
@@ -99,8 +106,10 @@ class Test::AdminUi::TestFlashMessagesHtmlSafety < Minitest::Capybara::Test
 
   def test_nonexistent_html_message
     data = MultiJson.dump({
-      "email" => "noadmin@example.com",
-      "email_verified" => true,
+      "id_token" => {
+        "email" => "noadmin@example.com",
+        "email_verified" => true,
+      },
     })
 
     mock_userinfo(data) do
@@ -111,8 +120,10 @@ class Test::AdminUi::TestFlashMessagesHtmlSafety < Minitest::Capybara::Test
 
   def test_nonexistent_html_message_with_xss_email
     data = MultiJson.dump({
-      "email" => "'\"><script>alert('hello')</script>",
-      "email_verified" => true,
+      "id_token" => {
+        "email" => "'\"><script>alert('hello')</script>",
+        "email_verified" => true,
+      },
     })
 
     mock_userinfo(data) do
@@ -140,7 +151,7 @@ class Test::AdminUi::TestFlashMessagesHtmlSafety < Minitest::Capybara::Test
   end
 
   def test_error_message_from_external_provider
-    visit "/admins/auth/google_oauth2/callback?error='\"><script>confirm(document.domain)</script>"
+    visit "/admins/auth/github/callback?error='\"><script>confirm(document.domain)</script>"
     assert_match("Could not authenticate you because \"'\"&gt;&lt;script&gt;confirm(document.domain)&lt;/script&gt;\".", page.body)
   end
 end

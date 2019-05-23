@@ -18,6 +18,7 @@ class Test::AdminUi::Login::TestExternalProviders < Minitest::Capybara::Test
             "auth_strategies" => {
               "enabled" => [
                 "facebook",
+                "login.gov",
                 "max.gov",
                 "github",
                 "gitlab",
@@ -66,6 +67,7 @@ class Test::AdminUi::Login::TestExternalProviders < Minitest::Capybara::Test
     buttons = page.all(".external-login .btn").map { |btn| btn.text }
     assert_equal([
       "Sign in with Facebook",
+      "Sign in with Login.gov",
       "Sign in with MAX.gov",
       "Sign in with GitHub",
       "Sign in with GitLab",
@@ -105,6 +107,7 @@ class Test::AdminUi::Login::TestExternalProviders < Minitest::Capybara::Test
     assert_equal("/o/oauth2/v2/auth", uri.path)
     assert_equal([
       "client_id",
+      "nonce",
       "prompt",
       "redirect_uri",
       "response_type",
@@ -120,6 +123,7 @@ class Test::AdminUi::Login::TestExternalProviders < Minitest::Capybara::Test
     assert_equal("code", uri.query_values.fetch("response_type"))
     assert_equal("openid email", uri.query_values.fetch("scope"))
     assert_kind_of(String, uri.query_values.fetch("state"))
+    assert_kind_of(String, uri.query_values.fetch("nonce"))
   end
 
   [
@@ -167,19 +171,48 @@ class Test::AdminUi::Login::TestExternalProviders < Minitest::Capybara::Test
       :provider => :gitlab,
       :login_button_text => "Sign in with GitLab",
       :mock_userinfo => MultiJson.dump({
-        "email" => "{{username}}",
+        "user" => {
+          "email" => "{{username}}",
+          "email_verified" => true,
+        },
+      }),
+      :mock_userinfo_unverified => MultiJson.dump({
+        "user" => {
+          "email" => "{{username}}",
+          "email_verified" => false,
+        },
       }),
     },
     {
       :provider => :google_oauth2,
       :login_button_text => "Sign in with Google",
       :mock_userinfo => MultiJson.dump({
-        "email" => "{{username}}",
-        "email_verified" => true,
+        "id_token" => {
+          "email" => "{{username}}",
+          "email_verified" => true,
+        },
       }),
       :mock_userinfo_unverfied => MultiJson.dump({
-        "email" => "{{username}}",
-        "email_verified" => false,
+        "id_token" => {
+          "email" => "{{username}}",
+          "email_verified" => false,
+        },
+      }),
+    },
+    {
+      :provider => :login_gov,
+      :login_button_text => "Sign in with Login.gov",
+      :mock_userinfo => MultiJson.dump({
+        "id_token" => {
+          "email" => "{{username}}",
+          "email_verified" => true,
+        },
+      }),
+      :mock_userinfo_unverfied => MultiJson.dump({
+        "id_token" => {
+          "email" => "{{username}}",
+          "email_verified" => false,
+        },
       }),
     },
     {

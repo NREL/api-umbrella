@@ -52,6 +52,12 @@ nginx:
       size: 20m
     upstream_checksums:
       size: 200k
+    discovery:
+      size: 200k
+    jwks:
+      size: 200k
+    introspection:
+      size: 200k
 gatekeeper:
   api_key_methods:
     - header

@@ -2,20 +2,17 @@ local Admin = require "api-umbrella.web-app.models.admin"
 local build_url = require "api-umbrella.utils.build_url"
 local cas = require "api-umbrella.web-app.utils.auth_external_cas"
 local config = require "api-umbrella.proxy.models.file_config"
-local deep_merge_overwrite_arrays = require "api-umbrella.utils.deep_merge_overwrite_arrays"
 local escape_html = require("lapis.html").escape
 local flash = require "api-umbrella.web-app.utils.flash"
 local is_empty = require("pl.types").is_empty
 local ldap = require "api-umbrella.web-app.utils.auth_external_ldap"
 local login_admin = require "api-umbrella.web-app.utils.login_admin"
 local oauth2 = require "api-umbrella.web-app.utils.auth_external_oauth2"
-local openidc = require "resty.openidc"
+local openid_connect = require "api-umbrella.web-app.utils.auth_external_openid_connect"
 local t = require("api-umbrella.web-app.utils.gettext").gettext
 local username_label = require "api-umbrella.web-app.utils.username_label"
 
 local _M = {}
-
-openidc.set_logging(nil, { DEBUG = ngx.NOTICE })
 
 local function email_unverified_error(self)
   flash.session(self, "danger", string.format(t([[The email address '%s' is not verified. Please <a href="%s">contact us</a> for further assistance.]]), escape_html(self.username or ""), escape_html(config["contact_url"] or "")), { html_safe = true })
@@ -176,14 +173,11 @@ function _M.github_callback(self)
 end
 
 function _M.gitlab_login(self)
-  local res, err = openidc.authenticate(deep_merge_overwrite_arrays(config["web"]["admin"]["auth_strategies"]["gitlab"], {
-    redirect_uri = build_url("/admins/auth/gitlab/callback"),
+  local res, err = openid_connect.authenticate(self, "gitlab", "/admins/auth/gitlab/callback", {
     session_contents = {
-      id_token = true,
       user = true,
     },
-  }), nil, nil, self.session_cookie_options)
-
+  })
   if not err and res and res["user"] then
     self.username = res["user"]["email"]
     if not res["user"]["email_verified"] then
@@ -195,13 +189,7 @@ function _M.gitlab_login(self)
 end
 
 function _M.google_login(self)
-  local res, err = openidc.authenticate(deep_merge_overwrite_arrays(config["web"]["admin"]["auth_strategies"]["google"], {
-    redirect_uri = build_url("/admins/auth/google_oauth2/callback"),
-    session_contents = {
-      id_token = true,
-    },
-  }), nil, nil, self.session_cookie_options)
-
+  local res, err = openid_connect.authenticate(self, "google", "/admins/auth/google_oauth2/callback")
   if not err and res and res["id_token"] then
     self.username = res["id_token"]["email"]
     if not res["id_token"]["email_verified"] then
@@ -213,13 +201,7 @@ function _M.google_login(self)
 end
 
 function _M.login_gov_login(self)
-  local res, err = openidc.authenticate(deep_merge_overwrite_arrays(config["web"]["admin"]["auth_strategies"]["login.gov"], {
-    redirect_uri = build_url("/admins/auth/login.gov/callback"),
-    session_contents = {
-      id_token = true,
-    },
-  }), nil, nil, self.session_cookie_options)
-
+  local res, err = openid_connect.authenticate(self, "login.gov", "/admins/auth/login.gov/callback")
   if not err and res and res["id_token"] then
     self.username = res["id_token"]["email"]
     if not res["id_token"]["email_verified"] then

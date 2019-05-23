@@ -43,6 +43,11 @@ http {
   lua_shared_dict interval_locks {{nginx.shared_dicts.interval_locks.size}};
   lua_shared_dict locks {{nginx.shared_dicts.locks.size}};
 
+  # For lua-resty-openidc
+  lua_shared_dict discovery {{nginx.shared_dicts.discovery.size}};
+  lua_shared_dict jwks {{nginx.shared_dicts.jwks.size}};
+  lua_shared_dict introspection {{nginx.shared_dicts.introspection.size}};
+
   {{#dns_resolver._nameservers_nginx}}
     # FIXME: Make ipv6 configurable.
     resolver {{dns_resolver._nameservers_nginx}} ipv6=off;
