@@ -1,6 +1,3 @@
-#!/usr/bin/env resty
--- vi: set ft=lua :
-
 local dir = require "pl.dir"
 local file = require "pl.file"
 local lexer = require "pl.lexer"

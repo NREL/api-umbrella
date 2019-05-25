@@ -9,15 +9,13 @@ class Test::Proxy::ResponseRewriting::TestContentTypeHeader < Minitest::Test
     setup_server
   end
 
-  # This is a side-effect of setting the X-Cache header in OpenResty. It
-  # appears like OpenResty forces a default text/plain content-type when it
-  # changes any other header if the content-type isn't already set. If this
-  # changes in the future to retaining no header, that should be fine, just
-  # testing current behavior.
-  def test_changes_empty_content_type_to_text_plain
+  # Ensure empty content types remain empty during proxying.
+  # https://github.com/openresty/lua-nginx-module/pull/1445
+  def test_keeps_empty_content_type
     response = Typhoeus.get("http://127.0.0.1:9080/api/compressible/1000?content_type=", http_options)
     assert_response_code(200, response)
-    assert_equal("text/plain", response.headers["content-type"])
+    refute_includes(response.headers.keys, "Content-Type")
+    assert_nil(response.headers["Content-Type"])
   end
 
   def test_does_not_change_existing_content_type

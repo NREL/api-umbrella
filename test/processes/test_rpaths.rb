@@ -24,10 +24,13 @@ class Test::Processes::TestRpaths < Minitest::Test
     bins += Dir.glob(File.join($config["_embedded_root_dir"], "sbin/**/*"))
     bins += Dir.glob(File.join($config["_embedded_root_dir"], "lib/**/*.so"))
     bins += Dir.glob(File.join($config["_embedded_root_dir"], "libexec/**/*.so"))
-    bins += Dir.glob(File.join($config["_embedded_root_dir"], "/apps/core/shared/vendor/**/*.so"))
+    bins += Dir.glob(File.join($config["_embedded_root_dir"], "openresty/**/bin/**/*"))
+    bins += Dir.glob(File.join($config["_embedded_root_dir"], "openresty/**/sbin/**/*"))
+    bins += Dir.glob(File.join($config["_embedded_root_dir"], "apps/core/shared/vendor/**/*.so"))
     bins.map! { |path| File.realpath(path) }
     bins.select! { |path| File.file?(path) }
     bins.reject! { |path| `file #{path}` =~ /(text executable|ASCII)/ }
+    bins.sort!
 
     # Spot check to ensure our list of binaries actually includes things we
     # expect.
@@ -36,6 +39,7 @@ class Test::Processes::TestRpaths < Minitest::Test
       "/embedded/bin/ruby",
       "/embedded/sbin/rsyslogd",
       "/embedded/openresty/nginx/sbin/nginx",
+      "/embedded/openresty/openssl/bin/openssl",
       "/embedded/libexec/trafficserver/header_rewrite.so",
       # LuaRock
       "/embedded/apps/core/shared/vendor/lua/lib/lua/5.1/yaml.so",

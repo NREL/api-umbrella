@@ -10,7 +10,6 @@ class Test::Proxy::Gzip::TestCompressibleTypes < Minitest::Test
   end
 
   [
-    "", # Gets turned into text/plain
     "application/atom+xml",
     "application/javascript",
     "application/json",
@@ -31,17 +30,15 @@ class Test::Proxy::Gzip::TestCompressibleTypes < Minitest::Test
         :params => { :content_type => mime },
       }))
       assert_response_code(200, response)
-      if(mime == "")
-        assert_equal("text/plain", response.headers["content-type"])
-      else
-        assert_equal(mime, response.headers["content-type"])
-      end
-      assert_equal("gzip", response.headers["content-encoding"])
+      assert_includes(response.headers.keys, "Content-Type")
+      assert_equal(mime, response.headers["Content-Type"])
+      assert_equal("gzip", response.headers["Content-Encoding"])
       assert_equal(1000, response.body.bytesize)
     end
   end
 
   [
+    "",
     "image/png",
     "application/octet-stream",
     "application/x-perl",
@@ -54,8 +51,14 @@ class Test::Proxy::Gzip::TestCompressibleTypes < Minitest::Test
         :params => { :content_type => mime },
       }))
       assert_response_code(200, response)
-      assert_equal(mime, response.headers["content-type"])
-      refute(response.headers["content-encoding"])
+      if(mime == "")
+        refute_includes(response.headers.keys, "Content-Type")
+        assert_nil(response.headers["Content-Type"])
+      else
+        assert_includes(response.headers.keys, "Content-Type")
+        assert_equal(mime, response.headers["Content-Type"])
+      end
+      refute(response.headers["Content-Encoding"])
       assert_equal(1000, response.body.bytesize)
     end
   end
