@@ -2,6 +2,10 @@ local config = require "api-umbrella.proxy.models.file_config"
 local int64 = require "api-umbrella.utils.int64"
 local pgmoon = require "pgmoon"
 
+-- Preload modules that pgmoon may require at query() time.
+require "pgmoon.arrays"
+require "pgmoon.json"
+
 local _encode_bytea = pgmoon.Postgres.encode_bytea
 local _escape_identifier = pgmoon.Postgres.escape_identifier
 local _escape_literal = pgmoon.Postgres.escape_literal

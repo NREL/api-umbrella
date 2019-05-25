@@ -30,9 +30,6 @@ class OutdatedPackages
       :git => "https://github.com/elasticsearch/elasticsearch.git",
       :constraint => "~> 7.0",
     },
-    "golang" => {
-      :git => "https://go.googlesource.com/go",
-    },
     "icu4c" => {
       :git => "https://github.com/unicode-org/icu.git",
     },
@@ -287,8 +284,6 @@ class OutdatedPackages
         :current_version => current_version,
       }
 
-      constraint = Gem::Dependency.new(name, options[:constraint])
-
       tags = []
       unparsable_tags = []
 
@@ -326,7 +321,7 @@ class OutdatedPackages
 
       case(name)
       when "openssl"
-        tags.select! { |tag| tag =~ /^1\.0\.\d+[a-z]?$/ }
+        tags.select! { |tag| tag =~ /^1\.1\.0[a-z]?$/ }
       when "mailhog"
         tags.reject! { |tag| tag =~ /^0\.0\d$/ }
       end
@@ -341,6 +336,8 @@ class OutdatedPackages
             versions[name][:wanted_version] = available_version
           end
         else
+          constraint = Gem::Dependency.new(name, options[:constraint])
+
           begin
             available_version = Gem::Version.new(tag)
             next if(available_version.prerelease?)
