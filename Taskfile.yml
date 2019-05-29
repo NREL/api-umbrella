@@ -323,9 +323,10 @@ tasks:
     method: checksum
 
   app-deps:lua:icu-date-ffi:
+    deps:
+      - deps:icu4c
+      - deps:luarocks
     cmds:
-      - task: deps:icu4c
-      - task: deps:luarocks
       - ./tasks/app-deps/lua/icu-date-ffi
     sources:
       - ./build/work/stamp/deps/icu4c
