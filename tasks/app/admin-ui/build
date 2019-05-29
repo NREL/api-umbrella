@@ -24,7 +24,9 @@ ln -s "$node_modules_dir" ./node_modules
 # these dependencies for the tasks/app/core task are still present if core
 # needs to be re-run, but not this task.
 mkdir -p ../_persist
-PATH="$DEV_PATH" ./node_modules/.bin/ember build \
+# Set JOBS=1 to fix parallel issues in CI environment:
+# https://github.com/emberjs/ember.js/issues/15641#issuecomment-328496408
+PATH="$DEV_PATH" JOBS=1 ./node_modules/.bin/ember build \
   --environment=production \
   --output-path=../_persist/dist
 
