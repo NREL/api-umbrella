@@ -682,6 +682,7 @@ tasks:
 
   app-deps:
     cmds:
+      - task: build-deps:yarn
       - task: app-deps:admin-ui:yarn
       - task: app-deps:lua:argparse
       - task: app-deps:lua:bcrypt
@@ -733,10 +734,11 @@ tasks:
     method: checksum
 
   app:core:
+    deps:
+      - app:admin-ui:build
+      - app:locale
+      - app:web-app:precompile
     cmds:
-      - task: app:admin-ui:build
-      - task: app:locale
-      - task: app:web-app:precompile
       - ./tasks/app/core
     sources:
       - ./build/work/stamp/app/admin-ui/build
