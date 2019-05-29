@@ -24,6 +24,10 @@ body {
   margin-right: auto;
 }
 
+.alert p:last-child {
+  margin-bottom: 0px;
+}
+
 .login .btn {
   display: block;
   width: 100%;
