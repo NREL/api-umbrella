@@ -36,6 +36,7 @@ class Test::Apis::Admin::TestAuth < Minitest::Test
       "api_key",
       "api_umbrella_version",
       "authenticated",
+      "csrf_token",
       "local_auth_enabled",
       "password_length_min",
       "username_is_email",
