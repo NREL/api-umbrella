@@ -1,5 +1,6 @@
 local Admin = require "api-umbrella.web-app.models.admin"
 local ApiUser = require "api-umbrella.web-app.models.api_user"
+local auth_external = require "api-umbrella.web-app.utils.auth_external"
 local build_url = require "api-umbrella.utils.build_url"
 local config = require "api-umbrella.proxy.models.file_config"
 local csrf = require "api-umbrella.web-app.utils.csrf"
@@ -138,10 +139,48 @@ end
 function _M.destroy(self)
   self:init_session_db()
   self.session_db:open()
+  local sign_in_provider = self.session_db.data["sign_in_provider"]
   self.session_db:destroy()
 
   flash.session(self, "info", t("Signed out successfully."))
-  return { status = 204, layout = false }
+
+  -- Trigger the authentication provider's own logout function if one exists.
+  -- For OpenID Connect providers, this may redirect to an external site to
+  -- handle RP-Initiated Logout.
+  if sign_in_provider and auth_external[sign_in_provider] and auth_external[sign_in_provider].logout then
+    auth_external[sign_in_provider].logout(self)
+  end
+
+  -- Assuming RP-Initiated Logout has not already redirected, then redirect to
+  -- the after-logout route to complete the client-side logout after the
+  -- server-side session has been terminated.
+  return { redirect_to = build_url("/admin/#/after-logout") }
+end
+
+function _M.logout_callback(self)
+  if self.current_admin then
+    return self:write({ redirect_to = build_url("/admin/#/login") })
+  end
+
+  -- Validate the "state" param.
+  local state = ngx.var.arg_state
+  if state then
+    self:init_session_cookie()
+    self.session_cookie:start()
+    local session_state = self.session_cookie.data["openid_connect_state"]
+    if state ~= session_state then
+      ngx.log(ngx.WARN, "state from argument: " .. (state or "nil") .. " does not match state restored from session: " .. (session_state or "nil"))
+
+      self.res.status = 422
+      return json_response(self, {
+        ["error"] = t("Unprocessable Entity"),
+      })
+    end
+  end
+
+  -- Redirect to the after-logout route to complete the client-side logout
+  -- after the server-side session has been terminated.
+  return { redirect_to = build_url("/admin/#/after-logout") }
 end
 
 function _M.auth(self)
@@ -179,6 +218,7 @@ function _M.auth(self)
     response["admin"]["permissions"]["backend_publish"] = json_null_default(current_admin:allows_permission("backend_publish"))
     response["api_key"] = json_null_default(api_user:api_key_decrypted())
     response["admin_auth_token"] = json_null_default(current_admin:authentication_token_decrypted())
+    response["csrf_token"] = json_null_default(csrf.generate_token(self))
   end
 
   return json_response(self, response)
@@ -220,5 +260,7 @@ return function(app)
     POST = create,
   }))
   app:delete("/admin/logout(.:format)", csrf.validate_token_or_admin_filter(require_admin(_M.destroy)))
+  app:post("/admin/logout(.:format)", csrf.validate_token_or_admin_filter(require_admin(_M.destroy)))
+  app:get("/admin/logout/callback(.:format)", _M.logout_callback)
   app:get("/admin/auth(.:format)", _M.auth)
 end

@@ -19,6 +19,7 @@ return function(self, admin, provider)
   self:init_session_db()
   self.session_db:start()
   self.session_db.data["admin_id"] = admin_id
+  self.session_db.data["sign_in_provider"] = provider
   self.session_db:save()
 
   return build_url("/admin/#/login")

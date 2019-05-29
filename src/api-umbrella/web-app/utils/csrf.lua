@@ -19,14 +19,23 @@ function _M.generate_token(self)
   self:init_session_cookie()
   self.session_cookie:start()
   local csrf_token_key = self.session_cookie.data["csrf_token_key"]
-  if not csrf_token_key then
-    csrf_token_key = random_token(40)
-    self.session_cookie.data["csrf_token_key"] = csrf_token_key
+  local csrf_token_iv = self.session_cookie.data["csrf_token_iv"]
+  if not csrf_token_key or not csrf_token_iv then
+    if not csrf_token_key then
+      csrf_token_key = random_token(40)
+      self.session_cookie.data["csrf_token_key"] = csrf_token_key
+    end
+
+    if not csrf_token_iv then
+      csrf_token_iv = random_token(12)
+      self.session_cookie.data["csrf_token_iv"] = csrf_token_iv
+    end
+
     self.session_cookie:save()
   end
 
   local auth_data = (ngx.var.http_user_agent or "") .. (ngx.var.scheme or "")
-  local encrypted, iv = encryptor.encrypt(csrf_token_key, auth_data)
+  local encrypted, iv = encryptor.encrypt(csrf_token_key, auth_data, { iv = csrf_token_iv })
   return encrypted .. "|" .. iv
 end
 

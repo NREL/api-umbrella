@@ -1,316 +1,44 @@
-local Admin = require "api-umbrella.web-app.models.admin"
-local build_url = require "api-umbrella.utils.build_url"
-local cas = require "api-umbrella.web-app.utils.auth_external_cas"
+local auth_external = require "api-umbrella.web-app.utils.auth_external"
 local config = require "api-umbrella.proxy.models.file_config"
-local escape_html = require("lapis.html").escape
-local flash = require "api-umbrella.web-app.utils.flash"
-local is_empty = require("pl.types").is_empty
-local ldap = require "api-umbrella.web-app.utils.auth_external_ldap"
-local login_admin = require "api-umbrella.web-app.utils.login_admin"
-local oauth2 = require "api-umbrella.web-app.utils.auth_external_oauth2"
-local openid_connect = require "api-umbrella.web-app.utils.auth_external_openid_connect"
-local t = require("api-umbrella.web-app.utils.gettext").gettext
-local username_label = require "api-umbrella.web-app.utils.username_label"
-
-local _M = {}
-
-local function email_unverified_error(self)
-  flash.session(self, "danger", string.format(t([[The email address '%s' is not verified. Please <a href="%s">contact us</a> for further assistance.]]), escape_html(self.username or ""), escape_html(config["contact_url"] or "")), { html_safe = true })
-  return { redirect_to = build_url("/admin/login") }
-end
-
-local function mfa_required_error(self)
-  flash.session(self, "danger", string.format(t([[You must use multi-factor authentication to sign in. Please try again, or <a href="%s">contact us</a> for further assistance.]]), escape_html(config["contact_url"] or "")), { html_safe = true })
-  return { redirect_to = build_url("/admin/login") }
-end
-
-local function login(self, strategy_name, err)
-  self:init_session_cookie()
-  self.session_cookie:start()
-  self.session_cookie.data["access_token"] = nil
-  self.session_cookie.data["access_token_expiration"] = nil
-  self.session_cookie.data["authenticated"] = nil
-  self.session_cookie.data["enc_id_token"] = nil
-  self.session_cookie.data["id_token"] = nil
-  self.session_cookie.data["last_authenticated"] = nil
-  self.session_cookie.data["nonce"] = nil
-  self.session_cookie.data["original_url"] = nil
-  self.session_cookie.data["refresh_token"] = nil
-  self.session_cookie.data["state"] = nil
-  self.session_cookie.data["user"] = nil
-  self.session_cookie:save()
-
-  if err then
-    flash.session(self, "danger", string.format(t([[Could not authenticate you because "%s".]]), err))
-    return { redirect_to = build_url("/admin/login") }
-  end
-
-  if is_empty(self.username) then
-    flash.session(self, "danger", string.format(t([[Could not authenticate you because "%s".]]), t("Invalid credentials")))
-    return { redirect_to = build_url("/admin/login") }
-  end
-
-  local admin = Admin:find_for_login(self.username)
-  if admin then
-    return { redirect_to = login_admin(self, admin, strategy_name) }
-  else
-    flash.session(self, "danger", string.format(t([[The account for '%s' is not authorized to access the admin. Please <a href="%s">contact us</a> for further assistance.]]), escape_html(self.username or ""), escape_html(config["contact_url"] or "")), { html_safe = true })
-    return { redirect_to = build_url("/admin/login") }
-  end
-end
-
-function _M.cas_login()
-  return cas.authorize("cas")
-end
-
-function _M.cas_callback(self)
-  local userinfo, err = cas.userinfo(self, "cas")
-  if userinfo then
-    self.username = userinfo["user"]
-  end
-
-  return login(self, "cas", err)
-end
-
-function _M.developer_login(self)
-  if config["app_env"] ~= "development" then
-    return self.app.handle_404(self)
-  end
-
-  self.admin_params = {}
-  self.username_label = username_label()
-  return { render = require("api-umbrella.web-app.views.admin.auth_external.developer_login") }
-end
-
-function _M.developer_callback(self)
-  if config["app_env"] ~= "development" then
-    return self.app.handle_404(self)
-  end
-
-  local admin_params = _M.admin_params(self)
-  if admin_params then
-    local username = admin_params["username"]
-    if not is_empty(username) then
-      local admin = Admin:find({ username = username })
-      if admin and not admin:is_access_locked() then
-        self.username = username
-      else
-        self.current_admin = {
-          id = "00000000-0000-0000-0000-000000000000",
-          username = "admin",
-          superuser = true,
-        }
-        ngx.ctx.current_admin = self.current_admin
-
-        admin_params["superuser"] = true
-        assert(Admin:create(admin_params))
-        self.username = username
-      end
-    end
-  end
-
-  if self.username then
-    return login(self, "developer")
-  else
-    self.admin_params = admin_params
-    self.username_label = username_label()
-    return { render = require("api-umbrella.web-app.views.admin.auth_external.developer_login") }
-  end
-end
-
-function _M.facebook_login(self)
-  return oauth2.authorize(self, "facebook", "https://www.facebook.com/v2.11/dialog/oauth", {
-    scope = "email",
-  })
-end
-
-function _M.facebook_callback(self)
-  local userinfo, err = oauth2.userinfo(self, "facebook", {
-    token_endpoint = "https://graph.facebook.com/v2.11/oauth/access_token",
-    userinfo_endpoint = "https://graph.facebook.com/v2.11/me",
-    userinfo_query_params = {
-      fields = "email,verified",
-    },
-  })
-
-  if userinfo then
-    self.username = userinfo["email"]
-    if not userinfo["verified"] then
-      return email_unverified_error(self)
-    end
-  end
-
-  return login(self, "facebook", err)
-end
-
-function _M.github_login(self)
-  return oauth2.authorize(self, "github", "https://github.com/login/oauth/authorize", {
-    scope = "user:email",
-  })
-end
-
-function _M.github_callback(self)
-  local userinfo, err = oauth2.userinfo(self, "github", {
-    token_endpoint = "https://github.com/login/oauth/access_token",
-    userinfo_endpoint = "https://api.github.com/user/emails",
-  })
-
-  if userinfo then
-    for _, email in ipairs(userinfo) do
-      if email["primary"] then
-        self.username = email["email"]
-
-        if not email["verified"] then
-          return email_unverified_error(self)
-        end
-
-        break
-      end
-    end
-  end
-
-  return login(self, "github", err)
-end
-
-function _M.gitlab_login(self)
-  local res, err = openid_connect.authenticate(self, "gitlab", "/admins/auth/gitlab/callback", {
-    session_contents = {
-      user = true,
-    },
-  })
-  if not err and res and res["user"] then
-    self.username = res["user"]["email"]
-    if not res["user"]["email_verified"] then
-      return email_unverified_error(self)
-    end
-  end
-
-  return login(self, "gitlab", err)
-end
-
-function _M.google_login(self)
-  local res, err = openid_connect.authenticate(self, "google", "/admins/auth/google_oauth2/callback")
-  if not err and res and res["id_token"] then
-    self.username = res["id_token"]["email"]
-    if not res["id_token"]["email_verified"] then
-      return email_unverified_error(self)
-    end
-  end
-
-  return login(self, "google", err)
-end
-
-function _M.login_gov_login(self)
-  local res, err = openid_connect.authenticate(self, "login.gov", "/admins/auth/login.gov/callback")
-  if not err and res and res["id_token"] then
-    self.username = res["id_token"]["email"]
-    if not res["id_token"]["email_verified"] then
-      return email_unverified_error(self)
-    end
-  end
-
-  return login(self, "login.gov", err)
-end
-
-function _M.ldap_login(self)
-  self.config = config
-  self.username_label = username_label()
-  if not self.admin_params then
-    self.admin_params = {}
-  end
-
-  if config["app_env"] == "test" and ngx.var.cookie_test_mock_userinfo then
-    return _M.ldap_callback(self)
-  end
-
-  return { render = require("api-umbrella.web-app.views.admin.auth_external.ldap_login") }
-end
-
-function _M.ldap_callback(self)
-  local admin_params = _M.admin_params(self)
-  local options = config["web"]["admin"]["auth_strategies"]["ldap"]["options"]
-  local userinfo = ldap.userinfo(admin_params, options)
-
-  if userinfo then
-    self.username = userinfo[options["uid"]]
-  end
-  if self.username then
-    return login(self, "ldap")
-  else
-    self.admin_params = admin_params
-    self.username_label = username_label()
-    flash.now(self, "danger", string.format(t([[Could not authenticate you because "%s".]]), t("Invalid credentials")))
-    return _M.ldap_login(self)
-  end
-end
-
-function _M.max_gov_login()
-  return cas.authorize("max.gov")
-end
-
-function _M.max_gov_callback(self)
-  local userinfo, err = cas.userinfo(self, "max.gov")
-  if userinfo then
-    self.username = userinfo["user"]
-  end
-
-  if config["web"]["admin"]["auth_strategies"]["max.gov"]["require_mfa"] then
-    if not userinfo or not userinfo["max_security_level"] or not string.find(userinfo["max_security_level"], "securePlus2") then
-      return mfa_required_error(self)
-    end
-  end
-
-  return login(self, "max.gov", err)
-end
-
-function _M.admin_params(self)
-  local params = {}
-  if self.params and type(self.params["admin"]) == "table" then
-    local input = self.params["admin"]
-    params = {
-      username = input["username"],
-      password = input["password"],
-    }
-  end
-
-  return params
-end
 
 return function(app)
   if config["web"]["admin"]["auth_strategies"]["_enabled"]["cas"] then
-    app:get("/admins/auth/cas(.:format)", _M.cas_login)
-    app:get("/admins/auth/cas/callback(.:format)", _M.cas_callback)
+    app:get("/admins/auth/cas(.:format)", auth_external["cas"].login)
+    app:get("/admins/auth/cas/callback(.:format)", auth_external["cas"].callback)
   end
   if config["app_env"] == "development" then
-    app:get("/admins/auth/developer(.:format)", _M.developer_login)
-    app:post("/admins/auth/developer/callback(.:format)", _M.developer_callback)
+    app:get("/admins/auth/developer(.:format)", auth_external["developer"].login)
+    app:post("/admins/auth/developer/callback(.:format)", auth_external["developer"].callback)
   end
   if config["web"]["admin"]["auth_strategies"]["_enabled"]["facebook"] then
-    app:get("/admins/auth/facebook(.:format)", _M.facebook_login)
-    app:get("/admins/auth/facebook/callback(.:format)", _M.facebook_callback)
+    app:get("/admins/auth/facebook(.:format)", auth_external["facebook"].login)
+    app:get("/admins/auth/facebook/callback(.:format)", auth_external["facebook"].callback)
   end
   if config["web"]["admin"]["auth_strategies"]["_enabled"]["github"] then
-    app:get("/admins/auth/github(.:format)", _M.github_login)
-    app:get("/admins/auth/github/callback(.:format)", _M.github_callback)
+    app:get("/admins/auth/github(.:format)", auth_external["github"].login)
+    app:get("/admins/auth/github/callback(.:format)", auth_external["github"].callback)
   end
   if config["web"]["admin"]["auth_strategies"]["_enabled"]["gitlab"] then
-    app:get("/admins/auth/gitlab(.:format)", _M.gitlab_login)
-    app:get("/admins/auth/gitlab/callback(.:format)", _M.gitlab_login)
+    app:get("/admins/auth/gitlab(.:format)", auth_external["gitlab"].login)
+    app:get("/admins/auth/gitlab/callback(.:format)", auth_external["gitlab"].login)
+    app:get("/admins/auth/gitlab/post-logout(.:format)", auth_external["gitlab"].post_logout)
   end
   if config["web"]["admin"]["auth_strategies"]["_enabled"]["google"] then
-    app:get("/admins/auth/google_oauth2(.:format)", _M.google_login)
-    app:get("/admins/auth/google_oauth2/callback(.:format)", _M.google_login)
+    app:get("/admins/auth/google_oauth2(.:format)", auth_external["google"].login)
+    app:get("/admins/auth/google_oauth2/callback(.:format)", auth_external["google"].login)
+    app:get("/admins/auth/google_oauth2/post-logout(.:format)", auth_external["google"].post_logout)
   end
   if config["web"]["admin"]["auth_strategies"]["_enabled"]["ldap"] then
-    app:get("/admins/auth/ldap(.:format)", _M.ldap_login)
-    app:post("/admins/auth/ldap/callback(.:format)", _M.ldap_callback)
+    app:get("/admins/auth/ldap(.:format)", auth_external["ldap"].login)
+    app:post("/admins/auth/ldap/callback(.:format)", auth_external["ldap"].callback)
   end
   if config["web"]["admin"]["auth_strategies"]["_enabled"]["login.gov"] then
-    app:get("/admins/auth/login.gov(.:format)", _M.login_gov_login)
-    app:get("/admins/auth/login.gov/callback(.:format)", _M.login_gov_login)
+    app:get("/admins/auth/login.gov(.:format)", auth_external["login.gov"].login)
+    app:get("/admins/auth/login.gov/callback(.:format)", auth_external["login.gov"].login)
+    app:get("/admins/auth/login.gov/post-logout(.:format)", auth_external["login.gov"].post_logout)
   end
   if config["web"]["admin"]["auth_strategies"]["_enabled"]["max.gov"] then
-    app:get("/admins/auth/max.gov(.:format)", _M.max_gov_login)
-    app:get("/admins/auth/max.gov/callback(.:format)", _M.max_gov_callback)
+    app:get("/admins/auth/max.gov(.:format)", auth_external["max.gov"].login)
+    app:get("/admins/auth/max.gov/callback(.:format)", auth_external["max.gov"].callback)
   end
 end

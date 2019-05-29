@@ -1,3 +1,4 @@
+local auth_external_path = require "api-umbrella.web-app.utils.auth_external_path"
 local build_url = require "api-umbrella.utils.build_url"
 local config = require "api-umbrella.proxy.models.file_config"
 local deep_merge_overwrite_arrays = require "api-umbrella.utils.deep_merge_overwrite_arrays"
@@ -8,15 +9,6 @@ local random_token = require "api-umbrella.utils.random_token"
 local t = require("api-umbrella.web-app.utils.gettext").gettext
 
 local _M = {}
-
-local function redirect_uri(strategy_name)
-  local url_name = strategy_name
-  if strategy_name == "google" then
-    url_name = "google_oauth2"
-  end
-
-  return build_url("/admins/auth/" .. url_name .. "/callback")
-end
 
 local function get_token(httpc, code, strategy_name, options)
   if is_empty(code) then
@@ -38,7 +30,7 @@ local function get_token(httpc, code, strategy_name, options)
       code = code,
       client_id = config["web"]["admin"]["auth_strategies"][strategy_name]["client_id"],
       client_secret = config["web"]["admin"]["auth_strategies"][strategy_name]["client_secret"],
-      redirect_uri = redirect_uri(strategy_name),
+      redirect_uri = build_url(auth_external_path(strategy_name, "/callback")),
       grant_type = "authorization_code",
     }),
     query = options["token_query_params"],
@@ -101,7 +93,7 @@ function _M.authorize(self, strategy_name, url, params)
   self.session_cookie.data["oauth2_state"] = state
   self.session_cookie:save()
 
-  local callback_url = redirect_uri(strategy_name)
+  local callback_url = build_url(auth_external_path(strategy_name, "/callback"))
   local redirect = url .. "?" .. ngx.encode_args(deep_merge_overwrite_arrays({
     client_id = config["web"]["admin"]["auth_strategies"][strategy_name]["client_id"],
     response_type = "code",
