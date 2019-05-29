@@ -54,7 +54,7 @@ local function define_view_helpers(self)
         provider["name"] = t("LDAP")
       end
     elseif strategy == "login.gov" then
-      provider["name"] = t("Login.gov")
+      provider["name"] = t("login.gov")
     elseif strategy == "max.gov" then
       provider["name"] = t("MAX.gov")
     elseif strategy == "local" then

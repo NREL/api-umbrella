@@ -67,7 +67,7 @@ class Test::AdminUi::Login::TestExternalProviders < Minitest::Capybara::Test
     buttons = page.all(".external-login .btn").map { |btn| btn.text }
     assert_equal([
       "Sign in with Facebook",
-      "Sign in with Login.gov",
+      "Sign in with login.gov",
       "Sign in with MAX.gov",
       "Sign in with GitHub",
       "Sign in with GitLab",
@@ -201,7 +201,7 @@ class Test::AdminUi::Login::TestExternalProviders < Minitest::Capybara::Test
     },
     {
       :provider => :login_gov,
-      :login_button_text => "Sign in with Login.gov",
+      :login_button_text => "Sign in with login.gov",
       :mock_userinfo => MultiJson.dump({
         "id_token" => {
           "email" => "{{username}}",
