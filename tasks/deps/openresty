@@ -2,20 +2,15 @@
 
 ngx_http_geoip2_module_version="3.2"
 ngx_http_geoip2_module_hash="2e60d26460d178068f7a4e9a4e64990a"
-openresty_version="1.13.6.2"
-openresty_hash="d95bc4bbe15e4b045a0593b4ecc0db38"
-openssl_version="1.0.2r"
-openssl_hash="ae51d08bba8a83958e894946f15303ff894d75c2b8bbd44a852b64e3fe11d0d6"
-pcre_version="8.43"
-pcre_hash="636222e79e392c3d95dcc545f24f98c4"
+openresty_version="1.15.8.1"
+openresty_hash="d614e17360e3a805ff94edbf7037221c"
+openssl_version="1.1.0k"
+openssl_hash="efa4965f4f773574d6cbda1cf874dbbe455ab1c0d4f906115f867d30444470b1"
 
 set -e -u -x
 source ./tasks/helpers.sh
 
 task_working_dir
-
-download "https://ftp.pcre.org/pub/pcre/pcre-$pcre_version.tar.bz2" "md5" "$pcre_hash"
-extract_download "pcre-$pcre_version.tar.bz2"
 
 download "https://www.openssl.org/source/openssl-$openssl_version.tar.gz" "sha256" "$openssl_hash"
 extract_download "openssl-$openssl_version.tar.gz"
@@ -26,30 +21,68 @@ extract_download "openresty-$openresty_version.tar.gz"
 download "https://github.com/leev/ngx_http_geoip2_module/archive/$ngx_http_geoip2_module_version.tar.gz" "md5" "$ngx_http_geoip2_module_hash"
 extract_download "$ngx_http_geoip2_module_version.tar.gz"
 
+(
+  cd "openssl-$openssl_version"
+  patch -p1 < "../openresty-$openresty_version/patches/openssl-1.1.0d-sess_set_get_cb_yield.patch"
+  patch -p1 < "../openresty-$openresty_version/patches/openssl-1.1.0j-parallel_build_fix.patch"
+  ./config \
+      no-threads \
+      shared \
+      zlib \
+      -g \
+      enable-ssl3 \
+      enable-ssl3-method \
+      --prefix="$INSTALL_PREFIX_EMBEDDED/openresty/openssl" \
+      --libdir=lib
+  make -j"$NPROC"
+  make install_sw install_ssldirs DESTDIR="$STAGE_DIR"
+)
+
 cd "openresty-$openresty_version"
 patch -p1 < "$SOURCE_DIR/build/patches/openresty-opm.patch"
 patch -p1 < "$SOURCE_DIR/build/patches/openresty-cli.patch"
 
 ./configure \
   --prefix="$INSTALL_PREFIX_EMBEDDED/openresty" \
-  --with-cc-opt="-I$STAGE_EMBEDDED_DIR/include" \
-  --with-ld-opt="-L$STAGE_EMBEDDED_DIR/lib" \
+  --with-cc-opt="-I$STAGE_EMBEDDED_DIR/openresty/openssl/include -I$STAGE_EMBEDDED_DIR/include" \
+  --with-ld-opt="-L$STAGE_EMBEDDED_DIR/openresty/openssl/lib -L$STAGE_EMBEDDED_DIR/lib" \
   --error-log-path=stderr \
   --with-ipv6 \
-  --with-openssl="../openssl-$openssl_version" \
-  --with-pcre="../pcre-$pcre_version" \
-  --with-pcre-opt=-g \
-  --with-pcre-conf-opt="--disable-cpp --enable-jit --enable-utf --enable-unicode-properties" \
   --with-pcre-jit \
-  --with-http_gunzip_module \
-  --with-http_gzip_static_module \
-  --with-http_realip_module \
-  --with-http_ssl_module \
+  --without-http_rds_json_module \
+  --without-http_rds_csv_module \
+  --without-lua_rds_parser \
+  --with-stream \
+  --with-stream_ssl_module \
+  --with-stream_ssl_preread_module \
+  --with-http_v2_module \
+  --without-mail_pop3_module \
+  --without-mail_imap_module \
+  --without-mail_smtp_module \
   --with-http_stub_status_module \
-  --add-module="../ngx_http_geoip2_module-$ngx_http_geoip2_module_version"
+  --with-http_realip_module \
+  --with-http_addition_module \
+  --with-http_auth_request_module \
+  --with-http_secure_link_module \
+  --with-http_random_index_module \
+  --with-http_gzip_static_module \
+  --with-http_sub_module \
+  --with-http_dav_module \
+  --with-http_flv_module \
+  --with-http_mp4_module \
+  --with-http_gunzip_module \
+  --with-threads \
+  --with-luajit-xcflags="-DLUAJIT_NUMMODE=2 -DLUAJIT_ENABLE_LUA52COMPAT" \
+  --add-module="../ngx_http_geoip2_module-$ngx_http_geoip2_module_version" \
+  -j"$NPROC"
 make -j"$NPROC"
 make install DESTDIR="$STAGE_DIR"
 chrpath -d "$STAGE_EMBEDDED_DIR/openresty/nginx/sbin/nginx"
+(
+  cd "$STAGE_EMBEDDED_DIR/openresty/bin"
+  ln -snf ../nginx/sbin/nginx ./openresty
+)
+mkdir -p "$STAGE_EMBEDDED_DIR/bin"
 (
   cd "$STAGE_EMBEDDED_DIR/bin"
   ln -snf ../openresty/bin/opm ./opm
@@ -57,6 +90,9 @@ chrpath -d "$STAGE_EMBEDDED_DIR/openresty/nginx/sbin/nginx"
   ln -snf ../openresty/luajit/bin/luajit ./luajit
 )
 mkdir -p "$STAGE_EMBEDDED_DIR/sbin"
-(cd "$STAGE_EMBEDDED_DIR/sbin" && ln -snf ../openresty/nginx/sbin/nginx ./nginx)
+(
+  cd "$STAGE_EMBEDDED_DIR/sbin"
+  ln -snf ../openresty/nginx/sbin/nginx ./nginx
+)
 
 stamp

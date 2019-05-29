@@ -13,6 +13,8 @@ export default Route.extend(ApplicationRouteMixin, {
   // disappears after the server-side login redirect. So instead, we'll store
   // just the string value of the attempted transition and persist it in the
   // session store so it's available after the server-side login.
+  //
+  // eslint-disable-next-line ember/no-observers
   attemptedTransitionChange: observer('session.attemptedTransition', function() {
     const attemptedTransition = this.get('session.attemptedTransition');
     if(attemptedTransition) {

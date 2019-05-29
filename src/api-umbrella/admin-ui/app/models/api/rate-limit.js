@@ -46,6 +46,7 @@ export default DS.Model.extend({
     }
   },
 
+  // eslint-disable-next-line ember/no-observers
   durationInUnitsDidChange: observer('durationInUnits', 'durationUnits', function() {
     if(this.durationUnits) {
       let inUnits = parseInt(this.durationInUnits, 10);

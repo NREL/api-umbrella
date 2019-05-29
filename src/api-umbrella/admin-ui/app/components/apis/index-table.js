@@ -109,6 +109,7 @@ export default Component.extend({
     });
   },
 
+  // eslint-disable-next-line ember/no-observers
   handleReorderChange: observer('reorderActive', function() {
     if(this.reorderActive) {
       this.$().find('table').addClass('reorder-active');

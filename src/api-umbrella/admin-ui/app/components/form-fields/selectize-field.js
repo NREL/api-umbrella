@@ -43,7 +43,7 @@ export default BaseField.extend({
     this.selectize.$control_input.attr('data-selectize-control-id', controlId);
   },
 
-  // eslint-disable-next-line ember/no-on-calls-in-components
+  // eslint-disable-next-line ember/no-on-calls-in-components, ember/no-observers
   defaultOptionsDidChange: on('init', observer('options.@each', function() {
     this.set('defaultOptions', this.options.map((item) => {
       return {
