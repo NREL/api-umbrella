@@ -11,7 +11,7 @@ export default Component.extend({
     return this.labelForId || this.inputId;
   }),
 
-  // eslint-disable-next-line ember/no-on-calls-in-components
+  // eslint-disable-next-line ember/no-on-calls-in-components, ember/no-observers
   fieldNameDidChange: on('init', observer('fieldName', function() {
     let fieldName = this.fieldName;
     let fieldValidations = 'model.validations.attrs.' + fieldName;
@@ -49,6 +49,8 @@ export default Component.extend({
 
   // If the page is submitted, show any errors on the page (even if the fields
   // haven't been focused and then unfocused yet).
+  //
+  // eslint-disable-next-line ember/no-observers
   showErrorsOnSubmit: observer('model.clientErrors', function() {
     this.set('canShowErrors', true);
   }),
@@ -60,6 +62,8 @@ export default Component.extend({
   // times. Without this, errors would show up immediately the second time the
   // modal is opened if all the fields were unfocused the first time the modal
   // was opened.
+  //
+  // eslint-disable-next-line ember/no-observers
   hideErrorsOnModelChange: observer('model', function() {
     this.set('canShowErrors', false);
   }),

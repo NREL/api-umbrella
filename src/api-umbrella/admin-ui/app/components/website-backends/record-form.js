@@ -13,6 +13,7 @@ export default Component.extend(Save, {
     ];
   },
 
+  // eslint-disable-next-line ember/no-observers
   changeDefaultPort: observer('model.backendProtocol', function() {
     let protocol = this.get('model.backendProtocol');
     let port = parseInt(this.get('model.serverPort'), 10);

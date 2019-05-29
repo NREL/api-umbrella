@@ -176,6 +176,7 @@ export default Component.extend({
     return `/api-umbrella/v1/apis.csv?${params}`;
   }),
 
+  // eslint-disable-next-line ember/no-observers
   handleReorderChange: observer('reorderActive', function() {
     if(this.reorderActive) {
       this.$().find('table').addClass('reorder-active');

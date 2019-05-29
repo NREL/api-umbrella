@@ -79,7 +79,7 @@ export default Component.extend({
     }
   },
 
-  // eslint-disable-next-line ember/no-on-calls-in-components
+  // eslint-disable-next-line ember/no-on-calls-in-components, ember/no-observers
   refreshMap: on('init', observer('allQueryParamValues.region', function() {
     let currentRegion = this.get('allQueryParamValues.region');
     $.get('/admin/maps/' + currentRegion + '.json', (geojson) => {
@@ -110,7 +110,7 @@ export default Component.extend({
     });
   })),
 
-  // eslint-disable-next-line ember/no-on-calls-in-components
+  // eslint-disable-next-line ember/no-on-calls-in-components, ember/no-observers
   refreshData: on('init', observer('regions', function() {
     let currentRegion = this.get('allQueryParamValues.region');
 

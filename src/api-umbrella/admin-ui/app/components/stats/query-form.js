@@ -301,6 +301,7 @@ export default Component.extend({
     }
   },
 
+  // eslint-disable-next-line ember/no-observers
   updateQueryBuilderRules: observer('query', function() {
     let query = this.query;
     let rules;
@@ -315,6 +316,7 @@ export default Component.extend({
     }
   }),
 
+  // eslint-disable-next-line ember/no-observers
   updateDateRange: observer('allQueryParamValues.start_at', 'allQueryParamValues.end_at', function() {
     let start = moment(this.get('allQueryParamValues.start_at'), 'YYYY-MM-DD');
     let end = moment(this.get('allQueryParamValues.end_at'), 'YYYY-MM-DD');

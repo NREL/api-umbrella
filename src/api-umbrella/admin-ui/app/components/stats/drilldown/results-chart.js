@@ -19,7 +19,7 @@ export default Component.extend({
     $(window).on('resize', debounce(this.chart.resize, 100));
   },
 
-  // eslint-disable-next-line ember/no-on-calls-in-components
+  // eslint-disable-next-line ember/no-on-calls-in-components, ember/no-observers
   refreshData: on('init', observer('hitsOverTime', function() {
     let data = []
     let labels = [];

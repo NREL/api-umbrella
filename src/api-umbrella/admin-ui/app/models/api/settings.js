@@ -119,6 +119,7 @@ export default DS.Model.extend({
     return options;
   }),
 
+  // eslint-disable-next-line ember/no-observers
   passApiKeyDidChange: observer('passApiKey.@each', function() {
     let options = this.passApiKey;
     this.set('passApiKeyHeader', options.includes('header'));

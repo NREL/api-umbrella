@@ -52,6 +52,7 @@ export default Component.extend({
     });
   },
 
+  // eslint-disable-next-line ember/no-observers
   refreshData: observer('results', function() {
     let table = this.$().find('table').dataTable().api();
     table.clear();

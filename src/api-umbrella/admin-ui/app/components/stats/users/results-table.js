@@ -85,6 +85,7 @@ export default Component.extend({
     });
   },
 
+  // eslint-disable-next-line ember/no-observers
   refreshData: observer('backendQueryParamValues', function() {
     this.$().find('table').DataTable().draw();
   }),
