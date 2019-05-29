@@ -126,6 +126,7 @@ function _M.create(self)
     return { redirect_to = login_admin(self, admin, "local") }
   else
     self.admin_params = admin_params
+    self.config = config
     define_view_helpers(self)
     if config["web"]["admin"]["username_is_email"] then
       flash.now(self, "warning", t("Invalid email or password."))
