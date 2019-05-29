@@ -347,9 +347,10 @@ tasks:
     method: checksum
 
   app-deps:lua:icu-date-ffi:
+    deps:
+      - deps:icu4c
+      - deps:luarocks
     cmds:
-      - task: deps:icu4c
-      - task: deps:luarocks
       - ./tasks/app-deps/lua/icu-date-ffi
     sources:
       - ./build/work/stamp/deps/icu4c
@@ -682,7 +683,6 @@ tasks:
 
   app-deps:
     cmds:
-      - task: build-deps:yarn
       - task: app-deps:admin-ui:yarn
       - task: app-deps:lua:argparse
       - task: app-deps:lua:bcrypt
@@ -765,9 +765,10 @@ tasks:
     method: checksum
 
   app:static-site:
+    deps:
+      - build-deps:nodejs
+      - build-deps:bundler
     cmds:
-      - task: build-deps:nodejs
-      - task: build-deps:bundler
       - ./tasks/app/static-site
     sources:
       - ./build/work/stamp/build-deps/nodejs
@@ -930,9 +931,10 @@ tasks:
       - task: test-deps:unbound
 
   lint:js:
+    deps:
+      - app-deps:admin-ui:yarn
+      - app-deps:web-app:yarn
     cmds:
-      - task: app-deps:admin-ui:yarn
-      - task: app-deps:web-app:yarn
       - ./tasks/lint/js
 
   lint:lua:

@@ -61,6 +61,52 @@ if [[ "$NPROC" -gt 4 ]]; then
   NPROC=4
 fi
 
+# Lock build tasks so they don't run in parallel. This prevents race conditions
+# with task dependencies trying to execute concurrently.
+#
+# This is a workaround until Task better supports not running the same
+# dependency concurrently:
+# https://github.com/go-task/task/issues/53#issuecomment-405881428
+lock() {
+  set +x
+  stamp_path="$WORK_DIR/stamp/$TASK_SUBPATH"
+  pre_lock_stamp_modified=$(stat -c %y "$stamp_path" 2> /dev/null || echo -n "")
+
+  lock_path="$WORK_DIR/locks/$TASK_SUBPATH"
+  lock_dir=$(dirname "$lock_path")
+  mkdir -p "$lock_dir"
+  exec 200>"$lock_path"
+  echo "Locking task '$TASK_SUBPATH'"
+  set -x
+  while ! flock -x -w 60 200; do
+    echo "Still waiting to acquire lock for task '$TASK_SUBPATH'"
+  done
+  set +x
+
+  post_lock_stamp_modified=$(stat -c %y "$stamp_path" 2> /dev/null || echo -n "")
+  echo "pre_lock_stamp_modified: $pre_lock_stamp_modified"
+  echo "post_lock_stamp_modified: $post_lock_stamp_modified"
+
+  # Since this process may have been locked while another process was running
+  # this same task, perform a sanity check to see if another task completed
+  # this work, in which case we can skip work.
+  if [ "$pre_lock_stamp_modified" != "$post_lock_stamp_modified" ]; then
+    echo "Skipping task '$TASK_SUBPATH' since another process ran it while this processes was acquiring a lock"
+    set -x
+    unlock
+    exit 0
+  fi
+
+  set -x
+}
+
+unlock() {
+  set +x
+  echo "Unlocking task '$TASK_SUBPATH'"
+  exec 200>&-
+  set -x
+}
+
 # Cleanup any files not in the special "_persist" directory before and after
 # running tasks. This ensures clean builds if a task is being executed (since
 # we assume the task script is only being executed if the checksum has
@@ -90,6 +136,8 @@ clean_task_working_dir() {
 # For example, ./tasks/deps/openresty's working directory would be
 # ./build/work/tasks/deps/openresty
 task_working_dir() {
+  lock
+
   set +x
   dir="$WORK_DIR/tasks/$TASK_SUBPATH"
   set -x
@@ -137,6 +185,8 @@ stamp() {
   openssl rand -hex 64 >> "$stamp_path"
 
   set -x
+
+  unlock
 }
 
 download() {
