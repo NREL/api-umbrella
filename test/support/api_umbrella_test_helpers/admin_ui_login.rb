@@ -9,13 +9,13 @@ module ApiUmbrellaTestHelpers
 
     def assert_login_permitted(login_button_text, admin)
       visit "/admin/"
-      click_link(login_button_text)
+      click_button(login_button_text)
       assert_link("my_account_nav_link", :href => /#{admin.id}/, :visible => :all)
     end
 
     def assert_login_forbidden(login_button_text, error_text)
       visit "/admin/"
-      click_link(login_button_text)
+      click_button(login_button_text)
       assert_text(error_text)
       refute_link("my_account_nav_link")
     end

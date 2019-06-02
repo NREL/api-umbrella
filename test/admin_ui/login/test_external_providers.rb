@@ -58,13 +58,13 @@ class Test::AdminUi::Login::TestExternalProviders < Minitest::Capybara::Test
     refute_field("Password")
     refute_field("Remember me", :visible => :all)
     refute_link("Forgot your password?")
-    refute_button("Sign in")
+    refute_button(:text => /\ASign in\z/)
 
     # External login links
     assert_text("Sign in with")
 
     # Order matches enabled array order.
-    buttons = page.all(".external-login .btn").map { |btn| btn.text }
+    buttons = page.all(".login-container .btn").map { |btn| btn.text }
     assert_equal([
       "Sign in with Facebook",
       "Sign in with login.gov",
@@ -95,7 +95,7 @@ class Test::AdminUi::Login::TestExternalProviders < Minitest::Capybara::Test
   end
 
   def test_external_auth_redirect_wildcard_host
-    response = Typhoeus.get("https://127.0.0.1:9081/admins/auth/google_oauth2", keyless_http_options.deep_merge({
+    response = Typhoeus.post("https://127.0.0.1:9081/admins/auth/google_oauth2", keyless_http_options.deep_merge(csrf_session).deep_merge({
       :headers => {
         "Host" => "foobar.example.com",
       },
@@ -252,6 +252,24 @@ class Test::AdminUi::Login::TestExternalProviders < Minitest::Capybara::Test
     if(options[:mock_userinfo_unverified])
       define_method("test_#{options.fetch(:provider)}_unverified_email") do
         assert_login_unverified_email_login(options)
+      end
+    end
+
+    define_method("test_#{options.fetch(:provider)}_csrf_protection") do
+      response = Typhoeus.get("https://127.0.0.1:9081/admins/auth/#{options.fetch(:provider)}", keyless_http_options)
+      assert_response_code(404, response)
+
+      response = Typhoeus.get("https://127.0.0.1:9081/admins/auth/#{options.fetch(:provider)}", keyless_http_options.deep_merge(csrf_session))
+      assert_response_code(404, response)
+
+      response = Typhoeus.post("https://127.0.0.1:9081/admins/auth/#{options.fetch(:provider)}", keyless_http_options)
+      assert_response_code(422, response)
+
+      response = Typhoeus.post("https://127.0.0.1:9081/admins/auth/#{options.fetch(:provider)}", keyless_http_options.deep_merge(csrf_session))
+      if options.fetch(:provider) == :ldap
+        assert_response_code(200, response)
+      else
+        assert_response_code(302, response)
       end
     end
   end
