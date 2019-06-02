@@ -10,28 +10,30 @@ class Test::AdminUi::Login::TestLdapProvider < Minitest::Capybara::Test
     super
     setup_server
     Admin.delete_all
-    once_per_class_setup do
-      override_config_set({
-        :web => {
-          :admin => {
-            :username_is_email => false,
-            :auth_strategies => {
-              :enabled => [
-                "ldap",
-              ],
-              :ldap => {
-                :options => {
-                  :title => "Planet Express",
-                  :host => "127.0.0.1",
-                  :port => $config["openldap"]["port"],
-                  :base => "dc=planetexpress,dc=com",
-                  :uid => "uid",
-                },
+
+    @default_config = {
+      "web" => {
+        "admin" => {
+          "username_is_email" => false,
+          "auth_strategies" => {
+            "enabled" => [
+              "ldap",
+            ],
+            "ldap" => {
+              "options" => {
+                "title" => "Planet Express",
+                "host" => "127.0.0.1",
+                "port" => $config["openldap"]["port"],
+                "base" => "dc=planetexpress,dc=com",
+                "uid" => "uid",
               },
             },
           },
         },
-      }, ["--router", "--web"])
+      },
+    }
+    once_per_class_setup do
+      override_config_set(@default_config, ["--router", "--web"])
     end
   end
 
@@ -92,12 +94,31 @@ class Test::AdminUi::Login::TestLdapProvider < Minitest::Capybara::Test
   end
 
   def test_separate_login_page_used_when_non_exclusive_provider
-    admin = FactoryBot.create(:admin, :username => "hermes", :email => nil, :encrypted_password => nil)
-    visit "/admins/auth/ldap"
-    assert_text("Sign in with Planet Express")
-    fill_in "Planet Express Username", :with => "hermes"
-    fill_in "Planet Express Password", :with => "hermes"
-    click_button "Sign in"
-    assert_logged_in(admin)
+    override_config(@default_config.deep_merge({
+      "web" => {
+        "admin" => {
+          "auth_strategies" => {
+            "enabled" => [
+              "local",
+              "ldap",
+            ],
+          },
+        },
+      },
+    }), ["--router", "--web"]) do
+      admin = FactoryBot.create(:admin, :username => "hermes", :email => nil, :encrypted_password => nil)
+      visit "/admin/login"
+      assert_field "Username"
+      assert_field "Password"
+      refute_field "Planet Express Username"
+      refute_field "Planet Express Password"
+      click_button "Sign in with Planet Express"
+      assert_selector "h1", :text => "Sign in with Planet Express"
+      assert_match(%r{/admins/auth/ldap\z}, page.current_url)
+      fill_in "Planet Express Username", :with => "hermes"
+      fill_in "Planet Express Password", :with => "hermes"
+      click_button "Sign in"
+      assert_logged_in(admin)
+    end
   end
 end

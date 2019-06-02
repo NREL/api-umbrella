@@ -16,6 +16,15 @@ GIT
       omniauth (~> 1.2)
 
 GIT
+  remote: https://github.com/GUI/omniauth-rails_csrf_protection.git
+  revision: f2c092fe18ed482955e09bbc6e0edab5d32276dd
+  branch: rails-42
+  specs:
+    omniauth-rails_csrf_protection (0.1.0)
+      actionpack (>= 4.2)
+      omniauth (>= 1.3.1)
+
+GIT
   remote: https://github.com/heroku/rails_stdout_logging.git
   revision: b21ed3a29748d2fe62ef1f4fe6bda34294a42dc9
   specs:
@@ -351,6 +360,7 @@ DEPENDENCIES
   omniauth-github (~> 1.3.0)
   omniauth-gitlab (~> 2.0.0)
   omniauth-google-oauth2 (~> 0.6.0)
+  omniauth-rails_csrf_protection (~> 0.1.0)!
   premailer-rails (~> 1.10.2)
   public_suffix (~> 3.0.3)
   puma (~> 3.12.0)

@@ -1,6 +1,7 @@
 require_relative "../test_helper"
 
 class Test::Proxy::TestForwardedPortHeaders < Minitest::Test
+  include ApiUmbrellaTestHelpers::AdminAuth
   include ApiUmbrellaTestHelpers::Setup
   include Minitest::Hooks
 
@@ -503,11 +504,11 @@ class Test::Proxy::TestForwardedPortHeaders < Minitest::Test
   end
 
   def admin_oauth2_https_request(headers = {})
-    Typhoeus.get("https://127.0.0.1:9081/admins/auth/google_oauth2", keyless_http_options.deep_merge(:headers => headers))
+    Typhoeus.post("https://127.0.0.1:9081/admins/auth/google_oauth2", keyless_http_options.deep_merge(csrf_session).deep_merge(:headers => headers))
   end
 
   def admin_oauth2_http_request(headers = {})
-    Typhoeus.get("http://127.0.0.1:9080/admins/auth/google_oauth2", keyless_http_options.deep_merge(:headers => headers))
+    Typhoeus.post("http://127.0.0.1:9080/admins/auth/google_oauth2", keyless_http_options.deep_merge(csrf_session).deep_merge(:headers => headers))
   end
 
   def api_backend_redirect_http(headers = {})

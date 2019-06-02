@@ -8,7 +8,9 @@
       </div>
       <button class="btn btn-primary" disabled="disabled"><i class="fa fa-<%= provider %>" aria-hidden="true"></i><span>Sign in with <%= t(provider, :scope => [:omniauth_providers]) %></span></button>
     <% else %>
-      <%= link_to %(<i class="fa fa-#{provider}" aria-hidden="true"></i><span>Sign in with #{t(provider, :scope => [:omniauth_providers])}</span>).html_safe, omniauth_authorize_path(resource_name, provider), :class => "btn btn-primary" %>
+      <%= button_to omniauth_authorize_path(resource_name, provider), :class => "btn btn-primary" do %>
+        <i class="fa fa-<%= provider %>" aria-hidden="true"></i><span>Sign in with <%= t(provider, :scope => [:omniauth_providers]) %></span>
+      <% end %>
     <% end %>
   </div>
 <% end -%>
