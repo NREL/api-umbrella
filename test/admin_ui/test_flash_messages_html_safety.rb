@@ -51,11 +51,9 @@ class Test::AdminUi::TestFlashMessagesHtmlSafety < Minitest::Capybara::Test
       },
     })
 
-    response = Typhoeus.get("https://127.0.0.1:9081/admins/auth/google_oauth2", keyless_http_options.deep_merge({
-      :headers => {
-        "Cookie" => "test_mock_userinfo=#{CGI.escape(Base64.strict_encode64(data))}",
-      },
-    }))
+    http_opts = keyless_http_options.deep_merge(csrf_session)
+    http_opts[:headers]["Cookie"] = [http_opts.fetch(:headers).fetch("Cookie"), "test_mock_userinfo=#{CGI.escape(Base64.strict_encode64(data))}"].join("; ")
+    response = Typhoeus.post("https://127.0.0.1:9081/admins/auth/google_oauth2", http_opts)
     assert_response_code(302, response)
     assert_equal("https://127.0.0.1:9081/admins/auth/google_oauth2/callback", response.headers["Location"])
 
