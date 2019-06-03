@@ -32,7 +32,7 @@ class Test::AdminUi::Login::TestLdapProvider < Minitest::Capybara::Test
       },
     }
     once_per_class_setup do
-      override_config_set(@default_config, ["--router", "--web"])
+      override_config_set(@default_config)
     end
   end
 
@@ -104,7 +104,7 @@ class Test::AdminUi::Login::TestLdapProvider < Minitest::Capybara::Test
           },
         },
       },
-    }), ["--router", "--web"]) do
+    })) do
       admin = FactoryBot.create(:admin, :username => "hermes", :email => nil, :password_hash => nil)
       visit "/admin/login"
       assert_field "Username"

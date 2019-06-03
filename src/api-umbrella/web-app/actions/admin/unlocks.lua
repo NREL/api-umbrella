@@ -1,5 +1,6 @@
 local config = require "api-umbrella.proxy.models.file_config"
 local csrf = require "api-umbrella.web-app.utils.csrf"
+local respond_to = require "api-umbrella.web-app.utils.respond_to"
 
 local _M = {}
 
@@ -14,8 +15,10 @@ end
 
 return function(app)
   if config["web"]["admin"]["auth_strategies"]["_enabled"]["local"] then
-    app:get("/admins/unlock/new(.:format)", _M.new)
-    app:post("/admins/unlock(.:format)", csrf.validate_token_filter(_M.create))
-    app:get("/admins/unlock(.:format)", _M.show)
+    app:match("/admins/unlock/new(.:format)", respond_to({ GET = _M.new }))
+    app:match("/admins/unlock(.:format)", respond_to({
+      POST = csrf.validate_token_filter(_M.create),
+      GET = _M.show,
+    }))
   end
 end

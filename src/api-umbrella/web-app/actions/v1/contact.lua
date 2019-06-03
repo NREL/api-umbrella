@@ -2,6 +2,7 @@ local Contact = require "api-umbrella.web-app.models.contact"
 local capture_errors_json_full = require("api-umbrella.web-app.utils.capture_errors").json_full
 local json_response = require "api-umbrella.web-app.utils.json_response"
 local nillify_json_nulls = require "api-umbrella.utils.nillify_json_nulls"
+local respond_to = require "api-umbrella.web-app.utils.respond_to"
 local time = require "api-umbrella.utils.time"
 local wrapped_json_params = require "api-umbrella.web-app.utils.wrapped_json_params"
 
@@ -34,5 +35,5 @@ end
 
 
 return function(app)
-  app:post("/api-umbrella/v1/contact(.:format)", capture_errors_json_full(wrapped_json_params(_M.create, "contact")))
+  app:match("/api-umbrella/v1/contact(.:format)", respond_to({ POST = capture_errors_json_full(wrapped_json_params(_M.create, "contact")) }))
 end

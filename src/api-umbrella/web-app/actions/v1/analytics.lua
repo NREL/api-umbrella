@@ -10,6 +10,7 @@ local json_response = require "api-umbrella.web-app.utils.json_response"
 local number_with_delimiter = require "api-umbrella.web-app.utils.number_with_delimiter"
 local path_join = require "api-umbrella.utils.path_join"
 local require_admin = require "api-umbrella.web-app.utils.require_admin"
+local respond_to = require "api-umbrella.web-app.utils.respond_to"
 local split = require("ngx.re").split
 local table_sub = require("pl.tablex").sub
 
@@ -209,5 +210,5 @@ function _M.drilldown(self)
 end
 
 return function(app)
-  app:get("/api-umbrella/v1/analytics/drilldown(.:format)", require_admin(capture_errors_json(_M.drilldown)))
+  app:match("/api-umbrella/v1/analytics/drilldown(.:format)", respond_to({ GET = require_admin(capture_errors_json(_M.drilldown)) }))
 end

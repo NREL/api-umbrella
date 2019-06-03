@@ -10,6 +10,7 @@ local interval_lock = require "api-umbrella.utils.interval_lock"
 local json_encode = require "api-umbrella.utils.json_encode"
 local json_response = require "api-umbrella.web-app.utils.json_response"
 local pg_utils = require "api-umbrella.utils.pg_utils"
+local respond_to = require "api-umbrella.web-app.utils.respond_to"
 
 local json_decode = cjson.decode
 local json_null = cjson.null
@@ -362,5 +363,5 @@ function _M.summary(self)
 end
 
 return function(app)
-  app:get("/api-umbrella/v0/analytics/summary(.:format)", capture_errors_json(_M.summary))
+  app:match("/api-umbrella/v0/analytics/summary(.:format)", respond_to({ GET = capture_errors_json(_M.summary) }))
 end

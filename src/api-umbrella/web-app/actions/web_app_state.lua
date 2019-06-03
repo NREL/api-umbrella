@@ -1,4 +1,5 @@
 local json_response = require "api-umbrella.web-app.utils.json_response"
+local respond_to = require "api-umbrella.web-app.utils.respond_to"
 
 local _M = {}
 
@@ -13,5 +14,5 @@ function _M.state(self)
 end
 
 return function(app)
-  app:get("/_web-app-state(.:format)", _M.state)
+  app:match("/_web-app-state(.:format)", respond_to({ GET = _M.state }))
 end

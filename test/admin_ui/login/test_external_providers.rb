@@ -200,7 +200,7 @@ class Test::AdminUi::Login::TestExternalProviders < Minitest::Capybara::Test
       }),
     },
     {
-      :provider => :login_gov,
+      :provider => "login.gov",
       :login_button_text => "Sign in with login.gov",
       :mock_userinfo => MultiJson.dump({
         "id_token" => {
@@ -223,7 +223,7 @@ class Test::AdminUi::Login::TestExternalProviders < Minitest::Capybara::Test
       }),
     },
     {
-      :provider => :cas,
+      :provider => "max.gov",
       :login_button_text => "Sign in with MAX.gov",
       :mock_userinfo => <<~EOS,
         <cas:serviceResponse xmlns:cas="http://www.yale.edu/tp/cas">

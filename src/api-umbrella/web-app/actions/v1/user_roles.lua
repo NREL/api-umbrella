@@ -3,6 +3,7 @@ local api_role_policy = require "api-umbrella.web-app.policies.api_role_policy"
 local cjson = require "cjson"
 local json_response = require "api-umbrella.web-app.utils.json_response"
 local require_admin = require "api-umbrella.web-app.utils.require_admin"
+local respond_to = require "api-umbrella.web-app.utils.respond_to"
 
 local _M = {}
 
@@ -26,5 +27,5 @@ function _M.index(self)
 end
 
 return function(app)
-  app:get("/api-umbrella/v1/user_roles(.:format)", require_admin(_M.index))
+  app:match("/api-umbrella/v1/user_roles(.:format)", respond_to({ GET = require_admin(_M.index) }))
 end

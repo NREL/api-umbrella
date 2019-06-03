@@ -18,6 +18,7 @@ local json_null_default = require "api-umbrella.web-app.utils.json_null_default"
 local json_response = require "api-umbrella.web-app.utils.json_response"
 local number_with_delimiter = require "api-umbrella.web-app.utils.number_with_delimiter"
 local require_admin = require "api-umbrella.web-app.utils.require_admin"
+local respond_to = require "api-umbrella.web-app.utils.respond_to"
 local round = require "api-umbrella.utils.round"
 local t = require("api-umbrella.web-app.utils.gettext").gettext
 local table_sub = require("pl.tablex").sub
@@ -670,9 +671,11 @@ function _M.map(self)
 end
 
 return function(app)
-  app:get("/admin/stats/search(.:format)", require_admin(capture_errors_json(_M.search)))
-  app:get("/admin/stats/logs(.:format)", require_admin(capture_errors_json(_M.logs)))
-  app:post("/admin/stats/logs(.:format)", require_admin(capture_errors_json(_M.logs)))
-  app:get("/admin/stats/users(.:format)", require_admin(capture_errors_json(_M.users)))
-  app:get("/admin/stats/map(.:format)", require_admin(capture_errors_json(_M.map)))
+  app:match("/admin/stats/search(.:format)", respond_to({ GET = require_admin(capture_errors_json(_M.search)) }))
+  app:match("/admin/stats/logs(.:format)", respond_to({
+    GET = require_admin(capture_errors_json(_M.logs)),
+    POST = require_admin(capture_errors_json(_M.logs)),
+  }))
+  app:match("/admin/stats/users(.:format)", respond_to({ GET = require_admin(capture_errors_json(_M.users)) }))
+  app:match("/admin/stats/map(.:format)", respond_to({ GET = require_admin(capture_errors_json(_M.map)) }))
 end

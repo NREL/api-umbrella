@@ -2,6 +2,7 @@ local capture_errors_json = require("api-umbrella.web-app.utils.capture_errors")
 local config = require "api-umbrella.proxy.models.file_config"
 local elasticsearch_proxy_policy = require "api-umbrella.web-app.policies.elasticsearch_proxy_policy"
 local http = require "resty.http"
+local respond_to = require "api-umbrella.web-app.utils.respond_to"
 
 local _M = {}
 
@@ -66,5 +67,5 @@ function _M.elasticsearch(self)
 end
 
 return function(app)
-  app:get(prefix .. "(*)", capture_errors_json(_M.elasticsearch))
+  app:match(prefix .. "(*)", respond_to({ GET = capture_errors_json(_M.elasticsearch) }))
 end

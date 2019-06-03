@@ -8,6 +8,7 @@ local db_null = require("lapis.db").NULL
 local flash = require "api-umbrella.web-app.utils.flash"
 local is_empty = require("pl.types").is_empty
 local login_admin = require "api-umbrella.web-app.utils.login_admin"
+local respond_to = require "api-umbrella.web-app.utils.respond_to"
 local t = require("api-umbrella.web-app.utils.gettext").gettext
 
 local _M = {}
@@ -109,15 +110,15 @@ end
 
 return function(app)
   if config["web"]["admin"]["auth_strategies"]["_enabled"]["local"] then
-    app:get("/admins/password/new(.:format)", _M.new)
-    app:post("/admins/password(.:format)", csrf.validate_token_filter(capture_errors({
+    app:match("/admins/password/new(.:format)", respond_to({ GET = _M.new }))
+    app:match("/admins/password(.:format)", respond_to({ POST = csrf.validate_token_filter(capture_errors({
       on_error = _M.new,
       _M.create,
-    })))
-    app:get("/admins/password/edit(.:format)", _M.edit)
-    app:post("/admins/password/update(.:format)", csrf.validate_token_filter(capture_errors({
+    })) }))
+    app:match("/admins/password/edit(.:format)", respond_to({ GET = _M.edit }))
+    app:match("/admins/password/update(.:format)", respond_to({ POST = csrf.validate_token_filter(capture_errors({
       on_error = _M.edit,
       _M.update,
-    })))
+    })) }))
   end
 end

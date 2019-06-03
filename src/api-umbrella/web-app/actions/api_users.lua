@@ -2,6 +2,7 @@ local ApiUser = require "api-umbrella.web-app.models.api_user"
 local capture_errors_json_full = require("api-umbrella.web-app.utils.capture_errors").json_full
 local hmac = require "api-umbrella.utils.hmac"
 local json_response = require "api-umbrella.web-app.utils.json_response"
+local respond_to = require "api-umbrella.web-app.utils.respond_to"
 
 local _M = {}
 
@@ -20,5 +21,5 @@ function _M.validate(self)
 end
 
 return function(app)
-  app:get("/api-umbrella/api-users/:api_key/validate(.:format)", capture_errors_json_full(_M.validate))
+  app:match("/api-umbrella/api-users/:api_key/validate(.:format)", respond_to({ GET = capture_errors_json_full(_M.validate) }))
 end

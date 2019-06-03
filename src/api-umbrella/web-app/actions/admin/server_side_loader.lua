@@ -1,6 +1,7 @@
 local common_validations = require "api-umbrella.web-app.utils.common_validations"
 local config = require "api-umbrella.proxy.models.file_config"
 local json_encode = require "api-umbrella.utils.json_encode"
+local respond_to = require "api-umbrella.web-app.utils.respond_to"
 
 local _M = {}
 
@@ -46,5 +47,5 @@ function _M.loader(self)
 end
 
 return function(app)
-  app:get("/admin/server_side_loader.js", _M.loader)
+  app:match("/admin/server_side_loader.js", respond_to({ GET = _M.loader }))
 end

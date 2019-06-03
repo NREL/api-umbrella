@@ -51,7 +51,7 @@ local function define_view_helpers(self)
       if config["web"]["admin"]["auth_strategies"]["_only_ldap_enabled?"] then
         provider = nil
       else
-        provider["name"] = t("LDAP")
+        provider["name"] = config["web"]["admin"]["auth_strategies"]["ldap"]["options"]["title"] or t("LDAP")
       end
     elseif strategy == "login.gov" then
       provider["name"] = t("login.gov")
@@ -260,8 +260,10 @@ return function(app)
     GET = _M.new,
     POST = create,
   }))
-  app:delete("/admin/logout(.:format)", csrf.validate_token_or_admin_filter(require_admin(_M.destroy)))
-  app:post("/admin/logout(.:format)", csrf.validate_token_or_admin_filter(require_admin(_M.destroy)))
-  app:get("/admin/logout/callback(.:format)", _M.logout_callback)
-  app:get("/admin/auth(.:format)", _M.auth)
+  app:match("/admin/logout(.:format)", respond_to({
+    DELETE = csrf.validate_token_or_admin_filter(require_admin(_M.destroy)),
+    POST = csrf.validate_token_or_admin_filter(require_admin(_M.destroy)),
+  }))
+  app:match("/admin/logout/callback(.:format)", respond_to({ GET = _M.logout_callback }))
+  app:match("/admin/auth(.:format)", respond_to({ GET = _M.auth }))
 end
