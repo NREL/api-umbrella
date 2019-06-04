@@ -7,13 +7,15 @@ local json_decode = require("cjson").decode
 local openidc = require "resty.openidc"
 local random_token = require "api-umbrella.utils.random_token"
 
+local DEBUG = ngx.DEBUG
 if config["app_env"] == "development" or config["app_env"] == "test" then
+  DEBUG = ngx.NOTICE
   openidc.set_logging(nil, { DEBUG = ngx.NOTICE })
 end
 
 local _M = {}
 
-function _M.authenticate(self, strategy_name)
+function _M.authenticate(self, strategy_name, callback)
   local callback_path = auth_external_path(strategy_name, "/callback")
 
   local openidc_options = deepcopy(config["web"]["admin"]["auth_strategies"][strategy_name])
@@ -28,6 +30,28 @@ function _M.authenticate(self, strategy_name)
       enc_id_token = true,
       access_token = true,
       refresh_token = true,
+    },
+    lifecycle = {
+      -- On successful authenticatication, short-circuit lua-resty-openidc's
+      -- normal logic, and perform our own session finalization (to setup the
+      -- API Umbrella session), and redirect to the appropriate place.
+      on_authenticated = function(session)
+        ngx.log(DEBUG, "OIDC Authorization Code Flow completed -> Performing API Umbrella callback")
+
+        session:save()
+
+        -- Call the provider-specific callback logic, which should handle
+        -- authorizing the API Umbrella session and redirecting as appropriate.
+        callback({
+          id_token = session["data"]["id_token"],
+          user = session["data"]["user"],
+        })
+
+        -- This shouldn't get hit, since callback should perform it's own
+        -- redirect, but if this is unexpectedly hit, redirect back to the
+        -- login page.
+        return ngx.redirect(build_url("/admin/login"))
+      end,
     },
   })
 
@@ -45,6 +69,9 @@ function _M.authenticate(self, strategy_name)
     -- Fetch the discovery information and see if the "end_session_endpoint"
     -- item is set.
     local discovery, err = openidc.get_discovery_doc(openidc_options)
+    if err then
+      ngx.log(ngx.ERR, "Failed to fetch openidc discovery: ", err)
+    end
     if discovery and discovery["end_session_endpoint"] then
       -- Generate the state parameter to send.
       self:init_session_cookie()
@@ -66,8 +93,12 @@ function _M.authenticate(self, strategy_name)
       -- "redirect_after_logout_uri" is manually set for compatibility with the
       -- default "end_session_endpoint" behavior.
       openidc_options["redirect_after_logout_with_id_token_hint"] = true
-    elseif err then
-      ngx.log(ngx.ERR, "Failed to fetch openidc discovery: ", err)
+    elseif not discovery or not discovery["ping_end_session_endpoint"] then
+      -- lua-resty-openidc's default behavior is to render plain HTML response
+      -- to the logout endpoint. So if we're not performing a RP-initiaited
+      -- logout sequence, then make sure we redirect back to the final
+      -- destination, rather than rendering the HTML page.
+      openidc_options["redirect_after_logout_uri"] = openidc_options["post_logout_redirect_uri"]
     end
   end
 
@@ -91,6 +122,14 @@ function _M.authenticate(self, strategy_name)
   local res, err = openidc.authenticate(openidc_options, nil, nil, session_options)
   if err then
     ngx.log(ngx.WARN, "OpenID Connect error: ", err)
+  end
+
+  -- Successful authentications should be handled in the /callback request by
+  -- the "on_authenticated" hook. However, in the even of errors,
+  -- "openidc.authenticate" can return an error, which can be handled here by
+  -- the same callback.
+  if ngx.var.uri == callback_path then
+    callback(res, err)
   end
 
   return res, err

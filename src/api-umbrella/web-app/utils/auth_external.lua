@@ -16,31 +16,31 @@ local _M = {}
 
 local function email_unverified_error(self)
   flash.session(self, "danger", string.format(t([[The email address '%s' is not verified. Please <a href="%s">contact us</a> for further assistance.]]), escape_html(self.username or ""), escape_html(config["contact_url"] or "")), { html_safe = true })
-  return { redirect_to = build_url("/admin/login") }
+  return ngx.redirect(build_url("/admin/login"))
 end
 
 local function mfa_required_error(self)
   flash.session(self, "danger", string.format(t([[You must use multi-factor authentication to sign in. Please try again, or <a href="%s">contact us</a> for further assistance.]]), escape_html(config["contact_url"] or "")), { html_safe = true })
-  return { redirect_to = build_url("/admin/login") }
+  return ngx.redirect(build_url("/admin/login"))
 end
 
 local function login(self, strategy_name, err)
   if err then
     flash.session(self, "danger", string.format(t([[Could not authenticate you because "%s".]]), err))
-    return { redirect_to = build_url("/admin/login") }
+    return ngx.redirect(build_url("/admin/login"))
   end
 
   if is_empty(self.username) then
     flash.session(self, "danger", string.format(t([[Could not authenticate you because "%s".]]), t("Invalid credentials")))
-    return { redirect_to = build_url("/admin/login") }
+    return ngx.redirect(build_url("/admin/login"))
   end
 
   local admin = Admin:find_for_login(self.username)
   if admin then
-    return { redirect_to = login_admin(self, admin, strategy_name) }
+    return ngx.redirect(login_admin(self, admin, strategy_name))
   else
     flash.session(self, "danger", string.format(t([[The account for '%s' is not authorized to access the admin. Please <a href="%s">contact us</a> for further assistance.]]), escape_html(self.username or ""), escape_html(config["contact_url"] or "")), { html_safe = true })
-    return { redirect_to = build_url("/admin/login") }
+    return ngx.redirect(build_url("/admin/login"))
   end
 end
 
@@ -179,15 +179,16 @@ _M["github"] = {
 
 _M["gitlab"] = {
   login = function(self)
-    local res, err = openid_connect.authenticate(self, "gitlab")
-    if not err and res and res["user"] then
-      self.username = res["user"]["email"]
-      if not res["user"]["email_verified"] then
-        return email_unverified_error(self)
+    openid_connect.authenticate(self, "gitlab", function(res, err)
+      if not err and res and res["user"] then
+        self.username = res["user"]["email"]
+        if not res["user"]["email_verified"] then
+          return email_unverified_error(self)
+        end
       end
-    end
 
-    return login(self, "gitlab", err)
+      return login(self, "gitlab", err)
+    end)
   end,
 
   logout = function(self)
@@ -197,15 +198,16 @@ _M["gitlab"] = {
 
 _M["google"] = {
   login = function(self)
-    local res, err = openid_connect.authenticate(self, "google")
-    if not err and res and res["id_token"] then
-      self.username = res["id_token"]["email"]
-      if not res["id_token"]["email_verified"] then
-        return email_unverified_error(self)
+    openid_connect.authenticate(self, "google", function(res, err)
+      if not err and res and res["id_token"] then
+        self.username = res["id_token"]["email"]
+        if not res["id_token"]["email_verified"] then
+          return email_unverified_error(self)
+        end
       end
-    end
 
-    return login(self, "google", err)
+      return login(self, "google", err)
+    end)
   end,
 
   logout = function(self)
@@ -215,15 +217,16 @@ _M["google"] = {
 
 _M["login.gov"] = {
   login = function(self)
-    local res, err = openid_connect.authenticate(self, "login.gov")
-    if not err and res and res["id_token"] then
-      self.username = res["id_token"]["email"]
-      if not res["id_token"]["email_verified"] then
-        return email_unverified_error(self)
+    openid_connect.authenticate(self, "login.gov", function(res, err)
+      if not err and res and res["id_token"] then
+        self.username = res["id_token"]["email"]
+        if not res["id_token"]["email_verified"] then
+          return email_unverified_error(self)
+        end
       end
-    end
 
-    return login(self, "login.gov", err)
+      return login(self, "login.gov", err)
+    end)
   end,
 
   logout = function(self)

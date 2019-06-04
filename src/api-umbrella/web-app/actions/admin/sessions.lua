@@ -159,6 +159,8 @@ function _M.destroy(self)
 end
 
 function _M.logout_callback(self)
+  -- If the user is actaully still logged in, then ignore this logout callback
+  -- and redirect back to the tool.
   if self.current_admin then
     return self:write({ redirect_to = build_url("/admin/#/login") })
   end
