@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 
+# Use version from master until next version after 1.7.1 is released (then we
+# can go back to LuaRocks or OPM installs). Need master for lifecycle hooks
+# (https://github.com/zmartzone/lua-resty-openidc/pull/252) and to fix some
+# global variable warnings
+# (https://github.com/zmartzone/lua-resty-openidc/pull/254).
 lua_resty_openidc_version="88e5447d66351da5815131cf7e71aa325e3626f7"
 lua_resty_openidc_hash="0f4ef780d9b9519c9ec01ac4d441a693"
 

@@ -127,6 +127,7 @@ class OutdatedPackages
     },
     "lua_resty_openidc" => {
       :git => "https://github.com/zmartzone/lua-resty-openidc.git",
+      :git_ref => "master",
     },
     "lua_resty_session" => {
       :git => "https://github.com/bungle/lua-resty-session.git",
