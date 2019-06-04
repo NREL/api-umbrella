@@ -111,7 +111,10 @@ function _M.authenticate(self, strategy_name, callback)
   if config["app_env"] == "test" and ngx.var.cookie_test_mock_userinfo then
     if ngx.var.uri == callback_path then
       local mock_userinfo = require "api-umbrella.web-app.utils.test_env_mock_userinfo"
-      return json_decode(mock_userinfo()), nil
+      local res = json_decode(mock_userinfo())
+      local err = nil
+      callback(res, err)
+      return res, err
     elseif ngx.var.uri == openidc_options["logout_path"] then
       return ngx.redirect(openidc_options["post_logout_redirect_uri"])
     else
