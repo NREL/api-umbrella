@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 
-ruby_version="2.4.6"
-ruby_hash="909f360debed1f22fdcfc9f5335c6eaa0713198db4a6c13bab426f8b89b28b02"
+ruby_version="2.6.3"
+ruby_hash="dd638bf42059182c1d04af0d5577131d4ce70b79105231c4cc0a60de77b14f2e"
 
 set -e -u -x
 source ./tasks/helpers.sh
 
 task_working_dir
-download "https://cache.ruby-lang.org/pub/ruby/2.4/ruby-$ruby_version.tar.bz2" "sha256" "$ruby_hash"
+download "https://cache.ruby-lang.org/pub/ruby/2.6/ruby-$ruby_version.tar.bz2" "sha256" "$ruby_hash"
 extract_download "ruby-$ruby_version.tar.bz2"
 
 cd "ruby-$ruby_version"

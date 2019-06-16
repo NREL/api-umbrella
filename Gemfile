@@ -34,7 +34,7 @@ gem "oj", "~> 3.7.0"
 gem "activerecord", "~> 5.2.0", :require => "active_record"
 gem "pg", "~> 1.1.4"
 gem "elasticsearch", "~> 7.1.0"
-gem "active_attr", "~> 0.13.0"
+gem "active_attr", "~> 0.15.0"
 
 # Factories for test database data
 gem "factory_bot", "~> 5.0.0"
@@ -49,7 +49,7 @@ gem "rails_compatible_cookies_utils", "~> 0.1.0"
 gem "addressable", "~> 2.6.0"
 
 # Browser/JavaScript integration tests
-gem "capybara", "~> 3.22.0"
+gem "capybara", "~> 3.24.0"
 gem "selenium-webdriver", "~> 3.141"
 gem "webdrivers", "~> 4.0.0", :require => false
 # https://github.com/dbalatero/capybara-chromedriver-logger/pull/7

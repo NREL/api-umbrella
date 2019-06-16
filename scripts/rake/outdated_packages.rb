@@ -11,8 +11,6 @@ class OutdatedPackages
     },
     "bundler" => {
       :git => "https://github.com/bundler/bundler.git",
-      # Rails 4 not compatible with 2.0
-      :constraint => "~> 1.17",
     },
     "elasticsearch" => {
       :git => "https://github.com/elasticsearch/elasticsearch.git",
@@ -180,11 +178,11 @@ class OutdatedPackages
     },
     "ruby" => {
       :git => "https://github.com/ruby/ruby.git",
-      :constraint => "~> 2.4.3",
     },
     "rubygems" => {
       :git => "https://github.com/rubygems/rubygems.git",
-      # Rails 4 not compatible with Bundler 2.0
+      # Hold at 2.x until symlink and "bundle clean" issues are fixed in 3.x:
+      # https://github.com/bundler/bundler/issues/7208
       :constraint => "~> 2.7",
     },
     "rsyslog" => {
