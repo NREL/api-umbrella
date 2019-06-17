@@ -205,12 +205,14 @@ local function generate_production_apis_summary(start_time, end_time, recent_sta
   local data = {
     organizations = {},
   }
-  local counts = pg_utils.query([[SELECT COUNT(DISTINCT api_backends.organization_name) AS organization_count,
+  local counts = pg_utils.query([[
+    SELECT COUNT(DISTINCT api_backends.organization_name) AS organization_count,
       COUNT(DISTINCT api_backends.id) AS api_backend_count,
       COUNT(DISTINCT api_backend_url_matches.id) AS api_backend_url_match_count
     FROM api_backends
       LEFT JOIN api_backend_url_matches ON api_backends.id = api_backend_url_matches.api_backend_id
-    WHERE api_backends.status_description = 'Production']], nil, { fatal = true })
+    WHERE api_backends.status_description = 'Production'
+  ]], nil, { fatal = true })
   data["organization_count"] = int64_to_json_number(counts[1]["organization_count"])
   data["api_backend_count"] = int64_to_json_number(counts[1]["api_backend_count"])
   data["api_backend_url_match_count"] = int64_to_json_number(counts[1]["api_backend_url_match_count"])
@@ -220,13 +222,17 @@ local function generate_production_apis_summary(start_time, end_time, recent_sta
     rules = {},
   }
 
-  local organizations = pg_utils.query([[SELECT api_backends.organization_name,
+  local organizations = pg_utils.query([[
+    SELECT api_backends.organization_name,
+      COUNT(DISTINCT api_backends.id) AS api_backend_count,
+      COUNT(DISTINCT api_backend_url_matches.id) AS api_backend_url_match_count,
       json_agg(json_build_object('frontend_host', api_backends.frontend_host, 'frontend_prefix', api_backend_url_matches.frontend_prefix)) AS url_prefixes
     FROM api_backends
       LEFT JOIN api_backend_url_matches ON api_backends.id = api_backend_url_matches.api_backend_id
     WHERE api_backends.status_description = 'Production'
     GROUP BY api_backends.organization_name
-    ORDER BY api_backends.organization_name]], nil, { fatal = true })
+    ORDER BY api_backends.organization_name
+  ]], nil, { fatal = true })
   for _, organization in ipairs(organizations) do
     local filters = {
       condition = "OR",
@@ -255,6 +261,8 @@ local function generate_production_apis_summary(start_time, end_time, recent_sta
     ngx.log(ngx.NOTICE, 'Fetching analytics for organization "' .. organization["organization_name"] .. '"')
     local organization_data = generate_organization_summary(start_time, end_time, recent_start_time, filters)
     organization_data["name"] = organization["organization_name"]
+    organization_data["api_backend_count"] = int64_to_json_number(organization["api_backend_count"])
+    organization_data["api_backend_url_match_count"] = int64_to_json_number(organization["api_backend_url_match_count"])
     table.insert(data["organizations"], organization_data)
   end
 
