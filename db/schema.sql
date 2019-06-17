@@ -2,8 +2,8 @@
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 10.6
--- Dumped by pg_dump version 10.6
+-- Dumped from database version 10.8
+-- Dumped by pg_dump version 10.8
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -12,6 +12,7 @@ SET client_encoding = 'UTF8';
 SET standard_conforming_strings = on;
 SELECT pg_catalog.set_config('search_path', '', false);
 SET check_function_bodies = false;
+SET xmloption = content;
 SET client_min_messages = warning;
 SET row_security = off;
 
@@ -643,6 +644,20 @@ CREATE TABLE api_umbrella.admins (
 
 
 --
+-- Name: analytics_cache; Type: TABLE; Schema: api_umbrella; Owner: -
+--
+
+CREATE TABLE api_umbrella.analytics_cache (
+    id character varying(64) NOT NULL,
+    id_data jsonb NOT NULL,
+    data jsonb NOT NULL,
+    expires_at timestamp with time zone,
+    created_at timestamp with time zone DEFAULT transaction_timestamp() NOT NULL,
+    updated_at timestamp with time zone DEFAULT transaction_timestamp() NOT NULL
+);
+
+
+--
 -- Name: analytics_cities; Type: TABLE; Schema: api_umbrella; Owner: -
 --
 
@@ -694,7 +709,7 @@ CREATE TABLE api_umbrella.api_backend_http_headers (
     updated_at timestamp with time zone NOT NULL,
     updated_by_id uuid NOT NULL,
     updated_by_username character varying(255) NOT NULL,
-    CONSTRAINT api_backend_http_headers_header_type_check CHECK (((header_type)::text = ANY ((ARRAY['request'::character varying, 'response_default'::character varying, 'response_override'::character varying])::text[])))
+    CONSTRAINT api_backend_http_headers_header_type_check CHECK (((header_type)::text = ANY (ARRAY[('request'::character varying)::text, ('response_default'::character varying)::text, ('response_override'::character varying)::text])))
 );
 
 
@@ -716,8 +731,8 @@ CREATE TABLE api_umbrella.api_backend_rewrites (
     updated_at timestamp with time zone NOT NULL,
     updated_by_id uuid NOT NULL,
     updated_by_username character varying(255) NOT NULL,
-    CONSTRAINT api_backend_rewrites_http_method_check CHECK (((http_method)::text = ANY ((ARRAY['any'::character varying, 'GET'::character varying, 'POST'::character varying, 'PUT'::character varying, 'DELETE'::character varying, 'HEAD'::character varying, 'TRACE'::character varying, 'OPTIONS'::character varying, 'CONNECT'::character varying, 'PATCH'::character varying])::text[]))),
-    CONSTRAINT api_backend_rewrites_matcher_type_check CHECK (((matcher_type)::text = ANY ((ARRAY['route'::character varying, 'regex'::character varying])::text[])))
+    CONSTRAINT api_backend_rewrites_http_method_check CHECK (((http_method)::text = ANY (ARRAY[('any'::character varying)::text, ('GET'::character varying)::text, ('POST'::character varying)::text, ('PUT'::character varying)::text, ('DELETE'::character varying)::text, ('HEAD'::character varying)::text, ('TRACE'::character varying)::text, ('OPTIONS'::character varying)::text, ('CONNECT'::character varying)::text, ('PATCH'::character varying)::text]))),
+    CONSTRAINT api_backend_rewrites_matcher_type_check CHECK (((matcher_type)::text = ANY (ARRAY[('route'::character varying)::text, ('regex'::character varying)::text])))
 );
 
 
@@ -772,11 +787,11 @@ CREATE TABLE api_umbrella.api_backend_settings (
     updated_at timestamp with time zone NOT NULL,
     updated_by_id uuid NOT NULL,
     updated_by_username character varying(255) NOT NULL,
-    CONSTRAINT api_backend_settings_anonymous_rate_limit_behavior_check CHECK (((anonymous_rate_limit_behavior)::text = ANY ((ARRAY['ip_fallback'::character varying, 'ip_only'::character varying])::text[]))),
-    CONSTRAINT api_backend_settings_api_key_verification_level_check CHECK (((api_key_verification_level)::text = ANY ((ARRAY['none'::character varying, 'transition_email'::character varying, 'required_email'::character varying])::text[]))),
-    CONSTRAINT api_backend_settings_authenticated_rate_limit_behavior_check CHECK (((authenticated_rate_limit_behavior)::text = ANY ((ARRAY['all'::character varying, 'api_key_only'::character varying])::text[]))),
-    CONSTRAINT api_backend_settings_rate_limit_mode_check CHECK (((rate_limit_mode)::text = ANY ((ARRAY['unlimited'::character varying, 'custom'::character varying])::text[]))),
-    CONSTRAINT api_backend_settings_require_https_check CHECK (((require_https)::text = ANY ((ARRAY['required_return_error'::character varying, 'transition_return_error'::character varying, 'optional'::character varying])::text[]))),
+    CONSTRAINT api_backend_settings_anonymous_rate_limit_behavior_check CHECK (((anonymous_rate_limit_behavior)::text = ANY (ARRAY[('ip_fallback'::character varying)::text, ('ip_only'::character varying)::text]))),
+    CONSTRAINT api_backend_settings_api_key_verification_level_check CHECK (((api_key_verification_level)::text = ANY (ARRAY[('none'::character varying)::text, ('transition_email'::character varying)::text, ('required_email'::character varying)::text]))),
+    CONSTRAINT api_backend_settings_authenticated_rate_limit_behavior_check CHECK (((authenticated_rate_limit_behavior)::text = ANY (ARRAY[('all'::character varying)::text, ('api_key_only'::character varying)::text]))),
+    CONSTRAINT api_backend_settings_rate_limit_mode_check CHECK (((rate_limit_mode)::text = ANY (ARRAY[('unlimited'::character varying)::text, ('custom'::character varying)::text]))),
+    CONSTRAINT api_backend_settings_require_https_check CHECK (((require_https)::text = ANY (ARRAY[('required_return_error'::character varying)::text, ('transition_return_error'::character varying)::text, ('optional'::character varying)::text]))),
     CONSTRAINT parent_id_not_null CHECK ((((api_backend_id IS NOT NULL) AND (api_backend_sub_url_settings_id IS NULL)) OR ((api_backend_id IS NULL) AND (api_backend_sub_url_settings_id IS NOT NULL))))
 );
 
@@ -813,7 +828,7 @@ CREATE TABLE api_umbrella.api_backend_sub_url_settings (
     updated_at timestamp with time zone NOT NULL,
     updated_by_id uuid NOT NULL,
     updated_by_username character varying(255) NOT NULL,
-    CONSTRAINT api_backend_sub_url_settings_http_method_check CHECK (((http_method)::text = ANY ((ARRAY['any'::character varying, 'GET'::character varying, 'POST'::character varying, 'PUT'::character varying, 'DELETE'::character varying, 'HEAD'::character varying, 'TRACE'::character varying, 'OPTIONS'::character varying, 'CONNECT'::character varying, 'PATCH'::character varying])::text[])))
+    CONSTRAINT api_backend_sub_url_settings_http_method_check CHECK (((http_method)::text = ANY (ARRAY[('any'::character varying)::text, ('GET'::character varying)::text, ('POST'::character varying)::text, ('PUT'::character varying)::text, ('DELETE'::character varying)::text, ('HEAD'::character varying)::text, ('TRACE'::character varying)::text, ('OPTIONS'::character varying)::text, ('CONNECT'::character varying)::text, ('PATCH'::character varying)::text])))
 );
 
 
@@ -857,8 +872,8 @@ CREATE TABLE api_umbrella.api_backends (
     updated_by_username character varying(255) NOT NULL,
     organization_name character varying(255),
     status_description character varying(255),
-    CONSTRAINT api_backends_backend_protocol_check CHECK (((backend_protocol)::text = ANY ((ARRAY['http'::character varying, 'https'::character varying])::text[]))),
-    CONSTRAINT api_backends_balance_algorithm_check CHECK (((balance_algorithm)::text = ANY ((ARRAY['round_robin'::character varying, 'least_conn'::character varying, 'ip_hash'::character varying])::text[])))
+    CONSTRAINT api_backends_backend_protocol_check CHECK (((backend_protocol)::text = ANY (ARRAY[('http'::character varying)::text, ('https'::character varying)::text]))),
+    CONSTRAINT api_backends_balance_algorithm_check CHECK (((balance_algorithm)::text = ANY (ARRAY[('round_robin'::character varying)::text, ('least_conn'::character varying)::text, ('ip_hash'::character varying)::text])))
 );
 
 
@@ -911,7 +926,7 @@ CREATE TABLE api_umbrella.api_user_settings (
     updated_at timestamp with time zone NOT NULL,
     updated_by_id uuid NOT NULL,
     updated_by_username character varying(255) NOT NULL,
-    CONSTRAINT api_user_settings_rate_limit_mode_check CHECK (((rate_limit_mode)::text = ANY ((ARRAY['unlimited'::character varying, 'custom'::character varying])::text[])))
+    CONSTRAINT api_user_settings_rate_limit_mode_check CHECK (((rate_limit_mode)::text = ANY (ARRAY[('unlimited'::character varying)::text, ('custom'::character varying)::text])))
 );
 
 
@@ -986,7 +1001,7 @@ CREATE TABLE api_umbrella.rate_limits (
     updated_at timestamp with time zone NOT NULL,
     updated_by_id uuid NOT NULL,
     updated_by_username character varying(255) NOT NULL,
-    CONSTRAINT rate_limits_limit_by_check CHECK (((limit_by)::text = ANY ((ARRAY['ip'::character varying, 'api_key'::character varying])::text[]))),
+    CONSTRAINT rate_limits_limit_by_check CHECK (((limit_by)::text = ANY (ARRAY[('ip'::character varying)::text, ('api_key'::character varying)::text]))),
     CONSTRAINT settings_id_not_null CHECK ((((api_backend_settings_id IS NOT NULL) AND (api_user_settings_id IS NULL)) OR ((api_backend_settings_id IS NULL) AND (api_user_settings_id IS NOT NULL))))
 );
 
@@ -1161,7 +1176,7 @@ CREATE TABLE api_umbrella.website_backends (
     updated_at timestamp with time zone NOT NULL,
     updated_by_id uuid NOT NULL,
     updated_by_username character varying(255) NOT NULL,
-    CONSTRAINT website_backends_backend_protocol_check CHECK (((backend_protocol)::text = ANY ((ARRAY['http'::character varying, 'https'::character varying])::text[])))
+    CONSTRAINT website_backends_backend_protocol_check CHECK (((backend_protocol)::text = ANY (ARRAY[('http'::character varying)::text, ('https'::character varying)::text])))
 );
 
 
@@ -1464,6 +1479,14 @@ ALTER TABLE ONLY api_umbrella.admins
 
 
 --
+-- Name: analytics_cache analytics_cache_pkey; Type: CONSTRAINT; Schema: api_umbrella; Owner: -
+--
+
+ALTER TABLE ONLY api_umbrella.analytics_cache
+    ADD CONSTRAINT analytics_cache_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: analytics_cities analytics_cities_pkey; Type: CONSTRAINT; Schema: api_umbrella; Owner: -
 --
 
@@ -1695,6 +1718,13 @@ CREATE UNIQUE INDEX admins_unlock_token_hash_idx ON api_umbrella.admins USING bt
 --
 
 CREATE UNIQUE INDEX admins_username_idx ON api_umbrella.admins USING btree (username);
+
+
+--
+-- Name: analytics_cache_expires_at_idx; Type: INDEX; Schema: api_umbrella; Owner: -
+--
+
+CREATE INDEX analytics_cache_expires_at_idx ON api_umbrella.analytics_cache USING btree (expires_at);
 
 
 --
@@ -1954,6 +1984,13 @@ CREATE TRIGGER admin_permissions_stamp_record BEFORE INSERT OR DELETE OR UPDATE 
 --
 
 CREATE TRIGGER admins_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON api_umbrella.admins FOR EACH ROW EXECUTE PROCEDURE api_umbrella.stamp_record();
+
+
+--
+-- Name: analytics_cache analytics_cache_stamp_record; Type: TRIGGER; Schema: api_umbrella; Owner: -
+--
+
+CREATE TRIGGER analytics_cache_stamp_record BEFORE UPDATE ON api_umbrella.analytics_cache FOR EACH ROW EXECUTE PROCEDURE api_umbrella.update_timestamp();
 
 
 --

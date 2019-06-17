@@ -1,3 +1,4 @@
+local AnalyticsCache = require "api-umbrella.web-app.models.analytics_cache"
 local add_error = require("api-umbrella.web-app.utils.model_ext").add_error
 local cjson = require "cjson.safe"
 local config = require "api-umbrella.proxy.models.file_config"
@@ -262,6 +263,10 @@ function _M:set_start_time(start_time)
   end
 
   self.start_time = date_tz:format(format_iso8601)
+
+  if self.body["aggregations"]["hits_over_time"] then
+    self.body["aggregations"]["hits_over_time"]["date_histogram"]["extended_bounds"]["min"] = self.start_time
+  end
 end
 
 function _M:set_end_time(end_time)
@@ -277,6 +282,10 @@ function _M:set_end_time(end_time)
   date_tz:set(icu_date.fields.MILLISECOND, 999)
 
   self.end_time = date_tz:format(format_iso8601)
+
+  if self.body["aggregations"]["hits_over_time"] then
+    self.body["aggregations"]["hits_over_time"]["date_histogram"]["extended_bounds"]["max"] = self.end_time
+  end
 end
 
 function _M:set_interval(interval)
@@ -391,10 +400,11 @@ function _M:aggregate_by_interval_for_summary()
   self:aggregate_by_interval()
 
   self.body["aggregations"]["hits_over_time"]["aggregations"] = {
-    unique_user_id = {
-      cardinality = {
+    unique_user_ids = {
+      terms = {
         field = "user_id",
-        precision_threshold = 100,
+        size = 100000000,
+        shard_size = 100000000 * 4,
       },
     },
     response_time_average = {
@@ -635,11 +645,14 @@ function _M:filter_by_ip_region(region)
   })
 end
 
-function _M:fetch_results()
-  if not is_empty(self.errors) then
-    return coroutine.yield("error", self.errors)
-  end
+function _M:query_header()
+  local header = deepcopy(self.query)
+  header["index"] = table.concat(index_names(self.start_time, self.end_time), ",")
 
+  return header
+end
+
+function _M:query_body()
   local body = deepcopy(self.body)
 
   table.insert(body["query"]["bool"]["filter"]["bool"]["must"], {
@@ -661,6 +674,17 @@ function _M:fetch_results()
     body["aggregations"] = nil
   end
 
+  return body
+end
+
+function _M:fetch_results()
+  if not is_empty(self.errors) then
+    return coroutine.yield("error", self.errors)
+  end
+
+  local header = self:query_header()
+  local body = self:query_body()
+
   -- When querying many indices (particularly if partitioning by day), we can
   -- run into URL length limits with the default search approach, which
   -- requires the indices be in the URL:
@@ -677,19 +701,18 @@ function _M:fetch_results()
   -- querying all indices using a wildcard. While slightly less efficient, this
   -- should be better optimized in Elasticsearch 5+
   -- (https://www.elastic.co/blog/instant-aggregations-rewriting-queries-for-fun-and-profit).
-  local indices = table.concat(index_names(self.start_time, self.end_time), ",")
   local body_json
   local err
   if self.query["scroll"] then
     -- The default URL length limit for Elasticsearch is 4096 bytes, but reduce
     -- the limit before truncating to the wildcard index name so there's still
     -- room for other query params.
-    if string.len(indices) > 3700 then
-      indices = config["elasticsearch"]["index_name_prefix"] .. "-logs-*"
+    if string.len(header["index"]) > 3700 then
+      header["index"] = config["elasticsearch"]["index_name_prefix"] .. "-logs-*"
     end
 
     local res
-    res, err = elasticsearch_query("/" .. indices .. "/_search", {
+    res, err = elasticsearch_query("/" .. header["index"] .. "/_search", {
       method = "POST",
       query = self.query,
       body = body,
@@ -698,9 +721,6 @@ function _M:fetch_results()
       body_json = res.body_json
     end
   else
-    local header = deepcopy(self.query)
-    header["index"] = indices
-
     local res
     res, err = elasticsearch_query("/_msearch", {
       method = "POST",
@@ -709,9 +729,10 @@ function _M:fetch_results()
       },
       body = json_encode(header) .. "\n" .. json_encode(body) .. "\n",
     })
+
     if not err and res and res.body_json and res.body_json["responses"] and res.body_json["responses"][1] then
       body_json = res.body_json["responses"][1]
-      if body_json["_shards"] and not is_empty(body_json["_shards"]["failures"]) then
+      if (body_json["_shards"] and not is_empty(body_json["_shards"]["failures"])) or (body_json["error"] and body_json["error"]["root_cause"]) then
         err = "Unsuccessful response: " .. (res.body or "")
       end
     end
@@ -797,6 +818,75 @@ function _M:fetch_results_bulk(callback)
   if err then
     ngx.log(ngx.ERR, "elasticsearch scroll clear failed: ", err)
   end
+end
+
+function _M:cache_daily_results()
+  local ok = xpcall(date_tz.parse, xpcall_error_handler, date_tz, format_iso8601, self.end_time)
+  if not ok then
+    add_error(self.errors, "end_at", "end_at", t("is not valid date"))
+    return false
+  end
+  date_tz:set(icu_date.fields.HOUR_OF_DAY, 23)
+  date_tz:set(icu_date.fields.MINUTE, 59)
+  date_tz:set(icu_date.fields.SECOND, 59)
+  date_tz:set(icu_date.fields.MILLISECOND, 999)
+  local end_time_millis = date_tz:get_millis()
+
+  ok = xpcall(date_tz.parse, xpcall_error_handler, date_tz, format_iso8601, self.start_time)
+  if not ok then
+    add_error(self.errors, "end_at", "end_at", t("is not valid date"))
+    return false
+  end
+  date_tz:set(icu_date.fields.HOUR_OF_DAY, 0)
+  date_tz:set(icu_date.fields.MINUTE, 0)
+  date_tz:set(icu_date.fields.SECOND, 0)
+  date_tz:set(icu_date.fields.MILLISECOND, 0)
+
+  -- Loop through every day within the date range and perform daily searches,
+  -- instead of searching for everything all at once.
+  local cache_ids = {}
+  while date_tz:get_millis() <= end_time_millis do
+    -- For each day, setup the search instance to just search that day, instead
+    -- of the original full date range.
+    self:set_start_time(date_tz:format(format_iso8601))
+
+    date_tz:set(icu_date.fields.HOUR_OF_DAY, 23)
+    date_tz:set(icu_date.fields.MINUTE, 59)
+    date_tz:set(icu_date.fields.SECOND, 59)
+    date_tz:set(icu_date.fields.MILLISECOND, 999)
+    self:set_end_time(date_tz:format(format_iso8601))
+
+    -- Advance the date counter to the next day.
+    date_tz:add(icu_date.fields.DATE, 1)
+    date_tz:set(icu_date.fields.HOUR_OF_DAY, 0)
+    date_tz:set(icu_date.fields.MINUTE, 0)
+    date_tz:set(icu_date.fields.SECOND, 0)
+    date_tz:set(icu_date.fields.MILLISECOND, 0)
+
+    -- Check to see if we already have cached data for this exact search query
+    -- and date range.
+    local cache_id_data = {
+      header = self:query_header(),
+      body = self:query_body(),
+
+      -- Include the version information in the cache key, so that if the
+      -- underlying Elasticsearch database is upgraded, new data will be
+      -- fetched.
+      api_version = config["elasticsearch"]["api_version"],
+      template_version = config["elasticsearch"]["template_version"],
+    }
+    local cache = AnalyticsCache:find_by_id_data(cache_id_data)
+    if not cache then
+      -- Perform the real Elasticsearch query for uncached queries and cache
+      -- the result.
+      local results = self:fetch_results()
+      cache = AnalyticsCache:upsert(cache_id_data, results)
+    end
+
+    table.insert(cache_ids, cache["id"])
+  end
+
+  return cache_ids
 end
 
 return _M

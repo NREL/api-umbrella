@@ -864,4 +864,19 @@ return {
     db.query("ALTER TABLE api_umbrella.api_backends ADD COLUMN organization_name varchar(255)")
     db.query("ALTER TABLE api_umbrella.api_backends ADD COLUMN status_description varchar(255)")
   end,
+
+  [1560722058] = function()
+    db.query([[
+      CREATE TABLE analytics_cache(
+        id varchar(64) PRIMARY KEY,
+        id_data jsonb NOT NULL,
+        data jsonb NOT NULL,
+        expires_at timestamp with time zone,
+        created_at timestamp with time zone NOT NULL DEFAULT transaction_timestamp(),
+        updated_at timestamp with time zone NOT NULL DEFAULT transaction_timestamp()
+      )
+    ]])
+    db.query("CREATE INDEX ON analytics_cache(expires_at)")
+    db.query("CREATE TRIGGER analytics_cache_stamp_record BEFORE UPDATE ON analytics_cache FOR EACH ROW EXECUTE PROCEDURE update_timestamp()")
+  end,
 }

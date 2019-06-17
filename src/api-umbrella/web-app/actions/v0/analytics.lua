@@ -2,18 +2,15 @@ local AnalyticsSearch = require "api-umbrella.web-app.models.analytics_search"
 local Cache = require "api-umbrella.web-app.models.cache"
 local analytics_policy = require "api-umbrella.web-app.policies.analytics_policy"
 local capture_errors_json = require("api-umbrella.web-app.utils.capture_errors").json
-local cjson = require "cjson"
 local config = require "api-umbrella.proxy.models.file_config"
 local icu_date = require "icu-date-ffi"
 local int64_to_json_number = require("api-umbrella.utils.int64").to_json_number
 local interval_lock = require "api-umbrella.utils.interval_lock"
+local json_decode = require("cjson").decode
 local json_encode = require "api-umbrella.utils.json_encode"
 local json_response = require "api-umbrella.web-app.utils.json_response"
 local pg_utils = require "api-umbrella.utils.pg_utils"
 local respond_to = require "api-umbrella.web-app.utils.respond_to"
-
-local json_decode = cjson.decode
-local json_null = cjson.null
 
 local _M = {}
 
@@ -83,26 +80,23 @@ local function generate_summary_hits(start_time, end_time)
   -- background, this long timeout should be okay.
   search:set_timeout(20 * 60) -- 20 minutes
 
-  local results = search:fetch_results()
-
-  local total_hits = 0
-  local hits_by_month = {}
-  if results["aggregations"] then
-    for _, month in ipairs(results["aggregations"]["hits_over_time"]["buckets"]) do
-      table.insert(hits_by_month, {
-        year = tonumber(string.sub(month["key_as_string"], 1, 4)),
-        month = tonumber(string.sub(month["key_as_string"], 6, 7)),
-        count = month["doc_count"],
-      })
-
-      total_hits = total_hits + month["doc_count"]
-    end
-  end
-
-  local response = {
-    hits_by_month = hits_by_month,
-    total_hits = total_hits,
-  }
+  local analytics_cache_ids = search:cache_daily_results()
+  local response = pg_utils.query([[
+    SELECT jsonb_build_object('hits_by_month', jsonb_agg(months), 'total_hits', SUM(months.hit_count)) AS response
+    FROM (
+      SELECT
+        substring(bucket->>'key_as_string' from 1 for 4)::int AS year,
+        substring(bucket->>'key_as_string' from 6 for 2)::int AS month,
+        SUM((bucket->>'doc_count')::bigint) AS hit_count
+      FROM analytics_cache
+        LEFT JOIN LATERAL jsonb_array_elements(data->'aggregations'->'hits_over_time'->'buckets') AS bucket ON true
+      WHERE id IN :ids
+      GROUP BY year, month
+      ORDER BY year, month
+    ) AS months
+  ]], {
+    ids = pg_utils.list(analytics_cache_ids)
+  }, { fatal = true })[1]["response"]
 
   local response_json = json_encode(response)
   local expires_at = ngx.now() + 60 * 60 * 24 * 2 -- 2 days
@@ -134,73 +128,71 @@ local function generate_organization_summary(start_time, end_time, recent_start_
   search:set_timeout(20 * 60) -- 20 minutes
   search:set_permission_scope(filters)
 
-  local results = search:fetch_results()
+  local aggregate_sql = [[
+    SELECT jsonb_build_object(
+      'hits', jsonb_build_object(
+        :interval_name, jsonb_agg(jsonb_build_array(interval_totals.interval_date, COALESCE(interval_totals.hit_count, 0))),
+        'total', SUM(interval_totals.hit_count)
+      ),
+      'active_api_keys', jsonb_build_object(
+        :interval_name, jsonb_agg(jsonb_build_array(interval_totals.interval_date, jsonb_array_length(interval_totals.unique_user_ids))),
+        'total', (
+          SELECT COUNT(DISTINCT user_ids.id)
+          FROM jsonb_array_elements(jsonb_agg(interval_totals.unique_user_ids)) AS interval_user_ids(ids)
+            CROSS JOIN LATERAL jsonb_array_elements(CASE WHEN jsonb_typeof(interval_user_ids.ids) = 'array' THEN interval_user_ids.ids ELSE '[]' END) AS user_ids(id)
+          )
+      ),
+      'average_response_times', jsonb_build_object(
+        :interval_name, jsonb_agg(jsonb_build_array(interval_totals.interval_date, interval_totals.response_time_average)),
+        'average', ROUND(SUM(CASE WHEN interval_totals.response_time_average IS NOT NULL AND interval_totals.hit_count IS NOT NULL THEN interval_totals.response_time_average * interval_totals.hit_count END) / SUM(CASE WHEN interval_totals.response_time_average IS NOT NULL AND interval_totals.hit_count IS NOT NULL THEN interval_totals.hit_count END))
+      )
+    ) AS response
+    FROM (
+      SELECT
+        interval_date,
+        hit_count,
+        response_time_average,
+        (
+          SELECT jsonb_agg(DISTINCT user_id_buckets->>'key')
+          FROM jsonb_array_elements(interval_agg.user_id_array_buckets) AS user_id_arrays(bucket)
+            CROSS JOIN LATERAL jsonb_array_elements(user_id_arrays.bucket) AS user_id_buckets
+          WHERE user_id_buckets->>'key' IS NOT NULL
+        ) AS unique_user_ids
+      FROM (
+        SELECT
+          substring(bucket->>'key_as_string' from 1 for :date_key_length) AS interval_date,
+          SUM((bucket->>'doc_count')::bigint) AS hit_count,
+          jsonb_agg(bucket->'unique_user_ids'->'buckets') FILTER (WHERE jsonb_typeof(bucket->'unique_user_ids'->'buckets') = 'array') AS user_id_array_buckets,
+          ROUND(SUM(CASE WHEN bucket->'response_time_average'->>'value' IS NOT NULL AND bucket->>'doc_count' IS NOT NULL THEN (bucket->'response_time_average'->>'value')::numeric * (bucket->>'doc_count')::bigint END) / SUM(CASE WHEN bucket->'response_time_average'->>'value' IS NOT NULL AND bucket->>'doc_count' IS NOT NULL THEN (bucket->>'doc_count')::bigint END)) AS response_time_average
+        FROM analytics_cache
+          CROSS JOIN LATERAL jsonb_array_elements(data->'aggregations'->'hits_over_time'->'buckets') AS bucket
+        WHERE id IN :ids
+        GROUP BY interval_date
+        ORDER BY interval_date
+      ) AS interval_agg
+    ) AS interval_totals
+  ]]
 
-  local hits_monthly = {}
-  local active_api_keys_monthly = {}
-  local active_api_keys_total = 0
-  local average_response_times_monthly = {}
-  local average_response_times_total = json_null
-  if results["aggregations"] then
-    active_api_keys_total = results["aggregations"]["unique_user_id"]["value"]
-    average_response_times_total = results["aggregations"]["response_time_average"]["value"]
-
-    for _, month_data in ipairs(results["aggregations"]["hits_over_time"]["buckets"]) do
-      local key = string.sub(month_data["key_as_string"], 1, 7)
-      table.insert(hits_monthly, { key, month_data["doc_count"] })
-      table.insert(active_api_keys_monthly, { key, month_data["unique_user_id"]["value"] })
-      table.insert(average_response_times_monthly, { key, month_data["response_time_average"]["value"] })
-    end
-  end
+  local analytics_cache_ids = search:cache_daily_results()
+  local response = pg_utils.query(aggregate_sql, {
+    ids = pg_utils.list(analytics_cache_ids),
+    interval_name = "monthly",
+    date_key_length = 7,
+  }, { fatal = true })[1]["response"]
 
   search:set_start_time(recent_start_time)
   search:set_interval("day")
   search:aggregate_by_interval_for_summary()
-  local recent_results = search:fetch_results()
+  local recent_analytics_cache_ids = search:cache_daily_results()
+  local recent_response = pg_utils.query(aggregate_sql, {
+    ids = pg_utils.list(recent_analytics_cache_ids),
+    interval_name = "daily",
+    date_key_length = 10,
+  }, { fatal = true })[1]["response"]
 
-  local recent_hits_daily = {}
-  local recent_active_api_keys_daily = {}
-  local recent_active_api_keys_total = 0
-  local recent_average_response_times_daily = {}
-  local recent_average_response_times_total = json_null
-  if recent_results["aggregations"] then
-    recent_active_api_keys_total = recent_results["aggregations"]["unique_user_id"]["value"]
-    recent_average_response_times_total = recent_results["aggregations"]["response_time_average"]["value"]
-
-    for _, day_data in ipairs(recent_results["aggregations"]["hits_over_time"]["buckets"]) do
-      local key = string.sub(day_data["key_as_string"], 1, 10)
-      table.insert(recent_hits_daily, { key, day_data["doc_count"] })
-      table.insert(recent_active_api_keys_daily, { key, day_data["unique_user_id"]["value"] })
-      table.insert(recent_average_response_times_daily, { key, day_data["response_time_average"]["value"] })
-    end
-  end
-
-  local response = {
-    hits = {
-      monthly = hits_monthly,
-      total = results["hits"]["_total_value"],
-      recent = {
-        daily = recent_hits_daily,
-        total = recent_results["hits"]["_total_value"],
-      },
-    },
-    active_api_keys = {
-      monthly = active_api_keys_monthly,
-      total = active_api_keys_total,
-      recent = {
-        daily = recent_active_api_keys_daily,
-        total = recent_active_api_keys_total,
-      },
-    },
-    average_response_times = {
-      monthly = average_response_times_monthly,
-      average = average_response_times_total,
-      recent = {
-        daily = recent_average_response_times_daily,
-        average = recent_average_response_times_total,
-      },
-    },
-  }
+  response["hits"]["recent"] = recent_response["hits"]
+  response["active_api_keys"]["recent"] = recent_response["active_api_keys"]
+  response["average_response_times"]["recent"] = recent_response["average_response_times"]
 
   local response_json = json_encode(response)
   local expires_at = ngx.now() + 60 * 60 * 24 * 2 -- 2 days

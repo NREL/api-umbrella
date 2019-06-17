@@ -184,8 +184,11 @@ function _M.query(query, values, options)
       escaped_values[key] = _M.escape_literal(value)
     end
 
+    -- Find all bind variable syntax (":word") and replace with the appropriate
+    -- variable. Be careful not to match "::word", so that we don't match
+    -- postgres type casting (eg, "foo::date").
     local _, gsub_err
-    query, _, gsub_err = ngx.re.gsub(query, [[:(\w+)]], function(match)
+    query, _, gsub_err = ngx.re.gsub(query, [[(?<!:):(\w+)]], function(match)
       local key = match[1]
       local escaped_value = escaped_values[key] or "NULL"
       return escaped_value

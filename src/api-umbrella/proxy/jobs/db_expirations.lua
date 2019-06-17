@@ -7,6 +7,7 @@ local delay = 60  -- in seconds
 
 local function do_run()
   local queries = {
+    "DELETE FROM analytics_cache WHERE expires_at IS NOT NULL AND expires_at < now()",
     "DELETE FROM cache WHERE expires_at IS NOT NULL AND expires_at < now()",
     "DELETE FROM distributed_rate_limit_counters WHERE expires_at < now()",
     "DELETE FROM sessions WHERE expires_at < now()",
