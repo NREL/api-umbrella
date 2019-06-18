@@ -10,6 +10,9 @@ if [ "${1}" = "start" ]; then
   echo "starting ${2}..."
   api_umbrella_user="{{user}}"
 
+  # Use system openssl, rather than openresty version.
+  unset LD_LIBRARY_PATH
+
   PATH="{{_test_env_install_dir}}/sbin:{{_test_env_install_dir}}/bin:$PATH"
   run_args=()
   if [ -n "$api_umbrella_user" ]; then
