@@ -66,6 +66,23 @@ CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA public;
 
 
 --
+-- Name: analytics_cache_extract_unique_user_ids(); Type: FUNCTION; Schema: api_umbrella; Owner: -
+--
+
+CREATE FUNCTION api_umbrella.analytics_cache_extract_unique_user_ids() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+      BEGIN
+        IF (jsonb_typeof(NEW.data->'aggregations'->'hits_over_time'->'buckets'->0->'unique_user_ids'->'buckets') = 'array') THEN
+          NEW.unique_user_ids := (SELECT array_agg(DISTINCT bucket->>'key')::uuid[] FROM jsonb_array_elements(NEW.data->'aggregations'->'hits_over_time'->'buckets'->0->'unique_user_ids'->'buckets') AS bucket);
+        END IF;
+
+        RETURN NEW;
+      END;
+      $$;
+
+
+--
 -- Name: api_users_increment_version(); Type: FUNCTION; Schema: api_umbrella; Owner: -
 --
 
@@ -521,6 +538,17 @@ $$;
 COMMENT ON FUNCTION public.jsonb_minus("left" jsonb, "right" jsonb) IS 'Delete matching pairs in the right argument from the left argument';
 
 
+--
+-- Name: array_accum(anyarray); Type: AGGREGATE; Schema: api_umbrella; Owner: -
+--
+
+CREATE AGGREGATE api_umbrella.array_accum(anyarray) (
+    SFUNC = array_cat,
+    STYPE = anyarray,
+    INITCOND = '{}'
+);
+
+
 SET default_tablespace = '';
 
 SET default_with_oids = false;
@@ -653,7 +681,9 @@ CREATE TABLE api_umbrella.analytics_cache (
     data jsonb NOT NULL,
     expires_at timestamp with time zone,
     created_at timestamp with time zone DEFAULT transaction_timestamp() NOT NULL,
-    updated_at timestamp with time zone DEFAULT transaction_timestamp() NOT NULL
+    updated_at timestamp with time zone DEFAULT transaction_timestamp() NOT NULL,
+    unique_user_ids uuid[],
+    CONSTRAINT analytics_cache_enforce_single_date_bucket CHECK ((NOT (jsonb_array_length((((data -> 'aggregations'::text) -> 'hits_over_time'::text) -> 'buckets'::text)) > 1)))
 );
 
 
@@ -1991,6 +2021,13 @@ CREATE TRIGGER admins_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON api_umbr
 --
 
 CREATE TRIGGER analytics_cache_stamp_record BEFORE UPDATE ON api_umbrella.analytics_cache FOR EACH ROW EXECUTE PROCEDURE api_umbrella.update_timestamp();
+
+
+--
+-- Name: analytics_cache analytics_cache_unique_user_ids; Type: TRIGGER; Schema: api_umbrella; Owner: -
+--
+
+CREATE TRIGGER analytics_cache_unique_user_ids BEFORE INSERT OR UPDATE OF data ON api_umbrella.analytics_cache FOR EACH ROW EXECUTE PROCEDURE api_umbrella.analytics_cache_extract_unique_user_ids();
 
 
 --

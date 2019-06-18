@@ -135,12 +135,11 @@ local function generate_organization_summary(start_time, end_time, recent_start_
         'total', SUM(interval_totals.hit_count)
       ),
       'active_api_keys', jsonb_build_object(
-        :interval_name, jsonb_agg(jsonb_build_array(interval_totals.interval_date, jsonb_array_length(interval_totals.unique_user_ids))),
+        :interval_name, jsonb_agg(jsonb_build_array(interval_totals.interval_date, COALESCE(array_length(interval_totals.unique_user_ids, 1), 0))),
         'total', (
           SELECT COUNT(DISTINCT user_ids.id)
-          FROM jsonb_array_elements(jsonb_agg(interval_totals.unique_user_ids)) AS interval_user_ids(ids)
-            CROSS JOIN LATERAL jsonb_array_elements(CASE WHEN jsonb_typeof(interval_user_ids.ids) = 'array' THEN interval_user_ids.ids ELSE '[]' END) AS user_ids(id)
-          )
+          FROM unnest(array_accum(interval_totals.unique_user_ids)) AS user_ids(id)
+        )
       ),
       'average_response_times', jsonb_build_object(
         :interval_name, jsonb_agg(jsonb_build_array(interval_totals.interval_date, interval_totals.response_time_average)),
@@ -153,18 +152,16 @@ local function generate_organization_summary(start_time, end_time, recent_start_
         hit_count,
         response_time_average,
         (
-          SELECT jsonb_agg(DISTINCT user_id_buckets->>'key')
-          FROM jsonb_array_elements(interval_agg.user_id_array_buckets) AS user_id_arrays(bucket)
-            CROSS JOIN LATERAL jsonb_array_elements(user_id_arrays.bucket) AS user_id_buckets
-            LEFT JOIN api_users ON user_id_buckets->>'key' = api_users.id::text
-          WHERE user_id_buckets->>'key' IS NOT NULL
-            AND api_users.disabled_at IS NULL
+          SELECT array_agg(DISTINCT user_id)
+          FROM unnest(interval_agg.user_ids) AS user_id
+            LEFT JOIN api_users ON user_id = api_users.id
+          WHERE user_id IS NOT NULL AND api_users.disabled_at IS NULL
         ) AS unique_user_ids
       FROM (
         SELECT
           substring(bucket->>'key_as_string' from 1 for :date_key_length) AS interval_date,
           SUM((bucket->>'doc_count')::bigint) AS hit_count,
-          jsonb_agg(bucket->'unique_user_ids'->'buckets') FILTER (WHERE jsonb_typeof(bucket->'unique_user_ids'->'buckets') = 'array') AS user_id_array_buckets,
+          array_accum(unique_user_ids) AS user_ids,
           ROUND(SUM(CASE WHEN bucket->'response_time_average'->>'value' IS NOT NULL AND bucket->>'doc_count' IS NOT NULL THEN (bucket->'response_time_average'->>'value')::numeric * (bucket->>'doc_count')::bigint END) / SUM(CASE WHEN bucket->'response_time_average'->>'value' IS NOT NULL AND bucket->>'doc_count' IS NOT NULL THEN (bucket->>'doc_count')::bigint END)) AS response_time_average
         FROM analytics_cache
           CROSS JOIN LATERAL jsonb_array_elements(data->'aggregations'->'hits_over_time'->'buckets') AS bucket

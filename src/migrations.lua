@@ -879,4 +879,39 @@ return {
     db.query("CREATE INDEX ON analytics_cache(expires_at)")
     db.query("CREATE TRIGGER analytics_cache_stamp_record BEFORE UPDATE ON analytics_cache FOR EACH ROW EXECUTE PROCEDURE update_timestamp()")
   end,
+
+  [1560888068] = function()
+    db.query([[
+      CREATE AGGREGATE array_accum (anyarray) (
+        sfunc = array_cat,
+        stype = anyarray,
+        initcond = '{}'
+      )
+    ]])
+    -- Add an extra column to store the unique user IDs in a fashion more
+    -- optimized for querying. But since this strategy only works if each row
+    -- represents a single date bucket, add extra constraints to ensure we
+    -- don't accidentally mess up this assumption in the future.
+    db.query("ALTER TABLE analytics_cache ADD COLUMN unique_user_ids uuid[]")
+    db.query("ALTER TABLE analytics_cache ADD CONSTRAINT analytics_cache_enforce_single_date_bucket CHECK (NOT jsonb_array_length(data->'aggregations'->'hits_over_time'->'buckets') > 1)")
+    db.query([[
+      CREATE FUNCTION analytics_cache_extract_unique_user_ids()
+      RETURNS TRIGGER AS $$
+      BEGIN
+        IF (jsonb_typeof(NEW.data->'aggregations'->'hits_over_time'->'buckets'->0->'unique_user_ids'->'buckets') = 'array') THEN
+          NEW.unique_user_ids := (SELECT array_agg(DISTINCT bucket->>'key')::uuid[] FROM jsonb_array_elements(NEW.data->'aggregations'->'hits_over_time'->'buckets'->0->'unique_user_ids'->'buckets') AS bucket);
+        END IF;
+
+        RETURN NEW;
+      END;
+      $$ LANGUAGE plpgsql;
+    ]])
+    db.query([[
+      CREATE TRIGGER analytics_cache_unique_user_ids
+      BEFORE INSERT OR UPDATE OF data ON analytics_cache
+      FOR EACH ROW
+      EXECUTE PROCEDURE analytics_cache_extract_unique_user_ids()
+    ]])
+    db.query("UPDATE analytics_cache SET data = data")
+  end,
 }
