@@ -156,7 +156,9 @@ local function generate_organization_summary(start_time, end_time, recent_start_
           SELECT jsonb_agg(DISTINCT user_id_buckets->>'key')
           FROM jsonb_array_elements(interval_agg.user_id_array_buckets) AS user_id_arrays(bucket)
             CROSS JOIN LATERAL jsonb_array_elements(user_id_arrays.bucket) AS user_id_buckets
+            LEFT JOIN api_users ON user_id_buckets->>'key' = api_users.id::text
           WHERE user_id_buckets->>'key' IS NOT NULL
+            AND api_users.disabled_at IS NULL
         ) AS unique_user_ids
       FROM (
         SELECT
