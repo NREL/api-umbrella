@@ -22,7 +22,7 @@ local function generate_summary_users(start_time, end_time)
     SELECT extract(year FROM all_months.month) AS year, extract(month FROM all_months.month) AS month, COALESCE(counts_by_month.users_count, 0) AS "count"
     FROM (
       SELECT month
-      FROM generate_series(timestamp :start_time, timestamp :end_time, interval '1 month') AS month
+      FROM generate_series(date_trunc('month', timestamp :start_time), date_trunc('month', timestamp :end_time), interval '1 month') AS month
     ) AS all_months
     LEFT JOIN (
       SELECT date_trunc('month', first_created_at) as created_at_month, COUNT(email) AS users_count
@@ -82,12 +82,12 @@ local function generate_summary_hits(start_time, end_time)
 
   local analytics_cache_ids = search:cache_daily_results()
   local response = pg_utils.query([[
-    SELECT jsonb_build_object('hits_by_month', jsonb_agg(months), 'total_hits', SUM(months.hit_count)) AS response
+    SELECT jsonb_build_object('hits_by_month', jsonb_agg(months), 'total_hits', SUM(months."count")) AS response
     FROM (
       SELECT
         substring(bucket->>'key_as_string' from 1 for 4)::int AS year,
         substring(bucket->>'key_as_string' from 6 for 2)::int AS month,
-        SUM((bucket->>'doc_count')::bigint) AS hit_count
+        SUM((bucket->>'doc_count')::bigint) AS "count"
       FROM analytics_cache
         LEFT JOIN LATERAL jsonb_array_elements(data->'aggregations'->'hits_over_time'->'buckets') AS bucket ON true
       WHERE id IN :ids
@@ -279,26 +279,24 @@ local function generate_summary()
   })
   local format_iso8601 = icu_date.formats.iso8601()
 
-  date_tz:set(icu_date.fields.YEAR, 2013)
-  date_tz:set(icu_date.fields.MONTH, 6)
-  date_tz:set(icu_date.fields.DATE, 1)
-  date_tz:set(icu_date.fields.HOUR_OF_DAY, 0)
-  date_tz:set(icu_date.fields.MINUTE, 0)
-  date_tz:set(icu_date.fields.SECOND, 0)
-  date_tz:set(icu_date.fields.MILLISECOND, 0)
+  date_tz:parse(format_iso8601, config["web"]["analytics_v0_summary_start_time"])
+  date_tz:set_time_zone_id(config["analytics"]["timezone"])
   local start_time = date_tz:format(format_iso8601)
 
-  local now_ms = ngx.now() * 1000
-  date_tz:set_millis(now_ms)
-  date_tz:add(icu_date.fields.DATE, -1)
-  date_tz:set(icu_date.fields.HOUR_OF_DAY, 23)
-  date_tz:set(icu_date.fields.MINUTE, 59)
-  date_tz:set(icu_date.fields.SECOND, 59)
-  date_tz:set(icu_date.fields.MILLISECOND, 999)
+  if config["web"]["analytics_v0_summary_end_time"] then
+    date_tz:parse(format_iso8601, config["web"]["analytics_v0_summary_end_time"])
+    date_tz:set_time_zone_id(config["analytics"]["timezone"])
+  else
+    date_tz:set_millis(ngx.now() * 1000)
+    date_tz:add(icu_date.fields.DATE, -1)
+    date_tz:set(icu_date.fields.HOUR_OF_DAY, 23)
+    date_tz:set(icu_date.fields.MINUTE, 59)
+    date_tz:set(icu_date.fields.SECOND, 59)
+    date_tz:set(icu_date.fields.MILLISECOND, 999)
+  end
   local end_time = date_tz:format(format_iso8601)
 
-  date_tz:set_millis(now_ms)
-  date_tz:add(icu_date.fields.DATE, -30)
+  date_tz:add(icu_date.fields.DATE, -29)
   date_tz:set(icu_date.fields.HOUR_OF_DAY, 0)
   date_tz:set(icu_date.fields.MINUTE, 0)
   date_tz:set(icu_date.fields.SECOND, 0)

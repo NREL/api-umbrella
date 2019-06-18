@@ -159,12 +159,18 @@ class LogItem
     unless self.setup_indices[index_name]
       self.setup_indices_lock.synchronize do
         unless self.setup_indices[index_name]
-          self.client.indices.create(:index => index_name, :body => {
-            :aliases => {
-              index_name_read => {},
-              index_name_write => {},
-            },
-          })
+          begin
+            self.client.indices.create(:index => index_name, :body => {
+              :aliases => {
+                index_name_read => {},
+                index_name_write => {},
+              },
+            })
+          rescue Elasticsearch::Transport::Transport::Errors::BadRequest => e
+            unless e.message.include?("index_already_exists_exception")
+              raise e
+            end
+          end
 
           self.setup_indices[index_name] = true
         end

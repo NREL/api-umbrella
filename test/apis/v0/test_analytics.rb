@@ -24,8 +24,15 @@ class Test::Apis::V0::TestAnalytics < Minitest::Test
   end
 
   def test_expected_response
-    FactoryBot.create_list(:api_user, 3, :created_at => Time.parse("2013-08-15T00:00:00Z").utc)
-    FactoryBot.create_list(:log_item, 2, :request_at => Time.parse("2013-08-15T00:00:00Z").utc)
+    start_time = nil
+    end_time = nil
+    Time.use_zone($config["analytics"]["timezone"]) do
+      start_time = Time.zone.parse($config["web"]["analytics_v0_summary_start_time"].iso8601(3))
+      end_time = Time.zone.parse($config["web"]["analytics_v0_summary_end_time"].iso8601(3))
+    end
+    FactoryBot.create_list(:api_user, 3, :created_at => start_time)
+    FactoryBot.create_list(:log_item, 1, :request_at => start_time)
+    FactoryBot.create_list(:log_item, 2, :request_at => end_time)
     LogItem.refresh_indices!
 
     response = make_request
@@ -39,25 +46,25 @@ class Test::Apis::V0::TestAnalytics < Minitest::Test
     assert_kind_of(Array, data["users_by_month"])
 
     assert_equal({
-      "year" => 2013,
-      "month" => 7,
-      "count" => 0,
+      "year" => start_time.year,
+      "month" => start_time.month,
+      "count" => 1,
     }, data["hits_by_month"][0])
     assert_equal({
-      "year" => 2013,
-      "month" => 8,
+      "year" => end_time.year,
+      "month" => end_time.month,
       "count" => 2,
     }, data["hits_by_month"][1])
 
     assert_equal({
-      "year" => 2013,
-      "month" => 7,
-      "count" => 0,
+      "year" => start_time.year,
+      "month" => start_time.month,
+      "count" => 3,
     }, data["users_by_month"][0])
     assert_equal({
-      "year" => 2013,
-      "month" => 8,
-      "count" => 3,
+      "year" => end_time.year,
+      "month" => end_time.month,
+      "count" => 0,
     }, data["users_by_month"][1])
   end
 
