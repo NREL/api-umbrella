@@ -821,47 +821,50 @@ function _M:fetch_results_bulk(callback)
 end
 
 function _M:cache_daily_results()
-  local ok = xpcall(date_tz.parse, xpcall_error_handler, date_tz, format_iso8601, self.end_time)
+  local day = icu_date.new({
+    zone_id = config["analytics"]["timezone"],
+  })
+  local ok = xpcall(day.parse, xpcall_error_handler, day, format_iso8601, self.end_time)
   if not ok then
     add_error(self.errors, "end_at", "end_at", t("is not valid date"))
     return false
   end
-  date_tz:set(icu_date.fields.HOUR_OF_DAY, 23)
-  date_tz:set(icu_date.fields.MINUTE, 59)
-  date_tz:set(icu_date.fields.SECOND, 59)
-  date_tz:set(icu_date.fields.MILLISECOND, 999)
-  local end_time_millis = date_tz:get_millis()
+  day:set(icu_date.fields.HOUR_OF_DAY, 23)
+  day:set(icu_date.fields.MINUTE, 59)
+  day:set(icu_date.fields.SECOND, 59)
+  day:set(icu_date.fields.MILLISECOND, 999)
+  local end_time_millis = day:get_millis()
 
-  ok = xpcall(date_tz.parse, xpcall_error_handler, date_tz, format_iso8601, self.start_time)
+  ok = xpcall(day.parse, xpcall_error_handler, day, format_iso8601, self.start_time)
   if not ok then
     add_error(self.errors, "end_at", "end_at", t("is not valid date"))
     return false
   end
-  date_tz:set(icu_date.fields.HOUR_OF_DAY, 0)
-  date_tz:set(icu_date.fields.MINUTE, 0)
-  date_tz:set(icu_date.fields.SECOND, 0)
-  date_tz:set(icu_date.fields.MILLISECOND, 0)
+  day:set(icu_date.fields.HOUR_OF_DAY, 0)
+  day:set(icu_date.fields.MINUTE, 0)
+  day:set(icu_date.fields.SECOND, 0)
+  day:set(icu_date.fields.MILLISECOND, 0)
 
   -- Loop through every day within the date range and perform daily searches,
   -- instead of searching for everything all at once.
   local cache_ids = {}
-  while date_tz:get_millis() <= end_time_millis do
+  while day:get_millis() <= end_time_millis do
     -- For each day, setup the search instance to just search that day, instead
     -- of the original full date range.
-    self:set_start_time(date_tz:format(format_iso8601))
+    self:set_start_time(day:format(format_iso8601))
 
-    date_tz:set(icu_date.fields.HOUR_OF_DAY, 23)
-    date_tz:set(icu_date.fields.MINUTE, 59)
-    date_tz:set(icu_date.fields.SECOND, 59)
-    date_tz:set(icu_date.fields.MILLISECOND, 999)
-    self:set_end_time(date_tz:format(format_iso8601))
+    day:set(icu_date.fields.HOUR_OF_DAY, 23)
+    day:set(icu_date.fields.MINUTE, 59)
+    day:set(icu_date.fields.SECOND, 59)
+    day:set(icu_date.fields.MILLISECOND, 999)
+    self:set_end_time(day:format(format_iso8601))
 
     -- Advance the date counter to the next day.
-    date_tz:add(icu_date.fields.DATE, 1)
-    date_tz:set(icu_date.fields.HOUR_OF_DAY, 0)
-    date_tz:set(icu_date.fields.MINUTE, 0)
-    date_tz:set(icu_date.fields.SECOND, 0)
-    date_tz:set(icu_date.fields.MILLISECOND, 0)
+    day:add(icu_date.fields.DATE, 1)
+    day:set(icu_date.fields.HOUR_OF_DAY, 0)
+    day:set(icu_date.fields.MINUTE, 0)
+    day:set(icu_date.fields.SECOND, 0)
+    day:set(icu_date.fields.MILLISECOND, 0)
 
     -- Check to see if we already have cached data for this exact search query
     -- and date range.
