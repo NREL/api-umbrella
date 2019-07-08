@@ -17,7 +17,7 @@ class Test::AdminUi::TestApiUsersAllowedReferers < Minitest::Capybara::Test
     fill_in "E-mail", :with => "example@example.com"
     fill_in "First Name", :with => "John"
     fill_in "Last Name", :with => "Doe"
-    label_check "User agrees to the terms and conditions", :click => { :x => 0, :y => 0 }
+    label_check "User agrees to the terms and conditions"
     click_button("Save")
 
     assert_text("Successfully saved the user")
@@ -32,7 +32,7 @@ class Test::AdminUi::TestApiUsersAllowedReferers < Minitest::Capybara::Test
     fill_in "E-mail", :with => "example@example.com"
     fill_in "First Name", :with => "John"
     fill_in "Last Name", :with => "Doe"
-    label_check "User agrees to the terms and conditions", :click => { :x => 0, :y => 0 }
+    label_check "User agrees to the terms and conditions"
     fill_in "Restrict Access to HTTP Referers", :with => "*.example.com/*\n\n\n\nhttp://google.com/*"
     click_button("Save")
 
