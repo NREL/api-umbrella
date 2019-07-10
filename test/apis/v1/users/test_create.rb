@@ -303,6 +303,46 @@ class Test::Apis::V1::Users::TestCreate < Minitest::Test
     end
   end
 
+  def test_validates_first_name_format_configurable
+    response = make_request(:first_name => "foobar")
+    assert_response_code(201, response)
+
+    response = make_request(:first_name => "http")
+    assert_response_code(422, response)
+    data = MultiJson.load(response.body)
+    assert_equal({
+      "errors" => [{
+        "code" => "INVALID_INPUT",
+        "field" => "first_name",
+        "message" => "is invalid",
+        "full_message" => "First name: is invalid",
+      }],
+    }, data)
+
+    override_config({
+      "web" => {
+        "api_user" => {
+          "first_name_exclude_regex" => "foobar",
+        },
+      },
+    }, ["--router", "--web"]) do
+      response = make_request(:first_name => "foobar")
+      assert_response_code(422, response)
+      data = MultiJson.load(response.body)
+      assert_equal({
+        "errors" => [{
+          "code" => "INVALID_INPUT",
+          "field" => "first_name",
+          "message" => "is invalid",
+          "full_message" => "First name: is invalid",
+        }],
+      }, data)
+
+      response = make_request(:first_name => "http")
+      assert_response_code(201, response)
+    end
+  end
+
   def test_validates_last_name_length
     response = make_request(:last_name => "a" * 80)
     assert_response_code(201, response)
@@ -351,6 +391,46 @@ class Test::Apis::V1::Users::TestCreate < Minitest::Test
     end
   end
 
+  def test_validates_last_name_format_configurable
+    response = make_request(:last_name => "foobar")
+    assert_response_code(201, response)
+
+    response = make_request(:last_name => "http")
+    assert_response_code(422, response)
+    data = MultiJson.load(response.body)
+    assert_equal({
+      "errors" => [{
+        "code" => "INVALID_INPUT",
+        "field" => "last_name",
+        "message" => "is invalid",
+        "full_message" => "Last name: is invalid",
+      }],
+    }, data)
+
+    override_config({
+      "web" => {
+        "api_user" => {
+          "last_name_exclude_regex" => "foobar",
+        },
+      },
+    }, ["--router", "--web"]) do
+      response = make_request(:last_name => "foobar")
+      assert_response_code(422, response)
+      data = MultiJson.load(response.body)
+      assert_equal({
+        "errors" => [{
+          "code" => "INVALID_INPUT",
+          "field" => "last_name",
+          "message" => "is invalid",
+          "full_message" => "Last name: is invalid",
+        }],
+      }, data)
+
+      response = make_request(:last_name => "http")
+      assert_response_code(201, response)
+    end
+  end
+
   def test_validates_email_length
     response = make_request(:email => "a" * 249 + "@a.com")
     assert_response_code(201, response)
@@ -366,6 +446,63 @@ class Test::Apis::V1::Users::TestCreate < Minitest::Test
         "full_message" => "Email: is too long (maximum is 255 characters)",
       }],
     }, data)
+  end
+
+  def test_validates_email_format
+    response = make_request(:email => "foo@example.com")
+    assert_response_code(201, response)
+
+    [
+      " foo@example.com",
+      "foo@example.com ",
+      "foo@example.com\r",
+      "foo@example.com\n",
+      "foo@\rexample.com",
+      "foo@example .com",
+      "foo@ example.com",
+      "foo @example.com",
+      "foo@example",
+      "@example.com",
+      "@example",
+      "foo@.com",
+    ].each do |bad|
+      response = make_request(:email => bad)
+      assert_response_code(422, response)
+      data = MultiJson.load(response.body)
+      assert_equal({
+        "errors" => [{
+          "code" => "INVALID_INPUT",
+          "field" => "email",
+          "message" => "Provide a valid email address.",
+          "full_message" => "Email: Provide a valid email address.",
+        }],
+      }, data)
+    end
+  end
+
+  def test_validates_email_format_configurable
+    response = make_request(:email => "foo@example.com")
+    assert_response_code(201, response)
+
+    override_config({
+      "web" => {
+        "api_user" => {
+          "email_regex" => "\\A[^@\\s]+@(?!example\\.com)[^@\\s]+\\.[^@\\s]+\\z",
+        },
+      },
+    }, ["--router", "--web"]) do
+      response = make_request(:email => "foo@example.com")
+      assert_response_code(422, response)
+      data = MultiJson.load(response.body)
+      assert_equal({
+        "errors" => [{
+          "code" => "INVALID_INPUT",
+          "field" => "email",
+          "message" => "Provide a valid email address.",
+          "full_message" => "Email: Provide a valid email address.",
+        }],
+      }, data)
+    end
   end
 
   def test_validates_website_length
