@@ -31,7 +31,7 @@ module ApiUmbrellaTestHelpers
 
     def _custom_check_with_label(selector, checked, locator, **options)
       options[:allow_self] = true if locator.nil?
-      click_options = options.delete(:click) || {}
+      click_options = options.delete(:click) || { :x => 1, :y => 1 }
 
       el = find(selector, locator, options.merge(:visible => :all))
       el.session.find(:label, :for => el, :visible => true).click(click_options) unless el.checked? == checked
