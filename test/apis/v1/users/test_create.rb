@@ -307,6 +307,9 @@ class Test::Apis::V1::Users::TestCreate < Minitest::Test
     response = make_request(:first_name => "foobar")
     assert_response_code(201, response)
 
+    response = make_request(:first_name => "FOOBAR")
+    assert_response_code(201, response)
+
     response = make_request(:first_name => "http")
     assert_response_code(422, response)
     data = MultiJson.load(response.body)
@@ -327,6 +330,18 @@ class Test::Apis::V1::Users::TestCreate < Minitest::Test
       },
     }, ["--router", "--web"]) do
       response = make_request(:first_name => "foobar")
+      assert_response_code(422, response)
+      data = MultiJson.load(response.body)
+      assert_equal({
+        "errors" => [{
+          "code" => "INVALID_INPUT",
+          "field" => "first_name",
+          "message" => "is invalid",
+          "full_message" => "First name: is invalid",
+        }],
+      }, data)
+
+      response = make_request(:first_name => "FOOBAR")
       assert_response_code(422, response)
       data = MultiJson.load(response.body)
       assert_equal({
@@ -395,6 +410,9 @@ class Test::Apis::V1::Users::TestCreate < Minitest::Test
     response = make_request(:last_name => "foobar")
     assert_response_code(201, response)
 
+    response = make_request(:last_name => "FOOBAR")
+    assert_response_code(201, response)
+
     response = make_request(:last_name => "http")
     assert_response_code(422, response)
     data = MultiJson.load(response.body)
@@ -415,6 +433,18 @@ class Test::Apis::V1::Users::TestCreate < Minitest::Test
       },
     }, ["--router", "--web"]) do
       response = make_request(:last_name => "foobar")
+      assert_response_code(422, response)
+      data = MultiJson.load(response.body)
+      assert_equal({
+        "errors" => [{
+          "code" => "INVALID_INPUT",
+          "field" => "last_name",
+          "message" => "is invalid",
+          "full_message" => "Last name: is invalid",
+        }],
+      }, data)
+
+      response = make_request(:last_name => "FOOBAR")
       assert_response_code(422, response)
       data = MultiJson.load(response.body)
       assert_equal({
@@ -484,6 +514,9 @@ class Test::Apis::V1::Users::TestCreate < Minitest::Test
     response = make_request(:email => "foo@example.com")
     assert_response_code(201, response)
 
+    response = make_request(:email => "foo@EXAMPLE.com")
+    assert_response_code(201, response)
+
     override_config({
       "web" => {
         "api_user" => {
@@ -492,6 +525,18 @@ class Test::Apis::V1::Users::TestCreate < Minitest::Test
       },
     }, ["--router", "--web"]) do
       response = make_request(:email => "foo@example.com")
+      assert_response_code(422, response)
+      data = MultiJson.load(response.body)
+      assert_equal({
+        "errors" => [{
+          "code" => "INVALID_INPUT",
+          "field" => "email",
+          "message" => "Provide a valid email address.",
+          "full_message" => "Email: Provide a valid email address.",
+        }],
+      }, data)
+
+      response = make_request(:email => "foo@EXAMPLE.com")
       assert_response_code(422, response)
       data = MultiJson.load(response.body)
       assert_equal({

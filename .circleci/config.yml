@@ -8,6 +8,9 @@ jobs:
         user: root
     steps:
       - checkout
+      # Remove OpenJDK 11 from CircleCI base images, in favor of default JDK
+      # version from distro.
+      - run: apt-get -y purge openjdk-11-jre openjdk-11-jre-headless openjdk-11-jdk openjdk-11-jdk-headless
       # Install any system package dependencies.
       - run: env INSTALL_TEST_DEPENDENCIES=true ./tasks/install-system-build-dependencies
       - restore_cache:
