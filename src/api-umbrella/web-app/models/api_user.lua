@@ -281,7 +281,7 @@ ApiUser = model_ext.new_class("api_users", {
     validate_field(errors, data, "email", t("Email"), {
       { validation_ext.string:minlen(1), t("Provide your email address.") },
       { validation_ext.string:maxlen(255), string.format(t("is too long (maximum is %d characters)"), 255) },
-      { validation_ext.db_null_optional:regex([[.+@.+\..+]], "jo"), t("Provide a valid email address.") },
+      { validation_ext.db_null_optional:regex(config["web"]["api_user"]["email_regex"], "ijo"), t("Provide a valid email address.") },
     })
     validate_field(errors, data, "website", t("Website"), {
       { validation_ext.db_null_optional.string:maxlen(255), string.format(t("is too long (maximum is %d characters)"), 255) },

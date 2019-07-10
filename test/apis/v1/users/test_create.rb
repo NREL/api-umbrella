@@ -328,7 +328,7 @@ class Test::Apis::V1::Users::TestCreate < Minitest::Test
           "first_name_exclude_regex" => "foobar",
         },
       },
-    }, ["--router", "--web"]) do
+    }) do
       response = make_request(:first_name => "foobar")
       assert_response_code(422, response)
       data = MultiJson.load(response.body)
@@ -431,7 +431,7 @@ class Test::Apis::V1::Users::TestCreate < Minitest::Test
           "last_name_exclude_regex" => "foobar",
         },
       },
-    }, ["--router", "--web"]) do
+    }) do
       response = make_request(:last_name => "foobar")
       assert_response_code(422, response)
       data = MultiJson.load(response.body)
@@ -523,7 +523,7 @@ class Test::Apis::V1::Users::TestCreate < Minitest::Test
           "email_regex" => "\\A[^@\\s]+@(?!example\\.com)[^@\\s]+\\.[^@\\s]+\\z",
         },
       },
-    }, ["--router", "--web"]) do
+    }) do
       response = make_request(:email => "foo@example.com")
       assert_response_code(422, response)
       data = MultiJson.load(response.body)
