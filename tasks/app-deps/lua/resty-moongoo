@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 
-lua_cbson_version="2a0cf67daebf52fcb43274222b7b135aeb6c71d7"
-lua_cbson_hash="5834db5297cd3fa06b82a83ab64ced05"
+lua_cbson_version="ef488785981bbe3cf41237a2d9857494b73eb135"
+lua_cbson_hash="6656e6d991368c644e7dc6809297b89c"
 
-lua_resty_moongoo_version="0a54b44588be657ea74da225dc607b1fffb3bfdc"
-lua_resty_moongoo_hash="fb7855b20bbe0c96434ac94f7a9b19d8"
+lua_resty_moongoo_version="ff00437be1f6ac648b03b91cb3d9574a1e0c4762"
+lua_resty_moongoo_hash="1932424d1c5d1f76ced9f12ef756e1ea"
 
 set -e -u -x
 source ./tasks/helpers.sh

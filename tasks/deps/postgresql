@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-postgresql_version="10.8"
-postgresql_hash="b198c2aadf1d68308127a0f5b51dbe798958ffe60dd999134f6495c489afcd5d"
+postgresql_version="10.9"
+postgresql_hash="958b317fb007e94f3bef7e2a6641875db8f7f9d73db9f283324f3d6e8f5b0f54"
 
 set -e -u -x
 source ./tasks/helpers.sh

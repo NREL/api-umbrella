@@ -5,8 +5,8 @@
 # (https://github.com/zmartzone/lua-resty-openidc/pull/252) and to fix some
 # global variable warnings
 # (https://github.com/zmartzone/lua-resty-openidc/pull/254).
-lua_resty_openidc_version="88e5447d66351da5815131cf7e71aa325e3626f7"
-lua_resty_openidc_hash="0f4ef780d9b9519c9ec01ac4d441a693"
+lua_resty_openidc_version="cdaf824996d2b499de4c72852c91733872137c9c"
+lua_resty_openidc_hash="d30a973461e2f1e3762133d546062e06"
 
 set -e -u -x
 source ./tasks/helpers.sh
