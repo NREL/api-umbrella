@@ -11,7 +11,7 @@ if [ "${1}" = "start" ]; then
   api_umbrella_user="{{user}}"
   api_umbrella_group="{{group}}"
 
-  run_args=()
+  run_args=("-e" "rc.env")
   if [ -n "$api_umbrella_user" ]; then
     run_args+=("-u" "$api_umbrella_user")
   fi

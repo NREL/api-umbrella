@@ -16,7 +16,7 @@ if [ "${1}" = "start" ]; then
   bind="ldap://127.0.0.1:{{openldap.port}}/"
 
   PATH="{{_test_env_install_dir}}/libexec:{{_test_env_install_dir}}/sbin:{{_test_env_install_dir}}/bin:$PATH"
-  run_args=()
+  run_args=("-e" "rc.env")
   if [ -n "$api_umbrella_user" ]; then
     run_args+=("-u" "$api_umbrella_user")
   fi
