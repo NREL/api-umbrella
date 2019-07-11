@@ -5,17 +5,6 @@ Naming/FileName:
   Exclude:
     - "test_helper.rb"
 
-Rails/ApplicationRecord:
-  Enabled: false
-
-Rails/DynamicFindBy:
-  Whitelist:
-    # Capybara finder.
-    - find_by_id
-
-Rails/RefuteMethods:
-  Enabled: false
-
 Style/GlobalVars:
   AllowedVariables:
     - $api_umbrella_process
