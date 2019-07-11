@@ -4,6 +4,7 @@ lua_lapis_version="1.7.0-1"
 
 set -e -u -x
 source ./tasks/helpers.sh
+source ./tasks/helpers/lua.sh
 
 luarocks_install "lapis" "$lua_lapis_version"
 

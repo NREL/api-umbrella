@@ -4,6 +4,7 @@ lua_libcidr_ffi_version="1.0.0"
 
 set -e -u -x
 source ./tasks/helpers.sh
+source ./tasks/helpers/lua.sh
 
 opm_install "GUI/lua-libcidr-ffi" "$lua_libcidr_ffi_version"
 

@@ -4,6 +4,7 @@ lua_resty_nettle_version="0.105"
 
 set -e -u -x
 source ./tasks/helpers.sh
+source ./tasks/helpers/lua.sh
 
 opm_install "bungle/lua-resty-nettle" "$lua_resty_nettle_version"
 

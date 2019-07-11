@@ -4,6 +4,7 @@ lua_resty_session_version="2.24"
 
 set -e -u -x
 source ./tasks/helpers.sh
+source ./tasks/helpers/lua.sh
 
 opm_install "bungle/lua-resty-session" "$lua_resty_session_version"
 

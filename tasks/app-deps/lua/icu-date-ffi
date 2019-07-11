@@ -5,12 +5,12 @@ lua_icu_date_ffi_hash="53fecec4d7d38b6866f700236fe352b1"
 
 set -e -u -x
 source ./tasks/helpers.sh
+source ./tasks/helpers/lua.sh
 
 task_working_dir
 download "https://github.com/GUI/lua-icu-date-ffi/archive/$lua_icu_date_ffi_version.tar.gz" "md5" "$lua_icu_date_ffi_hash"
 extract_download "$lua_icu_date_ffi_version.tar.gz"
 
-cd "lua-icu-date-ffi-$lua_icu_date_ffi_version"
-"${LUAROCKS_CMD[@]}" --tree="$APP_CORE_VENDOR_LUA_DIR" make --local icu-date-ffi-git-1.rockspec ICU_DIR="$STAGE_EMBEDDED_DIR"
+luarocks_make "lua-icu-date-ffi-$lua_icu_date_ffi_version" "icu-date-ffi-git-1.rockspec"
 
 stamp

@@ -316,6 +316,7 @@ tasks:
       - ./build/work/stamp/deps/luarocks
       - ./tasks/app-deps/lua/argparse
       - ./tasks/helpers.sh
+      - ./tasks/helpers/lua.sh
     generates:
       - ./build/work/stamp/app-deps/lua/argparse
     method: checksum
@@ -329,6 +330,7 @@ tasks:
       - ./build/work/stamp/deps/luarocks
       - ./tasks/app-deps/lua/bcrypt
       - ./tasks/helpers.sh
+      - ./tasks/helpers/lua.sh
     generates:
       - ./build/work/stamp/app-deps/lua/bcrypt
     method: checksum
@@ -342,6 +344,7 @@ tasks:
       - ./build/work/stamp/deps/luarocks
       - ./tasks/app-deps/lua/cmsgpack
       - ./tasks/helpers.sh
+      - ./tasks/helpers/lua.sh
     generates:
       - ./build/work/stamp/app-deps/lua/cmsgpack
     method: checksum
@@ -357,6 +360,7 @@ tasks:
       - ./build/work/stamp/deps/luarocks
       - ./tasks/app-deps/lua/icu-date-ffi
       - ./tasks/helpers.sh
+      - ./tasks/helpers/lua.sh
     generates:
       - ./build/work/stamp/app-deps/lua/icu-date-ffi
     method: checksum
@@ -370,6 +374,7 @@ tasks:
       - ./build/work/stamp/deps/luarocks
       - ./tasks/app-deps/lua/inspect
       - ./tasks/helpers.sh
+      - ./tasks/helpers/lua.sh
     generates:
       - ./build/work/stamp/app-deps/lua/inspect
     method: checksum
@@ -383,6 +388,7 @@ tasks:
       - ./build/work/stamp/deps/luarocks
       - ./tasks/app-deps/lua/lapis
       - ./tasks/helpers.sh
+      - ./tasks/helpers/lua.sh
     generates:
       - ./build/work/stamp/app-deps/lua/lapis
     method: checksum
@@ -398,6 +404,7 @@ tasks:
       - ./build/work/stamp/deps/luarocks
       - ./tasks/app-deps/lua/libcidr-ffi
       - ./tasks/helpers.sh
+      - ./tasks/helpers/lua.sh
     generates:
       - ./build/work/stamp/app-deps/lua/libcidr-ffi
     method: checksum
@@ -411,6 +418,7 @@ tasks:
       - ./build/work/stamp/deps/luarocks
       - ./tasks/app-deps/lua/lualdap
       - ./tasks/helpers.sh
+      - ./tasks/helpers/lua.sh
     generates:
       - ./build/work/stamp/app-deps/lua/lualdap
     method: checksum
@@ -424,6 +432,7 @@ tasks:
       - ./build/work/stamp/deps/luarocks
       - ./tasks/app-deps/lua/luaposix
       - ./tasks/helpers.sh
+      - ./tasks/helpers/lua.sh
     generates:
       - ./build/work/stamp/app-deps/lua/luaposix
     method: checksum
@@ -437,6 +446,7 @@ tasks:
       - ./build/work/stamp/deps/luarocks
       - ./tasks/app-deps/lua/luasocket
       - ./tasks/helpers.sh
+      - ./tasks/helpers/lua.sh
     generates:
       - ./build/work/stamp/app-deps/lua/luasocket
     method: checksum
@@ -450,6 +460,7 @@ tasks:
       - ./build/work/stamp/deps/luarocks
       - ./tasks/app-deps/lua/luautf8
       - ./tasks/helpers.sh
+      - ./tasks/helpers/lua.sh
     generates:
       - ./build/work/stamp/app-deps/lua/luautf8
     method: checksum
@@ -463,6 +474,7 @@ tasks:
       - ./build/work/stamp/deps/luarocks
       - ./tasks/app-deps/lua/lustache
       - ./tasks/helpers.sh
+      - ./tasks/helpers/lua.sh
     generates:
       - ./build/work/stamp/app-deps/lua/lustache
     method: checksum
@@ -476,6 +488,7 @@ tasks:
       - ./build/work/stamp/deps/luarocks
       - ./tasks/app-deps/lua/lyaml
       - ./tasks/helpers.sh
+      - ./tasks/helpers/lua.sh
     generates:
       - ./build/work/stamp/app-deps/lua/lyaml
     method: checksum
@@ -489,6 +502,7 @@ tasks:
       - ./build/work/stamp/deps/luarocks
       - ./tasks/app-deps/lua/penlight
       - ./tasks/helpers.sh
+      - ./tasks/helpers/lua.sh
     generates:
       - ./build/work/stamp/app-deps/lua/penlight
     method: checksum
@@ -504,6 +518,7 @@ tasks:
       - ./build/work/stamp/deps/luarocks
       - ./tasks/app-deps/lua/psl
       - ./tasks/helpers.sh
+      - ./tasks/helpers/lua.sh
     generates:
       - ./build/work/stamp/app-deps/lua/psl
     method: checksum
@@ -517,6 +532,7 @@ tasks:
       - ./build/work/stamp/deps/luarocks
       - ./tasks/app-deps/lua/resty-auto-ssl
       - ./tasks/helpers.sh
+      - ./tasks/helpers/lua.sh
     generates:
       - ./build/work/stamp/app-deps/lua/resty-auto-ssl
     method: checksum
@@ -530,6 +546,7 @@ tasks:
       - ./build/work/stamp/deps/luarocks
       - ./tasks/app-deps/lua/resty-http
       - ./tasks/helpers.sh
+      - ./tasks/helpers/lua.sh
     generates:
       - ./build/work/stamp/app-deps/lua/resty-http
     method: checksum
@@ -543,6 +560,7 @@ tasks:
       - ./build/work/stamp/deps/luarocks
       - ./tasks/app-deps/lua/resty-logger-socket
       - ./tasks/helpers.sh
+      - ./tasks/helpers/lua.sh
     generates:
       - ./build/work/stamp/app-deps/lua/resty-logger-socket
     method: checksum
@@ -556,6 +574,7 @@ tasks:
       - ./build/work/stamp/deps/luarocks
       - ./tasks/app-deps/lua/resty-mail
       - ./tasks/helpers.sh
+      - ./tasks/helpers/lua.sh
     generates:
       - ./build/work/stamp/app-deps/lua/resty-mail
     method: checksum
@@ -571,6 +590,7 @@ tasks:
       - ./build/work/stamp/deps/luarocks
       - ./tasks/app-deps/lua/resty-moongoo
       - ./tasks/helpers.sh
+      - ./tasks/helpers/lua.sh
     generates:
       - ./build/work/stamp/app-deps/lua/resty-moongoo
     method: checksum
@@ -584,6 +604,7 @@ tasks:
       - ./build/work/stamp/deps/luarocks
       - ./tasks/app-deps/lua/resty-nettle
       - ./tasks/helpers.sh
+      - ./tasks/helpers/lua.sh
     generates:
       - ./build/work/stamp/app-deps/lua/resty-nettle
     method: checksum
@@ -597,6 +618,7 @@ tasks:
       - ./build/work/stamp/deps/luarocks
       - ./tasks/app-deps/lua/resty-openidc
       - ./tasks/helpers.sh
+      - ./tasks/helpers/lua.sh
     generates:
       - ./build/work/stamp/app-deps/lua/resty-openidc
     method: checksum
@@ -610,6 +632,7 @@ tasks:
       - ./build/work/stamp/deps/luarocks
       - ./tasks/app-deps/lua/resty-session
       - ./tasks/helpers.sh
+      - ./tasks/helpers/lua.sh
     generates:
       - ./build/work/stamp/app-deps/lua/resty-session
     method: checksum
@@ -623,6 +646,7 @@ tasks:
       - ./build/work/stamp/deps/luarocks
       - ./tasks/app-deps/lua/resty-shcache
       - ./tasks/helpers.sh
+      - ./tasks/helpers/lua.sh
     generates:
       - ./build/work/stamp/app-deps/lua/resty-shcache
     method: checksum
@@ -636,6 +660,7 @@ tasks:
       - ./build/work/stamp/deps/luarocks
       - ./tasks/app-deps/lua/resty-txid
       - ./tasks/helpers.sh
+      - ./tasks/helpers/lua.sh
     generates:
       - ./build/work/stamp/app-deps/lua/resty-txid
     method: checksum
@@ -649,6 +674,7 @@ tasks:
       - ./build/work/stamp/deps/luarocks
       - ./tasks/app-deps/lua/resty-uuid
       - ./tasks/helpers.sh
+      - ./tasks/helpers/lua.sh
     generates:
       - ./build/work/stamp/app-deps/lua/resty-uuid
     method: checksum
@@ -662,6 +688,7 @@ tasks:
       - ./build/work/stamp/deps/luarocks
       - ./tasks/app-deps/lua/resty-validation
       - ./tasks/helpers.sh
+      - ./tasks/helpers/lua.sh
     generates:
       - ./build/work/stamp/app-deps/lua/resty-validation
     method: checksum
@@ -860,6 +887,7 @@ tasks:
       - ./build/work/stamp/deps/luarocks
       - ./tasks/test-deps/lua/luacheck
       - ./tasks/helpers.sh
+      - ./tasks/helpers/lua.sh
     generates:
       - ./build/work/stamp/test-deps/lua/luacheck
     method: checksum
@@ -873,6 +901,7 @@ tasks:
       - ./build/work/stamp/deps/luarocks
       - ./tasks/test-deps/lua/penlight
       - ./tasks/helpers.sh
+      - ./tasks/helpers/lua.sh
     generates:
       - ./build/work/stamp/test-deps/lua/penlight
     method: checksum
