@@ -41,22 +41,6 @@ APP_CORE_VENDOR_DIR="$APP_CORE_DIR/shared/vendor"
 APP_CORE_VENDOR_BUNDLE_DIR="$APP_CORE_VENDOR_DIR/bundle"
 APP_CORE_VENDOR_LUA_DIR="$APP_CORE_VENDOR_DIR/lua"
 APP_CORE_VENDOR_LUA_SHARE_DIR="$APP_CORE_VENDOR_LUA_DIR/share/lua/5.1"
-LUA_PREFIX="$STAGE_EMBEDDED_DIR"
-LUAROCKS_CMD=(
-  env
-  "LUA_PATH=$LUA_PREFIX/openresty/luajit/share/lua/5.1/?.lua;$LUA_PREFIX/openresty/luajit/share/lua/5.1/?/init.lua;;"
-  "LUAROCKS_SYSCONFDIR=$LUA_PREFIX/openresty/luajit/etc/luarocks"
-  "PATH=$STAGE_EMBEDDED_DIR/openresty/openssl/bin:$STAGE_EMBEDDED_PATH"
-  "LD_LIBRARY_PATH=$STAGE_EMBEDDED_DIR/openresty/openssl/lib:$STAGE_EMBEDDED_DIR/openresty/luajit/lib:$STAGE_EMBEDDED_DIR/lib"
-  "$LUA_PREFIX/bin/luarocks"
-)
-OPM_CMD=(
-  env
-  "LUA_PATH=$LUA_PREFIX/openresty/lualib/?.lua;$LUA_PREFIX/openresty/lualib/?/init.lua;;"
-  "PATH=$STAGE_EMBEDDED_DIR/openresty/openssl/bin:$STAGE_EMBEDDED_PATH"
-  "LD_LIBRARY_PATH=$STAGE_EMBEDDED_DIR/openresty/openssl/lib:$STAGE_EMBEDDED_DIR/openresty/luajit/lib:$STAGE_EMBEDDED_DIR/lib"
-  opm
-)
 
 # Determine the sub-path for the currently executing task. This can be used for
 # generating unique directories for the current task.
@@ -233,47 +217,6 @@ download() {
 
 extract_download() {
   tar -xof "_persist/downloads/$1"
-}
-
-_luarocks_install() {
-  tree_dir="$1"
-  package="$2"
-  version="$3"
-
-  set -x
-  "${LUAROCKS_CMD[@]}" --tree="$tree_dir" install "$package" "$version"
-  find "$tree_dir/lib" -name "*.so" -exec chrpath -d {} \;
-}
-
-luarocks_install() {
-  set +x
-  _luarocks_install "$APP_CORE_VENDOR_LUA_DIR" "$@"
-}
-
-test_luarocks_install() {
-  set +x
-  _luarocks_install "$TEST_VENDOR_DIR" "$@"
-}
-
-_opm_install() {
-  tree_dir="$1"
-  package="$2"
-  version="$3"
-
-  set -x
-  mkdir -p "$tree_dir"
-  (cd "$tree_dir" && "${OPM_CMD[@]}" --cwd get "$package=$version")
-  find "$tree_dir/resty_modules" -name "*.so" -exec chrpath -d {} \;
-}
-
-opm_install() {
-  set +x
-  _opm_install "$APP_CORE_VENDOR_LUA_DIR" "$@"
-}
-
-test_opm_install() {
-  set +x
-  _opm_install "$TEST_VENDOR_DIR" "$@"
 }
 
 set -x

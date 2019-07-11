@@ -4,6 +4,7 @@ lua_luaposix_version="34.0.4-1"
 
 set -e -u -x
 source ./tasks/helpers.sh
+source ./tasks/helpers/lua.sh
 
 luarocks_install "luaposix" "$lua_luaposix_version"
 

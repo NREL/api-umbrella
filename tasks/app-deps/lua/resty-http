@@ -4,6 +4,7 @@ lua_resty_http_version="0.14"
 
 set -e -u -x
 source ./tasks/helpers.sh
+source ./tasks/helpers/lua.sh
 
 # Clean old version to deal with rename from "pintsized/lua-resty-http" (v0.12)
 # to "ledgetech/lua-resty-http" (v0.13).

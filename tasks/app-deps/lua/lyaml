@@ -4,6 +4,7 @@ lua_lyaml_version="6.2.3-1"
 
 set -e -u -x
 source ./tasks/helpers.sh
+source ./tasks/helpers/lua.sh
 
 luarocks_install "lyaml" "$lua_lyaml_version"
 
