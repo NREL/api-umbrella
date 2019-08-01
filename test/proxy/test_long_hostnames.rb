@@ -9,8 +9,8 @@ class Test::Proxy::TestLongHostnames < Minitest::Test
   end
 
   def test_supports_long_hostnames_in_api_backends_without_additional_config
-    long_frontend_host = Faker::Lorem.characters(200)
-    long_backend_host = Faker::Lorem.characters(200)
+    long_frontend_host = Faker::Lorem.characters(:number => 200)
+    long_backend_host = Faker::Lorem.characters(:number => 200)
     assert_equal(200, long_frontend_host.length)
     assert_equal(200, long_backend_host.length)
 
@@ -34,8 +34,8 @@ class Test::Proxy::TestLongHostnames < Minitest::Test
   end
 
   def test_supports_long_hostnames_in_hosts_with_additional_nginx_config
-    long_frontend_host = Faker::Lorem.characters(200)
-    long_backend_host = Faker::Lorem.characters(200)
+    long_frontend_host = Faker::Lorem.characters(:number => 200)
+    long_backend_host = Faker::Lorem.characters(:number => 200)
     assert_equal(200, long_frontend_host.length)
     assert_equal(200, long_backend_host.length)
 

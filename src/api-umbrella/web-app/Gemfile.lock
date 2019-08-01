@@ -110,14 +110,14 @@ GEM
       railties (>= 4.1.0, < 6.0)
       responders
       warden (~> 1.2.3)
-    devise-i18n (1.8.0)
+    devise-i18n (1.8.1)
       devise (>= 4.6)
-    elasticsearch (7.2.0)
-      elasticsearch-api (= 7.2.0)
-      elasticsearch-transport (= 7.2.0)
-    elasticsearch-api (7.2.0)
+    elasticsearch (7.3.0)
+      elasticsearch-api (= 7.3.0)
+      elasticsearch-transport (= 7.3.0)
+    elasticsearch-api (7.3.0)
       multi_json
-    elasticsearch-transport (7.2.0)
+    elasticsearch-transport (7.3.0)
       faraday
       multi_json
     erubis (2.7.0)
@@ -332,7 +332,7 @@ DEPENDENCIES
   delayed_job_mongoid (~> 2.3.0)
   devise (~> 4.6.1)
   devise-i18n (~> 1.8.0)
-  elasticsearch (~> 7.2.0)
+  elasticsearch (~> 7.3.0)
   font-awesome-rails (~> 4.7.0, >= 4.7.0.4)
   gitlab_omniauth-ldap (~> 2.1.0)
   http_accept_language (~> 2.1.1)

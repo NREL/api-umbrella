@@ -408,7 +408,7 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
   def test_logs_requests_with_maximum_8kb_url_limit
     url_path = "/api/hello?long="
     long_length = 8192 - "GET #{url_path} HTTP/1.1\r\n".length
-    long_value = Faker::Lorem.characters(long_length)
+    long_value = Faker::Lorem.characters(:number => long_length)
     url = "http://127.0.0.1:9080#{url_path}#{long_value}"
 
     response = Typhoeus.get(url, log_http_options)
@@ -429,7 +429,7 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
   def test_does_not_log_requests_exceeding_8kb_url_limit
     url_path = "/api/hello?long="
     long_length = 8193 - "GET #{url_path} HTTP/1.1\r\n".length
-    long_value = Faker::Lorem.characters(long_length)
+    long_value = Faker::Lorem.characters(:number => long_length)
     url = "http://127.0.0.1:9080#{url_path}#{long_value}"
 
     response = Typhoeus.get(url, log_http_options)
@@ -442,7 +442,7 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
   end
 
   def test_truncates_url_path_length_in_logs
-    long_path = "/api/hello/#{Faker::Lorem.characters(6000)}"
+    long_path = "/api/hello/#{Faker::Lorem.characters(:number => 6000)}"
     response = Typhoeus.get("http://127.0.0.1:9080#{long_path}", log_http_options)
     assert_response_code(200, response)
 
@@ -453,7 +453,7 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
   end
 
   def test_truncates_url_query_length_in_logs
-    long_query = "long=#{Faker::Lorem.characters(6000)}"
+    long_query = "long=#{Faker::Lorem.characters(:number => 6000)}"
     response = Typhoeus.get("http://127.0.0.1:9080/api/hello?#{long_query}", log_http_options)
     assert_response_code(200, response)
 
@@ -477,22 +477,22 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
     ]) do
       url_path = "/#{unique_test_id}/logging-long-response-headers/?long="
       long_length = 8192 - "GET #{url_path} HTTP/1.1\r\n".length
-      long_value = Faker::Lorem.characters(long_length)
+      long_value = Faker::Lorem.characters(:number => long_length)
       url = "http://127.0.0.1:9080#{url_path}#{long_value}"
 
-      long_host = Faker::Lorem.characters(1000)
+      long_host = Faker::Lorem.characters(:number => 1000)
       response = Typhoeus.get(url, log_http_options.deep_merge({
         :headers => {
-          "Accept" => Faker::Lorem.characters(1000),
-          "Accept-Encoding" => Faker::Lorem.characters(1000),
-          "Connection" => Faker::Lorem.characters(1000),
-          "Content-Type" => Faker::Lorem.characters(1000),
+          "Accept" => Faker::Lorem.characters(:number => 1000),
+          "Accept-Encoding" => Faker::Lorem.characters(:number => 1000),
+          "Connection" => Faker::Lorem.characters(:number => 1000),
+          "Content-Type" => Faker::Lorem.characters(:number => 1000),
           "Host" => long_host,
-          "Origin" => Faker::Lorem.characters(1000),
-          "User-Agent" => Faker::Lorem.characters(1000),
-          "Referer" => Faker::Lorem.characters(1000),
+          "Origin" => Faker::Lorem.characters(:number => 1000),
+          "User-Agent" => Faker::Lorem.characters(:number => 1000),
+          "Referer" => Faker::Lorem.characters(:number => 1000),
         },
-        :userpwd => "#{Faker::Lorem.characters(1000)}:#{Faker::Lorem.characters(1000)}",
+        :userpwd => "#{Faker::Lorem.characters(:number => 1000)}:#{Faker::Lorem.characters(:number => 1000)}",
       }))
       assert_response_code(200, response)
 
