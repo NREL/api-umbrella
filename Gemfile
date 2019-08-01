@@ -18,7 +18,7 @@ gem "minitest-hooks", "~> 1.5.0"
 gem "minitest-ci", "~> 3.4.0"
 
 # Ruby lint/style checker
-gem "rubocop", "~> 0.72.0", :require => false
+gem "rubocop", "~> 0.74.0", :require => false
 
 # Running background processes
 gem "childprocess", "~> 1.0.1"
@@ -28,12 +28,12 @@ gem "typhoeus", "~> 1.3.0"
 
 # JSON parsing
 gem "multi_json", "~> 1.13.1"
-gem "oj", "~> 3.7.0"
+gem "oj", "~> 3.8.1"
 
 # Database libraries
 gem "activerecord", "~> 5.2.0", :require => "active_record"
 gem "pg", "~> 1.1.4"
-gem "elasticsearch", "~> 7.2.0"
+gem "elasticsearch", "~> 7.3.0"
 gem "active_attr", "~> 0.15.0"
 
 # Factories for test database data
@@ -49,7 +49,7 @@ gem "rails_compatible_cookies_utils", "~> 0.1.0"
 gem "addressable", "~> 2.6.0"
 
 # Browser/JavaScript integration tests
-gem "capybara", "~> 3.25.0"
+gem "capybara", "~> 3.27.0"
 gem "selenium-webdriver", "~> 3.141"
 gem "webdrivers", "~> 4.1.0", :require => false
 # https://github.com/dbalatero/capybara-chromedriver-logger/pull/7
@@ -65,7 +65,7 @@ gem "nokogiri", "~> 1.10.0"
 gem "activesupport", "~> 5.2.0"
 
 # Generating fake strings and data.
-gem "faker", "~> 1.9.1"
+gem "faker", "~> 2.1.0"
 
 # Concurrency helpers.
 gem "concurrent-ruby", "~> 1.1.1"
