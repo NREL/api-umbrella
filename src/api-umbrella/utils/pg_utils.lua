@@ -21,9 +21,10 @@ _M.db_config = {
   password = config["postgresql"]["password"],
 }
 
+local BYTEA_METATABLE = {}
+local IDENTIFIER_METATABLE = {}
 local LIST_METATABLE = {}
 local RAW_METATABLE = {}
-local BYTEA_METATABLE = {}
 
 local function encode_values(values)
   local escaped_columns = {}
@@ -54,6 +55,22 @@ local function encode_where(values)
   return table.concat(escaped_assigns, " AND ")
 end
 
+function _M.bytea(value)
+  return setmetatable({ value }, BYTEA_METATABLE)
+end
+
+function _M.is_bytea(value)
+  return getmetatable(value) == BYTEA_METATABLE
+end
+
+function _M.identifier(value)
+  return setmetatable({ value }, IDENTIFIER_METATABLE)
+end
+
+function _M.is_identifier(value)
+  return getmetatable(value) == IDENTIFIER_METATABLE
+end
+
 function _M.list(value)
   return setmetatable({ value }, LIST_METATABLE)
 end
@@ -68,14 +85,6 @@ end
 
 function _M.is_raw(value)
   return getmetatable(value) == RAW_METATABLE
-end
-
-function _M.bytea(value)
-  return setmetatable({ value }, BYTEA_METATABLE)
-end
-
-function _M.is_bytea(value)
-  return getmetatable(value) == BYTEA_METATABLE
 end
 
 function _M.escape_like(value)
@@ -97,6 +106,8 @@ function _M.escape_literal(value)
     return _escape_literal(nil, int64.to_string(value))
   elseif _M.is_bytea(value) then
     return _encode_bytea(nil, value[1])
+  elseif _M.is_identifier(value) then
+    return _escape_identifier(nil, value[1])
   else
     return _escape_literal(nil, value)
   end
