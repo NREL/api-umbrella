@@ -1,6 +1,6 @@
 local _M = {}
 
-local escape = require("pl.utils").escape
+local escape_regex = require "api-umbrella.utils.escape_regex"
 local is_empty = require("pl.types").is_empty
 local iso8601_ms_to_timestamp = require("api-umbrella.utils.time").iso8601_ms_to_timestamp
 local json_null = require("cjson").null
@@ -65,12 +65,28 @@ function _M.cache_computed_settings(settings)
 
   -- Parse and cache the allowed referers as matchers
   if not is_empty(settings["allowed_referers"]) then
-    settings["_allowed_referer_matchers"] = {}
+    settings["_allowed_referer_regexes"] = {}
+    settings["_allowed_referer_origin_regexes"] = {}
+    local gsub_err
     for _, referer in ipairs(settings["allowed_referers"]) do
-      local matcher = escape(referer)
-      matcher = string.gsub(matcher, "%%%*", ".*")
-      matcher = "^" .. matcher .. "$"
-      table.insert(settings["_allowed_referer_matchers"], matcher)
+      local regex = escape_regex(referer)
+      regex, _, gsub_err = ngx.re.gsub(regex, [[\\\*]], ".*", "jo")
+      if gsub_err then
+        ngx.log(ngx.ERR, "regex error: ", gsub_err)
+      end
+      regex = "^" .. regex .. "$"
+      table.insert(settings["_allowed_referer_regexes"], regex)
+
+      -- If the Referer header isn't present, but Origin is, then use slightly
+      -- different behavior to match against the Origin header, which doesn't
+      -- include any part of the URL path. So take the referer regex and remove
+      -- any path portion of the matcher (the last "/" following something that
+      -- looks like a domain or IP).
+      local origin_regex, _, origin_gsub_err = ngx.re.sub(regex, "(.*[A-Za-z0-9])/.*$", "$1$$", "jo")
+      if origin_gsub_err then
+        ngx.log(ngx.ERR, "regex error: ", origin_gsub_err)
+      end
+      table.insert(settings["_allowed_referer_origin_regexes"], origin_regex)
     end
   end
   settings["allowed_referers"] = nil
