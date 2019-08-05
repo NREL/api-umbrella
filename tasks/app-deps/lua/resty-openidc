@@ -1,11 +1,16 @@
 #!/usr/bin/env bash
 
-lua_resty_openidc_version="1.7.2"
+lua_resty_openidc_version="de8860785d8911bd53e181fcf9fe8aad7c44d8cf"
+lua_resty_openidc_hash="6d78bb92b1cc449b010f77e81c4a00a6"
 
 set -e -u -x
 source ./tasks/helpers.sh
 source ./tasks/helpers/lua.sh
 
-luarocks_install "lua-resty-openidc" "$lua_resty_openidc_version"
+task_working_dir
+download "https://github.com/GUI/lua-resty-openidc/archive/$lua_resty_openidc_version.tar.gz" "md5" "$lua_resty_openidc_hash"
+extract_download "$lua_resty_openidc_version.tar.gz"
+
+luarocks_make "lua-resty-openidc-$lua_resty_openidc_version" "lua-resty-openidc-1.7.2-1.rockspec"
 
 stamp
