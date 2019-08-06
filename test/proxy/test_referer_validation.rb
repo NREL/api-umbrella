@@ -186,7 +186,7 @@ class Test::Proxy::TestRefererValidation < Minitest::Test
   end
 
   def test_referer_takes_precedence_over_origin
-    assert_unauthorized_referer("/#{unique_test_class_id}/required-referers/hello", {
+    assert_authorized_referer("/#{unique_test_class_id}/required-referers/hello", {
       "Origin" => "https://google.com",
       "Referer" => "https://google.com/extra",
     })
@@ -258,8 +258,12 @@ class Test::Proxy::TestRefererValidation < Minitest::Test
           "Origin" => origin,
         }),
       }))
-      assert_response_code(403, response)
-      assert_match("API_KEY_UNAUTHORIZED", response.body)
+      if origin_authorized
+        assert_response_code(200, response)
+      else
+        assert_response_code(403, response)
+        assert_match("API_KEY_UNAUTHORIZED", response.body)
+      end
 
       response = Typhoeus.get("http://127.0.0.1:9080#{path}", http_options.deep_merge({
         :headers => headers.except("Referer").deep_merge({
