@@ -51,15 +51,15 @@ gem "addressable", "~> 2.6.0"
 # Browser/JavaScript integration tests
 gem "capybara", "~> 3.27.0"
 gem "selenium-webdriver", "~> 3.141"
-gem "webdrivers", "~> 4.1.0", :require => false
+gem "webdrivers", "~> 4.1.2", :require => false
 # https://github.com/dbalatero/capybara-chromedriver-logger/pull/7
 gem "capybara-chromedriver-logger", "~> 0.3.0", :git => "https://github.com/ThriveTRM/capybara-chromedriver-logger.git", :branch => "do-not-raise-on-filtered-errors"
 
 # Take screenshots on capybara test failures
-gem "capybara-screenshot", "~> 1.0.22"
+gem "capybara-screenshot", "~> 1.0.23"
 
 # HTML or XML parsing
-gem "nokogiri", "~> 1.10.0"
+gem "nokogiri", "~> 1.10.4"
 
 # Useful additions
 gem "activesupport", "~> 5.2.0"
