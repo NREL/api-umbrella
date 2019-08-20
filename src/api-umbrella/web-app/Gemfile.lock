@@ -184,7 +184,7 @@ GEM
     multipart-post (2.1.1)
     net-ldap (0.16.1)
     nio4r (2.4.0)
-    nokogiri (1.10.3)
+    nokogiri (1.10.4)
       mini_portile2 (~> 2.4.0)
     oauth2 (1.4.1)
       faraday (>= 0.8, < 0.16.0)
@@ -348,7 +348,7 @@ DEPENDENCIES
   mongoid_rails_migrations (~> 1.2.1)
   mongoid_store!
   multi_json (~> 1.13.1)
-  nokogiri (~> 1.10.0)
+  nokogiri (~> 1.10.4)
   oj (~> 3.8.1)
   omniauth (~> 1.9.0)
   omniauth-cas (~> 1.1.0)!
