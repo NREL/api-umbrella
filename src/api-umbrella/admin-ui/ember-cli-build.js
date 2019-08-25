@@ -9,7 +9,7 @@ module.exports = function(defaults) {
     autoImport: {
       alias: {
         'jQuery-QueryBuilder': 'jQuery-QueryBuilder/dist/js/query-builder.standalone',
-        bootbox: 'bootbox/src/bootbox',
+        bootbox: 'bootbox/bootbox',
         diff: 'diff/dist/diff',
         inflection: 'inflection/lib/inflection',
         marked: 'marked/lib/marked',

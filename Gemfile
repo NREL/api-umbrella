@@ -28,7 +28,7 @@ gem "typhoeus", "~> 1.3.0"
 
 # JSON parsing
 gem "multi_json", "~> 1.13.1"
-gem "oj", "~> 3.8.1"
+gem "oj", "~> 3.9.0"
 
 # Database libraries
 gem "activerecord", "~> 5.2.0", :require => "active_record"
@@ -49,7 +49,7 @@ gem "rails_compatible_cookies_utils", "~> 0.1.0"
 gem "addressable", "~> 2.6.0"
 
 # Browser/JavaScript integration tests
-gem "capybara", "~> 3.27.0"
+gem "capybara", "~> 3.28.0"
 gem "selenium-webdriver", "~> 3.141"
 gem "webdrivers", "~> 4.1.0", :require => false
 # https://github.com/dbalatero/capybara-chromedriver-logger/pull/7
