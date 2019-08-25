@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-nodejs_version="10.16.1"
-nodejs_hash="127d9b2f485523805208f867fc513842570b29b4d6831773eeb6dd403a22ba9d"
+nodejs_version="10.16.3"
+nodejs_hash="d2271fd8cf997fa7447d638dfa92749ff18ca4b0d796bf89f2a82bf7800d5506"
 
 set -e -u -x
 source ./tasks/helpers.sh
