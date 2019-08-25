@@ -31,7 +31,7 @@ gem "multi_json", "~> 1.13.1"
 gem "oj", "~> 3.9.0"
 
 # Database libraries
-gem "activerecord", "~> 5.2.0", :require => "active_record"
+gem "activerecord", "~> 6.0.0", :require => "active_record"
 gem "pg", "~> 1.1.4"
 gem "elasticsearch", "~> 7.3.0"
 gem "active_attr", "~> 0.15.0"
@@ -62,7 +62,7 @@ gem "capybara-screenshot", "~> 1.0.22"
 gem "nokogiri", "~> 1.10.0"
 
 # Useful additions
-gem "activesupport", "~> 5.2.0"
+gem "activesupport", "~> 6.0.0"
 
 # Generating fake strings and data.
 gem "faker", "~> 2.1.0"
