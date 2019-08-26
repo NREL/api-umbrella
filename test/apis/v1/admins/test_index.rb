@@ -133,8 +133,8 @@ class Test::Apis::V1::Admins::TestIndex < Minitest::Test
     assert_equal([
       admin.username,
       "Superuser",
-      admin.current_sign_in_at.iso8601,
-      admin.created_at.iso8601,
+      admin.current_sign_in_at.utc.iso8601,
+      admin.created_at.utc.iso8601,
     ], csv[1])
   end
 

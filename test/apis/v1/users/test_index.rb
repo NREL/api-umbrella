@@ -243,7 +243,7 @@ class Test::Apis::V1::Users::TestIndex < Minitest::Test
       api_user.first_name,
       api_user.last_name,
       api_user.use_description,
-      api_user.created_at.iso8601,
+      api_user.created_at.utc.iso8601,
       api_user.registration_source,
       api_user.api_key_preview,
     ], csv[1])
