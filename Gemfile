@@ -21,7 +21,7 @@ gem "minitest-ci", "~> 3.4.0"
 gem "rubocop", "~> 0.74.0", :require => false
 
 # Running background processes
-gem "childprocess", "~> 1.0.1"
+gem "childprocess", "~> 2.0.0"
 
 # Making HTTP requests
 gem "typhoeus", "~> 1.3.0"
@@ -46,10 +46,10 @@ gem "database_cleaner", "~> 1.7.0"
 gem "rails_compatible_cookies_utils", "~> 0.1.0"
 
 # URL parsing/generation
-gem "addressable", "~> 2.6.0"
+gem "addressable", "~> 2.7.0"
 
 # Browser/JavaScript integration tests
-gem "capybara", "~> 3.28.0"
+gem "capybara", "~> 3.29.0"
 gem "selenium-webdriver", "~> 3.141"
 gem "webdrivers", "~> 4.1.0", :require => false
 # https://github.com/dbalatero/capybara-chromedriver-logger/pull/7
@@ -65,7 +65,7 @@ gem "nokogiri", "~> 1.10.0"
 gem "activesupport", "~> 6.0.0"
 
 # Generating fake strings and data.
-gem "faker", "~> 2.1.0"
+gem "faker", "~> 2.2.1"
 
 # Concurrency helpers.
 gem "concurrent-ruby", "~> 1.1.1"
