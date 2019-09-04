@@ -27,7 +27,6 @@ bundle config --local build.nokogiri --use-system-libraries
 bundle config --local path "$(pwd)/bundle"
 bundle config --local clean true
 bundle install
-find "$(pwd)/bundle" -name "libsass.so" -exec chrpath -d {} \;
 bundle update --bundler
 
 # Make a copy of the gems in the release directory for production purposes, and

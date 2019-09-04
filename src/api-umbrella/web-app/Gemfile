@@ -111,10 +111,10 @@ gem "font-awesome-rails", "~> 4.7.0", ">= 4.7.0.4", :require => false
 gem "active_attr", "~> 0.15.0"
 
 # URI parsing
-gem "addressable", "~> 2.6.0"
+gem "addressable", "~> 2.7.0"
 
 # Public suffix for hostnames.
-gem "public_suffix", "~> 3.1.1"
+gem "public_suffix", "~> 4.0.1"
 
 # Bundle gems for the local environment. Make sure to
 # put test-only gems in this group so their generators
