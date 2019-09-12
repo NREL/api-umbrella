@@ -42,7 +42,7 @@ gem "mongoid_store", :git => "https://github.com/GUI/mongoid_store.git"
 gem "elasticsearch", "~> 7.3.0"
 
 # OmniAuth-based authentication
-gem "devise", "~> 4.7.0"
+gem "devise", "~> 4.7.1"
 gem "devise-i18n", "~> 1.8.0"
 gem "omniauth", "~> 1.9.0"
 gem "omniauth-rails_csrf_protection", "~> 0.1.1"
