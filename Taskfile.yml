@@ -131,26 +131,14 @@ tasks:
   deps:openresty:
     deps:
       - deps:libmaxminddb
-      - deps:pcre
     cmds:
       - ./tasks/deps/openresty
     sources:
       - ./build/work/stamp/deps/libmaxminddb
-      - ./build/work/stamp/deps/pcre
       - ./tasks/deps/openresty
       - ./tasks/helpers.sh
     generates:
       - ./build/work/stamp/deps/openresty
-    method: checksum
-
-  deps:pcre:
-    cmds:
-      - ./tasks/deps/pcre
-    sources:
-      - ./tasks/deps/pcre
-      - ./tasks/helpers.sh
-    generates:
-      - ./build/work/stamp/deps/pcre
     method: checksum
 
   deps:perp:

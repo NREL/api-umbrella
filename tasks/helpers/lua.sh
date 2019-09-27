@@ -7,20 +7,19 @@ LUAROCKS_CMD=(
   env
   "LUA_PATH=$LUA_PREFIX/openresty/luajit/share/lua/5.1/?.lua;$LUA_PREFIX/openresty/luajit/share/lua/5.1/?/init.lua;;"
   "LUAROCKS_SYSCONFDIR=$LUA_PREFIX/openresty/luajit/etc/luarocks"
-  "PATH=$STAGE_EMBEDDED_DIR/openresty/openssl/bin:$STAGE_EMBEDDED_PATH"
-  "LD_LIBRARY_PATH=$STAGE_EMBEDDED_DIR/openresty/openssl/lib:$STAGE_EMBEDDED_DIR/openresty/luajit/lib:$STAGE_EMBEDDED_DIR/lib"
+  "PATH=$STAGE_EMBEDDED_PATH"
+  "LD_LIBRARY_PATH=$STAGE_EMBEDDED_DIR/openresty/luajit/lib:$STAGE_EMBEDDED_DIR/lib"
   "$LUA_PREFIX/bin/luarocks"
 )
 LUAROCKS_VARS=(
   "PSL_DIR=$STAGE_EMBEDDED_DIR"
   "ICU_DIR=$STAGE_EMBEDDED_DIR"
-  "OPENSSL_DIR=$STAGE_EMBEDDED_DIR/openresty/openssl"
 )
 OPM_CMD=(
   env
   "LUA_PATH=$LUA_PREFIX/openresty/lualib/?.lua;$LUA_PREFIX/openresty/lualib/?/init.lua;;"
-  "PATH=$STAGE_EMBEDDED_DIR/openresty/openssl/bin:$STAGE_EMBEDDED_PATH"
-  "LD_LIBRARY_PATH=$STAGE_EMBEDDED_DIR/openresty/openssl/lib:$STAGE_EMBEDDED_DIR/openresty/luajit/lib:$STAGE_EMBEDDED_DIR/lib"
+  "PATH=$STAGE_EMBEDDED_PATH"
+  "LD_LIBRARY_PATH=$STAGE_EMBEDDED_DIR/openresty/luajit/lib:$STAGE_EMBEDDED_DIR/lib"
   opm
 )
 
