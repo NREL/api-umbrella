@@ -3,7 +3,7 @@ source "https://rubygems.org"
 gem "rake", "~> 12.3.1"
 
 # Tests
-gem "minitest", "~> 5.11.3"
+gem "minitest", "~> 5.12.0"
 
 # CLI helper for running tests
 gem "minitest-sprint", "~> 1.2.0"
@@ -37,7 +37,7 @@ gem "elasticsearch", "~> 7.3.0"
 gem "active_attr", "~> 0.15.0"
 
 # Factories for test database data
-gem "factory_bot", "~> 5.0.0"
+gem "factory_bot", "~> 5.1.0"
 
 # Deleting database data between tests.
 gem "database_cleaner", "~> 1.7.0"
@@ -65,7 +65,7 @@ gem "nokogiri", "~> 1.10.0"
 gem "activesupport", "~> 6.0.0"
 
 # Generating fake strings and data.
-gem "faker", "~> 2.2.1"
+gem "faker", "~> 2.4.0"
 
 # Concurrency helpers.
 gem "concurrent-ruby", "~> 1.1.1"
