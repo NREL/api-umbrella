@@ -6,11 +6,25 @@ openresty_version="1.15.8.2"
 openresty_hash="fcc84af342ff2c073a47ffe2d3fe7b20"
 openssl_version="1.1.0l"
 openssl_hash="74a2f756c64fd7386a29184dc0344f4831192d61dc2481a93a4c5dd727f41148"
+# PCRE 8.21+ required for OpenResty's JIT regex support.
+#
+# We can likely drop compiling our own version and use the system version once
+# we no longer need to support CentOS 6 (currently on PCRE 7.8).
+pcre_version="8.43"
+pcre_hash="636222e79e392c3d95dcc545f24f98c4"
 
 set -e -u -x
 source ./tasks/helpers.sh
 
 task_working_dir
+
+download "https://ftp.pcre.org/pub/pcre/pcre-$pcre_version.tar.bz2" "md5" "$pcre_hash"
+extract_download "pcre-$pcre_version.tar.bz2"
+# Force pcre to statically link due to issues that prevent this from happening
+# by default in OpenResty 1.15.8. Shouldn't be necessary in next version of
+# OpenResty.
+# https://github.com/openresty/lua-resty-core/issues/258#issuecomment-524031472
+static_pcre_flags="-Wl,-u,pcre_version"
 
 download "https://www.openssl.org/source/openssl-$openssl_version.tar.gz" "sha256" "$openssl_hash"
 extract_download "openssl-$openssl_version.tar.gz"
@@ -25,17 +39,6 @@ extract_download "$ngx_http_geoip2_module_version.tar.gz"
   cd "openssl-$openssl_version"
   patch -p1 < "../openresty-$openresty_version/patches/openssl-1.1.0d-sess_set_get_cb_yield.patch"
   patch -p1 < "../openresty-$openresty_version/patches/openssl-1.1.0j-parallel_build_fix.patch"
-  ./config \
-      no-threads \
-      shared \
-      zlib \
-      -g \
-      enable-ssl3 \
-      enable-ssl3-method \
-      --prefix="$INSTALL_PREFIX_EMBEDDED/openresty/openssl" \
-      --libdir=lib
-  make -j"$NPROC"
-  make install_sw install_ssldirs DESTDIR="$STAGE_DIR"
 )
 
 cd "openresty-$openresty_version"
@@ -44,10 +47,14 @@ patch -p1 < "$SOURCE_DIR/build/patches/openresty-cli.patch"
 
 ./configure \
   --prefix="$INSTALL_PREFIX_EMBEDDED/openresty" \
-  --with-cc-opt="-I$STAGE_EMBEDDED_DIR/openresty/openssl/include -I$STAGE_EMBEDDED_DIR/include" \
-  --with-ld-opt="-L$STAGE_EMBEDDED_DIR/openresty/openssl/lib -L$STAGE_EMBEDDED_DIR/lib" \
+  --with-cc-opt="-I$STAGE_EMBEDDED_DIR/include" \
+  --with-ld-opt="-L$STAGE_EMBEDDED_DIR/lib $static_pcre_flags" \
   --error-log-path=stderr \
   --with-ipv6 \
+  --with-openssl="../openssl-$openssl_version" \
+  --with-pcre="../pcre-$pcre_version" \
+  --with-pcre-opt=-g \
+  --with-pcre-conf-opt="--disable-cpp --enable-jit --enable-utf --enable-unicode-properties" \
   --with-pcre-jit \
   --without-http_rds_json_module \
   --without-http_rds_csv_module \

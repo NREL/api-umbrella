@@ -48,13 +48,10 @@ if [ -z "${API_UMBRELLA_EMBEDDED_ROOT:-}" ]; then
 fi
 
 # Set the path for binaries.
-export PATH="$API_UMBRELLA_EMBEDDED_ROOT/openresty/openssl/bin:$API_UMBRELLA_EMBEDDED_ROOT/sbin:$API_UMBRELLA_EMBEDDED_ROOT/bin:$PATH"
+export PATH="$API_UMBRELLA_EMBEDDED_ROOT/sbin:$API_UMBRELLA_EMBEDDED_ROOT/bin:$PATH"
 
 # Set the path for libraries.
-export LD_LIBRARY_PATH="$API_UMBRELLA_EMBEDDED_ROOT/openresty/luajit/lib:$API_UMBRELLA_EMBEDDED_ROOT/openresty/openssl/lib:$API_UMBRELLA_EMBEDDED_ROOT/lib:${LD_LIBRARY_PATH:-}"
-
-# For the OpenResty version of OpenSSL.
-export OPENSSL_CONF="$API_UMBRELLA_EMBEDDED_ROOT/openresty/openssl/ssl/openssl.cnf"
+export LD_LIBRARY_PATH="$API_UMBRELLA_EMBEDDED_ROOT/openresty/luajit/lib:$API_UMBRELLA_EMBEDDED_ROOT/lib:${LD_LIBRARY_PATH:-}"
 
 # Set the Lua load paths to include the vendored app dependencies and the
 # embedded openresty installation.
