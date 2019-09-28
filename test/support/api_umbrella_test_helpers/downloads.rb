@@ -24,8 +24,8 @@ module ApiUmbrellaTestHelpers
     end
 
     def download_path
-      wait_for_download
-      download_paths.first
+      paths = wait_for_download
+      paths.first
     end
 
     def download_file
@@ -33,17 +33,22 @@ module ApiUmbrellaTestHelpers
     end
 
     def wait_for_download
+      paths = []
       Timeout.timeout(10) do
-        sleep 0.1 until downloaded?
+        until downloaded?(paths)
+          sleep 0.1
+          paths = download_paths
+        end
       end
+      paths
     end
 
-    def downloaded?
-      !downloading? && download_paths.any?
+    def downloaded?(paths)
+      paths.any? && !downloading?(paths)
     end
 
-    def downloading?
-      download_paths.grep(/\.(part|crdownload)$/).any?
+    def downloading?(paths)
+      paths.grep(/\.(part|crdownload)$/).any?
     end
 
     def clear_downloads
