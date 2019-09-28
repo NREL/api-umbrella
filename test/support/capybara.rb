@@ -49,6 +49,9 @@ def capybara_register_driver(driver_name, options = {})
       driver_options.args << "--lang=#{options[:lang]}"
     end
 
+    # Set download path for Chrome >= 77
+    driver_options.add_preference(:download, :default_directory => ApiUmbrellaTestHelpers::Downloads::DOWNLOADS_ROOT)
+
     capabilities = ::Selenium::WebDriver::Remote::Capabilities.chrome({
       :loggingPrefs => {
         :browser => "ALL",
@@ -62,6 +65,8 @@ def capybara_register_driver(driver_name, options = {})
       :desired_capabilities => capabilities,
     })
     driver.resize_window_to(driver.current_window_handle, 1200, 4000)
+
+    # Set download path for Chrome < 77
     driver.browser.download_path = ApiUmbrellaTestHelpers::Downloads::DOWNLOADS_ROOT
 
     driver
