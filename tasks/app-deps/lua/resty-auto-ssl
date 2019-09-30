@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-lua_resty_auto_ssl_version="0.12.0-1"
+lua_resty_auto_ssl_version="0.13.0-1"
 
 set -e -u -x
 source ./tasks/helpers.sh
