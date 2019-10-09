@@ -1,7 +1,7 @@
-import tippy from 'tippy.js'
+import { delegate } from 'tippy.js';
 
 export function initialize() {
-  tippy('body', {
+  delegate('body', {
     target: 'button.tooltip-trigger',
     trigger: 'click',
     interactive: true,

@@ -4,6 +4,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile-dev
+    command: /app/docker/dev/docker-start
     volumes:
       - .:/app
       - build_cache:/build

@@ -6,6 +6,7 @@ import { inject } from '@ember/service';
 import isFunction from 'lodash-es/isFunction';
 import scrollTo from 'jquery.scrollto';
 
+// eslint-disable-next-line ember/no-new-mixins
 export default Mixin.create({
   router: inject(),
 
