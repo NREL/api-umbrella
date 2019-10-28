@@ -22,6 +22,13 @@ class Test::Apis::V1::Users::TestCreateWelcomeEmail < Minitest::Test
       },
     }))
     assert_response_code(201, response)
+    data = MultiJson.load(response.body)
+    assert_equal({
+      "contact_url" => "https://localhost/contact/",
+      "send_welcome_email" => true,
+      "site_name" => "API Umbrella",
+    }, data.fetch("options"))
+
     assert_equal(1, sent_emails.length)
   end
 
@@ -34,6 +41,13 @@ class Test::Apis::V1::Users::TestCreateWelcomeEmail < Minitest::Test
       },
     }))
     assert_response_code(201, response)
+    data = MultiJson.load(response.body)
+    assert_equal({
+      "contact_url" => "https://localhost/contact/",
+      "send_welcome_email" => false,
+      "site_name" => "API Umbrella",
+    }, data.fetch("options"))
+
     assert_equal(0, sent_emails.length)
   end
 
@@ -46,6 +60,13 @@ class Test::Apis::V1::Users::TestCreateWelcomeEmail < Minitest::Test
       },
     }))
     assert_response_code(201, response)
+    data = MultiJson.load(response.body)
+    assert_equal({
+      "contact_url" => "https://localhost/contact/",
+      "send_welcome_email" => false,
+      "site_name" => "API Umbrella",
+    }, data.fetch("options"))
+
     assert_equal(0, sent_emails.length)
   end
 
@@ -57,6 +78,12 @@ class Test::Apis::V1::Users::TestCreateWelcomeEmail < Minitest::Test
       },
     }))
     assert_response_code(201, response)
+    data = MultiJson.load(response.body)
+    assert_equal({
+      "contact_url" => "https://localhost/contact/",
+      "site_name" => "API Umbrella",
+    }, data.fetch("options"))
+
     assert_equal(0, sent_emails.length)
   end
 
@@ -70,6 +97,13 @@ class Test::Apis::V1::Users::TestCreateWelcomeEmail < Minitest::Test
       },
     }))
     assert_response_code(201, response)
+    data = MultiJson.load(response.body)
+    assert_equal({
+      "contact_url" => "https://localhost/contact/",
+      "send_welcome_email" => true,
+      "site_name" => "API Umbrella",
+    }, data.fetch("options"))
+
     assert_equal(1, sent_emails.length)
   end
 
@@ -82,11 +116,16 @@ class Test::Apis::V1::Users::TestCreateWelcomeEmail < Minitest::Test
       },
     }))
     assert_response_code(201, response)
+    data = MultiJson.load(response.body)
+    assert_equal({
+      "contact_url" => "https://localhost/contact/",
+      "send_welcome_email" => true,
+      "site_name" => "API Umbrella",
+    }, data.fetch("options"))
 
     messages = sent_emails
     assert_equal(1, messages.length)
 
-    data = MultiJson.load(response.body)
     user = ApiUser.find(data["user"]["id"])
     message = messages.first
 
@@ -110,8 +149,8 @@ class Test::Apis::V1::Users::TestCreateWelcomeEmail < Minitest::Test
     refute_match("Here's an example", message.fetch("_mime_parts").fetch("text/plain").fetch("_body"))
 
     # Contact URL
-    assert_match(%(<a href="http://localhost/contact/">contact us</a>), message.fetch("_mime_parts").fetch("text/html").fetch("_body"))
-    assert_match("contact us ( http://localhost/contact/ )", message.fetch("_mime_parts").fetch("text/plain").fetch("_body"))
+    assert_match(%(<a href="https://localhost/contact/">contact us</a>), message.fetch("_mime_parts").fetch("text/html").fetch("_body"))
+    assert_match("contact us ( https://localhost/contact/ )", message.fetch("_mime_parts").fetch("text/plain").fetch("_body"))
   end
 
   def test_customized_content
@@ -138,11 +177,20 @@ class Test::Apis::V1::Users::TestCreateWelcomeEmail < Minitest::Test
         },
       }))
       assert_response_code(201, response)
+      data = MultiJson.load(response.body)
+      assert_equal({
+        "contact_url" => "https://example.com/contact-us",
+        "email_from_address" => "test@example.com",
+        "email_from_name" => "Tester",
+        "example_api_url" => "https://example.com/api.json?api_key=#{data.fetch("user").fetch("api_key")}&test=1",
+        "example_api_url_formatted_html" => "https://example.com/api.json?<strong>api_key=#{data.fetch("user").fetch("api_key")}</strong>&amp;test=1",
+        "send_welcome_email" => true,
+        "site_name" => "External Example",
+      }, data.fetch("options"))
 
       messages = sent_emails
       assert_equal(1, messages.length)
 
-      data = MultiJson.load(response.body)
       user = ApiUser.find(data["user"]["id"])
       message = messages.first
 

@@ -208,13 +208,13 @@ class Test::Apis::V1::Users::TestCreateWelcomeEmailSanitizedLinks < Minitest::Te
 
     assert_equal(["noreply@localhost"], message.fetch("Content").fetch("Headers").fetch("From"))
     refute_match(host, message.fetch("_mime_parts").fetch("text/plain").fetch("_body"))
-    assert_match("http://localhost/contact", message.fetch("_mime_parts").fetch("text/plain").fetch("_body"))
+    assert_match("https://localhost/contact", message.fetch("_mime_parts").fetch("text/plain").fetch("_body"))
 
     message = create_user({
       :contact_url => "mailto:example@#{host}",
     })
-    assert_match("http://localhost/contact", message.fetch("_mime_parts").fetch("text/plain").fetch("_body"))
-    assert_match("http://localhost/contact", message.fetch("_mime_parts").fetch("text/html").fetch("_body"))
+    assert_match("https://localhost/contact", message.fetch("_mime_parts").fetch("text/plain").fetch("_body"))
+    assert_match("https://localhost/contact", message.fetch("_mime_parts").fetch("text/html").fetch("_body"))
   end
 
   def assert_contact_only_host_links(host)

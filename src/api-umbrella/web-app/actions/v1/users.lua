@@ -9,8 +9,10 @@ local db = require "lapis.db"
 local dbify_json_nulls = require "api-umbrella.web-app.utils.dbify_json_nulls"
 local deep_merge_overwrite_arrays = require "api-umbrella.utils.deep_merge_overwrite_arrays"
 local deepcopy = require("pl.tablex").deepcopy
+local escape_html = require("lapis.html").escape
 local flatten_headers = require "api-umbrella.utils.flatten_headers"
 local is_array = require "api-umbrella.utils.is_array"
+local is_empty = require("pl.types").is_empty
 local is_hash = require "api-umbrella.utils.is_hash"
 local json_response = require "api-umbrella.web-app.utils.json_response"
 local known_domains = require "api-umbrella.utils.known_domains"
@@ -21,12 +23,59 @@ local validation_ext = require "api-umbrella.web-app.utils.validation_ext"
 local wrapped_json_params = require "api-umbrella.web-app.utils.wrapped_json_params"
 
 local db_null = db.NULL
+local gsub = ngx.re.gsub
 
 local _M = {}
 
-local function send_admin_notification_email(self, api_user)
+local function get_options(self)
+  local options = deepcopy(self.params["options"]) or {}
+  options["example_api_url"] = known_domains.sanitized_api_url(options["example_api_url"])
+  options["contact_url"] = known_domains.sanitized_url(options["contact_url"])
+  options["email_from_address"] = known_domains.sanitized_email(options["email_from_address"])
+
+  if options["send_notify_email"] ~= nil then
+    options["send_notify_email"] = (tostring(options["send_notify_email"]) == "true")
+  end
+
+  if options["send_welcome_email"] ~= nil then
+    options["send_welcome_email"] = (tostring(options["send_welcome_email"]) == "true")
+  end
+
+  -- For the admin tool, it's easier to have this attribute on the user model,
+  -- rather than options, so check there for whether we should send e-mail.
+  -- Also note that for backwards compatibility, we only check for the presence
+  -- of this attribute, and not it's actual value.
+  if not options["send_welcome_email"] and self.params and type(self.params["user"]) == "table" and self.params["user"]["send_welcome_email"] then
+    options["send_welcome_email"] = true
+  end
+
+  if options["verify_email"] ~= nil then
+    options["verify_email"] = (tostring(options["verify_email"]) == "true")
+  end
+
+  if is_empty(options["contact_url"]) then
+    options["contact_url"] = "https://" .. config["web"]["default_host"] .. "/contact/"
+  end
+
+  if is_empty(options["site_name"]) then
+    options["site_name"] = config["site_name"]
+  end
+
+  return options
+end
+
+local function options_output(options, response)
+  if not is_empty(options["example_api_url"]) then
+    options["example_api_url_formatted_html"] = gsub(escape_html(options["example_api_url"]), "api_key={{api_key}}", "<strong>api_key=" .. response["user"]["api_key"] .. "</strong>", "jo")
+    options["example_api_url"] = gsub(options["example_api_url"], "{{api_key}}", response["user"]["api_key"], "jo")
+  end
+
+  return options
+end
+
+local function send_admin_notification_email(self, api_user, options)
   local send_email = false
-  if self.params and type(self.params["options"]) == "table" and self.params["options"]["send_notify_email"] == "true" then
+  if options["send_notify_email"] then
     send_email = true
   end
 
@@ -38,34 +87,16 @@ local function send_admin_notification_email(self, api_user)
     return nil
   end
 
-  local ok, err = api_user_admin_notification_mailer(api_user, self.params["options"])
+  local ok, err = api_user_admin_notification_mailer(api_user, options)
   if not ok then
     ngx.log(ngx.ERR, "mail error: ", err)
   end
 end
 
-local function send_welcome_email(self, api_user)
-  local send_email = false
-  if self.params and type(self.params["options"]) == "table" and tostring(self.params["options"]["send_welcome_email"]) == "true" then
-    send_email = true
-  end
-
-  -- For the admin tool, it's easier to have this attribute on the user model,
-  -- rather than options, so check there for whether we should send e-mail.
-  -- Also note that for backwards compatibility, we only check for the presence
-  -- of this attribute, and not it's actual value.
-  if not send_email and self.params and type(self.params["user"]) == "table" and self.params["user"]["send_welcome_email"] then
-    send_email = true
-  end
-
-  if not send_email then
+local function send_welcome_email(self, api_user, options)
+  if not options["send_welcome_email"] then
     return nil
   end
-
-  local options = deepcopy(self.params["options"]) or {}
-  options["example_api_url"] = known_domains.sanitized_api_url(options["example_api_url"])
-  options["contact_url"] = known_domains.sanitized_url(options["contact_url"])
-  options["email_from_address"] = known_domains.sanitized_email(options["email_from_address"])
 
   local ok, err = api_user_welcome_mailer(api_user, options)
   if not ok then
@@ -118,6 +149,8 @@ function _M.show(self)
 end
 
 function _M.create(self)
+  local options = get_options(self)
+
   -- Wildcard CORS header to allow the signup form to be embedded anywhere.
   self.res.headers["Access-Control-Allow-Origin"] = "*"
 
@@ -134,17 +167,12 @@ function _M.create(self)
     user_params["registration_source"] = "api"
   end
 
-  local verify_email = false
-  if self.params and type(self.params["options"]) == "table" and tostring(self.params["options"]["verify_email"]) == "true" then
-    verify_email = true
-  end
-
   -- If email verification is enabled, then create the record and mark its
   -- email_verified field as true. Since the API key won't be part of the API
   -- response and will only be included in the e-mail to the user, we can
   -- assume that if the key is being used the it's only because it was received
   -- at the user's e-mail address.
-  if verify_email or self.current_admin then
+  if options["verify_email"] or self.current_admin then
     user_params["email_verified"] = true
   else
     user_params["email_verified"] = false
@@ -154,25 +182,29 @@ function _M.create(self)
   local response = {
     user = api_user:as_json({ allow_api_key = true }),
   }
+  response["options"] = options_output(options, response)
 
   -- On api key signup by public users, return the API key as part of the
   -- immediate response unless email verification is enabled.
-  if not self.current_admin and not verify_email then
+  if not self.current_admin and not options["verify_email"] then
     response["user"]["api_key"] = api_user:api_key_decrypted()
   end
 
-  send_admin_notification_email(self, api_user)
-  send_welcome_email(self, api_user)
+  send_admin_notification_email(self, api_user, options)
+  send_welcome_email(self, api_user, options)
 
   self.res.status = 201
   return json_response(self, response)
 end
 
 function _M.update(self)
+  local options = get_options(self)
+
   self.api_user:authorized_update(_M.api_user_params(self))
   local response = {
     user = self.api_user:as_json(),
   }
+  response["options"] = options_output(options, response)
 
   self.res.status = 200
   return json_response(self, response)
