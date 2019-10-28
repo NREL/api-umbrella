@@ -18,7 +18,7 @@ gem "minitest-hooks", "~> 1.5.0"
 gem "minitest-ci", "~> 3.4.0"
 
 # Ruby lint/style checker
-gem "rubocop", "~> 0.75.0", :require => false
+gem "rubocop", "~> 0.76.0", :require => false
 gem "rubocop-rails", "~> 2.3.0", :require => false
 
 # Running background processes
@@ -28,7 +28,7 @@ gem "childprocess", "~> 3.0.0"
 gem "typhoeus", "~> 1.3.0"
 
 # JSON parsing
-gem "multi_json", "~> 1.13.1"
+gem "multi_json", "~> 1.14.1"
 gem "oj", "~> 3.9.0"
 
 # Database libraries
@@ -68,7 +68,7 @@ gem "activesupport", "~> 5.2.0"
 gem "lazyhash", "~> 0.1.1"
 
 # Generating fake strings and data.
-gem "faker", "~> 2.5.0"
+gem "faker", "~> 2.6.0"
 
 # Concurrency helpers.
 gem "concurrent-ruby", "~> 1.1.1"

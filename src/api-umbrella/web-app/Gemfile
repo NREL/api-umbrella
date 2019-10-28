@@ -15,7 +15,7 @@ gem "rack-timeout", "~> 0.5.1", :require => "rack/timeout/base"
 gem "rack-proxy", "~> 0.6.4"
 
 # JSON handling
-gem "multi_json", "~> 1.13.1"
+gem "multi_json", "~> 1.14.1"
 gem "oj", "~> 3.9.0", :platforms => [:ruby]
 
 # MongoDB
@@ -91,7 +91,7 @@ gem "lucene_query_parser", :git => "https://github.com/zerowidth/lucene_query_pa
 gem "request_store", "~> 1.4.1"
 
 # Share i18n data with the admin-ui client-side app.
-gem "i18n-js", "~> 3.3.0"
+gem "i18n-js", "~> 3.4.0"
 
 # Log to stdout instead of file
 #
