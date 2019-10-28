@@ -1,7 +1,7 @@
 'use strict';
 
 const path = require('path');
-const CleanWebpackPlugin = require('clean-webpack-plugin');
+const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
 module.exports = {
@@ -26,7 +26,9 @@ module.exports = {
           {
             loader: 'sass-loader',
             options: {
-              outputStyle: 'compressed',
+              sassOptions: {
+                outputStyle: 'compressed',
+              },
             },
           },
         ],
@@ -34,7 +36,7 @@ module.exports = {
     ],
   },
   plugins: [
-    new CleanWebpackPlugin(['./assets/dist']),
+    new CleanWebpackPlugin(),
     new MiniCssExtractPlugin({
       filename: '[name]-[hash].css',
       chunkFilename: '[id]-[hash].css',

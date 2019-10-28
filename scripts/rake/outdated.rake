@@ -26,6 +26,18 @@ namespace :outdated do
     end
   end
 
+  namespace "web-app" do
+    desc "List outdated web-app NPM dependencies"
+    task :npm do
+      require "childprocess"
+      process = ChildProcess.build("yarn", "outdated")
+      process.cwd = File.join(API_UMBRELLA_SRC_ROOT, "src/api-umbrella/web-app")
+      process.io.inherit!
+      process.start
+      process.wait
+    end
+  end
+
   namespace "website" do
     desc "List outdated website gem dependencies"
     task :gems do
@@ -51,6 +63,10 @@ desc "List outdated dependencies"
 task :outdated do
   puts "==== ADMIN-UI: NPM ===="
   Rake::Task["outdated:admin-ui:npm"].invoke
+  puts "\n\n"
+
+  puts "==== WEB-APP: NPM ===="
+  Rake::Task["outdated:web-app:npm"].invoke
   puts "\n\n"
 
   puts "==== TEST: GEMS ===="
