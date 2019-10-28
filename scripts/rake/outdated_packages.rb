@@ -153,7 +153,7 @@ class OutdatedPackages
     },
     "nodejs" => {
       :git => "https://github.com/nodejs/node.git",
-      :constraint => "~> 10.13",
+      :constraint => "~> 12.13",
     },
     "openldap" => {
       :git => "https://github.com/openldap/openldap.git",

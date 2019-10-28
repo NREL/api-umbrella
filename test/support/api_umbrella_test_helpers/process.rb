@@ -196,7 +196,7 @@ module ApiUmbrellaTestHelpers
         progress.exit
 
         end_time = Time.now.utc
-        puts format("(%.2fs)", end_time - start_time)
+        puts format("(%<time>.2fs)", :time => end_time - start_time)
 
         # If anything exited unsuccessfully, abort tests.
         if(health.crashed? || $api_umbrella_process.crashed?)

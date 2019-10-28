@@ -1,6 +1,7 @@
 import Mixin from '@ember/object/mixin'
 import { run } from '@ember/runloop';
 
+// eslint-disable-next-line ember/no-new-mixins
 export default Mixin.create({
   // Call before fetching a model to clear any client-side cache data.
   //
