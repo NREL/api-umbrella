@@ -39,7 +39,6 @@ class Test::Processes::TestRpaths < Minitest::Test
       "/embedded/bin/ruby",
       "/embedded/sbin/rsyslogd",
       "/embedded/openresty/nginx/sbin/nginx",
-      "/embedded/openresty/openssl/bin/openssl",
       "/embedded/libexec/trafficserver/header_rewrite.so",
       # LuaRock
       "/embedded/apps/core/shared/vendor/lua/lib/lua/5.1/yaml.so",
