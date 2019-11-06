@@ -3,7 +3,7 @@ source "https://rubygems.org"
 gem "rake", "~> 13.0.0"
 
 # Tests
-gem "minitest", "~> 5.12.0"
+gem "minitest", "~> 5.13.0"
 
 # CLI helper for running tests
 gem "minitest-sprint", "~> 1.2.0"
@@ -65,7 +65,7 @@ gem "nokogiri", "~> 1.10.0"
 gem "activesupport", "~> 6.0.0"
 
 # Generating fake strings and data.
-gem "faker", "~> 2.6.0"
+gem "faker", "~> 2.7.0"
 
 # Concurrency helpers.
 gem "concurrent-ruby", "~> 1.1.1"

@@ -2,8 +2,14 @@ module ApiUmbrellaTestHelpers
   module CapybaraSelectize
     def selectize_add(locator, value)
       fill_in locator, :with => value
-      page.document.find(".selectize-dropdown-content div.create", :text => /Add #{value}/).click
-      page.document.find("body").send_keys(:escape)
+      within page.document do
+        assert_selector(".selectize-dropdown > .selectize-dropdown-content")
+        find(".selectize-dropdown-content div.create", :text => /Add #{value}/).click
+      end
+      find_field(locator).send_keys(:escape)
+      within page.document do
+        refute_selector(".selectize-dropdown")
+      end
     end
 
     def selectize_remove(locator, value)
