@@ -65,7 +65,7 @@ local function get_options(self)
 end
 
 local function options_output(options, response)
-  if not is_empty(options["example_api_url"]) then
+  if not is_empty(options["example_api_url"]) and response["user"] and response["user"]["api_key"] then
     options["example_api_url_formatted_html"] = gsub(escape_html(options["example_api_url"]), "api_key={{api_key}}", "<strong>api_key=" .. response["user"]["api_key"] .. "</strong>", "jo")
     options["example_api_url"] = gsub(options["example_api_url"], "{{api_key}}", response["user"]["api_key"], "jo")
   end
@@ -182,13 +182,14 @@ function _M.create(self)
   local response = {
     user = api_user:as_json({ allow_api_key = true }),
   }
-  response["options"] = options_output(options, response)
 
   -- On api key signup by public users, return the API key as part of the
   -- immediate response unless email verification is enabled.
   if not self.current_admin and not options["verify_email"] then
     response["user"]["api_key"] = api_user:api_key_decrypted()
   end
+
+  response["options"] = options_output(options, response)
 
   send_admin_notification_email(api_user, options)
   send_welcome_email(api_user, options)

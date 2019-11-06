@@ -107,8 +107,27 @@ class Test::Apis::V1::Users::TestCreateWelcomeEmail < Minitest::Test
     assert_equal(1, sent_emails.length)
   end
 
+  def test_non_admin
+    response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(non_admin_key_creator_api_key).deep_merge({
+      :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
+      :body => {
+        :user => FactoryBot.attributes_for(:api_user),
+        :options => { :send_welcome_email => true },
+      },
+    }))
+    assert_response_code(201, response)
+    data = MultiJson.load(response.body)
+    assert_equal({
+      "contact_url" => "https://localhost/contact/",
+      "send_welcome_email" => true,
+      "site_name" => "API Umbrella",
+    }, data.fetch("options"))
+
+    assert_equal(1, sent_emails.length)
+  end
+
   def test_default_content
-    response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(admin_token).deep_merge({
+    response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(non_admin_key_creator_api_key).deep_merge({
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => {
         :user => FactoryBot.attributes_for(:api_user),
@@ -176,7 +195,7 @@ class Test::Apis::V1::Users::TestCreateWelcomeEmail < Minitest::Test
         :url_matches => [{ :frontend_prefix => "/#{unique_test_id}/", :backend_prefix => "/" }],
       },
     ]) do
-      response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(admin_token).deep_merge({
+      response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(non_admin_key_creator_api_key).deep_merge({
         :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
         :body => {
           :user => FactoryBot.attributes_for(:api_user),
@@ -236,7 +255,7 @@ class Test::Apis::V1::Users::TestCreateWelcomeEmail < Minitest::Test
   end
 
   def test_html_escaping
-    response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(admin_token).deep_merge({
+    response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(non_admin_key_creator_api_key).deep_merge({
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => {
         :user => FactoryBot.attributes_for(:api_user, :email => "foo<script>&bar@example.com", :first_name => "Test&First", :last_name => "Test&Last"),
@@ -265,5 +284,15 @@ class Test::Apis::V1::Users::TestCreateWelcomeEmail < Minitest::Test
 
     assert_match("Account ID: #{user.id}", message.fetch("_mime_parts").fetch("text/html").fetch("_body"))
     assert_match("Account ID: #{user.id}", message.fetch("_mime_parts").fetch("text/plain").fetch("_body"))
+  end
+
+  private
+
+  def non_admin_key_creator_api_key
+    user = FactoryBot.create(:api_user, {
+      :roles => ["api-umbrella-key-creator"],
+    })
+
+    { :headers => { "X-Api-Key" => user.api_key } }
   end
 end
