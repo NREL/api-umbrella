@@ -73,7 +73,7 @@ local function options_output(options, response)
   return options
 end
 
-local function send_admin_notification_email(self, api_user, options)
+local function send_admin_notification_email(api_user, options)
   local send_email = false
   if options["send_notify_email"] then
     send_email = true
@@ -93,7 +93,7 @@ local function send_admin_notification_email(self, api_user, options)
   end
 end
 
-local function send_welcome_email(self, api_user, options)
+local function send_welcome_email(api_user, options)
   if not options["send_welcome_email"] then
     return nil
   end
@@ -190,8 +190,8 @@ function _M.create(self)
     response["user"]["api_key"] = api_user:api_key_decrypted()
   end
 
-  send_admin_notification_email(self, api_user, options)
-  send_welcome_email(self, api_user, options)
+  send_admin_notification_email(api_user, options)
+  send_welcome_email(api_user, options)
 
   self.res.status = 201
   return json_response(self, response)
