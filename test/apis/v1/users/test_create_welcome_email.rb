@@ -133,6 +133,13 @@ class Test::Apis::V1::Users::TestCreateWelcomeEmail < Minitest::Test
     refute_nil(user.email)
     assert_equal([user.email], message.fetch("Content").fetch("Headers").fetch("To"))
 
+    # Greeting
+    assert_match("Hi #{user.first_name},</p>", message.fetch("_mime_parts").fetch("text/html").fetch("_body"))
+    assert_match("Hi #{user.first_name},", message.fetch("_mime_parts").fetch("text/plain").fetch("_body"))
+
+    assert_match("Your API key for <strong>#{user.email}</strong> is:</p>", message.fetch("_mime_parts").fetch("text/html").fetch("_body"))
+    assert_match("Your API key for #{user.email} is:", message.fetch("_mime_parts").fetch("text/plain").fetch("_body"))
+
     # API key
     refute_nil(user.api_key)
     assert_match(user.api_key, message.fetch("_mime_parts").fetch("text/html").fetch("_body"))
@@ -151,6 +158,13 @@ class Test::Apis::V1::Users::TestCreateWelcomeEmail < Minitest::Test
     # Contact URL
     assert_match(%(<a href="https://localhost/contact/">contact us</a>), message.fetch("_mime_parts").fetch("text/html").fetch("_body"))
     assert_match("contact us ( https://localhost/contact/ )", message.fetch("_mime_parts").fetch("text/plain").fetch("_body"))
+
+    # Support footer
+    assert_match("Account Email: #{user.email}", message.fetch("_mime_parts").fetch("text/html").fetch("_body"))
+    assert_match("Account Email: #{user.email}", message.fetch("_mime_parts").fetch("text/plain").fetch("_body"))
+
+    assert_match("Account ID: #{user.id}", message.fetch("_mime_parts").fetch("text/html").fetch("_body"))
+    assert_match("Account ID: #{user.id}", message.fetch("_mime_parts").fetch("text/plain").fetch("_body"))
   end
 
   def test_customized_content
@@ -219,5 +233,37 @@ class Test::Apis::V1::Users::TestCreateWelcomeEmail < Minitest::Test
       assert_match(%(<a href="https://example.com/contact-us">contact us</a>), message.fetch("_mime_parts").fetch("text/html").fetch("_body"))
       assert_match("contact us ( https://example.com/contact-us )", message.fetch("_mime_parts").fetch("text/plain").fetch("_body"))
     end
+  end
+
+  def test_html_escaping
+    response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(admin_token).deep_merge({
+      :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
+      :body => {
+        :user => FactoryBot.attributes_for(:api_user, :email => "foo<script>&bar@example.com", :first_name => "Test&First", :last_name => "Test&Last"),
+        :options => { :send_welcome_email => true },
+      },
+    }))
+    assert_response_code(201, response)
+
+    messages = sent_emails
+    assert_equal(1, messages.length)
+
+    data = MultiJson.load(response.body)
+    user = ApiUser.find(data["user"]["id"])
+    message = messages.first
+
+    # Greeting
+    assert_match("Hi Test&amp;First,</p>", message.fetch("_mime_parts").fetch("text/html").fetch("_body"))
+    assert_match("Hi Test&First,", message.fetch("_mime_parts").fetch("text/plain").fetch("_body"))
+
+    assert_match("Your API key for <strong>foo&lt;script&gt;&amp;bar@example.com</strong> is:</p>", message.fetch("_mime_parts").fetch("text/html").fetch("_body"))
+    assert_match("Your API key for foo<script>&bar@example.com is:", message.fetch("_mime_parts").fetch("text/plain").fetch("_body"))
+
+    # Support footer
+    assert_match("Account Email: foo&lt;script&gt;&amp;bar@example.com", message.fetch("_mime_parts").fetch("text/html").fetch("_body"))
+    assert_match("Account Email: foo<script>&bar@example.com", message.fetch("_mime_parts").fetch("text/plain").fetch("_body"))
+
+    assert_match("Account ID: #{user.id}", message.fetch("_mime_parts").fetch("text/html").fetch("_body"))
+    assert_match("Account ID: #{user.id}", message.fetch("_mime_parts").fetch("text/plain").fetch("_body"))
   end
 end
