@@ -61,12 +61,12 @@ GEM
     concurrent-ruby (1.1.5)
     crass (1.0.5)
     database_cleaner (1.7.0)
-    elasticsearch (7.3.0)
-      elasticsearch-api (= 7.3.0)
-      elasticsearch-transport (= 7.3.0)
-    elasticsearch-api (7.3.0)
+    elasticsearch (7.4.0)
+      elasticsearch-api (= 7.4.0)
+      elasticsearch-transport (= 7.4.0)
+    elasticsearch-api (7.4.0)
       multi_json
-    elasticsearch-transport (7.3.0)
+    elasticsearch-transport (7.4.0)
       faraday
       multi_json
     encryptor (3.0.0)
@@ -168,7 +168,7 @@ DEPENDENCIES
   childprocess (~> 3.0.0)
   concurrent-ruby (~> 1.1.1)
   database_cleaner (~> 1.7.0)
-  elasticsearch (~> 7.3.0)
+  elasticsearch (~> 7.4.0)
   encryptor (~> 3.0.0)
   factory_bot (~> 5.1.0)
   faker (~> 2.7.0)
