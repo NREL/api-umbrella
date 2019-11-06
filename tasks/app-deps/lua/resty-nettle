@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-lua_resty_nettle_version="0.105"
+lua_resty_nettle_version="1.0"
 
 set -e -u -x
 source ./tasks/helpers.sh
