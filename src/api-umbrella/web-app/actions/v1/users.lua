@@ -65,12 +65,17 @@ local function get_options(self)
 end
 
 local function options_output(options, response)
-  if not is_empty(options["example_api_url"]) and response["user"] and response["user"]["api_key"] then
-    options["example_api_url_formatted_html"] = gsub(escape_html(options["example_api_url"]), "api_key={{api_key}}", "<strong>api_key=" .. response["user"]["api_key"] .. "</strong>", "jo")
-    options["example_api_url"] = gsub(options["example_api_url"], "{{api_key}}", response["user"]["api_key"], "jo")
+  local output = deepcopy(options)
+
+  if not is_empty(output["example_api_url"]) and response["user"] and response["user"]["api_key"] then
+    output["example_api_url_formatted_html"] = gsub(escape_html(output["example_api_url"]), "api_key={{api_key}}", "<strong>api_key=" .. response["user"]["api_key"] .. "</strong>", "jo")
+    output["example_api_url"] = gsub(output["example_api_url"], "{{api_key}}", response["user"]["api_key"], "jo")
+  else
+    output["example_api_url_formatted_html"] = nil
+    output["example_api_url"] = nil
   end
 
-  return options
+  return output
 end
 
 local function send_admin_notification_email(api_user, options)
@@ -191,8 +196,15 @@ function _M.create(self)
 
   response["options"] = options_output(options, response)
 
-  send_admin_notification_email(api_user, options)
-  send_welcome_email(api_user, options)
+  -- Rebuild the output options, always with the API key, since the email
+  -- should always include the full API key.
+  local email_response = deepcopy(response)
+  if not email_response["user"]["api_key"] then
+    email_response["user"]["api_key"] = api_user:api_key_decrypted()
+  end
+  local email_options = options_output(options, email_response)
+  send_admin_notification_email(api_user, email_options)
+  send_welcome_email(api_user, email_options)
 
   self.res.status = 201
   return json_response(self, response)

@@ -60,7 +60,7 @@ local template_html, template_html_err = etlua.compile([[
     <p><%- greeting %></p>
     <code class="signup-key"><%- api_key %></code>
 
-    <% if example_api_url then %>
+    <% if example_api_url and example_api_url_formatted_html then %>
       <p><%- example_instruction %></p>
       <pre><a href="<%= example_api_url %>"><%- example_api_url_formatted_html %></a></pre>
     <% end %>

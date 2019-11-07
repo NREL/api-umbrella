@@ -126,6 +126,41 @@ class Test::Apis::V1::Users::TestCreateWelcomeEmail < Minitest::Test
     assert_equal(1, sent_emails.length)
   end
 
+  def test_email_verification
+    response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(non_admin_key_creator_api_key).deep_merge({
+      :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
+      :body => {
+        :user => FactoryBot.attributes_for(:api_user),
+        :options => {
+          :send_welcome_email => true,
+          :verify_email => true,
+          :example_api_url => "https://localhost/api.json?api_key={{api_key}}&test=1",
+        },
+      },
+    }))
+    assert_response_code(201, response)
+    data = MultiJson.load(response.body)
+
+    assert_nil(data.fetch("user")["api_key"])
+    user = ApiUser.find(data["user"]["id"])
+    refute_match(user.api_key, response.body)
+
+    assert_equal({
+      "contact_url" => "https://localhost/contact/",
+      "send_welcome_email" => true,
+      "site_name" => "API Umbrella",
+      "verify_email" => true,
+    }, data.fetch("options"))
+
+    messages = sent_emails
+    assert_equal(1, messages.length)
+    message = messages.first
+
+    refute_nil(user.api_key)
+    assert_match(%(<a href="https://localhost/api.json?api_key=#{user.api_key}&amp;test=1">https://localhost/api.json?<strong>api_key=#{user.api_key}</strong>&amp;test=1</a>), message.fetch("_mime_parts").fetch("text/html").fetch("_body"))
+    assert_match("\n\nhttps://localhost/api.json?api_key=#{user.api_key}&test=1\n\n\n", message.fetch("_mime_parts").fetch("text/plain").fetch("_body"))
+  end
+
   def test_default_content
     response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(non_admin_key_creator_api_key).deep_merge({
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
