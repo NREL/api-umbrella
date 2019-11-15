@@ -9,7 +9,13 @@ class Test::Apis::V0::TestAnalytics < Minitest::Test
     LogItem.clean_indices!
   end
 
-  def test_forbids_api_key_without_role
+  def test_forbids_api_key_without_any_role
+    user = FactoryBot.create(:api_user)
+    response = make_request(user)
+    assert_response_code(401, response)
+  end
+
+  def test_forbids_api_key_without_correct_role
     user = FactoryBot.create(:api_user, {
       :roles => ["api-umbrella-public-metricsx"],
     })
@@ -21,6 +27,21 @@ class Test::Apis::V0::TestAnalytics < Minitest::Test
   def test_allows_api_key_with_role
     response = make_request
     assert_response_code(200, response)
+  end
+
+  def test_allows_api_key_without_role_if_configured
+    user = FactoryBot.create(:api_user)
+    response = make_request(user)
+    assert_response_code(401, response)
+
+    override_config({
+      "web" => {
+        "analytics_v0_summary_required_role" => nil,
+      },
+    }) do
+      response = make_request(user)
+      assert_response_code(200, response)
+    end
   end
 
   def test_expected_response

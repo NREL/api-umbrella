@@ -1,3 +1,4 @@
+local config = require "api-umbrella.proxy.models.file_config"
 local is_empty = require("pl.types").is_empty
 local request_api_umbrella_roles = require "api-umbrella.utils.request_api_umbrella_roles"
 local throw_authorization_error = require "api-umbrella.web-app.policies.throw_authorization_error"
@@ -51,9 +52,14 @@ end
 function _M.authorize_summary()
   local allowed = false
 
-  local current_roles = request_api_umbrella_roles()
-  if current_roles["api-umbrella-public-metrics"] then
+  local required_role = config["web"]["analytics_v0_summary_required_role"]
+  if required_role == nil then
     allowed = true
+  else
+    local current_roles = request_api_umbrella_roles()
+    if current_roles[required_role] then
+      allowed = true
+    end
   end
 
   if allowed then

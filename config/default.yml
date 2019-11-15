@@ -148,6 +148,7 @@ web:
     smtp_settings:
       address: 127.0.0.1
       port: 25
+  analytics_v0_summary_required_role: api-umbrella-public-metrics
   analytics_v0_summary_start_time: 2013-07-01T00:00:00.000Z
   analytics_v0_summary_end_time:
   analytics_v0_summary_filter:
