@@ -3,20 +3,20 @@ source "https://rubygems.org"
 gem "rails", "~> 4.2.11", ">= 4.2.11.1"
 
 # Rails app server
-gem "puma", "~> 4.2.1"
+gem "puma", "~> 4.3.1"
 
 # Error notification service (optional)
 gem "rollbar", "~> 2.22.0"
 
 # Abort requests that take too long
-gem "rack-timeout", "~> 0.5.1", :require => "rack/timeout/base"
+gem "rack-timeout", "~> 0.6.0", :require => "rack/timeout/base"
 
 # For proxying HTTP requests to password-protected places for admins.
 gem "rack-proxy", "~> 0.6.4"
 
 # JSON handling
 gem "multi_json", "~> 1.14.1"
-gem "oj", "~> 3.9.0", :platforms => [:ruby]
+gem "oj", "~> 3.10.0", :platforms => [:ruby]
 
 # MongoDB
 gem "mongoid", "~> 5.4"
@@ -39,11 +39,11 @@ gem "mongoid_rails_migrations", "~> 1.2.1"
 gem "mongoid_store", :git => "https://github.com/GUI/mongoid_store.git"
 
 # Elasticsearch
-gem "elasticsearch", "~> 7.3.0"
+gem "elasticsearch", "~> 7.4.0"
 
 # OmniAuth-based authentication
 gem "devise", "~> 4.7.0"
-gem "devise-i18n", "~> 1.8.0"
+gem "devise-i18n", "~> 1.9.0"
 gem "omniauth", "~> 1.9.0"
 gem "omniauth-rails_csrf_protection", "~> 0.1.1"
 gem "omniauth-cas", "~> 1.1.0", :git => "https://github.com/GUI/omniauth-cas.git", :branch => "rexml", :require => false
@@ -91,7 +91,7 @@ gem "lucene_query_parser", :git => "https://github.com/zerowidth/lucene_query_pa
 gem "request_store", "~> 1.4.1"
 
 # Share i18n data with the admin-ui client-side app.
-gem "i18n-js", "~> 3.4.0"
+gem "i18n-js", "~> 3.5.0"
 
 # Log to stdout instead of file
 #
@@ -104,7 +104,7 @@ gem "simple_form", "~> 3.5", ">= 3.5.1"
 
 # Login stylesheets
 gem "sass-rails", "~> 6.0.0"
-gem "bootstrap", "~> 4.3.1", :require => false
+gem "bootstrap", "~> 4.4.1", :require => false
 gem "font-awesome-rails", "~> 4.7.0", ">= 4.7.0.4", :require => false
 
 # Table-less models
