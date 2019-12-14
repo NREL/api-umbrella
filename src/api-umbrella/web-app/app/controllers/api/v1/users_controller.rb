@@ -139,7 +139,7 @@ class Api::V1::UsersController < Api::V1::BaseController
       api_key_roles = request.headers["X-Api-Roles"].to_s.split(",")
       unless(api_key_roles.include?("api-umbrella-key-creator"))
         render(:json => { :error => "You need to sign in or sign up before continuing." }, :status => :unauthorized)
-        return false
+        false
       end
     end
   end

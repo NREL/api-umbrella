@@ -297,7 +297,7 @@ module ApiUmbrellaTestHelpers
             end
           end
         end
-      rescue Timeout::Error # rubocop:disable Lint/HandleExceptions
+      rescue Timeout::Error # rubocop:disable Lint/SuppressedException
         # Ignore and return nil pid.
       end
 
