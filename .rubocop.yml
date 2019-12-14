@@ -12,14 +12,7 @@ AllCops:
 Bundler/OrderedGems:
   Enabled: false
 
-Layout/AlignHash:
-  # https://github.com/rubocop-hq/rubocop/issues/6291
-  EnforcedLastArgumentHashStyle: ignore_implicit
-
-Layout/AlignArguments:
-  EnforcedStyle: with_fixed_indentation
-
-Layout/AlignParameters:
+Layout/ArgumentAlignment:
   EnforcedStyle: with_fixed_indentation
 
 Layout/CaseIndentation:
@@ -28,23 +21,30 @@ Layout/CaseIndentation:
 Layout/EndAlignment:
   EnforcedStyleAlignWith: start_of_line
 
-Layout/IndentFirstArgument:
+Layout/FirstArgumentIndentation:
   EnforcedStyle: consistent
 
-Layout/IndentFirstArrayElement:
+Layout/FirstArrayElementIndentation:
   EnforcedStyle: consistent
 
-Layout/IndentFirstHashElement:
+Layout/FirstHashElementIndentation:
   EnforcedStyle: consistent
 
-Layout/IndentFirstParameter:
+Layout/FirstParameterIndentation:
   EnforcedStyle: consistent
+
+Layout/HashAlignment:
+  # https://github.com/rubocop-hq/rubocop/issues/6291
+  EnforcedLastArgumentHashStyle: ignore_implicit
 
 Layout/MultilineMethodCallIndentation:
   EnforcedStyle: indented
 
 Layout/MultilineOperationIndentation:
   EnforcedStyle: indented
+
+Layout/ParameterAlignment:
+  EnforcedStyle: with_fixed_indentation
 
 Layout/SpaceAroundKeyword:
   Enabled: false
