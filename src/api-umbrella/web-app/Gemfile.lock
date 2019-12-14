@@ -82,7 +82,7 @@ GEM
       popper_js (>= 1.14.3, < 2)
       sassc-rails (>= 2.0.0)
     brakeman (4.7.2)
-    bson (4.6.0)
+    bson (4.7.0)
     builder (3.2.4)
     bundler-audit (0.6.1)
       bundler (>= 1.2.0, < 3)
