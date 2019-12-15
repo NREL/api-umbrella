@@ -11,99 +11,9 @@ local json_encode = require "api-umbrella.utils.json_encode"
 local json_response = require "api-umbrella.web-app.utils.json_response"
 local pg_utils = require "api-umbrella.utils.pg_utils"
 local respond_to = require "api-umbrella.web-app.utils.respond_to"
+local time = require "api-umbrella.utils.time"
 
 local _M = {}
-
-local function generate_summary_users(start_time, end_time)
-  -- Fetch the user signups by month, trying to remove duplicate signups for
-  -- the same e-mail address (each e-mail address only gets counted for the
-  -- first month it signed up). Also fill in 0s for missing months of no data.
-  local users_by_month = pg_utils.query([[
-    SELECT extract(year FROM all_months.month) AS year, extract(month FROM all_months.month) AS month, COALESCE(counts_by_month.users_count, 0) AS "count"
-    FROM (
-      SELECT month
-      FROM generate_series(date_trunc('month', timestamp :start_time), date_trunc('month', timestamp :end_time), interval '1 month') AS month
-    ) AS all_months
-    LEFT JOIN (
-      SELECT date_trunc('month', first_created_at) as created_at_month, COUNT(email) AS users_count
-      FROM (
-        SELECT email, MIN(created_at) AS first_created_at
-        FROM api_users
-        WHERE imported != TRUE
-          AND disabled_at IS NULL
-        GROUP BY email
-      ) AS unique_users
-      GROUP BY created_at_month
-    ) AS counts_by_month ON all_months.month = counts_by_month.created_at_month
-    ORDER BY all_months.month
-  ]], {
-    start_time = start_time,
-    end_time = end_time,
-  }, { fatal = true })
-
-  local total_users = 0
-  for _, month in ipairs(users_by_month) do
-    month["count"] = int64_to_json_number(month["count"])
-    total_users = total_users + month["count"]
-  end
-
-  return {
-    users_by_month = users_by_month,
-    total_users = total_users,
-  }
-end
-
-local function generate_summary_hits(start_time, end_time)
-  local cache_id = "analytics_summary:hits:" .. start_time .. ":" .. end_time
-  local cache = Cache:find(cache_id)
-  if cache then
-    ngx.log(ngx.NOTICE, "Using cached analytics response for " .. cache_id)
-    return json_decode(cache.data)
-  end
-  ngx.log(ngx.NOTICE, "Fetching new analytics response for " .. cache_id)
-
-  local search = AnalyticsSearch.factory(config["analytics"]["adapter"])
-  search:set_start_time(start_time)
-  search:set_end_time(end_time)
-  search:set_interval("month")
-  search:filter_exclude_imported()
-  search:aggregate_by_interval()
-
-  -- Try to ignore some of the baseline monitoring traffic. Only include
-  -- successful responses.
-  if config["web"]["analytics_v0_summary_filter"] then
-    search:set_search_query_string(config["web"]["analytics_v0_summary_filter"])
-  end
-
-  -- This query can take a long time to run, so set a long timeout. But since
-  -- we're only delivering cached results and refreshing periodically in the
-  -- background, this long timeout should be okay.
-  search:set_timeout(20 * 60) -- 20 minutes
-
-  local analytics_cache_ids = search:cache_daily_results()
-  local response = pg_utils.query([[
-    SELECT jsonb_build_object('hits_by_month', jsonb_agg(months), 'total_hits', SUM(months."count")) AS response
-    FROM (
-      SELECT
-        substring(bucket->>'key_as_string' from 1 for 4)::int AS year,
-        substring(bucket->>'key_as_string' from 6 for 2)::int AS month,
-        SUM((bucket->>'doc_count')::bigint) AS "count"
-      FROM analytics_cache
-        LEFT JOIN LATERAL jsonb_array_elements(data->'aggregations'->'hits_over_time'->'buckets') AS bucket ON true
-      WHERE id IN :ids
-      GROUP BY year, month
-      ORDER BY year, month
-    ) AS months
-  ]], {
-    ids = pg_utils.list(analytics_cache_ids)
-  }, { fatal = true })[1]["response"]
-
-  local response_json = json_encode(response)
-  local expires_at = ngx.now() + 60 * 60 * 24 * 2 -- 2 days
-  Cache:upsert(cache_id, response_json, expires_at)
-
-  return response
-end
 
 local function generate_organization_summary(start_time, end_time, recent_start_time, filters)
   local cache_id = "analytics_summary:organization:" .. start_time .. ":" .. end_time .. ":" .. recent_start_time .. ":" .. ngx.md5(json_encode(filters))
@@ -281,6 +191,7 @@ local function generate_summary()
   date_tz:parse(format_iso8601, config["web"]["analytics_v0_summary_start_time"])
   date_tz:set_time_zone_id(config["analytics"]["timezone"])
   local start_time = date_tz:format(format_iso8601)
+  local start_time_ms = date_tz:get_millis()
 
   if config["web"]["analytics_v0_summary_end_time"] then
     date_tz:parse(format_iso8601, config["web"]["analytics_v0_summary_end_time"])
@@ -294,6 +205,7 @@ local function generate_summary()
     date_tz:set(icu_date.fields.MILLISECOND, 999)
   end
   local end_time = date_tz:format(format_iso8601)
+  local end_time_ms = date_tz:get_millis()
 
   date_tz:add(icu_date.fields.DATE, -29)
   date_tz:set(icu_date.fields.HOUR_OF_DAY, 0)
@@ -302,21 +214,14 @@ local function generate_summary()
   date_tz:set(icu_date.fields.MILLISECOND, 0)
   local recent_start_time = date_tz:format(format_iso8601)
 
-  local users = generate_summary_users(start_time, end_time)
-  local hits = generate_summary_hits(start_time, end_time)
-
   local response = {
-    users_by_month = users["users_by_month"],
-    hits_by_month = hits["hits_by_month"],
-    total_users = users["total_users"],
-    total_hits = hits["total_hits"],
     production_apis = generate_production_apis_summary(start_time, end_time, recent_start_time),
-    start_time = start_time,
-    end_time = end_time,
+    start_time = time.timestamp_ms_to_iso8601(start_time_ms),
+    end_time = time.timestamp_ms_to_iso8601(end_time_ms),
+    timezone = date_tz:get_time_zone_id(),
   }
 
-  date_tz:set_millis(ngx.now() * 1000)
-  response["cached_at"] = date_tz:format(format_iso8601)
+  response["cached_at"] = time.timestamp_to_iso8601(ngx.now())
 
   local cache_id = "analytics_summary"
   local response_json = json_encode(response)
