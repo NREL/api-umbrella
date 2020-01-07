@@ -12,4 +12,4 @@ set -e -u
 # shouldn't have a huge impact for these one-off CLI tasks, we'll silence these
 # warnings for now. At some point, maybe the lyaml or lfs modules will improve
 # to eliminate globals.
-exec resty --errlog-level error "$API_UMBRELLA_SRC_ROOT/src/api-umbrella/cli/runner.lua" -- "$@"
+exec resty --errlog-level error "$API_UMBRELLA_SRC_ROOT/src/api-umbrella/cli/runner.lua" "$@"
