@@ -36,6 +36,6 @@ ENV["TZ"] = ::Time.zone.tzinfo.identifier
 
 # Load all the support files. Load models first, so they're defined for other
 # helpers.
-Dir[File.join(API_UMBRELLA_SRC_ROOT, "test/support/models/*.rb")].each { |f| require f }
-Dir[File.join(API_UMBRELLA_SRC_ROOT, "test/support/models/**/*.rb")].each { |f| require f }
-Dir[File.join(API_UMBRELLA_SRC_ROOT, "test/support/**/*.rb")].each { |f| require f }
+Dir[File.join(API_UMBRELLA_SRC_ROOT, "test/support/models/*.rb")].sort.each { |f| require f }
+Dir[File.join(API_UMBRELLA_SRC_ROOT, "test/support/models/**/*.rb")].sort.each { |f| require f }
+Dir[File.join(API_UMBRELLA_SRC_ROOT, "test/support/**/*.rb")].sort.each { |f| require f }

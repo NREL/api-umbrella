@@ -6,7 +6,7 @@ gem "rails", "~> 4.2.11", ">= 4.2.11.1"
 gem "puma", "~> 4.3.1"
 
 # Error notification service (optional)
-gem "rollbar", "~> 2.22.0"
+gem "rollbar", "~> 2.23.1"
 
 # Abort requests that take too long
 gem "rack-timeout", "~> 0.6.0", :require => "rack/timeout/base"
@@ -88,7 +88,7 @@ gem "kramdown-parser-gfm", "~> 1.1.0"
 gem "lucene_query_parser", :git => "https://github.com/zerowidth/lucene_query_parser.git"
 
 # Thread-safe per-request variables.
-gem "request_store", "~> 1.4.1"
+gem "request_store", "~> 1.5.0"
 
 # Share i18n data with the admin-ui client-side app.
 gem "i18n-js", "~> 3.5.0"
