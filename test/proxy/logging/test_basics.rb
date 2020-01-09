@@ -520,6 +520,8 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
   end
 
   def test_case_sensitivity
+    assert($config["geoip"]["maxmind_license_key"], "MAXMIND_LICENSE_KEY environment variable must be set with valid license for geoip tests to run")
+
     # Setup a backend to accept wildcard hosts so we can test an uppercase hostname.
     prepend_api_backends([
       {
