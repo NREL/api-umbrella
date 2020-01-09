@@ -1,5 +1,6 @@
 local dir = require "pl.dir"
 local file = require "pl.file"
+local geoip_download_if_missing_or_old = require("api-umbrella.utils.geoip").download_if_missing_or_old
 local invert_table = require "api-umbrella.utils.invert_table"
 local lustache = require "lustache"
 local mustache_unescape = require "api-umbrella.utils.mustache_unescape"
@@ -128,18 +129,12 @@ end
 
 
 local function ensure_geoip_db()
-  -- If the city db path doesn't exist, copy it from the package installation
-  -- location to the runtime location (this path will then be overwritten by
-  -- the auto-updater so we don't touch the original packaged file).
-  local city_db_path = path.join(config["db_dir"], "geoip/GeoLite2-City.mmdb")
-  if not path.exists(city_db_path) then
-    local default_city_db_path = path.join(config["_embedded_root_dir"], "var/db/geoip/GeoLite2-City.mmdb")
-    dir.makepath(path.dirname(city_db_path))
-    file.copy(default_city_db_path, city_db_path)
-    chmod(city_db_path, tonumber("0640", 8))
-    if config["group"] then
-      chown(city_db_path, nil, config["group"])
-    end
+  local _, err = geoip_download_if_missing_or_old(config)
+  if err then
+    ngx.log(ngx.ERR, "GeoIP Database download failed: ", err)
+    config["geoip"]["_enabled"] = false
+  else
+    config["geoip"]["_enabled"] = true
   end
 end
 
@@ -291,7 +286,9 @@ local function activate_services()
     active_services["elasticsearch-aws-signing-proxy"] = 1
   end
   if config["_service_router_enabled?"] then
-    active_services["geoip-auto-updater"] = 1
+    if config["geoip"]["_enabled"] then
+      active_services["geoip-auto-updater"] = 1
+    end
     active_services["mora"] = 1
     active_services["nginx"] = 1
     active_services["rsyslog"] = 1

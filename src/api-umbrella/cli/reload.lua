@@ -46,6 +46,14 @@ local function reload_nginx(perp_base)
   end
 end
 
+local function reload_geoip_auto_updater(perp_base)
+  local _, _, err = run_command({ "perpctl", "-b", perp_base, "term", "geoip-auto-updater" })
+  if err then
+    print("Failed to reload geoip-auto-updater\n" .. err)
+    os.exit(1)
+  end
+end
+
 local function reload_dev_env_ember_server(perp_base)
   local _, _, err = run_command({ "perpctl", "-b", perp_base, "term", "dev-env-ember-server" })
   if err then
@@ -76,6 +84,10 @@ return function(options)
   if config["_service_router_enabled?"] and (is_empty(options) or options["router"]) then
     reload_trafficserver(config)
     reload_nginx(perp_base)
+
+    if config["geoip"]["_enabled"] then
+      reload_geoip_auto_updater(perp_base)
+    end
   end
 
   if config["app_env"] == "development" then

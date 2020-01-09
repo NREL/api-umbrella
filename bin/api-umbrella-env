@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -e -u
+set -Eeuo pipefail
 
 if [ -z "${API_UMBRELLA_ROOT:-}" ]; then
   export API_UMBRELLA_ROOT="/opt/api-umbrella"

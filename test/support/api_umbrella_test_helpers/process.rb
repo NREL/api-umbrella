@@ -63,6 +63,9 @@ module ApiUmbrellaTestHelpers
         # Create an config file for computed overrides.
         computed = {
           "root_dir" => TEST_RUN_API_UMBRELLA_ROOT,
+          "geoip" => {
+            "maxmind_license_key" => ENV["MAXMIND_LICENSE_KEY"],
+          },
         }
         if(::Process.euid == 0)
           # If tests are running as root (Docker environment), then add the

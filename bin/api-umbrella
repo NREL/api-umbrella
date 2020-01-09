@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -e -u
+set -Eeuo pipefail
 
 # Resolve the current path, taking into account symlinks.
 source="${BASH_SOURCE[0]}"

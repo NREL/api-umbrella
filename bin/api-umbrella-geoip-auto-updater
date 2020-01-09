@@ -1,81 +1,18 @@
 #!/usr/bin/env bash
 
-set -e -u
+set -Eeuo pipefail
 
-# Kill the child "sleep" processes on exit.
-cleanup() {
-  local pids
-  mapfile -t pids < <(jobs -pr)
-  if [ -n "${pids:-}" ]; then
-    kill "${pids[@]}"
-  fi
-}
-trap "cleanup" EXIT
-
-if [ -z "${API_UMBRELLA_SRC_ROOT:-}" ]; then
-  echo "Error: API_UMBRELLA_SRC_ROOT environment variable is not set"
-  exit 1
-fi
-
-if [ -z "${API_UMBRELLA_DB_DIR:-}" ]; then
-  echo "Error: API_UMBRELLA_DB_DIR environment variable is not set"
-  exit 1
-fi
-
-download_url="https://geolite.maxmind.com/download/geoip/database/GeoLite2-City.tar.gz"
-frequency=86400 # Sleep for 1 day between runs
-
-while true; do
-  current_path="$API_UMBRELLA_DB_DIR/geoip/GeoLite2-City.mmdb"
-
-  # Don't attempt to redownload if the current file has recently been updated
-  # (within the last 22 hours).
-  if [[ -f "$current_path" && -n "$(find "$current_path" -mmin -1320)" ]]; then
-    echo "$current_path recently updated - skipping"
-    sleep $frequency
-    continue
-  fi
-
-  # Download the data file to a temporary path.
-  echo "Downloading new file..."
-  unzip_dir=$(mktemp -d -t api-umbrella-geoip-auto-updater.XXXXXXXXXX)
-  download_path="$unzip_dir.gz"
-  if ! curl --silent --show-error --fail --location --retry 3 --output "$download_path" "$download_url"; then
-    echo "Error downloading $download_url"
-  else
-    # Un-gzip the downloaded file.
-    if ! tar -xof "$download_path" -C "$unzip_dir" --strip-components 1; then
-      echo "Error unzipping $download_path"
-    else
-      unzip_path="$unzip_dir/GeoLite2-City.mmdb"
-      unzip_md5=$(openssl md5 "$unzip_path" | awk '{print $2}')
-      if [ -f "$current_path" ]; then
-        current_md5=$(openssl md5 "$current_path" | awk '{print $2}')
-      fi
-
-      # If the new files is different, move it into place and then reload API
-      # Umbrella.
-      if [ "$unzip_md5" == "${current_md5:-}" ]; then
-        echo "$current_path is already up to date (checksum: ${current_md5:-})"
-      else
-        mv "$unzip_path" "$current_path"
-        echo "Installed new $current_path"
-
-        if "$API_UMBRELLA_SRC_ROOT"/bin/api-umbrella reload; then
-          echo "Reloaded api-umbrella"
-        else
-          echo "Reloading api-umbrella failed"
-        fi
-      fi
-
-      # Touch the file so we know we've checked it recently (even if we didn't
-      # replace it).
-      touch "$current_path"
-    fi
-  fi
-
-  # Cleanup any temp files.
-  rm -f "$download_path" "$unzip_path"
-
-  sleep $frequency
+# Resolve the current path, taking into account symlinks.
+source="${BASH_SOURCE[0]}"
+while [ -L "$source" ]; do
+  dir="$(cd -P "$(dirname "$source")" && pwd)"
+  source="$(readlink "$source")"
+  [[ $source != /* ]] && source="$dir/$source"
 done
+dir="$(cd -P "$(dirname "$source")" && pwd)"
+
+# shellcheck source=bin/api-umbrella-env
+source "$dir/api-umbrella-env"
+
+# Run the Lua app.
+exec resty --errlog-level notice "$API_UMBRELLA_SRC_ROOT/src/api-umbrella/geoip-auto-updater.lua" "$@"
