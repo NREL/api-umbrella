@@ -131,7 +131,7 @@ end
 local function ensure_geoip_db()
   local _, err = geoip_download_if_missing_or_old(config)
   if err then
-    ngx.log(ngx.ERR, "GeoIP Database download failed: ", err)
+    ngx.log(ngx.ERR, "geoip database download failed: ", err)
     config["geoip"]["_enabled"] = false
   else
     config["geoip"]["_enabled"] = true

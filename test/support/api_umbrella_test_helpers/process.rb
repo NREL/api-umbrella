@@ -275,6 +275,20 @@ module ApiUmbrellaTestHelpers
       reload.wait
     end
 
+    def processes
+      env = {
+        "API_UMBRELLA_EMBEDDED_ROOT" => EMBEDDED_ROOT,
+        "API_UMBRELLA_CONFIG" => CONFIG,
+      }
+      output, status = Open3.capture2e(env, File.join(API_UMBRELLA_SRC_ROOT, "bin/api-umbrella"), "processes")
+
+      if status.exitstatus != 0
+        raise "api-umbrella processes failed: #{output}"
+      end
+
+      output
+    end
+
     def perp_signal(service_name, signal_name)
       output, status = run_shell("perpctl", "-b", File.join($config["root_dir"], "etc/perp"), signal_name, service_name)
       if(status != 0)

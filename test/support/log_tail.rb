@@ -17,4 +17,22 @@ class LogTail
 
     output
   end
+
+  def read_until(regex, timeout: 5)
+    output = ""
+    begin
+      Timeout.timeout(timeout) do
+        loop do
+          output << self.read
+          break if output.match(regex)
+
+          sleep 0.1
+        end
+      end
+    rescue Timeout::Error
+      raise "Timed out (#{timeout}s) waiting for content in log (#{@path}): #{regex}\nLog Output: #{output.inspect}"
+    end
+
+    output
+  end
 end

@@ -3,10 +3,10 @@ local geoip_download_if_missing_or_old = require("api-umbrella.utils.geoip").dow
 local run_command = require "api-umbrella.utils.run_command"
 
 local function update()
-  print("UPDATE!")
+  ngx.log(ngx.NOTICE, "Checking for geoip database updates...")
   local status, err = geoip_download_if_missing_or_old(config)
   if err then
-    ngx.log(ngx.ERR, "GeoIP Database download failed: ", err)
+    ngx.log(ngx.ERR, "geoip database download failed: ", err)
   elseif status == "changed" then
     local _, _, reload_err = run_command({ "api-umbrella", "reload", "--router" })
     if reload_err then
@@ -20,4 +20,8 @@ end
 local _, err = ngx.timer.every(config["geoip"]["db_update_frequency"], update)
 if err then
   ngx.log(ngx.ERR, "Failed to create update timer: ", err)
+end
+
+while true do
+  ngx.sleep(3600)
 end

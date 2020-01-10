@@ -28,6 +28,11 @@ class Test::Proxy::Logging::TestIpGeocodingNoLicenseKey < Minitest::Test
     refute_match("geoip2", nginx_config)
   end
 
+  def test_runs_auto_update_process
+    processes = api_umbrella_process.processes
+    assert_match(%r{^\[- --- ---\] *geoip-auto-updater *\(service not activated\)$}, processes)
+  end
+
   def test_logs_but_no_geoip
     response = Typhoeus.get("http://127.0.0.1:9080/api/hello", log_http_options.deep_merge({
       :headers => {

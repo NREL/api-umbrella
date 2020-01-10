@@ -14,7 +14,7 @@ local _M = {}
 
 local function perform_download(config, unzip_dir, download_path)
   -- Download file
-  ngx.log(ngx.NOTICE, "Downloading new file..." .. download_path)
+  ngx.log(ngx.NOTICE, "Downloading new file (" .. download_path .. ")")
   local download_url = "https://download.maxmind.com/app/geoip_download?edition_id=GeoLite2-City&suffix=tar.gz&license_key=" .. ngx.escape_uri(config["geoip"]["maxmind_license_key"])
   local _, _, curl_err = run_command({ "curl", "--silent", "--show-error", "--fail", "--location", "--retry", "3", "--output", download_path, download_url })
   if curl_err then
@@ -58,7 +58,7 @@ local function perform_download(config, unzip_dir, download_path)
     if move_err then
       return false, move_err
     end
-    ngx.log(ngx.NOTICE, "Installed new " .. current_path)
+    ngx.log(ngx.NOTICE, "Installed new geoip database (" .. current_path .. ")")
   end
 
   -- Touch the file so we know we've checked it recently (even if we didn't
@@ -68,22 +68,12 @@ local function perform_download(config, unzip_dir, download_path)
     return false, touch_err
   end
 
-  if current_checksum == unzip_checksum then
-    return "unchanged"
-  else
-    return "changed"
+  local status = "unchanged"
+  if current_checksum ~= unzip_checksum then
+    status = "changed"
   end
-  -- If the new file is different, reload API Umbrella.
-  -- if current_checksum ~= unzip_checksum then
-  --   local _, _, reload_err = run_command({ "api-umbrella", "reload" })
-  --   if reload_err then
-  --     return false, reload_err
-  --   else
-  --     ngx.log(ngx.NOTICE, "Reloaded api-umbrella")
-  --   end
-  -- end
 
-  -- return true
+  return status
 end
 
 function _M.download(config)
