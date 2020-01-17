@@ -3,7 +3,7 @@ source "https://rubygems.org"
 gem "rake", "~> 13.0.0"
 
 # Tests
-gem "minitest", "~> 5.13.0"
+gem "minitest", "~> 5.14.0"
 
 # CLI helper for running tests
 gem "minitest-sprint", "~> 1.2.0"
