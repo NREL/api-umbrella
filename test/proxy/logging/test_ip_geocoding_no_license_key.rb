@@ -49,7 +49,5 @@ class Test::Proxy::Logging::TestIpGeocodingNoLicenseKey < Minitest::Test
     refute(record.key?("request_ip_region"))
     assert_nil(record["request_ip_city"])
     refute(record.key?("request_ip_city"))
-
-    assert_equal(0, LogCityLocation.count)
   end
 end
