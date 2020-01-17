@@ -8,6 +8,19 @@ class Test::Proxy::Logging::TestIpGeocoding < Minitest::Test
   def setup
     super
     setup_server
+
+    assert($config["geoip"]["maxmind_license_key"], "MAXMIND_LICENSE_KEY environment variable must be set with valid license for geoip tests to run")
+  end
+
+  def test_nginx_geoip_config
+    nginx_config_path = File.join($config.fetch("root_dir"), "etc/nginx/router.conf")
+    nginx_config = File.read(nginx_config_path)
+    assert_match("geoip2", nginx_config)
+  end
+
+  def test_runs_auto_update_process
+    processes = api_umbrella_process.processes
+    assert_match(%r{^\[\+ \+\+\+ \+\+\+\] *geoip-auto-updater *uptime: \d+\w/\d+\w *pids: \d+/\d+$}, processes)
   end
 
   def test_ipv4_address

@@ -48,16 +48,6 @@ tasks:
       - ./build/work/stamp/deps/elasticsearch
     method: checksum
 
-  deps:geolitecity:
-    cmds:
-      - ./tasks/deps/geolitecity
-    sources:
-      - ./tasks/deps/geolitecity
-      - ./tasks/helpers.sh
-    generates:
-      - ./build/work/stamp/deps/geolitecity
-    method: none
-
   deps:icu4c:
     cmds:
       - ./tasks/deps/icu4c
@@ -229,7 +219,6 @@ tasks:
     cmds:
       - task: deps:bundler
       - task: deps:elasticsearch
-      - task: deps:geolitecity
       - task: deps:icu4c
       - task: deps:libcidr
       - task: deps:luarocks

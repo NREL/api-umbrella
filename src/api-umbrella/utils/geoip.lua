@@ -1,0 +1,130 @@
+local checksum_file_sha256 = require("api-umbrella.utils.checksum_file").sha256
+local file_move = require("pl.file").move
+local mkdtemp = require("posix.stdlib").mkdtemp
+local makepath = require("pl.dir").makepath
+local path = require "pl.path"
+local run_command = require "api-umbrella.utils.run_command"
+local stat = require("posix.sys.stat").stat
+
+local dirname = path.dirname
+local path_exists = path.exists
+local path_join = path.join
+
+local _M = {}
+
+local function perform_download(config, unzip_dir, download_path)
+  -- Download file
+  ngx.log(ngx.NOTICE, "Downloading new file (" .. download_path .. ")")
+  local download_url = "https://download.maxmind.com/app/geoip_download?edition_id=GeoLite2-City&suffix=tar.gz&license_key=" .. ngx.escape_uri(config["geoip"]["maxmind_license_key"])
+  local _, _, curl_err = run_command({ "curl", "--silent", "--show-error", "--fail", "--location", "--retry", "3", "--output", download_path, download_url })
+  if curl_err then
+    return false, curl_err
+  end
+
+  -- Decompress
+  local _, _, tar_err = run_command({ "tar", "-xof", download_path, "-C", unzip_dir, "--strip-components", "1" })
+  if tar_err then
+    return false, tar_err
+  end
+
+  -- Checksum current db file.
+  local current_path = path_join(config["db_dir"], "geoip/GeoLite2-City.mmdb")
+  local current_checksum
+  if path_exists(current_path) then
+    local current_checksum_err
+    current_checksum, current_checksum_err = checksum_file_sha256(current_path)
+    if current_checksum_err then
+      return false, current_checksum_err
+    end
+  end
+
+  -- Checksum new db file.
+  local unzip_path = path_join(unzip_dir, "GeoLite2-City.mmdb")
+  local unzip_checksum, unzip_checksum_err = checksum_file_sha256(unzip_path)
+  if unzip_checksum_err then
+    return false, unzip_checksum_err
+  end
+
+  -- If the new file is different, move it into place.
+  if current_checksum == unzip_checksum then
+    ngx.log(ngx.NOTICE, current_path .. " is already up to date (checksum: " .. current_checksum ..")")
+  else
+    local _, makepath_err = makepath(dirname(current_path))
+    if makepath_err then
+      return false, makepath_err
+    end
+
+    local _, move_err = file_move(unzip_path, current_path)
+    if move_err then
+      return false, move_err
+    end
+    ngx.log(ngx.NOTICE, "Installed new geoip database (" .. current_path .. ")")
+  end
+
+  -- Touch the file so we know we've checked it recently (even if we didn't
+  -- replace it because the new file was identical to the current file).
+  local _, _, touch_err = run_command({ "touch", current_path })
+  if touch_err then
+    return false, touch_err
+  end
+
+  local status = "unchanged"
+  if current_checksum ~= unzip_checksum then
+    status = "changed"
+  end
+
+  return status
+end
+
+function _M.download(config)
+  -- Ensure license key is present, since otherwise downloading won't work.
+  if not config["geoip"]["maxmind_license_key"] then
+    return false, "Can't download geoip database due to missing geoip.maxmind_license_key config"
+  end
+
+  -- Create temp directory for decompressing to.
+  local unzip_dir, mkdtemp_err = mkdtemp(path_join(os.getenv("TMPDIR") or "/tmp", "api-umbrella-geoip-auto-updater.XXXXXX"))
+  if mkdtemp_err then
+    return false, mkdtemp_err
+  end
+
+  local download_path = unzip_dir .. ".tar.gz"
+  local status, err = perform_download(config, unzip_dir, download_path)
+
+  -- Cleanup temp directory and temp download file.
+  local _, _, rm_err = run_command({ "rm", "-rf", unzip_dir, download_path })
+  if rm_err then
+    return false, rm_err
+  end
+
+  return status, err
+end
+
+function _M.download_if_missing_or_old(config)
+  -- Ensure license key is present, since otherwise downloading won't work.
+  if not config["geoip"]["maxmind_license_key"] then
+    return false, "Can't download geoip database due to missing geoip.maxmind_license_key config"
+  end
+
+  local city_db_path = path_join(config["db_dir"], "geoip/GeoLite2-City.mmdb")
+  local download = false
+  if not path_exists(city_db_path) then
+    download = true
+  else
+    -- Check the age of the current file. Don't attempt to download if the
+    -- current file has recently been updated.
+    local city_db_stat = stat(city_db_path)
+    local age = ngx.time() - city_db_stat.st_mtime
+    if age < config["geoip"]["db_update_age"] then
+      ngx.log(ngx.NOTICE, city_db_path .. " recently updated (" .. age .. "s ago) - skipping")
+    else
+      download = true
+    end
+  end
+
+  if download then
+    return _M.download(config)
+  end
+end
+
+return _M
