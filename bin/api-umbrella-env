@@ -48,7 +48,7 @@ if [ -z "${API_UMBRELLA_EMBEDDED_ROOT:-}" ]; then
 fi
 
 # Set the path for binaries.
-export PATH="$API_UMBRELLA_EMBEDDED_ROOT/sbin:$API_UMBRELLA_EMBEDDED_ROOT/bin:$PATH"
+export PATH="$API_UMBRELLA_SRC_ROOT/bin:$API_UMBRELLA_EMBEDDED_ROOT/sbin:$API_UMBRELLA_EMBEDDED_ROOT/bin:$PATH"
 
 # Set the path for libraries.
 export LD_LIBRARY_PATH="$API_UMBRELLA_EMBEDDED_ROOT/openresty/luajit/lib:$API_UMBRELLA_EMBEDDED_ROOT/lib:${LD_LIBRARY_PATH:-}"
