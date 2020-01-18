@@ -501,6 +501,20 @@ tasks:
       - ./build/work/stamp/app-deps/lua/resty-uuid
     method: checksum
 
+  app-deps:lua:shell-games:
+    deps:
+      - deps:luarocks
+    cmds:
+      - ./tasks/app-deps/lua/shell-games
+    sources:
+      - ./build/work/stamp/deps/luarocks
+      - ./tasks/app-deps/lua/shell-games
+      - ./tasks/helpers.sh
+      - ./tasks/helpers/lua.sh
+    generates:
+      - ./build/work/stamp/app-deps/lua/shell-games
+    method: checksum
+
   app-deps:web-app:bundle:
     deps:
       - deps:bundler
@@ -536,6 +550,7 @@ tasks:
       - task: app-deps:lua:resty-shcache
       - task: app-deps:lua:resty-txid
       - task: app-deps:lua:resty-uuid
+      - task: app-deps:lua:shell-games
       - task: app-deps:web-app:bundle
 
   app:admin-ui:build:

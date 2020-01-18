@@ -7,7 +7,7 @@ local mustache_unescape = require "api-umbrella.utils.mustache_unescape"
 local path = require "pl.path"
 local plutils = require "pl.utils"
 local read_config = require "api-umbrella.cli.read_config"
-local run_command = require "api-umbrella.utils.run_command"
+local shell_blocking_capture_combined = require("shell-games").capture_combined
 local stat = require "posix.sys.stat"
 local tablex = require "pl.tablex"
 local unistd = require "posix.unistd"
@@ -26,8 +26,8 @@ local function permission_check()
       os.exit(1)
     end
 
-    local status, output, err = run_command({ "getent", "passwd", config["user"] })
-    if status == 2 and output == "" then
+    local result, err = shell_blocking_capture_combined({ "getent", "passwd", config["user"] })
+    if result["status"] == 2 and result["output"] == "" then
       print("User '" .. (config["user"] or "") .. "' does not exist")
       os.exit(1)
     elseif err then
@@ -42,8 +42,8 @@ local function permission_check()
       os.exit(1)
     end
 
-    local status, output, err = run_command({ "getent", "group", config["group"] })
-    if status == 2 and output == "" then
+    local result, err = shell_blocking_capture_combined({ "getent", "group", config["group"] })
+    if result["status"] == 2 and result["output"] == "" then
       print("Group '" .. (config["group"] or "") .. "' does not exist")
       os.exit(1)
     elseif err then
@@ -87,7 +87,7 @@ local function generate_cert(subject, key_filename, crt_filename)
 
   if not path.exists(ssl_key_path) or not path.exists(ssl_crt_path) then
     dir.makepath(ssl_dir)
-    local _, _, err = run_command({ "openssl", "req", "-new", "-newkey", "rsa:2048", "-days", "3650", "-nodes", "-x509", "-subj", subject, "-keyout", ssl_key_path, "-out", ssl_crt_path })
+    local _, err = shell_blocking_capture_combined({ "openssl", "req", "-new", "-newkey", "rsa:2048", "-days", "3650", "-nodes", "-x509", "-subj", subject, "-keyout", ssl_key_path, "-out", ssl_crt_path })
     if err then
       print(err)
       os.exit(1)
@@ -341,13 +341,13 @@ local function activate_services()
 
       local service_log_dir = path.join(config["log_dir"], service_log_name)
       dir.makepath(service_log_dir)
-      local _, _, log_chmod_err = run_command({ "chmod", "0755", service_log_dir })
+      local _, log_chmod_err = shell_blocking_capture_combined({ "chmod", "0755", service_log_dir })
       if log_chmod_err then
         print("chmod failed: ", log_chmod_err)
         os.exit(1)
       end
       if config["user"] and config["group"] then
-        local _, _, log_chown_err = run_command({ "chown", config["user"] .. ":" .. config["group"], service_log_dir })
+        local _, log_chown_err = shell_blocking_capture_combined({ "chown", config["user"] .. ":" .. config["group"], service_log_dir })
         if log_chown_err then
           print("chown failed: ", log_chown_err)
           os.exit(1)

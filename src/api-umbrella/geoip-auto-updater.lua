@@ -1,6 +1,6 @@
 local config = require "api-umbrella.proxy.models.file_config"
 local geoip_download_if_missing_or_old = require("api-umbrella.utils.geoip").download_if_missing_or_old
-local run_command = require "api-umbrella.utils.run_command"
+local shell_blocking_capture_combined = require("shell-games").capture_combined
 
 local function update()
   ngx.log(ngx.NOTICE, "Checking for geoip database updates...")
@@ -8,7 +8,7 @@ local function update()
   if err then
     ngx.log(ngx.ERR, "geoip database download failed: ", err)
   elseif status == "changed" then
-    local _, _, reload_err = run_command({ "api-umbrella", "reload", "--router" })
+    local _, reload_err = shell_blocking_capture_combined({ "api-umbrella", "reload", "--router" })
     if reload_err then
       ngx.log(ngx.ERR, "Failed to reload api-umbrella: ", reload_err)
     else

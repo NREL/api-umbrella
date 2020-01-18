@@ -103,6 +103,9 @@ class OutdatedPackages
     "lua_resty_uuid" => {
       :luarock => "lua-resty-uuid",
     },
+    "lua_shell_games" => {
+      :git => "https://github.com/GUI/lua-shell-games.git",
+    },
     "luarocks" => {
       :git => "https://github.com/keplerproject/luarocks.git",
     },

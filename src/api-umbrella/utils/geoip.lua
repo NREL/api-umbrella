@@ -1,9 +1,9 @@
 local checksum_file_sha256 = require("api-umbrella.utils.checksum_file").sha256
 local file_move = require("pl.file").move
-local mkdtemp = require("posix.stdlib").mkdtemp
 local makepath = require("pl.dir").makepath
+local mkdtemp = require("posix.stdlib").mkdtemp
 local path = require "pl.path"
-local run_command = require "api-umbrella.utils.run_command"
+local shell_blocking_capture_combined = require("shell-games").capture_combined
 local stat = require("posix.sys.stat").stat
 
 local dirname = path.dirname
@@ -16,13 +16,13 @@ local function perform_download(config, unzip_dir, download_path)
   -- Download file
   ngx.log(ngx.NOTICE, "Downloading new file (" .. download_path .. ")")
   local download_url = "https://download.maxmind.com/app/geoip_download?edition_id=GeoLite2-City&suffix=tar.gz&license_key=" .. ngx.escape_uri(config["geoip"]["maxmind_license_key"])
-  local _, _, curl_err = run_command({ "curl", "--silent", "--show-error", "--fail", "--location", "--retry", "3", "--output", download_path, download_url })
+  local _, curl_err = shell_blocking_capture_combined({ "curl", "--silent", "--show-error", "--fail", "--location", "--retry", "3", "--output", download_path, download_url })
   if curl_err then
     return false, curl_err
   end
 
   -- Decompress
-  local _, _, tar_err = run_command({ "tar", "-xof", download_path, "-C", unzip_dir, "--strip-components", "1" })
+  local _, tar_err = shell_blocking_capture_combined({ "tar", "-xof", download_path, "-C", unzip_dir, "--strip-components", "1" })
   if tar_err then
     return false, tar_err
   end
@@ -63,7 +63,7 @@ local function perform_download(config, unzip_dir, download_path)
 
   -- Touch the file so we know we've checked it recently (even if we didn't
   -- replace it because the new file was identical to the current file).
-  local _, _, touch_err = run_command({ "touch", current_path })
+  local _, touch_err = shell_blocking_capture_combined({ "touch", current_path })
   if touch_err then
     return false, touch_err
   end
@@ -92,7 +92,7 @@ function _M.download(config)
   local status, err = perform_download(config, unzip_dir, download_path)
 
   -- Cleanup temp directory and temp download file.
-  local _, _, rm_err = run_command({ "rm", "-rf", unzip_dir, download_path })
+  local _, rm_err = shell_blocking_capture_combined({ "rm", "-rf", unzip_dir, download_path })
   if rm_err then
     return false, rm_err
   end
