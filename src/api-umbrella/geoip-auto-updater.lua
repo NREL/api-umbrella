@@ -8,7 +8,7 @@ local function update()
   if err then
     ngx.log(ngx.ERR, "geoip database download failed: ", err)
   elseif status == "changed" then
-    local _, reload_err = shell_blocking_capture_combined({ "api-umbrella", "reload", "--router" })
+    local _, reload_err = shell_blocking_capture_combined({ "api-umbrella", "reload" })
     if reload_err then
       ngx.log(ngx.ERR, "Failed to reload api-umbrella: ", reload_err)
     else
