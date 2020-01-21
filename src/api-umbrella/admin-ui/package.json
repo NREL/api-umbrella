@@ -28,7 +28,7 @@
     "bootbox": "~5.4.0",
     "bootstrap": "~4.4.1",
     "broccoli-asset-rev": "^3.0.0",
-    "codemirror": "~5.50.2",
+    "codemirror": "~5.51.0",
     "datatables.net": "~1.10.19",
     "datatables.net-bs4": "~1.10.19",
     "daterangepicker": "~3.0.3",
