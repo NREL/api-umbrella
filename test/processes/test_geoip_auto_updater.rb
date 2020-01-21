@@ -15,13 +15,13 @@ class Test::Processes::TestGeoipAutoUpdater < Minitest::Test
         "geoip" => {
           "db_update_frequency" => 1,
         },
-      }, "--router")
+      })
     end
   end
 
   def after_all
     super
-    override_config_reset("--router")
+    override_config_reset
   end
 
   def test_checks_for_updates_skipping_recent_files
