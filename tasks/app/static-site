@@ -20,6 +20,7 @@ fi
 
 cd "api-umbrella-static-site-$api_umbrella_static_site_version"
 export PATH="$DEV_PATH"
+perl -0 -p -i -e 's/BUNDLED WITH[\n\r]+.+$//igs' Gemfile.lock
 bundle config --local build.nokogiri --use-system-libraries
 bundle config --local path "$(pwd)/vendor/bundle"
 bundle install

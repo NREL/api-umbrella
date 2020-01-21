@@ -180,12 +180,10 @@ class OutdatedPackages
     },
     "ruby" => {
       :git => "https://github.com/ruby/ruby.git",
+      :constraint => "~> 2.6.5",
     },
     "rubygems" => {
       :git => "https://github.com/rubygems/rubygems.git",
-      # Hold at 2.x until symlink and "bundle clean" issues are fixed in 3.x:
-      # https://github.com/bundler/bundler/issues/7208
-      :constraint => "~> 2.7",
     },
     "rsyslog" => {
       :git => "https://github.com/rsyslog/rsyslog.git",

@@ -32,7 +32,7 @@ gem "oj", "~> 3.10.0"
 
 # Database libraries
 gem "activerecord", "~> 6.0.0", :require => "active_record"
-gem "pg", "~> 1.1.4"
+gem "pg", "~> 1.2.2"
 gem "elasticsearch", "~> 7.4.0"
 gem "active_attr", "~> 0.15.0"
 
