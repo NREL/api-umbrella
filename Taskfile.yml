@@ -35,16 +35,6 @@ tasks:
       - ./build/work/stamp/deps/elasticsearch
     method: checksum
 
-  deps:geolitecity:
-    cmds:
-      - ./tasks/deps/geolitecity
-    sources:
-      - ./tasks/deps/geolitecity
-      - ./tasks/helpers.sh
-    generates:
-      - ./build/work/stamp/deps/geolitecity
-    method: none
-
   deps:icu4c:
     cmds:
       - ./tasks/deps/icu4c
@@ -202,7 +192,6 @@ tasks:
   deps:
     cmds:
       - task: deps:elasticsearch
-      - task: deps:geolitecity
       - task: deps:icu4c
       - task: deps:libbson
       - task: deps:libcidr
@@ -681,6 +670,20 @@ tasks:
       - ./build/work/stamp/app-deps/lua/resty-validation
     method: checksum
 
+  app-deps:lua:shell-games:
+    deps:
+      - deps:luarocks
+    cmds:
+      - ./tasks/app-deps/lua/shell-games
+    sources:
+      - ./build/work/stamp/deps/luarocks
+      - ./tasks/app-deps/lua/shell-games
+      - ./tasks/helpers.sh
+      - ./tasks/helpers/lua.sh
+    generates:
+      - ./build/work/stamp/app-deps/lua/shell-games
+    method: checksum
+
   app-deps:web-app:yarn:
     deps:
       - build-deps:yarn
@@ -726,6 +729,7 @@ tasks:
       - task: app-deps:lua:resty-txid
       - task: app-deps:lua:resty-uuid
       - task: app-deps:lua:resty-validation
+      - task: app-deps:lua:shell-games
       - task: app-deps:web-app:yarn
 
   app:admin-ui:build:

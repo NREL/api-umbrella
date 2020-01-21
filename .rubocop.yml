@@ -37,6 +37,9 @@ Layout/HashAlignment:
   # https://github.com/rubocop-hq/rubocop/issues/6291
   EnforcedLastArgumentHashStyle: ignore_implicit
 
+Layout/LineLength:
+  Enabled: false
+
 Layout/MultilineMethodCallIndentation:
   EnforcedStyle: indented
 
@@ -74,9 +77,6 @@ Metrics/ClassLength:
   Enabled: false
 
 Metrics/CyclomaticComplexity:
-  Enabled: false
-
-Metrics/LineLength:
   Enabled: false
 
 Metrics/MethodLength:

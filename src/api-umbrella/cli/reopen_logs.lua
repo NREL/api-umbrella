@@ -1,6 +1,6 @@
 local path = require "pl.path"
 local read_config = require "api-umbrella.cli.read_config"
-local run_command = require "api-umbrella.utils.run_command"
+local shell_blocking_capture_combined = require("shell-games").capture_combined
 local status = require "api-umbrella.cli.status"
 
 local function reopen_perp_logs(parent_pid)
@@ -11,17 +11,17 @@ local function reopen_perp_logs(parent_pid)
   -- perpctl doesn't seem to have a way to send signals to the root perpd's log
   -- process (just the services underneath perpd). Since we also want to be
   -- sure to reopen perpd's logs, we need to use this approach.
-  local _, output, err = run_command({ "pstree", "-p", "-A", parent_pid })
+  local result, err = shell_blocking_capture_combined({ "pstree", "-p", "-A", parent_pid })
   if err then
     print("Failed to reopen logs for perp\n" .. err)
     os.exit(1)
   end
 
   local log_process_name = "svlogd"
-  for line in string.gmatch(output, "[^\r\n]+") do
+  for line in string.gmatch(result["output"], "[^\r\n]+") do
     local log_pid = string.match(line, log_process_name .. "%((%d+)%)")
     if log_pid then
-      local _, _, reload_err = run_command({ "kill", "-s", "HUP", log_pid })
+      local _, reload_err = shell_blocking_capture_combined({ "kill", "-s", "HUP", log_pid })
       if reload_err then
         print("Failed to reopen logs for " .. log_pid .. "\n" .. reload_err)
         os.exit(1)
@@ -31,7 +31,7 @@ local function reopen_perp_logs(parent_pid)
 end
 
 local function reopen_nginx(perp_base)
-  local _, _, err = run_command({ "perpctl", "-b", perp_base, "1", "nginx" })
+  local _, err = shell_blocking_capture_combined({ "perpctl", "-b", perp_base, "1", "nginx" })
   if err then
     print("Failed to reopen logs for nginx\n" .. err)
     os.exit(1)
@@ -39,7 +39,7 @@ local function reopen_nginx(perp_base)
 end
 
 local function reopen_rsyslog(perp_base)
-  local _, _, err = run_command({ "perpctl", "-b", perp_base, "hup", "rsyslog" })
+  local _, err = shell_blocking_capture_combined({ "perpctl", "-b", perp_base, "hup", "rsyslog" })
   if err then
     print("Failed to reopen logs for rsyslog\n" .. err)
     os.exit(1)

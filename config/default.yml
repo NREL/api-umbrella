@@ -455,6 +455,10 @@ ember_server:
   port: 14050
   live_reload_port: 14051
 umask: "0027"
+geoip:
+  db_update_frequency: 86400 # 24 hours
+  db_update_age: 79200 # 22 hours
+  maxmind_license_key:
 _test_config:
   default_null_override_hash:
   default_null_override_string:

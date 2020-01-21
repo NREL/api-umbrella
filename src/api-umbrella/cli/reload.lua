@@ -1,10 +1,10 @@
 local path = require "pl.path"
-local run_command = require "api-umbrella.utils.run_command"
 local setup = require "api-umbrella.cli.setup"
+local shell_blocking_capture_combined = require("shell-games").capture_combined
 local status = require "api-umbrella.cli.status"
 
 local function reload_perp(perp_base)
-  local _, _, err = run_command({ "perphup", perp_base })
+  local _, err = shell_blocking_capture_combined({ "perphup", perp_base })
   if err then
     print("Failed to reload perp\n" .. err)
     os.exit(1)
@@ -12,7 +12,7 @@ local function reload_perp(perp_base)
 end
 
 local function reload_trafficserver(config)
-  local _, _, err = run_command({ "env", "TS_ROOT=" .. config["root_dir"], "traffic_ctl", "config", "reload" })
+  local _, err = shell_blocking_capture_combined({ "env", "TS_ROOT=" .. config["root_dir"], "traffic_ctl", "config", "reload" })
   if err then
     print("Failed to reload trafficserver\n" .. err)
     os.exit(1)
@@ -20,7 +20,7 @@ local function reload_trafficserver(config)
 end
 
 local function reload_nginx(perp_base)
-  local _, _, err = run_command({ "perpctl", "-b", perp_base, "hup", "nginx" })
+  local _, err = shell_blocking_capture_combined({ "perpctl", "-b", perp_base, "hup", "nginx" })
   if err then
     print("Failed to reload nginx\n" .. err)
     os.exit(1)
@@ -28,7 +28,7 @@ local function reload_nginx(perp_base)
 end
 
 local function reload_nginx_web_app(perp_base)
-  local _, _, err = run_command({ "perpctl", "-b", perp_base, "hup", "nginx-web-app" })
+  local _, err = shell_blocking_capture_combined({ "perpctl", "-b", perp_base, "hup", "nginx-web-app" })
   if err then
     print("Failed to reload nginx\n" .. err)
     os.exit(1)
@@ -36,15 +36,23 @@ local function reload_nginx_web_app(perp_base)
 end
 
 local function reload_nginx_auto_ssl(perp_base)
-  local _, _, err = run_command({ "perpctl", "-b", perp_base, "hup", "nginx-auto-ssl" })
+  local _, err = shell_blocking_capture_combined({ "perpctl", "-b", perp_base, "hup", "nginx-auto-ssl" })
   if err then
     print("Failed to reload nginx\n" .. err)
     os.exit(1)
   end
 end
 
+local function reload_geoip_auto_updater(perp_base)
+  local _, err = shell_blocking_capture_combined({ "perpctl", "-b", perp_base, "term", "geoip-auto-updater" })
+  if err then
+    print("Failed to reload geoip-auto-updater\n" .. err)
+    os.exit(1)
+  end
+end
+
 local function reload_dev_env_ember_server(perp_base)
-  local _, _, err = run_command({ "perpctl", "-b", perp_base, "term", "dev-env-ember-server" })
+  local _, err = shell_blocking_capture_combined({ "perpctl", "-b", perp_base, "term", "dev-env-ember-server" })
   if err then
     print("Failed to reload dev-env-ember-server\n" .. err)
     os.exit(1)
@@ -72,6 +80,10 @@ return function(options)
   if config["_service_router_enabled?"] then
     reload_trafficserver(config)
     reload_nginx(perp_base)
+
+    if config["geoip"]["_enabled"] then
+      reload_geoip_auto_updater(perp_base)
+    end
   end
 
   if config["_service_auto_ssl_enabled?"] then

@@ -142,6 +142,9 @@ class OutdatedPackages
     "lua_resty_validation" => {
       :git => "https://github.com/bungle/lua-resty-validation.git",
     },
+    "lua_shell_games" => {
+      :git => "https://github.com/GUI/lua-shell-games.git",
+    },
     "luarocks" => {
       :git => "https://github.com/keplerproject/luarocks.git",
     },

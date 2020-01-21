@@ -63,6 +63,9 @@ module ApiUmbrellaTestHelpers
         # Create an config file for computed overrides.
         computed = {
           "root_dir" => TEST_RUN_API_UMBRELLA_ROOT,
+          "geoip" => {
+            "maxmind_license_key" => ENV["MAXMIND_LICENSE_KEY"],
+          },
         }
         if(::Process.euid == 0)
           # If tests are running as root (Docker environment), then add the
@@ -295,6 +298,20 @@ module ApiUmbrellaTestHelpers
       # to test from.
       nginx_wait_for_new_child_pids(nginx_parent_pid, $config["nginx"]["workers"], original_nginx_child_pids)
       nginx_wait_for_new_child_pids(nginx_web_app_parent_pid, $config["web"]["workers"], original_nginx_web_app_child_pids)
+    end
+
+    def processes
+      env = {
+        "API_UMBRELLA_EMBEDDED_ROOT" => EMBEDDED_ROOT,
+        "API_UMBRELLA_CONFIG" => CONFIG,
+      }
+      output, status = Open3.capture2e(env, File.join(API_UMBRELLA_SRC_ROOT, "bin/api-umbrella"), "processes")
+
+      if status.exitstatus != 0
+        raise "api-umbrella processes failed: #{output}"
+      end
+
+      output
     end
 
     def perp_signal(service_name, signal_name)

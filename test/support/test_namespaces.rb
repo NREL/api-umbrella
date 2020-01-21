@@ -28,6 +28,8 @@ module Test
     end
   end
 
+  module Cli; end
+
   module Processes; end
 
   module Proxy

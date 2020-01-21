@@ -1,7 +1,7 @@
 local file = require "pl.file"
 local path = require "pl.path"
 local read_config = require "api-umbrella.cli.read_config"
-local run_command = require "api-umbrella.utils.run_command"
+local shell_blocking_capture_combined = require("shell-games").capture_combined
 
 local function perp_status(config)
   local running = false
@@ -16,8 +16,8 @@ local function perp_status(config)
   end
 
   if pid then
-    local status = run_command({ "runlock", "-c", pid_path })
-    if status == 1 then
+    local result = shell_blocking_capture_combined({ "runlock", "-c", pid_path })
+    if result["status"] == 1 then
       running = true
     else
       pid = nil

@@ -71,16 +71,18 @@ http {
     resolver_timeout 12s;
   {{/dns_resolver._nameservers_nginx}}
 
-  geoip2 {{db_dir}}/geoip/GeoLite2-City.mmdb {
-    $geoip2_data_continent_code continent code;
-    $geoip2_data_country_code country iso_code;
-    $geoip2_data_subdivision_code subdivisions 0 iso_code;
-    $geoip2_data_city_name city names en;
-    $geoip2_data_latitude location latitude;
-    $geoip2_data_longitude location longitude;
-    $geoip2_data_is_anonymous_proxy traits is_anonymous_proxy;
-    $geoip2_data_is_satellite_provider traits is_satellite_provider;
-  }
+  {{#geoip._enabled}}
+    geoip2 {{db_dir}}/geoip/GeoLite2-City.mmdb {
+      $geoip2_data_continent_code continent code;
+      $geoip2_data_country_code country iso_code;
+      $geoip2_data_subdivision_code subdivisions 0 iso_code;
+      $geoip2_data_city_name city names en;
+      $geoip2_data_latitude location latitude;
+      $geoip2_data_longitude location longitude;
+      $geoip2_data_is_anonymous_proxy traits is_anonymous_proxy;
+      $geoip2_data_is_satellite_provider traits is_satellite_provider;
+    }
+  {{/geoip._enabled}}
 
   geo $banned_ip {
     default 0;

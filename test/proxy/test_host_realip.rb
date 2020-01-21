@@ -66,6 +66,8 @@ class Test::Proxy::Logging::TestHostRealip < Minitest::Test
   end
 
   def test_allows_custom_realip_header_for_hosts
+    assert($config["geoip"]["maxmind_license_key"], "MAXMIND_LICENSE_KEY environment variable must be set with valid license for geoip tests to run")
+
     response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/hello", log_http_options.deep_merge({
       :headers => {
         "Host" => "realip.foo",

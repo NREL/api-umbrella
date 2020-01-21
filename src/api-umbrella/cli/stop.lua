@@ -1,4 +1,4 @@
-local run_command = require "api-umbrella.utils.run_command"
+local shell_blocking_capture_combined = require("shell-games").capture_combined
 local status = require "api-umbrella.cli.status"
 local time = require "posix.time"
 
@@ -9,7 +9,7 @@ local function stop_perp()
     return true
   end
 
-  local _, _, err = run_command({ "kill", "-s", "TERM", pid })
+  local _, err = shell_blocking_capture_combined({ "kill", "-s", "TERM", pid })
   if err then
     return false, err
   end
