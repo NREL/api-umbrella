@@ -32,7 +32,7 @@ GEM
       insist
       mustache (= 0.99.8)
       stud
-    rake (12.3.2)
+    rake (12.3.3)
     ruby-xz (0.2.3)
       ffi (~> 1.9)
       io-like (~> 0.3)
