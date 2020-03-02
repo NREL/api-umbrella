@@ -112,9 +112,6 @@ Rails/RakeEnvironment:
 Style/AsciiComments:
   Enabled: false
 
-Style/BracesAroundHashParameters:
-  Enabled: false
-
 Style/ClassAndModuleChildren:
   Enabled: false
 
@@ -143,8 +140,17 @@ Style/FrozenStringLiteralComment:
 Style/GuardClause:
   Enabled: false
 
+Style/HashEachMethods:
+  Enabled: true
+
 Style/HashSyntax:
   EnforcedStyle: hash_rockets
+
+Style/HashTransformKeys:
+  Enabled: true
+
+Style/HashTransformValues:
+  Enabled: true
 
 Style/IfInsideElse:
   Enabled: false

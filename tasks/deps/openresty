@@ -10,8 +10,8 @@ openssl_hash="74a2f756c64fd7386a29184dc0344f4831192d61dc2481a93a4c5dd727f41148"
 #
 # We can likely drop compiling our own version and use the system version once
 # we no longer need to support CentOS 6 (currently on PCRE 7.8).
-pcre_version="8.43"
-pcre_hash="636222e79e392c3d95dcc545f24f98c4"
+pcre_version="8.44"
+pcre_hash="cf7326204cc46c755b5b2608033d9d24"
 
 set -e -u -x
 source ./tasks/helpers.sh
