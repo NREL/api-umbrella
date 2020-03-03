@@ -7,7 +7,7 @@ GEM
       net-ssh (>= 2.6.5, < 6.0.0)
     net-ssh (2.9.4)
     net-telnet (0.1.1)
-    rake (10.5.0)
+    rake (12.3.3)
     rspec (3.5.0)
       rspec-core (~> 3.5.0)
       rspec-expectations (~> 3.5.0)
@@ -42,7 +42,7 @@ PLATFORMS
 DEPENDENCIES
   multi_json (~> 1.12.1)
   net-ssh (~> 2.9)
-  rake (~> 10.5)
+  rake (~> 12.3)
   rspec (~> 3.5.0)
   serverspec (= 2.30.0)
 

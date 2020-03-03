@@ -2,7 +2,7 @@ source "https://rubygems.org"
 
 # Use rake 10 for compatibility with Ruby 1.8, so the verify scripts can be
 # used with the older system versions of Ruby in each OS.
-gem "rake", "~> 10.5"
+gem "rake", "~> 12.3"
 # Hold serverspec at 2.30.0 since this change in 2.30.1 breaks our tests usage
 # of "be_installed" in "before(:all)" blocks:
 # https://github.com/mizzy/serverspec/pull/558
