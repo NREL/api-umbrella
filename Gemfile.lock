@@ -60,7 +60,10 @@ GEM
     colorize (0.8.1)
     concurrent-ruby (1.1.6)
     crass (1.0.6)
-    database_cleaner (1.7.0)
+    database_cleaner (1.8.3)
+    database_cleaner-active_record (1.8.0)
+      activerecord
+      database_cleaner (~> 1.8.0)
     elasticsearch (7.5.0)
       elasticsearch-api (= 7.5.0)
       elasticsearch-transport (= 7.5.0)
@@ -151,7 +154,7 @@ GEM
       selenium-webdriver (>= 3.0, < 4.0)
     xpath (3.2.0)
       nokogiri (~> 1.8)
-    zeitwerk (2.2.2)
+    zeitwerk (2.3.0)
     zonebie (0.6.1)
 
 PLATFORMS
@@ -169,7 +172,7 @@ DEPENDENCIES
   capybara-screenshot (~> 1.0.22)
   childprocess (~> 3.0.0)
   concurrent-ruby (~> 1.1.1)
-  database_cleaner (~> 1.7.0)
+  database_cleaner-active_record (~> 1.8.0)
   elasticsearch (~> 7.5.0)
   encryptor (~> 3.0.0)
   factory_bot (~> 5.1.0)

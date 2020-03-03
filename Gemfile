@@ -40,7 +40,7 @@ gem "active_attr", "~> 0.15.0"
 gem "factory_bot", "~> 5.1.0"
 
 # Deleting database data between tests.
-gem "database_cleaner", "~> 1.7.0"
+gem "database_cleaner-active_record", "~> 1.8.0"
 
 # Programmatically generate Rails session cookies.
 gem "rails_compatible_cookies_utils", "~> 0.1.0"

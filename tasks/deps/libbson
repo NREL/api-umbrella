@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-libbson_version="1.16.0"
-libbson_hash="b7af904b3ac094667d4c176c93925bfe"
+libbson_version="1.16.2"
+libbson_hash="6561011b25d0e690d0759247bcd390e4"
 
 set -e -u -x
 source ./tasks/helpers.sh
