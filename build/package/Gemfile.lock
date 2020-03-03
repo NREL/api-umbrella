@@ -3,13 +3,12 @@ GEM
   specs:
     arr-pm (0.0.10)
       cabin (> 0)
-    backports (3.14.0)
+    backports (3.16.1)
     cabin (0.9.0)
-    childprocess (1.0.1)
-      rake (< 13.0)
+    childprocess (3.0.0)
     clamp (1.0.1)
-    dotenv (2.7.2)
-    ffi (1.10.0)
+    dotenv (2.7.5)
+    ffi (1.12.2)
     fpm (1.10.2)
       arr-pm (~> 0.0.10)
       backports (>= 2.6.2)
@@ -22,7 +21,7 @@ GEM
       ruby-xz (~> 0.2.3)
       stud
     insist (1.0.0)
-    io-like (0.3.0)
+    io-like (0.3.1)
     json (1.8.6)
     mustache (0.99.8)
     pleaserun (0.0.30)
@@ -32,7 +31,6 @@ GEM
       insist
       mustache (= 0.99.8)
       stud
-    rake (12.3.2)
     ruby-xz (0.2.3)
       ffi (~> 1.9)
       io-like (~> 0.3)
