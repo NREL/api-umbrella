@@ -18,7 +18,7 @@ gem "minitest-hooks", "~> 1.5.0"
 gem "minitest-ci", "~> 3.4.0"
 
 # Ruby lint/style checker
-gem "rubocop", "~> 0.79.0", :require => false
+gem "rubocop", "~> 0.80.1", :require => false
 
 # Running background processes
 gem "childprocess", "~> 3.0.0"
@@ -33,7 +33,7 @@ gem "oj", "~> 3.10.0"
 # Database libraries
 gem "activerecord", "~> 6.0.0", :require => "active_record"
 gem "pg", "~> 1.2.2"
-gem "elasticsearch", "~> 7.4.0"
+gem "elasticsearch", "~> 7.5.0"
 gem "active_attr", "~> 0.15.0"
 
 # Factories for test database data
@@ -49,7 +49,7 @@ gem "rails_compatible_cookies_utils", "~> 0.1.0"
 gem "addressable", "~> 2.7.0"
 
 # Browser/JavaScript integration tests
-gem "capybara", "~> 3.30.0"
+gem "capybara", "~> 3.31.0"
 gem "selenium-webdriver", "~> 3.141"
 gem "webdrivers", "~> 4.2.0", :require => false
 # https://github.com/dbalatero/capybara-chromedriver-logger/pull/7

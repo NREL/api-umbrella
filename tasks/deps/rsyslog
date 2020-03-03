@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 
-rsyslog_version="8.2001.0"
-rsyslog_hash="58bf06f58cd4a4d796bc5aea65fffc18c25619285adaa90d89d4cea5921ea8da"
+rsyslog_version="8.2002.0"
+rsyslog_hash="fe86c14d860da1202c76616feac0539ea5a40a4ad182d74b7d6d2419cc2381f8"
 
 set -e -u -x
 source ./tasks/helpers.sh
 
 task_working_dir
-download "http://www.rsyslog.com/download/files/download/rsyslog/rsyslog-$rsyslog_version.tar.gz" "sha256" "$rsyslog_hash"
+download "https://www.rsyslog.com/files/download/rsyslog/rsyslog-$rsyslog_version.tar.gz" "sha256" "$rsyslog_hash"
 extract_download "rsyslog-$rsyslog_version.tar.gz"
 
 cd "rsyslog-$rsyslog_version"
