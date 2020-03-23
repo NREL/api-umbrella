@@ -82,7 +82,7 @@ GEM
       popper_js (>= 1.14.3, < 2)
       sassc-rails (>= 2.0.0)
     brakeman (4.8.0)
-    bson (4.8.0)
+    bson (4.8.2)
     builder (3.2.4)
     bundler-audit (0.6.1)
       bundler (>= 1.2.0, < 3)
@@ -148,6 +148,8 @@ GEM
     kramdown (2.1.0)
     kramdown-parser-gfm (1.1.0)
       kramdown (~> 2.0)
+    legacy-rails-CVE-2020-5267-patch (1.0.0)
+      rails (< 5)
     loofah (2.4.0)
       crass (~> 1.0.2)
       nokogiri (>= 1.5.9)
@@ -156,7 +158,7 @@ GEM
     mini_mime (1.0.2)
     mini_portile2 (2.4.0)
     minitest (5.14.0)
-    mongo (2.11.3)
+    mongo (2.11.4)
       bson (>= 4.4.2, < 5.0.0)
     mongoid (5.4.1)
       activemodel (~> 4.0)
@@ -192,7 +194,7 @@ GEM
       multi_json (~> 1.3)
       multi_xml (~> 0.5)
       rack (>= 1.2, < 3)
-    oj (3.10.3)
+    oj (3.10.5)
     omniauth (1.9.1)
       hashie (>= 3.4.6)
       rack (>= 1.6.2, < 3)
@@ -222,7 +224,7 @@ GEM
       addressable
       css_parser (>= 1.6.0)
       htmlentities (>= 4.0.0)
-    premailer-rails (1.10.3)
+    premailer-rails (1.11.0)
       actionmailer (>= 3)
       premailer (~> 1.7, >= 1.7.9)
     public_suffix (4.0.3)
@@ -324,9 +326,10 @@ DEPENDENCIES
   gitlab_omniauth-ldap (~> 2.1.0)
   http_accept_language (~> 2.1.1)
   i18n-js (~> 3.6.0)
-  jbuilder (~> 2.9.1)
+  jbuilder (~> 2.9)
   kramdown (~> 2.1.0)
   kramdown-parser-gfm (~> 1.1.0)
+  legacy-rails-CVE-2020-5267-patch
   lucene_query_parser!
   mongoid (~> 5.4)
   mongoid-embedded-errors (~> 2.1.1)
@@ -344,7 +347,7 @@ DEPENDENCIES
   omniauth-gitlab (~> 2.0.0)
   omniauth-google-oauth2 (~> 0.8.0)
   omniauth-rails_csrf_protection (~> 0.1.1)
-  premailer-rails (~> 1.10.2)
+  premailer-rails (~> 1.11.0)
   public_suffix (~> 4.0.1)
   puma (~> 4.3.1)
   pundit (~> 2.1.0)
@@ -358,6 +361,7 @@ DEPENDENCIES
   safe_yaml (~> 1.0.4)
   sass-rails (~> 6.0.0)
   simple_form (~> 3.5, >= 3.5.1)
+  sprockets (< 4)
 
 BUNDLED WITH
    1.17.3

@@ -19,7 +19,7 @@ gem "minitest-ci", "~> 3.4.0"
 
 # Ruby lint/style checker
 gem "rubocop", "~> 0.80.1", :require => false
-gem "rubocop-rails", "~> 2.4.0", :require => false
+gem "rubocop-rails", "~> 2.5.0", :require => false
 
 # Running background processes
 gem "childprocess", "~> 3.0.0"
@@ -32,7 +32,7 @@ gem "multi_json", "~> 1.14.1"
 gem "oj", "~> 3.10.0"
 
 # Database libraries
-gem "mongoid", "~> 7.0.1"
+gem "mongoid", "~> 7.1.0"
 gem "elasticsearch", "~> 7.5.0"
 gem "active_attr", "~> 0.15.0"
 
