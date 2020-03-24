@@ -9,23 +9,37 @@ require "support/api_umbrella_test_helpers/process"
 
 def capybara_register_driver(driver_name, options = {})
   ::Capybara.register_driver(driver_name) do |app|
-    service_options = {}
-    path, _stderr, status = Open3.capture3("which", "chromedriver")
-    if status.success?
-      service_options[:path] = path.strip
-    else
-      require "webdrivers"
-      Webdrivers.cache_time = 86_400
-    end
-
     root_dir = File.join(ApiUmbrellaTestHelpers::Process::TEST_RUN_ROOT, "capybara")
     FileUtils.mkdir_p(root_dir)
 
+    service_options = {}
+    service_args = [
+      "--log_path=#{File.join(root_dir, "#{driver_name}.log")}",
+      "--verbose",
+    ]
+
+    output, status = Open3.capture2e("which", "chromedriver")
+    if status.success?
+      service_options[:path] = output.strip
+    else
+      raise "chromedriver not found: #{output}"
+    end
+
+    # If passing in a custom language, use a wrapper script to parse the
+    # "--lang" argument into the LANG environment variable. We can't pass
+    # environment variables directly into chromdriver, so that's why we need
+    # the wrapper script. Chrome 80+ changes require this LANG environment
+    # variable instead of realying on the "--lang" argument itself.
+    #
+    # https://github.com/SeleniumHQ/selenium/issues/5412
+    # https://chromium.googlesource.com/chromium/src.git/+/b6a68c85183f42927186514212a8a9fd932a2413
+    if options[:lang]
+      service_options[:path] = File.expand_path("chromedriver_lang_wrapper", __dir__)
+      service_args << "--lang=#{options[:lang]}"
+    end
+
     service = ::Selenium::WebDriver::Service.chrome(service_options.merge({
-      :args => [
-        "--log_path=#{File.join(root_dir, "#{driver_name}.log")}",
-        "--verbose",
-      ],
+      :args => service_args,
     }))
 
     driver_options = ::Selenium::WebDriver::Chrome::Options.new
@@ -43,10 +57,6 @@ def capybara_register_driver(driver_name, options = {})
     # https://discuss.circleci.com/t/fontconfig-error-on-node-10-browsers/29029/8
     if ENV["CI"] != "true"
       driver_options.args << "--disable-dev-shm-usage"
-    end
-
-    if options[:lang]
-      driver_options.args << "--lang=#{options[:lang]}"
     end
 
     # Set download path for Chrome >= 77
