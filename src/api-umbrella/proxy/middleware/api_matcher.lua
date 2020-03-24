@@ -53,7 +53,7 @@ local function match_api(active_config, request_path)
 end
 
 return function(active_config)
-  local request_path = ngx.ctx.original_uri
+  local request_path = ngx.ctx.original_uri_path
   local api, url_match = match_api(active_config, request_path)
 
   if api and url_match then

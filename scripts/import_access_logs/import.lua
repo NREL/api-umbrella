@@ -352,7 +352,7 @@ for line in io.stdin:lines() do
     end
     -- print(inspect(line_matches))
 
-    ngx.ctx.original_uri = line_matches["request_uri"]
+    ngx.ctx.original_uri_path = line_matches["request_uri"]
     ngx.ctx.original_request_uri = line_matches["request_uri"]
     if not log_utils.ignore_request() then
       if line_matches["x_api_umbrella_request_id"] then

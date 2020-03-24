@@ -52,7 +52,7 @@ for _, media in ipairs(supported_media_types) do
 end
 
 local function request_format()
-  local request_path = ngx.ctx.uri
+  local request_path = ngx.ctx.uri_path
   if request_path then
     local format = extension(request_path)
     if format then
