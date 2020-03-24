@@ -2,7 +2,7 @@
 
 set -Eeuo pipefail
 
-if [[ "$@" =~ --lang=([^ ]+) ]]; then
+if [[ "$*" =~ --lang=([^ ]+) ]]; then
   export LANG="${BASH_REMATCH[1]}"
 fi
 
