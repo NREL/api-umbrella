@@ -1,12 +1,3 @@
-GIT
-  remote: https://github.com/ThriveTRM/capybara-chromedriver-logger.git
-  revision: 77b9c9a11d8ed18719fb2288dd74952bb87b4c44
-  branch: do-not-raise-on-filtered-errors
-  specs:
-    capybara-chromedriver-logger (0.3.0)
-      capybara
-      colorize
-
 GEM
   remote: https://rubygems.org/
   specs:
@@ -50,6 +41,9 @@ GEM
       rack-test (>= 0.6.3)
       regexp_parser (~> 1.5)
       xpath (~> 3.2)
+    capybara-chromedriver-logger (0.3.0)
+      capybara
+      colorize
     capybara-screenshot (1.0.24)
       capybara (>= 1.0, < 4)
       launchy
@@ -70,7 +64,7 @@ GEM
       ffi (>= 1.3.0)
     factory_bot (5.1.1)
       activesupport (>= 4.2.0)
-    faker (2.10.2)
+    faker (2.11.0)
       i18n (>= 1.6, < 2)
     faraday (0.17.3)
       multipart-post (>= 1.2, < 3)
@@ -163,13 +157,13 @@ DEPENDENCIES
   awesome_print (~> 1.8.0)
   bcrypt (~> 3.1.12)
   capybara (~> 3.31.0)
-  capybara-chromedriver-logger (~> 0.3.0)!
+  capybara-chromedriver-logger (~> 0.3.0)
   capybara-screenshot (~> 1.0.22)
   childprocess (~> 3.0.0)
   concurrent-ruby (~> 1.1.1)
   elasticsearch (~> 7.5.0)
   factory_bot (~> 5.1.0)
-  faker (~> 2.10.0)
+  faker (~> 2.11.0)
   lazyhash (~> 0.1.1)
   minitest (~> 5.14.0)
   minitest-ci (~> 3.4.0)

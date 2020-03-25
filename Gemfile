@@ -48,8 +48,7 @@ gem "addressable", "~> 2.7.0"
 # Browser/JavaScript integration tests
 gem "capybara", "~> 3.31.0"
 gem "selenium-webdriver", "~> 3.141"
-# https://github.com/dbalatero/capybara-chromedriver-logger/pull/7
-gem "capybara-chromedriver-logger", "~> 0.3.0", :git => "https://github.com/ThriveTRM/capybara-chromedriver-logger.git", :branch => "do-not-raise-on-filtered-errors"
+gem "capybara-chromedriver-logger", "~> 0.3.0"
 
 # Take screenshots on capybara test failures
 gem "capybara-screenshot", "~> 1.0.22"
@@ -64,7 +63,7 @@ gem "activesupport", "~> 5.2.0"
 gem "lazyhash", "~> 0.1.1"
 
 # Generating fake strings and data.
-gem "faker", "~> 2.10.0"
+gem "faker", "~> 2.11.0"
 
 # Concurrency helpers.
 gem "concurrent-ruby", "~> 1.1.1"
