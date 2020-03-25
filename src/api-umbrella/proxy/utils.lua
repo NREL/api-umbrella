@@ -261,7 +261,6 @@ end
 
 function _M.set_uri(new_path, new_args)
   local ngx_ctx = ngx.ctx
-  local ngx_var = ngx.var
 
   if new_path then
     -- Update the cached variable, which is used for ngx.ctx.request_uri and
@@ -277,7 +276,7 @@ function _M.set_uri(new_path, new_args)
     ngx.req.set_uri_args(new_args)
 
     -- Update the cached variable.
-    ngx_ctx.args = ngx_var.args
+    ngx_ctx.args = ngx.var.args
   end
 
   -- If either value changed, update the cached request_uri variable. We have
