@@ -68,13 +68,23 @@ ngx.ctx.protocol = real_proto
 ngx.ctx.remote_addr = ngx_var.remote_addr
 ngx.ctx.remote_user = ngx_var.remote_user
 ngx.ctx.request_method = string.lower(ngx.var.request_method)
-ngx.ctx.original_request_uri = ngx_var.request_uri
-ngx.ctx.request_uri = ngx.ctx.original_request_uri
-ngx.ctx.original_uri = ngx_var.uri
-ngx.ctx.uri = ngx.ctx.original_uri
+
+local request_uri = ngx_var.request_uri
+ngx.ctx.original_request_uri = request_uri
+ngx.ctx.request_uri = request_uri
+
+-- Extract the path portion of the URL from request_uri (instead of
+-- ngx.var.uri) so it's escaped as passed in (ngx.var.uri is unescaped).
+local uri_path, _, gsub_err = ngx.re.gsub(request_uri, [[\?.*]], "", "jo")
+if gsub_err then
+  ngx.log(ngx.ERR, "regex error: ", gsub_err)
+end
+ngx.ctx.original_uri_path = uri_path
+ngx.ctx.uri_path = uri_path
 
 local function route()
   ngx.var.proxy_host_header = ngx.ctx.proxy_host
+  ngx.var.proxy_request_uri = ngx.ctx.request_uri
   ngx.req.set_header("X-Forwarded-Proto", ngx.ctx.protocol)
   ngx.req.set_header("X-Forwarded-Port", ngx.ctx.port)
   ngx.req.set_header("X-Api-Umbrella-Backend-Server-Scheme", ngx.ctx.proxy_server_scheme)
