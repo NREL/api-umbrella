@@ -144,6 +144,12 @@ web:
           service_validate_url: /cas/serviceValidate
           logout_url: /cas/logout
           ssl: true
+  contact:
+    email_regex: "\\A[^@\\s]+@[^@\\s]+\\.[^@\\s]+\\z"
+    name_exclude_regex: "(http|https|www|<|>|\\r|\\n)"
+    api_exclude_regex: "(<script|\\r|\\n)"
+    subject_exclude_regex: "(<script|\\r|\\n)"
+    message_exclude_regex: "(\\A\\s*\\d+\\s*\\z)"
   mailer:
     smtp_settings:
       address: 127.0.0.1
