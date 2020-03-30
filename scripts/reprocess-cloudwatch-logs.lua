@@ -1,14 +1,22 @@
-local setenv = require("posix.stdlib").setenv
-setenv("API_UMBRELLA_RUNTIME_CONFIG", os.getenv("API_UMBRELLA_ROOT") .. "/var/run/runtime_config.yml")
+if not os.getenv("API_UMBRELLA_RUNTIME_CONFIG") then
+  local setenv = require("posix.stdlib").setenv
+  setenv("API_UMBRELLA_RUNTIME_CONFIG", os.getenv("API_UMBRELLA_ROOT") .. "/var/run/runtime_config.yml")
+end
 
 local argparse = require "argparse"
+local config = require "api-umbrella.proxy.models.file_config"
 local icu_date = require "icu-date-ffi"
 local json_decode = require("cjson").decode
 local log_utils = require "api-umbrella.proxy.log_utils"
 local shell_blocking_capture_combined = require("shell-games").capture_combined
 local split = require("ngx.re").split
+local table_new = require "table.new"
 
 local format_iso8601 = icu_date.formats.iso8601()
+
+local buffer_size = 100
+local buffer_index = 0
+local buffer = table_new(buffer_size, 0)
 
 local function parse_time(string)
   local date
@@ -48,6 +56,41 @@ local function parse_args()
   return parsed_args
 end
 
+local function flush_buffer()
+  if buffer_index == 0 then
+    return
+  end
+
+  print("\nFlushing buffer to rsyslog (" .. buffer_index .. " records)...")
+
+  local packet = table.concat(buffer, "", 1, buffer_index)
+
+  local sock = ngx.socket.tcp()
+  local _, connect_err = sock:connect(config["rsyslog"]["host"], config["rsyslog"]["port"], {
+    pool_size = 10,
+  })
+  if connect_err then
+    ngx.log(ngx.ERR, "rsyslog connect error: ", connect_err)
+    os.exit(1)
+  end
+  sock:settimeouts(1000, 5000, 5000)
+
+  local _, send_err = sock:send(packet)
+  if send_err then
+    ngx.log(ngx.ERR, "rsyslog send error: ", send_err)
+    os.exit(1)
+  end
+
+  local _, keepalive_err = sock:setkeepalive(0)
+  if keepalive_err then
+    ngx.log(ngx.ERR, "rsyslog keepalive error: ", keepalive_err)
+    os.exit(1)
+  end
+
+  buffer_index = 0
+  buffer = table_new(buffer_size, 0)
+end
+
 local function process_minute(args, start, stop)
   start = start:format(format_iso8601)
   stop = stop:format(format_iso8601)
@@ -82,16 +125,22 @@ local function process_minute(args, start, stop)
     if match_err then
       ngx.log(ngx.ERR, "regex error: ", match_err)
       os.exit(1)
-    end
-    local log_data = json_decode(match[1])
+    elseif not match then
+      ngx.log(ngx.ERR, "no matches found in line: ", line_data["log"])
+    else
+      local log_data = json_decode(match[1])
 
-    local syslog_message = log_utils.build_syslog_message(log_data)
-    local _, log_err = log_utils.send_syslog_message(syslog_message)
-    if log_err then
-      ngx.log(ngx.ERR, "failed to log message: ", log_err)
-      os.exit(1)
+      local syslog_message = log_utils.build_syslog_message(log_data)
+
+      buffer_index = buffer_index + 1
+      buffer[buffer_index] = syslog_message
+    end
+
+    if buffer_index >= buffer_size then
+      flush_buffer()
     end
   end
+  flush_buffer()
   io.write("\n")
 end
 
