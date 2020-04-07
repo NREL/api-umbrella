@@ -209,6 +209,9 @@ postgresql:
   database: api_umbrella
   username: api_umbrella_app
   password:
+  ssl: false
+  ssl_verify:
+  ssl_required:
   migrations:
     username: api_umbrella_owner
     password:

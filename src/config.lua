@@ -18,6 +18,9 @@ lapis_config(app_env, {
     database = config["postgresql"]["database"],
     user = config["postgresql"]["username"],
     password = config["postgresql"]["password"],
+    ssl = config["postgresql"]["ssl"],
+    ssl_verify = config["postgresql"]["ssl_verify"],
+    ssl_required = config["postgresql"]["ssl_required"],
   },
 
   -- Increase number of parsed POST arguments, for compatibility with some of

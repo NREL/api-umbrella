@@ -19,6 +19,9 @@ _M.db_config = {
   database = config["postgresql"]["database"],
   user = config["postgresql"]["username"],
   password = config["postgresql"]["password"],
+  ssl = config["postgresql"]["ssl"],
+  ssl_verify = config["postgresql"]["ssl_verify"],
+  ssl_required = config["postgresql"]["ssl_required"],
 }
 
 local BYTEA_METATABLE = {}
