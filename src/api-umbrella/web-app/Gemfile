@@ -39,7 +39,7 @@ gem "mongoid_rails_migrations", "~> 1.2.1"
 gem "mongoid_store", :git => "https://github.com/GUI/mongoid_store.git"
 
 # Elasticsearch
-gem "elasticsearch", "~> 7.5.0"
+gem "elasticsearch", "~> 7.6.0"
 
 # OmniAuth-based authentication
 gem "devise", "~> 4.7.0"

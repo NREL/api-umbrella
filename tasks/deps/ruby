@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-ruby_version="2.4.9"
-ruby_hash="f72bdef50246ef047ba3ce9c59d2081b949feb16f9a04e008108e98f1a995e99"
+ruby_version="2.4.10"
+ruby_hash="6ea3ce7fd0064524ae06dbdcd99741c990901dfc9c66d8139a02f907d30b95a8"
 
 set -e -u -x
 source ./tasks/helpers.sh
