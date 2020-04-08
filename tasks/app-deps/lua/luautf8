@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-lua_luautf8_version="0.1.1-1"
+lua_luautf8_version="0.1.2-2"
 
 set -e -u -x
 source ./tasks/helpers.sh
