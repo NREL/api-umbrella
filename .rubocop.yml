@@ -58,6 +58,12 @@ Lint/AssignmentInCondition:
 Lint/LiteralInInterpolation:
   Enabled: false
 
+Lint/RaiseException:
+  Enabled: true
+
+Lint/StructNewOverride:
+  Enabled: true
+
 Lint/UnusedBlockArgument:
   Enabled: false
 

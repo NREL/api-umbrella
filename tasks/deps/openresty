@@ -26,7 +26,7 @@ extract_download "pcre-$pcre_version.tar.bz2"
 # https://github.com/openresty/lua-resty-core/issues/258#issuecomment-524031472
 static_pcre_flags="-Wl,-u,pcre_version"
 
-download "https://www.openssl.org/source/openssl-$openssl_version.tar.gz" "sha256" "$openssl_hash"
+download "https://www.openssl.org/source/old/openssl-$openssl_version.tar.gz" "sha256" "$openssl_hash"
 extract_download "openssl-$openssl_version.tar.gz"
 
 download "https://openresty.org/download/openresty-$openresty_version.tar.gz" "md5" "$openresty_hash"

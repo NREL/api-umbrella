@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 
-shellcheck_version="0.7.0"
-shellcheck_hash="84e06bee3c8b8c25f46906350fb32708f4b661636c04e55bd19cdd1071265112d84906055372149678d37f09a1667019488c62a0561b81fe6a6b45ad4fae4ac0"
+shellcheck_version="0.7.1"
+shellcheck_hash="beca3d7819a6bdcfbd044576df4fc284053b48f468b2f03428fe66f4ceb2c05d9b5411357fa15003cb0311406c255084cf7283a3b8fce644c340c2f6aa910b9f"
 
 set -e -u -x
 source ./tasks/helpers.sh
 
 task_working_dir
-download "https://storage.googleapis.com/shellcheck/shellcheck-v$shellcheck_version.linux.x86_64.tar.xz" "sha512" "$shellcheck_hash"
+download "https://github.com/koalaman/shellcheck/releases/download/v$shellcheck_version/shellcheck-v$shellcheck_version.linux.x86_64.tar.xz" "sha512" "$shellcheck_hash"
 extract_download "shellcheck-v$shellcheck_version.linux.x86_64.tar.xz"
 
 install -D -m 755 "shellcheck-v$shellcheck_version/shellcheck" "$TEST_INSTALL_PREFIX/bin/shellcheck"
