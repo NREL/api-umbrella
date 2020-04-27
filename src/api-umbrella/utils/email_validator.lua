@@ -36,17 +36,17 @@ local function domain_allowed(domain, options)
   if options["exclude_blocked"] and config["web"]["email"]["_blocked_domains"] then
     for _, possible_domain in ipairs(all_domains) do
       if config["web"]["email"]["_blocked_domains"][possible_domain] then
-        return false
+        return false, "email domain was blocked: " .. possible_domain
       end
     end
   end
 
   -- Check to see if this domain (or root domain) is for a disposable e-mail
   -- service.
-  if options["exclude_disposable"] then
+  if options["exclude_disposable"] and config["web"]["email"]["_disposable_domains"] then
     for _, possible_domain in ipairs(all_domains) do
-      if config["web"]["email"]["disposable_domains"][possible_domain] then
-        return false
+      if config["web"]["email"]["_disposable_domains"][possible_domain] then
+        return false, "email domain was disposable: " .. possible_domain
       end
     end
   end
@@ -91,19 +91,26 @@ function _M.is_valid_domain(domain, options)
 
   -- First, see if the domain is explicitly allowed, blocked, or disposable.
   ngx.log(ngx.ERR, "BLAH")
-  local allowed = domain_allowed(domain, options)
+  local allowed, allowed_err = domain_allowed(domain, options)
   ngx.log(ngx.ERR, "DOMAIN ALLOWED: ", inspect(allowed))
   if allowed ~= nil then
+    if allowed_err then
+      ngx.log(ngx.NOTICE, "email domain: ", allowed_err)
+    end
     return allowed
   end
 
   -- Next, check to see if this domain has valid MX records for receiving
   -- e-mail.
   if options["validate_mx"] then
-    local answers, err = dns_query(domain, { qtype = dns_type_mx })
+    local answers, query_err = dns_query(domain, { qtype = dns_type_mx })
     ngx.log(ngx.ERR, "MX VALIDATE: ", inspect(answers))
-    ngx.log(ngx.ERR, "MX VALIDATE: ", inspect(err))
-    if err then
+    ngx.log(ngx.ERR, "MX VALIDATE: ", inspect(query_err))
+    if query_err then
+      ngx.log(ngx.ERR, "DNS query error: ", query_err)
+      return false
+    elseif not answers then
+      ngx.log(ngx.NOTICE, "email domain not found")
       return false
     end
 

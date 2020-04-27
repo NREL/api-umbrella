@@ -171,6 +171,7 @@ web:
     blocked_domains: []
     disposable_domains: []
     auto_update_disposable_domains: true
+    auto_update_disposable_domains_frequency: 86400 # 24 hours
 static_site:
   host: 127.0.0.1
   port: 14013

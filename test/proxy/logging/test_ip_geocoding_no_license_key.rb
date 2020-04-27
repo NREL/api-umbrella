@@ -30,7 +30,7 @@ class Test::Proxy::Logging::TestIpGeocodingNoLicenseKey < Minitest::Test
 
   def test_runs_auto_update_process
     processes = api_umbrella_process.processes
-    assert_match(%r{^\[- --- ---\] *geoip-auto-updater *\(service not activated\)$}, processes)
+    assert_match(%r{^\[- --- ---\] *auto-updater *\(service not activated\)$}, processes)
   end
 
   def test_logs_but_no_geoip

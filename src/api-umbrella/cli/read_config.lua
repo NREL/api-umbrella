@@ -1,8 +1,10 @@
+local append_array = require("api-umbrella.proxy.utils").append_array
 local array_includes = require "api-umbrella.utils.array_includes"
 local array_last = require "api-umbrella.utils.array_last"
 local deep_defaults = require "api-umbrella.utils.deep_defaults"
 local deep_merge_overwrite_arrays = require "api-umbrella.utils.deep_merge_overwrite_arrays"
 local dir = require "pl.dir"
+local disposable_email_domains_get_domains = require("api-umbrella.utils.disposable_email_domains").get_domains
 local file = require "pl.file"
 local getgrgid = require("posix.grp").getgrgid
 local getpwuid = require("posix.pwd").getpwuid
@@ -446,6 +448,7 @@ local function set_computed_config()
     ["_service_log_db_enabled?"] = array_includes(config["services"], "log_db"),
     ["_service_elasticsearch_aws_signing_proxy_enabled?"] = array_includes(config["services"], "elasticsearch_aws_signing_proxy"),
     ["_service_router_enabled?"] = array_includes(config["services"], "router"),
+    ["_service_auto_updater_enabled?"] = array_includes(config["services"], "auto_updater"),
     ["_service_auto_ssl_enabled?"] = array_includes(config["services"], "auto_ssl"),
     ["_service_web_enabled?"] = array_includes(config["services"], "web"),
     router = {
@@ -461,12 +464,26 @@ local function set_computed_config()
           ["_only_ldap_enabled?"] = (#config["web"]["admin"]["auth_strategies"]["enabled"] == 1 and config["web"]["admin"]["auth_strategies"]["enabled"][1] == "ldap"),
         },
       },
+      email = {
+        ["_allowed_domains"] = invert_table(config["web"]["email"]["allowed_domains"]),
+        ["_blocked_domains"] = invert_table(config["web"]["email"]["blocked_domains"]),
+        ["_disposable_domains"] = invert_table(config["web"]["email"]["disposable_domains"]),
+      },
     },
     static_site = {
       dir = path.join(embedded_root_dir, "apps/static-site/current"),
       build_dir = path.join(embedded_root_dir, "apps/static-site/current/build"),
     },
   })
+
+  local disposable_domains = config["web"]["email"]["disposable_domains"]
+  if config["web"]["email"]["auto_update_disposable_domains"] then
+    append_array(disposable_domains, disposable_email_domains_get_domains(config))
+  end
+  config["web"]["email"]["_disposable_domains"] = invert_table(disposable_domains)
+  config["web"]["email"]["allowed_domains"] = nil
+  config["web"]["email"]["blocked_domains"] = nil
+  config["web"]["email"]["disposable_domains"] = nil
 
   if config["elasticsearch"]["api_version"] <= 2 then
     deep_merge_overwrite_arrays(config, {

@@ -20,7 +20,7 @@ class Test::Proxy::Logging::TestIpGeocoding < Minitest::Test
 
   def test_runs_auto_update_process
     processes = api_umbrella_process.processes
-    assert_match(%r{^\[\+ \+\+\+ \+\+\+\] *geoip-auto-updater *uptime: \d+\w/\d+\w *pids: \d+/\d+$}, processes)
+    assert_match(%r{^\[\+ \+\+\+ \+\+\+\] *auto-updater *uptime: \d+\w/\d+\w *pids: \d+/\d+$}, processes)
   end
 
   def test_ipv4_address

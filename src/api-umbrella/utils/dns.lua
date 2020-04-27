@@ -27,6 +27,7 @@ local function cache_key(name, options)
 end
 
 local function perform_query(name, options)
+  ngx.log(ngx.ERR, "PERFORM_QUERY")
   local resolver, resolver_err = dns_resolver:new({
     nameservers = config["dns_resolver"]["_nameservers_resty"],
     timeout = config["dns_resolver"]["timeout"],
@@ -42,27 +43,36 @@ local function perform_query(name, options)
     ngx.log(ngx.ERR, "DNS query error: ", query_err)
     return nil, query_err
   end
+
+  local ttl = 60
+
+  -- If we got an answer back, but it was an error (eg, NXDOMAIN),
   if answers.errcode then
-    ngx.log(ngx.ERR, "DNS query error: ", answers.errstr)
-    return nil, query_err
+    ngx.log(ngx.ERR, "DNS returned error code: ", answers.errcode, ": ", answers.errstr)
+    return nil, nil, ttl
   end
 
   -- Cache these results based on the minimum TTL in the answers.
-  local ttl = 60
   for _, answer in ipairs(answers) do
     if answer["ttl"] < ttl then
       ttl = answer["ttl"]
     end
   end
 
-  ngx.log(ngx.ERR, "ANSWERS: ", answers)
+  local inspect = require "inspect"
+  ngx.log(ngx.ERR, "ANSWERS: ", inspect(answers))
   ngx.log(ngx.ERR, "TTL: ", ttl)
   return answers, nil, ttl
 end
 
 _M.query = function(name, options)
   local key = cache_key(name, options)
-  return cache:get(key, nil, perform_query, name, options)
+  local value, err, hit_level = cache:get(key, nil, perform_query, name, options)
+  local inspect = require "inspect"
+  ngx.log(ngx.ERR, "QUERY VALUE: ", inspect(value))
+  ngx.log(ngx.ERR, "QUERY ERR: ", err)
+  ngx.log(ngx.ERR, "QUERY HIT_LEVEL: ", hit_level)
+  return value, err, hit_level
 end
 
 return _M

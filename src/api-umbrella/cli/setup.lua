@@ -1,6 +1,7 @@
 local dir = require "pl.dir"
 local file = require "pl.file"
 local geoip_download_if_missing_or_old = require("api-umbrella.utils.geoip").download_if_missing_or_old
+local disposable_email_domains_pull = require("api-umbrella.utils.disposable_email_domains").pull
 local invert_table = require "api-umbrella.utils.invert_table"
 local lustache = require "lustache"
 local mustache_unescape = require "api-umbrella.utils.mustache_unescape"
@@ -127,7 +128,6 @@ local function generate_auto_ssl_fallback_cert()
   end
 end
 
-
 local function ensure_geoip_db()
   local _, err = geoip_download_if_missing_or_old(config)
   if err then
@@ -135,6 +135,15 @@ local function ensure_geoip_db()
     config["geoip"]["_enabled"] = false
   else
     config["geoip"]["_enabled"] = true
+  end
+end
+
+local function ensure_disposable_email_domains()
+  if config["web"]["email"]["auto_update_disposable_domains"] then
+    local _, err = disposable_email_domains_pull(config)
+    if err then
+      ngx.log(ngx.ERR, "disposable email domains database pull failed: ", err)
+    end
   end
 end
 
@@ -287,7 +296,7 @@ local function activate_services()
   end
   if config["_service_router_enabled?"] then
     if config["geoip"]["_enabled"] then
-      active_services["geoip-auto-updater"] = 1
+      active_services["auto-updater"] = 1
     end
     active_services["nginx"] = 1
     active_services["rsyslog"] = 1
@@ -297,6 +306,9 @@ local function activate_services()
     active_services["nginx-auto-ssl"] = 1
   end
   if config["_service_web_enabled?"] then
+    if config["web"]["email"]["auto_update_disposable_domains"] then
+      active_services["auto-updater"] = 1
+    end
     active_services["nginx-web-app"] = 1
   end
   if config["app_env"] == "development" then
@@ -375,6 +387,7 @@ return function()
   generate_self_signed_cert()
   generate_auto_ssl_fallback_cert()
   ensure_geoip_db()
+  ensure_disposable_email_domains()
   write_templates()
   write_static_site_key()
   set_permissions()

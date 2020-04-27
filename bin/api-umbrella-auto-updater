@@ -15,4 +15,4 @@ dir="$(cd -P "$(dirname "$source")" && pwd)"
 source "$dir/api-umbrella-env"
 
 # Run the Lua app.
-exec resty --errlog-level notice "$API_UMBRELLA_SRC_ROOT/src/api-umbrella/geoip-auto-updater.lua" "$@"
+exec resty --errlog-level notice "$API_UMBRELLA_SRC_ROOT/src/api-umbrella/auto-updater.lua" "$@"

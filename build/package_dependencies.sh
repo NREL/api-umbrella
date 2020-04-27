@@ -39,6 +39,9 @@ if [[ "$ID_NORMALIZED" == "rhel" ]]; then
     curl
     gzip
 
+    # disposable email domains auto updater
+    git
+
     # TrafficServer
     libxml2
     tcl
@@ -85,7 +88,6 @@ if [[ "$ID_NORMALIZED" == "rhel" ]]; then
     gcc
     gcc-c++
     gettext
-    git
     libcurl-devel
     libffi-devel
     libtool
@@ -201,6 +203,9 @@ elif [[ "$ID_NORMALIZED" == "debian" ]]; then
     curl
     gzip
 
+    # disposable email domains auto updater
+    git
+
     # TrafficServer
     libxml2
     tcl
@@ -246,7 +251,6 @@ elif [[ "$ID_NORMALIZED" == "debian" ]]; then
     g++
     gcc
     gettext
-    git
     libcurl4-openssl-dev
     libffi-dev
     libjansson-dev

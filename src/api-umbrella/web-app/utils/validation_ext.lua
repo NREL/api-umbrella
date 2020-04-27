@@ -103,13 +103,17 @@ end
 local xpcall_error_handler = require "api-umbrella.utils.xpcall_error_handler"
 
 local function email(options)
-  ngx.log(ngx.ERR, "EMAIL VALIDATOR")
   return function(value)
-    ngx.log(ngx.ERR, "EMAIL VALIDATOR2")
-    local foo, err = xpcall(is_valid_email, xpcall_error_handler, value, options)
-    ngx.log(ngx.ERR, "IS VALID: ", foo)
-    ngx.log(ngx.ERR, "IS VALID ERR: ", err)
-    return foo
+    local ok, valid, err = xpcall(is_valid_email, xpcall_error_handler, value, options)
+    ngx.log(ngx.ERR, "IS VALID: ", valid)
+    if not ok then
+      ngx.log(ngx.ERR, "Unexpected email validation error: ", valid)
+      return false
+    elseif err then
+      ngx.log(ngx.ERR, "Email validation error: ", valid)
+      return false
+    end
+    return valid
   end
 end
 
