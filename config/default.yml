@@ -42,6 +42,8 @@ nginx:
       size: 3m
     api_users:
       size: 3m
+    dns_cache:
+      size: 300k
     geocode_city_cache:
       size: 100k
     interval_locks:
@@ -84,6 +86,9 @@ web:
     email_regex: "\\A[^@\\s]+@[^@\\s]+\\.[^@\\s]+\\z"
     first_name_exclude_regex: "(http|https|www|<|>|\\r|\\n)"
     last_name_exclude_regex: "(http|https|www|<|>|\\r|\\n)"
+    validate_email_mx: true
+    validate_email_blocked_domain: true
+    validate_email_disposable_domain: true
   admin:
     initial_superusers: []
     username_is_email: true
@@ -150,6 +155,9 @@ web:
     api_exclude_regex: "(<script|\\r|\\n)"
     subject_exclude_regex: "(<script|\\r|\\n)"
     message_exclude_regex: "(\\A\\s*\\d+\\s*\\z)"
+    validate_email_mx: true
+    validate_email_blocked_domain: true
+    validate_email_disposable_domain: true
   mailer:
     smtp_settings:
       address: 127.0.0.1
@@ -158,6 +166,11 @@ web:
   analytics_v0_summary_start_time: 2013-07-01T00:00:00.000Z
   analytics_v0_summary_end_time:
   analytics_v0_summary_filter:
+  email:
+    allowed_domains: []
+    blocked_domains: []
+    disposable_domains: []
+    auto_update_disposable_domains: true
 static_site:
   host: 127.0.0.1
   port: 14013

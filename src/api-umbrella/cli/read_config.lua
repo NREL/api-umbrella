@@ -273,14 +273,17 @@ local function set_computed_config()
   -- Parse the nameservers, allowing for custom DNS ports to be specified in
   -- the OpenBSD resolv.conf format of "[IP]:port".
   config["dns_resolver"]["_nameservers"] = {}
+  config["dns_resolver"]["_nameservers_resty"] = {}
   config["dns_resolver"]["_nameservers_nginx"] = {}
   for _, nameserver in ipairs(nameservers) do
     local ip, port = string.match(nameserver, "^%[(.+)%]:(%d+)$")
     if ip and port then
       nameserver = { ip, port }
       table.insert(config["dns_resolver"]["_nameservers_nginx"], ip .. ":" .. port)
+      table.insert(config["dns_resolver"]["_nameservers_resty"], { ip, port })
     else
       table.insert(config["dns_resolver"]["_nameservers_nginx"], nameserver)
+      table.insert(config["dns_resolver"]["_nameservers_resty"], nameserver)
     end
 
     table.insert(config["dns_resolver"]["_nameservers"], nameserver)

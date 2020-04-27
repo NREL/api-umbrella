@@ -1,6 +1,7 @@
 local cidr = require "libcidr-ffi"
 local common_validations = require "api-umbrella.web-app.utils.common_validations"
 local db_null = require("lapis.db").NULL
+local is_valid_email = require("api-umbrella.utils.email_validator").is_valid_email
 local is_array = require "api-umbrella.utils.is_array"
 local is_hash = require "api-umbrella.utils.is_hash"
 local match = ngx.re.match
@@ -81,16 +82,36 @@ end
 
 local function not_regex(regex, options)
   return function(value)
-    return match(value, regex, options) == nil
+    local matches, err = match(value, regex, options)
+    if err then
+      ngx.log(ngx.ERR, "regex error: ", err)
+    end
+    return matches == nil
   end
 end
 
 local function uuid()
   return function(value)
-    return match(value, common_validations.uuid, "ijo") ~= nil
+    local matches, err = match(value, common_validations.uuid, "ijo")
+    if err then
+      ngx.log(ngx.ERR, "regex error: ", err)
+    end
+    return matches ~= nil
   end
 end
 
+local xpcall_error_handler = require "api-umbrella.utils.xpcall_error_handler"
+
+local function email(options)
+  ngx.log(ngx.ERR, "EMAIL VALIDATOR")
+  return function(value)
+    ngx.log(ngx.ERR, "EMAIL VALIDATOR2")
+    local foo, err = xpcall(is_valid_email, xpcall_error_handler, value, options)
+    ngx.log(ngx.ERR, "IS VALID: ", foo)
+    ngx.log(ngx.ERR, "IS VALID ERR: ", err)
+    return foo
+  end
+end
 
 local validators = validation.validators
 local validators_metatable = getmetatable(validators)
@@ -121,6 +142,9 @@ validators_metatable.not_regex = not_regex
 
 validators.uuid = uuid()
 validators_metatable.uuid = uuid
+
+validators.email = email()
+validators_metatable.email = email
 
 setmetatable(validators, validators_metatable)
 

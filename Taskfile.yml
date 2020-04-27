@@ -556,6 +556,20 @@ tasks:
       - ./build/work/stamp/app-deps/lua/resty-mail
     method: checksum
 
+  app-deps:lua:resty-mlcache:
+    deps:
+      - deps:luarocks
+    cmds:
+      - ./tasks/app-deps/lua/resty-mlcache
+    sources:
+      - ./build/work/stamp/deps/luarocks
+      - ./tasks/app-deps/lua/resty-mlcache
+      - ./tasks/helpers.sh
+      - ./tasks/helpers/lua.sh
+    generates:
+      - ./build/work/stamp/app-deps/lua/resty-mlcache
+    method: checksum
+
   app-deps:lua:resty-moongoo:
     deps:
       - deps:libbson
@@ -721,6 +735,7 @@ tasks:
       - task: app-deps:lua:resty-http
       - task: app-deps:lua:resty-logger-socket
       - task: app-deps:lua:resty-mail
+      - task: app-deps:lua:resty-mlcache
       - task: app-deps:lua:resty-moongoo
       - task: app-deps:lua:resty-nettle
       - task: app-deps:lua:resty-openidc

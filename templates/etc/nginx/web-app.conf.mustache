@@ -40,6 +40,7 @@ http {
   if_modified_since off;
 
   lua_shared_dict active_config {{nginx.shared_dicts.active_config.size}};
+  lua_shared_dict dns_cache {{nginx.shared_dicts.dns_cache.size}};
   lua_shared_dict interval_locks {{nginx.shared_dicts.interval_locks.size}};
   lua_shared_dict locks {{nginx.shared_dicts.locks.size}};
 
