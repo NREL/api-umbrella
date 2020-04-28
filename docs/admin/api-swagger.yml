@@ -1011,6 +1011,18 @@ paths:
                     $ref: '#/definitions/ConfigPublish'
                   website_backends:
                     $ref: '#/definitions/ConfigPublish'
+            example:
+              config:
+                apis:
+                  uuid_of_api_backend:
+                    publish: "1"
+                  uuid_of_additional_api_backend:
+                    publish: "0"
+                website_backends:
+                  uuid_of_website_backend:
+                    publish: "0"
+                  uuid_of_additional_website_backend:
+                    publish: "1"
       responses:
         201:
           description: Successfully published changes
