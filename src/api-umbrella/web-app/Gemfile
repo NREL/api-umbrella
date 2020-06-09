@@ -6,7 +6,7 @@ gem "rails", "~> 4.2.11", ">= 4.2.11.1"
 gem "puma", "~> 4.3.5"
 
 # Error notification service (optional)
-gem "rollbar", "~> 2.24.0"
+gem "rollbar", "~> 2.25.0"
 
 # Abort requests that take too long
 gem "rack-timeout", "~> 0.6.0", :require => "rack/timeout/base"
@@ -39,7 +39,7 @@ gem "mongoid_rails_migrations", "~> 1.2.1"
 gem "mongoid_store", :git => "https://github.com/GUI/mongoid_store.git"
 
 # Elasticsearch
-gem "elasticsearch", "~> 7.6.0"
+gem "elasticsearch", "~> 7.7.0"
 
 # OmniAuth-based authentication
 gem "devise", "~> 4.7.0"
@@ -81,7 +81,7 @@ gem "nokogiri", "~> 1.10.0"
 gem "http_accept_language", "~> 2.1.1"
 
 # Markdown
-gem "kramdown", "~> 2.1.0"
+gem "kramdown", "~> 2.2.1"
 gem "kramdown-parser-gfm", "~> 1.1.0"
 
 # Lucene query parsing for translating into SQL.
@@ -91,7 +91,7 @@ gem "lucene_query_parser", :git => "https://github.com/zerowidth/lucene_query_pa
 gem "request_store", "~> 1.5.0"
 
 # Share i18n data with the admin-ui client-side app.
-gem "i18n-js", "~> 3.6.0"
+gem "i18n-js", "~> 3.7.0"
 
 # Log to stdout instead of file
 #
@@ -105,7 +105,7 @@ gem "simple_form", "~> 3.5", ">= 3.5.1"
 # Login stylesheets
 gem "sass-rails", "~> 6.0.0"
 gem "sprockets", "< 4"
-gem "bootstrap", "~> 4.4.1", :require => false
+gem "bootstrap", "~> 4.5.0", :require => false
 gem "font-awesome-rails", "~> 4.7.0", ">= 4.7.0.4", :require => false
 
 # Table-less models
