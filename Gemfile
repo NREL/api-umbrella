@@ -57,7 +57,7 @@ gem "capybara-screenshot", "~> 1.0.22"
 gem "nokogiri", "~> 1.10.0"
 
 # Useful additions
-gem "activesupport", "~> 5.2.0"
+gem "activesupport", "~> 5.2.4"
 
 # Path-based setting of hashes
 gem "lazyhash", "~> 0.1.1"
