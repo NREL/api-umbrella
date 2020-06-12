@@ -12,6 +12,8 @@ extract_download "elasticsearch-$elasticsearch7_version-linux-x86_64.tar.gz"
 
 mkdir -p "$TEST_INSTALL_PREFIX/elasticsearch7"
 rsync -a -v --checksum --delete-after "elasticsearch-$elasticsearch7_version/" "$TEST_INSTALL_PREFIX/elasticsearch7/"
+# Fix jdk directories being chmod 750.
+find "$TEST_INSTALL_PREFIX/elasticsearch7/" -type d -print0 | xargs -0 chmod 755
 "$TEST_INSTALL_PREFIX/elasticsearch7/bin/elasticsearch-keystore" create
 chmod 660 "$TEST_INSTALL_PREFIX/elasticsearch7/config/elasticsearch.keystore"
 
