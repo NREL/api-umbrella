@@ -303,7 +303,7 @@ Devise.setup do |config|
         :service_validate_url => "/cas/serviceValidate",
         :logout_url => "/cas/logout",
         :ssl => true
-    when "local" # rubocop:disable Lint/EmptyWhen
+    when "local"
       # Ignore
     else
       raise "Unknown authentication strategy enabled in config: #{strategy.inspect}"

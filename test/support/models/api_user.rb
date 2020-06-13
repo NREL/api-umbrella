@@ -19,9 +19,10 @@ class ApiUser
   field :registration_origin
   field :created_by, :type => String
   field :updated_by, :type => String
-  attr_accessor :terms_and_conditions
   embeds_one :settings, :class_name => "Api::Settings"
   after_save :touch_server_side_timestamp
+
+  attr_accessor :terms_and_conditions
 
   def api_key_preview
     self.api_key.truncate(9)

@@ -283,7 +283,7 @@ class OutdatedPackages
         tags.map! { |tag| luarock_version_to_semver(tag) }
       elsif(options[:http])
         content = Net::HTTP.get_response(URI.parse(options[:http])).body
-        tags = content.scan(/#{name}-[\d\.]+.tar/)
+        tags = content.scan(/#{name}-[\d.]+.tar/)
         tags.map! { |f| tag_to_semver(name, File.basename(f, ".tar")) }
       end
 

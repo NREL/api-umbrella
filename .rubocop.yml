@@ -24,6 +24,9 @@ Layout/ArgumentAlignment:
 Layout/CaseIndentation:
   EnforcedStyle: end
 
+Layout/EmptyLinesAroundAttributeAccessor:
+  Enabled: true
+
 Layout/EndAlignment:
   EnforcedStyleAlignWith: start_of_line
 
@@ -58,11 +61,20 @@ Layout/ParameterAlignment:
 Layout/SpaceAroundKeyword:
   Enabled: false
 
+Layout/SpaceAroundMethodCallOperator:
+  Enabled: true
+
 Lint/AssignmentInCondition:
   AllowSafeAssignment: false
 
+Lint/DeprecatedOpenSSLConstant:
+  Enabled: true
+
 Lint/LiteralInInterpolation:
   Enabled: false
+
+Lint/MixedRegexpCaptureTypes:
+  Enabled: true
 
 Lint/RaiseException:
   Enabled: true
@@ -140,6 +152,9 @@ Style/EmptyElse:
 Style/EmptyMethod:
   Enabled: false
 
+Style/ExponentialNotation:
+  Enabled: true
+
 Style/FrozenStringLiteralComment:
   Enabled: false
 
@@ -191,6 +206,12 @@ Style/PercentLiteralDelimiters:
 Style/RaiseArgs:
   Enabled: false
 
+Style/RedundantRegexpCharacterClass:
+  Enabled: true
+
+Style/RedundantRegexpEscape:
+  Enabled: true
+
 Style/RedundantSelf:
   Enabled: false
 
@@ -205,6 +226,9 @@ Style/SafeNavigation:
 
 Style/SignalException:
   Enabled: false
+
+Style/SlicingWithRange:
+  Enabled: true
 
 Style/StringLiterals:
   EnforcedStyle: double_quotes
