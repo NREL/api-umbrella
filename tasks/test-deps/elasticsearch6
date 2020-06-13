@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-elasticsearch6_version="6.8.8"
-elasticsearch6_hash="dbe27b9dec378ac79dae67500dbfdf4b7ae5865f"
+elasticsearch6_version="6.8.10"
+elasticsearch6_hash="01410753ae065fc088f731217ee823e17f3de267"
 
 set -e -u -x
 source ./tasks/helpers.sh
