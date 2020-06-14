@@ -119,7 +119,11 @@ function _M.userinfo(self, strategy_name, options)
   end
 
   self:init_session_cookie()
-  self.session_cookie:open()
+  local _, _, open_err = self.session_cookie:open()
+  if open_err then
+    ngx.log(ngx.ERR, "session open error: ", open_err)
+  end
+
   if not self.session_cookie or not self.session_cookie.data or not self.session_cookie.data["oauth2_state"] then
     ngx.log(ngx.ERR, "oauth2 state not available")
     return nil, t("Cross-site request forgery detected")

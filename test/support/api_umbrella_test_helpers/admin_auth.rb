@@ -235,16 +235,16 @@ module ApiUmbrellaTestHelpers
     end
 
     def session_base64_encode(value)
-      Base64.strict_encode64(value).tr("+/=", "-_.")
+      Base64.urlsafe_encode64(value, :padding => false)
     end
 
     def session_base64_decode(value)
-      Base64.strict_decode64(value.tr("-_.", "+/="))
+      Base64.urlsafe_decode64(value)
     end
 
     def encrypt_session_cookie(data)
       id = SecureRandom.hex(20)
-      id_hash = OpenSSL::HMAC.hexdigest("sha256", $config["secret_key"], id)
+      id_hash = session_base64_encode(id)
       iv = id[0, 12]
       expires = Time.now.to_i + 3600
       data_serialized = MultiJson.dump(data)
@@ -279,7 +279,7 @@ module ApiUmbrellaTestHelpers
       })
 
       [
-        session_base64_encode(id),
+        id_hash,
         expires,
         session_base64_encode(hmac_data),
       ].join("|")

@@ -27,7 +27,11 @@ function _M.setup(self)
 
   self.restore_flashes = function()
     self:init_session_cookie()
-    self.session_cookie:open()
+    local _, _, open_err = self.session_cookie:open()
+    if open_err then
+      ngx.log(ngx.ERR, "session open error: ", open_err)
+    end
+
     if self.session_cookie.data and not is_empty(self.session_cookie.data["flash"]) then
       for flash_type, data in pairs(self.session_cookie.data["flash"]) do
         _M.now(self, flash_type, data["message"], data)
