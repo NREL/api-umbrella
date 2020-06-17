@@ -4,8 +4,8 @@ local defaults = {
   length = 40
 }
 
-return function(config)
-  local c = config.random or defaults
-  local l = c.length or defaults.length
-  return random_token(l)
+return function(session)
+  local config = session.random or defaults
+  local length = tonumber(config.length, 10) or defaults.length
+  return random_token(length)
 end

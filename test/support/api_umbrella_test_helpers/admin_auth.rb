@@ -235,16 +235,16 @@ module ApiUmbrellaTestHelpers
     end
 
     def session_base64_encode(value)
-      Base64.strict_encode64(value).tr("+/=", "-_.")
+      Base64.urlsafe_encode64(value, :padding => false)
     end
 
     def session_base64_decode(value)
-      Base64.strict_decode64(value.tr("-_.", "+/="))
+      Base64.urlsafe_decode64(value)
     end
 
     def encrypt_session_cookie(data)
       id = SecureRandom.hex(20)
-      id_hash = OpenSSL::HMAC.hexdigest("sha256", $config["secret_key"], id)
+      id_encoded = session_base64_encode(id)
       iv = id[0, 12]
       expires = Time.now.to_i + 3600
       data_serialized = MultiJson.dump(data)
@@ -272,14 +272,14 @@ module ApiUmbrellaTestHelpers
       })
 
       Session.create!({
-        :id_hash => id_hash,
+        :id_hash => id_encoded,
         :expires_at => Time.at(expires).utc,
         :data_encrypted => data_encrypted,
         :data_encrypted_iv => iv,
       })
 
       [
-        session_base64_encode(id),
+        id_encoded,
         expires,
         session_base64_encode(hmac_data),
       ].join("|")
@@ -287,14 +287,13 @@ module ApiUmbrellaTestHelpers
 
     def decrypt_session_cookie(cookie_value)
       parts = cookie_value.split("|")
-      id = session_base64_decode(parts[0])
+      id_encoded = parts[0]
       auth_data = [
         STATIC_USER_AGENT,
         "http",
       ].join("")
 
-      id_hash = OpenSSL::HMAC.hexdigest("sha256", $config["secret_key"], id)
-      session = Session.find_by(:id_hash => id_hash)
+      session = Session.find_by(:id_hash => id_encoded)
 
       data_serialized = Encryptor.decrypt({
         :value => session.data_encrypted,
@@ -309,6 +308,7 @@ module ApiUmbrellaTestHelpers
     def encrypt_session_client_cookie(data)
       id = SecureRandom.hex(20)
       iv = id[0, 12]
+      id_encoded = session_base64_encode(id)
       expires = Time.now.to_i + 3600
       data_serialized = MultiJson.dump(data)
       hmac_data_key = OpenSSL::HMAC.digest("sha256", $config["secret_key"], [
@@ -335,7 +335,7 @@ module ApiUmbrellaTestHelpers
       })
 
       [
-        session_base64_encode(id),
+        id_encoded,
         expires,
         session_base64_encode(data_encrypted),
         session_base64_encode(hmac_data),
@@ -344,7 +344,8 @@ module ApiUmbrellaTestHelpers
 
     def decrypt_session_client_cookie(cookie_value)
       parts = cookie_value.split("|")
-      id = session_base64_decode(parts[0])
+      id_encoded = parts[0]
+      id = session_base64_decode(id_encoded)
       iv = id[0, 12]
       data = session_base64_decode(parts[2])
       auth_data = [

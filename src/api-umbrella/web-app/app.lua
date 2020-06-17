@@ -134,7 +134,11 @@ end
 local function current_admin_from_session(self)
   local current_admin
   self:init_session_db()
-  self.session_db:open()
+  local _, _, open_err = self.session_db:open()
+  if open_err then
+    ngx.log(ngx.ERR, "session open error: ", open_err)
+  end
+
   if self.session_db and self.session_db.data and self.session_db.data["admin_id"] then
     local admin_id = self.session_db.data["admin_id"]
     local admin = Admin:find({ id = admin_id })

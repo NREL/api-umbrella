@@ -1,57 +1,50 @@
 local db = require "lapis.db"
-local escape_regex = require "api-umbrella.utils.escape_regex"
-local hmac = require "api-umbrella.utils.hmac"
-local split = require("ngx.re").split
-local time = require "api-umbrella.utils.time"
-
-local now = ngx.now
 
 local _M = {}
 _M.__index = _M
 
-function _M.new(config)
+function _M.new(session)
   local self = {
-    encode = config.encoder.encode,
-    decode = config.encoder.decode,
-    delimiter = config.cookie.delimiter,
+    encode = session.encoder.encode,
+    decode = session.encoder.decode,
   }
 
   return setmetatable(self, _M)
 end
 
-function _M:open(cookie, lifetime)
-  local parts = split(cookie, escape_regex(self.delimiter))
-  if parts and parts[1] and parts[2] and parts[3] then
-    local id = self.decode(parts[1])
-    local expires = tonumber(parts[2])
-    local hmac_data = self.decode(parts[3])
-
-    local data
-    local res = db.query("SELECT data_encrypted FROM sessions WHERE id_hash = ? AND expires_at >= now()", hmac(id))
-    if res and res[1] and res[1]["data_encrypted"] then
-      data = res[1]["data_encrypted"]
-      db.query("UPDATE sessions SET expires_at = now() + interval ? WHERE id_hash = ?", lifetime .. " seconds", hmac(id))
-    end
-
-    return id, expires, data, hmac_data
+function _M.open(_, id_encoded)
+  local data
+  local res = db.query("SELECT data_encrypted FROM sessions WHERE id_hash = ? AND expires_at >= now()", id_encoded)
+  if res and res[1] and res[1]["data_encrypted"] then
+    data = res[1]["data_encrypted"]
   end
 
-  return nil, "invalid"
+  return data
 end
 
-function _M:save(id, expires, data, hmac_data)
+function _M.start()
+  return true
+end
+
+function _M:save(id_encoded, ttl, data)
+  local id = self.decode(id_encoded)
   local iv = string.sub(id, 1, 12)
-  local ttl = expires - now()
-  if ttl <= 0 then
-    return nil, "expired"
-  end
 
-  db.query("INSERT INTO sessions(id_hash, expires_at, data_encrypted, data_encrypted_iv) VALUES(?, ?, ?, ?) ON CONFLICT (id_hash) DO UPDATE SET expires_at = EXCLUDED.expires_at, data_encrypted = EXCLUDED.data_encrypted, data_encrypted_iv = EXCLUDED.data_encrypted_iv", hmac(id), time.timestamp_to_iso8601(expires), db.raw(ngx.ctx.pgmoon:encode_bytea(data)), iv)
-  return table.concat({ self.encode(id), expires, self.encode(hmac_data) }, self.delimiter)
+  db.query("INSERT INTO sessions(id_hash, expires_at, data_encrypted, data_encrypted_iv) VALUES(?, now() + interval ?, ?, ?) ON CONFLICT (id_hash) DO UPDATE SET expires_at = EXCLUDED.expires_at, data_encrypted = EXCLUDED.data_encrypted, data_encrypted_iv = EXCLUDED.data_encrypted_iv", id_encoded, ttl .. " seconds", db.raw(ngx.ctx.pgmoon:encode_bytea(data)), iv)
+  return true
 end
 
-function _M.destroy(_, id)
-  db.query("DELETE FROM sessions WHERE id_hash = ?", hmac(id))
+function _M.close()
+  return true
+end
+
+function _M.destroy(_, id_encoded)
+  db.query("DELETE FROM sessions WHERE id_hash = ?", id_encoded)
+end
+
+function _M.ttl(_, id_encoded, ttl)
+  db.query("UPDATE sessions SET expires_at = now() + interval ? WHERE id_hash = ?", ttl .. " seconds", id_encoded)
+  return true
 end
 
 return _M

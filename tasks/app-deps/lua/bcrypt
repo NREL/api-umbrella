@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-lua_bcrypt_version="2.1-4"
+lua_bcrypt_version="2.1-5"
 
 set -e -u -x
 source ./tasks/helpers.sh

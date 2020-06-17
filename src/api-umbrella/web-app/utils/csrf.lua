@@ -41,7 +41,11 @@ end
 
 local function validate_token(self)
   self:init_session_cookie()
-  self.session_cookie:open()
+  local _, _, open_err = self.session_cookie:open()
+  if open_err then
+    ngx.log(ngx.ERR, "session open error: ", open_err)
+  end
+
   local key = self.session_cookie.data["csrf_token_key"]
   if not key then
     return false, "Missing CSRF token key"

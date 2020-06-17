@@ -18,13 +18,13 @@ gem "minitest-hooks", "~> 1.5.0"
 gem "minitest-ci", "~> 3.4.0"
 
 # Ruby lint/style checker
-gem "rubocop", "~> 0.81.0", :require => false
+gem "rubocop", "~> 0.85.1", :require => false
 
 # Running background processes
 gem "childprocess", "~> 3.0.0"
 
 # Making HTTP requests
-gem "typhoeus", "~> 1.3.0"
+gem "typhoeus", "~> 1.4.0"
 
 # JSON parsing
 gem "multi_json", "~> 1.14.1"
@@ -33,11 +33,11 @@ gem "oj", "~> 3.10.0"
 # Database libraries
 gem "activerecord", "~> 6.0.0", :require => "active_record"
 gem "pg", "~> 1.2.2"
-gem "elasticsearch", "~> 7.6.0"
+gem "elasticsearch", "~> 7.7.0"
 gem "active_attr", "~> 0.15.0"
 
 # Factories for test database data
-gem "factory_bot", "~> 5.1.0"
+gem "factory_bot", "~> 5.2.0"
 
 # Deleting database data between tests.
 gem "database_cleaner-active_record", "~> 1.8.0"
@@ -63,7 +63,7 @@ gem "nokogiri", "~> 1.10.0"
 gem "activesupport", "~> 6.0.0"
 
 # Generating fake strings and data.
-gem "faker", "~> 2.11.0"
+gem "faker", "~> 2.12.0"
 
 # Concurrency helpers.
 gem "concurrent-ruby", "~> 1.1.1"

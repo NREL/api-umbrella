@@ -27,6 +27,25 @@ security:
   - api_key: []
   - admin_auth_token: []
 parameters:
+  json-format:
+    name: format
+    in: path
+    description: Response format
+    required: true
+    type: string
+    enum:
+      - json
+    default: json
+  json-csv-format:
+    name: format
+    in: path
+    description: Response format
+    required: true
+    type: string
+    enum:
+      - json
+      - csv
+    default: json
   datatables-start:
     name: start
     in: query
@@ -71,7 +90,7 @@ parameters:
     required: false
     type: string
 paths:
-  /api-umbrella/v1/admin_groups:
+  /api-umbrella/v1/admin_groups.{format}:
     get:
       tags:
         - admin_group
@@ -81,6 +100,7 @@ paths:
 
         This API's query parameters and responses are intended to be compatible with the [DataTables server-side processing API](https://datatables.net/manual/server-side).
       parameters:
+        - $ref: '#/parameters/json-csv-format'
         - $ref: '#/parameters/datatables-start'
         - $ref: '#/parameters/datatables-length'
         - $ref: '#/parameters/datatables-search-value'
@@ -110,6 +130,7 @@ paths:
         - admin_group
       summary: Create a new admin group.
       parameters:
+        - $ref: '#/parameters/json-format'
         - in: body
           name: body
           description: AdminGroup object to create
@@ -123,7 +144,7 @@ paths:
       responses:
         201:
           description: Successfully created record
-  /api-umbrella/v1/admin_groups/{id}:
+  /api-umbrella/v1/admin_groups/{id}.{format}:
     parameters:
       - name: id
         in: path
@@ -131,6 +152,7 @@ paths:
         required: true
         type: string
         format: uuid
+      - $ref: '#/parameters/json-format'
     get:
       tags:
         - admin_group
@@ -170,7 +192,9 @@ paths:
       responses:
         204:
           description: Successfully deleted record
-  /api-umbrella/v1/admin_permissions:
+  /api-umbrella/v1/admin_permissions.{format}:
+    parameters:
+      - $ref: '#/parameters/json-format'
     get:
       tags:
         - admin_permission
@@ -195,7 +219,7 @@ paths:
                       type: string
                     display_order:
                       type: integer
-  /api-umbrella/v1/admins:
+  /api-umbrella/v1/admins.{format}:
     get:
       tags:
         - admin
@@ -205,6 +229,7 @@ paths:
 
         This API's query parameters and responses are intended to be compatible with the [DataTables server-side processing API](https://datatables.net/manual/server-side).
       parameters:
+        - $ref: '#/parameters/json-csv-format'
         - $ref: '#/parameters/datatables-start'
         - $ref: '#/parameters/datatables-length'
         - $ref: '#/parameters/datatables-search-value'
@@ -234,6 +259,7 @@ paths:
         - admin
       summary: Create a new admin account.
       parameters:
+        - $ref: '#/parameters/json-format'
         - in: body
           name: body
           description: Admin object to create
@@ -247,7 +273,7 @@ paths:
       responses:
         201:
           description: Successfully created record
-  /api-umbrella/v1/admins/{id}:
+  /api-umbrella/v1/admins/{id}.{format}:
     parameters:
       - name: id
         in: path
@@ -255,6 +281,7 @@ paths:
         required: true
         type: string
         format: uuid
+      - $ref: '#/parameters/json-format'
     get:
       tags:
         - admin
@@ -294,11 +321,13 @@ paths:
       responses:
         204:
           description: Successfully deleted record
-  /api-umbrella/v1/analytics/drilldown:
+  /api-umbrella/v1/analytics/drilldown.{format}:
+    parameters:
+      - $ref: '#/parameters/json-csv-format'
     get:
       tags:
         - analytics
-      summary: Get a summary of pending configuration changes.
+      summary: Summary analytics for each level of URL paths.
       parameters:
         - name: prefix
           in: query
@@ -371,7 +400,366 @@ paths:
                       type: string
                     hits:
                       type: integer
-  /api-umbrella/v1/api_scopes:
+  /admin/stats/search.{format}:
+    parameters:
+      - $ref: '#/parameters/json-format'
+    get:
+      tags:
+        - analytics
+      summary: Summary analytics and aggregations for filtered analytics results.
+      parameters:
+        - name: start_at
+          in: query
+          required: true
+          type: string
+          format: date-time
+        - name: end_at
+          in: query
+          required: true
+          type: string
+          format: date-time
+        - name: interval
+          in: query
+          required: true
+          type: string
+          enum: ["month", "week", "day", "hour", "minute"]
+        - name: query
+          in: query
+          required: false
+          type: string
+          description: A string of JSON in the format [jQuery QueryBuilder](http://mistic100.github.io/jQuery-QueryBuilder/) generates for fields to filter.
+        - name: search
+          in: query
+          required: false
+          type: string
+          description: A raw elasticsearch query string.
+      responses:
+        200:
+          description: Successful response
+          schema:
+            title: Response
+            type: object
+            properties:
+              hits_over_time:
+                type: array
+                items:
+                  type: object
+              stats:
+                type: object
+                properties:
+                  total_users:
+                    type: integer
+                  total_ips:
+                    type: integer
+                  total_hits:
+                    type: integer
+                  average_response_time:
+                    type: number
+              aggregations:
+                type: object
+                properties:
+                  ips:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        key:
+                          type: string
+                        count:
+                          type: integer
+                        percent:
+                          type: integer
+                  users:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        key:
+                          type: string
+                        count:
+                          type: integer
+                        percent:
+                          type: integer
+  /admin/stats/logs.{format}:
+    parameters:
+      - $ref: '#/parameters/json-csv-format'
+    get:
+      tags:
+        - analytics
+      summary: Query the analytics logs for individual API hits.
+      parameters:
+        - name: prefix
+          in: query
+          required: true
+          type: string
+        - name: start_at
+          in: query
+          required: true
+          type: string
+          format: date-time
+        - name: end_at
+          in: query
+          required: true
+          type: string
+          format: date-time
+        - name: interval
+          in: query
+          required: true
+          type: string
+          enum: ["month", "week", "day", "hour", "minute"]
+        - name: query
+          in: query
+          required: false
+          type: string
+          description: A string of JSON in the format [jQuery QueryBuilder](http://mistic100.github.io/jQuery-QueryBuilder/) generates for fields to filter.
+        - name: search
+          in: query
+          required: false
+          type: string
+          description: A raw elasticsearch query string.
+      responses:
+        200:
+          description: Successful response
+          schema:
+            title: Response
+            type: object
+            properties:
+              draw:
+                type: integer
+              recordsTotal:
+                type: integer
+              recordsFiltered:
+                type: integer
+              data:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    api_backend_id:
+                      type: string
+                    api_backend_url_match_id:
+                      type: string
+                    request_accept:
+                      type: string
+                    request_accept_encoding:
+                      type: string
+                    request_at:
+                      type: integer
+                    request_host:
+                      type: string
+                    request_ip:
+                      type: string
+                    request_ip_city:
+                      type: string
+                    request_ip_country:
+                      type: string
+                    request_ip_region:
+                      type: string
+                    request_method:
+                      type: string
+                    request_path:
+                      type: string
+                    request_scheme:
+                      type: string
+                    request_size:
+                      type: integer
+                    request_url:
+                      type: string
+                    request_url_hierarchy_level0:
+                      type: string
+                    request_url_hierarchy_level1:
+                      type: string
+                    request_url_hierarchy_level2:
+                      type: string
+                    request_url_hierarchy_level3:
+                      type: string
+                    request_url_hierarchy_level4:
+                      type: string
+                    request_url_hierarchy_level5:
+                      type: string
+                    request_url_query:
+                      type: string
+                    request_user_agent:
+                      type: string
+                    request_user_agent_family:
+                      type: string
+                    request_user_agent_type:
+                      type: string
+                    response_age:
+                      type: integer
+                    response_cache:
+                      type: string
+                    response_content_encoding:
+                      type: string
+                    response_content_length:
+                      type: integer
+                    response_content_type:
+                      type: string
+                    response_size:
+                      type: integer
+                    response_status:
+                      type: integer
+                    response_time:
+                      type: integer
+                    user_email:
+                      type: string
+                    user_id:
+                      type: string
+                    user_registration_source:
+                      type: string
+  /admin/stats/users.{format}:
+    parameters:
+      - $ref: '#/parameters/json-csv-format'
+    get:
+      tags:
+        - analytics
+      summary: Aggregate API usage data by user.
+      parameters:
+        - name: prefix
+          in: query
+          required: true
+          type: string
+        - name: start_at
+          in: query
+          required: true
+          type: string
+          format: date-time
+        - name: end_at
+          in: query
+          required: true
+          type: string
+          format: date-time
+        - name: interval
+          in: query
+          required: true
+          type: string
+          enum: ["month", "week", "day", "hour", "minute"]
+        - name: query
+          in: query
+          required: false
+          type: string
+          description: A string of JSON in the format [jQuery QueryBuilder](http://mistic100.github.io/jQuery-QueryBuilder/) generates for fields to filter.
+        - name: search
+          in: query
+          required: false
+          type: string
+          description: A raw elasticsearch query string.
+      responses:
+        200:
+          description: Successful response
+          schema:
+            title: Response
+            type: object
+            properties:
+              draw:
+                type: integer
+              recordsTotal:
+                type: integer
+              recordsFiltered:
+                type: integer
+              data:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    created_at:
+                      type: string
+                      format: date-time
+                    email:
+                      type: string
+                    first_name:
+                      type: string
+                    hits:
+                      type: integer
+                    id:
+                      type: string
+                    last_name:
+                      type: string
+                    last_request_at:
+                      type: string
+                      format: date-time
+                    registration_source:
+                      type: string
+                    use_description:
+                      type: string
+                    website:
+                      type: string
+  /admin/stats/map.{format}:
+    parameters:
+      - $ref: '#/parameters/json-csv-format'
+    get:
+      tags:
+        - analytics
+      summary: Aggregate API usage data by geographic location.
+      parameters:
+        - name: prefix
+          in: query
+          required: true
+          type: string
+        - name: start_at
+          in: query
+          required: true
+          type: string
+          format: date-time
+        - name: end_at
+          in: query
+          required: true
+          type: string
+          format: date-time
+        - name: interval
+          in: query
+          required: true
+          type: string
+          enum: ["month", "week", "day", "hour", "minute"]
+        - name: query
+          in: query
+          required: false
+          type: string
+          description: A string of JSON in the format [jQuery QueryBuilder](http://mistic100.github.io/jQuery-QueryBuilder/) generates for fields to filter.
+        - name: search
+          in: query
+          required: false
+          type: string
+          description: A raw elasticsearch query string.
+        - name: region
+          in: query
+          required: false
+          type: string
+          description: The geographic region to query.
+      responses:
+        200:
+          description: Successful response
+          schema:
+            title: Response
+            type: object
+            properties:
+              region_field:
+                type: string
+              regions:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                    name:
+                      type: string
+                    hits:
+                      type: integer
+              map_breadcrumbs:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    region:
+                      type: string
+                    name:
+                      type: string
+              map_regions:
+                type: array
+                items:
+                  type: object
+  /api-umbrella/v1/api_scopes.{format}:
     get:
       tags:
         - api_scope
@@ -381,6 +769,7 @@ paths:
 
         This API's query parameters and responses are intended to be compatible with the [DataTables server-side processing API](https://datatables.net/manual/server-side).
       parameters:
+        - $ref: '#/parameters/json-csv-format'
         - $ref: '#/parameters/datatables-start'
         - $ref: '#/parameters/datatables-length'
         - $ref: '#/parameters/datatables-search-value'
@@ -410,6 +799,7 @@ paths:
         - api_scope
       summary: Create a new API scope.
       parameters:
+        - $ref: '#/parameters/json-format'
         - in: body
           name: body
           description: API scope object to create
@@ -423,7 +813,7 @@ paths:
       responses:
         201:
           description: Successfully created record
-  /api-umbrella/v1/api_scopes/{id}:
+  /api-umbrella/v1/api_scopes/{id}.{format}:
     parameters:
       - name: id
         in: path
@@ -431,6 +821,7 @@ paths:
         required: true
         type: string
         format: uuid
+      - $ref: '#/parameters/json-format'
     get:
       tags:
         - api_scope
@@ -470,7 +861,7 @@ paths:
       responses:
         204:
           description: Successfully deleted record
-  /api-umbrella/v1/apis:
+  /api-umbrella/v1/apis.{format}:
     get:
       tags:
         - api
@@ -480,6 +871,7 @@ paths:
 
         This API's query parameters and responses are intended to be compatible with the [DataTables server-side processing API](https://datatables.net/manual/server-side).
       parameters:
+        - $ref: '#/parameters/json-csv-format'
         - $ref: '#/parameters/datatables-start'
         - $ref: '#/parameters/datatables-length'
         - $ref: '#/parameters/datatables-search-value'
@@ -509,6 +901,7 @@ paths:
         - api
       summary: Create a new API backend.
       parameters:
+        - $ref: '#/parameters/json-format'
         - in: body
           name: body
           description: API backend object to create
@@ -522,7 +915,7 @@ paths:
       responses:
         201:
           description: Successfully created record
-  /api-umbrella/v1/apis/{id}:
+  /api-umbrella/v1/apis/{id}.{format}:
     parameters:
       - name: id
         in: path
@@ -530,6 +923,7 @@ paths:
         required: true
         type: string
         format: uuid
+      - $ref: '#/parameters/json-format'
     get:
       tags:
         - api
@@ -569,7 +963,9 @@ paths:
       responses:
         204:
           description: Successfully deleted record
-  /api-umbrella/v1/config/pending_changes:
+  /api-umbrella/v1/config/pending_changes.{format}:
+    parameters:
+      - $ref: '#/parameters/json-format'
     get:
       tags:
         - config
@@ -591,7 +987,9 @@ paths:
                     $ref: '#/definitions/ConfigDiffGroup'
                   website_backends:
                     $ref: '#/definitions/ConfigDiffGroup'
-  /api-umbrella/v1/config/publish:
+  /api-umbrella/v1/config/publish.{format}:
+    parameters:
+      - $ref: '#/parameters/json-format'
     post:
       tags:
         - config
@@ -613,6 +1011,18 @@ paths:
                     $ref: '#/definitions/ConfigPublish'
                   website_backends:
                     $ref: '#/definitions/ConfigPublish'
+            example:
+              config:
+                apis:
+                  uuid_of_api_backend:
+                    publish: "1"
+                  uuid_of_additional_api_backend:
+                    publish: "0"
+                website_backends:
+                  uuid_of_website_backend:
+                    publish: "0"
+                  uuid_of_additional_website_backend:
+                    publish: "1"
       responses:
         201:
           description: Successfully published changes
@@ -622,7 +1032,9 @@ paths:
             properties:
               config_version:
                 $ref: "#/definitions/ConfigVersion"
-  /api-umbrella/v1/contact:
+  /api-umbrella/v1/contact.{format}:
+    parameters:
+      - $ref: '#/parameters/json-format'
     post:
       tags:
         - contact
@@ -656,7 +1068,9 @@ paths:
               submitted:
                 type: string
                 format: date-time
-  /api-umbrella/v1/user_roles:
+  /api-umbrella/v1/user_roles.{format}:
+    parameters:
+      - $ref: '#/parameters/json-format'
     get:
       tags:
         - user_role
@@ -675,7 +1089,9 @@ paths:
                   properties:
                     id:
                       type: string
-  /api-umbrella/v1/users:
+  /api-umbrella/v1/users.{format}:
+    parameters:
+      - $ref: '#/parameters/json-format'
     get:
       tags:
         - user
@@ -685,6 +1101,7 @@ paths:
 
         This API's query parameters and responses are intended to be compatible with the [DataTables server-side processing API](https://datatables.net/manual/server-side).
       parameters:
+        - $ref: '#/parameters/json-csv-format'
         - $ref: '#/parameters/datatables-start'
         - $ref: '#/parameters/datatables-length'
         - $ref: '#/parameters/datatables-search-value'
@@ -727,7 +1144,7 @@ paths:
       responses:
         201:
           description: Successfully created record
-  /api-umbrella/v1/users/{id}:
+  /api-umbrella/v1/users/{id}.{format}:
     parameters:
       - name: id
         in: path
@@ -735,6 +1152,7 @@ paths:
         required: true
         type: string
         format: uuid
+      - $ref: '#/parameters/json-format'
     get:
       tags:
         - user
@@ -774,7 +1192,7 @@ paths:
       responses:
         204:
           description: Successfully deleted record
-  /api-umbrella/v1/website_backends:
+  /api-umbrella/v1/website_backends.{format}:
     get:
       tags:
         - website_backend
@@ -784,6 +1202,7 @@ paths:
 
         This API's query parameters and responses are intended to be compatible with the [DataTables server-side processing API](https://datatables.net/manual/server-side).
       parameters:
+        - $ref: '#/parameters/json-csv-format'
         - $ref: '#/parameters/datatables-start'
         - $ref: '#/parameters/datatables-length'
         - $ref: '#/parameters/datatables-search-value'
@@ -813,6 +1232,7 @@ paths:
         - website_backend
       summary: Create a new website backend.
       parameters:
+        - $ref: '#/parameters/json-format'
         - in: body
           name: body
           description: Website backend object to create
@@ -826,7 +1246,7 @@ paths:
       responses:
         201:
           description: Successfully created record
-  /api-umbrella/v1/website_backends/{id}:
+  /api-umbrella/v1/website_backends/{id}.{format}:
     parameters:
       - name: id
         in: path
@@ -834,6 +1254,7 @@ paths:
         required: true
         type: string
         format: uuid
+      - $ref: '#/parameters/json-format'
     get:
       tags:
         - website_backend

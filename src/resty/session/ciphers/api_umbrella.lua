@@ -8,8 +8,9 @@ function _M.new()
 end
 
 function _M.encrypt(_, data, _, id, auth_data)
+  local iv = string.sub(id, 1, 12)
   local encrypted, _ = encryptor.encrypt(data, auth_data, {
-    iv = string.sub(id, 1, 12),
+    iv = iv,
     base64 = false,
   })
 
