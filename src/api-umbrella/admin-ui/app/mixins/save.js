@@ -20,6 +20,8 @@ export default Mixin.create({
     PNotify.success({
       title: 'Saved',
       text: (isFunction(options.message)) ? options.message(this.model) : options.message,
+      hide: (isFunction(options.messageHide)) ? options.messageHide(this.model) : options.messageHide,
+      width: (isFunction(options.messageWidth)) ? options.messageWidth(this.model) : options.messageWidth,
       textTrusted: true,
     });
 
