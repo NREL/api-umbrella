@@ -6,7 +6,6 @@ local config = require "api-umbrella.proxy.models.file_config"
 local db = require "lapis.db"
 local encryptor = require "api-umbrella.utils.encryptor"
 local hmac = require "api-umbrella.utils.hmac"
-local is_empty = require("pl.types").is_empty
 local json_array_fields = require "api-umbrella.web-app.utils.json_array_fields"
 local json_null_default = require "api-umbrella.web-app.utils.json_null_default"
 local model_ext = require "api-umbrella.web-app.utils.model_ext"
@@ -75,29 +74,16 @@ ApiUser = model_ext.new_class("api_users", {
   api_key_hides_at = function(self)
     if not self._api_key_hides_at then
       local hides_at = time.postgres_to_timestamp(self.created_at)
-      if hides_at then
-        hides_at = hides_at + 14 * 24 * 60 * 60 -- 14 days
-      end
-
       self._api_key_hides_at = hides_at
     end
 
     return self._api_key_hides_at
   end,
 
-  admin_can_view_api_key = function(self)
+  admin_can_view_api_key = function()
     local allowed = false
-    if ngx.ctx.current_admin then
-      if ngx.ctx.current_admin.superuser then
-        allowed = true
-      elseif ngx.now() < self:api_key_hides_at() then
-        local roles = self:get_roles()
-        if is_empty(roles) then
-          allowed = true
-        elseif self.created_by_id and ngx.ctx.current_admin.id and self.created_by_id == ngx.ctx.current_admin.id then
-          allowed = true
-        end
-      end
+    if ngx.ctx.current_admin and ngx.ctx.current_admin.superuser then
+      allowed = true
     end
 
     return allowed

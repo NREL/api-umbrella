@@ -135,3 +135,7 @@ a:hover {
 .btn-light {
   @include button-variant($gray-300, $gray-300);
 }
+
+.ui-pnotify-text p:last-of-type {
+  margin-bottom: 0px;
+}

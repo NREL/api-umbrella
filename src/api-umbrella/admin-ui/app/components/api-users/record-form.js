@@ -35,15 +35,31 @@ export default Component.extend(Save, {
     },
 
     submit() {
+      const isNew = this.model.get('isNew');
       this.saveRecord({
         transitionToRoute: 'api_users',
         message(model) {
-          let message = 'Successfully saved the user "' + escape(model.get('email')) + '"';
-          if(model.get('apiKey')) {
-            message += '<br>API Key: <code>' + escape(model.get('apiKey')) + '</code>';
+          let message = '<p>Successfully saved the user "' + escape(model.get('email')) + '"</p>';
+          if(isNew && model.get('apiKey')) {
+            message += '<p style="font-size: 18px;"><strong>API Key:</strong> <code>' + escape(model.get('apiKey')) + '</code></p>';
+            message += '<p><strong>Note:</strong> This API key will not be displayed again, so make note of it if needed.</p>';
           }
 
           return message;
+        },
+        messageHide(model) {
+          if(isNew && model.get('apiKey')) {
+            return false;
+          } else {
+            return true;
+          }
+        },
+        messageWidth(model) {
+          if(isNew && model.get('apiKey')) {
+            return '500px';
+          } else {
+            return undefined;
+          }
         },
       });
     },

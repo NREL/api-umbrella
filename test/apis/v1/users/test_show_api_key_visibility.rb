@@ -19,7 +19,7 @@ class Test::Apis::V1::Users::TestShowApiKeyVisibility < Minitest::Test
     assert_api_key_visible(user, superuser)
 
     user.update(:created_by_id => limited_admin.id)
-    assert_api_key_visible(user, limited_admin)
+    refute_api_key_visible(user, limited_admin)
   end
 
   def test_new_accounts_they_created_with_roles
@@ -31,7 +31,7 @@ class Test::Apis::V1::Users::TestShowApiKeyVisibility < Minitest::Test
     assert_api_key_visible(user, superuser)
 
     user.update(:created_by_id => limited_admin.id)
-    assert_api_key_visible(user, limited_admin)
+    refute_api_key_visible(user, limited_admin)
   end
 
   def test_old_accounts_they_created_without_roles
@@ -64,7 +64,7 @@ class Test::Apis::V1::Users::TestShowApiKeyVisibility < Minitest::Test
     limited_admin = FactoryBot.create(:limited_admin)
 
     assert_api_key_visible(user, superuser)
-    assert_api_key_visible(user, limited_admin)
+    refute_api_key_visible(user, limited_admin)
   end
 
   def test_new_accounts_other_admins_created_with_roles
@@ -102,7 +102,7 @@ class Test::Apis::V1::Users::TestShowApiKeyVisibility < Minitest::Test
 
     data = MultiJson.load(response.body)
     assert_equal(user.api_key, data["user"]["api_key"])
-    assert_equal((user.created_at.utc + 2.weeks).utc.iso8601, data["user"]["api_key_hides_at"])
+    assert_equal(user.created_at.utc.iso8601, data["user"]["api_key_hides_at"])
     assert_equal("#{user.api_key[0, 6]}...", data["user"]["api_key_preview"])
   end
 
