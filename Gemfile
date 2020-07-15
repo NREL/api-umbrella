@@ -18,7 +18,7 @@ gem "minitest-hooks", "~> 1.5.0"
 gem "minitest-ci", "~> 3.4.0"
 
 # Ruby lint/style checker
-gem "rubocop", "~> 0.85.1", :require => false
+gem "rubocop", "~> 0.88.0", :require => false
 
 # Running background processes
 gem "childprocess", "~> 3.0.0"
@@ -27,13 +27,13 @@ gem "childprocess", "~> 3.0.0"
 gem "typhoeus", "~> 1.4.0"
 
 # JSON parsing
-gem "multi_json", "~> 1.14.1"
+gem "multi_json", "~> 1.15.0"
 gem "oj", "~> 3.10.0"
 
 # Database libraries
 gem "activerecord", "~> 6.0.0", :require => "active_record"
 gem "pg", "~> 1.2.2"
-gem "elasticsearch", "~> 7.7.0"
+gem "elasticsearch", "~> 7.8.0"
 gem "active_attr", "~> 0.15.0"
 
 # Factories for test database data
