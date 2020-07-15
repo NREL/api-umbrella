@@ -33,8 +33,10 @@ class Api::V1::AnalyticsController < Api::V1::BaseController
       end
       format.json do
         @breadcrumbs = [
-          :crumb => "All Hosts",
-          :prefix => "0/",
+          {
+            :crumb => "All Hosts",
+            :prefix => "0/",
+          },
         ]
 
         path = params[:prefix].split("/", 2)[1]

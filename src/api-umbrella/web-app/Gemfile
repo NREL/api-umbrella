@@ -6,7 +6,7 @@ gem "rails", "~> 4.2.11", ">= 4.2.11.1"
 gem "puma", "~> 4.3.5"
 
 # Error notification service (optional)
-gem "rollbar", "~> 2.25.0"
+gem "rollbar", "~> 2.26.0"
 
 # Abort requests that take too long
 gem "rack-timeout", "~> 0.6.0", :require => "rack/timeout/base"
@@ -15,7 +15,7 @@ gem "rack-timeout", "~> 0.6.0", :require => "rack/timeout/base"
 gem "rack-proxy", "~> 0.6.4"
 
 # JSON handling
-gem "multi_json", "~> 1.14.1"
+gem "multi_json", "~> 1.15.0"
 gem "oj", "~> 3.10.0", :platforms => [:ruby]
 
 # MongoDB
@@ -39,7 +39,7 @@ gem "mongoid_rails_migrations", "~> 1.2.1"
 gem "mongoid_store", :git => "https://github.com/GUI/mongoid_store.git"
 
 # Elasticsearch
-gem "elasticsearch", "~> 7.7.0"
+gem "elasticsearch", "~> 7.8.0"
 
 # OmniAuth-based authentication
 gem "devise", "~> 4.7.0"
@@ -81,7 +81,7 @@ gem "nokogiri", "~> 1.10.0"
 gem "http_accept_language", "~> 2.1.1"
 
 # Markdown
-gem "kramdown", "~> 2.2.1"
+gem "kramdown", "~> 2.3.0"
 gem "kramdown-parser-gfm", "~> 1.1.0"
 
 # Lucene query parsing for translating into SQL.

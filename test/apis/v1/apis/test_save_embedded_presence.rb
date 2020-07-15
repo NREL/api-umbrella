@@ -70,11 +70,12 @@ class Test::Apis::V1::Apis::TestSaveEmbeddedPresence < Minitest::Test
     attributes[field.to_s] = [FactoryBot.attributes_for(:"api_#{field.to_s.singularize}")]
 
     response = create_or_update(action, attributes)
-    if(action == :create)
+    case action
+    when :create
       assert_response_code(201, response)
       data = MultiJson.load(response.body)
       api = Api.find(data["api"]["id"])
-    elsif(action == :update)
+    when :update
       assert_response_code(204, response)
       api = Api.find(attributes["id"])
     end
@@ -82,9 +83,10 @@ class Test::Apis::V1::Apis::TestSaveEmbeddedPresence < Minitest::Test
   end
 
   def attributes_for(action)
-    if(action == :create)
+    case action
+    when :create
       FactoryBot.attributes_for(:api).deep_stringify_keys
-    elsif(action == :update)
+    when :update
       FactoryBot.create(:api).serializable_hash
     else
       flunk("Unknown action: #{action.inspect}")
@@ -92,12 +94,13 @@ class Test::Apis::V1::Apis::TestSaveEmbeddedPresence < Minitest::Test
   end
 
   def create_or_update(action, attributes)
-    if(action == :create)
+    case action
+    when :create
       Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/apis.json", http_options.deep_merge(admin_token).deep_merge({
         :headers => { "Content-Type" => "application/json" },
         :body => MultiJson.dump(:api => attributes),
       }))
-    elsif(action == :update)
+    when :update
       Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/apis/#{attributes["id"]}.json", http_options.deep_merge(admin_token).deep_merge({
         :headers => { "Content-Type" => "application/json" },
         :body => MultiJson.dump(:api => attributes),

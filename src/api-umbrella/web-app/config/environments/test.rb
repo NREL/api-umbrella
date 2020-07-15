@@ -1,7 +1,7 @@
 # Since we're performing all our tests as full-stack integration tests, use the
 # production settings as the defaults, so the tests are what we'll see in
 # production.
-require_relative "./production.rb"
+require_relative "./production"
 
 Rails.application.configure do
   config.log_level = :debug

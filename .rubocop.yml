@@ -70,6 +70,9 @@ Lint/AssignmentInCondition:
 Lint/DeprecatedOpenSSLConstant:
   Enabled: true
 
+Lint/DuplicateElsifCondition:
+  Enabled: true
+
 Lint/LiteralInInterpolation:
   Enabled: false
 
@@ -127,8 +130,20 @@ Rails/HasAndBelongsToMany:
 Rails/RakeEnvironment:
   Enabled: false
 
+Style/AccessorGrouping:
+  Enabled: true
+
+Style/ArrayCoercion:
+  Enabled: true
+
 Style/AsciiComments:
   Enabled: false
+
+Style/BisectedAttrAccessor:
+  Enabled: true
+
+Style/CaseLikeIf:
+  Enabled: true
 
 Style/ClassAndModuleChildren:
   Enabled: false
@@ -162,6 +177,12 @@ Style/GuardClause:
   Enabled: false
 
 Style/HashEachMethods:
+  Enabled: true
+
+Style/HashAsLastArrayItem:
+  Enabled: true
+
+Style/HashLikeCase:
   Enabled: true
 
 Style/HashSyntax:
@@ -205,6 +226,15 @@ Style/PercentLiteralDelimiters:
 
 Style/RaiseArgs:
   Enabled: false
+
+Style/RedundantAssignment:
+  Enabled: true
+
+Style/RedundantFetchBlock:
+  Enabled: true
+
+Style/RedundantFileExtensionInRequire:
+  Enabled: true
 
 Style/RedundantRegexpCharacterClass:
   Enabled: true

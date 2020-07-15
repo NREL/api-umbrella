@@ -217,15 +217,16 @@ class Test::Apis::V1::Apis::TestSaveEmbeddedHeaders < Minitest::Test
   end
 
   def attributes_for(action, field)
-    if(action == :create)
+    case action
+    when :create
       attributes = FactoryBot.attributes_for(:api).deep_stringify_keys
-    elsif(action == :update)
+    when :update
       api = FactoryBot.create(:api, {
         :settings => FactoryBot.attributes_for(:api_setting),
       })
       assert_equal(0, api.settings.send(field).length)
       attributes = api.serializable_hash
-    elsif(action == :update_clears_existing_headers)
+    when :update_clears_existing_headers
       api = FactoryBot.create(:api, {
         :settings => FactoryBot.attributes_for(:api_setting, {
           :"#{field}" => [
