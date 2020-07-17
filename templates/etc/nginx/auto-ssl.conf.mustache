@@ -36,6 +36,9 @@ http {
   uwsgi_temp_path {{tmp_dir}}/nginx-auto-ssl-uwsgi_temp;
   scgi_temp_path {{tmp_dir}}/nginx-auto-ssl-scgi_temp;
   server_tokens off;
+  {{#strip_server_header}}
+    more_clear_headers Server;
+  {{/strip_server_header}}
 
   {{#_development_env?}}
     lua_code_cache off;

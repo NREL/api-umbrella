@@ -274,6 +274,7 @@ strip_cookies:
   - ^__utm.*$
   - ^_ga$
   - ^is_returning$
+strip_server_header: false
 site_name: API Umbrella
 apiSettings:
   require_https: required_return_error

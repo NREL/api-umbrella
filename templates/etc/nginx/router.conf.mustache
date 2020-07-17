@@ -47,6 +47,9 @@ http {
   uwsgi_temp_path {{tmp_dir}}/nginx-uwsgi_temp;
   scgi_temp_path {{tmp_dir}}/nginx-scgi_temp;
   server_tokens off;
+  {{#strip_server_header}}
+    more_clear_headers Server;
+  {{/strip_server_header}}
 
   lua_package_path '{{_package_path}}';
   lua_package_cpath '{{_package_cpath}}';
