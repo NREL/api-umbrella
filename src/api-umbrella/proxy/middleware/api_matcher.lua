@@ -28,12 +28,17 @@ local function apis_for_request_host(active_config)
   return apis
 end
 
+local inspect = require "inspect"
 local function match_api(active_config, request_path)
   -- Find the API backends that match this host.
   local apis = apis_for_request_host(active_config)
 
-  -- Search through each API backend for the first that matches the URL path
-  -- prefix.
+  -- Search through each API backend for URL path prefix matches. Choose the
+  -- match that is the longest prefix path string, since this would be the most
+  -- specific match in cases where multiple path prefixes would match.
+  local matched_api = nil
+  local matched_url_match = nil
+  local matched_length = 0
   for _, api in ipairs(apis) do
     if api["url_matches"] then
       for _, url_match in ipairs(api["url_matches"]) do
@@ -45,10 +50,25 @@ local function match_api(active_config, request_path)
         end
 
         if matches then
-          return api, url_match
+          ngx.log(ngx.ERR, "MATCHES: " .. inspect(api))
+          ngx.log(ngx.ERR, "MATCHES: " .. inspect(url_match))
+        end
+
+        local length = string.len(url_match["frontend_prefix"])
+        if matches and length > matched_length then
+          matched_api = api
+          matched_url_match = url_match
+          matched_length = length
         end
       end
     end
+  end
+
+          ngx.log(ngx.ERR, "MATCHED: " .. inspect(matched_api))
+          ngx.log(ngx.ERR, "MATCHED: " .. inspect(matched_url_match))
+
+  if matched_api and matched_url_match then
+    return matched_api, matched_url_match
   end
 end
 

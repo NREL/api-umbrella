@@ -38,10 +38,6 @@ ApiBackendUrlMatch = model_ext.new_class("api_backend_url_matches", {
       "api_backend_id",
       "frontend_prefix",
     })
-    validate_uniqueness(errors, data, "sort_order", t("Sort order"), ApiBackendUrlMatch, {
-      "api_backend_id",
-      "sort_order",
-    })
     return errors
   end,
 })

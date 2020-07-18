@@ -410,15 +410,15 @@ internal_apis:
     url_matches:
       - frontend_prefix: "/api-umbrella/"
         backend_prefix: "/api-umbrella/"
-      - frontend_prefix: "/admin/"
-        backend_prefix: "/admin/"
-      - frontend_prefix: "/admin"
-        backend_prefix: "/admin"
-        exact_match: true
       - frontend_prefix: "/admins/"
         backend_prefix: "/admins/"
       - frontend_prefix: "/admins"
         backend_prefix: "/admins"
+        exact_match: true
+      - frontend_prefix: "/admin/"
+        backend_prefix: "/admin/"
+      - frontend_prefix: "/admin"
+        backend_prefix: "/admin"
         exact_match: true
       - frontend_prefix: "/web-assets/"
         backend_prefix: "/web-assets/"

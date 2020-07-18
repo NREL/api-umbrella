@@ -18,64 +18,13 @@ local validation_ext = require "api-umbrella.web-app.utils.validation_ext"
 local db_null = db.NULL
 local validate_field = model_ext.validate_field
 
-local MAX_SORT_ORDER = 2147483647
-local MIN_SORT_ORDER = -2147483648
-local SORT_ORDER_GAP = 10000
-
-local function get_new_beginning_sort_order()
-  local new_order = 0
-
-  -- Find the current first sort_order value and move this record SORT_ORDER_GAP before that value.
-  local res = db.query("SELECT MIN(sort_order) AS current_min FROM api_backends")
-  if res and res[1] and res[1]["current_min"] then
-    local current_min = res[1]["current_min"]
-    new_order = current_min - SORT_ORDER_GAP
-
-    -- If we've hit the minimum allowed value, find an new minimum value in
-    -- between.
-    if new_order < MIN_SORT_ORDER then
-      new_order = math.floor((current_min + MIN_SORT_ORDER) / 2.0)
-    end
-  end
-
-  return new_order
-end
-
-local function get_new_end_sort_order()
-  local new_order = 0
-
-  -- Find the current first sort_order value and move this record
-  -- SORT_ORDER_GAP after that value.
-  local res = db.query("SELECT MAX(sort_order) AS current_max FROM api_backends")
-  if res and res[1] and res[1]["current_max"] then
-    local current_max = res[1]["current_max"]
-    new_order = current_max + SORT_ORDER_GAP
-
-    -- If we've hit the maximum allowed value, find an new maximum value in
-    -- between.
-    if new_order > MAX_SORT_ORDER then
-      new_order = math.ceil((current_max + MAX_SORT_ORDER) / 2.0)
-    end
-  end
-
-  return new_order
-end
-
-local function add_sort_order_from_array_order(array)
-  if is_array(array) and array ~= db_null then
-    for index, values in ipairs(array) do
-      values["sort_order"] = index
-    end
-  end
-end
-
 local ApiBackend
 ApiBackend = model_ext.new_class("api_backends", {
   relations = {
     {
       "rewrites",
       has_many = "ApiBackendRewrite",
-      order = "sort_order",
+      order = "array_length(string_to_array(frontend_matcher, '/'), 1) DESC, frontend_matcher",
     },
     {
       "servers",
@@ -89,12 +38,12 @@ ApiBackend = model_ext.new_class("api_backends", {
     {
       "sub_settings",
       has_many = "ApiBackendSubUrlSettings",
-      order = "sort_order",
+      order = "array_length(string_to_array(regex, '/'), 1) DESC, regex",
     },
     {
       "url_matches",
       has_many = "ApiBackendUrlMatch",
-      order = "sort_order",
+      order = "array_length(string_to_array(frontend_prefix, '/'), 1) DESC, frontend_prefix",
     },
     {
       "api_scopes",
@@ -332,7 +281,6 @@ ApiBackend = model_ext.new_class("api_backends", {
     local data = {
       id = json_null_default(self.id),
       name = json_null_default(self.name),
-      sort_order = json_null_default(self.sort_order),
       backend_protocol = json_null_default(self.backend_protocol),
       frontend_host = json_null_default(self.frontend_host),
       backend_host = json_null_default(self.backend_host),
@@ -344,12 +292,12 @@ ApiBackend = model_ext.new_class("api_backends", {
       settings = json_null,
       sub_settings = {},
       url_matches = {},
-      created_at = json_null_default(time.postgres_to_iso8601(self.created_at)),
+      created_at = json_null_default(time.postgres_to_iso8601_ms(self.created_at)),
       created_by = json_null_default(self.created_by_id),
       creator = {
         username = json_null_default(self.created_by_username),
       },
-      updated_at = json_null_default(time.postgres_to_iso8601(self.updated_at)),
+      updated_at = json_null_default(time.postgres_to_iso8601_ms(self.updated_at)),
       updated_by = json_null_default(self.updated_by_id),
       updater = {
         username = json_null_default(self.updated_by_username),
@@ -439,8 +387,6 @@ ApiBackend = model_ext.new_class("api_backends", {
       table.insert(headers, t("Admin Groups"))
     end
 
-    table.insert(headers, t("Matching Order"))
-
     return headers
   end,
 
@@ -459,79 +405,7 @@ ApiBackend = model_ext.new_class("api_backends", {
       table.insert(data, json_null_default(table.concat(self:admin_group_names(), "\n")))
     end
 
-    table.insert(data, json_null_default(self.sort_order))
-
     return data
-  end,
-
-  move_to_beginning = function(self)
-    local order = get_new_beginning_sort_order()
-    self:update({ sort_order = order })
-  end,
-
-  move_after = function(self, after_api)
-    local order
-    local after_after_api = ApiBackend:select("WHERE id != ? AND sort_order > ? ORDER BY sort_order ASC LIMIT 1", self.id, after_api.sort_order)[1]
-    if after_after_api then
-      if after_api.sort_order and after_after_api.sort_order then
-        order = ((after_api.sort_order + after_after_api.sort_order) / 2.0)
-        if order < 0 then
-          order = math.ceil(order)
-        else
-          order = math.floor(order)
-        end
-      end
-    else
-      if after_api.sort_order then
-        order = after_api.sort_order + SORT_ORDER_GAP
-      end
-    end
-
-    if order then
-      if order > MAX_SORT_ORDER then
-        order = math.ceil((after_api.sort_order + MAX_SORT_ORDER) / 2.0)
-      elseif order < MIN_SORT_ORDER then
-        order = math.floor((after_api.sort_order + MIN_SORT_ORDER) / 2.0)
-      end
-    end
-
-    self:update({ sort_order = order })
-  end,
-
-  ensure_unique_sort_order = function(self, original_order)
-    -- Look for any existing records that have conflicting sort_order values.
-    -- We will then shift those existing sort_order values to be unique.
-    --
-    -- Note: This iterative, recursive approach isn't efficient, but since our
-    -- whole approach of having SORT_ORDER_GAP between each sort_order value,
-    -- conflicts like this should be exceedingly rare.
-    local conflicting_order_apis = ApiBackend:select("WHERE id != ? AND sort_order = ?", self.id, self.sort_order)
-    if conflicting_order_apis and #conflicting_order_apis > 0 then
-      for index, api in ipairs(conflicting_order_apis) do
-        -- Shift positive rank_orders negatively, and negative rank_orders
-        -- positively. This is designed so that we work away from the
-        -- MAX_SORT_ORDER or MIN_SORT_ORDER values if we're bumping into our
-        -- integer size limits.
-        --
-        -- Base this positive and negative logic on the original sort_order
-        -- that triggered this process. This prevents the recursive logic from
-        -- getting stuck in infinite loops if based on the current record's
-        -- sort_order (since 0 will become -1, which on recursion will become
-        -- 0).
-        local new_order
-        if original_order < 0 then
-          new_order = api.sort_order + index
-        else
-          new_order = api.sort_order - index
-        end
-        api.sort_order = new_order
-        model_ext.transaction_update(ApiBackend:table_name(), { sort_order = api.sort_order }, { id = api.id })
-      end
-
-      for _, api in ipairs(conflicting_order_apis) do
-        api:ensure_unique_sort_order(original_order)
-      end
-    end
   end,
 
   rewrites_update_or_create = function(self, rewrite_values)
@@ -578,26 +452,11 @@ ApiBackend = model_ext.new_class("api_backends", {
     api_backend_policy.authorize_modify(ngx.ctx.current_admin, data)
   end,
 
-  before_validate_on_create = function(_, values)
-    if not values["sort_order"] or values["sort_order"] == db_null then
-      values["sort_order"] = get_new_end_sort_order()
-    end
-  end,
-
-  before_validate = function(_, values)
-    add_sort_order_from_array_order(values["rewrites"])
-    add_sort_order_from_array_order(values["sub_settings"])
-    add_sort_order_from_array_order(values["url_matches"])
-  end,
-
   validate = function(_, data)
     local errors = {}
     validate_field(errors, data, "name", t("Name"), {
       { validation_ext.string:minlen(1), t("can't be blank") },
       { validation_ext.db_null_optional.string:maxlen(255), string.format(t("is too long (maximum is %d characters)"), 255) },
-    })
-    validate_field(errors, data, "sort_order", t("Sort order"), {
-      { validation_ext.tonumber.number, t("can't be blank") },
     })
     validate_field(errors, data, "backend_protocol", t("Backend protocol"), {
       { validation_ext:regex("^(http|https)$", "jo"), t("is not included in the list") },
@@ -646,10 +505,6 @@ ApiBackend = model_ext.new_class("api_backends", {
     model_ext.has_many_save(self, values, "url_matches")
     model_ext.has_one_save(self, values, "settings")
   end,
-
-  after_commit = function(self)
-    self:ensure_unique_sort_order(self.sort_order)
-  end,
 })
 
 ApiBackend.all_sorted = function(where)
@@ -657,7 +512,7 @@ ApiBackend.all_sorted = function(where)
   if where then
     sql = sql .. "WHERE " .. where
   end
-  sql = sql .. " ORDER BY sort_order"
+  sql = sql .. " ORDER BY created_at"
 
   return ApiBackend:select(sql)
 end

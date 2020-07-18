@@ -1,16 +1,11 @@
 import Component from '@ember/component';
-import Sortable from 'api-umbrella-admin-ui/mixins/sortable';
 import bootbox from 'bootbox';
 import { computed } from '@ember/object';
 import { inject } from '@ember/service';
 
-export default Component.extend(Sortable, {
+export default Component.extend({
   store: inject(),
   openModal: false,
-
-  sortableCollection: computed('model', function() {
-    return this.get('model.urlMatches');
-  }),
 
   actions: {
     add() {

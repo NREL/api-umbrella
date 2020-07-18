@@ -48,7 +48,6 @@ function _M.index(self)
     order_fields = {
       "name",
       "frontend_host",
-      "sort_order",
       "created_at",
       "updated_at",
     },
@@ -264,7 +263,6 @@ function _M.api_backend_params(self)
     local input = self.params["api"]
     params = dbify_json_nulls({
       name = input["name"],
-      sort_order = input["sort_order"],
       backend_protocol = input["backend_protocol"],
       frontend_host = input["frontend_host"],
       backend_host = input["backend_host"],

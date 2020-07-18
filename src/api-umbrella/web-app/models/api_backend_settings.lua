@@ -68,7 +68,6 @@ local function add_http_headers_metadata(headers, header_type)
   if is_array(headers) and headers ~= db_null then
     for index, header in ipairs(headers) do
       header["header_type"] = header_type
-      header["sort_order"] = index
     end
   end
 end
@@ -79,7 +78,7 @@ local ApiBackendSettings = model_ext.new_class("api_backend_settings", {
       "http_headers",
       has_many = "ApiBackendHttpHeader",
       key = "api_backend_settings_id",
-      order = "sort_order",
+      order = "key",
     },
     {
       "rate_limits",

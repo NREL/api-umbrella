@@ -914,4 +914,13 @@ return {
     ]])
     db.query("UPDATE analytics_cache SET data = data")
   end,
+
+  [1595106665] = function()
+    db.query("ALTER TABLE api_backend_http_headers DROP COLUMN sort_order")
+    db.query("ALTER TABLE api_backend_rewrites DROP COLUMN sort_order")
+    db.query("ALTER TABLE api_backend_sub_url_settings DROP COLUMN sort_order")
+    db.query("ALTER TABLE api_backend_url_matches DROP COLUMN sort_order")
+    db.query("ALTER TABLE api_backends DROP COLUMN sort_order")
+    db.query("DROP FUNCTION next_api_backend_sort_order")
+  end,
 }
