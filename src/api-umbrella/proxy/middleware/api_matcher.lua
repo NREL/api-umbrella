@@ -21,7 +21,7 @@ local function apis_for_request_host(active_config)
     end
   end
 
-  -- If a default host exists, append its APIs to the end sot hey have a lower
+  -- If a default host exists, append its APIs to the end so they have a lower
   -- matching precedence than any APIs that actually match the host.
   append_array(apis, apis_for_default_host)
 
