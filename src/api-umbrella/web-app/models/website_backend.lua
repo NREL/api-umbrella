@@ -27,12 +27,13 @@ WebsiteBackend = model_ext.new_class("website_backends", {
       backend_protocol = json_null_default(self.backend_protocol),
       server_host = json_null_default(self.server_host),
       server_port = json_null_default(self.server_port),
-      created_at = json_null_default(time.postgres_to_iso8601_ms(self.created_at)),
+      created_order = json_null_default(self.created_order),
+      created_at = json_null_default(time.postgres_to_iso8601(self.created_at)),
       created_by = json_null_default(self.created_by_id),
       creator = {
         username = json_null_default(self.created_by_username),
       },
-      updated_at = json_null_default(time.postgres_to_iso8601_ms(self.updated_at)),
+      updated_at = json_null_default(time.postgres_to_iso8601(self.updated_at)),
       updated_by = json_null_default(self.updated_by_id),
       updater = {
         username = json_null_default(self.updated_by_username),
@@ -87,7 +88,7 @@ WebsiteBackend.all_sorted = function(where)
   if where then
     sql = sql .. "WHERE " .. where
   end
-  sql = sql .. " ORDER BY created_at"
+  sql = sql .. " ORDER BY created_order"
 
   return WebsiteBackend:select(sql)
 end

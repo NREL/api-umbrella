@@ -312,10 +312,10 @@ PublishedConfig.publish_ids = function(api_backend_ids, website_backend_ids, cur
 
     if apis_changed or websites_changed then
       table.sort(new_config["apis"], function(a, b)
-        return a["created_at"] < b["created_at"]
+        return a["created_order"] < b["created_order"]
       end)
       table.sort(new_config["website_backends"], function(a, b)
-        return a["created_at"] < b["created_at"]
+        return a["created_order"] < b["created_order"]
       end)
 
       local published = assert(PublishedConfig:create({

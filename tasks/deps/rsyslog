@@ -7,7 +7,7 @@ set -e -u -x
 source ./tasks/helpers.sh
 
 task_working_dir
-download "https://www.rsyslog.com/files/download/rsyslog/rsyslog-$rsyslog_version.tar.gz" "sha256" "$rsyslog_hash"
+download "https://fossies.org/linux/misc/rsyslog-8.2006.0.tar.gz" "sha256" "$rsyslog_hash"
 extract_download "rsyslog-$rsyslog_version.tar.gz"
 
 cd "rsyslog-$rsyslog_version"

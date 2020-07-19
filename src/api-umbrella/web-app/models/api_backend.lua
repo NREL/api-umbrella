@@ -24,7 +24,7 @@ ApiBackend = model_ext.new_class("api_backends", {
     {
       "rewrites",
       has_many = "ApiBackendRewrite",
-      order = "array_length(string_to_array(frontend_matcher, '/'), 1) DESC, frontend_matcher",
+      order = "array_append(string_to_array(frontend_matcher, '/'), NULL) NULLS LAST",
     },
     {
       "servers",
@@ -38,12 +38,12 @@ ApiBackend = model_ext.new_class("api_backends", {
     {
       "sub_settings",
       has_many = "ApiBackendSubUrlSettings",
-      order = "array_length(string_to_array(regex, '/'), 1) DESC, regex",
+      order = "array_append(string_to_array(regex, '/'), NULL) NULLS LAST",
     },
     {
       "url_matches",
       has_many = "ApiBackendUrlMatch",
-      order = "array_length(string_to_array(frontend_prefix, '/'), 1) DESC, frontend_prefix",
+      order = "array_append(string_to_array(frontend_prefix, '/'), NULL) NULLS LAST",
     },
     {
       "api_scopes",
@@ -292,12 +292,13 @@ ApiBackend = model_ext.new_class("api_backends", {
       settings = json_null,
       sub_settings = {},
       url_matches = {},
-      created_at = json_null_default(time.postgres_to_iso8601_ms(self.created_at)),
+      created_order = json_null_default(self.created_order),
+      created_at = json_null_default(time.postgres_to_iso8601(self.created_at)),
       created_by = json_null_default(self.created_by_id),
       creator = {
         username = json_null_default(self.created_by_username),
       },
-      updated_at = json_null_default(time.postgres_to_iso8601_ms(self.updated_at)),
+      updated_at = json_null_default(time.postgres_to_iso8601(self.updated_at)),
       updated_by = json_null_default(self.updated_by_id),
       updater = {
         username = json_null_default(self.updated_by_username),
@@ -512,7 +513,7 @@ ApiBackend.all_sorted = function(where)
   if where then
     sql = sql .. "WHERE " .. where
   end
-  sql = sql .. " ORDER BY created_at"
+  sql = sql .. " ORDER BY created_order"
 
   return ApiBackend:select(sql)
 end

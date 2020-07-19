@@ -27,6 +27,9 @@ local ApiBackendHttpHeader = model_ext.new_class("api_backend_http_headers", {
     validate_field(errors, data, "header_type", t("Header type"), {
       { validation_ext:regex("^(request|response_default|response_override)$", "jo"), t("is not included in the list") },
     })
+    validate_field(errors, data, "sort_order", t("Sort order"), {
+      { validation_ext.tonumber.number, t("can't be blank") },
+    })
     validate_field(errors, data, "key", t("Key"), {
       { validation_ext.string:minlen(1), t("can't be blank") },
       { validation_ext.db_null_optional.string:maxlen(255), string.format(t("is too long (maximum is %d characters)"), 255) },

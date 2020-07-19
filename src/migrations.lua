@@ -916,11 +916,25 @@ return {
   end,
 
   [1595106665] = function()
-    db.query("ALTER TABLE api_backend_http_headers DROP COLUMN sort_order")
+    db.query("SET SESSION api_umbrella.disable_stamping = 'on'")
+
     db.query("ALTER TABLE api_backend_rewrites DROP COLUMN sort_order")
     db.query("ALTER TABLE api_backend_sub_url_settings DROP COLUMN sort_order")
     db.query("ALTER TABLE api_backend_url_matches DROP COLUMN sort_order")
     db.query("ALTER TABLE api_backends DROP COLUMN sort_order")
+
+    db.query("ALTER TABLE api_backends ADD COLUMN created_order INTEGER")
+    db.query("UPDATE api_backends SET created_order = t.rownum FROM (SELECT id, row_number() OVER (ORDER BY created_at) AS rownum FROM api_backends) AS t WHERE api_backends.id = t.id")
+    db.query("ALTER TABLE api_backends ALTER COLUMN created_order SET NOT NULL")
+    db.query("ALTER TABLE api_backends ALTER COLUMN created_order ADD GENERATED ALWAYS AS IDENTITY")
+
+    db.query("ALTER TABLE website_backends ADD COLUMN created_order INTEGER")
+    db.query("UPDATE website_backends SET created_order = t.rownum FROM (SELECT id, row_number() OVER (ORDER BY created_at) AS rownum FROM website_backends) AS t WHERE website_backends.id = t.id")
+    db.query("ALTER TABLE website_backends ALTER COLUMN created_order SET NOT NULL")
+    db.query("ALTER TABLE website_backends ALTER COLUMN created_order ADD GENERATED ALWAYS AS IDENTITY")
+
     db.query("DROP FUNCTION next_api_backend_sort_order")
+
+    db.query("SET SESSION api_umbrella.disable_stamping = 'off'")
   end,
 }

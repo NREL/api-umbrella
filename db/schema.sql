@@ -717,6 +717,7 @@ CREATE TABLE api_umbrella.api_backend_http_headers (
     id uuid DEFAULT public.gen_random_uuid() NOT NULL,
     api_backend_settings_id uuid NOT NULL,
     header_type character varying(17) NOT NULL,
+    sort_order integer NOT NULL,
     key character varying(255) NOT NULL,
     value character varying(255),
     created_at timestamp with time zone NOT NULL,
@@ -884,8 +885,23 @@ CREATE TABLE api_umbrella.api_backends (
     updated_by_username character varying(255) NOT NULL,
     organization_name character varying(255),
     status_description character varying(255),
+    created_order integer NOT NULL,
     CONSTRAINT api_backends_backend_protocol_check CHECK (((backend_protocol)::text = ANY (ARRAY[('http'::character varying)::text, ('https'::character varying)::text]))),
     CONSTRAINT api_backends_balance_algorithm_check CHECK (((balance_algorithm)::text = ANY (ARRAY[('round_robin'::character varying)::text, ('least_conn'::character varying)::text, ('ip_hash'::character varying)::text])))
+);
+
+
+--
+-- Name: api_backends_created_order_seq; Type: SEQUENCE; Schema: api_umbrella; Owner: -
+--
+
+ALTER TABLE api_umbrella.api_backends ALTER COLUMN created_order ADD GENERATED ALWAYS AS IDENTITY (
+    SEQUENCE NAME api_umbrella.api_backends_created_order_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
 );
 
 
@@ -1188,7 +1204,22 @@ CREATE TABLE api_umbrella.website_backends (
     updated_at timestamp with time zone NOT NULL,
     updated_by_id uuid NOT NULL,
     updated_by_username character varying(255) NOT NULL,
+    created_order integer NOT NULL,
     CONSTRAINT website_backends_backend_protocol_check CHECK (((backend_protocol)::text = ANY (ARRAY[('http'::character varying)::text, ('https'::character varying)::text])))
+);
+
+
+--
+-- Name: website_backends_created_order_seq; Type: SEQUENCE; Schema: api_umbrella; Owner: -
+--
+
+ALTER TABLE api_umbrella.website_backends ALTER COLUMN created_order ADD GENERATED ALWAYS AS IDENTITY (
+    SEQUENCE NAME api_umbrella.website_backends_created_order_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
 );
 
 
@@ -1744,6 +1775,13 @@ CREATE INDEX analytics_cache_expires_at_idx ON api_umbrella.analytics_cache USIN
 --
 
 CREATE UNIQUE INDEX analytics_cities_country_region_city_idx ON api_umbrella.analytics_cities USING btree (country, region, city);
+
+
+--
+-- Name: api_backend_http_headers_api_backend_settings_id_header_typ_idx; Type: INDEX; Schema: api_umbrella; Owner: -
+--
+
+CREATE UNIQUE INDEX api_backend_http_headers_api_backend_settings_id_header_typ_idx ON api_umbrella.api_backend_http_headers USING btree (api_backend_settings_id, header_type, sort_order);
 
 
 --
