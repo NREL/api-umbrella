@@ -1,6 +1,5 @@
 import Component from '@ember/component';
 import bootbox from 'bootbox';
-import { computed } from '@ember/object';
 import { inject } from '@ember/service';
 
 export default Component.extend({

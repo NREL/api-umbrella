@@ -114,9 +114,6 @@ local function route_to_website(website)
 end
 
 local active_config = get_packed(ngx.shared.active_config, "packed_data") or {}
-local file = require "pl.file"
-local lyaml = require "lyaml"
-file.write("/app/tmp/active.yml", lyaml.dump({ active_config }))
 
 local api, url_match, api_err = api_matcher(active_config)
 if api and url_match then

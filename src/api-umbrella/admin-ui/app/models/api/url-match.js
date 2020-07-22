@@ -30,7 +30,6 @@ const Validations = buildValidations({
 });
 
 export default DS.Model.extend(Validations, {
-  sortOrder: DS.attr('number'),
   frontendPrefix: DS.attr(),
   backendPrefix: DS.attr(),
 

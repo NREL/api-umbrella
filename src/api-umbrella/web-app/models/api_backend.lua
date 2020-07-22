@@ -6,7 +6,6 @@ local ApiBackendUrlMatch = require "api-umbrella.web-app.models.api_backend_url_
 local api_backend_policy = require "api-umbrella.web-app.policies.api_backend_policy"
 local common_validations = require "api-umbrella.web-app.utils.common_validations"
 local db = require "lapis.db"
-local is_array = require "api-umbrella.utils.is_array"
 local json_array_fields = require "api-umbrella.web-app.utils.json_array_fields"
 local json_null = require("cjson").null
 local json_null_default = require "api-umbrella.web-app.utils.json_null_default"
@@ -24,7 +23,7 @@ ApiBackend = model_ext.new_class("api_backends", {
     {
       "rewrites",
       has_many = "ApiBackendRewrite",
-      order = "array_append(string_to_array(frontend_matcher, '/'), NULL) NULLS LAST",
+      order = "path_sort_order(frontend_matcher) NULLS LAST",
     },
     {
       "servers",
@@ -38,12 +37,12 @@ ApiBackend = model_ext.new_class("api_backends", {
     {
       "sub_settings",
       has_many = "ApiBackendSubUrlSettings",
-      order = "array_append(string_to_array(regex, '/'), NULL) NULLS LAST",
+      order = "path_sort_order(regex) NULLS LAST",
     },
     {
       "url_matches",
       has_many = "ApiBackendUrlMatch",
-      order = "array_append(string_to_array(frontend_prefix, '/'), NULL) NULLS LAST",
+      order = "path_sort_order(frontend_prefix) NULLS LAST",
     },
     {
       "api_scopes",

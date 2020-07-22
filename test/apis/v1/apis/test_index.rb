@@ -68,7 +68,6 @@ class Test::Apis::V1::Apis::TestIndex < Minitest::Test
       "Root API Scope",
       "API Scopes",
       "Admin Groups",
-      "Matching Order",
     ], csv[0])
     assert_equal([
       api_backend.name,
@@ -79,7 +78,6 @@ class Test::Apis::V1::Apis::TestIndex < Minitest::Test
       api_scope.name,
       api_scope.name,
       admin_group.name,
-      api_backend.sort_order.to_s,
     ], csv[1])
   end
 

@@ -41,7 +41,6 @@ const Validations = buildValidations({
 
 export default DS.Model.extend(Validations, {
   name: DS.attr(),
-  sortOrder: DS.attr('number'),
   backendProtocol: DS.attr('string', { defaultValue: 'http' }),
   frontendHost: DS.attr(),
   backendHost: DS.attr(),

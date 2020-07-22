@@ -7,20 +7,18 @@
         <th>Frontend Prefix</th>
         <th>Backend Prefix</th>
         <th></th>
-        <th class="reorder-handle"></th>
       </tr>
     </thead>
     <tbody>
       {{#if model.urlMatches}}
         {{#each model.urlMatches as |urlMatch|}}
-          <tr data-guid={{guid-for urlMatch}}>
+          <tr>
             <td>{{urlMatch.frontendPrefix}}</td>
             <td>{{urlMatch.backendPrefixWithDefault}}</td>
             <td class="table-row-actions">
               <a href="#" {{action "edit" urlMatch}}>{{fa-icon "pencil-alt"}}{{t "Edit"}}</a>
               <a href="#" class="remove-action" {{action "remove" urlMatch}}>{{fa-icon "times"}}{{t "Remove"}}</a>
             </td>
-            <td class="reorder-handle">{{fa-icon "bars"}}</td>
           </tr>
         {{/each}}
       {{else}}
@@ -31,11 +29,6 @@
   <div class="row">
     <div class="col-6">
       <button type="button" class="btn btn-light btn-sm" {{action "add"}}>{{fa-icon "plus-circle"}} {{t "Add URL Prefix"}}</button>
-    </div>
-    <div class="col-6 text-right">
-      {{#if isReorderable}}
-        <button type="button" id="url_matches_reorder" class="btn btn-light btn-sm" {{action "reorderCollection" "url_matches"}}>{{fa-icon "bars"}} <span class="reorder-button-text">{{t "Reorder"}}</span></button>
-      {{/if}}
     </div>
   </div>
 </div>

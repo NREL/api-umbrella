@@ -1,11 +1,9 @@
-import { computed, observer } from '@ember/object';
 import $ from 'jquery';
 import Component from '@ember/component';
 import DataTablesHelpers from 'api-umbrella-admin-ui/utils/data-tables-helpers';
-import bootbox from 'bootbox';
+import { computed } from '@ember/object';
 import escape from 'lodash-es/escape';
 import { inject } from '@ember/service';
-import isEqual from 'lodash-es/isEqual';
 
 export default Component.extend({
   busy: inject('busy'),

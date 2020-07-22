@@ -61,23 +61,29 @@ class Test::Apis::V1::Config::TestPublish < Minitest::Test
     assert_equal(2, active_config["apis"].length)
   end
 
-  def test_combines_new_and_existing_config_in_order
-    api1 = FactoryBot.create(:api_backend, :sort_order => 40)
-    api2 = FactoryBot.create(:api_backend, :sort_order => 15)
-    publish_api_backends([api1.id, api2.id])
-    assert_equal(2, PublishedConfig.count)
+  def test_combines_new_and_existing_config_in_created_order
+    api1 = FactoryBot.create(:api_backend, :created_order => 4)
+    api2 = FactoryBot.create(:api_backend, :created_order => 2)
+    api3 = FactoryBot.create(:api_backend, :created_order => 6)
+    api4 = FactoryBot.create(:api_backend, :created_order => 1)
+    api5 = FactoryBot.create(:api_backend, :created_order => 5)
+    api6 = FactoryBot.create(:api_backend, :created_order => 3)
 
-    api3 = FactoryBot.create(:api_backend, :sort_order => 90)
-    api4 = FactoryBot.create(:api_backend, :sort_order => 1)
-    api5 = FactoryBot.create(:api_backend, :sort_order => 50)
-    api6 = FactoryBot.create(:api_backend, :sort_order => 20)
+    publish_api_backends([api3.id, api1.id])
+    assert_equal(2, PublishedConfig.count)
+    active_config = PublishedConfig.active_config
+    assert_equal([
+      api1.id,
+      api3.id,
+    ], active_config["apis"].map { |api| api["id"] })
 
     config = {
       :apis => {
+        api6.id => { :publish => "1" },
+        api2.id => { :publish => "1" },
         api3.id => { :publish => "1" },
         api4.id => { :publish => "1" },
         api5.id => { :publish => "1" },
-        api6.id => { :publish => "1" },
       },
     }
 
