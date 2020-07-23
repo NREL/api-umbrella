@@ -918,8 +918,6 @@ return {
   [1595106665] = function()
     db.query("SET SESSION api_umbrella.disable_stamping = 'on'")
 
-    db.query("ALTER TABLE api_backend_rewrites DROP COLUMN sort_order")
-    db.query("ALTER TABLE api_backend_sub_url_settings DROP COLUMN sort_order")
     db.query("ALTER TABLE api_backend_url_matches DROP COLUMN sort_order")
     db.query("ALTER TABLE api_backends DROP COLUMN sort_order")
 

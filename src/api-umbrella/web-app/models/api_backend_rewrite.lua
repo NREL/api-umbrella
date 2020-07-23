@@ -41,11 +41,18 @@ ApiBackendRewrite = model_ext.new_class("api_backend_rewrites", {
       { validation_ext.string:minlen(1), t("can't be blank") },
       { validation_ext.db_null_optional.string:maxlen(255), string.format(t("is too long (maximum is %d characters)"), 255) },
     })
+    validate_field(errors, data, "sort_order", t("Sort order"), {
+      { validation_ext.tonumber.number, t("can't be blank") },
+    })
     validate_uniqueness(errors, data, "frontend_matcher", t("Frontend matcher"), ApiBackendRewrite, {
       "api_backend_id",
       "matcher_type",
       "http_method",
       "frontend_matcher",
+    })
+    validate_uniqueness(errors, data, "sort_order", t("Sort order"), ApiBackendRewrite, {
+      "api_backend_id",
+      "sort_order",
     })
     return errors
   end,

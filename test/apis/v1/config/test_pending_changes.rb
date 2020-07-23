@@ -87,6 +87,7 @@ class Test::Apis::V1::Config::TestPendingChanges < Minitest::Test
       "backend_host",
       "backend_protocol",
       "balance_algorithm",
+      "created_order",
       "frontend_host",
       "servers",
       "- host",

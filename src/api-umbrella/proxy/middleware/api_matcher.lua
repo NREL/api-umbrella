@@ -28,7 +28,6 @@ local function apis_for_request_host(active_config)
   return apis
 end
 
-local inspect = require "inspect"
 local function match_api(active_config, request_path)
   -- Find the API backends that match this host.
   local apis = apis_for_request_host(active_config)
@@ -49,11 +48,6 @@ local function match_api(active_config, request_path)
           matches = true
         end
 
-        if matches then
-          ngx.log(ngx.ERR, "MATCHES: " .. inspect(api))
-          ngx.log(ngx.ERR, "MATCHES: " .. inspect(url_match))
-        end
-
         local length = string.len(url_match["frontend_prefix"])
         if matches and length > matched_length then
           matched_api = api
@@ -63,9 +57,6 @@ local function match_api(active_config, request_path)
       end
     end
   end
-
-          ngx.log(ngx.ERR, "MATCHED: " .. inspect(matched_api))
-          ngx.log(ngx.ERR, "MATCHED: " .. inspect(matched_url_match))
 
   if matched_api and matched_url_match then
     return matched_api, matched_url_match

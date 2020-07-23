@@ -31,6 +31,7 @@ const Validations = buildValidations({
 });
 
 export default DS.Model.extend(Validations, {
+  sortOrder: DS.attr('number'),
   matcherType: DS.attr(),
   httpMethod: DS.attr(),
   frontendMatcher: DS.attr(),

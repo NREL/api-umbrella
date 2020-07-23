@@ -6,6 +6,7 @@ local ApiBackendUrlMatch = require "api-umbrella.web-app.models.api_backend_url_
 local api_backend_policy = require "api-umbrella.web-app.policies.api_backend_policy"
 local common_validations = require "api-umbrella.web-app.utils.common_validations"
 local db = require "lapis.db"
+local is_array = require "api-umbrella.utils.is_array"
 local json_array_fields = require "api-umbrella.web-app.utils.json_array_fields"
 local json_null = require("cjson").null
 local json_null_default = require "api-umbrella.web-app.utils.json_null_default"
@@ -17,13 +18,21 @@ local validation_ext = require "api-umbrella.web-app.utils.validation_ext"
 local db_null = db.NULL
 local validate_field = model_ext.validate_field
 
+local function add_sort_order_from_array_order(array)
+  if is_array(array) and array ~= db_null then
+    for index, values in ipairs(array) do
+      values["sort_order"] = index
+    end
+  end
+end
+
 local ApiBackend
 ApiBackend = model_ext.new_class("api_backends", {
   relations = {
     {
       "rewrites",
       has_many = "ApiBackendRewrite",
-      order = "path_sort_order(frontend_matcher) NULLS LAST",
+      order = "sort_order",
     },
     {
       "servers",
@@ -37,7 +46,7 @@ ApiBackend = model_ext.new_class("api_backends", {
     {
       "sub_settings",
       has_many = "ApiBackendSubUrlSettings",
-      order = "path_sort_order(regex) NULLS LAST",
+      order = "sort_order",
     },
     {
       "url_matches",
@@ -450,6 +459,11 @@ ApiBackend = model_ext.new_class("api_backends", {
 }, {
   authorize = function(data)
     api_backend_policy.authorize_modify(ngx.ctx.current_admin, data)
+  end,
+
+  before_validate = function(_, values)
+    add_sort_order_from_array_order(values["rewrites"])
+    add_sort_order_from_array_order(values["sub_settings"])
   end,
 
   validate = function(_, data)

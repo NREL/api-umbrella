@@ -8,12 +8,13 @@
       <th>From</th>
       <th>To</th>
       <th></th>
+      <th class="reorder-handle"></th>
     </tr>
   </thead>
   <tbody>
     {{#if model.rewrites}}
       {{#each model.rewrites as |rewrite|}}
-        <tr>
+        <tr data-guid={{guid-for rewrite}}>
           <td>{{rewrite.matcherType}}</td>
           <td>{{rewrite.httpMethod}}</td>
           <td>{{rewrite.frontendMatcher}}</td>
@@ -22,6 +23,7 @@
             <a href="#" {{action "edit" rewrite}}>{{fa-icon "pencil-alt"}}{{t "Edit"}}</a>
             <a href="#" class="remove-action" {{action "remove" rewrite}}>{{fa-icon "times"}}{{t "Remove"}}</a>
           </td>
+          <td class="reorder-handle">{{fa-icon "bars"}}</td>
         </tr>
       {{/each}}
     {{else}}
@@ -32,5 +34,10 @@
 <div class="row">
   <div class="col-6">
     <button type="button" class="btn btn-light btn-sm" {{action "add"}}>{{fa-icon "plus-circle"}} {{t "Add Rewrite"}}</button>
+  </div>
+  <div class="col-6 text-right">
+    {{#if isReorderable}}
+      <button type="button" id="rewrites_reorder" class="btn btn-light btn-sm" {{action "reorderCollection" "rewrites"}}>{{fa-icon "bars"}} <span class="reorder-button-text">{{t "Reorder"}}</span></button>
+    {{/if}}
   </div>
 </div>

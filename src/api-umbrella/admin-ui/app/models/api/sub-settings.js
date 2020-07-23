@@ -19,6 +19,7 @@ const Validations = buildValidations({
 });
 
 export default DS.Model.extend(Validations, {
+  sortOrder: DS.attr('number'),
   httpMethod: DS.attr(),
   regex: DS.attr(),
 

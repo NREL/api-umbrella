@@ -754,6 +754,7 @@ CREATE TABLE api_umbrella.api_backend_rewrites (
     http_method character varying(7) NOT NULL,
     frontend_matcher character varying(255) NOT NULL,
     backend_replacement character varying(255) NOT NULL,
+    sort_order integer DEFAULT 0 NOT NULL,
     created_at timestamp with time zone NOT NULL,
     created_by_id uuid NOT NULL,
     created_by_username character varying(255) NOT NULL,
@@ -850,6 +851,7 @@ CREATE TABLE api_umbrella.api_backend_sub_url_settings (
     api_backend_id uuid NOT NULL,
     http_method character varying(7) NOT NULL,
     regex character varying(255) NOT NULL,
+    sort_order integer DEFAULT 0 NOT NULL,
     created_at timestamp with time zone NOT NULL,
     created_by_id uuid NOT NULL,
     created_by_username character varying(255) NOT NULL,
@@ -1805,6 +1807,13 @@ CREATE UNIQUE INDEX api_backend_rewrites_api_backend_id_matcher_type_http_metho_
 
 
 --
+-- Name: api_backend_rewrites_api_backend_id_sort_order_idx; Type: INDEX; Schema: api_umbrella; Owner: -
+--
+
+CREATE UNIQUE INDEX api_backend_rewrites_api_backend_id_sort_order_idx ON api_umbrella.api_backend_rewrites USING btree (api_backend_id, sort_order);
+
+
+--
 -- Name: api_backend_servers_api_backend_id_host_port_idx; Type: INDEX; Schema: api_umbrella; Owner: -
 --
 
@@ -1837,6 +1846,13 @@ CREATE UNIQUE INDEX api_backend_settings_required_api_backend_settings_id_api_r_
 --
 
 CREATE UNIQUE INDEX api_backend_sub_url_settings_api_backend_id_http_method_reg_idx ON api_umbrella.api_backend_sub_url_settings USING btree (api_backend_id, http_method, regex);
+
+
+--
+-- Name: api_backend_sub_url_settings_api_backend_id_sort_order_idx; Type: INDEX; Schema: api_umbrella; Owner: -
+--
+
+CREATE UNIQUE INDEX api_backend_sub_url_settings_api_backend_id_sort_order_idx ON api_umbrella.api_backend_sub_url_settings USING btree (api_backend_id, sort_order);
 
 
 --
