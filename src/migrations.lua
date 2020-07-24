@@ -918,6 +918,62 @@ return {
   [1595106665] = function()
     db.query("SET SESSION api_umbrella.disable_stamping = 'on'")
 
+    local res = db.query("SELECT * FROM published_config ORDER BY id DESC LIMIT 1")
+    if res and res[1] then
+      local apis = res[1]["config"]["apis"]
+
+      -- local inspect = require "inspect"
+      -- print(inspect(apis))
+
+      local url_prefixes = {}
+      for _, api in ipairs(apis) do
+        for _, url_match in ipairs(api["url_matches"]) do
+          table.insert(url_prefixes, {
+            url_prefix = api["frontend_host"] .. url_match["frontend_prefix"],
+            api = api,
+          })
+        end
+      end
+
+      --[[
+      table.sort(url_prefixes, function(a, b)
+        return string.len(a["url_prefix"]) < string.len(b["url_prefix"])
+        -- return a["api"]["created_at"] < b["api"]["created_at"]
+      end)
+      ]]
+
+      for index1, url_prefix1 in ipairs(url_prefixes) do
+        local index1_printed = false
+        for index2, url_prefix2 in ipairs(url_prefixes) do
+          if index2 > index1 and string.sub(url_prefix2["url_prefix"], 1, string.len(url_prefix1["url_prefix"])) == url_prefix1["url_prefix"] then
+            if not index1_printed then
+              print("================================================================================")
+              print("WARNING: URL matches present that will never be matched given the current ordering.")
+              print("")
+              print("URL that will be matched first currently:")
+              print("  " .. url_prefix1["url_prefix"])
+              print("    ID: " .. url_prefix1["api"]["id"])
+              print("    Name: " .. url_prefix1["api"]["name"])
+              print("    Sort Order: " .. url_prefix1["api"]["sort_order"])
+              print("    Created At: " .. url_prefix1["api"]["created_at"])
+              print("")
+              print("Other URLs that are defined, but will never be matched currently:")
+              -- print(index1 .. ": " .. url_prefix1["url_prefix"] .. " (API Backend: " .. url_prefix1["api"]["id"] .. ", Sort Order: " .. url_prefix1["api"]["sort_order"] .. ", Name: " .. url_prefix1["api"]["name"] .. ")")
+              index1_printed = true
+            end
+
+            print("  - " .. url_prefix2["url_prefix"])
+            print("      ID: " .. url_prefix2["api"]["id"])
+            print("      Name: " .. url_prefix2["api"]["name"])
+            print("      Sort Order: " .. url_prefix2["api"]["sort_order"])
+            print("      Created At: " .. url_prefix2["api"]["created_at"])
+          end
+        end
+      end
+
+      os.exit(1)
+    end
+
     db.query("ALTER TABLE api_backend_url_matches DROP COLUMN sort_order")
     db.query("ALTER TABLE api_backends DROP COLUMN sort_order")
 
