@@ -1,10 +1,8 @@
+local is_empty = require "api-umbrella.utils.is_empty"
 local path = require "pl.path"
 local setup = require "api-umbrella.cli.setup"
 local shell_blocking_capture_combined = require("shell-games").capture_combined
 local status = require "api-umbrella.cli.status"
-local types = require "pl.types"
-
-local is_empty = types.is_empty
 
 local function reload_perp(perp_base)
   local _, err = shell_blocking_capture_combined({ "perphup", perp_base })

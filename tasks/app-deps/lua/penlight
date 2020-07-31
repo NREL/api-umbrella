@@ -1,9 +1,6 @@
 #!/usr/bin/env bash
 
-# Hold at 1.5 until we get clarify on changes to "is_empty" behavior in 1.6-1.7
-# which broke some of our expectations:
-# https://github.com/Tieske/Penlight/issues/313
-lua_penlight_version="1.5.4-1"
+lua_penlight_version="1.7.0-1"
 
 set -e -u -x
 source ./tasks/helpers.sh

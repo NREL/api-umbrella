@@ -1,5 +1,5 @@
 local config = require "api-umbrella.proxy.models.file_config"
-local is_empty = require("pl.types").is_empty
+local is_empty = require "api-umbrella.utils.is_empty"
 
 return function()
   local api_key_methods = config["gatekeeper"]["api_key_methods"]

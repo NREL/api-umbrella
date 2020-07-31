@@ -1,12 +1,11 @@
 local _M = {}
 
 local interval_lock = require "api-umbrella.utils.interval_lock"
+local is_empty = require "api-umbrella.utils.is_empty"
 local mongo = require "api-umbrella.utils.mongo"
 local packed_shared_dict = require "api-umbrella.utils.packed_shared_dict"
-local types = require "pl.types"
 
 local get_packed = packed_shared_dict.get_packed
-local is_empty = types.is_empty
 local set_packed = packed_shared_dict.set_packed
 
 local delay = 0.25  -- in seconds

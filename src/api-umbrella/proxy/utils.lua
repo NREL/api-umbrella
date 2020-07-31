@@ -1,14 +1,13 @@
 local _M = {}
 
+local is_empty = require "api-umbrella.utils.is_empty"
 local json_null = require("cjson").null
 local plutils = require "pl.utils"
 local stringx = require "pl.stringx"
 local tablex = require "pl.tablex"
-local types = require "pl.types"
 
 local escape = plutils.escape
 local gsub = ngx.re.gsub
-local is_empty = types.is_empty
 local split = plutils.split
 local strip = stringx.strip
 local table_keys = tablex.keys

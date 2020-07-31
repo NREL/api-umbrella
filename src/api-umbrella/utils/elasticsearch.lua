@@ -1,7 +1,7 @@
 local config = require "api-umbrella.proxy.models.file_config"
 local http = require "resty.http"
 local icu_date = require "icu-date-ffi"
-local is_empty = require("pl.types").is_empty
+local is_empty = require "api-umbrella.utils.is_empty"
 local json_decode = require("cjson").decode
 local json_encode = require "api-umbrella.utils.json_encode"
 

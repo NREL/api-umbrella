@@ -3,15 +3,14 @@ local _M = {}
 local cmsgpack = require "cmsgpack"
 local config = require "api-umbrella.proxy.models.file_config"
 local invert_table = require "api-umbrella.utils.invert_table"
+local is_empty = require "api-umbrella.utils.is_empty"
 local json_null = require("cjson").null
 local lrucache = require "resty.lrucache.pureffi"
 local mongo = require "api-umbrella.utils.mongo"
 local shcache = require "shcache"
-local types = require "pl.types"
 local utils = require "api-umbrella.proxy.utils"
 
 local cache_computed_settings = utils.cache_computed_settings
-local is_empty = types.is_empty
 
 local function lookup_user(api_key)
   local raw_user, err = mongo.first("api_users", {
