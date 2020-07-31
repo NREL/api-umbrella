@@ -88,7 +88,7 @@ WebsiteBackend.all_sorted = function(where)
   if where then
     sql = sql .. "WHERE " .. where
   end
-  sql = sql .. " ORDER BY created_order"
+  sql = sql .. " ORDER BY frontend_host"
 
   return WebsiteBackend:select(sql)
 end

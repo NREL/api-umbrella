@@ -916,36 +916,32 @@ return {
   end,
 
   [1595106665] = function()
+    db.query("BEGIN")
     db.query("SET SESSION api_umbrella.disable_stamping = 'on'")
 
     local res = db.query("SELECT * FROM published_config ORDER BY id DESC LIMIT 1")
     if res and res[1] then
       local apis = res[1]["config"]["apis"]
 
-      -- local inspect = require "inspect"
-      -- print(inspect(apis))
-
       local url_prefixes = {}
       for _, api in ipairs(apis) do
         for _, url_match in ipairs(api["url_matches"]) do
           table.insert(url_prefixes, {
             url_prefix = api["frontend_host"] .. url_match["frontend_prefix"],
+            url_backend_prefix = api["backend_host"] .. url_match["backend_prefix"],
+            frontend_prefix = url_match["frontend_prefix"],
+            backend_prefix = url_match["backend_prefix"],
             api = api,
           })
         end
       end
 
-      --[[
-      table.sort(url_prefixes, function(a, b)
-        return string.len(a["url_prefix"]) < string.len(b["url_prefix"])
-        -- return a["api"]["created_at"] < b["api"]["created_at"]
-      end)
-      ]]
-
       for index1, url_prefix1 in ipairs(url_prefixes) do
         local index1_printed = false
         for index2, url_prefix2 in ipairs(url_prefixes) do
-          if index2 > index1 and string.sub(url_prefix2["url_prefix"], 1, string.len(url_prefix1["url_prefix"])) == url_prefix1["url_prefix"] then
+          local url_prefix2_common_prefix = string.sub(url_prefix2["url_prefix"], 1, string.len(url_prefix1["url_prefix"]))
+          local url_prefix2_with_url_prefix1_backend = url_prefix1["url_backend_prefix"] .. string.sub(url_prefix2["url_prefix"], string.len(url_prefix1["url_prefix"]) + 1)
+          if index2 > index1 and url_prefix2_common_prefix == url_prefix1["url_prefix"] and (url_prefix1["api"]["id"] ~= url_prefix2["api"]["id"] or url_prefix2_with_url_prefix1_backend ~= url_prefix2["url_backend_prefix"]) then
             if not index1_printed then
               print("================================================================================")
               print("WARNING: URL matches present that will never be matched given the current ordering.")
@@ -956,9 +952,9 @@ return {
               print("    Name: " .. url_prefix1["api"]["name"])
               print("    Sort Order: " .. url_prefix1["api"]["sort_order"])
               print("    Created At: " .. url_prefix1["api"]["created_at"])
+              print("    Backend Prefix: " .. url_prefix1["url_backend_prefix"])
               print("")
               print("Other URLs that are defined, but will never be matched currently:")
-              -- print(index1 .. ": " .. url_prefix1["url_prefix"] .. " (API Backend: " .. url_prefix1["api"]["id"] .. ", Sort Order: " .. url_prefix1["api"]["sort_order"] .. ", Name: " .. url_prefix1["api"]["name"] .. ")")
               index1_printed = true
             end
 
@@ -967,11 +963,11 @@ return {
             print("      Name: " .. url_prefix2["api"]["name"])
             print("      Sort Order: " .. url_prefix2["api"]["sort_order"])
             print("      Created At: " .. url_prefix2["api"]["created_at"])
+            print("      Backend Prefix for this Unused Route:        " .. url_prefix2["url_backend_prefix"])
+            print("      Backend Prefix for Currently Matching Route: " .. url_prefix2_with_url_prefix1_backend)
           end
         end
       end
-
-      os.exit(1)
     end
 
     db.query("ALTER TABLE api_backend_url_matches DROP COLUMN sort_order")
@@ -999,5 +995,72 @@ return {
     ]])
 
     db.query("SET SESSION api_umbrella.disable_stamping = 'off'")
+
+    if res and res[1] then
+      local config = res[1]["config"]
+
+      table.sort(config["apis"], function(a, b)
+        return a["created_at"] < b["created_at"]
+      end)
+      table.sort(config["website_backends"], function(a, b)
+        return a["created_at"] < b["created_at"]
+      end)
+
+      local split = require("ngx.re").split
+      local inspect = require "inspect"
+      local function path_sort_order(path)
+        local parts, parts_err = split(path, "/", "jo")
+        print(inspect(parts))
+        return parts
+      end
+      for index, api in ipairs(config["apis"]) do
+        api["sort_order"] = nil
+        api["created_order"] = index
+
+        print("BEFORE SORT:")
+        for _, v in ipairs(api["url_matches"]) do
+          print(v["frontend_prefix"])
+        end
+        table.sort(api["url_matches"], function(a, b)
+          print("COMPARE " .. a["frontend_prefix"] .. " to " .. b["frontend_prefix"])
+          local a_frontend_prefix = string.lower(a["frontend_prefix"])
+          local b_frontend_prefix = string.lower(b["frontend_prefix"])
+          local a_sort = path_sort_order(a_frontend_prefix)
+          local b_sort = path_sort_order(b_frontend_prefix)
+          for i, _ in ipairs(a_sort) do
+            if b_sort[i] == nil then
+              print("return true")
+              return true
+            elseif a_sort[i] ~= b_sort[i] then
+              print("return a " .. tostring(a_frontend_prefix < b_frontend_prefix))
+              return a_frontend_prefix < b_frontend_prefix
+            end
+          end
+
+          if #a_sort < #b_sort then
+            print("return false")
+            return false
+          else
+            print("return b " .. tostring(a_frontend_prefix < b_frontend_prefix))
+            return a_frontend_prefix < b_frontend_prefix
+          end
+        end)
+        print("AFTER SORT:")
+        for _, v in ipairs(api["url_matches"]) do
+          print(v["frontend_prefix"])
+        end
+      end
+      for index, website_backend in ipairs(config["website_backends"]) do
+        website_backend["created_order"] = index
+      end
+
+      db.query("SET LOCAL audit.application_user_id = ?", "00000000-0000-0000-0000-000000000000")
+      db.query("SET LOCAL audit.application_user_name = ?", "migrations")
+
+      local pg_encode_json = require("pgmoon.json").encode_json
+      db.query("INSERT INTO published_config (config) VALUES (?)", db.raw(pg_encode_json(config)))
+    end
+
+    db.query("COMMIT")
   end,
 }

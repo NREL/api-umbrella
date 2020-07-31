@@ -70,6 +70,7 @@ local compare_exclude_keys = {
   created_by = 1,
   created_by_id = 1,
   created_by_username = 1,
+  created_order = 1,
   creator = 1,
   id = 1,
   name = 1,

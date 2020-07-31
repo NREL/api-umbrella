@@ -526,7 +526,7 @@ ApiBackend.all_sorted = function(where)
   if where then
     sql = sql .. "WHERE " .. where
   end
-  sql = sql .. " ORDER BY created_order"
+  sql = sql .. " ORDER BY name"
 
   return ApiBackend:select(sql)
 end
