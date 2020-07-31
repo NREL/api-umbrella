@@ -13,7 +13,7 @@
   margin-left: 8px;
 }
 
-.tippy-tooltip {
+.tippy-box {
   text-align: left;
   word-break: break-word;
 
@@ -22,11 +22,11 @@
   }
 }
 
-.tippy-tooltip.wide-theme {
+.tippy-box[data-theme~='wide'] {
   max-width: 700px;
 }
 
-.tippy-tooltip.forced-wide-theme {
+.tippy-box[data-theme~='forced-wide'] {
   min-width: 400px;
   max-width: 600px;
 }

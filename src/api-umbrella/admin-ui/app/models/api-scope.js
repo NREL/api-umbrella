@@ -1,6 +1,6 @@
+import Model, { attr } from '@ember-data/model';
 import { buildValidations, validator } from 'ember-cp-validations';
 
-import DS from 'ember-data';
 import I18n from 'i18n-js';
 import { computed } from '@ember/object';
 
@@ -22,14 +22,14 @@ const Validations = buildValidations({
   ],
 });
 
-export default DS.Model.extend(Validations, {
-  name: DS.attr(),
-  host: DS.attr(),
-  pathPrefix: DS.attr(),
-  createdAt: DS.attr(),
-  updatedAt: DS.attr(),
-  creator: DS.attr(),
-  updater: DS.attr(),
+export default Model.extend(Validations, {
+  name: attr(),
+  host: attr(),
+  pathPrefix: attr(),
+  createdAt: attr(),
+  updatedAt: attr(),
+  creator: attr(),
+  updater: attr(),
 
   displayName: computed('name', 'host', 'pathPrefix', function() {
     return this.name + ' - ' + this.host + this.pathPrefix;

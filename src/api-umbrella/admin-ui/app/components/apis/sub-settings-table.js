@@ -8,9 +8,7 @@ export default Component.extend(Sortable, {
   store: inject(),
   openModal: false,
 
-  sortableCollection: computed('model', function() {
-    return this.get('model.subSettings');
-  }),
+  sortableCollection: computed.reads('model.subSettings'),
 
   actions: {
     add() {
@@ -26,7 +24,7 @@ export default Component.extend(Sortable, {
     remove(subSettings) {
       bootbox.confirm('Are you sure you want to remove this URL setting?', function(response) {
         if(response) {
-          this.get('model.subSettings').removeObject(subSettings);
+          this.model.subSettings.removeObject(subSettings);
         }
       }.bind(this));
     },

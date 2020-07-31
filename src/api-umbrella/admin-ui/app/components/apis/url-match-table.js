@@ -8,9 +8,7 @@ export default Component.extend(Sortable, {
   store: inject(),
   openModal: false,
 
-  sortableCollection: computed('model', function() {
-    return this.get('model.urlMatches');
-  }),
+  sortableCollection: computed.reads('model.urlMatches'),
 
   actions: {
     add() {
@@ -26,7 +24,7 @@ export default Component.extend(Sortable, {
     remove(urlMatch) {
       bootbox.confirm('Are you sure you want to remove this URL prefix?', function(response) {
         if(response) {
-          this.get('model.urlMatches').removeObject(urlMatch);
+          this.model.urlMatches.removeObject(urlMatch);
         }
       }.bind(this));
     },

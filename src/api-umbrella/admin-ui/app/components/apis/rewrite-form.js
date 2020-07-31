@@ -29,8 +29,8 @@ export default Component.extend({
     ];
   },
 
-  modalTitle: computed('model', function() {
-    if(this.get('model.isNew')) {
+  modalTitle: computed('model.isNew', function() {
+    if(this.model.isNew) {
       return 'Add Matching URL Prefix';
     } else {
       return 'Edit Matching URL Prefix';
@@ -45,7 +45,7 @@ export default Component.extend({
   actions: {
     submit() {
       this.bufferedModel.applyChanges();
-      if(this.get('model.isNew')) {
+      if(this.model.isNew) {
         this.collection.pushObject(this.model);
       }
 

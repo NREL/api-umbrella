@@ -7,8 +7,8 @@ import { getOwner } from '@ember/application';
 export default Component.extend({
   openModal: false,
 
-  modalTitle: computed('model', function() {
-    if(this.get('model.isNew')) {
+  modalTitle: computed('model.isNew', function() {
+    if(this.model.isNew) {
       return 'Add Server';
     } else {
       return 'Edit Server';
@@ -24,7 +24,7 @@ export default Component.extend({
     open() {
       // For new servers, intelligently pick the default port based on the
       // backend protocol selected.
-      if(this.bufferedModel && !this.get('bufferedModel.port')) {
+      if(this.bufferedModel && !this.bufferedModel.get('port')) {
         if(this.apiBackendProtocol === 'https') {
           this.set('bufferedModel.port', 443);
         } else {
@@ -35,7 +35,7 @@ export default Component.extend({
 
     submit() {
       this.bufferedModel.applyChanges();
-      if(this.get('model.isNew')) {
+      if(this.model.isNew) {
         this.collection.pushObject(this.model);
       }
 
@@ -43,7 +43,7 @@ export default Component.extend({
       // "Backend Host" field based on the server's host (because in most
       // non-load balancing situations they will match).
       if(!this.apiBackendHost) {
-        let server = this.get('collection.firstObject');
+        let server = this.collection.firstObject;
         if(server && server.get('host')) {
           this.set('apiBackendHost', server.get('host'));
         }

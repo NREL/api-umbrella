@@ -1,6 +1,5 @@
+import Model, { attr } from '@ember-data/model';
 import { buildValidations, validator } from 'ember-cp-validations';
-
-import DS from 'ember-data';
 
 const Validations = buildValidations({
   matcherType: [
@@ -17,12 +16,12 @@ const Validations = buildValidations({
   ],
 });
 
-export default DS.Model.extend(Validations, {
-  sortOrder: DS.attr('number'),
-  matcherType: DS.attr(),
-  httpMethod: DS.attr(),
-  frontendMatcher: DS.attr(),
-  backendReplacement: DS.attr(),
+export default Model.extend(Validations, {
+  sortOrder: attr('number'),
+  matcherType: attr(),
+  httpMethod: attr(),
+  frontendMatcher: attr(),
+  backendReplacement: attr(),
 }).reopenClass({
   validationClass: Validations,
 });

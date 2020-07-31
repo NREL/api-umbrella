@@ -1,3 +1,4 @@
+// eslint-disable-next-line ember/no-observers
 import { computed, observer } from '@ember/object';
 
 import $ from 'jquery';

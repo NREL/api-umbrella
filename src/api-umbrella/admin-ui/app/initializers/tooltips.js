@@ -7,6 +7,7 @@ export function initialize() {
     interactive: true,
     theme: 'light-border',
     arrow: true,
+    allowHTML: true,
     onShow: (tip) => {
       const contentSelector = tip.reference.getAttribute('data-tooltip-content-selector');
       if(contentSelector) {

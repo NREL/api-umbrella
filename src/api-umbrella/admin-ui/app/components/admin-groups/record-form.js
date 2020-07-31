@@ -7,15 +7,15 @@ export default Component.extend(Save, {
     submit() {
       this.saveRecord({
         transitionToRoute: 'admin_groups',
-        message: 'Successfully saved the admin group "' + escape(this.get('model.name')) + '"',
+        message: 'Successfully saved the admin group "' + escape(this.model.name) + '"',
       });
     },
 
     delete() {
       this.destroyRecord({
-        prompt: 'Are you sure you want to delete the admin group "' + escape(this.get('model.name')) + '"?',
+        prompt: 'Are you sure you want to delete the admin group "' + escape(this.model.name) + '"?',
         transitionToRoute: 'admin_groups',
-        message: 'Successfully deleted the admin group "' + escape(this.get('model.name')) + '"',
+        message: 'Successfully deleted the admin group "' + escape(this.model.name) + '"',
       });
     },
   },

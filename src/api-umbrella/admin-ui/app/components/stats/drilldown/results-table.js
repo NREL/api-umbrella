@@ -1,3 +1,4 @@
+// eslint-disable-next-line ember/no-observers
 import { computed, observer } from '@ember/object';
 
 import $ from 'jquery';
@@ -60,7 +61,7 @@ export default Component.extend({
     table.draw();
   }),
 
-  downloadUrl: computed('backendQueryParamValues', function() {
-    return '/api-umbrella/v1/analytics/drilldown.csv?api_key=' + this.get('session.data.authenticated.api_key') + '&' + $.param(this.backendQueryParamValues);
+  downloadUrl: computed('backendQueryParamValues', 'session.data.authenticated.api_key', function() {
+    return '/api-umbrella/v1/analytics/drilldown.csv?api_key=' + this.session.data.authenticated.api_key + '&' + $.param(this.backendQueryParamValues);
   }),
 });

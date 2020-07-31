@@ -1,4 +1,4 @@
-import RESTAdapter from 'ember-data/adapters/rest';
+import RESTAdapter from '@ember-data/adapter/rest';
 import flatten from 'lodash-es/flatten';
 import isArray from 'lodash-es/isArray';
 import isPlainObject from 'lodash-es/isPlainObject';

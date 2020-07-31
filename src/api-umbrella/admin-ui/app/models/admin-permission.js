@@ -1,7 +1,7 @@
-import DS from 'ember-data';
+import Model, { attr } from '@ember-data/model';
 
-export default DS.Model.extend({
-  name: DS.attr(),
+export default Model.extend({
+  name: attr(),
 }).reopenClass({
   urlRoot: '/api-umbrella/v1/admin_permissions',
   singlePayloadKey: 'admin_permission',

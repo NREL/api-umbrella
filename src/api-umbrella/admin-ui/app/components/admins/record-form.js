@@ -7,23 +7,21 @@ import { inject } from '@ember/service';
 export default Component.extend(Save, {
   session: inject(),
 
-  currentAdmin: computed(function() {
-    return this.get('session.data.authenticated.admin');
-  }),
+  currentAdmin: computed.reads('session.data.authenticated.admin'),
 
   actions: {
     submit() {
       this.saveRecord({
         transitionToRoute: 'admins',
-        message: 'Successfully saved the admin "' + escape(this.get('model.username')) + '"',
+        message: 'Successfully saved the admin "' + escape(this.model.username) + '"',
       });
     },
 
     delete() {
       this.destroyRecord({
-        prompt: 'Are you sure you want to delete the admin "' + escape(this.get('model.username')) + '"?',
+        prompt: 'Are you sure you want to delete the admin "' + escape(this.model.username) + '"?',
         transitionToRoute: 'admins',
-        message: 'Successfully deleted the admin "' + escape(this.get('model.username')) + '"',
+        message: 'Successfully deleted the admin "' + escape(this.model.username) + '"',
       });
     },
   },

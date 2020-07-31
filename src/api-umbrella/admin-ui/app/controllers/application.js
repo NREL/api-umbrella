@@ -7,9 +7,7 @@ export default Controller.extend({
 
   isLoading: null,
 
-  currentAdmin: computed(function() {
-    return this.get('session.data.authenticated.admin');
-  }),
+  currentAdmin: computed.reads('session.data.authenticated.admin'),
 
   actions: {
     logout() {

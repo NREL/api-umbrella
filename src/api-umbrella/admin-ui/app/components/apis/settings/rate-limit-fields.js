@@ -35,7 +35,7 @@ export default Component.extend({
 
   actions: {
     primaryRateLimitChange(selectedRateLimit) {
-      let rateLimits = this.get('model.rateLimits');
+      let rateLimits = this.model.rateLimits;
       rateLimits.forEach(function(rateLimit) {
         if(rateLimit === selectedRateLimit) {
           rateLimit.set('responseHeaders', true);
@@ -46,12 +46,12 @@ export default Component.extend({
     },
 
     addRateLimit() {
-      let collection = this.get('model.rateLimits');
+      let collection = this.model.rateLimits;
       collection.pushObject(this.store.createRecord('api/rate-limit'));
     },
 
     deleteRateLimit(rateLimit) {
-      let collection = this.get('model.rateLimits');
+      let collection = this.model.rateLimits;
       bootbox.confirm('Are you sure you want to remove this rate limit?', function(result) {
         if(result) {
           collection.removeObject(rateLimit);

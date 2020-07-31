@@ -64,12 +64,12 @@ export default Component.extend({
     }.bind(this));
   },
 
-  downloadUrl: computed('queryParams', function() {
+  downloadUrl: computed('queryParams', 'session.data.authenticated.api_key', function() {
     let params = this.queryParams;
     if(params) {
       params = $.param(params);
     }
 
-    return '/api-umbrella/v1/admins.csv?api_key=' + this.get('session.data.authenticated.api_key') + '&' + params;
+    return '/api-umbrella/v1/admins.csv?api_key=' + this.session.data.authenticated.api_key + '&' + params;
   }),
 });

@@ -1,6 +1,6 @@
+import Model, { attr, belongsTo, hasMany } from '@ember-data/model';
 import { buildValidations, validator } from 'ember-cp-validations';
 
-import DS from 'ember-data';
 import I18n from 'i18n-js';
 import { computed } from '@ember/object';
 
@@ -17,36 +17,34 @@ const Validations = buildValidations({
     validator('presence', {
       presence: true,
       disabled: computed('model.frontendHost', function() {
-        return (this.get('model.frontendHost') && this.get('model.frontendHost')[0] === '*');
+        return (this.model.frontendHost && this.model.frontendHost[0] === '*');
       }),
     }),
     validator('format', {
       regex: CommonValidations.host_format_with_wildcard,
       message: I18n.t('errors.messages.invalid_host_format'),
-      disabled: computed('model.backendHost', function() {
-        return !this.get('model.backendHost');
-      }),
+      disabled: computed.not('model.backendHost'),
     }),
   ],
 });
 
-export default DS.Model.extend(Validations, {
-  name: DS.attr(),
-  sortOrder: DS.attr('number'),
-  backendProtocol: DS.attr('string', { defaultValue: 'http' }),
-  frontendHost: DS.attr(),
-  backendHost: DS.attr(),
-  balanceAlgorithm: DS.attr('string', { defaultValue: 'least_conn' }),
-  createdAt: DS.attr(),
-  updatedAt: DS.attr(),
-  creator: DS.attr(),
-  updater: DS.attr(),
+export default Model.extend(Validations, {
+  name: attr(),
+  sortOrder: attr('number'),
+  backendProtocol: attr('string', { defaultValue: 'http' }),
+  frontendHost: attr(),
+  backendHost: attr(),
+  balanceAlgorithm: attr('string', { defaultValue: 'least_conn' }),
+  createdAt: attr(),
+  updatedAt: attr(),
+  creator: attr(),
+  updater: attr(),
 
-  servers: DS.hasMany('api/server', { async: false }),
-  urlMatches: DS.hasMany('api/url-match', { async: false }),
-  settings: DS.belongsTo('api/settings', { async: false }),
-  subSettings: DS.hasMany('api/sub-settings', { async: false }),
-  rewrites: DS.hasMany('api/rewrites', { async: false }),
+  servers: hasMany('api/server', { async: false }),
+  urlMatches: hasMany('api/url-match', { async: false }),
+  settings: belongsTo('api/settings', { async: false }),
+  subSettings: hasMany('api/sub-settings', { async: false }),
+  rewrites: hasMany('api/rewrites', { async: false }),
 
   ready() {
     this.setDefaults();
@@ -63,7 +61,7 @@ export default DS.Model.extend(Validations, {
     return 'https://' + (this.frontendHost || '');
   }),
 
-  exampleOutgoingUrlRoot: computed('backendProtocol', 'backendHost', 'fontendHost', function() {
+  exampleOutgoingUrlRoot: computed('backendHost', 'backendProtocol', 'fontendHost', 'frontendHost', function() {
     return this.backendProtocol + '://' + (this.backendHost || this.frontendHost || '');
   }),
 }).reopenClass({

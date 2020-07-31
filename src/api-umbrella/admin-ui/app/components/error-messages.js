@@ -7,11 +7,11 @@ import isArray from 'lodash-es/isArray';
 import marked from 'marked';
 
 export default Component.extend({
-  messages: computed('model.{clientErrors,serverErrors}', function() {
+  messages: computed('model.{constructor.modelName,clientErrors,serverErrors}', function() {
     let errors = [];
-    let modelI18nRoot = 'mongoid.attributes.' + this.get('model.constructor.modelName').replace('-', '_');
+    let modelI18nRoot = 'mongoid.attributes.' + this.model.constructor.modelName.replace('-', '_');
 
-    let clientErrors = this.get('model.clientErrors');
+    let clientErrors = this.model.clientErrors;
     if(clientErrors) {
       if(isArray(clientErrors)) {
         each(clientErrors, function(clientError) {
@@ -30,7 +30,7 @@ export default Component.extend({
       }
     }
 
-    let serverErrors = this.get('model.serverErrors');
+    let serverErrors = this.model.serverErrors;
     if(serverErrors) {
       if(isArray(serverErrors)) {
         each(serverErrors, function(serverError) {
@@ -84,7 +84,5 @@ export default Component.extend({
     return messages;
   }),
 
-  hasErrors: computed('messages', function() {
-    return this.messages.length > 0;
-  }),
+  hasErrors: computed.gt('messages.length', 0),
 });

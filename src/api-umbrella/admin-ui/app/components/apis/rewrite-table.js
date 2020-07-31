@@ -8,9 +8,7 @@ export default Component.extend(Sortable, {
   store: inject(),
   openModal: false,
 
-  sortableCollection: computed('model', function() {
-    return this.get('model.rewrites');
-  }),
+  sortableCollection: computed.reads('model.rewrites'),
 
   actions: {
     add() {
@@ -26,7 +24,7 @@ export default Component.extend(Sortable, {
     remove(rewrite) {
       bootbox.confirm('Are you sure you want to remove this rewrite?', function(response) {
         if(response) {
-          this.get('model.rewrites').removeObject(rewrite);
+          this.model.rewrites.removeObject(rewrite);
         }
       }.bind(this));
     },

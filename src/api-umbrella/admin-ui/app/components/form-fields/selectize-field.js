@@ -1,5 +1,7 @@
 import 'selectize';
+
 import BaseField from './base-field';
+// eslint-disable-next-line ember/no-observers
 import { observer } from '@ember/object';
 import { on } from '@ember/object/evented';
 import uniq from 'lodash-es/uniq';
@@ -14,6 +16,7 @@ export default BaseField.extend({
     this.defaultOptions =  [];
 
     this.set('selectizeTextInputId', this.elementId + '-selectize_text_input');
+    // eslint-disable-next-line ember/no-observers
     this.addObserver('model.' + this.fieldName, this, this.valueDidChange);
   },
 
@@ -65,7 +68,7 @@ export default BaseField.extend({
   // externally.
   valueDidChange() {
     if(this.selectize) {
-      let valueString = this.get('model.' + this.fieldName);
+      let valueString = this.get('model.' + this.fieldName)
       if(valueString !== this.selectize.getValue()) {
         let values = valueString;
         if(values) {

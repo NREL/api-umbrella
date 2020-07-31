@@ -26,7 +26,7 @@ export default Component.extend({
       if(options) {
         let firstOption = options[0];
         if(firstOption && firstOption.id) {
-          this.get('action')(firstOption.id);
+          this.action(firstOption.id);
         }
       }
     }

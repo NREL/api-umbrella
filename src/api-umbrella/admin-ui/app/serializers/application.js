@@ -1,4 +1,4 @@
-import JSONSerializer from 'ember-data/serializers/json';
+import JSONSerializer from '@ember-data/serializer/json';
 import { underscore } from '@ember/string';
 
 export default JSONSerializer.extend({

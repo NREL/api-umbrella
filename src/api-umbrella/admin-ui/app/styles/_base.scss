@@ -3,7 +3,7 @@ body {
 }
 
 .code-block,
-.tippy-tooltip pre {
+.tippy-box pre {
   background-color: $light;
   border: $card-border-width solid $card-border-color;
   @include border-radius($card-border-radius);

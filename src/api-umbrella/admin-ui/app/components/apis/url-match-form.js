@@ -8,8 +8,8 @@ export default Component.extend({
   openModal: false,
   exampleSuffix: 'example.json?param=value',
 
-  modalTitle: computed('model', function() {
-    if(this.get('model.isNew')) {
+  modalTitle: computed('model.isNew', function() {
+    if(this.model.isNew) {
       return 'Add Matching URL Prefix';
     } else {
       return 'Edit Matching URL Prefix';
@@ -21,22 +21,22 @@ export default Component.extend({
     return BufferedProxy.extend(UrlMatch.validationClass).create(owner, { content: this.model });
   }),
 
-  exampleIncomingUrl: computed('bufferedModel.frontendPrefix', function() {
+  exampleIncomingUrl: computed('apiExampleIncomingUrlRoot', 'bufferedModel.frontendPrefix', 'exampleSuffix', function() {
     let root = this.apiExampleIncomingUrlRoot || '';
-    let prefix = this.get('bufferedModel.frontendPrefix') || '';
+    let prefix = this.bufferedModel.get('frontendPrefix') || '';
     return root + prefix + this.exampleSuffix;
   }),
 
-  exampleOutgoingUrl: computed('bufferedModel.{frontendPrefix,backendPrefix}', function() {
+  exampleOutgoingUrl: computed('apiExampleOutgoingUrlRoot', 'bufferedModel.{backendPrefix,frontendPrefix}', 'exampleSuffix', function() {
     let root = this.apiExampleOutgoingUrlRoot || '';
-    let prefix = this.get('bufferedModel.backendPrefix') || this.get('bufferedModel.frontendPrefix') || '';
+    let prefix = this.bufferedModel.get('backendPrefix') || this.bufferedModel.get('frontendPrefix') || '';
     return root + prefix + this.exampleSuffix;
   }),
 
   actions: {
     submit() {
       this.bufferedModel.applyChanges();
-      if(this.get('model.isNew')) {
+      if(this.model.isNew) {
         this.collection.pushObject(this.model);
       }
 

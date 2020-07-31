@@ -21,7 +21,7 @@ export default Route.extend(AuthenticatedRouteMixin, {
   beforeModel() {
     this._super(...arguments);
 
-    let timezone = this.get('session.data.authenticated.analytics_timezone');
+    let timezone = this.session.data.authenticated.analytics_timezone;
     let dateRanges = {
       'today': {
         label: 'Today',

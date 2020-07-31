@@ -1,4 +1,5 @@
 import 'jquery-ui/ui/widgets/sortable';
+
 import $ from 'jquery';
 import Component from '@ember/component';
 import DataTablesHelpers from 'api-umbrella-admin-ui/utils/data-tables-helpers';
@@ -6,6 +7,7 @@ import bootbox from 'bootbox';
 import escape from 'lodash-es/escape';
 import { inject } from '@ember/service';
 import isEqual from 'lodash-es/isEqual';
+// eslint-disable-next-line ember/no-observers
 import { observer } from '@ember/object';
 
 export default Component.extend({

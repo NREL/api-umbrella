@@ -1,6 +1,5 @@
+import Model, { attr, belongsTo } from '@ember-data/model';
 import { buildValidations, validator } from 'ember-cp-validations';
-
-import DS from 'ember-data';
 
 const Validations = buildValidations({
   httpMethod: [
@@ -11,12 +10,12 @@ const Validations = buildValidations({
   ],
 });
 
-export default DS.Model.extend(Validations, {
-  sortOrder: DS.attr('number'),
-  httpMethod: DS.attr(),
-  regex: DS.attr(),
+export default Model.extend(Validations, {
+  sortOrder: attr('number'),
+  httpMethod: attr(),
+  regex: attr(),
 
-  settings: DS.belongsTo('api/settings', { async: false }),
+  settings: belongsTo('api/settings', { async: false }),
 
   ready() {
     this.setDefaults();
