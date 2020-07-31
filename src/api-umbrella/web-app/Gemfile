@@ -6,7 +6,7 @@ gem "rails", "~> 4.2.11", ">= 4.2.11.1"
 gem "puma", "~> 4.3.5"
 
 # Error notification service (optional)
-gem "rollbar", "~> 2.26.0"
+gem "rollbar", "~> 2.27"
 
 # Abort requests that take too long
 gem "rack-timeout", "~> 0.6.0", :require => "rack/timeout/base"

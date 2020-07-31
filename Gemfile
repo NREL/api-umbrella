@@ -18,8 +18,8 @@ gem "minitest-hooks", "~> 1.5.0"
 gem "minitest-ci", "~> 3.4.0"
 
 # Ruby lint/style checker
-gem "rubocop", "~> 0.88.0", :require => false
-gem "rubocop-rails", "~> 2.6.0", :require => false
+gem "rubocop", "~> 0.88", :require => false
+gem "rubocop-rails", "~> 2.7", :require => false
 
 # Running background processes
 gem "childprocess", "~> 3.0.0"
@@ -46,7 +46,7 @@ gem "rails_compatible_cookies_utils", "~> 0.1.0"
 gem "addressable", "~> 2.7.0"
 
 # Browser/JavaScript integration tests
-gem "capybara", "~> 3.32.1"
+gem "capybara", "~> 3.32"
 gem "selenium-webdriver", "~> 3.141"
 gem "capybara-chromedriver-logger", "~> 0.3.0"
 
@@ -63,7 +63,7 @@ gem "activesupport", "~> 5.2.4"
 gem "lazyhash", "~> 0.1.1"
 
 # Generating fake strings and data.
-gem "faker", "~> 2.12.0"
+gem "faker", "~> 2.12"
 
 # Concurrency helpers.
 gem "concurrent-ruby", "~> 1.1.1"
