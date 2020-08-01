@@ -36,7 +36,6 @@ module.exports = {
     }}],
     'no-trailing-spaces': 'error',
     'ember/no-jquery': 'off',
-    'ember/no-mixins': 'off',
   },
   globals: {
     'CommonValidations': true,

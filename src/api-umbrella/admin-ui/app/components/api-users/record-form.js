@@ -1,5 +1,6 @@
 import Component from '@ember/component';
 import I18n from 'i18n-js';
+// eslint-disable-next-line ember/no-mixins
 import Save from 'api-umbrella-admin-ui/mixins/save';
 import escape from 'lodash-es/escape';
 

@@ -1,4 +1,5 @@
 import Component from '@ember/component';
+// eslint-disable-next-line ember/no-mixins
 import Sortable from 'api-umbrella-admin-ui/mixins/sortable';
 import bootbox from 'bootbox';
 import { computed } from '@ember/object';
