@@ -1,16 +1,16 @@
-{{#bs-modal open=openModal onSubmit=(action "submit") onHidden=(action "closed") backdropClose=false size="lg" fade=false as |modal|}}
-  {{modal.header title=modalTitle}}
-  {{#modal.body}}
+<BsModal @open={{this.openModal}} @onSubmit={{action "submit"}} @onHidden={{action "closed"}} @backdropClose={{false}} @size="lg" @fade={{false}} as |modal|>
+  <modal.header @title={{this.modalTitle}} />
+  <modal.body>
     <form {{action "submit" on="submit"}}>
-      {{#fields-for model=bufferedModel style="vertical" as |f|}}
+      <FieldsFor @model={{this.bufferedModel}} @style="vertical" as |f|>
         <div class="row">
           <div class="col-sm-12">
-            {{f.select-field "matcherType" label="Matcher Type" options=matcherTypeOptions}}
+            {{f.select-field "matcherType" label="Matcher Type" options=this.matcherTypeOptions}}
           </div>
         </div>
         <div class="row">
           <div class="col-sm-3">
-            {{f.select-field "httpMethod" label="HTTP Method" options=httpMethodOptions}}
+            {{f.select-field "httpMethod" label="HTTP Method" options=this.httpMethodOptions}}
           </div>
           <div class="col-sm-9">
             {{f.text-field "frontendMatcher" label="Frontend Matcher" placeholder="/example/"}}
@@ -28,9 +28,9 @@
             {{f.text-field "backendReplacement" label="Backend Replacement" placeholder="/example/"}}
           </div>
         </div>
-      {{/fields-for}}
+      </FieldsFor>
       <input type="submit" class="hidden-submit-button" tabindex="-1">
     </form>
-  {{/modal.body}}
-  {{modal.footer closeTitle="Cancel" submitTitle="OK"}}
-{{/bs-modal}}
+  </modal.body>
+  <modal.footer @closeTitle="Cancel" @submitTitle="OK" />
+</BsModal>

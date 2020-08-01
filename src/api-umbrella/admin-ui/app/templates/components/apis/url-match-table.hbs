@@ -1,4 +1,4 @@
-{{apis/url-match-form model=urlMatchModel collection=model.urlMatches apiExampleIncomingUrlRoot=model.exampleIncomingUrlRoot apiExampleOutgoingUrlRoot=model.exampleOutgoingUrlRoot openModal=openModal}}
+<Apis::UrlMatchForm @model={{this.urlMatchModel}} @collection={{this.model.urlMatches}} @apiExampleIncomingUrlRoot={{this.model.exampleIncomingUrlRoot}} @apiExampleOutgoingUrlRoot={{this.model.exampleOutgoingUrlRoot}} @openModal={{this.openModal}} />
 
 <div id="url_matches">
   <table id="url_matches_table" class="table table-striped table-sm">
@@ -11,8 +11,8 @@
       </tr>
     </thead>
     <tbody>
-      {{#if model.urlMatches}}
-        {{#each model.urlMatches as |urlMatch|}}
+      {{#if this.model.urlMatches}}
+        {{#each this.model.urlMatches as |urlMatch|}}
           <tr data-guid={{guid-for urlMatch}}>
             <td>{{urlMatch.frontendPrefix}}</td>
             <td>{{urlMatch.backendPrefixWithDefault}}</td>
@@ -33,7 +33,7 @@
       <button type="button" class="btn btn-light btn-sm" {{action "add"}}>{{fa-icon "plus-circle"}} {{t "admin.api.url_matches.add"}}</button>
     </div>
     <div class="col-6 text-right">
-      {{#if isReorderable}}
+      {{#if this.isReorderable}}
         <button type="button" id="url_matches_reorder" class="btn btn-light btn-sm" {{action "reorderCollection" "url_matches"}}>{{fa-icon "bars"}} <span class="reorder-button-text">{{t "admin.reorder"}}</span></button>
       {{/if}}
     </div>

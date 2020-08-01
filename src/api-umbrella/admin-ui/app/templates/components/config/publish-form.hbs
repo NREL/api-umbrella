@@ -1,44 +1,44 @@
-{{#if hasChanges}}
+{{#if this.hasChanges}}
   <form id="publish_form" {{action "publish" on="submit"}}>
-    {{#if model.config.apis.new}}
+    {{#if this.model.config.apis.new}}
       <fieldset>
-        <legend>{{model.config.apis.new.length}} New API Backends</legend>
-        {{config/publish-form-records category="apis" records=model.config.apis.new}}
+        <legend>{{this.model.config.apis.new.length}} New API Backends</legend>
+        <Config::PublishFormRecords @category="apis" @records={{this.model.config.apis.new}} />
       </fieldset>
     {{/if}}
 
-    {{#if model.config.website_backends.new}}
+    {{#if this.model.config.website_backends.new}}
       <fieldset>
-        <legend>{{model.config.website_backends.new.length}} New Website Backends</legend>
-        {{config/publish-form-records category="website_backends" records=model.config.website_backends.new}}
+        <legend>{{this.model.config.website_backends.new.length}} New Website Backends</legend>
+        <Config::PublishFormRecords @category="website_backends" @records={{this.model.config.website_backends.new}} />
       </fieldset>
     {{/if}}
 
-    {{#if model.config.apis.modified}}
+    {{#if this.model.config.apis.modified}}
       <fieldset>
-        <legend>{{model.config.apis.modified.length}} Modified API Backends</legend>
-        {{config/publish-form-records category="apis" records=model.config.apis.modified}}
+        <legend>{{this.model.config.apis.modified.length}} Modified API Backends</legend>
+        <Config::PublishFormRecords @category="apis" @records={{this.model.config.apis.modified}} />
       </fieldset>
     {{/if}}
 
-    {{#if model.config.website_backends.modified}}
+    {{#if this.model.config.website_backends.modified}}
       <fieldset>
-        <legend>{{model.config.website_backends.modified.length}} Modified Website Backends</legend>
-        {{config/publish-form-records category="website_backends" records=model.config.website_backends.modified}}
+        <legend>{{this.model.config.website_backends.modified.length}} Modified Website Backends</legend>
+        <Config::PublishFormRecords @category="website_backends" @records={{this.model.config.website_backends.modified}} />
       </fieldset>
     {{/if}}
 
-    {{#if model.config.apis.deleted}}
+    {{#if this.model.config.apis.deleted}}
       <fieldset>
-        <legend>{{model.config.apis.deleted.length}} Deleted API Backends</legend>
-        {{config/publish-form-records category="apis" records=model.config.apis.deleted}}
+        <legend>{{this.model.config.apis.deleted.length}} Deleted API Backends</legend>
+        <Config::PublishFormRecords @category="apis" @records={{this.model.config.apis.deleted}} />
       </fieldset>
     {{/if}}
 
-    {{#if model.config.website_backends.deleted}}
+    {{#if this.model.config.website_backends.deleted}}
       <fieldset>
-        <legend>{{model.config.website_backends.deleted.length}} Deleted Website Backends</legend>
-        {{config/publish-form-records category="website_backends" records=model.config.website_backends.deleted}}
+        <legend>{{this.model.config.website_backends.deleted.length}} Deleted Website Backends</legend>
+        <Config::PublishFormRecords @category="website_backends" @records={{this.model.config.website_backends.deleted}} />
       </fieldset>
     {{/if}}
 

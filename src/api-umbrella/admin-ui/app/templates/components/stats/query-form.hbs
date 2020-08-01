@@ -6,14 +6,14 @@
       </div>
     </div>
     <div class="col-sm-8 filter-times">
-      {{#if enableInterval}}
-        {{#bs-button-group value=interval onChange=(action (mut interval)) type="radio" size="sm" id="interval_buttons" as |bg|}}
-          {{#bg.button type="light" value="minute"}}{{t "admin.stats.minute"}}{{/bg.button}}
-          {{#bg.button type="light" value="hour"}}{{t "admin.stats.hour"}}{{/bg.button}}
-          {{#bg.button type="light" value="day"}}{{t "admin.stats.day"}}{{/bg.button}}
-          {{#bg.button type="light" value="week"}}{{t "admin.stats.week"}}{{/bg.button}}
-          {{#bg.button type="light" value="month"}}{{t "admin.stats.month"}}{{/bg.button}}
-        {{/bs-button-group}}
+      {{#if this.enableInterval}}
+        <BsButtonGroup @value={{this.interval}} @onChange={{action (mut this.interval)}} @type="radio" @size="sm" @id="interval_buttons" as |bg|>
+          <bg.button @type="light" @value="minute">{{t "admin.stats.minute"}}</bg.button>
+          <bg.button @type="light" @value="hour">{{t "admin.stats.hour"}}</bg.button>
+          <bg.button @type="light" @value="day">{{t "admin.stats.day"}}</bg.button>
+          <bg.button @type="light" @value="week">{{t "admin.stats.week"}}</bg.button>
+          <bg.button @type="light" @value="month">{{t "admin.stats.month"}}</bg.button>
+        </BsButtonGroup>
       {{/if}}
 
       <div id="reportrange" class="pull-right">
@@ -43,7 +43,7 @@
         <div id="filter_type_advanced" class="filter-type" style="display: none;">
           <div id="search_field">
             <div class="input-group">
-              <input type="text" name="search" class="form-control" placeholder={{t "admin.stats.advanced_filters_placeholder"}} value={{query.params.search}}>
+              <input type="text" name="search" class="form-control" placeholder={{t "admin.stats.advanced_filters_placeholder"}} value={{this.query.params.search}}>
               <span class="input-group-append">
                 <button class="btn btn-primary" type="submit">{{t "admin.stats.filter"}}</button>
               </span>

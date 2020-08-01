@@ -1,7 +1,7 @@
 <h1>API Scopes</h1>
 
 <div class="button-actions button-actions-down">
-  {{#link-to "api_scopes.new" class="btn btn-primary"}}{{fa-icon "plus"}} Add New API Scope{{/link-to}}
+  <LinkTo @route="api_scopes.new" class="btn btn-primary">{{fa-icon "plus"}} Add New API Scope</LinkTo>
 </div>
 
-{{api-scopes/index-table}}
+<ApiScopes::IndexTable />

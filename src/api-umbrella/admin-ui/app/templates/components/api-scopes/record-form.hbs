@@ -1,7 +1,7 @@
-{{error-messages model=model}}
+<ErrorMessages @model={{this.model}} />
 
 <form {{action "submit" on="submit"}}>
-  {{#fields-for model=model style="horizontal" as |f|}}
+  <FieldsFor @model={{this.model}} @style="horizontal" as |f|>
     <fieldset class="form-horizontal condensed">
       {{f.text-field "name" label="Name"}}
       {{f.text-field "host" label="Host"}}
@@ -13,16 +13,16 @@
         <button type="submit" class="btn btn-lg btn-primary save-button"><span class="btn-label">Save</span><span class="btn-loading-label">{{fa-icon "sync-alt" spin=true}}Saving...</span></button>
       </div>
       <div class="col-sm-6 record-details">
-        {{#if model.id}}
-          Created: {{format-date model.createdAt}} by {{model.creator.username}}<br>
-          Last Updated: {{format-date model.updatedAt}} by {{model.updater.username}}<br>
+        {{#if this.model.id}}
+          Created: {{format-date this.model.createdAt}} by {{this.model.creator.username}}<br>
+          Last Updated: {{format-date this.model.updatedAt}} by {{this.model.updater.username}}<br>
         {{/if}}
       </div>
     </div>
-    {{#if model.id}}
+    {{#if this.model.id}}
       <div class="form-extra-actions">
         <a href="#" class="remove-action" {{action "delete"}}>{{fa-icon "times"}}Delete API Scope</a>
       </div>
     {{/if}}
-  {{/fields-for}}
+  </FieldsFor>
 </form>

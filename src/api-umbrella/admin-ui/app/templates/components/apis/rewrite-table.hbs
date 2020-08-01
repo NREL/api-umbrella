@@ -1,4 +1,4 @@
-{{apis/rewrite-form model=rewriteModel collection=model.rewrites openModal=openModal}}
+<Apis::RewriteForm @model={{this.rewriteModel}} @collection={{this.model.rewrites}} @openModal={{this.openModal}} />
 
 <table id="rewrites_table" class="table table-striped table-sm">
   <thead>
@@ -12,8 +12,8 @@
     </tr>
   </thead>
   <tbody>
-    {{#if model.rewrites}}
-      {{#each model.rewrites as |rewrite|}}
+    {{#if this.model.rewrites}}
+      {{#each this.model.rewrites as |rewrite|}}
         <tr data-guid={{guid-for rewrite}}>
           <td>{{rewrite.matcherType}}</td>
           <td>{{rewrite.httpMethod}}</td>
@@ -36,7 +36,7 @@
     <button type="button" class="btn btn-light btn-sm" {{action "add"}}>{{fa-icon "plus-circle"}} {{t "admin.api.rewrites.add"}}</button>
   </div>
   <div class="span6 text-right">
-    {{#if isReorderable}}
+    {{#if this.isReorderable}}
       <button type="button" id="rewrites_reorder" class="btn btn-light btn-sm" {{action "reorderCollection" "rewrites"}}>{{fa-icon "bars"}} <span class="reorder-button-text">{{t "admin.reorder"}}</span></button>
     {{/if}}
   </div>

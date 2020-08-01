@@ -1,4 +1,4 @@
-{{stats/query-form enableInterval=true date_range=date_range start_at=start_at end_at=end_at query=query search=search interval=interval allQueryParamValues=allQueryParamValues dateRanges=dateRanges}}
-{{stats/drilldown/results-chart hitsOverTime=model.hits_over_time}}
-{{stats/drilldown/results-breadcrumbs breadcrumbs=model.breadcrumbs}}
-{{stats/drilldown/results-table results=model.results presentQueryParamValues=presentQueryParamValues backendQueryParamValues=backendQueryParamValues}}
+<Stats::QueryForm @enableInterval={{true}} @date_range={{this.date_range}} @start_at={{this.start_at}} @end_at={{this.end_at}} @query={{this.query}} @search={{this.search}} @interval={{this.interval}} @allQueryParamValues={{this.allQueryParamValues}} @dateRanges={{this.dateRanges}} />
+<Stats::Drilldown::ResultsChart @hitsOverTime={{this.model.hits_over_time}} />
+<Stats::Drilldown::ResultsBreadcrumbs @breadcrumbs={{this.model.breadcrumbs}} />
+<Stats::Drilldown::ResultsTable @results={{this.model.results}} @presentQueryParamValues={{this.presentQueryParamValues}} @backendQueryParamValues={{this.backendQueryParamValues}} />

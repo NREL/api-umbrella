@@ -1,7 +1,7 @@
 <h1>Website Backends</h1>
 
 <div class="button-actions button-actions-down">
-  {{#link-to "website_backends.new" class="btn btn-primary"}}{{fa-icon "plus"}} Add Website Backend{{/link-to}}
+  <LinkTo @route="website_backends.new" class="btn btn-primary">{{fa-icon "plus"}} Add Website Backend</LinkTo>
 </div>
 
-{{website-backends/index-table}}
+<WebsiteBackends::IndexTable />

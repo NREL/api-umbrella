@@ -8,7 +8,7 @@
     </tr>
   </thead>
   <tbody>
-    {{#each facets as |facet|}}
+    {{#each this.facets as |facet|}}
       <tr>
         <td><a href={{facet.link}}>{{facet.key}}</a></td>
         <td class="value">{{format-number facet.count}}</td>
