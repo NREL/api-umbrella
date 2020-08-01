@@ -37,7 +37,7 @@
   </fieldset>
 
   <fieldset class="collapsible">
-    <legend><a data-toggle="collapse" class="collapsed" data-target="#global_settings">{{fa-icon "caret-down" fixedWidth=true}}Global Request Settings</a></legend>
+    <legend><button type="button" class="btn btn-link collapsed" data-toggle="collapse" data-target="#global_settings" aria-controls="global_settings" aria-expanded="false">{{fa-icon "caret-down" fixedWidth=true}}Global Request Settings</button></legend>
     <div id="global_settings" class="collapse form-horizontal">
       <FieldsFor @model={{this.model.settings}} @style="horizontal-wide-labels" as |f|>
         {{f.text-field "appendQueryString" label="Append Query String Parameters" placeholder="param1=value&param2=value"}}
@@ -50,7 +50,7 @@
   </fieldset>
 
   <fieldset class="collapsible">
-    <legend><a data-toggle="collapse" class="collapsed" data-target="#sub_settings">{{fa-icon "caret-down" fixedWidth=true}}{{t "admin.api.sub_settings.legend"}}</a></legend>
+    <legend><button type="button" class="btn btn-link collapsed" data-toggle="collapse" data-target="#sub_settings" aria-controls="sub_settings" aria-expanded="false">{{fa-icon "caret-down" fixedWidth=true}}{{t "admin.api.sub_settings.legend"}}</button></legend>
     <div id="sub_settings" class="collapse">
       <p class="fieldset-note">{{t "admin.api.sub_settings.note"}}</p>
       <Apis::SubSettingsTable @model={{this.model}} @roleOptions={{this.roleOptions}} />
@@ -58,7 +58,7 @@
   </fieldset>
 
   <fieldset class="collapsible">
-    <legend><a data-toggle="collapse" class="collapsed" data-target="#rewrites">{{fa-icon "caret-down" fixedWidth=true}}{{t "admin.api.rewrites.legend"}}</a></legend>
+    <legend><button type="button" class="btn btn-link collapsed" data-toggle="collapse" data-target="#rewrites" aria-controls="rewrites" aria-expanded="false">{{fa-icon "caret-down" fixedWidth=true}}{{t "admin.api.rewrites.legend"}}</button></legend>
     <div id="rewrites" class="collapse">
       <p class="fieldset-note">{{t "admin.api.rewrites.note"}}</p>
       <Apis::RewriteTable @model={{this.model}} />
@@ -66,7 +66,7 @@
   </fieldset>
 
   <fieldset class="collapsible">
-    <legend><a data-toggle="collapse" class="collapsed" data-target="#advanced_settings">{{fa-icon "caret-down" fixedWidth=true}}Advanced Settings</a></legend>
+    <legend><button type="button" class="btn btn-link collapsed" data-toggle="collapse" data-target="#advanced_settings" aria-controls="advanced_settings" aria-expanded="false">{{fa-icon "caret-down" fixedWidth=true}}Advanced Settings</button></legend>
     <div id="advanced_settings" class="collapse form-horizontal">
       <FieldsFor @model={{this.model}} @style="horizontal-wide-labels" as |f|>
         {{f.select-field "balanceAlgorithm" label="Balance Algorithm" options=this.balanceAlgorithmOptions}}
