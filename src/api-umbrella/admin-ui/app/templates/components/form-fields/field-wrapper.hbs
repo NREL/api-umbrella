@@ -3,7 +3,7 @@
     <div class="form-group row {{this.wrapperErrorClass}}">
       <div class="col-sm-2 col-form-label">
         {{#if this.label}}
-          <label for={{this.labelFor}}>{{label}}</label>
+          <label for={{this.labelFor}}>{{this.label}}</label>
         {{/if}}
         <HelpTooltip @tooltip={{this.tooltip}} />
       </div>
@@ -19,7 +19,7 @@
     <div class="form-group row {{this.wrapperErrorClass}}">
       <div class="col-sm-3 col-form-label">
         {{#if this.label}}
-          <label for={{this.labelFor}}>{{label}}</label>
+          <label for={{this.labelFor}}>{{this.label}}</label>
         {{/if}}
         <HelpTooltip @tooltip={{this.tooltip}} />
       </div>
@@ -33,7 +33,7 @@
 {{else}}
   <div class="form-group {{this.wrapperErrorClass}}">
     {{#if this.label}}
-      <label for={{this.labelFor}}>{{label}}</label>
+      <label for={{this.labelFor}}>{{this.label}}</label>
     {{/if}}
     <HelpTooltip @tooltip={{this.tooltip}} />
     {{yield}}
