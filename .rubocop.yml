@@ -14,6 +14,8 @@ AllCops:
 
 Rails:
   Enabled: true
+  Exclude:
+    - test/**/*
 
 Bundler/OrderedGems:
   Enabled: false
@@ -118,16 +120,52 @@ Metrics/PerceivedComplexity:
 Naming/HeredocDelimiterNaming:
   Enabled: false
 
+Rails/ActiveRecordCallbacksOrder:
+  Enabled: true
+
 Rails/ApplicationMailer:
   Enabled: false
 
 Rails/FindBy:
   Enabled: false
 
+Rails/FindById:
+  Enabled: true
+
 Rails/HasAndBelongsToMany:
   Enabled: false
 
+Rails/Inquiry:
+  Enabled: true
+
+Rails/MailerName:
+  Enabled: true
+
+Rails/MatchRoute:
+  Enabled: true
+
+Rails/NegateInclude:
+  Enabled: true
+
+Rails/Pluck:
+  Enabled: true
+
+Rails/PluckInWhere:
+  Enabled: true
+
 Rails/RakeEnvironment:
+  Enabled: false
+
+Rails/RenderInline:
+  Enabled: true
+
+Rails/RenderPlainText:
+  Enabled: true
+
+Rails/ShortI18n:
+  Enabled: true
+
+Rails/WhereExists:
   Enabled: false
 
 Style/AccessorGrouping:

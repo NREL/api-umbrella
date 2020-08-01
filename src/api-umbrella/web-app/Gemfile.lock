@@ -73,7 +73,7 @@ GEM
     addressable (2.7.0)
       public_suffix (>= 2.0.2, < 5.0)
     arel (6.0.4)
-    autoprefixer-rails (9.8.6)
+    autoprefixer-rails (9.8.6.1)
       execjs
     awesome_print (1.8.0)
     bcrypt (3.1.15)

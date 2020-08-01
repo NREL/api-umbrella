@@ -23,7 +23,7 @@ class Admin::Admins::OmniauthCallbacksController < Devise::OmniauthCallbacksCont
 
   def cas
     if(ApiUmbrellaConfig[:web][:admin][:auth_strategies][:"max.gov"][:require_mfa])
-      if(!request.env["omniauth.auth"]["extra"] || !request.env["omniauth.auth"]["extra"]["MaxSecurityLevel"] || !request.env["omniauth.auth"]["extra"]["MaxSecurityLevel"].include?("securePlus2"))
+      if(!request.env["omniauth.auth"]["extra"] || !request.env["omniauth.auth"]["extra"]["MaxSecurityLevel"] || request.env["omniauth.auth"]["extra"]["MaxSecurityLevel"].exclude?("securePlus2"))
         return mfa_required_error
       end
     end

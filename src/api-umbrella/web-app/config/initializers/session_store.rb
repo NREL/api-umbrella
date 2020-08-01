@@ -7,5 +7,5 @@ Rails.application.config.session_store(:cookie_store, {
   :httponly => true,
 
   # Use secure cookies to prevent sidejacking.
-  :secure => !["development", "test"].include?(Rails.env),
+  :secure => ["development", "test"].exclude?(Rails.env),
 })

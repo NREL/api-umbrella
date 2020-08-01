@@ -48,9 +48,9 @@ module DatatablesHelper
 
   # Set download headers and join arrays
   def csv_output(results, columns)
-    requested_fields = columns.map { |c| c[:field] }
+    requested_fields = columns.pluck(:field)
     CSV.generate do |csv|
-      csv << columns.map { |c| c[:name] }
+      csv << columns.pluck(:name)
       results.each do |result|
         result = requested_fields.map { |field| result[field] }
         result = result.map { |cell| cell.kind_of?(Array) ? cell.join(",") : cell }
@@ -62,7 +62,7 @@ module DatatablesHelper
   # Include only the requested columns
   def respond_to_datatables(results, csv_filename)
     columns = self.datatables_columns
-    requested_fields = columns.map { |c| c[:field] }
+    requested_fields = columns.pluck(:field)
     results = results.map do |result|
       hash = result.serializable_hash
       hash.select { |k, v| requested_fields.include? k }

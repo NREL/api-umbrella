@@ -153,7 +153,7 @@ class LogSearch::ElasticSearch < LogSearch::Base
       query["rules"].each do |rule|
         filter = {}
 
-        if(!CASE_SENSITIVE_FIELDS.include?(rule["field"]) && rule["value"].kind_of?(String))
+        if(CASE_SENSITIVE_FIELDS.exclude?(rule["field"]) && rule["value"].kind_of?(String))
           if(UPPERCASE_FIELDS.include?(rule["field"]))
             rule["value"].upcase!
           else
