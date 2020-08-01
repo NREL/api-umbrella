@@ -148,7 +148,7 @@ Rails/NegateInclude:
   Enabled: true
 
 Rails/Pluck:
-  Enabled: true
+  Enabled: false
 
 Rails/PluckInWhere:
   Enabled: true
