@@ -3,7 +3,7 @@ body {
 }
 
 .code-block,
-.tippy-tooltip pre {
+.tippy-box pre {
   background-color: $light;
   border: $card-border-width solid $card-border-color;
   @include border-radius($card-border-radius);
@@ -134,6 +134,11 @@ a:hover {
 
 .btn-light {
   @include button-variant($gray-300, $gray-300);
+}
+
+.btn-link:not(:disabled):not(.disabled):active,
+.btn-link:not(:disabled):not(.disabled).active {
+  box-shadow: none;
 }
 
 .ui-pnotify-text p:last-of-type {

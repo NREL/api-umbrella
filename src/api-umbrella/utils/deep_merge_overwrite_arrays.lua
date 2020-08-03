@@ -1,5 +1,5 @@
 local is_array = require "api-umbrella.utils.is_array"
-local is_empty = require("pl.types").is_empty
+local is_empty = require "api-umbrella.utils.is_empty"
 
 local function deep_merge_overwrite_arrays(dest, src)
   if not src then return dest end

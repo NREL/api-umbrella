@@ -1,5 +1,5 @@
-{{#x-select value=value action=action id=inputId class=inputClass as |xs|}}
-  {{#each options as |option|}}
-    {{#xs.option value=option.id}}{{option.name}}{{/xs.option}}
+<XSelect @value={{this.value}} @action={{this.action}} @id={{this.inputId}} @class={{this.inputClass}} as |xs|>
+  {{#each this.options as |option|}}
+    <xs.option @value={{option.id}}>{{option.name}}</xs.option>
   {{/each}}
-{{/x-select}}
+</XSelect>

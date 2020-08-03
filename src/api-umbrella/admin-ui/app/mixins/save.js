@@ -1,10 +1,10 @@
 import LoadingButton from 'api-umbrella-admin-ui/utils/loading-button';
 import Mixin from '@ember/object/mixin'
-import PNotify from 'pnotify';
 import bootbox from 'bootbox';
 import { inject } from '@ember/service';
 import isFunction from 'lodash-es/isFunction';
 import scrollTo from 'jquery.scrollto';
+import { success } from '@pnotify/core';
 
 // eslint-disable-next-line ember/no-new-mixins
 export default Mixin.create({
@@ -17,7 +17,7 @@ export default Mixin.create({
 
   afterSaveComplete(options, button) {
     LoadingButton.reset(button);
-    PNotify.success({
+    success({
       title: 'Saved',
       text: (isFunction(options.message)) ? options.message(this.model) : options.message,
       hide: (isFunction(options.messageHide)) ? options.messageHide(this.model) : options.messageHide,
@@ -38,8 +38,8 @@ export default Mixin.create({
     });
 
     this.model.validate().then(function() {
-      if(this.get('model.validations.isValid') === false) {
-        this.set('model.clientErrors', this.get('model.validations.errors'));
+      if(this.model.validations.isValid === false) {
+        this.set('model.clientErrors', this.model.validations.errors);
         this.scrollToErrors(button);
       } else {
         this.model.save().then(function() {
@@ -69,7 +69,7 @@ export default Mixin.create({
     bootbox.confirm(options.prompt, function(result) {
       if(result) {
         this.model.destroyRecord().then(function() {
-          PNotify.success({
+          success({
             title: 'Deleted',
             text: (isFunction(options.message)) ? options.message(this.model) : options.message,
             textTrusted: true,

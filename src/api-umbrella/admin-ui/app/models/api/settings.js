@@ -1,31 +1,32 @@
+// eslint-disable-next-line ember/no-observers
 import EmberObject, { computed, observer } from '@ember/object';
+import Model, { attr, hasMany } from '@ember-data/model';
 
 import { A } from '@ember/array';
-import DS from 'ember-data';
 import compact from 'lodash-es/compact';
 
-export default DS.Model.extend({
-  appendQueryString: DS.attr(),
-  headersString: DS.attr(),
-  httpBasicAuth: DS.attr(),
-  requireHttps: DS.attr(),
-  disableApiKey: DS.attr(),
-  apiKeyVerificationLevel: DS.attr(),
-  requiredRoles: DS.attr(),
-  requiredRolesOverride: DS.attr(),
-  allowedIps: DS.attr(),
-  allowedReferers: DS.attr(),
-  rateLimitMode: DS.attr(),
-  anonymousRateLimitBehavior: DS.attr(),
-  authenticatedRateLimitBehavior: DS.attr(),
-  passApiKeyHeader: DS.attr(),
-  passApiKeyQueryParam: DS.attr(),
-  defaultResponseHeadersString: DS.attr(),
-  overrideResponseHeadersString: DS.attr(),
-  errorTemplates: DS.attr(),
-  errorDataYamlStrings: DS.attr(),
+export default Model.extend({
+  appendQueryString: attr(),
+  headersString: attr(),
+  httpBasicAuth: attr(),
+  requireHttps: attr(),
+  disableApiKey: attr(),
+  apiKeyVerificationLevel: attr(),
+  requiredRoles: attr(),
+  requiredRolesOverride: attr(),
+  allowedIps: attr(),
+  allowedReferers: attr(),
+  rateLimitMode: attr(),
+  anonymousRateLimitBehavior: attr(),
+  authenticatedRateLimitBehavior: attr(),
+  passApiKeyHeader: attr(),
+  passApiKeyQueryParam: attr(),
+  defaultResponseHeadersString: attr(),
+  overrideResponseHeadersString: attr(),
+  errorTemplates: attr(),
+  errorDataYamlStrings: attr(),
 
-  rateLimits: DS.hasMany('api/rate-limit', { async: false }),
+  rateLimits: hasMany('api/rate-limit', { async: false }),
 
   ready() {
     this.setDefaults();
@@ -126,7 +127,5 @@ export default DS.Model.extend({
     this.set('passApiKeyQueryParam', options.includes('param'));
   }),
 
-  isRateLimitModeCustom: computed('rateLimitMode', function() {
-    return this.rateLimitMode === 'custom';
-  }),
+  isRateLimitModeCustom: computed.equal('rateLimitMode', 'custom'),
 });

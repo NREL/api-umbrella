@@ -2,12 +2,11 @@ local _M = {}
 
 local array_last = require "api-umbrella.utils.array_last"
 local distributed_rate_limit_queue = require "api-umbrella.proxy.distributed_rate_limit_queue"
+local is_empty = require "api-umbrella.utils.is_empty"
 local pg_utils = require "api-umbrella.utils.pg_utils"
 local plutils = require "pl.utils"
-local types = require "pl.types"
 local xpcall_error_handler = require "api-umbrella.utils.xpcall_error_handler"
 
-local is_empty = types.is_empty
 local split = plutils.split
 
 local delay = 0.25  -- in seconds

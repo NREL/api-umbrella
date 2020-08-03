@@ -1,4 +1,4 @@
-{{#if session.isAuthenticated}}
+{{#if this.session.isAuthenticated}}
   <nav class="navbar navbar-expand-md fixed-top navbar-dark bg-dark">
     <span class="navbar-brand">API Umbrella</span>
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
@@ -6,44 +6,44 @@
     </button>
     <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
       <ul class="navbar-nav mr-auto">
-        {{#if currentAdmin.permissions.analytics}}
+        {{#if this.currentAdmin.permissions.analytics}}
           <li class="nav-item dropdown nav-analytics">
             <a href="#" class="nav-link dropdown-toggle" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">{{t "Analytics"}}</a>
             <div class="dropdown-menu">
-              {{#link-to "stats.drilldown" class="dropdown-item"}}{{fa-icon "sitemap" fixedWidth=true}} {{t "API Drilldown"}}{{/link-to}}
-              {{#link-to "stats.logs" class="dropdown-item"}}{{fa-icon "signal" fixedWidth=true}} {{t "Filter Logs"}}{{/link-to}}
-              {{#link-to "stats.users" class="dropdown-item"}}{{fa-icon "user" fixedWidth=true}} {{t "By Users"}}{{/link-to}}
-              {{#link-to "stats.map" class="dropdown-item"}}{{fa-icon "map-marker-alt" fixedWidth=true}} {{t "By Location"}}{{/link-to}}
+              <LinkTo @route="stats.drilldown" class="dropdown-item">{{fa-icon "sitemap" fixedWidth=true}} {{t "API Drilldown"}}</LinkTo>
+              <LinkTo @route="stats.logs" class="dropdown-item">{{fa-icon "signal" fixedWidth=true}} {{t "Filter Logs"}}</LinkTo>
+              <LinkTo @route="stats.users" class="dropdown-item">{{fa-icon "user" fixedWidth=true}} {{t "By Users"}}</LinkTo>
+              <LinkTo @route="stats.map" class="dropdown-item">{{fa-icon "map-marker-alt" fixedWidth=true}} {{t "By Location"}}</LinkTo>
             </div>
           </li>
         {{/if}}
-        {{#if (or currentAdmin.permissions.user_view currentAdmin.permissions.admin_manage)}}
+        {{#if (or this.currentAdmin.permissions.user_view this.currentAdmin.permissions.admin_manage)}}
           <li class="nav-item dropdown nav-users">
             <a href="#" class="nav-link dropdown-toggle" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">{{t "Users"}}</a>
             <div class="dropdown-menu">
-              {{#if currentAdmin.permissions.user_view}}
-                {{#link-to "api_users" class="dropdown-item"}}{{fa-icon "user" fixedWidth=true}} {{t "API Users"}}{{/link-to}}
+              {{#if this.currentAdmin.permissions.user_view}}
+                <LinkTo @route="api_users" class="dropdown-item">{{fa-icon "user" fixedWidth=true}} {{t "API Users"}}</LinkTo>
               {{/if}}
-              {{#if currentAdmin.permissions.admin_manage}}
-                {{#link-to "admins" class="dropdown-item"}}{{fa-icon "user" fixedWidth=true}} {{t "Admin Accounts"}}{{/link-to}}
+              {{#if this.currentAdmin.permissions.admin_manage}}
+                <LinkTo @route="admins" class="dropdown-item">{{fa-icon "user" fixedWidth=true}} {{t "Admin Accounts"}}</LinkTo>
                 <div class="dropdown-divider"></div>
-                <div role="presentation" class="dropdown-header"> {{t "Permissions Management"}}</div>
-                {{#link-to "api_scopes" class="dropdown-item"}}{{fa-icon "lock" fixedWidth=true}} {{t "API Scopes"}}{{/link-to}}
-                {{#link-to "admin_groups" class="dropdown-item"}}{{fa-icon "users" fixedWidth=true}} {{t "Admin Groups"}}{{/link-to}}
+                <div role="presentation" class="dropdown-header">{{t "Permissions Management"}}</div>
+                <LinkTo @route="api_scopes" class="dropdown-item">{{fa-icon "lock" fixedWidth=true}} {{t "API Scopes"}}</LinkTo>
+                <LinkTo @route="admin_groups" class="dropdown-item">{{fa-icon "users" fixedWidth=true}} {{t "Admin Groups"}}</LinkTo>
               {{/if}}
             </div>
           </li>
         {{/if}}
-        {{#if (or currentAdmin.permissions.backend_manage currentAdmin.permissions.backend_publish)}}
+        {{#if (or this.currentAdmin.permissions.backend_manage this.currentAdmin.permissions.backend_publish)}}
           <li class="nav-item dropdown nav-config">
             <a href="#" class="nav-link dropdown-toggle" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">{{t "Configuration"}}</a>
             <div class="dropdown-menu">
-              {{#if currentAdmin.permissions.backend_manage}}
-                {{#link-to "apis" class="dropdown-item"}}{{fa-icon "cog" fixedWidth=true}} {{t "API Backends"}}{{/link-to}}
-                {{#link-to "website_backends" class="dropdown-item"}}{{fa-icon "cog" fixedWidth=true}} {{t "Website Backends"}}{{/link-to}}
+              {{#if this.currentAdmin.permissions.backend_manage}}
+                <LinkTo @route="apis" class="dropdown-item">{{fa-icon "cog" fixedWidth=true}} {{t "API Backends"}}</LinkTo>
+                <LinkTo @route="website_backends" class="dropdown-item">{{fa-icon "cog" fixedWidth=true}} {{t "Website Backends"}}</LinkTo>
               {{/if}}
-              {{#if currentAdmin.permissions.backend_publish}}
-                {{#link-to "config.publish" class="dropdown-item"}}{{fa-icon "upload" fixedWidth=true}} {{t "Publish Changes"}}{{/link-to}}
+              {{#if this.currentAdmin.permissions.backend_publish}}
+                <LinkTo @route="config.publish" class="dropdown-item">{{fa-icon "upload" fixedWidth=true}} {{t "Publish Changes"}}</LinkTo>
               {{/if}}
             </div>
           </li>
@@ -53,7 +53,7 @@
         <li class="nav-item dropdown">
           <a href="#" id="nav_gear_menu" class="nav-link dropdown-toggle" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">{{fa-icon "cog" fixedWidth=true}}</a>
           <div class="dropdown-menu dropdown-menu-right">
-            {{#link-to "admins.edit" session.data.authenticated.admin.id class="dropdown-item" id="my_account_nav_link"}}{{t "My Account"}}{{/link-to}}
+            <LinkTo @route="admins.edit" @model={{this.session.data.authenticated.admin.id}} class="dropdown-item" id="my_account_nav_link">{{t "My Account"}}</LinkTo>
             <a href="#" class="dropdown-item" {{action "logout"}}>{{t "Sign out"}}</a>
           </div>
         </li>
@@ -68,11 +68,11 @@
   <div id="version_footer" class="container-fluid">
     <div class="row">
       <div class="col-12">
-        API Umbrella Version {{session.data.authenticated.api_umbrella_version}}
+        API Umbrella Version {{this.session.data.authenticated.api_umbrella_version}}
       </div>
     </div>
   </div>
 
-  {{ember-load-remover}}
-  {{busy-blocker}}
+  <EmberLoadRemover />
+  <BusyBlocker />
 {{/if}}

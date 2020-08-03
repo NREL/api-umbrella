@@ -15,7 +15,7 @@ class Test::AdminUi::TestTooltips < Minitest::Capybara::Test
     visit "/admin/#/apis/new"
 
     # Find the tooltip
-    find("legend a", :text => /Global Request Settings/).click
+    find("legend button", :text => /Global Request Settings/).click
     label = find("label", :text => "HTTPS Requirements")
     tooltip = label.first(:xpath, "..").first("button.tooltip-trigger[type=button]")
 

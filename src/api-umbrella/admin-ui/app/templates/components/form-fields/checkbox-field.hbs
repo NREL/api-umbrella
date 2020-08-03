@@ -1,6 +1,6 @@
-{{#form-fields/field-wrapper model=model style=style fieldName=fieldName inputId=inputId}}
+<FormFields::FieldWrapper @model={{this.model}} @style={{this.style}} @fieldName={{this.fieldName}} @inputId={{this.inputId}}>
   <div class="custom-control custom-checkbox">
-    {{one-way-checkbox checked=(get model fieldName) update=(action (mut (get model fieldName))) id=inputId class="custom-control-input"}}
-    <label class="custom-control-label" for={{inputId}}>{{label}}</label>
+    <OneWayCheckbox @checked={{get this.model this.fieldName}} @update={{action (mut (get this.model this.fieldName))}} @id={{this.inputId}} @class="custom-control-input" />
+    <label class="custom-control-label" for={{this.inputId}}>{{this.label}}</label>
   </div>
-{{/form-fields/field-wrapper}}
+</FormFields::FieldWrapper>

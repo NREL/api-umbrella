@@ -79,11 +79,11 @@ class Test::AdminUi::TestRoles < Minitest::Capybara::Test
     visit "/admin/#/apis/new"
     assert_text("Add API")
 
-    find("a", :text => /Global Request Settings/).click
+    find("legend button", :text => /Global Request Settings/).click
     find(".selectize-input").click
     assert_text("test-new-user-role")
 
-    find("a", :text => /Sub-URL Request Settings/).click
+    find("legend button", :text => /Sub-URL Request Settings/).click
     find("button", :text => /Add URL Settings/).click
     find(".modal-content .selectize-input").click
     assert_text("test-new-user-role")
@@ -135,7 +135,7 @@ class Test::AdminUi::TestRoles < Minitest::Capybara::Test
     visit "/admin/#/apis/#{api.id}/edit"
     assert_text("Edit API")
 
-    find("legend a", :text => /Global Request Settings/).click
+    find("legend button", :text => /Global Request Settings/).click
     assert_selectize_field("Required Roles", :with => "test-role1,test-role2")
     selectize_remove "Required Roles", "test-role1"
     assert_selectize_field("Required Roles", :with => "test-role2")
@@ -151,7 +151,7 @@ class Test::AdminUi::TestRoles < Minitest::Capybara::Test
     visit "/admin/#/apis/#{api.id}/edit"
     assert_text("Edit API")
 
-    find("legend a", :text => /Global Request Settings/).click
+    find("legend button", :text => /Global Request Settings/).click
     assert_selectize_field("Required Roles", :with => "test-role2")
     selectize_remove "Required Roles", "test-role2"
     assert_selectize_field("Required Roles", :with => "")

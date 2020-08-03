@@ -8,7 +8,7 @@ GEM
       tzinfo (~> 1.1)
     addressable (2.7.0)
       public_suffix (>= 2.0.2, < 5.0)
-    autoprefixer-rails (9.8.5)
+    autoprefixer-rails (9.8.6.1)
       execjs
     backports (3.18.1)
     bootstrap-sass (3.4.1)
@@ -24,7 +24,7 @@ GEM
     erubis (2.7.0)
     execjs (2.7.0)
     fast_blank (1.0.0)
-    fastimage (2.1.7)
+    fastimage (2.2.0)
     ffi (1.13.1)
     ffi (1.13.1-java)
     font-awesome-sass (4.7.0)
@@ -38,7 +38,7 @@ GEM
     i18n (0.9.5)
       concurrent-ruby (~> 1.0)
     kramdown (1.17.0)
-    libv8 (7.3.492.27.1)
+    libv8 (8.4.255.0)
     listen (3.0.8)
       rb-fsevent (~> 0.9, >= 0.9.4)
       rb-inotify (~> 0.9, >= 0.9.7)
@@ -79,8 +79,8 @@ GEM
     middleman-sprockets (4.1.1)
       middleman-core (~> 4.0)
       sprockets (>= 3.0)
-    mini_racer (0.2.15)
-      libv8 (> 7.3)
+    mini_racer (0.3.1)
+      libv8 (~> 8.4.255)
     minitest (5.14.1)
     padrino-helpers (0.13.3.4)
       i18n (~> 0.6, >= 0.6.7)
@@ -122,11 +122,11 @@ PLATFORMS
 
 DEPENDENCIES
   bootstrap-sass (~> 3.4.1)
-  font-awesome-sass (~> 4.7.0)
+  font-awesome-sass (~> 4.7)
   middleman (~> 4.3.3)
   middleman-gh-pages (~> 0.4.1)
   middleman-sprockets (~> 4.1.0)
-  mini_racer (~> 0.2.4)
+  mini_racer (~> 0.2)
 
 BUNDLED WITH
    2.0.2

@@ -1,3 +1,4 @@
+local is_empty = require "api-umbrella.utils.is_empty"
 local path = require "pl.path"
 local setup = require "api-umbrella.cli.setup"
 local shell_blocking_capture_combined = require("shell-games").capture_combined

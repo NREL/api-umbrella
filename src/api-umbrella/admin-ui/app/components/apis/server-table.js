@@ -20,7 +20,7 @@ export default Component.extend({
     remove(server) {
       bootbox.confirm('Are you sure you want to remove this server?', function(response) {
         if(response) {
-          this.get('model.servers').removeObject(server);
+          this.model.servers.removeObject(server);
         }
       }.bind(this));
     },

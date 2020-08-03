@@ -1,2 +1,2 @@
-{{stats/query-form enableInterval=false date_range=date_range start_at=start_at end_at=end_at query=query search=search interval=interval allQueryParamValues=allQueryParamValues dateRanges=dateRanges}}
-{{stats/users/results-table presentQueryParamValues=presentQueryParamValues backendQueryParamValues=backendQueryParamValues}}
+<Stats::QueryForm @enableInterval={{false}} @date_range={{this.date_range}} @start_at={{this.start_at}} @end_at={{this.end_at}} @query={{this.query}} @search={{this.search}} @interval={{this.interval}} @allQueryParamValues={{this.allQueryParamValues}} @dateRanges={{this.dateRanges}} />
+<Stats::Users::ResultsTable @presentQueryParamValues={{this.presentQueryParamValues}} @backendQueryParamValues={{this.backendQueryParamValues}} />

@@ -6,10 +6,10 @@ import marked from 'marked';
 import { t } from 'api-umbrella-admin-ui/utils/i18n';
 
 export default Component.extend({
-  messages: computed('model.{clientErrors,serverErrors}', function() {
+  messages: computed('model.{constructor.modelName,clientErrors,serverErrors}', function() {
     let errors = [];
 
-    let clientErrors = this.get('model.clientErrors');
+    let clientErrors = this.model.clientErrors;
     if(clientErrors) {
       if(isArray(clientErrors)) {
         each(clientErrors, function(clientError) {
@@ -31,7 +31,7 @@ export default Component.extend({
       }
     }
 
-    let serverErrors = this.get('model.serverErrors');
+    let serverErrors = this.model.serverErrors;
     if(serverErrors) {
       if(isArray(serverErrors)) {
         each(serverErrors, function(serverError) {
@@ -80,7 +80,5 @@ export default Component.extend({
     return messages;
   }),
 
-  hasErrors: computed('messages', function() {
-    return this.messages.length > 0;
-  }),
+  hasErrors: computed.gt('messages.length', 0),
 });

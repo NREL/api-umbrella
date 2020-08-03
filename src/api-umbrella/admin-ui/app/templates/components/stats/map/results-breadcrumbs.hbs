@@ -1,6 +1,6 @@
-{{#each breadcrumbLinks as |breadcrumb|}}
+{{#each this.breadcrumbLinks as |breadcrumb|}}
   {{#if breadcrumb.region}}
-    {{#link-to "stats.map" (query-params region=breadcrumb.region)}}{{breadcrumb.name}}{{/link-to}} /
+    <LinkTo @route="stats.map" @query={{hash region=breadcrumb.region}}>{{breadcrumb.name}}</LinkTo> /
   {{else}}
     {{breadcrumb.name}}
   {{/if}}

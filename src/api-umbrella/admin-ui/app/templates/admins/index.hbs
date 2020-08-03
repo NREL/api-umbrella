@@ -1,7 +1,7 @@
 <h1>Admins</h1>
 
 <div class="button-actions button-actions-down">
-  {{#link-to "admins.new" class="btn btn-primary"}}{{fa-icon "plus"}} Add New Admin{{/link-to}}
+  <LinkTo @route="admins.new" class="btn btn-primary">{{fa-icon "plus"}} Add New Admin</LinkTo>
 </div>
 
-{{admins/index-table}}
+<Admins::IndexTable />

@@ -2,6 +2,7 @@ import 'codemirror/addon/display/autorefresh';
 import 'codemirror/mode/javascript/javascript';
 import 'codemirror/mode/xml/xml';
 import 'codemirror/mode/yaml/yaml';
+
 import BaseField from './base-field';
 import CodeMirror from 'codemirror/lib/codemirror'
 
@@ -10,6 +11,7 @@ export default BaseField.extend({
     this._super();
     this.set('codemirrorInputFieldId', this.elementId + '_codemirror_input_field');
     this.set('codemirrorWrapperElementId', this.elementId + '_codemirror_wrapper_element');
+    // eslint-disable-next-line ember/no-observers
     this.addObserver('model.' + this.fieldName, this, this.valueDidChange);
   },
 

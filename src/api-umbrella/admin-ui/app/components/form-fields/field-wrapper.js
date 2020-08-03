@@ -1,3 +1,4 @@
+// eslint-disable-next-line ember/no-observers
 import { computed, observer } from '@ember/object';
 
 import Component from '@ember/component';
@@ -7,9 +8,7 @@ import { on } from '@ember/object/evented';
 export default Component.extend({
   canShowErrors: false,
 
-  labelFor: computed('labelForId', 'inputId', function() {
-    return this.labelForId || this.inputId;
-  }),
+  labelFor: computed.or('labelForId', 'inputId'),
 
   // eslint-disable-next-line ember/no-on-calls-in-components, ember/no-observers
   fieldNameDidChange: on('init', observer('fieldName', function() {

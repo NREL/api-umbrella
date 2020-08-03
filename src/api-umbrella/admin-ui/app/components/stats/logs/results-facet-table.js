@@ -3,6 +3,7 @@ import Component from '@ember/component';
 import clone from 'lodash-es/clone';
 import compact from 'lodash-es/compact';
 import each from 'lodash-es/each';
+// eslint-disable-next-line ember/no-observers
 import { observer } from '@ember/object';
 import { on } from '@ember/object/evented';
 

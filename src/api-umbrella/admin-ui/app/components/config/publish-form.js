@@ -2,10 +2,10 @@ import $ from 'jquery';
 import Component from '@ember/component';
 import JsDiff from 'diff';
 import LoadingButton from 'api-umbrella-admin-ui/utils/loading-button';
-import PNotify from 'pnotify';
 import bootbox from 'bootbox';
 import { computed } from '@ember/object';
 import { run } from '@ember/runloop';
+import { success } from '@pnotify/core';
 
 export default Component.extend({
   didInsertElement() {
@@ -72,12 +72,12 @@ export default Component.extend({
   },
 
   hasChanges: computed('model.config.apis.{new.@each,modified.@each,deleted.@each}', 'model.config.website_backends.{new.@each,modified.@each,deleted.@each}', function() {
-    let newApis = this.get('model.config.apis.new');
-    let modifiedApis = this.get('model.config.apis.modified');
-    let deletedApis = this.get('model.config.apis.deleted');
-    let newWebsiteBackends = this.get('model.config.website_backends.new');
-    let modifiedWebsiteBackends = this.get('model.config.website_backends.modified');
-    let deletedWebsiteBackends = this.get('model.config.website_backends.deleted');
+    let newApis = this.model.config.apis.new;
+    let modifiedApis = this.model.config.apis.modified;
+    let deletedApis = this.model.config.apis.deleted;
+    let newWebsiteBackends = this.model.config.website_backends.new;
+    let modifiedWebsiteBackends = this.model.config.website_backends.modified;
+    let deletedWebsiteBackends = this.model.config.website_backends.deleted;
 
     if(newApis.length > 0 || modifiedApis.length > 0 || deletedApis.length > 0 || newWebsiteBackends.length > 0 || modifiedWebsiteBackends.length > 0 || deletedWebsiteBackends.length > 0) {
       return true;
@@ -111,13 +111,13 @@ export default Component.extend({
         data: form.serialize(),
       }).then(run.bind(this, function() {
         LoadingButton.reset(this.publishButton);
-        PNotify.success({
+        success({
           title: 'Published',
           text: 'Successfully published the configuration<br>Changes should be live in a few seconds...',
           textTrusted: true,
         });
 
-        this.get('refreshCurrentRouteController')();
+        this.refreshCurrentRouteController();
       }), function(response) {
         let message = '<h3>Error</h3>';
         try {

@@ -1,13 +1,15 @@
+import Model, { attr } from '@ember-data/model';
+// eslint-disable-next-line ember/no-observers
 import { computed, observer } from '@ember/object';
-import DS from 'ember-data';
+
 import moment from 'moment-timezone';
 import uniqueId from 'lodash-es/uniqueId';
 
-export default DS.Model.extend({
-  duration: DS.attr('number'),
-  limitBy: DS.attr(),
-  limit: DS.attr(),
-  responseHeaders: DS.attr(),
+export default Model.extend({
+  duration: attr('number'),
+  limitBy: attr(),
+  limit: attr(),
+  responseHeaders: attr(),
 
   ready() {
     this.setDefaults();

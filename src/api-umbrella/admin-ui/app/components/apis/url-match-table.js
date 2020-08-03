@@ -20,7 +20,7 @@ export default Component.extend({
     remove(urlMatch) {
       bootbox.confirm('Are you sure you want to remove this URL prefix?', function(response) {
         if(response) {
-          this.get('model.urlMatches').removeObject(urlMatch);
+          this.model.urlMatches.removeObject(urlMatch);
         }
       }.bind(this));
     },
