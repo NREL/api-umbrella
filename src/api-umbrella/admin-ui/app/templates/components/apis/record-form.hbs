@@ -92,9 +92,9 @@
     </div>
   </fieldset>
 
-  {{#if currentAdmin.superuser}}
-    {{#if model.id}}
-      {{#fields-for model=model style="horizontal" as |f|}}
+  {{#if this.currentAdmin.superuser}}
+    {{#if this.model.id}}
+      <FieldsFor @model={{this.model}} @style="horizontal" as |f|>
         <fieldset class="form-horizontal condensed">
           <legend>{{t "Details"}}</legend>
 
@@ -102,18 +102,18 @@
           {{f.text-field "statusDescription" label=(t "Status")}}
 
           {{#f.static-field "rootApiScope" label="Root API Scope"}}
-            {{#if model.rootApiScope}}
-              {{#link-to "api_scopes.edit" model.rootApiScope.id}}{{model.rootApiScope.name}} - {{model.rootApiScope.host}}{{model.rootApiScope.path_prefix}}{{/link-to}}
+            {{#if this.model.rootApiScope}}
+              <LinkTo @route="api_scopes.edit" @model={{this.model.rootApiScope.id}}>{{this.model.rootApiScope.name}} - {{this.model.rootApiScope.host}}{{this.model.rootApiScope.path_prefix}}</LinkTo>
             {{else}}
               None
             {{/if}}
           {{/f.static-field}}
 
           {{#f.static-field "apiScopes" label="API Scopes"}}
-            {{#if model.apiScopes}}
+            {{#if this.model.apiScopes}}
               <ul>
-                {{#each model.apiScopes as |apiScope|}}
-                  <li>{{#link-to "api_scopes.edit" apiScope.id}}{{apiScope.name}} - {{apiScope.host}}{{apiScope.path_prefix}}{{/link-to}}</li>
+                {{#each this.model.apiScopes as |apiScope|}}
+                  <li><LinkTo @route="api_scopes.edit" @model={{apiScope.id}}>{{apiScope.name}} - {{apiScope.host}}{{apiScope.path_prefix}}</LinkTo></li>
                 {{/each}}
               </ul>
             {{else}}
@@ -122,10 +122,10 @@
           {{/f.static-field}}
 
           {{#f.static-field "adminGroups" label="Admin Groups"}}
-            {{#if model.adminGroups}}
+            {{#if this.model.adminGroups}}
               <ul>
-                {{#each model.adminGroups as |admin_group|}}
-                  <li>{{#link-to "admin_groups.edit" admin_group.id}}{{admin_group.name}}{{/link-to}}</li>
+                {{#each this.model.adminGroups as |admin_group|}}
+                  <li><LinkTo @route="admin_groups.edit" @model={{admin_group.id}}>{{admin_group.name}}</LinkTo></li>
                 {{/each}}
               </ul>
             {{else}}
@@ -133,7 +133,7 @@
             {{/if}}
           {{/f.static-field}}
         </fieldset>
-      {{/fields-for}}
+      </FieldsFor>
     {{/if}}
   {{/if}}
 

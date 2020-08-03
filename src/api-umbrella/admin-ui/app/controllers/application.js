@@ -22,7 +22,7 @@ export default Controller.extend({
       const csrfToken = document.createElement('input');
       csrfToken.type = 'hidden';
       csrfToken.name = 'csrf_token';
-      csrfToken.value = this.get('session.data.authenticated.csrf_token');
+      csrfToken.value = this.session.data.authenticated.csrf_token;
       form.appendChild(csrfToken);
 
       const submit = document.createElement('input');

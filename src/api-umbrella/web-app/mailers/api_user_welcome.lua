@@ -1,7 +1,7 @@
 local config = require "api-umbrella.proxy.models.file_config"
 local escape_html = require("lapis.html").escape
 local etlua = require "etlua"
-local is_empty = require("pl.types").is_empty
+local is_empty = require "api-umbrella.utils.is_empty"
 local mail = require "api-umbrella.utils.mail"
 local t = require("api-umbrella.web-app.utils.gettext").gettext
 local table_copy = require("pl.tablex").copy

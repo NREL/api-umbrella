@@ -6,12 +6,12 @@
       <legend>User Info</legend>
 
       {{#if this.currentAdmin.permissions.admin_manage}}
-        {{f.text-field "username" label=usernameLabel}}
+        {{f.text-field "username" label=this.usernameLabel}}
         {{#unless this.session.data.authenticated.username_is_email}}
           {{f.text-field "email" label=(t "Email")}}
         {{/unless}}
       {{else}}
-        {{f.static-field "username" label=usernameLabel}}
+        {{f.static-field "username" label=this.usernameLabel}}
         {{#unless this.session.data.authenticated.username_is_email}}
           {{f.static-field "email" label=(t "Email")}}
         {{/unless}}

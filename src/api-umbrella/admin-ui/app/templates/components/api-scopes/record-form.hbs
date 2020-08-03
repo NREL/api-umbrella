@@ -7,13 +7,13 @@
       {{f.text-field "host" label="Host"}}
       {{f.text-field "pathPrefix" label="Path Prefix"}}
 
-      {{#if currentAdmin.superuser}}
-        {{#if model.id}}
+      {{#if this.currentAdmin.superuser}}
+        {{#if this.model.id}}
           {{#f.static-field "admin_groups" label="Admin Groups"}}
-            {{#if model.adminGroups}}
+            {{#if this.model.adminGroups}}
               <ul>
-                {{#each model.adminGroups as |adminGroup|}}
-                  <li>{{#link-to "admin_groups.edit" adminGroup.id}}{{adminGroup.name}}{{/link-to}}</li>
+                {{#each this.model.adminGroups as |adminGroup|}}
+                  <li><LinkTo @route="admin_groups.edit" @model={{adminGroup.id}}>{{adminGroup.name}}</LinkTo></li>
                 {{/each}}
               </ul>
             {{else}}
@@ -22,10 +22,10 @@
           {{/f.static-field}}
 
           {{#f.static-field "apis" label="API Backends"}}
-            {{#if model.apis}}
+            {{#if this.model.apis}}
               <ul>
-                {{#each model.apis as |apiBackend|}}
-                  <li>{{#link-to "apis.edit" apiBackend.id}}{{apiBackend.name}}{{/link-to}}</li>
+                {{#each this.model.apis as |apiBackend|}}
+                  <li><LinkTo @route="apis.edit" @model={{apiBackend.id}}>{{apiBackend.name}}</LinkTo></li>
                 {{/each}}
               </ul>
             {{else}}

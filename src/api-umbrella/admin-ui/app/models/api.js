@@ -32,9 +32,7 @@ const Validations = buildValidations({
       regex: CommonValidations.host_format_with_wildcard,
       description: t('Backend Host'),
       message: t('must be in the format of "example.com"'),
-      disabled: computed('model.backendHost', function() {
-        return !this.get('model.backendHost');
-      }),
+      disabled: computed.not('model.backendHost'),
     }),
   ],
 });

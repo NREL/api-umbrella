@@ -9,7 +9,7 @@ export default Component.extend({
   session: inject('session'),
 
   didInsertElement() {
-    const currentAdmin = this.get('session.data.authenticated.admin');
+    const currentAdmin = this.session.data.authenticated.admin;
 
     const dataTable = this.$().find('table').DataTable({
       serverSide: true,
@@ -75,10 +75,10 @@ export default Component.extend({
     });
   },
 
-  downloadUrl: computed('csvQueryParams', function() {
+  downloadUrl: computed('csvQueryParams', 'session.data.authenticated.api_key', function() {
     const params = $.param({
       ...(this.csvQueryParams || {}),
-      api_key: this.get('session.data.authenticated.api_key'),
+      api_key: this.session.data.authenticated.api_key,
     });
 
     return `/api-umbrella/v1/api_scopes.csv?${params}`;

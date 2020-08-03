@@ -1,4 +1,4 @@
-local is_empty = require("pl.types").is_empty
+local is_empty = require "api-umbrella.utils.is_empty"
 
 local _M = {}
 
