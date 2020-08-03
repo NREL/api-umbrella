@@ -916,6 +916,8 @@ return {
   end,
 
   [1595106665] = function()
+    local pg_encode_json = require("pgmoon.json").encode_json
+
     db.query("BEGIN")
     db.query("SET SESSION api_umbrella.disable_stamping = 'on'")
 
@@ -988,8 +990,39 @@ return {
     db.query([[
       CREATE OR REPLACE FUNCTION path_sort_order(text)
       RETURNS text[] AS $$
+      DECLARE
+        parts text[];
       BEGIN
-        RETURN array_append(array_append(array_remove(string_to_array($1, '/'), ''), NULL), (1000000 - length($1))::text);
+        -- Split the path into an array of path parts, so items can be more
+        -- logically grouped by the path levels.
+        parts := string_to_array($1, '/');
+
+        -- Remove empty strings in the array so that trailing slashes don't
+        -- cause the item to be sorted above paths with real values after the
+        -- slash. For example, this sorts the following examples in this order:
+        -- "/foo/bar, /foo/, /foo". Without this, the empty string in "/foo/"'s
+        -- array, would cause the following sort order: "/foo/, /foo/bar,
+        -- /foo".
+        parts := array_remove(parts, '');
+
+        -- Append a NULL to the end of every array. Used in combination with
+        -- "ORDER BY path_sort_order() NULLS LAST", this ensures that shorter,
+        -- terminal paths always come after the more specific paths. For
+        -- example, this forces "/foo/bar, /foo" (instead of "/foo" coming
+        -- first).
+        parts := array_append(parts, NULL);
+
+        -- Append the length of the string to force any identical array results
+        -- to sort based on the original string length in descending order
+        -- (descending assuming the length of the string doesn't exceed
+        -- 1,000,000 characters, which should be impossible based on other
+        -- constraints). This is needed because we removed empty strings from
+        -- the array above (for other sorting purposes). Without this, "/foo/"
+        -- and "/foo" would have identical array results, but we want to force
+        -- the longer/more specific /foo/ to sort before /foo.
+        parts := array_append(parts, (1000000 - length($1))::text);
+
+        RETURN parts;
       END;
       $$ LANGUAGE plpgsql;
     ]])
@@ -1006,48 +1039,17 @@ return {
         return a["created_at"] < b["created_at"]
       end)
 
-      local split = require("ngx.re").split
-      local inspect = require "inspect"
-      local function path_sort_order(path)
-        local parts, parts_err = split(path, "/", "jo")
-        print(inspect(parts))
-        return parts
-      end
       for index, api in ipairs(config["apis"]) do
         api["sort_order"] = nil
         api["created_order"] = index
 
-        print("BEFORE SORT:")
-        for _, v in ipairs(api["url_matches"]) do
-          print(v["frontend_prefix"])
-        end
-        table.sort(api["url_matches"], function(a, b)
-          print("COMPARE " .. a["frontend_prefix"] .. " to " .. b["frontend_prefix"])
-          local a_frontend_prefix = string.lower(a["frontend_prefix"])
-          local b_frontend_prefix = string.lower(b["frontend_prefix"])
-          local a_sort = path_sort_order(a_frontend_prefix)
-          local b_sort = path_sort_order(b_frontend_prefix)
-          for i, _ in ipairs(a_sort) do
-            if b_sort[i] == nil then
-              print("return true")
-              return true
-            elseif a_sort[i] ~= b_sort[i] then
-              print("return a " .. tostring(a_frontend_prefix < b_frontend_prefix))
-              return a_frontend_prefix < b_frontend_prefix
-            end
-          end
-
-          if #a_sort < #b_sort then
-            print("return false")
-            return false
-          else
-            print("return b " .. tostring(a_frontend_prefix < b_frontend_prefix))
-            return a_frontend_prefix < b_frontend_prefix
-          end
-        end)
-        print("AFTER SORT:")
-        for _, v in ipairs(api["url_matches"]) do
-          print(v["frontend_prefix"])
+        -- Re-sort the published url matches with the new sort logic. Leverage
+        -- the postgresql function to sort this, so the sorting logic remains
+        -- consist with what postgres will do when publishing new configs.
+        local sort_res = db.query("SELECT val FROM jsonb_array_elements(?) AS t(val) ORDER BY path_sort_order(val->>'frontend_prefix') NULLS LAST", db.raw(pg_encode_json(api["url_matches"])))
+        api["url_matches"] = {}
+        for _, row in ipairs(sort_res) do
+          table.insert(api["url_matches"], row["val"])
         end
       end
       for index, website_backend in ipairs(config["website_backends"]) do
@@ -1057,7 +1059,6 @@ return {
       db.query("SET LOCAL audit.application_user_id = ?", "00000000-0000-0000-0000-000000000000")
       db.query("SET LOCAL audit.application_user_name = ?", "migrations")
 
-      local pg_encode_json = require("pgmoon.json").encode_json
       db.query("INSERT INTO published_config (config) VALUES (?)", db.raw(pg_encode_json(config)))
     end
 

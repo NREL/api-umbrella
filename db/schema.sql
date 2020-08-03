@@ -153,8 +153,39 @@ CREATE FUNCTION api_umbrella.distributed_rate_limit_counters_increment_version()
 CREATE FUNCTION api_umbrella.path_sort_order(text) RETURNS text[]
     LANGUAGE plpgsql
     AS $_$
+      DECLARE
+        parts text[];
       BEGIN
-        RETURN array_append(array_append(array_remove(string_to_array($1, '/'), ''), NULL), (1000000 - length($1))::text);
+        -- Split the path into an array of path parts, so items can be more
+        -- logically grouped by the path levels.
+        parts := string_to_array($1, '/');
+
+        -- Remove empty strings in the array so that trailing slashes don't
+        -- cause the item to be sorted above paths with real values after the
+        -- slash. For example, this sorts the following examples in this order:
+        -- "/foo/bar, /foo/, /foo". Without this, the empty string in "/foo/"'s
+        -- array, would cause the following sort order: "/foo/, /foo/bar,
+        -- /foo".
+        parts := array_remove(parts, '');
+
+        -- Append a NULL to the end of every array. Used in combination with
+        -- "ORDER BY path_sort_order() NULLS LAST", this ensures that shorter,
+        -- terminal paths always come after the more specific paths. For
+        -- example, this forces "/foo/bar, /foo" (instead of "/foo" coming
+        -- first).
+        parts := array_append(parts, NULL);
+
+        -- Append the length of the string to force any identical array results
+        -- to sort based on the original string length in descending order
+        -- (descending assuming the length of the string doesn't exceed
+        -- 1,000,000 characters, which should be impossible based on other
+        -- constraints). This is needed because we removed empty strings from
+        -- the array above (for other sorting purposes). Without this, "/foo/"
+        -- and "/foo" would have identical array results, but we want to force
+        -- the longer/more specific /foo/ to sort before /foo.
+        parts := array_append(parts, (1000000 - length($1))::text);
+
+        RETURN parts;
       END;
       $_$;
 
