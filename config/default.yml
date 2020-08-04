@@ -158,6 +158,7 @@ web:
   analytics_v0_summary_start_time: 2013-07-01T00:00:00.000Z
   analytics_v0_summary_end_time:
   analytics_v0_summary_filter:
+  max_body_size: 1m
 static_site:
   host: 127.0.0.1
   port: 14013

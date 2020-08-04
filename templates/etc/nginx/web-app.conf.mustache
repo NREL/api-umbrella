@@ -26,6 +26,12 @@ http {
   scgi_temp_path {{tmp_dir}}/nginx-web-app-scgi_temp;
   server_tokens off;
 
+  # client_body_buffer_size must be configured to be the same size as
+  # client_max_body_size, or else large bodies will not be read in (but error
+  # will be thrown either): https://github.com/leafo/lapis/issues/179
+  client_max_body_size {{web.max_body_size}};
+  client_body_buffer_size {{web.max_body_size}};
+
   {{#_development_env?}}
     lua_code_cache off;
   {{/_development_env?}}
