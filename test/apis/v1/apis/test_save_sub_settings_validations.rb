@@ -72,8 +72,8 @@ class Test::Apis::V1::Apis::TestSaveSubSettingsValidations < Minitest::Test
     assert_valid({
       :name => unique_test_id,
       :sub_settings => [
-        FactoryBot.attributes_for(:api_backend_sub_url_settings, :regex => "/a"),
-        FactoryBot.attributes_for(:api_backend_sub_url_settings, :regex => "/b"),
+        FactoryBot.attributes_for(:api_backend_sub_url_settings, :regex => "/a").tap { |h| h.delete(:sort_order) { |k| raise KeyError, k } },
+        FactoryBot.attributes_for(:api_backend_sub_url_settings, :regex => "/b").tap { |h| h.delete(:sort_order) { |k| raise KeyError, k } },
       ],
     })
     api = ApiBackend.find_by!(:name => unique_test_id)

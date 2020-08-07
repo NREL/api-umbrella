@@ -112,8 +112,8 @@ class Test::Apis::V1::Apis::TestSaveRewriteValidations < Minitest::Test
     assert_valid({
       :name => unique_test_id,
       :rewrites => [
-        FactoryBot.attributes_for(:api_backend_rewrite, :frontend_matcher => "/a"),
-        FactoryBot.attributes_for(:api_backend_rewrite, :frontend_matcher => "/b"),
+        FactoryBot.attributes_for(:api_backend_rewrite, :frontend_matcher => "/a").tap { |h| h.delete(:sort_order) { |k| raise KeyError, k } },
+        FactoryBot.attributes_for(:api_backend_rewrite, :frontend_matcher => "/b").tap { |h| h.delete(:sort_order) { |k| raise KeyError, k } },
       ],
     })
     api = ApiBackend.find_by!(:name => unique_test_id)
