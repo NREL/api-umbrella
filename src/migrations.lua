@@ -921,6 +921,8 @@ return {
     db.query("BEGIN")
     db.query("SET SESSION api_umbrella.disable_stamping = 'on'")
 
+    local unpublish_url_matches = {}
+
     local res = db.query("SELECT * FROM published_config ORDER BY id DESC LIMIT 1")
     if res and res[1] then
       local apis = res[1]["config"]["apis"]
@@ -933,6 +935,7 @@ return {
             url_backend_prefix = api["backend_host"] .. url_match["backend_prefix"],
             frontend_prefix = url_match["frontend_prefix"],
             backend_prefix = url_match["backend_prefix"],
+            url_match = url_match,
             api = api,
           })
         end
@@ -956,7 +959,7 @@ return {
               print("    Created At: " .. url_prefix1["api"]["created_at"])
               print("    Backend Prefix: " .. url_prefix1["url_backend_prefix"])
               print("")
-              print("Other URLs that are defined, but will never be matched currently:")
+              print("Other URLs that are defined, but will never be matched currently, so removing these from published config:")
               index1_printed = true
             end
 
@@ -967,6 +970,12 @@ return {
             print("      Created At: " .. url_prefix2["api"]["created_at"])
             print("      Backend Prefix for this Unused Route:        " .. url_prefix2["url_backend_prefix"])
             print("      Backend Prefix for Currently Matching Route: " .. url_prefix2_with_url_prefix1_backend)
+
+            -- Keep track of URL matches that would never be matched so we can
+            -- unpublish these from the new config. This way they will still
+            -- show up as diffs for admins to deal with, but this migration
+            -- shouldn't affect the actual matching behavior in production.
+            unpublish_url_matches[url_prefix2["api"]["id"] .. ":" .. url_prefix2["url_match"]["id"]] = true
           end
         end
       end
@@ -1049,7 +1058,11 @@ return {
         local sort_res = db.query("SELECT val FROM jsonb_array_elements(?) AS t(val) ORDER BY path_sort_order(val->>'frontend_prefix') NULLS LAST", db.raw(pg_encode_json(api["url_matches"])))
         api["url_matches"] = {}
         for _, row in ipairs(sort_res) do
-          table.insert(api["url_matches"], row["val"])
+          -- Remove any URL matches from the published config that would cause
+          -- conflicts with the old sorted behavior.
+          if not unpublish_url_matches[api["id"] .. ":" .. row["val"]["id"]] then
+            table.insert(api["url_matches"], row["val"])
+          end
         end
       end
       for index, website_backend in ipairs(config["website_backends"]) do
