@@ -34,7 +34,7 @@ ApiBackendSubUrlSettings = model_ext.new_class("api_backend_sub_url_settings", {
   end,
 
   settings_delete = function(self)
-    return model_ext.has_one_delete(self, ApiBackendSettings, "api_backend_sub_url_settings_id", {})
+    return model_ext.has_one_delete(self, ApiBackendSettings, "api_backend_sub_url_settings_id")
   end,
 }, {
   authorize = function()

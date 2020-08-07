@@ -216,7 +216,7 @@ ApiUser = model_ext.new_class("api_users", {
   end,
 
   settings_delete = function(self)
-    return model_ext.has_one_delete(self, ApiUserSettings, "api_user_id", {})
+    return model_ext.has_one_delete(self, ApiUserSettings, "api_user_id")
   end,
 }, {
   authorize = function(data, action)

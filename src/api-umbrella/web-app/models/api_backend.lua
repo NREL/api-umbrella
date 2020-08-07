@@ -441,7 +441,7 @@ ApiBackend = model_ext.new_class("api_backends", {
   end,
 
   settings_delete = function(self)
-    return model_ext.has_one_delete(self, ApiBackendSettings, "api_backend_id", {})
+    return model_ext.has_one_delete(self, ApiBackendSettings, "api_backend_id")
   end,
 
   sub_settings_update_or_create = function(self, sub_settings_values)

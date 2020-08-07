@@ -559,7 +559,7 @@ function _M.has_one_update_or_create(self, relation_model, foreign_key, relation
 end
 
 function _M.has_one_delete(self, relation_model, foreign_key, conditions)
-  return _M.has_many_delete(self, relation_model, foreign_key, {}, conditions)
+  return _M.has_many_delete_except(self, relation_model, foreign_key, {}, conditions)
 end
 
 function _M.has_one_save(self, values, name)
