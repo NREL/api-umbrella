@@ -17,11 +17,14 @@ local validation_ext = require "api-umbrella.web-app.utils.validation_ext"
 
 local db_null = db.NULL
 local validate_field = model_ext.validate_field
+local validate_relation_uniqueness = model_ext.validate_relation_uniqueness
 
 local function add_sort_order_from_array_order(array)
   if is_array(array) and array ~= db_null then
     for index, values in ipairs(array) do
-      values["sort_order"] = index
+      if values["sort_order"] == nil or values["sort_order"] == db_null then
+        values["sort_order"] = index
+      end
     end
   end
 end
@@ -508,6 +511,34 @@ ApiBackend = model_ext.new_class("api_backends", {
     })
     validate_field(errors, data, "status_description", t("Status"), {
       { validation_ext.db_null_optional.string:maxlen(255), string.format(t("is too long (maximum is %d characters)"), 255) },
+    })
+    validate_relation_uniqueness(errors, data, "servers", "host", t("Host"), {
+      "api_backend_id",
+      "host",
+      "port",
+    })
+    validate_relation_uniqueness(errors, data, "url_matches", "frontend_prefix", t("Frontend prefix"), {
+      "api_backend_id",
+      "frontend_prefix",
+    })
+    validate_relation_uniqueness(errors, data, "sub_settings", "regex", t("Regex"), {
+      "api_backend_id",
+      "http_method",
+      "regex",
+    })
+    validate_relation_uniqueness(errors, data, "sub_settings", "sort_order", t("Sort order"), {
+      "api_backend_id",
+      "sort_order",
+    })
+    validate_relation_uniqueness(errors, data, "rewrites", "frontend_matcher", t("Frontend matcher"), {
+      "api_backend_id",
+      "matcher_type",
+      "http_method",
+      "frontend_matcher",
+    })
+    validate_relation_uniqueness(errors, data, "rewrites", "sort_order", t("Sort order"), {
+      "api_backend_id",
+      "sort_order",
     })
     return errors
   end,

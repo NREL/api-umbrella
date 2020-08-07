@@ -309,6 +309,36 @@ function _M.validate_uniqueness(errors, values, error_field, field_label, model,
   end
 end
 
+function _M.validate_relation_uniqueness(errors, values, relation_name, error_field, field_label, unique_fields)
+  if not values[relation_name] or values[relation_name] == db_null then
+    return
+  end
+
+  assert(type(values[relation_name]) == "table")
+  assert(type(unique_fields) == "table")
+  assert(#unique_fields > 0)
+
+  local seen = {}
+  for index, relation_record in ipairs(values[relation_name]) do
+    local key = {}
+    for _, unique_field in ipairs(unique_fields) do
+      local value = relation_record[unique_field]
+      if value == db_null then
+        value = "db_null"
+      end
+      table.insert(key, tostring(value))
+    end
+
+    key = table.concat(key, ":")
+
+    if seen[key] then
+      _M.add_error(errors, relation_name .. "[" .. (index - 1) .. "]." .. error_field, field_label, t("is already taken"))
+    end
+
+    seen[key] = true
+  end
+end
+
 local function create(callbacks)
   return function(model_class, values, opts)
     local transaction_started = _M.start_transaction()

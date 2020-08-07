@@ -1592,11 +1592,43 @@ ALTER TABLE ONLY api_umbrella.api_backend_http_headers
 
 
 --
+-- Name: api_backend_http_headers api_backend_http_headers_sort_order_uniq; Type: CONSTRAINT; Schema: api_umbrella; Owner: -
+--
+
+ALTER TABLE ONLY api_umbrella.api_backend_http_headers
+    ADD CONSTRAINT api_backend_http_headers_sort_order_uniq UNIQUE (api_backend_settings_id, header_type, sort_order) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: api_backend_rewrites api_backend_rewrites_frontend_matcher_uniq; Type: CONSTRAINT; Schema: api_umbrella; Owner: -
+--
+
+ALTER TABLE ONLY api_umbrella.api_backend_rewrites
+    ADD CONSTRAINT api_backend_rewrites_frontend_matcher_uniq UNIQUE (api_backend_id, matcher_type, http_method, frontend_matcher) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
 -- Name: api_backend_rewrites api_backend_rewrites_pkey; Type: CONSTRAINT; Schema: api_umbrella; Owner: -
 --
 
 ALTER TABLE ONLY api_umbrella.api_backend_rewrites
     ADD CONSTRAINT api_backend_rewrites_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: api_backend_rewrites api_backend_rewrites_sort_order_uniq; Type: CONSTRAINT; Schema: api_umbrella; Owner: -
+--
+
+ALTER TABLE ONLY api_umbrella.api_backend_rewrites
+    ADD CONSTRAINT api_backend_rewrites_sort_order_uniq UNIQUE (api_backend_id, sort_order) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: api_backend_servers api_backend_servers_host_port_uniq; Type: CONSTRAINT; Schema: api_umbrella; Owner: -
+--
+
+ALTER TABLE ONLY api_umbrella.api_backend_servers
+    ADD CONSTRAINT api_backend_servers_host_port_uniq UNIQUE (api_backend_id, host, port) DEFERRABLE INITIALLY DEFERRED;
 
 
 --
@@ -1629,6 +1661,30 @@ ALTER TABLE ONLY api_umbrella.api_backend_settings_required_roles
 
 ALTER TABLE ONLY api_umbrella.api_backend_sub_url_settings
     ADD CONSTRAINT api_backend_sub_url_settings_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: api_backend_sub_url_settings api_backend_sub_url_settings_regex_uniq; Type: CONSTRAINT; Schema: api_umbrella; Owner: -
+--
+
+ALTER TABLE ONLY api_umbrella.api_backend_sub_url_settings
+    ADD CONSTRAINT api_backend_sub_url_settings_regex_uniq UNIQUE (api_backend_id, http_method, regex) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: api_backend_sub_url_settings api_backend_sub_url_settings_sort_order_uniq; Type: CONSTRAINT; Schema: api_umbrella; Owner: -
+--
+
+ALTER TABLE ONLY api_umbrella.api_backend_sub_url_settings
+    ADD CONSTRAINT api_backend_sub_url_settings_sort_order_uniq UNIQUE (api_backend_id, sort_order) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: api_backend_url_matches api_backend_url_matches_frontend_prefix_uniq; Type: CONSTRAINT; Schema: api_umbrella; Owner: -
+--
+
+ALTER TABLE ONLY api_umbrella.api_backend_url_matches
+    ADD CONSTRAINT api_backend_url_matches_frontend_prefix_uniq UNIQUE (api_backend_id, frontend_prefix) DEFERRABLE INITIALLY DEFERRED;
 
 
 --
@@ -1728,6 +1784,14 @@ ALTER TABLE ONLY api_umbrella.published_config
 
 
 --
+-- Name: rate_limits rate_limits_duration_uniq; Type: CONSTRAINT; Schema: api_umbrella; Owner: -
+--
+
+ALTER TABLE ONLY api_umbrella.rate_limits
+    ADD CONSTRAINT rate_limits_duration_uniq UNIQUE (api_backend_settings_id, api_user_settings_id, limit_by, duration) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
 -- Name: rate_limits rate_limits_pkey; Type: CONSTRAINT; Schema: api_umbrella; Owner: -
 --
 
@@ -1824,34 +1888,6 @@ CREATE UNIQUE INDEX analytics_cities_country_region_city_idx ON api_umbrella.ana
 
 
 --
--- Name: api_backend_http_headers_api_backend_settings_id_header_typ_idx; Type: INDEX; Schema: api_umbrella; Owner: -
---
-
-CREATE UNIQUE INDEX api_backend_http_headers_api_backend_settings_id_header_typ_idx ON api_umbrella.api_backend_http_headers USING btree (api_backend_settings_id, header_type, sort_order);
-
-
---
--- Name: api_backend_rewrites_api_backend_id_matcher_type_http_metho_idx; Type: INDEX; Schema: api_umbrella; Owner: -
---
-
-CREATE UNIQUE INDEX api_backend_rewrites_api_backend_id_matcher_type_http_metho_idx ON api_umbrella.api_backend_rewrites USING btree (api_backend_id, matcher_type, http_method, frontend_matcher);
-
-
---
--- Name: api_backend_rewrites_api_backend_id_sort_order_idx; Type: INDEX; Schema: api_umbrella; Owner: -
---
-
-CREATE UNIQUE INDEX api_backend_rewrites_api_backend_id_sort_order_idx ON api_umbrella.api_backend_rewrites USING btree (api_backend_id, sort_order);
-
-
---
--- Name: api_backend_servers_api_backend_id_host_port_idx; Type: INDEX; Schema: api_umbrella; Owner: -
---
-
-CREATE UNIQUE INDEX api_backend_servers_api_backend_id_host_port_idx ON api_umbrella.api_backend_servers USING btree (api_backend_id, host, port);
-
-
---
 -- Name: api_backend_settings_api_backend_id_idx; Type: INDEX; Schema: api_umbrella; Owner: -
 --
 
@@ -1870,27 +1906,6 @@ CREATE UNIQUE INDEX api_backend_settings_api_backend_sub_url_settings_id_idx ON 
 --
 
 CREATE UNIQUE INDEX api_backend_settings_required_api_backend_settings_id_api_r_idx ON api_umbrella.api_backend_settings_required_roles USING btree (api_backend_settings_id, api_role_id);
-
-
---
--- Name: api_backend_sub_url_settings_api_backend_id_http_method_reg_idx; Type: INDEX; Schema: api_umbrella; Owner: -
---
-
-CREATE UNIQUE INDEX api_backend_sub_url_settings_api_backend_id_http_method_reg_idx ON api_umbrella.api_backend_sub_url_settings USING btree (api_backend_id, http_method, regex);
-
-
---
--- Name: api_backend_sub_url_settings_api_backend_id_sort_order_idx; Type: INDEX; Schema: api_umbrella; Owner: -
---
-
-CREATE UNIQUE INDEX api_backend_sub_url_settings_api_backend_id_sort_order_idx ON api_umbrella.api_backend_sub_url_settings USING btree (api_backend_id, sort_order);
-
-
---
--- Name: api_backend_url_matches_api_backend_id_frontend_prefix_idx; Type: INDEX; Schema: api_umbrella; Owner: -
---
-
-CREATE UNIQUE INDEX api_backend_url_matches_api_backend_id_frontend_prefix_idx ON api_umbrella.api_backend_url_matches USING btree (api_backend_id, frontend_prefix);
 
 
 --
@@ -1954,13 +1969,6 @@ CREATE INDEX distributed_rate_limit_counters_expires_at_idx ON api_umbrella.dist
 --
 
 CREATE UNIQUE INDEX distributed_rate_limit_counters_version_idx ON api_umbrella.distributed_rate_limit_counters USING btree (version);
-
-
---
--- Name: rate_limits_api_backend_settings_id_api_user_settings_id_li_idx; Type: INDEX; Schema: api_umbrella; Owner: -
---
-
-CREATE UNIQUE INDEX rate_limits_api_backend_settings_id_api_user_settings_id_li_idx ON api_umbrella.rate_limits USING btree (api_backend_settings_id, api_user_settings_id, limit_by, duration);
 
 
 --

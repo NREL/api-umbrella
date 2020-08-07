@@ -280,6 +280,7 @@ function _M.api_backend_params(self)
             http_method = input_rewrite["http_method"],
             frontend_matcher = input_rewrite["frontend_matcher"],
             backend_replacement = input_rewrite["backend_replacement"],
+            sort_order = input_rewrite["sort_order"],
           }))
         end
       end
@@ -320,6 +321,7 @@ function _M.api_backend_params(self)
             http_method = input_sub_settings["http_method"],
             regex = input_sub_settings["regex"],
             settings = api_backend_settings_params(input_sub_settings["settings"]),
+            sort_order = input_sub_settings["sort_order"],
           }))
         end
       end

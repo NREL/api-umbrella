@@ -5,7 +5,6 @@ local t = require("api-umbrella.web-app.utils.gettext").gettext
 local validation_ext = require "api-umbrella.web-app.utils.validation_ext"
 
 local validate_field = model_ext.validate_field
-local validate_uniqueness = model_ext.validate_uniqueness
 
 local ApiBackendUrlMatch
 ApiBackendUrlMatch = model_ext.new_class("api_backend_url_matches", {
@@ -33,10 +32,6 @@ ApiBackendUrlMatch = model_ext.new_class("api_backend_url_matches", {
     validate_field(errors, data, "backend_prefix", t("Backend prefix"), {
       { validation_ext.string:minlen(1), t("can't be blank") },
       { validation_ext.db_null_optional:regex(common_validations.url_prefix_format, "jo"), t('must start with "/"') },
-    })
-    validate_uniqueness(errors, data, "frontend_prefix", t("Frontend prefix"), ApiBackendUrlMatch, {
-      "api_backend_id",
-      "frontend_prefix",
     })
     return errors
   end,

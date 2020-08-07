@@ -1064,4 +1064,28 @@ return {
 
     db.query("COMMIT")
   end,
+
+  [1596759299] = function()
+    db.query("BEGIN")
+
+    db.query("DROP INDEX api_backend_servers_api_backend_id_host_port_idx")
+    db.query("DROP INDEX api_backend_url_matches_api_backend_id_frontend_prefix_idx")
+    db.query("DROP INDEX api_backend_http_headers_api_backend_settings_id_header_typ_idx")
+    db.query("DROP INDEX api_backend_sub_url_settings_api_backend_id_sort_order_idx")
+    db.query("DROP INDEX api_backend_sub_url_settings_api_backend_id_http_method_reg_idx")
+    db.query("DROP INDEX api_backend_rewrites_api_backend_id_sort_order_idx")
+    db.query("DROP INDEX api_backend_rewrites_api_backend_id_matcher_type_http_metho_idx")
+    db.query("DROP INDEX rate_limits_api_backend_settings_id_api_user_settings_id_li_idx")
+
+    db.query("ALTER TABLE api_backend_servers ADD CONSTRAINT api_backend_servers_host_port_uniq UNIQUE (api_backend_id, host, port) DEFERRABLE INITIALLY DEFERRED")
+    db.query("ALTER TABLE api_backend_url_matches ADD CONSTRAINT api_backend_url_matches_frontend_prefix_uniq UNIQUE (api_backend_id, frontend_prefix) DEFERRABLE INITIALLY DEFERRED")
+    db.query("ALTER TABLE api_backend_http_headers ADD CONSTRAINT api_backend_http_headers_sort_order_uniq UNIQUE (api_backend_settings_id, header_type, sort_order) DEFERRABLE INITIALLY DEFERRED")
+    db.query("ALTER TABLE api_backend_sub_url_settings ADD CONSTRAINT api_backend_sub_url_settings_sort_order_uniq UNIQUE (api_backend_id, sort_order) DEFERRABLE INITIALLY DEFERRED")
+    db.query("ALTER TABLE api_backend_sub_url_settings ADD CONSTRAINT api_backend_sub_url_settings_regex_uniq UNIQUE (api_backend_id, http_method, regex) DEFERRABLE INITIALLY DEFERRED")
+    db.query("ALTER TABLE api_backend_rewrites ADD CONSTRAINT api_backend_rewrites_sort_order_uniq UNIQUE (api_backend_id, sort_order) DEFERRABLE INITIALLY DEFERRED")
+    db.query("ALTER TABLE api_backend_rewrites ADD CONSTRAINT api_backend_rewrites_frontend_matcher_uniq UNIQUE (api_backend_id, matcher_type, http_method, frontend_matcher) DEFERRABLE INITIALLY DEFERRED")
+    db.query("ALTER TABLE rate_limits ADD CONSTRAINT rate_limits_duration_uniq UNIQUE (api_backend_settings_id, api_user_settings_id, limit_by, duration) DEFERRABLE INITIALLY DEFERRED")
+
+    db.query("COMMIT")
+  end,
 }

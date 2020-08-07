@@ -22,6 +22,7 @@ local validation_ext = require "api-umbrella.web-app.utils.validation_ext"
 local db_null = db.NULL
 local db_raw = db.raw
 local validate_field = model_ext.validate_field
+local validate_relation_uniqueness = model_ext.validate_relation_uniqueness
 
 local function http_headers_to_string(self, header_type)
   if not self._http_header_strings then
@@ -327,6 +328,11 @@ local ApiBackendSettings = model_ext.new_class("api_backend_settings", {
       { validation_ext.db_null_optional.array_table, t("is not an array") },
       { validation_ext.db_null_optional.array_strings, t("must be an array of strings") },
       { validation_ext.db_null_optional:array_strings_maxlen(500), string.format(t("is too long (maximum is %d characters)"), 500) },
+    })
+    validate_relation_uniqueness(errors, data, "rate_limits", "duration", t("Duration"), {
+      "api_backend_settings_id",
+      "limit_by",
+      "duration",
     })
 
     if data["error_data"] then
