@@ -45,7 +45,7 @@ module ApiUmbrella
     def attributify_data!(data, old_data)
       attributify_settings!(data, old_data)
 
-      if(self.class == ::Api)
+      if(self.instance_of?(::Api))
         ["servers", "url_matches", "sub_settings", "rewrites"].each do |collection_name|
           attributify_embeds_many!(data, collection_name, old_data)
         end
@@ -61,7 +61,7 @@ module ApiUmbrella
       old_settings_data = old_data["settings"] if(old_data.present?)
 
       attributify_embeds_many!(settings_data, "rate_limits", old_settings_data)
-      if(self.class == ::Api)
+      if(self.instance_of?(::Api))
         ["headers", "default_response_headers", "override_response_headers"].each do |collection_name|
           # The header associations are a bit different, since they accept
           # either an array of nested attributes (like other nested object

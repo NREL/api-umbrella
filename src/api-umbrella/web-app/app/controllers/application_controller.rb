@@ -83,11 +83,9 @@ class ApplicationController < ActionController::Base
     end
   end
 
-  def use_locale
+  def use_locale(&block)
     locale = http_accept_language.language_region_compatible_from(I18n.available_locales) || I18n.default_locale
-    I18n.with_locale(locale) do
-      yield
-    end
+    I18n.with_locale(locale, &block)
   end
 
   def set_analytics_adapter

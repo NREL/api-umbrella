@@ -461,10 +461,10 @@ class Test::Apis::V1::Users::TestCreate < Minitest::Test
   end
 
   def test_validates_email_length
-    response = make_request(:email => "a" * 249 + "@a.com")
+    response = make_request(:email => "#{"a" * 249}@a.com")
     assert_response_code(201, response)
 
-    response = make_request(:email => "a" * 250 + "@a.com")
+    response = make_request(:email => "#{"a" * 250}@a.com")
     assert_response_code(422, response)
     data = MultiJson.load(response.body)
     assert_equal({
@@ -550,10 +550,10 @@ class Test::Apis::V1::Users::TestCreate < Minitest::Test
   end
 
   def test_validates_website_length
-    response = make_request(:website => "https://example.com/" + "a" * 235)
+    response = make_request(:website => "https://example.com/#{"a" * 235}")
     assert_response_code(201, response)
 
-    response = make_request(:website => "https://example.com/" + "a" * 236)
+    response = make_request(:website => "https://example.com/#{"a" * 236}")
     assert_response_code(422, response)
     data = MultiJson.load(response.body)
     assert_equal({

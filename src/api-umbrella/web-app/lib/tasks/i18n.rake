@@ -47,7 +47,7 @@ namespace :i18n do
       gettext_data
     end
 
-    def write_po(gettext_data, file, skip_empty = false)
+    def write_po(gettext_data, file, skip_empty: false)
       gettext_data.keys.sort.each do |key|
         value = gettext_data[key][:value]
         if(!skip_empty || (skip_empty && !value.to_s.empty?))
@@ -117,7 +117,7 @@ namespace :i18n do
         file.puts('"MIME-Version: 1.0\n"')
         file.puts('"Content-Type: text/plain; charset=UTF-8\n"')
         file.puts('"Content-Transfer-Encoding: 8bit\n"')
-        write_po(gettext_data, file, true)
+        write_po(gettext_data, file, :skip_empty => true)
       end
     end
   end

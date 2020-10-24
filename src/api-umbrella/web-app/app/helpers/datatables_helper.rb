@@ -69,7 +69,7 @@ module DatatablesHelper
     end
     respond_to do |format|
       format.csv do
-        send_file_headers!(:disposition => "attachment", :filename => csv_filename + ".csv")
+        send_file_headers!(:disposition => "attachment", :filename => "#{csv_filename}.csv")
         self.response_body = self.csv_output(results, columns)
       end
       format.json

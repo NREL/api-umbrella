@@ -27,7 +27,7 @@ class AdminUuids < Mongoid::Migration
       end
     end
 
-    Admin.all.each do |admin|
+    Admin.all.each do |admin| # rubocop:disable Style/CombinableLoops
       legacy_id = admin.read_attribute(:legacy_id)
       id = admin._id
 

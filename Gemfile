@@ -18,7 +18,7 @@ gem "minitest-hooks", "~> 1.5.0"
 gem "minitest-ci", "~> 3.4.0"
 
 # Ruby lint/style checker
-gem "rubocop", "~> 0.88", :require => false
+gem "rubocop", "~> 1.0.0", :require => false
 gem "rubocop-rails", "~> 2.7", :require => false
 
 # Running background processes
@@ -33,11 +33,11 @@ gem "oj", "~> 3.10.0"
 
 # Database libraries
 gem "mongoid", "~> 7.1.0"
-gem "elasticsearch", "~> 7.8.0"
+gem "elasticsearch", "~> 7.9.0"
 gem "active_attr", "~> 0.15.0"
 
 # Factories for test database data
-gem "factory_bot", "~> 5.2.0"
+gem "factory_bot", "~> 5.2"
 
 # Programmatically generate Rails session cookies.
 gem "rails_compatible_cookies_utils", "~> 0.1.0"

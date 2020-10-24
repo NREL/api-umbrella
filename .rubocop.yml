@@ -123,6 +123,9 @@ Naming/HeredocDelimiterNaming:
 Rails/ActiveRecordCallbacksOrder:
   Enabled: true
 
+Rails/AfterCommitOverride:
+  Enabled: true
+
 Rails/ApplicationMailer:
   Enabled: false
 
@@ -165,8 +168,14 @@ Rails/RenderPlainText:
 Rails/ShortI18n:
   Enabled: true
 
+Rails/SquishedSQLHeredocs:
+  Enabled: true
+
 Rails/WhereExists:
   Enabled: false
+
+Rails/WhereNot:
+  Enabled: true
 
 Style/AccessorGrouping:
   Enabled: true
@@ -297,6 +306,9 @@ Style/SignalException:
 
 Style/SlicingWithRange:
   Enabled: true
+
+Style/SoleNestedConditional:
+  Enabled: false
 
 Style/StringLiterals:
   EnforcedStyle: double_quotes

@@ -217,14 +217,14 @@ class Test::Apis::V1::Users::TestPermissions < Minitest::Test
   def assert_admin_permitted_view_only(api_key, admin)
     assert_admin_permitted_index(api_key, admin)
     assert_admin_permitted_show(api_key, admin)
-    assert_admin_forbidden_create(api_key, admin, true)
-    assert_admin_forbidden_update(api_key, admin, true)
+    assert_admin_forbidden_create(api_key, admin, :role_based_error => true)
+    assert_admin_forbidden_update(api_key, admin, :role_based_error => true)
     assert_no_destroy(api_key, admin)
   end
 
   def assert_admin_permitted_manage_only(api_key, admin)
-    assert_admin_forbidden_index(api_key, admin, true)
-    assert_admin_forbidden_show(api_key, admin, true)
+    assert_admin_forbidden_index(api_key, admin, :role_based_error => true)
+    assert_admin_forbidden_show(api_key, admin, :role_based_error => true)
     assert_admin_permitted_create(api_key, admin)
     assert_admin_permitted_update(api_key, admin)
     assert_no_destroy(api_key, admin)
@@ -248,7 +248,7 @@ class Test::Apis::V1::Users::TestPermissions < Minitest::Test
     assert_includes(record_ids, record.id)
   end
 
-  def assert_admin_forbidden_index(api_key, admin, role_based_error = false)
+  def assert_admin_forbidden_index(api_key, admin, role_based_error: false)
     FactoryBot.create(:api_user)
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options(api_key, admin))
 
@@ -276,7 +276,7 @@ class Test::Apis::V1::Users::TestPermissions < Minitest::Test
     assert_equal(["user"], data.keys)
   end
 
-  def assert_admin_forbidden_show(api_key, admin, role_based_error = false)
+  def assert_admin_forbidden_show(api_key, admin, role_based_error: false)
     record = FactoryBot.create(:api_user)
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/users/#{record.id}.json", http_options(api_key, admin))
 
@@ -310,7 +310,7 @@ class Test::Apis::V1::Users::TestPermissions < Minitest::Test
     assert_equal(1, active_count - initial_count)
   end
 
-  def assert_admin_forbidden_create(api_key, admin, role_based_error = false)
+  def assert_admin_forbidden_create(api_key, admin, role_based_error: false)
     attributes = FactoryBot.attributes_for(:api_user).deep_stringify_keys
     initial_count = active_count
     response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options(api_key, admin).deep_merge({
@@ -350,7 +350,7 @@ class Test::Apis::V1::Users::TestPermissions < Minitest::Test
     assert_equal(attributes["first_name"], record.first_name)
   end
 
-  def assert_admin_forbidden_update(api_key, admin, role_based_error = false)
+  def assert_admin_forbidden_update(api_key, admin, role_based_error: false)
     record = FactoryBot.create(:api_user)
 
     attributes = record.serializable_hash
