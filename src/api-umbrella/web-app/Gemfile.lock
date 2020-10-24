@@ -170,8 +170,8 @@ GEM
     mongoid-compatibility (0.5.1)
       activesupport
       mongoid (>= 2.0)
-    mongoid-embedded-errors (3.0.1)
-      mongoid (>= 4.0, < 8.0.0)
+    mongoid-embedded-errors (2.1.1)
+      mongoid (>= 3.0)
     mongoid-paranoia (2.0.0)
       activesupport (~> 4.0)
       mongoid (>= 4.0.0, <= 6.0.0)
@@ -336,7 +336,7 @@ DEPENDENCIES
   legacy-rails-CVE-2020-5267-patch
   lucene_query_parser!
   mongoid (~> 5.4)
-  mongoid-embedded-errors (~> 3.0.1)
+  mongoid-embedded-errors (~> 2.1.1)
   mongoid-paranoia (~> 2.0.0)
   mongoid_delorean (~> 1.3.0)
   mongoid_rails_migrations (~> 1.2.1)
