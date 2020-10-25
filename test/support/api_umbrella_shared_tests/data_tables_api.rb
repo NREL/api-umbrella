@@ -66,7 +66,7 @@ module ApiUmbrellaSharedTests
       response = Typhoeus.get(data_tables_api_url, http_options.deep_merge(admin_token).deep_merge({
         :params => {
           # Search for value that will never be found.
-          :search => { :value => SecureRandom.uuid + SecureRandom.uuid },
+          :search => { :value => "#{SecureRandom.uuid}#{SecureRandom.uuid}" },
         },
       }))
       assert_response_code(200, response)

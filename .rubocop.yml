@@ -242,6 +242,9 @@ Style/SignalException:
 Style/SlicingWithRange:
   Enabled: true
 
+Style/SoleNestedConditional:
+  Enabled: false
+
 Style/StringLiterals:
   EnforcedStyle: double_quotes
 

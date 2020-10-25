@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 
-rsyslog_version="8.2006.0"
-rsyslog_hash="d9589e64866f2fdc5636af4cae9d60ebf1e3257bb84b81ee953ede6a05878e97"
+rsyslog_version="8.2010.0"
+rsyslog_hash="19b232f765c4ba7a35b91ef1f5f9af775f6ff78ef56bb7737a2ce79ccbb32b98"
 
 set -e -u -x
 source ./tasks/helpers.sh
 
 task_working_dir
-download "https://fossies.org/linux/misc/rsyslog-8.2006.0.tar.gz" "sha256" "$rsyslog_hash"
+download "https://www.rsyslog.com/files/download/rsyslog/rsyslog-$rsyslog_version.tar.gz" "sha256" "$rsyslog_hash"
 extract_download "rsyslog-$rsyslog_version.tar.gz"
 
 cd "rsyslog-$rsyslog_version"
