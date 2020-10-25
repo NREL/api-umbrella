@@ -1,7 +1,14 @@
 #!/usr/bin/env bash
 
-trafficserver_version="8.1.0"
-trafficserver_hash="19bebf9f718cdfcfc6fcb24c6b40272e033502464709931180fc0066c4f3f4a96730098a536a7b71584149578382a38f1c14781e23d941f11e0bf78c2f5c43d1"
+# Don't upgrade to 8.1.0 yet, since I believe these changes to connection
+# timeouts affect some of our workaround logic related to
+# proxy.config.http.connect_attempts_timeout and
+# proxy.config.http.connect_attempts_max_retries. The new behavior actually
+# seems like it might be preferable and remove the need for some of our
+# workarounds, but 8.1.0 breaks some of our assumptions, so for now, we'll hold
+# back on upgrading.
+trafficserver_version="8.0.8"
+trafficserver_hash="e412c14f424456f0b813d1e7a05e6e1d4d428ef85c9186dc657c61abc287a9887fd7cd120e43d8b7f406c8aee8279e5311c2f417a0ff3ba347cc391e6a28afea"
 
 set -e -u -x
 source ./tasks/helpers.sh
