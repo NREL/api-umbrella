@@ -24,8 +24,8 @@ export default Component.extend({
     ];
   },
 
-  modalTitle: computed('model', function() {
-    if(this.get('model.isNew')) {
+  modalTitle: computed('model.isNew', function() {
+    if(this.model.isNew) {
       return 'Add Sub-URL Request Settings';
     } else {
       return 'Edit Sub-URL Request Settings';
@@ -40,7 +40,7 @@ export default Component.extend({
   actions: {
     submit() {
       this.bufferedModel.applyChanges();
-      if(this.get('model.isNew')) {
+      if(this.model.isNew) {
         this.collection.pushObject(this.model);
       }
 

@@ -16,5 +16,13 @@ module ApiUmbrellaTestHelpers
       data = MultiJson.load(response.body)
       assert_equal(backend, data["headers"]["x-backend"])
     end
+
+    def assert_backend_host_path_match(host, path, response)
+      assert_response_code(200, response)
+      assert_equal("application/json", response.headers["content-type"])
+      data = MultiJson.load(response.body)
+      assert_equal(host, data["url"]["host"])
+      assert_equal(path, data["url"]["path"])
+    end
   end
 end

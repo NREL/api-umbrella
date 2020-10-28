@@ -20,7 +20,7 @@ class Test::AdminUi::TestApis < Minitest::Capybara::Test
 
     assert_equal("Save Test API", find_field("Name").value)
 
-    find("legend a", :text => /Advanced Settings/).click
+    find("legend button", :text => /Advanced Settings/).click
     fill_in_codemirror "API Key Missing", :with => "hello1: foo\nhello2: bar"
 
     click_button("Save")
@@ -85,10 +85,10 @@ class Test::AdminUi::TestApis < Minitest::Capybara::Test
     admin_login
     visit "/admin/#/apis/new"
 
-    find("legend a", :text => /Global Request Settings/).click
+    find("legend button", :text => /Global Request Settings/).click
     refute_field('Override required roles from "Global Request Settings"', :visible => :all)
 
-    find("legend a", :text => /Sub-URL Request Settings/).click
+    find("legend button", :text => /Sub-URL Request Settings/).click
     find("button", :text => /Add URL Settings/).click
     assert_selector(".modal-content")
     within(".modal-content") do
@@ -134,7 +134,7 @@ class Test::AdminUi::TestApis < Minitest::Capybara::Test
     end
 
     # Global Request Settings
-    find("legend a", :text => /Global Request Settings/).click
+    find("legend button", :text => /Global Request Settings/).click
     fill_in "Append Query String Parameters", :with => "foo=bar"
     fill_in "Set Request Headers", :with => "X-Foo1: Bar\nX-Bar2: Foo"
     fill_in "HTTP Basic Authentication", :with => "foo:bar"
@@ -160,7 +160,7 @@ class Test::AdminUi::TestApis < Minitest::Capybara::Test
     fill_in "Override Response Headers", :with => "X-Foo3: Bar\nX-Bar3: Foo"
 
     # Sub-URL Request Settings
-    find("legend a", :text => /Sub-URL Request Settings/).click
+    find("legend button", :text => /Sub-URL Request Settings/).click
     find("button", :text => /Add URL Settings/).click
     assert_selector(".modal-content")
     within(".modal-content") do
@@ -192,7 +192,7 @@ class Test::AdminUi::TestApis < Minitest::Capybara::Test
     end
 
     # Advanced Requests Rewriting
-    find("legend a", :text => /Advanced Requests Rewriting/).click
+    find("legend button", :text => /Advanced Requests Rewriting/).click
     find("button", :text => /Add Rewrite/).click
     assert_selector(".modal-content")
     within(".modal-content") do
@@ -204,7 +204,7 @@ class Test::AdminUi::TestApis < Minitest::Capybara::Test
     end
 
     # Advanced Settings
-    find("legend a", :text => /Advanced Settings/).click
+    find("legend button", :text => /Advanced Settings/).click
     fill_in_codemirror "JSON Template", :with => '{"foo":"bar"}'
     fill_in_codemirror "XML Template", :with => "<foo>bar</foo>"
     fill_in_codemirror "CSV Template", :with => "foo,bar\nbar,foo"
@@ -248,7 +248,7 @@ class Test::AdminUi::TestApis < Minitest::Capybara::Test
     end
 
     # Global Request Settings
-    find("legend a", :text => /Global Request Settings/).click
+    find("legend button", :text => /Global Request Settings/).click
     assert_field("Append Query String Parameters", :with => "foo=bar")
     assert_field("Set Request Headers", :with => "X-Foo1: Bar\nX-Bar2: Foo")
     assert_field("HTTP Basic Authentication", :with => "foo:bar")
@@ -272,7 +272,7 @@ class Test::AdminUi::TestApis < Minitest::Capybara::Test
     assert_field("Override Response Headers", :with => "X-Foo3: Bar\nX-Bar3: Foo")
 
     # Sub-URL Request Settings
-    find("legend a", :text => /Sub-URL Request Settings/).click
+    find("legend button", :text => /Sub-URL Request Settings/).click
     find("#sub_settings_table a", :text => /Edit/).click
     assert_selector(".modal-content")
     within(".modal-content") do
@@ -301,7 +301,7 @@ class Test::AdminUi::TestApis < Minitest::Capybara::Test
     end
 
     # Advanced Requests Rewriting
-    find("legend a", :text => /Advanced Requests Rewriting/).click
+    find("legend button", :text => /Advanced Requests Rewriting/).click
     find("#rewrites a", :text => /Edit/).click
     assert_selector(".modal-content")
     within(".modal-content") do
@@ -313,7 +313,7 @@ class Test::AdminUi::TestApis < Minitest::Capybara::Test
     end
 
     # Advanced Settings
-    find("legend a", :text => /Advanced Settings/).click
+    find("legend button", :text => /Advanced Settings/).click
     assert_codemirror_field("JSON Template", :with => '{"foo":"bar"}')
     assert_codemirror_field("XML Template", :with => "<foo>bar</foo>")
     assert_codemirror_field("CSV Template", :with => "foo,bar\nbar,foo")
@@ -331,7 +331,7 @@ class Test::AdminUi::TestApis < Minitest::Capybara::Test
     admin_login
     visit "/admin/#/apis/#{api.id}/edit"
 
-    find("legend a", :text => /Global Request Settings/).click
+    find("legend button", :text => /Global Request Settings/).click
     within(".custom-rate-limits-table") do
       assert_equal("1", find(".rate-limit-duration-in-units").value)
       assert_equal("minutes", find(".rate-limit-duration-units").value)
@@ -358,7 +358,7 @@ class Test::AdminUi::TestApis < Minitest::Capybara::Test
     visit "/admin/#/apis/#{api.id}/edit"
 
     # Add a sub-url setting.
-    find("legend a", :text => /Sub-URL Request Settings/).click
+    find("legend button", :text => /Sub-URL Request Settings/).click
     find("button", :text => /Add URL Settings/).click
     assert_selector(".modal-content")
     within(".modal-content") do
@@ -383,7 +383,7 @@ class Test::AdminUi::TestApis < Minitest::Capybara::Test
     click_link api.name
 
     # Verify the sub-url setting in the table.
-    find("legend a", :text => /Sub-URL Request Settings/).click
+    find("legend button", :text => /Sub-URL Request Settings/).click
     assert_selector("#sub_settings_table")
     within("#sub_settings_table") do
       assert_text("any")
@@ -417,7 +417,7 @@ class Test::AdminUi::TestApis < Minitest::Capybara::Test
     # Verify all of the edit updates are displayed properly (we saw an issue
     # where the select menu handling didn't work properly on the second display
     # of an edited record).
-    find("legend a", :text => /Sub-URL Request Settings/).click
+    find("legend button", :text => /Sub-URL Request Settings/).click
     assert_selector("#sub_settings_table")
     within("#sub_settings_table") do
       assert_text("OPTIONS")

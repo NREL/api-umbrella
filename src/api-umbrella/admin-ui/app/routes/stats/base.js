@@ -1,4 +1,5 @@
 import $ from 'jquery';
+// eslint-disable-next-line ember/no-mixins
 import AuthenticatedRouteMixin from 'ember-simple-auth/mixins/authenticated-route-mixin';
 import Route from '@ember/routing/route';
 import bootbox from 'bootbox';
@@ -21,7 +22,7 @@ export default Route.extend(AuthenticatedRouteMixin, {
   beforeModel() {
     this._super(...arguments);
 
-    let timezone = this.get('session.data.authenticated.analytics_timezone');
+    let timezone = this.session.data.authenticated.analytics_timezone;
     let dateRanges = {
       'today': {
         label: 'Today',

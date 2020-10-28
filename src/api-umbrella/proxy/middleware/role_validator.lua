@@ -1,6 +1,4 @@
-local types = require "pl.types"
-
-local is_empty = types.is_empty
+local is_empty = require "api-umbrella.utils.is_empty"
 
 return function(settings, user)
   local required_roles = settings["required_roles"]

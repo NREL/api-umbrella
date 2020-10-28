@@ -1,44 +1,44 @@
-{{#if hasChanges}}
+{{#if this.hasChanges}}
   <form id="publish_form" {{action "publish" on="submit"}}>
-    {{#if model.config.apis.new}}
+    {{#if this.model.config.apis.new}}
       <fieldset>
-        <legend>{{model.config.apis.new.length}} New API Backends</legend>
-        {{config/publish-form-records category="apis" records=model.config.apis.new}}
+        <legend>{{this.model.config.apis.new.length}} New API Backends</legend>
+        <Config::PublishFormRecords @category="apis" @records={{this.model.config.apis.new}} />
       </fieldset>
     {{/if}}
 
-    {{#if model.config.website_backends.new}}
+    {{#if this.model.config.website_backends.new}}
       <fieldset>
-        <legend>{{model.config.website_backends.new.length}} New Website Backends</legend>
-        {{config/publish-form-records category="website_backends" records=model.config.website_backends.new}}
+        <legend>{{this.model.config.website_backends.new.length}} New Website Backends</legend>
+        <Config::PublishFormRecords @category="website_backends" @records={{this.model.config.website_backends.new}} />
       </fieldset>
     {{/if}}
 
-    {{#if model.config.apis.modified}}
+    {{#if this.model.config.apis.modified}}
       <fieldset>
-        <legend>{{model.config.apis.modified.length}} Modified API Backends</legend>
-        {{config/publish-form-records category="apis" records=model.config.apis.modified}}
+        <legend>{{this.model.config.apis.modified.length}} Modified API Backends</legend>
+        <Config::PublishFormRecords @category="apis" @records={{this.model.config.apis.modified}} />
       </fieldset>
     {{/if}}
 
-    {{#if model.config.website_backends.modified}}
+    {{#if this.model.config.website_backends.modified}}
       <fieldset>
-        <legend>{{model.config.website_backends.modified.length}} Modified Website Backends</legend>
-        {{config/publish-form-records category="website_backends" records=model.config.website_backends.modified}}
+        <legend>{{this.model.config.website_backends.modified.length}} Modified Website Backends</legend>
+        <Config::PublishFormRecords @category="website_backends" @records={{this.model.config.website_backends.modified}} />
       </fieldset>
     {{/if}}
 
-    {{#if model.config.apis.deleted}}
+    {{#if this.model.config.apis.deleted}}
       <fieldset>
-        <legend>{{model.config.apis.deleted.length}} Deleted API Backends</legend>
-        {{config/publish-form-records category="apis" records=model.config.apis.deleted}}
+        <legend>{{this.model.config.apis.deleted.length}} Deleted API Backends</legend>
+        <Config::PublishFormRecords @category="apis" @records={{this.model.config.apis.deleted}} />
       </fieldset>
     {{/if}}
 
-    {{#if model.config.website_backends.deleted}}
+    {{#if this.model.config.website_backends.deleted}}
       <fieldset>
-        <legend>{{model.config.website_backends.deleted.length}} Deleted Website Backends</legend>
-        {{config/publish-form-records category="website_backends" records=model.config.website_backends.deleted}}
+        <legend>{{this.model.config.website_backends.deleted.length}} Deleted Website Backends</legend>
+        <Config::PublishFormRecords @category="website_backends" @records={{this.model.config.website_backends.deleted}} />
       </fieldset>
     {{/if}}
 
@@ -51,11 +51,11 @@
     </div>
   </form>
 {{else}}
-  <div class="row-fluid">
-    <div class="span4 offset4">
+  <div class="row">
+    <div class="col-4 offset-4">
       <div class="alert alert-success text-center">
-        <big>Published configuration is up to date</big><br>
-        <small><em>Recently published changes should be live within a few seconds</em></small>
+        <p class="h4">Published configuration is up to date</p>
+        <p class="mb-0"><small><em>Recently published changes should be live within a few seconds</em></small></p>
       </div>
     </div>
   </div>

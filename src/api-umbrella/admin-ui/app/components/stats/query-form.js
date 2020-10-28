@@ -6,6 +6,7 @@ import QueryBuilder from 'jQuery-QueryBuilder';
 import forEach from 'lodash-es/forEach';
 import { inject } from '@ember/service';
 import moment from 'moment-timezone';
+// eslint-disable-next-line ember/no-observers
 import { observer } from '@ember/object';
 import { t } from 'api-umbrella-admin-ui/utils/i18n';
 
@@ -318,8 +319,8 @@ export default Component.extend({
 
   // eslint-disable-next-line ember/no-observers
   updateDateRange: observer('allQueryParamValues.start_at', 'allQueryParamValues.end_at', function() {
-    let start = moment(this.get('allQueryParamValues.start_at'), 'YYYY-MM-DD');
-    let end = moment(this.get('allQueryParamValues.end_at'), 'YYYY-MM-DD');
+    let start = moment(this.allQueryParamValues.start_at, 'YYYY-MM-DD');
+    let end = moment(this.allQueryParamValues.end_at, 'YYYY-MM-DD');
 
     this.dateRangePicker.hideCalendars();
     this.dateRangePicker.setStartDate(start);

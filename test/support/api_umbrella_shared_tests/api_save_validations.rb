@@ -19,9 +19,10 @@ module ApiUmbrellaTestHelpers
       attributes = attributes_for(action).deep_merge(overrides.deep_stringify_keys)
 
       response = create_or_update(action, attributes)
-      if(action == :create)
+      case action
+      when :create
         assert_response_code(201, response)
-      elsif(action == :update)
+      when :update
         assert_response_code(204, response)
       end
     end
@@ -50,9 +51,10 @@ module ApiUmbrellaTestHelpers
     end
 
     def attributes_for(action)
-      if(action == :create)
+      case action
+      when :create
         FactoryBot.attributes_for(:api_backend).deep_stringify_keys
-      elsif(action == :update)
+      when :update
         FactoryBot.create(:api_backend).serializable_hash
       else
         flunk("Unknown action: #{action.inspect}")
@@ -60,12 +62,13 @@ module ApiUmbrellaTestHelpers
     end
 
     def create_or_update(action, attributes)
-      if(action == :create)
+      case action
+      when :create
         Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/apis.json", http_options.deep_merge(admin_token).deep_merge({
           :headers => { "Content-Type" => "application/json" },
           :body => MultiJson.dump(:api => attributes),
         }))
-      elsif(action == :update)
+      when :update
         Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/apis/#{attributes["id"]}.json", http_options.deep_merge(admin_token).deep_merge({
           :headers => { "Content-Type" => "application/json" },
           :body => MultiJson.dump(:api => attributes),

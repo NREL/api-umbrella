@@ -11,6 +11,7 @@ local validation_ext = require "api-umbrella.web-app.utils.validation_ext"
 local db_null = db.NULL
 local db_raw = db.raw
 local validate_field = model_ext.validate_field
+local validate_relation_uniqueness = model_ext.validate_relation_uniqueness
 
 local ApiUserSettings = model_ext.new_class("api_user_settings", {
   relations = {
@@ -67,6 +68,11 @@ local ApiUserSettings = model_ext.new_class("api_user_settings", {
     })
     validate_field(errors, data, "rate_limit_mode", t("Rate limit mode"), {
       { validation_ext.db_null_optional:regex("^(unlimited|custom)$", "jo"), t("is not included in the list") },
+    })
+    validate_relation_uniqueness(errors, data, "rate_limits", "duration", t("Duration"), {
+      "api_user_settings_id",
+      "limit_by",
+      "duration",
     })
 
     return errors

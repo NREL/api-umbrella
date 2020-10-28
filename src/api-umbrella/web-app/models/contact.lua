@@ -1,7 +1,7 @@
 local config = require "api-umbrella.proxy.models.file_config"
 local contact_mailer = require "api-umbrella.web-app.mailers.contact"
 local contact_policy = require "api-umbrella.web-app.policies.contact_policy"
-local is_empty = require("pl.types").is_empty
+local is_empty = require "api-umbrella.utils.is_empty"
 local t = require("api-umbrella.web-app.utils.gettext").gettext
 local validate_field = require("api-umbrella.web-app.utils.model_ext").validate_field
 local validation_ext = require "api-umbrella.web-app.utils.validation_ext"

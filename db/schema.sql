@@ -2,8 +2,8 @@
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 10.8
--- Dumped by pg_dump version 10.8
+-- Dumped from database version 10.13
+-- Dumped by pg_dump version 10.13
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -72,14 +72,14 @@ CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA public;
 CREATE FUNCTION api_umbrella.analytics_cache_extract_unique_user_ids() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
-      BEGIN
-        IF (jsonb_typeof(NEW.data->'aggregations'->'hits_over_time'->'buckets'->0->'unique_user_ids'->'buckets') = 'array') THEN
-          NEW.unique_user_ids := (SELECT array_agg(DISTINCT bucket->>'key')::uuid[] FROM jsonb_array_elements(NEW.data->'aggregations'->'hits_over_time'->'buckets'->0->'unique_user_ids'->'buckets') AS bucket);
-        END IF;
+BEGIN
+  IF (jsonb_typeof(NEW.data->'aggregations'->'hits_over_time'->'buckets'->0->'unique_user_ids'->'buckets') = 'array') THEN
+    NEW.unique_user_ids := (SELECT array_agg(DISTINCT bucket->>'key')::uuid[] FROM jsonb_array_elements(NEW.data->'aggregations'->'hits_over_time'->'buckets'->0->'unique_user_ids'->'buckets') AS bucket);
+  END IF;
 
-        RETURN NEW;
-      END;
-      $$;
+  RETURN NEW;
+END;
+$$;
 
 
 --
@@ -147,16 +147,47 @@ CREATE FUNCTION api_umbrella.distributed_rate_limit_counters_increment_version()
 
 
 --
--- Name: next_api_backend_sort_order(); Type: FUNCTION; Schema: api_umbrella; Owner: -
+-- Name: path_sort_order(text); Type: FUNCTION; Schema: api_umbrella; Owner: -
 --
 
-CREATE FUNCTION api_umbrella.next_api_backend_sort_order() RETURNS integer
+CREATE FUNCTION api_umbrella.path_sort_order(text) RETURNS text[]
     LANGUAGE plpgsql
-    AS $$
+    AS $_$
+      DECLARE
+        parts text[];
       BEGIN
-        RETURN (SELECT COALESCE(MAX(sort_order), 0) + 10000 FROM api_backends);
+        -- Split the path into an array of path parts, so items can be more
+        -- logically grouped by the path levels.
+        parts := string_to_array($1, '/');
+
+        -- Remove empty strings in the array so that trailing slashes don't
+        -- cause the item to be sorted above paths with real values after the
+        -- slash. For example, this sorts the following examples in this order:
+        -- "/foo/bar, /foo/, /foo". Without this, the empty string in "/foo/"'s
+        -- array, would cause the following sort order: "/foo/, /foo/bar,
+        -- /foo".
+        parts := array_remove(parts, '');
+
+        -- Append a NULL to the end of every array. Used in combination with
+        -- "ORDER BY path_sort_order() NULLS LAST", this ensures that shorter,
+        -- terminal paths always come after the more specific paths. For
+        -- example, this forces "/foo/bar, /foo" (instead of "/foo" coming
+        -- first).
+        parts := array_append(parts, NULL);
+
+        -- Append the length of the string to force any identical array results
+        -- to sort based on the original string length in descending order
+        -- (descending assuming the length of the string doesn't exceed
+        -- 1,000,000 characters, which should be impossible based on other
+        -- constraints). This is needed because we removed empty strings from
+        -- the array above (for other sorting purposes). Without this, "/foo/"
+        -- and "/foo" would have identical array results, but we want to force
+        -- the longer/more specific /foo/ to sort before /foo.
+        parts := array_append(parts, (1000000 - length($1))::text);
+
+        RETURN parts;
       END;
-      $$;
+      $_$;
 
 
 --
@@ -871,7 +902,6 @@ CREATE TABLE api_umbrella.api_backend_url_matches (
     api_backend_id uuid NOT NULL,
     frontend_prefix character varying(255) NOT NULL,
     backend_prefix character varying(255) NOT NULL,
-    sort_order integer DEFAULT 0 NOT NULL,
     created_at timestamp with time zone NOT NULL,
     created_by_id uuid NOT NULL,
     created_by_username character varying(255) NOT NULL,
@@ -888,7 +918,6 @@ CREATE TABLE api_umbrella.api_backend_url_matches (
 CREATE TABLE api_umbrella.api_backends (
     id uuid DEFAULT public.gen_random_uuid() NOT NULL,
     name character varying(255) NOT NULL,
-    sort_order integer DEFAULT api_umbrella.next_api_backend_sort_order() NOT NULL,
     backend_protocol character varying(5) NOT NULL,
     frontend_host character varying(255) NOT NULL,
     backend_host character varying(255),
@@ -902,8 +931,23 @@ CREATE TABLE api_umbrella.api_backends (
     updated_by_username character varying(255) NOT NULL,
     organization_name character varying(255),
     status_description character varying(255),
+    created_order integer NOT NULL,
     CONSTRAINT api_backends_backend_protocol_check CHECK (((backend_protocol)::text = ANY (ARRAY[('http'::character varying)::text, ('https'::character varying)::text]))),
     CONSTRAINT api_backends_balance_algorithm_check CHECK (((balance_algorithm)::text = ANY (ARRAY[('round_robin'::character varying)::text, ('least_conn'::character varying)::text, ('ip_hash'::character varying)::text])))
+);
+
+
+--
+-- Name: api_backends_created_order_seq; Type: SEQUENCE; Schema: api_umbrella; Owner: -
+--
+
+ALTER TABLE api_umbrella.api_backends ALTER COLUMN created_order ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME api_umbrella.api_backends_created_order_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
 );
 
 
@@ -1206,7 +1250,22 @@ CREATE TABLE api_umbrella.website_backends (
     updated_at timestamp with time zone NOT NULL,
     updated_by_id uuid NOT NULL,
     updated_by_username character varying(255) NOT NULL,
+    created_order integer NOT NULL,
     CONSTRAINT website_backends_backend_protocol_check CHECK (((backend_protocol)::text = ANY (ARRAY[('http'::character varying)::text, ('https'::character varying)::text])))
+);
+
+
+--
+-- Name: website_backends_created_order_seq; Type: SEQUENCE; Schema: api_umbrella; Owner: -
+--
+
+ALTER TABLE api_umbrella.website_backends ALTER COLUMN created_order ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME api_umbrella.website_backends_created_order_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
 );
 
 
@@ -1533,11 +1592,43 @@ ALTER TABLE ONLY api_umbrella.api_backend_http_headers
 
 
 --
+-- Name: api_backend_http_headers api_backend_http_headers_sort_order_uniq; Type: CONSTRAINT; Schema: api_umbrella; Owner: -
+--
+
+ALTER TABLE ONLY api_umbrella.api_backend_http_headers
+    ADD CONSTRAINT api_backend_http_headers_sort_order_uniq UNIQUE (api_backend_settings_id, header_type, sort_order) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: api_backend_rewrites api_backend_rewrites_frontend_matcher_uniq; Type: CONSTRAINT; Schema: api_umbrella; Owner: -
+--
+
+ALTER TABLE ONLY api_umbrella.api_backend_rewrites
+    ADD CONSTRAINT api_backend_rewrites_frontend_matcher_uniq UNIQUE (api_backend_id, matcher_type, http_method, frontend_matcher) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
 -- Name: api_backend_rewrites api_backend_rewrites_pkey; Type: CONSTRAINT; Schema: api_umbrella; Owner: -
 --
 
 ALTER TABLE ONLY api_umbrella.api_backend_rewrites
     ADD CONSTRAINT api_backend_rewrites_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: api_backend_rewrites api_backend_rewrites_sort_order_uniq; Type: CONSTRAINT; Schema: api_umbrella; Owner: -
+--
+
+ALTER TABLE ONLY api_umbrella.api_backend_rewrites
+    ADD CONSTRAINT api_backend_rewrites_sort_order_uniq UNIQUE (api_backend_id, sort_order) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: api_backend_servers api_backend_servers_host_port_uniq; Type: CONSTRAINT; Schema: api_umbrella; Owner: -
+--
+
+ALTER TABLE ONLY api_umbrella.api_backend_servers
+    ADD CONSTRAINT api_backend_servers_host_port_uniq UNIQUE (api_backend_id, host, port) DEFERRABLE INITIALLY DEFERRED;
 
 
 --
@@ -1570,6 +1661,30 @@ ALTER TABLE ONLY api_umbrella.api_backend_settings_required_roles
 
 ALTER TABLE ONLY api_umbrella.api_backend_sub_url_settings
     ADD CONSTRAINT api_backend_sub_url_settings_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: api_backend_sub_url_settings api_backend_sub_url_settings_regex_uniq; Type: CONSTRAINT; Schema: api_umbrella; Owner: -
+--
+
+ALTER TABLE ONLY api_umbrella.api_backend_sub_url_settings
+    ADD CONSTRAINT api_backend_sub_url_settings_regex_uniq UNIQUE (api_backend_id, http_method, regex) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: api_backend_sub_url_settings api_backend_sub_url_settings_sort_order_uniq; Type: CONSTRAINT; Schema: api_umbrella; Owner: -
+--
+
+ALTER TABLE ONLY api_umbrella.api_backend_sub_url_settings
+    ADD CONSTRAINT api_backend_sub_url_settings_sort_order_uniq UNIQUE (api_backend_id, sort_order) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: api_backend_url_matches api_backend_url_matches_frontend_prefix_uniq; Type: CONSTRAINT; Schema: api_umbrella; Owner: -
+--
+
+ALTER TABLE ONLY api_umbrella.api_backend_url_matches
+    ADD CONSTRAINT api_backend_url_matches_frontend_prefix_uniq UNIQUE (api_backend_id, frontend_prefix) DEFERRABLE INITIALLY DEFERRED;
 
 
 --
@@ -1669,6 +1784,14 @@ ALTER TABLE ONLY api_umbrella.published_config
 
 
 --
+-- Name: rate_limits rate_limits_duration_uniq; Type: CONSTRAINT; Schema: api_umbrella; Owner: -
+--
+
+ALTER TABLE ONLY api_umbrella.rate_limits
+    ADD CONSTRAINT rate_limits_duration_uniq UNIQUE (api_backend_settings_id, api_user_settings_id, limit_by, duration) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
 -- Name: rate_limits rate_limits_pkey; Type: CONSTRAINT; Schema: api_umbrella; Owner: -
 --
 
@@ -1765,34 +1888,6 @@ CREATE UNIQUE INDEX analytics_cities_country_region_city_idx ON api_umbrella.ana
 
 
 --
--- Name: api_backend_http_headers_api_backend_settings_id_header_typ_idx; Type: INDEX; Schema: api_umbrella; Owner: -
---
-
-CREATE UNIQUE INDEX api_backend_http_headers_api_backend_settings_id_header_typ_idx ON api_umbrella.api_backend_http_headers USING btree (api_backend_settings_id, header_type, sort_order);
-
-
---
--- Name: api_backend_rewrites_api_backend_id_matcher_type_http_metho_idx; Type: INDEX; Schema: api_umbrella; Owner: -
---
-
-CREATE UNIQUE INDEX api_backend_rewrites_api_backend_id_matcher_type_http_metho_idx ON api_umbrella.api_backend_rewrites USING btree (api_backend_id, matcher_type, http_method, frontend_matcher);
-
-
---
--- Name: api_backend_rewrites_api_backend_id_sort_order_idx; Type: INDEX; Schema: api_umbrella; Owner: -
---
-
-CREATE UNIQUE INDEX api_backend_rewrites_api_backend_id_sort_order_idx ON api_umbrella.api_backend_rewrites USING btree (api_backend_id, sort_order);
-
-
---
--- Name: api_backend_servers_api_backend_id_host_port_idx; Type: INDEX; Schema: api_umbrella; Owner: -
---
-
-CREATE UNIQUE INDEX api_backend_servers_api_backend_id_host_port_idx ON api_umbrella.api_backend_servers USING btree (api_backend_id, host, port);
-
-
---
 -- Name: api_backend_settings_api_backend_id_idx; Type: INDEX; Schema: api_umbrella; Owner: -
 --
 
@@ -1811,41 +1906,6 @@ CREATE UNIQUE INDEX api_backend_settings_api_backend_sub_url_settings_id_idx ON 
 --
 
 CREATE UNIQUE INDEX api_backend_settings_required_api_backend_settings_id_api_r_idx ON api_umbrella.api_backend_settings_required_roles USING btree (api_backend_settings_id, api_role_id);
-
-
---
--- Name: api_backend_sub_url_settings_api_backend_id_http_method_reg_idx; Type: INDEX; Schema: api_umbrella; Owner: -
---
-
-CREATE UNIQUE INDEX api_backend_sub_url_settings_api_backend_id_http_method_reg_idx ON api_umbrella.api_backend_sub_url_settings USING btree (api_backend_id, http_method, regex);
-
-
---
--- Name: api_backend_sub_url_settings_api_backend_id_sort_order_idx; Type: INDEX; Schema: api_umbrella; Owner: -
---
-
-CREATE UNIQUE INDEX api_backend_sub_url_settings_api_backend_id_sort_order_idx ON api_umbrella.api_backend_sub_url_settings USING btree (api_backend_id, sort_order);
-
-
---
--- Name: api_backend_url_matches_api_backend_id_frontend_prefix_idx; Type: INDEX; Schema: api_umbrella; Owner: -
---
-
-CREATE UNIQUE INDEX api_backend_url_matches_api_backend_id_frontend_prefix_idx ON api_umbrella.api_backend_url_matches USING btree (api_backend_id, frontend_prefix);
-
-
---
--- Name: api_backend_url_matches_api_backend_id_sort_order_idx; Type: INDEX; Schema: api_umbrella; Owner: -
---
-
-CREATE UNIQUE INDEX api_backend_url_matches_api_backend_id_sort_order_idx ON api_umbrella.api_backend_url_matches USING btree (api_backend_id, sort_order);
-
-
---
--- Name: api_backends_sort_order_idx; Type: INDEX; Schema: api_umbrella; Owner: -
---
-
-CREATE INDEX api_backends_sort_order_idx ON api_umbrella.api_backends USING btree (sort_order);
 
 
 --
@@ -1909,13 +1969,6 @@ CREATE INDEX distributed_rate_limit_counters_expires_at_idx ON api_umbrella.dist
 --
 
 CREATE UNIQUE INDEX distributed_rate_limit_counters_version_idx ON api_umbrella.distributed_rate_limit_counters USING btree (version);
-
-
---
--- Name: rate_limits_api_backend_settings_id_api_user_settings_id_li_idx; Type: INDEX; Schema: api_umbrella; Owner: -
---
-
-CREATE UNIQUE INDEX rate_limits_api_backend_settings_id_api_user_settings_id_li_idx ON api_umbrella.rate_limits USING btree (api_backend_settings_id, api_user_settings_id, limit_by, duration);
 
 
 --
@@ -2136,27 +2189,6 @@ CREATE TRIGGER api_users_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON api_u
 
 
 --
--- Name: admins audit_trigger_row; Type: TRIGGER; Schema: api_umbrella; Owner: -
---
-
-CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_umbrella.admins FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
-
-
---
--- Name: admin_permissions audit_trigger_row; Type: TRIGGER; Schema: api_umbrella; Owner: -
---
-
-CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_umbrella.admin_permissions FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
-
-
---
--- Name: api_scopes audit_trigger_row; Type: TRIGGER; Schema: api_umbrella; Owner: -
---
-
-CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_umbrella.api_scopes FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
-
-
---
 -- Name: admin_groups audit_trigger_row; Type: TRIGGER; Schema: api_umbrella; Owner: -
 --
 
@@ -2185,17 +2217,24 @@ CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_umbrell
 
 
 --
--- Name: api_roles audit_trigger_row; Type: TRIGGER; Schema: api_umbrella; Owner: -
+-- Name: admin_permissions audit_trigger_row; Type: TRIGGER; Schema: api_umbrella; Owner: -
 --
 
-CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_umbrella.api_roles FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
+CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_umbrella.admin_permissions FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
 
 
 --
--- Name: api_backends audit_trigger_row; Type: TRIGGER; Schema: api_umbrella; Owner: -
+-- Name: admins audit_trigger_row; Type: TRIGGER; Schema: api_umbrella; Owner: -
 --
 
-CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_umbrella.api_backends FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
+CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_umbrella.admins FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
+
+
+--
+-- Name: api_backend_http_headers audit_trigger_row; Type: TRIGGER; Schema: api_umbrella; Owner: -
+--
+
+CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_umbrella.api_backend_http_headers FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
 
 
 --
@@ -2213,20 +2252,6 @@ CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_umbrell
 
 
 --
--- Name: api_backend_sub_url_settings audit_trigger_row; Type: TRIGGER; Schema: api_umbrella; Owner: -
---
-
-CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_umbrella.api_backend_sub_url_settings FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
-
-
---
--- Name: api_backend_url_matches audit_trigger_row; Type: TRIGGER; Schema: api_umbrella; Owner: -
---
-
-CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_umbrella.api_backend_url_matches FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
-
-
---
 -- Name: api_backend_settings audit_trigger_row; Type: TRIGGER; Schema: api_umbrella; Owner: -
 --
 
@@ -2241,10 +2266,45 @@ CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_umbrell
 
 
 --
--- Name: api_backend_http_headers audit_trigger_row; Type: TRIGGER; Schema: api_umbrella; Owner: -
+-- Name: api_backend_sub_url_settings audit_trigger_row; Type: TRIGGER; Schema: api_umbrella; Owner: -
 --
 
-CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_umbrella.api_backend_http_headers FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
+CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_umbrella.api_backend_sub_url_settings FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
+
+
+--
+-- Name: api_backend_url_matches audit_trigger_row; Type: TRIGGER; Schema: api_umbrella; Owner: -
+--
+
+CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_umbrella.api_backend_url_matches FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
+
+
+--
+-- Name: api_backends audit_trigger_row; Type: TRIGGER; Schema: api_umbrella; Owner: -
+--
+
+CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_umbrella.api_backends FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
+
+
+--
+-- Name: api_roles audit_trigger_row; Type: TRIGGER; Schema: api_umbrella; Owner: -
+--
+
+CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_umbrella.api_roles FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
+
+
+--
+-- Name: api_scopes audit_trigger_row; Type: TRIGGER; Schema: api_umbrella; Owner: -
+--
+
+CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_umbrella.api_scopes FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
+
+
+--
+-- Name: api_user_settings audit_trigger_row; Type: TRIGGER; Schema: api_umbrella; Owner: -
+--
+
+CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_umbrella.api_user_settings FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
 
 
 --
@@ -2259,13 +2319,6 @@ CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_umbrell
 --
 
 CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_umbrella.api_users_roles FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
-
-
---
--- Name: api_user_settings audit_trigger_row; Type: TRIGGER; Schema: api_umbrella; Owner: -
---
-
-CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_umbrella.api_user_settings FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
 
 
 --
@@ -2287,27 +2340,6 @@ CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_umbrell
 --
 
 CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_umbrella.website_backends FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
-
-
---
--- Name: admins audit_trigger_stm; Type: TRIGGER; Schema: api_umbrella; Owner: -
---
-
-CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_umbrella.admins FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
-
-
---
--- Name: admin_permissions audit_trigger_stm; Type: TRIGGER; Schema: api_umbrella; Owner: -
---
-
-CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_umbrella.admin_permissions FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
-
-
---
--- Name: api_scopes audit_trigger_stm; Type: TRIGGER; Schema: api_umbrella; Owner: -
---
-
-CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_umbrella.api_scopes FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
 
 
 --
@@ -2339,17 +2371,24 @@ CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_umbrella.admin_groups_api
 
 
 --
--- Name: api_roles audit_trigger_stm; Type: TRIGGER; Schema: api_umbrella; Owner: -
+-- Name: admin_permissions audit_trigger_stm; Type: TRIGGER; Schema: api_umbrella; Owner: -
 --
 
-CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_umbrella.api_roles FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
+CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_umbrella.admin_permissions FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
 
 
 --
--- Name: api_backends audit_trigger_stm; Type: TRIGGER; Schema: api_umbrella; Owner: -
+-- Name: admins audit_trigger_stm; Type: TRIGGER; Schema: api_umbrella; Owner: -
 --
 
-CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_umbrella.api_backends FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
+CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_umbrella.admins FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
+
+
+--
+-- Name: api_backend_http_headers audit_trigger_stm; Type: TRIGGER; Schema: api_umbrella; Owner: -
+--
+
+CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_umbrella.api_backend_http_headers FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
 
 
 --
@@ -2367,20 +2406,6 @@ CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_umbrella.api_backend_serv
 
 
 --
--- Name: api_backend_sub_url_settings audit_trigger_stm; Type: TRIGGER; Schema: api_umbrella; Owner: -
---
-
-CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_umbrella.api_backend_sub_url_settings FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
-
-
---
--- Name: api_backend_url_matches audit_trigger_stm; Type: TRIGGER; Schema: api_umbrella; Owner: -
---
-
-CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_umbrella.api_backend_url_matches FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
-
-
---
 -- Name: api_backend_settings audit_trigger_stm; Type: TRIGGER; Schema: api_umbrella; Owner: -
 --
 
@@ -2395,10 +2420,45 @@ CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_umbrella.api_backend_sett
 
 
 --
--- Name: api_backend_http_headers audit_trigger_stm; Type: TRIGGER; Schema: api_umbrella; Owner: -
+-- Name: api_backend_sub_url_settings audit_trigger_stm; Type: TRIGGER; Schema: api_umbrella; Owner: -
 --
 
-CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_umbrella.api_backend_http_headers FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
+CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_umbrella.api_backend_sub_url_settings FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
+
+
+--
+-- Name: api_backend_url_matches audit_trigger_stm; Type: TRIGGER; Schema: api_umbrella; Owner: -
+--
+
+CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_umbrella.api_backend_url_matches FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
+
+
+--
+-- Name: api_backends audit_trigger_stm; Type: TRIGGER; Schema: api_umbrella; Owner: -
+--
+
+CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_umbrella.api_backends FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
+
+
+--
+-- Name: api_roles audit_trigger_stm; Type: TRIGGER; Schema: api_umbrella; Owner: -
+--
+
+CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_umbrella.api_roles FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
+
+
+--
+-- Name: api_scopes audit_trigger_stm; Type: TRIGGER; Schema: api_umbrella; Owner: -
+--
+
+CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_umbrella.api_scopes FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
+
+
+--
+-- Name: api_user_settings audit_trigger_stm; Type: TRIGGER; Schema: api_umbrella; Owner: -
+--
+
+CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_umbrella.api_user_settings FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
 
 
 --
@@ -2413,13 +2473,6 @@ CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_umbrella.api_users FOR EA
 --
 
 CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_umbrella.api_users_roles FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
-
-
---
--- Name: api_user_settings audit_trigger_stm; Type: TRIGGER; Schema: api_umbrella; Owner: -
---
-
-CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_umbrella.api_user_settings FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
 
 
 --

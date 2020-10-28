@@ -1,18 +1,18 @@
-{{error-messages model=model}}
+<ErrorMessages @model={{this.model}} />
 
 <form {{action "submit" on="submit"}}>
-  {{#fields-for model=model style="horizontal" as |f|}}
+  <FieldsFor @model={{this.model}} @style="horizontal" as |f|>
     <fieldset class="form-horizontal condensed">
       {{f.text-field "name" label="Group Name"}}
-      {{f.checkboxes-field "apiScopeIds" label="Scopes" options=apiScopeOptions}}
-      {{f.checkboxes-field "permissionIds" label="Permissions" options=permissionOptions}}
+      {{f.checkboxes-field "apiScopeIds" label="Scopes" options=this.apiScopeOptions}}
+      {{f.checkboxes-field "permissionIds" label="Permissions" options=this.permissionOptions}}
 
-      {{#if model.id}}
+      {{#if this.model.id}}
         {{#f.static-field "admins" label="Admins"}}
-          {{#if model.admins}}
+          {{#if this.model.admins}}
             <ul>
-              {{#each model.admins as |admin|}}
-                <li>{{#link-to "admins.edit" admin.id}}{{admin.username}}{{/link-to}} (Last Login: {{#if admin.current_sign_in_at}}{{format-date admin.current_sign_in_at}}{{else}}Never{{/if}})</li>
+              {{#each this.model.admins as |admin|}}
+                <li><LinkTo @route="admins.edit" @model={{admin.id}}>{{admin.username}}</LinkTo> (Last Login: {{#if admin.current_sign_in_at}}{{format-date admin.current_sign_in_at}}{{else}}Never{{/if}})</li>
               {{/each}}
             </ul>
           {{else}}
@@ -27,16 +27,16 @@
         <button type="submit" class="btn btn-lg btn-primary save-button"><span class="btn-label">Save</span><span class="btn-loading-label">{{fa-icon "sync-alt" spin=true}}Saving...</span></button>
       </div>
       <div class="col-sm-6 record-details">
-        {{#if model.id}}
-          Created: {{format-date model.createdAt}} by {{model.creator.username}}<br>
-          Last Updated: {{format-date model.updatedAt}} by {{model.updater.username}}<br>
+        {{#if this.model.id}}
+          Created: {{format-date this.model.createdAt}} by {{this.model.creator.username}}<br>
+          Last Updated: {{format-date this.model.updatedAt}} by {{this.model.updater.username}}<br>
         {{/if}}
       </div>
     </div>
-    {{#if model.id}}
+    {{#if this.model.id}}
       <div class="form-extra-actions">
         <a href="#" class="remove-action" {{action "delete"}}>{{fa-icon "times"}}Delete Admin Group</a>
       </div>
     {{/if}}
-  {{/fields-for}}
+  </FieldsFor>
 </form>

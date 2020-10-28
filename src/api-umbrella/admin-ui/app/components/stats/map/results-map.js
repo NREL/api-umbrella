@@ -4,6 +4,7 @@ import clone from 'lodash-es/clone';
 import debounce from 'lodash-es/debounce';
 import echarts from 'echarts/lib/echarts';
 import { inject } from '@ember/service';
+// eslint-disable-next-line ember/no-observers
 import { observer } from '@ember/object';
 import { on } from '@ember/object/evented';
 
@@ -33,7 +34,7 @@ export default Component.extend({
 
   handleCityClick(event) {
     if(event.seriesType === 'scatter') {
-      let currentRegion = this.get('allQueryParamValues.region').split('-');
+      let currentRegion = this.allQueryParamValues.region.split('-');
       let currentCountry = currentRegion[0];
       currentRegion = currentRegion[1];
       let queryParams = clone(this.presentQueryParamValues);
@@ -81,7 +82,7 @@ export default Component.extend({
 
   // eslint-disable-next-line ember/no-on-calls-in-components, ember/no-observers
   refreshMap: on('init', observer('allQueryParamValues.region', function() {
-    let currentRegion = this.get('allQueryParamValues.region');
+    let currentRegion = this.allQueryParamValues.region;
     $.get('/admin/maps/' + currentRegion + '.json', (geojson) => {
       this.labels = geojson._labels || {};
 
@@ -103,7 +104,7 @@ export default Component.extend({
 
       echarts.registerMap('region', geojson, specialMapAreas);
 
-      this.set('loadedMapRegion', this.get('allQueryParamValues.region'));
+      this.set('loadedMapRegion', this.allQueryParamValues.region);
 
       this.fillInChartDataMissingRegions();
       this.draw();
@@ -112,7 +113,7 @@ export default Component.extend({
 
   // eslint-disable-next-line ember/no-on-calls-in-components, ember/no-observers
   refreshData: on('init', observer('regions', function() {
-    let currentRegion = this.get('allQueryParamValues.region');
+    let currentRegion = this.allQueryParamValues.region;
 
     let data = {};
     let maxValue = 2;
@@ -155,7 +156,7 @@ export default Component.extend({
     this.set('chartData', data);
     this.set('chartDataMaxValue', maxValue);
     this.set('chartDataMaxValueDisplay', maxValueDisplay);
-    this.set('loadedDataRegion', this.get('allQueryParamValues.region'));
+    this.set('loadedDataRegion', this.allQueryParamValues.region);
 
     this.fillInChartDataMissingRegions();
     this.draw();
@@ -185,7 +186,7 @@ export default Component.extend({
   },
 
   draw() {
-    let currentRegion = this.get('allQueryParamValues.region');
+    let currentRegion = this.allQueryParamValues.region;
     if(!this.chart || this.loadedDataRegion !== currentRegion || this.loadedMapRegion !== currentRegion) {
       return;
     }

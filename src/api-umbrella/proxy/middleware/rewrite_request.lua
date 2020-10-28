@@ -1,14 +1,13 @@
 local config = require "api-umbrella.proxy.models.file_config"
+local is_empty = require "api-umbrella.utils.is_empty"
 local lustache = require "lustache"
 local plutils = require "pl.utils"
 local stringx = require "pl.stringx"
 local tablex = require "pl.tablex"
-local types = require "pl.types"
 local utils = require "api-umbrella.proxy.utils"
 local xpcall_error_handler = require "api-umbrella.utils.xpcall_error_handler"
 
 local gsub = ngx.re.gsub
-local is_empty = types.is_empty
 local keys = tablex.keys
 local set_uri = utils.set_uri
 local size = tablex.size

@@ -1,5 +1,5 @@
 local get_packed = require("api-umbrella.utils.packed_shared_dict").get_packed
-local is_empty = require("pl.types").is_empty
+local is_empty = require "api-umbrella.utils.is_empty"
 local psl = require "api-umbrella.utils.psl"
 local url_parse = require("socket.url").parse
 

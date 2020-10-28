@@ -1,20 +1,16 @@
-import 'jquery-ui/ui/widgets/sortable';
-import { computed, observer } from '@ember/object';
 import $ from 'jquery';
 import Component from '@ember/component';
 import DataTablesHelpers from 'api-umbrella-admin-ui/utils/data-tables-helpers';
-import bootbox from 'bootbox';
+import { computed } from '@ember/object';
 import escape from 'lodash-es/escape';
 import { inject } from '@ember/service';
-import isEqual from 'lodash-es/isEqual';
 
 export default Component.extend({
   busy: inject('busy'),
   session: inject('session'),
-  reorderActive: false,
 
   didInsertElement() {
-    const currentAdmin = this.get('session.data.authenticated.admin');
+    const currentAdmin = this.session.data.authenticated.admin;
 
     const dataTable = this.$().find('table').DataTable({
       serverSide: true,
@@ -96,22 +92,6 @@ export default Component.extend({
             }),
           },
         ] : []),
-        {
-          name: 'sort_order',
-          data: 'sort_order',
-          title: 'Matching Order',
-          defaultContent: '-',
-          width: 130,
-          render: DataTablesHelpers.renderEscaped,
-        },
-        {
-          data: null,
-          className: 'reorder-handle',
-          orderable: false,
-          render() {
-            return '<i class="fas fa-bars"></i>';
-          },
-        },
       ],
     });
     this.set('table', dataTable);
@@ -122,104 +102,14 @@ export default Component.extend({
       delete params.length;
       this.set('csvQueryParams', params);
     });
-
-    this.table
-      .on('search', (event, settings) => {
-        // Disable reordering if the user tries to filter the table by anything
-        // (otherwise, our reordering logic won't work, since it relies on the
-        // neighboring rows).
-        if(this.reorderActive) {
-          if(settings.oPreviousSearch && settings.oPreviousSearch.sSearch) {
-            this.set('reorderActive', false);
-          }
-        }
-      })
-      .on('order', (event, settings) => {
-        // Disable reordering if the user tries to sort the table by anything
-        // other than the sort order (otherwise, our reordering logic won't
-        // work, since it relies on the neighboring rows).
-        if(this.reorderActive) {
-          if(settings.aaSorting && !isEqual(settings.aaSorting, [[this.table.column('sort_order:name').index(), 'asc']])) {
-            this.set('reorderActive', false);
-          }
-        }
-      });
-
-    this.$().find('tbody').sortable({
-      handle: '.reorder-handle',
-      placeholder: 'reorder-placeholder',
-      helper(event, ui) {
-        ui.children().each(function() {
-          $(this).width($(this).width());
-        });
-        return ui;
-      },
-      stop: (event, ui) => {
-        let row = $(ui.item);
-        let previousRow = row.prev('tbody tr');
-        let moveAfterId = null;
-        if(previousRow.length > 0) {
-          moveAfterId = $(previousRow[0]).data('id');
-        }
-
-        this.saveReorder(row.data('id'), moveAfterId);
-      },
-    });
   },
 
-  downloadUrl: computed('csvQueryParams', function() {
+  downloadUrl: computed('csvQueryParams', 'session.data.authenticated.api_key', function() {
     const params = $.param({
       ...(this.csvQueryParams || {}),
-      api_key: this.get('session.data.authenticated.api_key'),
+      api_key: this.session.data.authenticated.api_key,
     });
 
     return `/api-umbrella/v1/apis.csv?${params}`;
   }),
-
-  // eslint-disable-next-line ember/no-observers
-  handleReorderChange: observer('reorderActive', function() {
-    if(this.reorderActive) {
-      this.$().find('table').addClass('reorder-active');
-      this.table
-        .order([[this.table.column('sort_order:name').index(), 'asc']])
-        .search('')
-        .draw();
-    } else {
-      this.$().find('table').removeClass('reorder-active');
-    }
-
-    let $container = this.$();
-    if($container) {
-      let $buttonText = this.$().find('.reorder-button-text');
-      if(this.reorderActive) {
-        $buttonText.data('originalText',  $buttonText.text());
-        $buttonText.text('Done');
-      } else {
-        $buttonText.text($buttonText.data('originalText'));
-      }
-    }
-  }),
-
-  saveReorder(id, moveAfterId) {
-    this.busy.show();
-    $.ajax({
-      url: '/api-umbrella/v1/apis/' + id + '/move_after.json',
-      method: 'PUT',
-      data: { move_after_id: moveAfterId },
-    }).done(() => {
-      // eslint-disable-next-line ember/jquery-ember-run
-      this.table.draw();
-    }).fail((xhr) => {
-      // eslint-disable-next-line no-console
-      console.error('Unexpected error: ' + xhr.status + ' ' + xhr.statusText + ' (' + xhr.readyState + '): ' + xhr.responseText);
-      bootbox.alert('An unexpected error occurred. Please try again.');
-      this.table.draw();
-    });
-  },
-
-  actions: {
-    toggleReorderApis() {
-      this.set('reorderActive', !this.reorderActive);
-    },
-  },
 });

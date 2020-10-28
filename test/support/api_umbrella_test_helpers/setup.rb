@@ -373,9 +373,7 @@ module ApiUmbrellaTestHelpers
       # the 63 char limit).
       unique_number = next_unique_number
       assert_operator(unique_number, :<=, 999999)
-      hostname = "#{hostname}-#{unique_number.to_s.rjust(6, "0")}"
-
-      hostname
+      "#{hostname}-#{unique_number.to_s.rjust(6, "0")}"
     end
 
     def unique_test_class_id

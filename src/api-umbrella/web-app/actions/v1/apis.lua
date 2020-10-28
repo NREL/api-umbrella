@@ -6,7 +6,7 @@ local db = require "lapis.db"
 local dbify_json_nulls = require "api-umbrella.web-app.utils.dbify_json_nulls"
 local deep_merge_overwrite_arrays = require "api-umbrella.utils.deep_merge_overwrite_arrays"
 local is_array = require "api-umbrella.utils.is_array"
-local is_empty = require("pl.types").is_empty
+local is_empty = require "api-umbrella.utils.is_empty"
 local is_hash = require "api-umbrella.utils.is_hash"
 local json_response = require "api-umbrella.web-app.utils.json_response"
 local require_admin = require "api-umbrella.web-app.utils.require_admin"
@@ -48,7 +48,6 @@ function _M.index(self)
     order_fields = {
       "name",
       "frontend_host",
-      "sort_order",
       "created_at",
       "updated_at",
     },
@@ -264,7 +263,6 @@ function _M.api_backend_params(self)
     local input = self.params["api"]
     params = dbify_json_nulls({
       name = input["name"],
-      sort_order = input["sort_order"],
       backend_protocol = input["backend_protocol"],
       frontend_host = input["frontend_host"],
       backend_host = input["backend_host"],
@@ -282,6 +280,7 @@ function _M.api_backend_params(self)
             http_method = input_rewrite["http_method"],
             frontend_matcher = input_rewrite["frontend_matcher"],
             backend_replacement = input_rewrite["backend_replacement"],
+            sort_order = input_rewrite["sort_order"],
           }))
         end
       end
@@ -322,6 +321,7 @@ function _M.api_backend_params(self)
             http_method = input_sub_settings["http_method"],
             regex = input_sub_settings["regex"],
             settings = api_backend_settings_params(input_sub_settings["settings"]),
+            sort_order = input_sub_settings["sort_order"],
           }))
         end
       end

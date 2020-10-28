@@ -1,4 +1,4 @@
-local is_empty = require("pl.types").is_empty
+local is_empty = require "api-umbrella.utils.is_empty"
 
 -- This allows us to support IE8-9 and their shimmed pseudo-CORS support. This
 -- parses the post body as form data, even if the content-type is text/plain or

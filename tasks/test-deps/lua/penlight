@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-lua_penlight_version="1.5.4-1"
+lua_penlight_version="1.9.2-1"
 
 set -e -u -x
 source ./tasks/helpers.sh

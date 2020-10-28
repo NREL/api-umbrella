@@ -7,9 +7,7 @@ export default Controller.extend({
 
   isLoading: null,
 
-  currentAdmin: computed(function() {
-    return this.get('session.data.authenticated.admin');
-  }),
+  currentAdmin: computed.reads('session.data.authenticated.admin'),
 
   actions: {
     logout() {
@@ -24,7 +22,7 @@ export default Controller.extend({
       const csrfToken = document.createElement('input');
       csrfToken.type = 'hidden';
       csrfToken.name = 'csrf_token';
-      csrfToken.value = this.get('session.data.authenticated.csrf_token');
+      csrfToken.value = this.session.data.authenticated.csrf_token;
       form.appendChild(csrfToken);
 
       const submit = document.createElement('input');

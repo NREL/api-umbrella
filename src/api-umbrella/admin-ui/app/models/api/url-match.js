@@ -1,6 +1,6 @@
+import Model, { attr } from '@ember-data/model';
 import { buildValidations, validator } from 'ember-cp-validations';
 
-import DS from 'ember-data';
 import { computed } from '@ember/object';
 import { t } from 'api-umbrella-admin-ui/utils/i18n';
 
@@ -29,14 +29,11 @@ const Validations = buildValidations({
   ],
 });
 
-export default DS.Model.extend(Validations, {
-  sortOrder: DS.attr('number'),
-  frontendPrefix: DS.attr(),
-  backendPrefix: DS.attr(),
+export default Model.extend(Validations, {
+  frontendPrefix: attr(),
+  backendPrefix: attr(),
 
-  backendPrefixWithDefault: computed('backendPrefix', 'frontendPrefix', function() {
-    return this.backendPrefix || this.frontendPrefix;
-  }),
+  backendPrefixWithDefault: computed.or('backendPrefix', 'frontendPrefix'),
 }).reopenClass({
   validationClass: Validations,
 });

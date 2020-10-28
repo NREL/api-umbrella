@@ -166,6 +166,7 @@ web:
   analytics_v0_summary_start_time: 2013-07-01T00:00:00.000Z
   analytics_v0_summary_end_time:
   analytics_v0_summary_filter:
+  max_body_size: 1m
   email:
     allowed_domains: []
     blocked_domains: []
@@ -288,6 +289,7 @@ strip_cookies:
   - ^__utm.*$
   - ^_ga$
   - ^is_returning$
+strip_server_header: false
 site_name: API Umbrella
 apiSettings:
   require_https: required_return_error
@@ -423,15 +425,15 @@ internal_apis:
     url_matches:
       - frontend_prefix: "/api-umbrella/"
         backend_prefix: "/api-umbrella/"
-      - frontend_prefix: "/admin/"
-        backend_prefix: "/admin/"
-      - frontend_prefix: "/admin"
-        backend_prefix: "/admin"
-        exact_match: true
       - frontend_prefix: "/admins/"
         backend_prefix: "/admins/"
       - frontend_prefix: "/admins"
         backend_prefix: "/admins"
+        exact_match: true
+      - frontend_prefix: "/admin/"
+        backend_prefix: "/admin/"
+      - frontend_prefix: "/admin"
+        backend_prefix: "/admin"
         exact_match: true
       - frontend_prefix: "/web-assets/"
         backend_prefix: "/web-assets/"

@@ -1,4 +1,5 @@
 import 'jquery-ui/ui/widgets/sortable';
+
 import $ from 'jquery';
 import Mixin from '@ember/object/mixin'
 import { computed } from '@ember/object';
@@ -7,14 +8,14 @@ import { guidFor } from '@ember/object/internals';
 // eslint-disable-next-line ember/no-new-mixins
 export default Mixin.create({
   isReorderable: computed('sortableCollection.length', function() {
-    let length = this.get('sortableCollection.length');
+    let length = this.sortableCollection.length;
     return (length && length > 1);
   }),
 
   updateSortOrder(indexes) {
     this.sortableCollection.forEach(function(record) {
       let index = indexes[guidFor(record)];
-      record.set('sortOrder', index);
+      record.set('sortOrder', index + 1);
     });
   },
 

@@ -1,7 +1,7 @@
 local _M = {}
 
 local escape_regex = require "api-umbrella.utils.escape_regex"
-local is_empty = require("pl.types").is_empty
+local is_empty = require "api-umbrella.utils.is_empty"
 local iso8601_ms_to_timestamp = require("api-umbrella.utils.time").iso8601_ms_to_timestamp
 local json_null = require("cjson").null
 local table_keys = require("pl.tablex").keys

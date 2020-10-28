@@ -43,13 +43,26 @@ legend {
   background-color: #fff;
 }
 
-legend a {
+legend button.btn-link {
+  padding: 0px;
+  font-size: inherit;
+  line-height: inherit;
+  border-width: 0px;
+}
+
+legend a,
+legend button.btn-link {
   display: block;
   color: $link-color !important;
 }
 
-legend a:hover {
+legend a:hover,
+legend button.btn-link:hover {
   color: $link-hover-color !important;
+  text-decoration: none;
+}
+
+legend button.btn-link:focus {
   text-decoration: none;
 }
 

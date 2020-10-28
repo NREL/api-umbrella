@@ -1,14 +1,19 @@
-import 'pnotify/lib/es/PNotifyButtons';
-import 'pnotify/lib/es/PNotifyMobile';
-import PNotify from 'pnotify';
+import * as PNotifyBootstrap4 from '@pnotify/bootstrap4';
+import * as PNotifyFontAwesome5 from '@pnotify/font-awesome5';
+import * as PNotifyFontAwesome5Fix from '@pnotify/font-awesome5-fix';
+import * as PNotifyMobile from '@pnotify/mobile';
+
+import { defaultModules, defaults } from '@pnotify/core';
 
 export function initialize() {
-  PNotify.defaults.styling = 'bootstrap4';
-  PNotify.defaults.width = '400px';
-  PNotify.defaults.icon = false;
-  PNotify.defaults.icons = 'fontawesome5'; // Icons used for Buttons plugin.
-  PNotify.defaults.animation = 'none';
-  PNotify.modules.Buttons.defaults.sticker = false;
+  defaults.width = '400px';
+  defaults.icon = false;
+  defaults.animation = 'none';
+  defaults.sticker = false;
+  defaultModules.set(PNotifyMobile, {});
+  defaultModules.set(PNotifyBootstrap4, {});
+  defaultModules.set(PNotifyFontAwesome5Fix, {});
+  defaultModules.set(PNotifyFontAwesome5, {});
 }
 
 export default {

@@ -1,7 +1,7 @@
 local AdminGroup = require "api-umbrella.web-app.models.admin_group"
 local db = require "lapis.db"
 local invert_table = require "api-umbrella.utils.invert_table"
-local is_empty = require("pl.types").is_empty
+local is_empty = require "api-umbrella.utils.is_empty"
 local throw_authorization_error = require "api-umbrella.web-app.policies.throw_authorization_error"
 
 local _M = {}

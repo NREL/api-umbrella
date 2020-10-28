@@ -50,6 +50,66 @@ class Test::Apis::V1::Apis::TestShow < Minitest::Test
     assert_equal(true, rate_limit["response_headers"])
   end
 
+  def test_orders_url_matches
+    api = FactoryBot.create(:api_backend, {
+      :url_matches => [FactoryBot.build(:api_backend_url_match, :frontend_prefix => "/1")],
+    })
+
+    # Create the prefixes separately and in randomdized order to best ensure
+    # insertion order doesn't affect things.
+    prefixes = [
+      "/foo",
+      "/foo/",
+      "/foo/bar",
+      "/baz",
+      "/baz/foo/bar",
+      "/a",
+      "/A",
+      "/ä",
+      "/ab",
+      "/b",
+      "/B",
+      "/c/d/e/f/g",
+      "/foo-bar/baz",
+      "/foo_bar/baz",
+      "/c-d/",
+      "/api/",
+      "/API/",
+      "/aPi/",
+    ]
+    prefixes.shuffle!
+    prefixes.each do |prefix|
+      FactoryBot.create(:api_backend_url_match, :frontend_prefix => prefix, :api_backend_id => api.id)
+    end
+
+    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/apis/#{api.id}.json", http_options.deep_merge(admin_token))
+    data = MultiJson.load(response.body)
+
+    expected_frontend_prefix_order = [
+      "/1",
+      "/a",
+      "/A",
+      "/ä",
+      "/ab",
+      "/api/",
+      "/aPi/",
+      "/API/",
+      "/b",
+      "/B",
+      "/baz/foo/bar",
+      "/baz",
+      "/c/d/e/f/g",
+      "/c-d/",
+      "/foo/bar",
+      "/foo/",
+      "/foo",
+      "/foo_bar/baz",
+      "/foo-bar/baz",
+    ]
+    assert_equal(expected_frontend_prefix_order, data.fetch("api").fetch("url_matches").map { |u| u.fetch("frontend_prefix") })
+    assert_equal(expected_frontend_prefix_order.join(", "), data.fetch("api").fetch("frontend_prefixes"))
+  end
+
   private
 
   def assert_headers_field(field)

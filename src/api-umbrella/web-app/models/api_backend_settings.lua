@@ -3,7 +3,7 @@ local ApiRole = require "api-umbrella.web-app.models.api_role"
 local RateLimit = require "api-umbrella.web-app.models.rate_limit"
 local db = require "lapis.db"
 local is_array = require "api-umbrella.utils.is_array"
-local is_empty = require("pl.types").is_empty
+local is_empty = require "api-umbrella.utils.is_empty"
 local is_hash = require "api-umbrella.utils.is_hash"
 local json_array_fields = require "api-umbrella.web-app.utils.json_array_fields"
 local json_null_default = require "api-umbrella.web-app.utils.json_null_default"
@@ -22,6 +22,7 @@ local validation_ext = require "api-umbrella.web-app.utils.validation_ext"
 local db_null = db.NULL
 local db_raw = db.raw
 local validate_field = model_ext.validate_field
+local validate_relation_uniqueness = model_ext.validate_relation_uniqueness
 
 local function http_headers_to_string(self, header_type)
   if not self._http_header_strings then
@@ -327,6 +328,11 @@ local ApiBackendSettings = model_ext.new_class("api_backend_settings", {
       { validation_ext.db_null_optional.array_table, t("is not an array") },
       { validation_ext.db_null_optional.array_strings, t("must be an array of strings") },
       { validation_ext.db_null_optional:array_strings_maxlen(500), string.format(t("is too long (maximum is %d characters)"), 500) },
+    })
+    validate_relation_uniqueness(errors, data, "rate_limits", "duration", t("Duration"), {
+      "api_backend_settings_id",
+      "limit_by",
+      "duration",
     })
 
     if data["error_data"] then

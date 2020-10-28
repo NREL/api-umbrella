@@ -1,6 +1,6 @@
+import Model, { attr } from '@ember-data/model';
 import { buildValidations, validator } from 'ember-cp-validations';
 
-import DS from 'ember-data';
 import { computed } from '@ember/object';
 import { t } from 'api-umbrella-admin-ui/utils/i18n';
 
@@ -33,16 +33,15 @@ const Validations = buildValidations({
   ],
 });
 
-export default DS.Model.extend(Validations, {
-  name: DS.attr(),
-  host: DS.attr(),
-  pathPrefix: DS.attr(),
-  adminGroups: DS.attr(),
-  apis: DS.attr(),
-  createdAt: DS.attr(),
-  updatedAt: DS.attr(),
-  creator: DS.attr(),
-  updater: DS.attr(),
+export default Model.extend(Validations, {
+  name: attr(),
+  host: attr(),
+  pathPrefix: attr(),
+  adminGroups: attr(),
+  createdAt: attr(),
+  updatedAt: attr(),
+  creator: attr(),
+  updater: attr(),
 
   displayName: computed('name', 'host', 'pathPrefix', function() {
     return this.name + ' - ' + this.host + this.pathPrefix;

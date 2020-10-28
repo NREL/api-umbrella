@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-mailhog_version="1.0.0"
-mailhog_hash="3b758c81bfe2c9110911511daca1a7bc"
+mailhog_version="1.0.1"
+mailhog_hash="b5628956d35c9d2df3df30f980365df4"
 
 set -e -u -x
 source ./tasks/helpers.sh

@@ -21,7 +21,7 @@ local function apis_for_request_host(active_config)
     end
   end
 
-  -- If a default host exists, append its APIs to the end sot hey have a lower
+  -- If a default host exists, append its APIs to the end so they have a lower
   -- matching precedence than any APIs that actually match the host.
   append_array(apis, apis_for_default_host)
 
@@ -32,8 +32,12 @@ local function match_api(active_config, request_path)
   -- Find the API backends that match this host.
   local apis = apis_for_request_host(active_config)
 
-  -- Search through each API backend for the first that matches the URL path
-  -- prefix.
+  -- Search through each API backend for URL path prefix matches. Choose the
+  -- match that is the longest prefix path string, since this would be the most
+  -- specific match in cases where multiple path prefixes would match.
+  local matched_api = nil
+  local matched_url_match = nil
+  local matched_length = 0
   for _, api in ipairs(apis) do
     if api["url_matches"] then
       for _, url_match in ipairs(api["url_matches"]) do
@@ -44,11 +48,18 @@ local function match_api(active_config, request_path)
           matches = true
         end
 
-        if matches then
-          return api, url_match
+        local length = string.len(url_match["frontend_prefix"])
+        if matches and length > matched_length then
+          matched_api = api
+          matched_url_match = url_match
+          matched_length = length
         end
       end
     end
+  end
+
+  if matched_api and matched_url_match then
+    return matched_api, matched_url_match
   end
 end
 

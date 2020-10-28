@@ -2,7 +2,7 @@ local api_role_policy = require "api-umbrella.web-app.policies.api_role_policy"
 local db = require "lapis.db"
 local escape_db_like = require "api-umbrella.utils.escape_db_like"
 local is_array = require "api-umbrella.utils.is_array"
-local is_empty = require("pl.types").is_empty
+local is_empty = require "api-umbrella.utils.is_empty"
 local startswith = require("pl.stringx").startswith
 local throw_authorization_error = require "api-umbrella.web-app.policies.throw_authorization_error"
 

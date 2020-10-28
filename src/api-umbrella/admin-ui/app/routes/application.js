@@ -1,7 +1,9 @@
+// eslint-disable-next-line ember/no-mixins
 import ApplicationRouteMixin from 'ember-simple-auth/mixins/application-route-mixin';
 import Route from '@ember/routing/route';
 import { inject } from '@ember/service';
 import isString from 'lodash-es/isString';
+// eslint-disable-next-line ember/no-observers
 import { observer } from '@ember/object';
 
 export default Route.extend(ApplicationRouteMixin, {
@@ -16,7 +18,7 @@ export default Route.extend(ApplicationRouteMixin, {
   //
   // eslint-disable-next-line ember/no-observers
   attemptedTransitionChange: observer('session.attemptedTransition', function() {
-    const attemptedTransition = this.get('session.attemptedTransition');
+    const attemptedTransition = this.session.attemptedTransition;
     if(attemptedTransition) {
       this.session.set('data.attemptedTransitionUrl', attemptedTransition.intent.url);
     } else {
@@ -30,7 +32,7 @@ export default Route.extend(ApplicationRouteMixin, {
   // mechanism. We need to use the "attempedTransitionUrl" string value we
   // persist in the session store.
   sessionAuthenticated() {
-    const attemptedTransitionUrl = this.get('session.data.attemptedTransitionUrl');
+    const attemptedTransitionUrl = this.session.data.attemptedTransitionUrl;
     if(attemptedTransitionUrl) {
       this.transitionTo(attemptedTransitionUrl);
       this.set('session.attemptedTransition', null);

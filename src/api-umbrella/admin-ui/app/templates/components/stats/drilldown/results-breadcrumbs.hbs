@@ -1,6 +1,6 @@
-{{#each breadcrumbLinks as |breadcrumb|}}
+{{#each this.breadcrumbLinks as |breadcrumb|}}
   {{#if breadcrumb.prefix}}
-    {{#link-to "stats.drilldown" (query-params prefix=breadcrumb.prefix)}}{{breadcrumb.name}}{{/link-to}} /
+    <LinkTo @route="stats.drilldown" @query={{hash prefix=breadcrumb.prefix}}>{{breadcrumb.name}}</LinkTo> /
   {{else}}
     {{breadcrumb.name}}
   {{/if}}

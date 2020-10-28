@@ -1,4 +1,5 @@
 import Component from '@ember/component';
+// eslint-disable-next-line ember/no-mixins
 import Save from 'api-umbrella-admin-ui/mixins/save';
 import bootbox from 'bootbox';
 import { computed } from '@ember/object';
@@ -23,33 +24,31 @@ export default Component.extend(Save, {
     ];
   },
 
-  currentAdmin: computed(function() {
-    return this.get('session.data.authenticated.admin');
-  }),
+  currentAdmin: computed.reads('session.data.authenticated.admin'),
 
   actions: {
     submit() {
       this.saveRecord({
         transitionToRoute: 'apis',
-        message: 'Successfully saved the "' + escape(this.get('model.name')) + '" API backend<br><strong>Note:</strong> Your changes are not yet live. <a href="/admin/#/config/publish">Publish Changes</a> to send your updates live.',
+        message: 'Successfully saved the "' + escape(this.model.name) + '" API backend<br><strong>Note:</strong> Your changes are not yet live. <a href="/admin/#/config/publish">Publish Changes</a> to send your updates live.',
       });
     },
 
     delete() {
       this.destroyRecord({
-        prompt: 'Are you sure you want to delete the API backend "' + escape(this.get('model.name')) + '"?',
+        prompt: 'Are you sure you want to delete the API backend "' + escape(this.model.name) + '"?',
         transitionToRoute: 'apis',
-        message: 'Successfully deleted the "' + escape(this.get('model.name')) + '" API backend<br><strong>Note:</strong> Your changes are not yet live. <a href="/admin/#/config/publish">Publish Changes</a> to send your updates live.',
+        message: 'Successfully deleted the "' + escape(this.model.name) + '" API backend<br><strong>Note:</strong> Your changes are not yet live. <a href="/admin/#/config/publish">Publish Changes</a> to send your updates live.',
       });
     },
 
     addUrlMatch() {
-      this.get('controllers.apis_url_match_form').add(this.model, 'urlMatches');
+      this.controllers.apis_url_match_form.add(this.model, 'urlMatches');
       this.send('openModal', 'apis/url_match_form');
     },
 
     editUrlMatch(urlMatch) {
-      this.get('controllers.apis_url_match_form').edit(this.model, 'urlMatches', urlMatch);
+      this.controllers.apis_url_match_form.edit(this.model, 'urlMatches', urlMatch);
       this.send('openModal', 'apis/url_match_form');
     },
 
@@ -58,12 +57,12 @@ export default Component.extend(Save, {
     },
 
     addSubSettings() {
-      this.get('controllers.apis_sub_settings_form').add(this.model, 'subSettings');
+      this.controllers.apis_sub_settings_form.add(this.model, 'subSettings');
       this.send('openModal', 'apis/sub_settings_form');
     },
 
     editSubSettings(subSettings) {
-      this.get('controllers.apis_sub_settings_form').edit(this.model, 'subSettings', subSettings);
+      this.controllers.apis_sub_settings_form.edit(this.model, 'subSettings', subSettings);
       this.send('openModal', 'apis/sub_settings_form');
     },
 
@@ -72,12 +71,12 @@ export default Component.extend(Save, {
     },
 
     addRewrite() {
-      this.get('controllers.apis_rewrite_form').add(this.model, 'rewrites');
+      this.controllers.apis_rewrite_form.add(this.model, 'rewrites');
       this.send('openModal', 'apis/rewrite_form');
     },
 
     editRewrite(rewrite) {
-      this.get('controllers.apis_rewrite_form').edit(this.model, 'rewrites', rewrite);
+      this.controllers.apis_rewrite_form.edit(this.model, 'rewrites', rewrite);
       this.send('openModal', 'apis/rewrite_form');
     },
 

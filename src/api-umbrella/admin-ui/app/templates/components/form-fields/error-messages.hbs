@@ -1,6 +1,6 @@
-{{#if hasErrors}}
+{{#if this.hasErrors}}
   <div>
-    {{#each errorMessages as |message|}}
+    {{#each this.errorMessages as |message|}}
       {{message}}<br>
     {{/each}}
   </div>

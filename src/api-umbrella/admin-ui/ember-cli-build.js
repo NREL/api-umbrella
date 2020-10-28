@@ -14,7 +14,6 @@ module.exports = function(defaults) {
         inflection: 'inflection/lib/inflection',
         marked: 'marked/lib/marked',
         numeral: 'numeral/numeral',
-        pnotify: 'pnotify/lib/es/PNotify',
         selectize: 'selectize/dist/js/standalone/selectize',
       },
 

@@ -1,7 +1,7 @@
 class ApiBackend < ApplicationRecord
   has_one :settings, :class_name => "ApiBackendSettings"
   has_many :servers, -> { order(:host, :port) }, :class_name => "ApiBackendServer"
-  has_many :url_matches, -> { order(:sort_order) }, :class_name => "ApiBackendUrlMatch"
+  has_many :url_matches, -> { order("path_sort_order(frontend_prefix) NULLS LAST") }, :class_name => "ApiBackendUrlMatch"
   has_many :sub_settings, -> { order(:sort_order) }, :class_name => "ApiBackendSubUrlSettings"
   has_many :rewrites, -> { order(:sort_order) }, :class_name => "ApiBackendRewrite"
 

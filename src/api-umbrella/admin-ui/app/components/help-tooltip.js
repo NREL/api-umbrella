@@ -6,6 +6,6 @@ export default Component.extend({
   tagName: 'span',
 
   tooltipHtml: computed('tooltip', function() {
-    return marked(this.get('tooltip'));
+    return marked(this.tooltip);
   }),
 });

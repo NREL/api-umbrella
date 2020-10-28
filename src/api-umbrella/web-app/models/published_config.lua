@@ -4,7 +4,7 @@ local api_backend_policy = require "api-umbrella.web-app.policies.api_backend_po
 local cjson = require("cjson")
 local db = require "lapis.db"
 local is_array = require "api-umbrella.utils.is_array"
-local is_empty = require("pl.types").is_empty
+local is_empty = require "api-umbrella.utils.is_empty"
 local is_hash = require "api-umbrella.utils.is_hash"
 local json_null_default = require "api-umbrella.web-app.utils.json_null_default"
 local model_ext = require "api-umbrella.web-app.utils.model_ext"
@@ -70,6 +70,7 @@ local compare_exclude_keys = {
   created_by = 1,
   created_by_id = 1,
   created_by_username = 1,
+  created_order = 1,
   creator = 1,
   id = 1,
   name = 1,
@@ -312,10 +313,10 @@ PublishedConfig.publish_ids = function(api_backend_ids, website_backend_ids, cur
 
     if apis_changed or websites_changed then
       table.sort(new_config["apis"], function(a, b)
-        return a["sort_order"] < b["sort_order"]
+        return a["created_order"] < b["created_order"]
       end)
       table.sort(new_config["website_backends"], function(a, b)
-        return a["frontend_host"] < b["frontend_host"]
+        return a["created_order"] < b["created_order"]
       end)
 
       local published = assert(PublishedConfig:create({

@@ -1,6 +1,6 @@
-{{stats/query-form enableInterval=false date_range=date_range start_at=start_at end_at=end_at query=query search=search interval=interval allQueryParamValues=allQueryParamValues dateRanges=dateRanges}}
+<Stats::QueryForm @enableInterval={{false}} @date_range={{this.date_range}} @start_at={{this.start_at}} @end_at={{this.end_at}} @query={{this.query}} @search={{this.search}} @interval={{this.interval}} @allQueryParamValues={{this.allQueryParamValues}} @dateRanges={{this.dateRanges}} />
 <div id="map_container">
-  {{stats/map/results-breadcrumbs breadcrumbs=model.map_breadcrumbs}}
-  {{stats/map/results-map regions=model.map_regions regionField=model.region_field presentQueryParamValues=presentQueryParamValues allQueryParamValues=allQueryParamValues}}
+  <Stats::Map::ResultsBreadcrumbs @breadcrumbs={{this.model.map_breadcrumbs}} />
+  <Stats::Map::ResultsMap @regions={{this.model.map_regions}} @regionField={{this.model.region_field}} @presentQueryParamValues={{this.presentQueryParamValues}} @allQueryParamValues={{this.allQueryParamValues}} />
 </div>
-{{stats/map/results-table regions=model.regions regionField=model.region_field presentQueryParamValues=presentQueryParamValues backendQueryParamValues=backendQueryParamValues}}
+<Stats::Map::ResultsTable @regions={{this.model.regions}} @regionField={{this.model.region_field}} @presentQueryParamValues={{this.presentQueryParamValues}} @backendQueryParamValues={{this.backendQueryParamValues}} />

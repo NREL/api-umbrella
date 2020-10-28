@@ -1,4 +1,4 @@
-{{apis/sub-settings-form model=subSettingsModel collection=model.subSettings roleOptions=roleOptions openModal=openModal}}
+<Apis::SubSettingsForm @model={{this.subSettingsModel}} @collection={{this.model.subSettings}} @roleOptions={{this.roleOptions}} @openModal={{this.openModal}} />
 
 <table id="sub_settings_table" class="table table-striped table-sm">
   <thead>
@@ -10,8 +10,8 @@
     </tr>
   </thead>
   <tbody>
-    {{#if model.subSettings}}
-      {{#each model.subSettings as |subSettings|}}
+    {{#if this.model.subSettings}}
+      {{#each this.model.subSettings as |subSettings|}}
         <tr data-guid={{guid-for subSettings}}>
           <td>{{subSettings.httpMethod}}</td>
           <td>{{subSettings.regex}}</td>
@@ -27,13 +27,13 @@
     {{/if}}
   </tbody>
 </table>
-<div class="row-fluid">
-  <div class="span6">
+<div class="row">
+  <div class="col-6">
     <button type="button" class="btn btn-light btn-sm" {{action "add"}}>{{fa-icon "plus-circle"}} Add URL Settings</button>
   </div>
-  <div class="span6 text-right">
-    {{#if isReorderable}}
-      <button type="button" class="btn btn-light btn-sm" {{action "reorderCollection" "sub_settings"}}>{{fa-icon "bars"}} <span class="reorder-button-text">Reorder</span></button>
+  <div class="col-6 text-right">
+    {{#if this.isReorderable}}
+      <button type="button" id="sub_settings_reorder" class="btn btn-light btn-sm" {{action "reorderCollection" "sub_settings"}}>{{fa-icon "bars"}} <span class="reorder-button-text">Reorder</span></button>
     {{/if}}
   </div>
 </div>

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-task_version="2.8.1"
-task_hash="c7ca69ef85a6db25b04f90d417ec7e9c537518d7023c2a563ae4d1e34b841aba"
+task_version="3.0.0"
+task_hash="8f4d0e0219fd7ad71285a9e28930f40c84f1141c60b7fecb2e0acfdceb9bd17c"
 
 set -e -u -x
 root_dir="$(cd "$(dirname "$(dirname "${BASH_SOURCE[0]}")")" && pwd)"

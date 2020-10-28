@@ -1,19 +1,19 @@
-{{error-messages model=model}}
+<ErrorMessages @model={{this.model}} />
 
 <form {{action "submit" on="submit"}}>
-  {{#fields-for model=model style="horizontal" as |f|}}
+  <FieldsFor @model={{this.model}} @style="horizontal" as |f|>
     <fieldset class="form-horizontal condensed">
       {{f.text-field "name" label="Name"}}
       {{f.text-field "host" label="Host"}}
       {{f.text-field "pathPrefix" label="Path Prefix"}}
 
-      {{#if currentAdmin.superuser}}
-        {{#if model.id}}
+      {{#if this.currentAdmin.superuser}}
+        {{#if this.model.id}}
           {{#f.static-field "admin_groups" label="Admin Groups"}}
-            {{#if model.adminGroups}}
+            {{#if this.model.adminGroups}}
               <ul>
-                {{#each model.adminGroups as |adminGroup|}}
-                  <li>{{#link-to "admin_groups.edit" adminGroup.id}}{{adminGroup.name}}{{/link-to}}</li>
+                {{#each this.model.adminGroups as |adminGroup|}}
+                  <li><LinkTo @route="admin_groups.edit" @model={{adminGroup.id}}>{{adminGroup.name}}</LinkTo></li>
                 {{/each}}
               </ul>
             {{else}}
@@ -22,10 +22,10 @@
           {{/f.static-field}}
 
           {{#f.static-field "apis" label="API Backends"}}
-            {{#if model.apis}}
+            {{#if this.model.apis}}
               <ul>
-                {{#each model.apis as |apiBackend|}}
-                  <li>{{#link-to "apis.edit" apiBackend.id}}{{apiBackend.name}}{{/link-to}}</li>
+                {{#each this.model.apis as |apiBackend|}}
+                  <li><LinkTo @route="apis.edit" @model={{apiBackend.id}}>{{apiBackend.name}}</LinkTo></li>
                 {{/each}}
               </ul>
             {{else}}
@@ -41,16 +41,16 @@
         <button type="submit" class="btn btn-lg btn-primary save-button"><span class="btn-label">Save</span><span class="btn-loading-label">{{fa-icon "sync-alt" spin=true}}Saving...</span></button>
       </div>
       <div class="col-sm-6 record-details">
-        {{#if model.id}}
-          Created: {{format-date model.createdAt}} by {{model.creator.username}}<br>
-          Last Updated: {{format-date model.updatedAt}} by {{model.updater.username}}<br>
+        {{#if this.model.id}}
+          Created: {{format-date this.model.createdAt}} by {{this.model.creator.username}}<br>
+          Last Updated: {{format-date this.model.updatedAt}} by {{this.model.updater.username}}<br>
         {{/if}}
       </div>
     </div>
-    {{#if model.id}}
+    {{#if this.model.id}}
       <div class="form-extra-actions">
         <a href="#" class="remove-action" {{action "delete"}}>{{fa-icon "times"}}Delete API Scope</a>
       </div>
     {{/if}}
-  {{/fields-for}}
+  </FieldsFor>
 </form>

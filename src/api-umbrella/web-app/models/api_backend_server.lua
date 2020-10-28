@@ -5,7 +5,6 @@ local t = require("api-umbrella.web-app.utils.gettext").gettext
 local validation_ext = require "api-umbrella.web-app.utils.validation_ext"
 
 local validate_field = model_ext.validate_field
-local validate_uniqueness = model_ext.validate_uniqueness
 
 local ApiBackendServer
 ApiBackendServer = model_ext.new_class("api_backend_servers", {
@@ -34,11 +33,6 @@ ApiBackendServer = model_ext.new_class("api_backend_servers", {
     validate_field(errors, data, "port", t("Port"), {
       { validation_ext.tonumber.number, t("can't be blank") },
       { validation_ext.tonumber.number:between(0, 65535), t("is not included in the list") },
-    })
-    validate_uniqueness(errors, data, "host", t("Host"), ApiBackendServer, {
-      "api_backend_id",
-      "host",
-      "port",
     })
     return errors
   end,

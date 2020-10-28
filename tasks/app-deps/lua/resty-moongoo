@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-lua_cbson_version="b9c131b146804c9658e95d437cb7e621d3c1ccd7"
-lua_cbson_hash="25de68bdc8b7f17ea8f6c7c6f17459d7"
+lua_cbson_version="4d9f7f1033bf98e73e12382b56d29a7a2065a189"
+lua_cbson_hash="799b926bfd16cbf16b189d3c33892e4f"
 
 lua_resty_moongoo_version="acedcad2dc7cd049cd50bd8aa32cbc31d8670564"
 lua_resty_moongoo_hash="6924fade8de3ad2ea950cf680d951275"

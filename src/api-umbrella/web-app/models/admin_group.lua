@@ -1,7 +1,7 @@
 local admin_group_policy = require "api-umbrella.web-app.policies.admin_group_policy"
 local cjson = require "cjson"
 local db = require "lapis.db"
-local is_empty = require("pl.types").is_empty
+local is_empty = require "api-umbrella.utils.is_empty"
 local json_array_fields = require "api-umbrella.web-app.utils.json_array_fields"
 local json_null_default = require "api-umbrella.web-app.utils.json_null_default"
 local model_ext = require "api-umbrella.web-app.utils.model_ext"

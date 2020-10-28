@@ -27,6 +27,7 @@ WebsiteBackend = model_ext.new_class("website_backends", {
       backend_protocol = json_null_default(self.backend_protocol),
       server_host = json_null_default(self.server_host),
       server_port = json_null_default(self.server_port),
+      created_order = json_null_default(self.created_order),
       created_at = json_null_default(time.postgres_to_iso8601(self.created_at)),
       created_by = json_null_default(self.created_by_id),
       creator = {

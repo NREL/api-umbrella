@@ -323,6 +323,8 @@ class OutdatedPackages
         tags.select! { |tag| tag =~ /^1\.1\.0[a-z]?$/ }
       when "mailhog"
         tags.reject! { |tag| tag =~ /^0\.0\d$/ }
+      when "rubygems"
+        tags.reject! { |tag| tag == "1000" }
       end
 
       tags.compact!

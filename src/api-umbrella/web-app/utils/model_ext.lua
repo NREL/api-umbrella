@@ -2,7 +2,7 @@ local Model = require("lapis.db.model").Model
 local capture_errors = require("lapis.application").capture_errors
 local db = require "lapis.db"
 local is_array = require "api-umbrella.utils.is_array"
-local is_empty = require("pl.types").is_empty
+local is_empty = require "api-umbrella.utils.is_empty"
 local is_hash = require "api-umbrella.utils.is_hash"
 local readonly = require("pl.tablex").readonly
 local relations_loaded_key = require("lapis.db.model.relations").LOADED_KEY
@@ -309,6 +309,36 @@ function _M.validate_uniqueness(errors, values, error_field, field_label, model,
   end
 end
 
+function _M.validate_relation_uniqueness(errors, values, relation_name, error_field, field_label, unique_fields)
+  if not values[relation_name] or values[relation_name] == db_null then
+    return
+  end
+
+  assert(type(values[relation_name]) == "table")
+  assert(type(unique_fields) == "table")
+  assert(#unique_fields > 0)
+
+  local seen = {}
+  for index, relation_record in ipairs(values[relation_name]) do
+    local key = {}
+    for _, unique_field in ipairs(unique_fields) do
+      local value = relation_record[unique_field]
+      if value == db_null then
+        value = "db_null"
+      end
+      table.insert(key, tostring(value))
+    end
+
+    key = table.concat(key, ":")
+
+    if seen[key] then
+      _M.add_error(errors, relation_name .. "[" .. (index - 1) .. "]." .. error_field, field_label, t("is already taken"))
+    end
+
+    seen[key] = true
+  end
+end
+
 local function create(callbacks)
   return function(model_class, values, opts)
     local transaction_started = _M.start_transaction()
@@ -529,7 +559,7 @@ function _M.has_one_update_or_create(self, relation_model, foreign_key, relation
 end
 
 function _M.has_one_delete(self, relation_model, foreign_key, conditions)
-  return _M.has_many_delete(self, relation_model, foreign_key, {}, conditions)
+  return _M.has_many_delete_except(self, relation_model, foreign_key, {}, conditions)
 end
 
 function _M.has_one_save(self, values, name)

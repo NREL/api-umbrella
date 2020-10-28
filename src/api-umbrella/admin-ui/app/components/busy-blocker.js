@@ -18,7 +18,7 @@ export default Component.extend({
   didInsertElement() {
     // Convert animation duration ms to css string value
     let duration = (ANIMATION_DURATION / 1000) + 's';
-    let busy = this.get('busy');
+    let busy = this.busy;
 
     // Hide immediately
     this.$().css('display', 'none');
@@ -32,7 +32,7 @@ export default Component.extend({
   },
 
   willDestroyElement() {
-    let busy = this.get('busy');
+    let busy = this.busy;
 
     busy.off('hide', this, this._hide);
     busy.off('show', this, this._show);
@@ -48,7 +48,7 @@ export default Component.extend({
    * @return {void}
    */
   _hide() {
-    let elements = this.get('animationElements');
+    let elements = this.animationElements;
 
     elements.removeClass('fade-in');
     elements.addClass('fade-out');
@@ -67,7 +67,7 @@ export default Component.extend({
    * @returns {void}
    */
   _show(options) {
-    let elements = this.get('animationElements');
+    let elements = this.animationElements;
     let message = DEFAULT_MESSAGE;
 
     if(options && options.message) {

@@ -1,4 +1,5 @@
 import $ from 'jquery';
+// eslint-disable-next-line ember/no-mixins
 import AuthenticatedRouteMixin from 'ember-simple-auth/mixins/authenticated-route-mixin';
 import ConfigPendingChanges from 'api-umbrella-admin-ui/models/config-pending-changes';
 import Route from '@ember/routing/route';

@@ -3,7 +3,7 @@ body {
 }
 
 .code-block,
-.tippy-tooltip pre {
+.tippy-box pre {
   background-color: $light;
   border: $card-border-width solid $card-border-color;
   @include border-radius($card-border-radius);
@@ -108,7 +108,7 @@ a:hover {
   margin-top: -16px;
 }
 
-#version_footer .row-fluid {
+#version_footer .row .col-12 {
   border-top: 1px solid $gray-200;
   text-align: center;
   margin-top: 3em;
@@ -134,6 +134,11 @@ a:hover {
 
 .btn-light {
   @include button-variant($gray-300, $gray-300);
+}
+
+.btn-link:not(:disabled):not(.disabled):active,
+.btn-link:not(:disabled):not(.disabled).active {
+  box-shadow: none;
 }
 
 .ui-pnotify-text p:last-of-type {

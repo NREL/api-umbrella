@@ -1,4 +1,4 @@
-{{stats/query-form enableInterval=true date_range=date_range start_at=start_at end_at=end_at query=query search=search interval=interval allQueryParamValues=allQueryParamValues dateRanges=dateRanges}}
-{{stats/logs/results-chart hitsOverTime=model.hits_over_time}}
-{{stats/logs/results-highlights stats=model.stats aggregations=model.aggregations presentQueryParamValues=presentQueryParamValues}}
-{{stats/logs/results-table presentQueryParamValues=presentQueryParamValues backendQueryParamValues=backendQueryParamValues}}
+<Stats::QueryForm @enableInterval={{true}} @date_range={{this.date_range}} @start_at={{this.start_at}} @end_at={{this.end_at}} @query={{this.query}} @search={{this.search}} @interval={{this.interval}} @allQueryParamValues={{this.allQueryParamValues}} @dateRanges={{this.dateRanges}} />
+<Stats::Logs::ResultsChart @hitsOverTime={{this.model.hits_over_time}} />
+<Stats::Logs::ResultsHighlights @stats={{this.model.stats}} @aggregations={{this.model.aggregations}} @presentQueryParamValues={{this.presentQueryParamValues}} />
+<Stats::Logs::ResultsTable @presentQueryParamValues={{this.presentQueryParamValues}} @backendQueryParamValues={{this.backendQueryParamValues}} />

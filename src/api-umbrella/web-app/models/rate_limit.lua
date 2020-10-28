@@ -1,13 +1,10 @@
-local db = require "lapis.db"
 local int64_to_json_number = require("api-umbrella.utils.int64").to_json_number
 local json_null_default = require "api-umbrella.web-app.utils.json_null_default"
 local model_ext = require "api-umbrella.web-app.utils.model_ext"
 local t = require("api-umbrella.web-app.utils.gettext").gettext
 local validation_ext = require "api-umbrella.web-app.utils.validation_ext"
 
-local db_null = db.NULL
 local validate_field = model_ext.validate_field
-local validate_uniqueness = model_ext.validate_uniqueness
 
 local function auto_calculate_accuracy(values)
   if values["accuracy"] ~= nil then
@@ -111,16 +108,6 @@ RateLimit = model_ext.new_class("rate_limits", {
     }, { error_field = "limit" })
     validate_field(errors, data, "distributed", t("Distributed"), {
       { validation_ext.boolean, t("can't be blank") },
-    })
-
-    local settings_id_column = "api_backend_settings_id"
-    if data["api_user_settings_id"] and data["api_user_settings_id"] ~= db_null then
-      settings_id_column = "api_user_settings_id"
-    end
-    validate_uniqueness(errors, data, "duration", t("Duration"), RateLimit, {
-      settings_id_column,
-      "limit_by",
-      "duration",
     })
 
     return errors

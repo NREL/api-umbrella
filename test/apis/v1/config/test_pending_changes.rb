@@ -74,7 +74,7 @@ class Test::Apis::V1::Config::TestPendingChanges < Minitest::Test
   end
 
   def test_yaml_output_sorts_fields_alphabetically
-    FactoryBot.create(:api_backend, :sort_order => 10)
+    FactoryBot.create(:api_backend)
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/config/pending_changes.json", http_options.deep_merge(admin_token))
 
     assert_response_code(200, response)
@@ -91,7 +91,6 @@ class Test::Apis::V1::Config::TestPendingChanges < Minitest::Test
       "servers",
       "- host",
       "  port",
-      "sort_order",
       "url_matches",
       "- backend_prefix",
       "  frontend_prefix",

@@ -4,7 +4,6 @@ local t = require("api-umbrella.web-app.utils.gettext").gettext
 local validation_ext = require "api-umbrella.web-app.utils.validation_ext"
 
 local validate_field = model_ext.validate_field
-local validate_uniqueness = model_ext.validate_uniqueness
 
 local ApiBackendRewrite
 ApiBackendRewrite = model_ext.new_class("api_backend_rewrites", {
@@ -43,16 +42,6 @@ ApiBackendRewrite = model_ext.new_class("api_backend_rewrites", {
     })
     validate_field(errors, data, "sort_order", t("Sort order"), {
       { validation_ext.tonumber.number, t("can't be blank") },
-    })
-    validate_uniqueness(errors, data, "frontend_matcher", t("Frontend matcher"), ApiBackendRewrite, {
-      "api_backend_id",
-      "matcher_type",
-      "http_method",
-      "frontend_matcher",
-    })
-    validate_uniqueness(errors, data, "sort_order", t("Sort order"), ApiBackendRewrite, {
-      "api_backend_id",
-      "sort_order",
     })
     return errors
   end,

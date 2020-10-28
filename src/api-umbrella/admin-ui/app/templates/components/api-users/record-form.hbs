@@ -1,7 +1,7 @@
-{{error-messages model=model}}
+<ErrorMessages @model={{this.model}} />
 
 <form {{action "submit" on="submit"}}>
-  {{#fields-for model=model style="horizontal" as |f|}}
+  <FieldsFor @model={{this.model}} @style="horizontal" as |f|>
     <fieldset class="form-horizontal condensed">
       <legend>User Info</legend>
 
@@ -10,15 +10,15 @@
       {{f.text-field "lastName" label="Last Name"}}
       {{f.textarea-field "useDescription" label="Purpose"}}
 
-      {{#if model.id}}
+      {{#if this.model.id}}
         {{#f.static-field "createdAt" label="Signed Up"}}
-          {{format-date model.createdAt}}
+          {{format-date this.model.createdAt}}
         {{/f.static-field}}
         {{#f.static-field "apiKey" label="API Key"}}
-          {{#if model.apiKey}}
-            <span class="api-key" data-api-key={{model.apiKey}} data-api-key-preview={{model.apiKeyPreview}}>{{model.apiKeyPreview}}</span> <a href="#" {{action "apiKeyRevealToggle"}} class="api-key-reveal-toggle">{{t "(reveal)"}}</a>
+          {{#if this.model.apiKey}}
+            <span class="api-key" data-api-key={{this.model.apiKey}} data-api-key-preview={{this.model.apiKeyPreview}}>{{this.model.apiKeyPreview}}</span> <a href="#" {{action "apiKeyRevealToggle"}} class="api-key-reveal-toggle">{{t "(reveal)"}}</a>
           {{else}}
-            <span class="api-key">{{model.apiKeyPreview}}</span>
+            <span class="api-key">{{this.model.apiKeyPreview}}</span>
           {{/if}}
         {{/f.static-field}}
         {{f.static-field "id" label="User ID"}}
@@ -31,17 +31,17 @@
 
     <fieldset class="form-horizontal">
       <legend>Rate Limiting</legend>
-      {{apis/settings/rate-limit-fields model=model.settings}}
-      {{f.select-field "throttleByIp" label="Limit By" options=throttleByIpOptions}}
+      <Apis::Settings::RateLimitFields @model={{this.model.settings}} />
+      {{f.select-field "throttleByIp" label="Limit By" options=this.throttleByIpOptions}}
     </fieldset>
 
     <fieldset class="form-horizontal">
       <legend>Permissions</legend>
 
-      {{f.selectize-field "rolesString" label="Roles" options=roleOptions}}
-      {{apis/settings/allowed-ips-fields model=model.settings}}
-      {{apis/settings/allowed-referers-fields model=model.settings}}
-      {{f.select-field "enabled" label="Account Enabled" options=enabledOptions}}
+      {{f.selectize-field "rolesString" label="Roles" options=this.roleOptions}}
+      <Apis::Settings::AllowedIpsFields @model={{this.model.settings}} />
+      <Apis::Settings::AllowedReferersFields @model={{this.model.settings}} />
+      {{f.select-field "enabled" label="Account Enabled" options=this.enabledOptions}}
     </fieldset>
 
     <div class="row">
@@ -49,22 +49,22 @@
         <button type="submit" class="btn btn-lg btn-primary save-button"><span class="btn-label">Save</span><span class="btn-loading-label">{{fa-icon "sync-alt" spin=true}}Saving...</span></button>
       </div>
       <div class="col-sm-6 record-details">
-        Created: {{format-date model.createdAt}}{{#if model.creator}} by {{model.creator.username}}{{/if}}<br>
-        Last Updated: {{format-date model.updatedAt}}{{#if model.updater}} by {{model.updater.username}}{{/if}}<br>
-        E-mail Verified: {{model.emailVerified}}<br>
-        {{#if model.registrationIp}}
-          Registration IP: {{model.registrationIp}}<br>
+        Created: {{format-date this.model.createdAt}}{{#if this.model.creator}} by {{this.model.creator.username}}{{/if}}<br>
+        Last Updated: {{format-date this.model.updatedAt}}{{#if this.model.updater}} by {{this.model.updater.username}}{{/if}}<br>
+        E-mail Verified: {{this.model.emailVerified}}<br>
+        {{#if this.model.registrationIp}}
+          Registration IP: {{this.model.registrationIp}}<br>
         {{/if}}
-        {{#if model.registrationUserAgent}}
-          Registration User Agent: {{model.registrationUserAgent}}<br>
+        {{#if this.model.registrationUserAgent}}
+          Registration User Agent: {{this.model.registrationUserAgent}}<br>
         {{/if}}
-        {{#if model.registrationReferer}}
-          Registration Referer: {{model.registrationReferer}}<br>
+        {{#if this.model.registrationReferer}}
+          Registration Referer: {{this.model.registrationReferer}}<br>
         {{/if}}
-        {{#if model.registrationOrigin}}
-          Registration Origin: {{model.registrationOrigin}}<br>
+        {{#if this.model.registrationOrigin}}
+          Registration Origin: {{this.model.registrationOrigin}}<br>
         {{/if}}
       </div>
     </div>
-  {{/fields-for}}
+  </FieldsFor>
 </form>
