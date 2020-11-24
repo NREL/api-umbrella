@@ -3,6 +3,7 @@ require:
 
 AllCops:
   TargetRubyVersion: 2.4
+  NewCops: enable
   Exclude:
     - bin/**/*
     - scripts/**/*
@@ -25,9 +26,6 @@ Layout/ArgumentAlignment:
 
 Layout/CaseIndentation:
   EnforcedStyle: end
-
-Layout/EmptyLinesAroundAttributeAccessor:
-  Enabled: true
 
 Layout/EndAlignment:
   EnforcedStyleAlignWith: start_of_line
@@ -63,29 +61,14 @@ Layout/ParameterAlignment:
 Layout/SpaceAroundKeyword:
   Enabled: false
 
-Layout/SpaceAroundMethodCallOperator:
-  Enabled: true
-
 Lint/AssignmentInCondition:
   AllowSafeAssignment: false
 
-Lint/DeprecatedOpenSSLConstant:
-  Enabled: true
-
-Lint/DuplicateElsifCondition:
-  Enabled: true
+Lint/DuplicateBranch:
+  Enabled: false
 
 Lint/LiteralInInterpolation:
   Enabled: false
-
-Lint/MixedRegexpCaptureTypes:
-  Enabled: true
-
-Lint/RaiseException:
-  Enabled: true
-
-Lint/StructNewOverride:
-  Enabled: true
 
 Lint/UnusedBlockArgument:
   Enabled: false
@@ -120,11 +103,8 @@ Metrics/PerceivedComplexity:
 Naming/HeredocDelimiterNaming:
   Enabled: false
 
-Rails/ActiveRecordCallbacksOrder:
-  Enabled: true
-
-Rails/AfterCommitOverride:
-  Enabled: true
+Naming/VariableNumber:
+  Enabled: false
 
 Rails/ApplicationMailer:
   Enabled: false
@@ -132,65 +112,20 @@ Rails/ApplicationMailer:
 Rails/FindBy:
   Enabled: false
 
-Rails/FindById:
-  Enabled: true
-
 Rails/HasAndBelongsToMany:
   Enabled: false
-
-Rails/Inquiry:
-  Enabled: true
-
-Rails/MailerName:
-  Enabled: true
-
-Rails/MatchRoute:
-  Enabled: true
-
-Rails/NegateInclude:
-  Enabled: true
 
 Rails/Pluck:
   Enabled: false
 
-Rails/PluckInWhere:
-  Enabled: true
-
 Rails/RakeEnvironment:
   Enabled: false
-
-Rails/RenderInline:
-  Enabled: true
-
-Rails/RenderPlainText:
-  Enabled: true
-
-Rails/ShortI18n:
-  Enabled: true
-
-Rails/SquishedSQLHeredocs:
-  Enabled: true
 
 Rails/WhereExists:
   Enabled: false
 
-Rails/WhereNot:
-  Enabled: true
-
-Style/AccessorGrouping:
-  Enabled: true
-
-Style/ArrayCoercion:
-  Enabled: true
-
 Style/AsciiComments:
   Enabled: false
-
-Style/BisectedAttrAccessor:
-  Enabled: true
-
-Style/CaseLikeIf:
-  Enabled: true
 
 Style/ClassAndModuleChildren:
   Enabled: false
@@ -214,32 +149,14 @@ Style/EmptyElse:
 Style/EmptyMethod:
   Enabled: false
 
-Style/ExponentialNotation:
-  Enabled: true
-
 Style/FrozenStringLiteralComment:
   Enabled: false
 
 Style/GuardClause:
   Enabled: false
 
-Style/HashEachMethods:
-  Enabled: true
-
-Style/HashAsLastArrayItem:
-  Enabled: true
-
-Style/HashLikeCase:
-  Enabled: true
-
 Style/HashSyntax:
   EnforcedStyle: hash_rockets
-
-Style/HashTransformKeys:
-  Enabled: true
-
-Style/HashTransformValues:
-  Enabled: true
 
 Style/IfInsideElse:
   Enabled: false
@@ -274,20 +191,8 @@ Style/PercentLiteralDelimiters:
 Style/RaiseArgs:
   Enabled: false
 
-Style/RedundantAssignment:
-  Enabled: true
-
-Style/RedundantFetchBlock:
-  Enabled: true
-
-Style/RedundantFileExtensionInRequire:
-  Enabled: true
-
-Style/RedundantRegexpCharacterClass:
-  Enabled: true
-
-Style/RedundantRegexpEscape:
-  Enabled: true
+Style/RedundantArgument:
+  Enabled: false
 
 Style/RedundantSelf:
   Enabled: false
@@ -303,9 +208,6 @@ Style/SafeNavigation:
 
 Style/SignalException:
   Enabled: false
-
-Style/SlicingWithRange:
-  Enabled: true
 
 Style/SoleNestedConditional:
   Enabled: false
