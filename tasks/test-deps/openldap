@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-openldap_version="2.4.54"
-openldap_hash="e82d321ac3df5ffb6790c22322471e2fae3d1546"
+openldap_version="2.4.56"
+openldap_hash="4c617b87bd50ef8d071e7deb7525af79b08d4910"
 
 set -e -u -x
 source ./tasks/helpers.sh

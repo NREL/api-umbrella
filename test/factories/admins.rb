@@ -43,6 +43,7 @@ FactoryBot.define do
     end
 
     factory :empty_attributes_admin do
+      # Empty attributes
     end
 
     factory :filled_attributes_admin do

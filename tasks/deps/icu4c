@@ -3,8 +3,8 @@
 # Build newer version of icu than relying on system libicu packages, since
 # lua-icu-date-ffi needs ICU v55 or higher for "udat_formatCalendar" support.
 
-icu4c_version="67.1"
-icu4c_hash="c4d62b497cbd89ab2a9ca6b543e57b30"
+icu4c_version="68.1"
+icu4c_hash="6a99b541ea01f271257b121a4433c7c0"
 
 set -e -u -x
 source ./tasks/helpers.sh

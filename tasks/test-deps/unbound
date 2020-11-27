@@ -7,7 +7,7 @@ set -e -u -x
 source ./tasks/helpers.sh
 
 task_working_dir
-download "https://www.unbound.net/downloads/unbound-$unbound_version.tar.gz" "sha256" "$unbound_hash"
+download "https://nlnetlabs.nl/downloads/unbound/unbound-$unbound_version.tar.gz" "sha256" "$unbound_hash"
 extract_download "unbound-$unbound_version.tar.gz"
 
 cd "unbound-$unbound_version"
