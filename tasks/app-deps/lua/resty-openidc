@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-lua_resty_openidc_version="1.7.2"
+lua_resty_openidc_version="1.7.4"
 
 set -e -u -x
 source ./tasks/helpers.sh

@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 
-libpsl_version="0.21.0"
-libpsl_hash="171e96d887709e36a57f4ee627bf82d2"
+libpsl_version="0.21.1"
+libpsl_hash="ad40b970dcb5117d559b62a1e0d8d827"
 
 set -e -u -x
 source ./tasks/helpers.sh
 
 task_working_dir
-download "https://github.com/rockdaboot/libpsl/releases/download/libpsl-$libpsl_version/libpsl-$libpsl_version.tar.gz" "md5" "$libpsl_hash"
+download "https://github.com/rockdaboot/libpsl/releases/download/$libpsl_version/libpsl-$libpsl_version.tar.gz" "md5" "$libpsl_hash"
 extract_download "libpsl-$libpsl_version.tar.gz"
 
 cd "libpsl-$libpsl_version"
