@@ -2,8 +2,8 @@
 
 ngx_http_geoip2_module_version="3.3"
 ngx_http_geoip2_module_hash="9f2c77f4d897e87992c2f7ec7516949c"
-openresty_version="1.19.3.1"
-openresty_hash="5744e4ecfc0137e3d5f7b7e349077c49"
+openresty_version="1.17.8.2"
+openresty_hash="ae9cdb51cabe42b0e3f46313da003d51"
 openssl_version="1.1.0l"
 openssl_hash="74a2f756c64fd7386a29184dc0344f4831192d61dc2481a93a4c5dd727f41148"
 # PCRE 8.21+ required for OpenResty's JIT regex support.
