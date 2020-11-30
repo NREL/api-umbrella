@@ -1,3 +1,13 @@
+--  vi: ft=lua
+
+local rex = require "rex_pcre"
+
+local strip_response_cookies = {
+  {{#strip_response_cookies}}
+  [[{{ . }}]],
+  {{/strip_response_cookies}}
+}
+
 function do_global_read_request()
   -- If API Umbrella is injecting a static Authorization header into each
   -- request (to authenticate against the API backend), then we still want to
@@ -58,6 +68,51 @@ function do_global_read_response()
     end
 
     ts.server_response.header["Cache-Control"] = surrogate_control
+  end
+
+  -- Allow stripping specific cookies before caching so responses with cookies
+  -- can still be cached if the cookies are irrelevant.
+  --
+  -- Note: Due to Traffic Server's Lua cookie setting making it difficult to
+  -- deal with setting multiple cookies (it only accepts a single string), we
+  -- will only strip cookies if all of the cookies can be stripped and
+  -- therefore the response can be cached. If only some of the cookies can be
+  -- stripped, we will leave all the cookies as-is.
+  if next(strip_response_cookies) ~= nil then
+    -- Fetch all the cookies being set on the response.
+    local set_cookie = ts.server_response.header["Set-Cookie"]
+    if set_cookie then
+      local strip_all_cookies = false
+
+      -- Traffic Server's Lua API returns multiple cookes as comma-delimited
+      -- values. However, this becomes tricky to parse, since "Set-Cookie"
+      -- headers can contain commas themselves. So we'll do our best to try and
+      -- parse this by looking for a cookie name either at the beginning of the
+      -- string, or immediately following a comma (but this shouldn't match
+      -- commas present in "Expires" arguments).
+      for cookie_name in rex.gmatch(set_cookie, [[(?:^|,)(\w+)=]]) do
+        local strip_cookie = false
+        for _, strip_cookie_name in ipairs(strip_response_cookies) do
+          if rex.match(cookie_name, strip_cookie_name) then
+            strip_cookie = true
+            break
+          end
+        end
+
+        if strip_cookie then
+          strip_all_cookies = true
+        else
+          strip_all_cookies = false
+          break
+        end
+      end
+
+      -- Due to the limitations in setting multiple headers, we will only reset
+      -- all the cookies if all of the headers were eligible for stripping.
+      if strip_all_cookies then
+        ts.server_response.header["Set-Cookie"] = nil
+      end
+    end
   end
 
   return 0

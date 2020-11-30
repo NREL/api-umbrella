@@ -384,8 +384,24 @@ server {
   location /cacheable-set-cookie/ {
     set_secure_random_alphanum $random 50;
     more_set_headers "Cache-Control: max-age=60";
-    more_set_headers "Set-Cookie: foo=bar";
     more_set_headers "X-Unique-Output: $random";
+    rewrite_by_lua_block {
+      local cookies = {
+        "foo=bar",
+      }
+
+      ngx.req.read_body()
+      local body = ngx.req.get_body_data()
+      if body then
+        local cjson = require "cjson"
+        local data = cjson.decode(body)
+        if data and data["set_cookies"] then
+          cookies = data["set_cookies"]
+        end
+      end
+
+      ngx.header.set_cookie = cookies
+    }
     echo $random;
   }
 

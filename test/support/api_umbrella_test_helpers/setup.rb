@@ -345,6 +345,11 @@ module ApiUmbrellaTestHelpers
         # effect.
         elsif(previous_override_config.dig("router", "api_backends", "keepalive_idle_timeout") || @@current_override_config.dig("router", "api_backends", "keepalive_idle_timeout"))
           self.api_umbrella_process.restart_trafficserver
+
+        # Restart trafficserver when changing the response stripping config,
+        # since that is part of Trafficserver's global.lua config template.
+        elsif(previous_override_config["strip_response_cookies"] || @@current_override_config["strip_response_cookies"])
+          self.api_umbrella_process.restart_trafficserver
         end
       end
     end

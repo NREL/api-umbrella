@@ -386,6 +386,21 @@ tasks:
       - ./build/work/stamp/app-deps/lua/libcidr-ffi
     method: checksum
 
+  app-deps:lua:lrexlib-pcre:
+    deps:
+      - deps:luarocks
+    cmds:
+      - ./tasks/app-deps/lua/lrexlib-pcre
+    sources:
+      - ./build/work/stamp/deps/luarocks
+      - ./tasks/app-deps/lua/lrexlib-pcre
+      - ./tasks/app-deps/lua/lrexlib-pcre-2.9.1-1.rockspec
+      - ./tasks/helpers.sh
+      - ./tasks/helpers/lua.sh
+    generates:
+      - ./build/work/stamp/app-deps/lua/lrexlib-pcre
+    method: checksum
+
   app-deps:lua:lualdap:
     deps:
       - deps:luarocks
@@ -709,6 +724,7 @@ tasks:
       - task: app-deps:lua:inspect
       - task: app-deps:lua:lapis
       - task: app-deps:lua:libcidr-ffi
+      - task: app-deps:lua:lrexlib-pcre
       - task: app-deps:lua:lualdap
       - task: app-deps:lua:luaposix
       - task: app-deps:lua:luasocket

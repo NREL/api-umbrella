@@ -46,5 +46,8 @@ http {
   # Don't restrict file upload size.
   client_max_body_size 0;
 
+  # Read larger JSON bodies.
+  client_body_buffer_size 1m;
+
   include ./apis.conf;
 }
