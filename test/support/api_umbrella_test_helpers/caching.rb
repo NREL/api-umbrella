@@ -3,15 +3,11 @@ module ApiUmbrellaTestHelpers
     private
 
     def make_duplicate_requests(path, options = {}, second_request_options = {})
-      @cacheable_duplicate_test_id ||= 0
-      @cacheable_duplicate_test_id += 1
-
-      http_opts = http_options.deep_merge(options).deep_merge({
+      http_opts = http_options.deep_merge({
         :params => {
           :unique_test_id => unique_test_id,
-          :unique_duplicate_test_id => @cacheable_duplicate_test_id,
         },
-      })
+      }).deep_merge(options)
 
       first = Typhoeus::Request.new("http://127.0.0.1:9080#{path}", http_opts).run
       assert_equal(200, first.code, first.body)

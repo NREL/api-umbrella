@@ -213,6 +213,9 @@ class Test::Proxy::Caching::TestGzip < Minitest::Test
 
   def assert_first_request_gzipped_second_request_gzipped(path)
     first, second = make_duplicate_requests(path, {
+      :params => {
+        :unique_test_id => "#{unique_test_id}-#{next_unique_number}",
+      },
       :accept_encoding => "gzip",
     })
     assert_equal("gzip", first.headers["content-encoding"])
@@ -221,6 +224,9 @@ class Test::Proxy::Caching::TestGzip < Minitest::Test
 
   def assert_first_request_gzipped_second_request_not_gzipped(path)
     first, second = make_duplicate_requests(path, {
+      :params => {
+        :unique_test_id => "#{unique_test_id}-#{next_unique_number}",
+      },
       :accept_encoding => "gzip",
     }, {
       :accept_encoding => nil,
@@ -231,6 +237,9 @@ class Test::Proxy::Caching::TestGzip < Minitest::Test
 
   def assert_first_request_not_gzipped_second_request_gzipped(path)
     first, second = make_duplicate_requests(path, {
+      :params => {
+        :unique_test_id => "#{unique_test_id}-#{next_unique_number}",
+      },
       :accept_encoding => nil,
     }, {
       :accept_encoding => "gzip",
@@ -241,6 +250,9 @@ class Test::Proxy::Caching::TestGzip < Minitest::Test
 
   def assert_first_request_not_gzipped_second_request_not_gzipped(path)
     first, second = make_duplicate_requests(path, {
+      :params => {
+        :unique_test_id => "#{unique_test_id}-#{next_unique_number}",
+      },
       :accept_encoding => nil,
     })
     refute(first.headers["content-encoding"])
