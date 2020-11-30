@@ -9,7 +9,7 @@ class Test::Proxy::Caching::TestStripResponseCookies < Minitest::Test
     setup_server
   end
 
-  def test_does_not_cache_responses_with_google_analytics_cookie
+  def test_does_not_cache_responses_with_google_analytics_utm_cookie
     refute_cacheable("/api/cacheable-set-cookie/", {
       :headers => { "Content-Type" => "application/json" },
       :body => MultiJson.dump({
@@ -18,7 +18,9 @@ class Test::Proxy::Caching::TestStripResponseCookies < Minitest::Test
         ],
       }),
     })
+  end
 
+  def test_does_not_cache_responses_with_google_analytics_ga_cookie
     refute_cacheable("/api/cacheable-set-cookie/", {
       :headers => { "Content-Type" => "application/json" },
       :body => MultiJson.dump({
@@ -42,6 +44,9 @@ class Test::Proxy::Caching::TestStripResponseCookies < Minitest::Test
 
   def test_stripped_cookies_can_be_configured
     refute_cacheable("/api/cacheable-set-cookie/", {
+      :params => {
+        :unique_test_id => "#{unique_test_id}-#{next_unique_number}",
+      },
       :headers => { "Content-Type" => "application/json" },
       :body => MultiJson.dump({
         "set_cookies" => [
@@ -51,6 +56,9 @@ class Test::Proxy::Caching::TestStripResponseCookies < Minitest::Test
     })
 
     refute_cacheable("/api/cacheable-set-cookie/", {
+      :params => {
+        :unique_test_id => "#{unique_test_id}-#{next_unique_number}",
+      },
       :headers => { "Content-Type" => "application/json" },
       :body => MultiJson.dump({
         "set_cookies" => [
@@ -61,6 +69,9 @@ class Test::Proxy::Caching::TestStripResponseCookies < Minitest::Test
     })
 
     refute_cacheable("/api/cacheable-set-cookie/", {
+      :params => {
+        :unique_test_id => "#{unique_test_id}-#{next_unique_number}",
+      },
       :headers => { "Content-Type" => "application/json" },
       :body => MultiJson.dump({
         "set_cookies" => [
@@ -70,6 +81,9 @@ class Test::Proxy::Caching::TestStripResponseCookies < Minitest::Test
     })
 
     refute_cacheable("/api/cacheable-set-cookie/", {
+      :params => {
+        :unique_test_id => "#{unique_test_id}-#{next_unique_number}",
+      },
       :headers => { "Content-Type" => "application/json" },
       :body => MultiJson.dump({
         "set_cookies" => [
@@ -79,6 +93,9 @@ class Test::Proxy::Caching::TestStripResponseCookies < Minitest::Test
     })
 
     refute_cacheable("/api/cacheable-set-cookie/", {
+      :params => {
+        :unique_test_id => "#{unique_test_id}-#{next_unique_number}",
+      },
       :headers => { "Content-Type" => "application/json" },
       :body => MultiJson.dump({
         "set_cookies" => [
@@ -88,6 +105,9 @@ class Test::Proxy::Caching::TestStripResponseCookies < Minitest::Test
     })
 
     refute_cacheable("/api/cacheable-set-cookie/", {
+      :params => {
+        :unique_test_id => "#{unique_test_id}-#{next_unique_number}",
+      },
       :headers => { "Content-Type" => "application/json" },
       :body => MultiJson.dump({
         "set_cookies" => [
@@ -104,6 +124,9 @@ class Test::Proxy::Caching::TestStripResponseCookies < Minitest::Test
       ],
     }) do
       assert_cacheable("/api/cacheable-set-cookie/", {
+        :params => {
+          :unique_test_id => "#{unique_test_id}-#{next_unique_number}",
+        },
         :headers => { "Content-Type" => "application/json" },
         :body => MultiJson.dump({
           "set_cookies" => [
@@ -113,6 +136,9 @@ class Test::Proxy::Caching::TestStripResponseCookies < Minitest::Test
       })
 
       assert_cacheable("/api/cacheable-set-cookie/", {
+        :params => {
+          :unique_test_id => "#{unique_test_id}-#{next_unique_number}",
+        },
         :headers => { "Content-Type" => "application/json" },
         :body => MultiJson.dump({
           "set_cookies" => [
@@ -123,6 +149,9 @@ class Test::Proxy::Caching::TestStripResponseCookies < Minitest::Test
       })
 
       assert_cacheable("/api/cacheable-set-cookie/", {
+        :params => {
+          :unique_test_id => "#{unique_test_id}-#{next_unique_number}",
+        },
         :headers => { "Content-Type" => "application/json" },
         :body => MultiJson.dump({
           "set_cookies" => [
@@ -132,6 +161,9 @@ class Test::Proxy::Caching::TestStripResponseCookies < Minitest::Test
       })
 
       refute_cacheable("/api/cacheable-set-cookie/", {
+        :params => {
+          :unique_test_id => "#{unique_test_id}-#{next_unique_number}",
+        },
         :headers => { "Content-Type" => "application/json" },
         :body => MultiJson.dump({
           "set_cookies" => [
@@ -141,6 +173,9 @@ class Test::Proxy::Caching::TestStripResponseCookies < Minitest::Test
       })
 
       refute_cacheable("/api/cacheable-set-cookie/", {
+        :params => {
+          :unique_test_id => "#{unique_test_id}-#{next_unique_number}",
+        },
         :headers => { "Content-Type" => "application/json" },
         :body => MultiJson.dump({
           "set_cookies" => [
@@ -150,6 +185,9 @@ class Test::Proxy::Caching::TestStripResponseCookies < Minitest::Test
       })
 
       refute_cacheable("/api/cacheable-set-cookie/", {
+        :params => {
+          :unique_test_id => "#{unique_test_id}-#{next_unique_number}",
+        },
         :headers => { "Content-Type" => "application/json" },
         :body => MultiJson.dump({
           "set_cookies" => [
