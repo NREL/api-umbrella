@@ -81,7 +81,7 @@ gem "nokogiri", "~> 1.10.0"
 gem "http_accept_language", "~> 2.1.1"
 
 # Markdown
-gem "kramdown", "~> 2.3.0"
+gem "kramdown", "~> 2.3.1"
 gem "kramdown-parser-gfm", "~> 1.1.0"
 
 # Lucene query parsing for translating into SQL.
