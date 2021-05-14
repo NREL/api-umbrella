@@ -54,7 +54,7 @@ gem "capybara-chromedriver-logger", "~> 0.3.0"
 gem "capybara-screenshot", "~> 1.0.22"
 
 # HTML or XML parsing
-gem "nokogiri", "~> 1.10.0"
+gem "nokogiri", "~> 1.11.0"
 
 # Useful additions
 gem "activesupport", "~> 5.2.4"
