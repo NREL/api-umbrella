@@ -112,12 +112,12 @@ GEM
       warden (~> 1.2.3)
     devise-i18n (1.9.2)
       devise (>= 4.7.1)
-    elasticsearch (7.9.0)
-      elasticsearch-api (= 7.9.0)
-      elasticsearch-transport (= 7.9.0)
-    elasticsearch-api (7.9.0)
+    elasticsearch (7.10.1)
+      elasticsearch-api (= 7.10.1)
+      elasticsearch-transport (= 7.10.1)
+    elasticsearch-api (7.10.1)
       multi_json
-    elasticsearch-transport (7.9.0)
+    elasticsearch-transport (7.10.1)
       faraday (~> 1)
       multi_json
     erubis (2.7.0)
@@ -146,7 +146,7 @@ GEM
     jbuilder (2.9.1)
       activesupport (>= 4.2.0)
     jwt (2.2.2)
-    kramdown (2.3.0)
+    kramdown (2.3.1)
       rexml
     kramdown-parser-gfm (1.1.0)
       kramdown (~> 2.0)
@@ -325,13 +325,13 @@ DEPENDENCIES
   delayed_job_mongoid (~> 2.3.0)
   devise (~> 4.7.0)
   devise-i18n (~> 1.9.0)
-  elasticsearch (~> 7.9.0)
+  elasticsearch (~> 7.10.0)
   font-awesome-rails (~> 4.7.0, >= 4.7.0.4)
   gitlab_omniauth-ldap (~> 2.1.0)
   http_accept_language (~> 2.1.1)
   i18n-js (~> 3.8.0)
   jbuilder (~> 2.9)
-  kramdown (~> 2.3.0)
+  kramdown (~> 2.3.1)
   kramdown-parser-gfm (~> 1.1.0)
   legacy-rails-CVE-2020-5267-patch
   lucene_query_parser!
