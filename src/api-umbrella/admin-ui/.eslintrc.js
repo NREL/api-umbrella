@@ -12,6 +12,7 @@ module.exports = {
   },
   plugins: [
     'ember',
+    'simple-import-sort',
   ],
   extends: [
     'eslint:recommended',
@@ -36,6 +37,10 @@ module.exports = {
     }}],
     'no-trailing-spaces': 'error',
     'ember/no-jquery': 'off',
+    "simple-import-sort/imports": "error",
+    "simple-import-sort/exports": "error",
+    "sort-imports": "off",
+    "import/order": "off",
   },
   globals: {
     'CommonValidations': true,

@@ -1,19 +1,21 @@
-<FieldsFor @model={{this.model}} @style="horizontal-wide-labels" as |f|>
-  {{f.select-field "requireHttps" label=(t "admin.api.settings.require_https") tooltip=(t "admin.api.settings.require_https_tooltip_markdown") options=this.requireHttpsOptions}}
-  {{f.select-field "disableApiKey" label=(t "admin.api.settings.disable_api_key") options=this.disableApiKeyOptions}}
-  {{f.select-field "apiKeyVerificationLevel" label=(t "admin.api.settings.api_key_verification_level") options=this.apiKeyVerificationLevelOptions}}
-  {{f.selectize-field "requiredRolesString" label=(t "admin.api.settings.required_roles") tooltip=(t "admin.api.settings.required_roles_tooltip_markdown") options=this.roleOptions}}
-  {{#if this.isSubSettings}}
-    {{f.checkbox-field "requiredRolesOverride" label=(t "admin.api.settings.required_roles_override") tooltip=(t "admin.api.settings.required_roles_override_tooltip_markdown")}}
-  {{/if}}
-  {{f.checkboxes-field "passApiKey" label=(t "admin.api.settings.pass_api_key") tooltip=(t "admin.api.settings.pass_api_key_tooltip_markdown") options=this.passApiKeyOptions}}
+<div ...attributes>
+  <FieldsFor @model={{this.model}} @style="horizontal-wide-labels" as |f|>
+    {{f.select-field "requireHttps" label=(t "admin.api.settings.require_https") tooltip=(t "admin.api.settings.require_https_tooltip_markdown") options=this.requireHttpsOptions}}
+    {{f.select-field "disableApiKey" label=(t "admin.api.settings.disable_api_key") options=this.disableApiKeyOptions}}
+    {{f.select-field "apiKeyVerificationLevel" label=(t "admin.api.settings.api_key_verification_level") options=this.apiKeyVerificationLevelOptions}}
+    {{f.selectize-field "requiredRolesString" label=(t "admin.api.settings.required_roles") tooltip=(t "admin.api.settings.required_roles_tooltip_markdown") options=this.roleOptions}}
+    {{#if this.isSubSettings}}
+      {{f.checkbox-field "requiredRolesOverride" label=(t "admin.api.settings.required_roles_override") tooltip=(t "admin.api.settings.required_roles_override_tooltip_markdown")}}
+    {{/if}}
+    {{f.checkboxes-field "passApiKey" label=(t "admin.api.settings.pass_api_key") tooltip=(t "admin.api.settings.pass_api_key_tooltip_markdown") options=this.passApiKeyOptions}}
 
-  <Apis::Settings::RateLimitFields @model={{this.model}} @style="horizontal-wide-labels" />
-  {{#if this.model.disableApiKey}}
-    {{f.select-field "anonymousRateLimitBehavior" label="Anonymous Rate Limit Behavior" options=this.anonymousRateLimitBehaviorOptions}}
-    {{f.select-field "authenticatedRateLimitBehavior" label="Authenticated Rate Limit Behavior" options=this.authenticatedRateLimitBehaviorOptions}}
-  {{/if}}
+    <Apis::Settings::RateLimitFields @model={{this.model}} @style="horizontal-wide-labels" />
+    {{#if this.model.disableApiKey}}
+      {{f.select-field "anonymousRateLimitBehavior" label="Anonymous Rate Limit Behavior" options=this.anonymousRateLimitBehaviorOptions}}
+      {{f.select-field "authenticatedRateLimitBehavior" label="Authenticated Rate Limit Behavior" options=this.authenticatedRateLimitBehaviorOptions}}
+    {{/if}}
 
-  {{f.textarea-field "defaultResponseHeadersString" label=(t "admin.api.settings.default_response_headers") tooltip=(t "admin.api.settings.default_response_headers_tooltip_markdown") placeholder="X-Example-Header: value"}}
-  {{f.textarea-field "overrideResponseHeadersString" label=(t "admin.api.settings.override_response_headers") tooltip=(t "admin.api.settings.override_response_headers_tooltip_markdown") placeholder="X-Example-Header: value"}}
-</FieldsFor>
+    {{f.textarea-field "defaultResponseHeadersString" label=(t "admin.api.settings.default_response_headers") tooltip=(t "admin.api.settings.default_response_headers_tooltip_markdown") placeholder="X-Example-Header: value"}}
+    {{f.textarea-field "overrideResponseHeadersString" label=(t "admin.api.settings.override_response_headers") tooltip=(t "admin.api.settings.override_response_headers_tooltip_markdown") placeholder="X-Example-Header: value"}}
+  </FieldsFor>
+</div>

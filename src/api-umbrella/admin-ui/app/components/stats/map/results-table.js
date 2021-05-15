@@ -1,14 +1,18 @@
-// eslint-disable-next-line ember/no-observers
-import { computed, observer } from '@ember/object';
-
-import $ from 'jquery';
+// eslint-disable-next-line ember/no-classic-components
 import Component from '@ember/component';
+import { computed } from '@ember/object';
+import { observes } from '@ember-decorators/object';
+import classic from 'ember-classic-decorator';
+import $ from 'jquery';
 import clone from 'lodash-es/clone';
 import escape from 'lodash-es/escape';
 import numeral from 'numeral';
 
-export default Component.extend({
+// eslint-disable-next-line ember/no-classic-classes
+@classic
+export default class ResultsTable extends Component {
   didInsertElement() {
+    super.didInsertElement(...arguments);
     this.$().find('table').DataTable({
       searching: false,
       order: [[1, 'desc']],
@@ -51,17 +55,19 @@ export default Component.extend({
         },
       ],
     });
-  },
+  }
 
   // eslint-disable-next-line ember/no-observers
-  refreshData: observer('regions', function() {
+  @observes('regions')
+  refreshData() {
     let table = this.$().find('table').dataTable().api();
     table.clear();
     table.rows.add(this.regions);
     table.draw();
-  }),
+  }
 
-  downloadUrl: computed('backendQueryParamValues', function() {
+  @computed('backendQueryParamValues')
+  get downloadUrl() {
     return '/admin/stats/map.csv?' + $.param(this.backendQueryParamValues);
-  }),
-});
+  }
+}

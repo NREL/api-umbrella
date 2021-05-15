@@ -1,11 +1,14 @@
-import $ from 'jquery';
 import EmberObject from '@ember/object';
 import Evented from '@ember/object/evented';
+import classic from 'ember-classic-decorator';
+import $ from 'jquery';
 import { Promise } from 'rsvp';
 
-let Drilldown = EmberObject.extend(Evented, {
-  results: null,
-});
+// eslint-disable-next-line ember/no-classic-classes
+@classic
+class Drilldown extends EmberObject.extend(Evented) {
+  results = null;
+}
 
 Drilldown.reopenClass({
   urlRoot: '/api-umbrella/v1/analytics/drilldown.json',

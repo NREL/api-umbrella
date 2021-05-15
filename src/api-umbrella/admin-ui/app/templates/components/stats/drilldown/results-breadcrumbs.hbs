@@ -1,7 +1,9 @@
-{{#each this.breadcrumbLinks as |breadcrumb|}}
-  {{#if breadcrumb.prefix}}
-    <LinkTo @route="stats.drilldown" @query={{hash prefix=breadcrumb.prefix}}>{{breadcrumb.name}}</LinkTo> /
-  {{else}}
-    {{breadcrumb.name}}
-  {{/if}}
-{{/each}}
+<div ...attributes>
+  {{#each this.breadcrumbLinks as |breadcrumb|}}
+    {{#if breadcrumb.prefix}}
+      <LinkTo @route="stats.drilldown" @query={{hash prefix=breadcrumb.prefix}}>{{breadcrumb.name}}</LinkTo> /
+    {{else}}
+      {{breadcrumb.name}}
+    {{/if}}
+  {{/each}}
+</div>

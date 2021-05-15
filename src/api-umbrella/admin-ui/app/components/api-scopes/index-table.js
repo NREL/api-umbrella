@@ -1,9 +1,14 @@
+// eslint-disable-next-line ember/no-classic-components
 import Component from '@ember/component';
 import DataTablesHelpers from 'api-umbrella-admin-ui/utils/data-tables-helpers';
+import classic from 'ember-classic-decorator';
 import escape from 'lodash-es/escape';
 
-export default Component.extend({
+// eslint-disable-next-line ember/no-classic-classes
+@classic
+export default class IndexTable extends Component {
   didInsertElement() {
+    super.didInsertElement(...arguments);
     this.$().find('table').DataTable({
       serverSide: true,
       ajax: '/api-umbrella/v1/api_scopes.json',
@@ -37,5 +42,5 @@ export default Component.extend({
         },
       ],
     });
-  },
-});
+  }
+}

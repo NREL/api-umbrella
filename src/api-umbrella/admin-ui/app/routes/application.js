@@ -1,11 +1,13 @@
 // eslint-disable-next-line ember/no-mixins
-import ApplicationRouteMixin from 'ember-simple-auth/mixins/application-route-mixin';
-import Route from '@ember/routing/route';
-import { inject } from '@ember/service';
-import isString from 'lodash-es/isString';
 // eslint-disable-next-line ember/no-observers
 import { observer } from '@ember/object';
+import { action } from '@ember/object';
+import Route from '@ember/routing/route';
+import { inject } from '@ember/service';
+import ApplicationRouteMixin from 'ember-simple-auth/mixins/application-route-mixin';
+import isString from 'lodash-es/isString';
 
+// eslint-disable-next-line ember/no-classic-classes
 export default Route.extend(ApplicationRouteMixin, {
   busy: inject('busy'),
 
@@ -51,7 +53,7 @@ export default Route.extend(ApplicationRouteMixin, {
       });
     },
 
-    refreshCurrentRoute(){
+    refreshCurrentRoutefunction() {
       this.refresh();
     },
 

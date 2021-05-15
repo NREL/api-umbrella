@@ -1,13 +1,21 @@
+import classic from 'ember-classic-decorator';
+import { tagName } from '@ember-decorators/component';
+import { computed } from '@ember/object';
+import { gt } from '@ember/object/computed';
+// eslint-disable-next-line ember/no-classic-components
 import Component from '@ember/component';
 import I18n from 'i18n-js';
-import { computed } from '@ember/object';
-import each from 'lodash-es/each';
 import inflection from 'inflection';
+import each from 'lodash-es/each';
 import isArray from 'lodash-es/isArray';
 import marked from 'marked';
 
-export default Component.extend({
-  messages: computed('model.{constructor.modelName,clientErrors,serverErrors}', function() {
+// eslint-disable-next-line ember/no-classic-classes
+@classic
+@tagName("")
+export default class ErrorMessages extends Component {
+  @computed('model.{constructor.modelName,clientErrors,serverErrors}')
+  get messages() {
     let errors = [];
     let modelI18nRoot = 'mongoid.attributes.' + this.model.constructor.modelName.replace('-', '_');
 
@@ -82,7 +90,8 @@ export default Component.extend({
     });
 
     return messages;
-  }),
+  }
 
-  hasErrors: computed.gt('messages.length', 0),
-});
+  @gt('messages.length', 0)
+  hasErrors;
+}

@@ -1,9 +1,9 @@
 app_env: production
 services:
-  - general_db
-  - log_db
+  #- general_db
+  #- log_db
   - router
-  - web
+    #- web
 user: api-umbrella
 group: api-umbrella
 rlimits:

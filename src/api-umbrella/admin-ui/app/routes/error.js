@@ -1,7 +1,10 @@
 import Route from '@ember/routing/route';
+import classic from 'ember-classic-decorator';
 
-export default Route.extend({
+// eslint-disable-next-line ember/no-classic-classes
+@classic
+export default class ErrorRoute extends Route {
   renderTemplate() {
     this.render('error');
-  },
-});
+  }
+}

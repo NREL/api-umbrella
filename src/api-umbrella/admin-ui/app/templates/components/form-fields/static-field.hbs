@@ -1,6 +1,6 @@
 <FormFields::FieldWrapper @model={{this.model}} @style={{this.style}} @fieldName={{this.fieldName}} @inputId={{this.inputId}} @label={{this.label}} @tooltip={{this.tooltip}} @hint={{this.hint}}>
   <div class="form-control-plaintext">
-    {{#if hasBlock}}
+    {{#if (has-block)}}
       {{yield}}
     {{else}}
       {{get this.model this.fieldName}}

@@ -18,7 +18,7 @@ gem "minitest-hooks", "~> 1.5.0"
 gem "minitest-ci", "~> 3.4.0"
 
 # Ruby lint/style checker
-gem "rubocop", "~> 1.4.1", :require => false
+gem "rubocop", "~> 1.4", :require => false
 gem "rubocop-rails", "~> 2.7", :require => false
 
 # Running background processes
@@ -29,11 +29,11 @@ gem "typhoeus", "~> 1.4.0"
 
 # JSON parsing
 gem "multi_json", "~> 1.15.0"
-gem "oj", "~> 3.10.0"
+gem "oj", "~> 3.10"
 
 # Database libraries
-gem "mongoid", "~> 7.1.0"
-gem "elasticsearch", "~> 7.10.0"
+gem "mongoid", "~> 7.3.0"
+gem "elasticsearch", "~> 7.12.0"
 gem "active_attr", "~> 0.15.0"
 
 # Factories for test database data
@@ -54,7 +54,7 @@ gem "capybara-chromedriver-logger", "~> 0.3.0"
 gem "capybara-screenshot", "~> 1.0.22"
 
 # HTML or XML parsing
-gem "nokogiri", "~> 1.10.0"
+gem "nokogiri", "~> 1.10"
 
 # Useful additions
 gem "activesupport", "~> 5.2.4"
@@ -78,4 +78,4 @@ gem "bcrypt", "~> 3.1.12"
 gem "rainbow", "~> 3.0.0"
 
 # Debug printing
-gem "awesome_print", "~> 1.8.0"
+gem "awesome_print", "~> 1.9.2"

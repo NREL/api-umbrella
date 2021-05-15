@@ -1,10 +1,13 @@
 import RESTAdapter from '@ember-data/adapter/rest';
+import classic from 'ember-classic-decorator';
 import flatten from 'lodash-es/flatten';
 import isArray from 'lodash-es/isArray';
 import isPlainObject from 'lodash-es/isPlainObject';
 import isString from 'lodash-es/isString';
 
-export default RESTAdapter.extend({
+// eslint-disable-next-line ember/no-classic-classes
+@classic
+export default class Application extends RESTAdapter {
   // Build the URL using the customizable "urlRoot" attribute that can be set
   // on the model class.
   buildURL(modelName, id, snapshot) {
@@ -16,9 +19,9 @@ export default RESTAdapter.extend({
 
       return url;
     } else {
-      return this._super(...arguments);
+      return super.buildURL(...arguments);
     }
-  },
+  }
 
   // Ember data requires that errors from the API be returned as an array. This
   // normalizes some of our different error responses, so they're always an
@@ -29,8 +32,8 @@ export default RESTAdapter.extend({
       this.normalizePayloadErrors(payload, 'error');
     }
 
-    return this._super(...arguments);
-  },
+    return super.handleResponse(...arguments);
+  }
 
   normalizePayloadErrors(payload, key) {
     if(payload && payload[key]) {
@@ -75,5 +78,5 @@ export default RESTAdapter.extend({
         delete payload[key];
       }
     }
-  },
-});
+  }
+}

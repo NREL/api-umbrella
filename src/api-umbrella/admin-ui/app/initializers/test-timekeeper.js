@@ -1,5 +1,6 @@
-import config from '../config/environment';
 import timekeeper from 'timekeeper';
+
+import config from '../config/environment';
 
 export function initialize() {
   if(config.integrationTestMode === true) {

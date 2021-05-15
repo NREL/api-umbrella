@@ -1,12 +1,19 @@
+// eslint-disable-next-line ember/no-classic-components
 import Component from '@ember/component';
 import { once } from '@ember/runloop';
+import { tagName } from "@ember-decorators/component";
+import classic from 'ember-classic-decorator';
 
-export default Component.extend({
+// eslint-disable-next-line ember/no-classic-classes
+@tagName("")
+@classic
+export default class SelectMenu extends Component {
   didRender() {
+    super.didRender(...arguments);
     // Defer update to within the run loop, to prevent ember warnings about
     // updates within the actual rendering (which can cause poor performance).
     once(this, this.updateDefault);
-  },
+  }
 
   // If a select menu doesn't have a value set on the model, set it to the
   // value of the first option. This better aligns with the default behavior of
@@ -30,5 +37,5 @@ export default Component.extend({
         }
       }
     }
-  },
-});
+  }
+}

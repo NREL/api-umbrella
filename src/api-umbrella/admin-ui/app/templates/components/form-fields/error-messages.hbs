@@ -1,7 +1,9 @@
-{{#if this.hasErrors}}
-  <div>
-    {{#each this.errorMessages as |message|}}
-      {{message}}<br>
-    {{/each}}
-  </div>
-{{/if}}
+<div class="invalid-feedback" ...attributes>
+  {{#if this.hasErrors}}
+    <div>
+      {{#each this.errorMessages as |message|}}
+        {{message}}<br>
+      {{/each}}
+    </div>
+  {{/if}}
+</div>

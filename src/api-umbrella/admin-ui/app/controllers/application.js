@@ -1,17 +1,22 @@
-import Controller from '@ember/controller';
-import { computed } from '@ember/object';
+import classic from 'ember-classic-decorator';
+import { action } from '@ember/object';
 import { inject } from '@ember/service';
+import { reads } from '@ember/object/computed';
+import Controller from '@ember/controller';
 
-export default Controller.extend({
-  session: inject('session'),
+// eslint-disable-next-line ember/no-classic-classes
+@classic
+export default class ApplicationController extends Controller {
+  @inject('session')
+  session;
 
-  isLoading: null,
+  isLoading = null;
 
-  currentAdmin: computed.reads('session.data.authenticated.admin'),
+  @reads('session.data.authenticated.admin')
+  currentAdmin;
 
-  actions: {
-    logout() {
-      this.session.invalidate();
-    },
-  },
-});
+  @action
+  logout() {
+    this.session.invalidate();
+  }
+}

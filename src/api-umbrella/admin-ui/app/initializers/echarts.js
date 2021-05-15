@@ -4,6 +4,7 @@ import 'echarts/lib/chart/scatter';
 import 'echarts/lib/component/geo';
 import 'echarts/lib/component/tooltip';
 import 'echarts/lib/component/visualMapContinuous';
+
 import echarts from 'echarts/lib/echarts';
 
 export function initialize() {
@@ -62,6 +63,7 @@ export function initialize() {
     };
   }
 
+  /*
   echarts.registerTheme('api-umbrella-theme', {
     color: colorPalette,
     graph: {
@@ -94,6 +96,7 @@ export function initialize() {
       },
     },
   });
+  */
 }
 
 export default {

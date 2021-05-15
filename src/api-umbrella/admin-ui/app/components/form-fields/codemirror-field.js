@@ -3,20 +3,23 @@ import 'codemirror/mode/javascript/javascript';
 import 'codemirror/mode/xml/xml';
 import 'codemirror/mode/yaml/yaml';
 
-import BaseField from './base-field';
 import CodeMirror from 'codemirror/lib/codemirror'
+import classic from 'ember-classic-decorator';
 
-export default BaseField.extend({
+import BaseField from './base-field';
+
+@classic
+export default class CodemirrorField extends BaseField {
   init() {
-    this._super();
+    super.init();
     this.set('codemirrorInputFieldId', this.elementId + '_codemirror_input_field');
     this.set('codemirrorWrapperElementId', this.elementId + '_codemirror_wrapper_element');
     // eslint-disable-next-line ember/no-observers
     this.addObserver('model.' + this.fieldName, this, this.valueDidChange);
-  },
+  }
 
   didInsertElement() {
-    this._super();
+    super.didInsertElement();
 
     let $originalTextarea = this.$().find('textarea');
     this.codemirror = CodeMirror.fromTextArea($originalTextarea[0], {
@@ -50,7 +53,7 @@ export default BaseField.extend({
       this.codemirror.save();
       $originalTextarea.trigger('change');
     });
-  },
+  }
 
   valueDidChange() {
     // Sync any external model changes back to the code mirror input.
@@ -61,5 +64,5 @@ export default BaseField.extend({
         this.codemirror.setValue(newValue);
       }
     }
-  },
-});
+  }
+}

@@ -1,14 +1,17 @@
+import classic from 'ember-classic-decorator';
 import Controller from '@ember/controller';
 
-export default Controller.extend({
-  search: '',
-  interval: 'day',
-  prefix: '0/',
-  region: 'world',
-  date_range: '30d',
-  start_at: '',
-  end_at: '',
-  query: JSON.stringify({
+// eslint-disable-next-line ember/no-classic-classes
+@classic
+export default class BaseController extends Controller {
+  search = '';
+  interval = 'day';
+  prefix = '0/';
+  region = 'world';
+  date_range = '30d';
+  start_at = '';
+  end_at = '';
+  query = JSON.stringify({
     condition: 'AND',
     rules: [{
       field: 'gatekeeper_denied_code',
@@ -18,5 +21,5 @@ export default Controller.extend({
       type: 'string',
       value: null,
     }],
-  }),
-});
+  });
+}

@@ -1,6 +1,8 @@
 // eslint-disable-next-line ember/no-mixins
-import AuthenticatedRouteMixin from 'ember-simple-auth/mixins/authenticated-route-mixin';
 import Route from '@ember/routing/route';
+import classic from 'ember-classic-decorator';
+import AuthenticatedRouteMixin from 'ember-simple-auth/mixins/authenticated-route-mixin';
 
-export default Route.extend(AuthenticatedRouteMixin, {
-});
+// eslint-disable-next-line ember/no-classic-classes
+@classic
+export default class IndexRoute extends Route.extend(AuthenticatedRouteMixin) {}

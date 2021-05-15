@@ -1,8 +1,8 @@
+import classic from 'ember-classic-decorator';
+import { computed } from '@ember/object';
 import Model, { attr } from '@ember-data/model';
 import { buildValidations, validator } from 'ember-cp-validations';
-
 import I18n from 'i18n-js';
-import { computed } from '@ember/object';
 
 const Validations = buildValidations({
   name: validator('presence', true),
@@ -22,20 +22,40 @@ const Validations = buildValidations({
   ],
 });
 
-export default Model.extend(Validations, {
-  name: attr(),
-  host: attr(),
-  pathPrefix: attr(),
-  createdAt: attr(),
-  updatedAt: attr(),
-  creator: attr(),
-  updater: attr(),
+// eslint-disable-next-line ember/no-classic-classes
+@classic
+class ApiScope extends Model.extend(Validations) {
+  @attr()
+  name;
 
-  displayName: computed('name', 'host', 'pathPrefix', function() {
+  @attr()
+  host;
+
+  @attr()
+  pathPrefix;
+
+  @attr()
+  createdAt;
+
+  @attr()
+  updatedAt;
+
+  @attr()
+  creator;
+
+  @attr()
+  updater;
+
+  @computed('name', 'host', 'pathPrefix')
+  get displayName() {
     return this.name + ' - ' + this.host + this.pathPrefix;
-  }),
-}).reopenClass({
+  }
+}
+
+ApiScope.reopenClass({
   urlRoot: '/api-umbrella/v1/api_scopes',
   singlePayloadKey: 'api_scope',
   arrayPayloadKey: 'data',
 });
+
+export default ApiScope;

@@ -1,9 +1,14 @@
-import $ from 'jquery';
+// eslint-disable-next-line ember/no-classic-components
 import Component from '@ember/component';
+import classic from 'ember-classic-decorator';
+import $ from 'jquery';
 import escape from 'lodash-es/escape';
 
-export default Component.extend({
+// eslint-disable-next-line ember/no-classic-classes
+@classic
+export default class IndexTable extends Component {
   didInsertElement() {
+    super.didInsertElement(...arguments);
     this.set('table', this.$().find('table').DataTable({
       serverSide: true,
       ajax: '/api-umbrella/v1/website_backends.json',
@@ -28,5 +33,5 @@ export default Component.extend({
         },
       ],
     }));
-  },
-});
+  }
+}

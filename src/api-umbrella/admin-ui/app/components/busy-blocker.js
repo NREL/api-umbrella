@@ -1,21 +1,25 @@
+// eslint-disable-next-line ember/no-classic-components
 import Component from '@ember/component';
-import { inject } from '@ember/service';
 import { later } from '@ember/runloop';
+import { inject } from '@ember/service';
+import classic from 'ember-classic-decorator';
 
 const ANIMATION_DURATION = 300;
 const DEFAULT_MESSAGE = 'Loading...';
 
-export default Component.extend({
-  busy: inject('busy'),
+// eslint-disable-next-line ember/no-classic-classes
+@classic
+export default class BusyBlocker extends Component {
+  @inject('busy')
+  busy;
 
-  classNames: ['busy-blocker'],
-  animationElements: null,
-  message: null,
-
+  animationElements = null;
+  message = null;
 
   // Hooks
   // ------------------------
   didInsertElement() {
+    super.didInsertElement(...arguments);
     // Convert animation duration ms to css string value
     let duration = (ANIMATION_DURATION / 1000) + 's';
     let busy = this.busy;
@@ -29,15 +33,15 @@ export default Component.extend({
 
     busy.on('hide', this, this._hide);
     busy.on('show', this, this._show);
-  },
+  }
 
   willDestroyElement() {
+    super.willDestroyElement(...arguments);
     let busy = this.busy;
 
     busy.off('hide', this, this._hide);
     busy.off('show', this, this._show);
-  },
-
+  }
 
   // Functions
   // ------------------------
@@ -56,7 +60,7 @@ export default Component.extend({
     later(this, function hideLoading() {
       this.$().css('display', 'none');
     }, ANIMATION_DURATION);
-  },
+  }
 
   /**
    * Show the busy animation and apply received options.
@@ -79,5 +83,5 @@ export default Component.extend({
     this.$().css('display', 'block');
     elements.removeClass('fade-out');
     elements.addClass('fade-in');
-  },
-});
+  }
+}

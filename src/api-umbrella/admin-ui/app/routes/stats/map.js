@@ -1,8 +1,11 @@
-import Base from './base';
 import StatsMap from 'api-umbrella-admin-ui/models/stats/map';
+import classic from 'ember-classic-decorator';
 
-export default Base.extend({
-  queryParams: {
+import Base from './base';
+
+@classic
+export default class MapRoute extends Base {
+  queryParams = {
     date_range: {
       refreshModel: true,
     },
@@ -21,7 +24,7 @@ export default Base.extend({
     region: {
       refreshModel: true,
     },
-  },
+  };
 
   model() {
     let params = this.backendQueryParamValues;
@@ -30,6 +33,6 @@ export default Base.extend({
     } else {
       return {};
     }
-  },
-});
+  }
+}
 

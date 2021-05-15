@@ -1,3 +1,4 @@
+import classic from 'ember-classic-decorator';
 import Model, { attr, belongsTo } from '@ember-data/model';
 import { buildValidations, validator } from 'ember-cp-validations';
 
@@ -10,23 +11,35 @@ const Validations = buildValidations({
   ],
 });
 
-export default Model.extend(Validations, {
-  sortOrder: attr('number'),
-  httpMethod: attr(),
-  regex: attr(),
+// eslint-disable-next-line ember/no-classic-classes
+@classic
+class SubSettings extends Model.extend(Validations) {
+  @attr('number')
+  sortOrder;
 
-  settings: belongsTo('api/settings', { async: false }),
+  @attr()
+  httpMethod;
+
+  @attr()
+  regex;
+
+  @belongsTo('api/settings', { async: false })
+  settings;
 
   ready() {
     this.setDefaults();
-    this._super();
-  },
+    super.ready();
+  }
 
   setDefaults() {
     if(!this.settings) {
       this.set('settings', this.store.createRecord('api/settings'));
     }
-  },
-}).reopenClass({
+  }
+}
+
+SubSettings.reopenClass({
   validationClass: Validations,
 });
+
+export default SubSettings;

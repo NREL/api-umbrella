@@ -1,7 +1,9 @@
-{{#each this.breadcrumbLinks as |breadcrumb|}}
-  {{#if breadcrumb.region}}
-    <LinkTo @route="stats.map" @query={{hash region=breadcrumb.region}}>{{breadcrumb.name}}</LinkTo> /
-  {{else}}
-    {{breadcrumb.name}}
-  {{/if}}
-{{/each}}
+<div ...attributes>
+  {{#each this.breadcrumbLinks as |breadcrumb|}}
+    {{#if breadcrumb.region}}
+      <LinkTo @route="stats.map" @query={{hash region=breadcrumb.region}}>{{breadcrumb.name}}</LinkTo> /
+    {{else}}
+      {{breadcrumb.name}}
+    {{/if}}
+  {{/each}}
+</div>

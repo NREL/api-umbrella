@@ -1,10 +1,11 @@
 import 'selectize';
 
-import BaseField from './base-field';
 // eslint-disable-next-line ember/no-observers
 import { observer } from '@ember/object';
 import { on } from '@ember/object/evented';
 import uniq from 'lodash-es/uniq';
+
+import BaseField from './base-field';
 
 export default BaseField.extend({
   optionValuePath: 'id',
@@ -95,6 +96,7 @@ export default BaseField.extend({
   },
 
   willDestroyElement() {
+    this._super(...arguments);
     if(this.selectize) {
       this.selectize.destroy();
     }

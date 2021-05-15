@@ -1,14 +1,16 @@
 // eslint-disable-next-line ember/no-observers
-import { computed, observer } from '@ember/object';
-
+// eslint-disable-next-line ember/no-classic-components
 import Component from '@ember/component';
-import Ember from 'ember';
+import { or } from '@ember/object/computed';
+import { computed, observer } from '@ember/object';
 import { on } from '@ember/object/evented';
+import Ember from 'ember';
 
+// eslint-disable-next-line ember/no-classic-classes
 export default Component.extend({
   canShowErrors: false,
 
-  labelFor: computed.or('labelForId', 'inputId'),
+  labelFor: or('labelForId', 'inputId'),
 
   // eslint-disable-next-line ember/no-on-calls-in-components, ember/no-observers
   fieldNameDidChange: on('init', observer('fieldName', function() {

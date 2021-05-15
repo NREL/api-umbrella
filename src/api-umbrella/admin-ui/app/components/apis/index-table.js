@@ -1,20 +1,27 @@
 import 'jquery-ui/ui/widgets/sortable';
 
-import $ from 'jquery';
+// eslint-disable-next-line ember/no-classic-components
 import Component from '@ember/component';
+import { action } from '@ember/object';
+import { inject } from '@ember/service';
+import { observes } from '@ember-decorators/object';
 import DataTablesHelpers from 'api-umbrella-admin-ui/utils/data-tables-helpers';
 import bootbox from 'bootbox';
+import classic from 'ember-classic-decorator';
+import $ from 'jquery';
 import escape from 'lodash-es/escape';
-import { inject } from '@ember/service';
 import isEqual from 'lodash-es/isEqual';
-// eslint-disable-next-line ember/no-observers
-import { observer } from '@ember/object';
 
-export default Component.extend({
-  busy: inject('busy'),
-  reorderActive: false,
+// eslint-disable-next-line ember/no-classic-classes
+@classic
+export default class IndexTable extends Component {
+  @inject('busy')
+  busy;
+
+  reorderActive = false;
 
   didInsertElement() {
+    super.didInsertElement(...arguments);
     this.set('table', this.$().find('table').DataTable({
       serverSide: true,
       ajax: '/api-umbrella/v1/apis.json',
@@ -109,10 +116,11 @@ export default Component.extend({
         this.saveReorder(row.data('id'), moveAfterId);
       },
     });
-  },
+  }
 
   // eslint-disable-next-line ember/no-observers
-  handleReorderChange: observer('reorderActive', function() {
+  @observes('reorderActive')
+  handleReorderChange() {
     if(this.reorderActive) {
       this.$().find('table').addClass('reorder-active');
       this.table
@@ -133,7 +141,7 @@ export default Component.extend({
         $buttonText.text($buttonText.data('originalText'));
       }
     }
-  }),
+  }
 
   saveReorder(id, moveAfterId) {
     this.busy.show();
@@ -150,11 +158,10 @@ export default Component.extend({
       bootbox.alert('An unexpected error occurred. Please try again.');
       this.table.draw();
     });
-  },
+  }
 
-  actions: {
-    toggleReorderApis() {
-      this.set('reorderActive', !this.reorderActive);
-    },
-  },
-});
+  @action
+  toggleReorderApis() {
+    this.set('reorderActive', !this.reorderActive);
+  }
+}

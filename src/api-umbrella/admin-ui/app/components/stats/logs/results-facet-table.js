@@ -1,12 +1,14 @@
-import $ from 'jquery';
+// eslint-disable-next-line ember/no-classic-components
 import Component from '@ember/component';
-import clone from 'lodash-es/clone';
-import compact from 'lodash-es/compact';
-import each from 'lodash-es/each';
 // eslint-disable-next-line ember/no-observers
 import { observer } from '@ember/object';
 import { on } from '@ember/object/evented';
+import $ from 'jquery';
+import clone from 'lodash-es/clone';
+import compact from 'lodash-es/compact';
+import each from 'lodash-es/each';
 
+// eslint-disable-next-line ember/no-classic-classes
 export default Component.extend({
   // eslint-disable-next-line ember/no-on-calls-in-components, ember/no-observers
   setLinks: on('init', observer('facets', function() {

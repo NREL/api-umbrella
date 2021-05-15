@@ -1,15 +1,16 @@
-import $ from 'jquery';
+// eslint-disable-next-line ember/no-classic-components
 import Component from '@ember/component';
-import debounce from 'lodash-es/debounce';
-import echarts from 'echarts/lib/echarts';
 // eslint-disable-next-line ember/no-observers
 import { observer } from '@ember/object';
 import { on } from '@ember/object/evented';
+import echarts from 'echarts/lib/echarts';
+import $ from 'jquery';
+import debounce from 'lodash-es/debounce';
 
+// eslint-disable-next-line ember/no-classic-classes
 export default Component.extend({
-  classNames: ['stats-logs-results-chart'],
-
   didInsertElement() {
+    this._super(...arguments);
     this.renderChart();
   },
 

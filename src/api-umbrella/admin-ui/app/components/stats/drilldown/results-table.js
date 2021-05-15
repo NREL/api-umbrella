@@ -1,17 +1,22 @@
-// eslint-disable-next-line ember/no-observers
-import { computed, observer } from '@ember/object';
-
-import $ from 'jquery';
+// eslint-disable-next-line ember/no-classic-components
 import Component from '@ember/component';
+import { computed } from '@ember/object';
+import { inject } from '@ember/service';
+import { observes } from '@ember-decorators/object';
+import classic from 'ember-classic-decorator';
+import $ from 'jquery';
 import clone from 'lodash-es/clone';
 import escape from 'lodash-es/escape';
-import { inject } from '@ember/service';
 import numeral from 'numeral';
 
-export default Component.extend({
-  session: inject(),
+// eslint-disable-next-line ember/no-classic-classes
+@classic
+export default class ResultsTable extends Component {
+  @inject()
+  session;
 
   didInsertElement() {
+    super.didInsertElement(...arguments);
     this.$().find('table').DataTable({
       searching: false,
       order: [[1, 'desc']],
@@ -51,17 +56,19 @@ export default Component.extend({
         },
       ],
     });
-  },
+  }
 
   // eslint-disable-next-line ember/no-observers
-  refreshData: observer('results', function() {
+  @observes('results')
+  refreshData() {
     let table = this.$().find('table').dataTable().api();
     table.clear();
     table.rows.add(this.results);
     table.draw();
-  }),
+  }
 
-  downloadUrl: computed('backendQueryParamValues', 'session.data.authenticated.api_key', function() {
+  @computed('backendQueryParamValues', 'session.data.authenticated.api_key')
+  get downloadUrl() {
     return '/api-umbrella/v1/analytics/drilldown.csv?api_key=' + this.session.data.authenticated.api_key + '&' + $.param(this.backendQueryParamValues);
-  }),
-});
+  }
+}

@@ -1,22 +1,29 @@
+import classic from 'ember-classic-decorator';
+import { tagName } from '@ember-decorators/component';
+import { observes } from '@ember-decorators/object';
+import { action } from '@ember/object';
+// eslint-disable-next-line ember/no-classic-components
 import Component from '@ember/component';
 // eslint-disable-next-line ember/no-mixins
 import Save from 'api-umbrella-admin-ui/mixins/save';
 import escape from 'lodash-es/escape';
-// eslint-disable-next-line ember/no-observers
-import { observer } from '@ember/object';
 
-export default Component.extend(Save, {
+// eslint-disable-next-line ember/no-classic-classes
+@classic
+@tagName("")
+export default class RecordForm extends Component.extend(Save) {
   init() {
-    this._super(...arguments);
+    super.init(...arguments);
 
     this.backendProtocolOptions = [
       { id: 'http', name: 'http' },
       { id: 'https', name: 'https' },
     ];
-  },
+  }
 
   // eslint-disable-next-line ember/no-observers
-  changeDefaultPort: observer('model.backendProtocol', function() {
+  @observes('model.backendProtocol')
+  changeDefaultPort() {
     let protocol = this.model.backendProtocol;
     let port = parseInt(this.model.serverPort, 10);
     if(protocol === 'https') {
@@ -28,22 +35,22 @@ export default Component.extend(Save, {
         this.set('model.serverPort', 80);
       }
     }
-  }),
+  }
 
-  actions: {
-    submit() {
-      this.saveRecord({
-        transitionToRoute: 'website_backends',
-        message: 'Successfully saved the "' + escape(this.model.frontendHost) + '" website backend<br><strong>Note:</strong> Your changes are not yet live. <a href="/admin/#/config/publish">Publish Changes</a> to send your updates live.',
-      });
-    },
+  @action
+  submitForm() {
+    this.saveRecord({
+      transitionToRoute: 'website_backends',
+      message: 'Successfully saved the "' + escape(this.model.frontendHost) + '" website backend<br><strong>Note:</strong> Your changes are not yet live. <a href="/admin/#/config/publish">Publish Changes</a> to send your updates live.',
+    });
+  }
 
-    delete() {
-      this.destroyRecord({
-        prompt: 'Are you sure you want to delete the website backend "' + escape(this.model.frontendHost) + '"?',
-        transitionToRoute: 'website_backends',
-        message: 'Successfully deleted the "' + escape(this.model.frontendHost) + '" website backend<br><strong>Note:</strong> Your changes are not yet live. <a href="/admin/#/config/publish">Publish Changes</a> to send your updates live.',
-      });
-    },
-  },
-});
+  @action
+  delete() {
+    this.destroyRecord({
+      prompt: 'Are you sure you want to delete the website backend "' + escape(this.model.frontendHost) + '"?',
+      transitionToRoute: 'website_backends',
+      message: 'Successfully deleted the "' + escape(this.model.frontendHost) + '" website backend<br><strong>Note:</strong> Your changes are not yet live. <a href="/admin/#/config/publish">Publish Changes</a> to send your updates live.',
+    });
+  }
+}

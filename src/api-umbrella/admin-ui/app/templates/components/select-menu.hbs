@@ -1,5 +1,7 @@
-<XSelect @value={{this.value}} @action={{this.action}} @id={{this.inputId}} @class={{this.inputClass}} as |xs|>
-  {{#each this.options as |option|}}
-    <xs.option @value={{option.id}}>{{option.name}}</xs.option>
-  {{/each}}
-</XSelect>
+<div ...attributes>
+  <XSelect @value={{this.value}} @action={{this.action}} @id={{this.inputId}} @class={{this.inputClass}} as |xs|>
+    {{#each this.options as |option|}}
+      <xs.option @value={{option.id}}>{{option.name}}</xs.option>
+    {{/each}}
+  </XSelect>
+</div>

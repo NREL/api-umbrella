@@ -1,37 +1,39 @@
-{{#if this.records}}
-  <table class="table table-sm">
-    <thead>
-      <tr>
-        <th class="text-center" style="width: 80px;">Publish?</th>
-        <th>Name</th>
-      </tr>
-    </thead>
-    <tbody>
-      {{#each this.records as |record|}}
+<div ...attributes>
+  {{#if this.records}}
+    <table class="table table-sm">
+      <thead>
         <tr>
-          <td class="text-center">
-            <input type="hidden" name="config[{{this.category}}][{{record.id}}][mode]" value={{record.mode}}>
-            <input type="hidden" name="config[{{this.category}}][{{record.id}}][active_version]" value={{record.active.version}}>
-            <input type="hidden" name="config[{{this.category}}][{{record.id}}][pending_version]" value={{record.pending.version}}>
-            <input type="hidden" name="config[{{this.category}}][{{record.id}}][publish]" value="0">
-            <div class="custom-control custom-checkbox custom-control-no-label">
-              <input type="checkbox" class="custom-control-input" name="config[{{this.category}}][{{record.id}}][publish]" value="1" id="config_{{this.category}}_{{record.id}}">
-              <label class="custom-control-label" for="config_{{this.category}}_{{record.id}}"><span class="sr-only">Publish {{record.name}} changes</span></label>
-            </div>
-          </td>
-          <td>{{record.name}}<br><small><a href="#" {{action "toggleConfigDiff" record.id}}>View Config Differences</a></small></td>
+          <th class="text-center" style="width: 80px;">Publish?</th>
+          <th>Name</th>
         </tr>
-        <tr class="line-bottom config-diff-row" data-diff-id={{record.id}} style="display: none;">
-          <td></td>
-          <td>
-            <pre class="code-block diff config-diff"></pre>
-            <pre class="diff-active-yaml" style="display: none;">{{record.active_yaml}}</pre>
-            <pre class="diff-pending-yaml" style="display: none;">{{record.pending_yaml}}</pre>
-          </td>
-        </tr>
-      {{/each}}
-    </tbody>
-  </table>
-{{else}}
-  <div class="text-center"><em>None</em></div>
-{{/if}}
+      </thead>
+      <tbody>
+        {{#each this.records as |record|}}
+          <tr>
+            <td class="text-center">
+              <input type="hidden" name="config[{{this.category}}][{{record.id}}][mode]" value={{record.mode}}>
+              <input type="hidden" name="config[{{this.category}}][{{record.id}}][active_version]" value={{record.active.version}}>
+              <input type="hidden" name="config[{{this.category}}][{{record.id}}][pending_version]" value={{record.pending.version}}>
+              <input type="hidden" name="config[{{this.category}}][{{record.id}}][publish]" value="0">
+              <div class="custom-control custom-checkbox custom-control-no-label">
+                <input type="checkbox" class="custom-control-input" name="config[{{this.category}}][{{record.id}}][publish]" value="1" id="config_{{this.category}}_{{record.id}}">
+                <label class="custom-control-label" for="config_{{this.category}}_{{record.id}}"><span class="sr-only">Publish {{record.name}} changes</span></label>
+              </div>
+            </td>
+            <td>{{record.name}}<br><small><a href="#" {{action "toggleConfigDiff" record.id}}>View Config Differences</a></small></td>
+          </tr>
+          <tr class="line-bottom config-diff-row" data-diff-id={{record.id}} style="display: none;">
+            <td></td>
+            <td>
+              <pre class="code-block diff config-diff"></pre>
+              <pre class="diff-active-yaml" style="display: none;">{{record.active_yaml}}</pre>
+              <pre class="diff-pending-yaml" style="display: none;">{{record.pending_yaml}}</pre>
+            </td>
+          </tr>
+        {{/each}}
+      </tbody>
+    </table>
+  {{else}}
+    <div class="text-center"><em>None</em></div>
+  {{/if}}
+</div>

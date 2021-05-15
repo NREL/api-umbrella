@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-rubygems_version="2.7.10"
+rubygems_version="2.7.11"
 
 set -e -u -x
 source ./tasks/helpers.sh
