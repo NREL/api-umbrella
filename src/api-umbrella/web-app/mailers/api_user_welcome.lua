@@ -146,6 +146,7 @@ return function(api_user, options)
   end
 
   local ok, send_err = mailer:send({
+    headers = config["web"]["mailer"]["headers"],
     from = from,
     to = { api_user.email },
     subject = string.format(t("Your %s API key"), options["site_name"]),

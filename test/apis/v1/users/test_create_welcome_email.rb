@@ -321,6 +321,33 @@ class Test::Apis::V1::Users::TestCreateWelcomeEmail < Minitest::Test
     assert_match("Account ID: #{user.id}", message.fetch("_mime_parts").fetch("text/plain").fetch("_body"))
   end
 
+  def test_custom_mail_headers
+    override_config({
+      "web" => {
+        "mailer" => {
+          "headers" => {
+            "X-Foo" => unique_test_id,
+          },
+        },
+      },
+    }) do
+      response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(non_admin_key_creator_api_key).deep_merge({
+        :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
+        :body => {
+          :user => FactoryBot.attributes_for(:api_user),
+          :options => { :send_welcome_email => true },
+        },
+      }))
+      assert_response_code(201, response)
+
+      messages = sent_emails
+      assert_equal(1, messages.length)
+      message = messages.first
+
+      assert_equal([unique_test_id], message.fetch("Content").fetch("Headers").fetch("X-Foo"))
+    end
+  end
+
   private
 
   def non_admin_key_creator_api_key

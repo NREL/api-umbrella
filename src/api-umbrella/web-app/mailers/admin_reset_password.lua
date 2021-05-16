@@ -54,6 +54,7 @@ return function(admin, token)
   end
 
   local ok, send_err = mailer:send({
+    headers = config["web"]["mailer"]["headers"],
     from = "noreply@" .. config["web"]["default_host"],
     to = { admin.email },
     subject = t("Reset password instructions"),

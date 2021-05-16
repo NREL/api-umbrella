@@ -31,6 +31,7 @@ return function(data)
   local subject = string.format(t("%s Contact Message from %s"), config["site_name"], data["email"])
 
   local ok, send_err = mailer:send({
+    headers = config["web"]["mailer"]["headers"],
     from = from,
     to = { to },
     reply_to = reply_to,

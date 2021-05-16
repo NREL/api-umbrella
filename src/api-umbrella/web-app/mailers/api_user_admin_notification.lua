@@ -77,6 +77,7 @@ return function(api_user)
   }
 
   local ok, send_err = mailer:send({
+    headers = config["web"]["mailer"]["headers"],
     from = from,
     to = { to },
     subject = subject,
