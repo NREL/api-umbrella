@@ -70,7 +70,7 @@ GEM
       minitest (~> 5.1)
       thread_safe (~> 0.3, >= 0.3.4)
       tzinfo (~> 1.1)
-    addressable (2.7.0)
+    addressable (2.8.0)
       public_suffix (>= 2.0.2, < 5.0)
     arel (6.0.4)
     autoprefixer-rails (10.0.2.0)
@@ -112,12 +112,12 @@ GEM
       warden (~> 1.2.3)
     devise-i18n (1.9.2)
       devise (>= 4.7.1)
-    elasticsearch (7.9.0)
-      elasticsearch-api (= 7.9.0)
-      elasticsearch-transport (= 7.9.0)
-    elasticsearch-api (7.9.0)
+    elasticsearch (7.10.1)
+      elasticsearch-api (= 7.10.1)
+      elasticsearch-transport (= 7.10.1)
+    elasticsearch-api (7.10.1)
       multi_json
-    elasticsearch-transport (7.9.0)
+    elasticsearch-transport (7.10.1)
       faraday (~> 1)
       multi_json
     erubis (2.7.0)
@@ -314,7 +314,7 @@ PLATFORMS
 
 DEPENDENCIES
   active_attr (~> 0.15.0)
-  addressable (~> 2.7.0)
+  addressable (~> 2.8.0)
   awesome_print (~> 1.8.0)
   bootstrap (~> 4.5.0)
   brakeman
@@ -325,7 +325,7 @@ DEPENDENCIES
   delayed_job_mongoid (~> 2.3.0)
   devise (~> 4.7.0)
   devise-i18n (~> 1.9.0)
-  elasticsearch (~> 7.9.0)
+  elasticsearch (~> 7.10.0)
   font-awesome-rails (~> 4.7.0, >= 4.7.0.4)
   gitlab_omniauth-ldap (~> 2.1.0)
   http_accept_language (~> 2.1.1)
