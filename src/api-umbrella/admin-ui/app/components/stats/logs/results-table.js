@@ -11,7 +11,6 @@ import escape from 'lodash-es/escape';
 import extend from 'lodash-es/extend';
 import tippy from 'tippy.js'
 
-// eslint-disable-next-line ember/no-classic-classes
 @classic
 export default class ResultsTable extends Component {
   didInsertElement() {

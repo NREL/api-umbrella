@@ -7,7 +7,6 @@ import classic from 'ember-classic-decorator';
 const ANIMATION_DURATION = 300;
 const DEFAULT_MESSAGE = 'Loading...';
 
-// eslint-disable-next-line ember/no-classic-classes
 @classic
 export default class BusyBlocker extends Component {
   @inject('busy')

@@ -3,7 +3,6 @@ import classic from 'ember-classic-decorator';
 // eslint-disable-next-line ember/no-mixins
 import UnauthenticatedRouteMixin from 'ember-simple-auth/mixins/unauthenticated-route-mixin';
 
-// eslint-disable-next-line ember/no-classic-classes
 @classic
 export default class LoginRoute extends Route.extend(UnauthenticatedRouteMixin) {
   activate() {

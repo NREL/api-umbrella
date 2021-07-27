@@ -1,7 +1,6 @@
-import classic from 'ember-classic-decorator';
 import Model from '@ember-data/model';
+import classic from 'ember-classic-decorator';
 
-// eslint-disable-next-line ember/no-classic-classes
 @classic
 class ApiUserRole extends Model {}
 

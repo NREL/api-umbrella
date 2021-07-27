@@ -8,7 +8,6 @@ import I18n from 'i18n-js';
 import $ from 'jquery';
 import escape from 'lodash-es/escape';
 
-// eslint-disable-next-line ember/no-classic-classes
 @classic
 export default class IndexTable extends Component {
   @inject('session')

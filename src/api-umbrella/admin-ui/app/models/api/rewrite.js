@@ -1,5 +1,5 @@
-import classic from 'ember-classic-decorator';
 import Model, { attr } from '@ember-data/model';
+import classic from 'ember-classic-decorator';
 import { buildValidations, validator } from 'ember-cp-validations';
 
 const Validations = buildValidations({
@@ -17,7 +17,6 @@ const Validations = buildValidations({
   ],
 });
 
-// eslint-disable-next-line ember/no-classic-classes
 @classic
 class Rewrite extends Model.extend(Validations) {
   @attr('number')

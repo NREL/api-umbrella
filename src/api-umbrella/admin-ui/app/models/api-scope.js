@@ -1,6 +1,6 @@
-import classic from 'ember-classic-decorator';
 import { computed } from '@ember/object';
 import Model, { attr } from '@ember-data/model';
+import classic from 'ember-classic-decorator';
 import { buildValidations, validator } from 'ember-cp-validations';
 import I18n from 'i18n-js';
 
@@ -22,7 +22,6 @@ const Validations = buildValidations({
   ],
 });
 
-// eslint-disable-next-line ember/no-classic-classes
 @classic
 class ApiScope extends Model.extend(Validations) {
   @attr()

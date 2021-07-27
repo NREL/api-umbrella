@@ -5,7 +5,6 @@ import classic from 'ember-classic-decorator';
 import uniqueId from 'lodash-es/uniqueId';
 import moment from 'moment-timezone';
 
-// eslint-disable-next-line ember/no-classic-classes
 @classic
 export default class RateLimit extends Model {
   @attr('number')

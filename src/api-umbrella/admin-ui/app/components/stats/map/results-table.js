@@ -8,7 +8,6 @@ import clone from 'lodash-es/clone';
 import escape from 'lodash-es/escape';
 import numeral from 'numeral';
 
-// eslint-disable-next-line ember/no-classic-classes
 @classic
 export default class ResultsTable extends Component {
   didInsertElement() {

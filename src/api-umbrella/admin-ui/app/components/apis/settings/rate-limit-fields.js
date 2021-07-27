@@ -7,7 +7,6 @@ import bootbox from 'bootbox';
 import classic from 'ember-classic-decorator';
 import uniqueId from 'lodash-es/uniqueId';
 
-// eslint-disable-next-line ember/no-classic-classes
 @tagName("")
 @classic
 export default class RateLimitFields extends Component {

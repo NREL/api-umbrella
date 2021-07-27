@@ -1,13 +1,11 @@
-import classic from 'ember-classic-decorator';
-import { observes } from '@ember-decorators/object';
-import { equal } from '@ember/object/computed';
-// eslint-disable-next-line ember/no-observers
 import { A } from '@ember/array';
 import EmberObject, { computed } from '@ember/object';
+import { equal } from '@ember/object/computed';
 import Model, { attr, hasMany } from '@ember-data/model';
+import { observes } from '@ember-decorators/object';
+import classic from 'ember-classic-decorator';
 import compact from 'lodash-es/compact';
 
-// eslint-disable-next-line ember/no-classic-classes
 @classic
 export default class Settings extends Model {
   @attr()

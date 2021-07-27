@@ -9,7 +9,6 @@ import cloneDeep from 'lodash-es/cloneDeep';
 import omit from 'lodash-es/omit';
 import moment from 'moment-timezone';
 
-// eslint-disable-next-line ember/no-classic-classes
 @classic
 export default class BaseRoute extends Route.extend(AuthenticatedRouteMixin) {
   setupController(controller, model) {

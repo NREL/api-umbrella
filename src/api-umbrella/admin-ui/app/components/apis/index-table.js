@@ -12,7 +12,6 @@ import $ from 'jquery';
 import escape from 'lodash-es/escape';
 import isEqual from 'lodash-es/isEqual';
 
-// eslint-disable-next-line ember/no-classic-classes
 @classic
 export default class IndexTable extends Component {
   @inject('busy')

@@ -9,7 +9,6 @@ import Diff from 'diff';
 import classic from 'ember-classic-decorator';
 import $ from 'jquery';
 
-// eslint-disable-next-line ember/no-classic-classes
 @classic
 export default class PublishForm extends Component {
   didInsertElement() {
@@ -132,7 +131,7 @@ export default class PublishForm extends Component {
       let message = '<h3>Error</h3>';
       try {
         let errors = response.responseJSON.errors;
-        for(let prop in errors) {
+        for(const prop in errors) {
           message += prop + ': ' + errors[prop].join(', ') + '<br>';
         }
       } catch(e) {

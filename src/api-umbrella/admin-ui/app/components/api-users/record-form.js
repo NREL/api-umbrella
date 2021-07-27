@@ -1,13 +1,12 @@
-import classic from 'ember-classic-decorator';
 // eslint-disable-next-line ember/no-classic-components
 import Component from '@ember/component';
 import { action } from '@ember/object';
 // eslint-disable-next-line ember/no-mixins
 import Save from 'api-umbrella-admin-ui/mixins/save';
+import classic from 'ember-classic-decorator';
 import I18n from 'i18n-js';
 import escape from 'lodash-es/escape';
 
-// eslint-disable-next-line ember/no-classic-classes
 @classic
 export default class RecordForm extends Component.extend(Save) {
   init() {

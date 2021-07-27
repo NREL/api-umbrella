@@ -1,29 +1,29 @@
 // eslint-disable-next-line ember/no-classic-components
 import Component from '@ember/component';
-// eslint-disable-next-line ember/no-observers
-import { observer } from '@ember/object';
-import { on } from '@ember/object/evented';
+import { observes, on } from '@ember-decorators/object';
 import echarts from 'echarts/lib/echarts';
+import classic from 'ember-classic-decorator';
 import $ from 'jquery';
 import debounce from 'lodash-es/debounce';
 
-// eslint-disable-next-line ember/no-classic-classes
-export default Component.extend({
+@classic
+export default class ResultsChart extends Component {
   // eslint-disable-next-line ember/no-component-lifecycle-hooks
   didInsertElement() {
-    this._super(...arguments);
+    super.didInsertElement(...arguments);
     this.renderChart();
-  },
+  }
 
   renderChart() {
     this.chart = echarts.init(this.$()[0], 'api-umbrella-theme');
     this.draw();
 
     $(window).on('resize', debounce(this.chart.resize, 100));
-  },
+  }
 
   // eslint-disable-next-line ember/no-on-calls-in-components, ember/no-observers
-  refreshData: on('init', observer('hitsOverTime', function() {
+  @observes('hitsOverTime')
+  refreshData() {
     let data = []
     let labels = [];
 
@@ -60,7 +60,7 @@ export default Component.extend({
     });
 
     this.draw();
-  })),
+  }
 
   draw() {
     if(!this.chart || !this.chartData) {
@@ -128,5 +128,5 @@ export default Component.extend({
         },
       ],
     }, true);
-  },
-});
+  }
+}

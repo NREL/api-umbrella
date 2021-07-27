@@ -1,22 +1,22 @@
 // eslint-disable-next-line ember/no-classic-components
 import Component from '@ember/component';
-// eslint-disable-next-line ember/no-observers
-import { observer } from '@ember/object';
-import { on } from '@ember/object/evented';
 import { inject } from '@ember/service';
+import { observes, on } from '@ember-decorators/object';
 import echarts from 'echarts/lib/echarts';
+import classic from 'ember-classic-decorator';
 import $ from 'jquery';
 import clone from 'lodash-es/clone';
 import debounce from 'lodash-es/debounce';
 
-// eslint-disable-next-line ember/no-classic-classes
-export default Component.extend({
-  router: inject(),
+@classic
+export default class ResultsMap extends Component {
+  @inject()
+  router;
 
   didInsertElement() {
-    this._super(...arguments);
+    super.didInsertElement(...arguments);
     this.renderChart();
-  },
+  }
 
   renderChart() {
     this.chart = echarts.init(this.$()[0], 'api-umbrella-theme');
@@ -26,13 +26,13 @@ export default Component.extend({
     this.draw();
 
     $(window).on('resize', debounce(this.chart.resize, 100));
-  },
+  }
 
   handleRegionClick(event) {
     let queryParams = clone(this.presentQueryParamValues);
     queryParams.region = event.batch[0].name;
     this.router.transitionTo('stats.map', { queryParams });
-  },
+  }
 
   handleCityClick(event) {
     if(event.seriesType === 'scatter') {
@@ -80,10 +80,11 @@ export default Component.extend({
 
       this.router.transitionTo('stats.logs', { queryParams });
     }
-  },
+  }
 
   // eslint-disable-next-line ember/no-on-calls-in-components, ember/no-observers
-  refreshMap: on('init', observer('allQueryParamValues.region', function() {
+  @observes('allQueryParamValues.region')
+  refreshMap() {
     let currentRegion = this.allQueryParamValues.region;
     $.get('/admin/maps/' + currentRegion + '.json', (geojson) => {
       this.labels = geojson._labels || {};
@@ -111,10 +112,11 @@ export default Component.extend({
       this.fillInChartDataMissingRegions();
       this.draw();
     });
-  })),
+  }
 
   // eslint-disable-next-line ember/no-on-calls-in-components, ember/no-observers
-  refreshData: on('init', observer('regions', function() {
+  @observes('regions')
+  refreshData() {
     let currentRegion = this.allQueryParamValues.region;
 
     let data = {};
@@ -162,7 +164,7 @@ export default Component.extend({
 
     this.fillInChartDataMissingRegions();
     this.draw();
-  })),
+  }
 
   // In order to generate tooltips with the region names, the region data must
   // contain a record for each region, even if no data is present (otherwise
@@ -185,7 +187,7 @@ export default Component.extend({
 
       this.set('chartData', data);
     }
-  },
+  }
 
   draw() {
     let currentRegion = this.allQueryParamValues.region;
@@ -279,5 +281,5 @@ export default Component.extend({
         right: 30,
       },
     }, true);
-  },
-});
+  }
+}

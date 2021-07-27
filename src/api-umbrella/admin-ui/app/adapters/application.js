@@ -5,7 +5,6 @@ import isArray from 'lodash-es/isArray';
 import isPlainObject from 'lodash-es/isPlainObject';
 import isString from 'lodash-es/isString';
 
-// eslint-disable-next-line ember/no-classic-classes
 @classic
 export default class Application extends RESTAdapter {
   // Build the URL using the customizable "urlRoot" attribute that can be set

@@ -1,12 +1,12 @@
-import classic from 'ember-classic-decorator';
-import { tagName } from '@ember-decorators/component';
-import { observes } from '@ember-decorators/object';
-import { action } from '@ember/object';
-import { inject } from '@ember/service';
 import 'daterangepicker';
 
 // eslint-disable-next-line ember/no-classic-components
 import Component from '@ember/component';
+import { action } from '@ember/object';
+import { inject } from '@ember/service';
+import { tagName } from '@ember-decorators/component';
+import { observes } from '@ember-decorators/object';
+import classic from 'ember-classic-decorator';
 import I18n from 'i18n-js';
 import $ from 'jquery';
 import QueryBuilder from 'jQuery-QueryBuilder';
@@ -33,7 +33,6 @@ QueryBuilder.define('filter-description', function() {
   });
 });
 
-// eslint-disable-next-line ember/no-classic-classes
 @classic
 @tagName("")
 export default class QueryForm extends Component {

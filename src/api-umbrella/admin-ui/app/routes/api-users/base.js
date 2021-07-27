@@ -4,7 +4,6 @@ import classic from 'ember-classic-decorator';
 import AuthenticatedRouteMixin from 'ember-simple-auth/mixins/authenticated-route-mixin';
 import $ from 'jquery';
 
-// eslint-disable-next-line ember/no-classic-classes
 @classic
 export default class BaseRoute extends Route.extend(AuthenticatedRouteMixin) {
   setupController(controller, model) {

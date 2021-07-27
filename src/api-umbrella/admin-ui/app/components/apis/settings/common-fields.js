@@ -4,7 +4,6 @@ import { tagName } from "@ember-decorators/component";
 import classic from 'ember-classic-decorator';
 import I18n from 'i18n-js';
 
-// eslint-disable-next-line ember/no-classic-classes
 @tagName("")
 @classic
 export default class CommonFields extends Component {

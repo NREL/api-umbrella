@@ -1,7 +1,6 @@
-import classic from 'ember-classic-decorator';
 import Controller from '@ember/controller';
+import classic from 'ember-classic-decorator';
 
-// eslint-disable-next-line ember/no-classic-classes
 @classic
 export default class BaseController extends Controller {
   search = '';

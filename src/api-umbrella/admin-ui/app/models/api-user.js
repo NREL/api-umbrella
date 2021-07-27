@@ -1,6 +1,6 @@
-import classic from 'ember-classic-decorator';
 import { computed } from '@ember/object';
 import Model, { attr, belongsTo } from '@ember-data/model';
+import classic from 'ember-classic-decorator';
 import { buildValidations, validator } from 'ember-cp-validations';
 import compact from 'lodash-es/compact';
 
@@ -10,7 +10,6 @@ const Validations = buildValidations({
   email: validator('presence', true),
 });
 
-// eslint-disable-next-line ember/no-classic-classes
 @classic
 class ApiUser extends Model.extend(Validations) {
   @attr()

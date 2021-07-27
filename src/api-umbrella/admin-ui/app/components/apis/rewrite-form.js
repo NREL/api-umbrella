@@ -1,13 +1,12 @@
-import classic from 'ember-classic-decorator';
-import { tagName } from '@ember-decorators/component';
-import { action, computed } from '@ember/object';
 import { getOwner } from '@ember/application';
 // eslint-disable-next-line ember/no-classic-components
 import Component from '@ember/component';
+import { action, computed } from '@ember/object';
+import { tagName } from '@ember-decorators/component';
 import Rewrite from 'api-umbrella-admin-ui/models/api/rewrite';
 import BufferedProxy from 'ember-buffered-proxy/proxy';
+import classic from 'ember-classic-decorator';
 
-// eslint-disable-next-line ember/no-classic-classes
 @classic
 @tagName("")
 export default class RewriteForm extends Component {

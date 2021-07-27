@@ -4,7 +4,6 @@ import classic from 'ember-classic-decorator';
 import $ from 'jquery';
 import { Promise } from 'rsvp';
 
-// eslint-disable-next-line ember/no-classic-classes
 @classic
 class Drilldown extends EmberObject.extend(Evented) {
   results = null;

@@ -1,13 +1,12 @@
-import classic from 'ember-classic-decorator';
-import { tagName } from '@ember-decorators/component';
-import { action, computed } from '@ember/object';
 import { getOwner } from '@ember/application';
 // eslint-disable-next-line ember/no-classic-components
 import Component from '@ember/component';
+import { action, computed } from '@ember/object';
+import { tagName } from '@ember-decorators/component';
 import UrlMatch from 'api-umbrella-admin-ui/models/api/url-match';
 import BufferedProxy from 'ember-buffered-proxy/proxy';
+import classic from 'ember-classic-decorator';
 
-// eslint-disable-next-line ember/no-classic-classes
 @classic
 @tagName("")
 export default class UrlMatchForm extends Component {
@@ -32,7 +31,7 @@ export default class UrlMatchForm extends Component {
   @computed(
     'apiExampleIncomingUrlRoot',
     'bufferedModel.frontendPrefix',
-    'exampleSuffix'
+    'exampleSuffix',
   )
   get exampleIncomingUrl() {
     let root = this.apiExampleIncomingUrlRoot || '';
@@ -43,7 +42,7 @@ export default class UrlMatchForm extends Component {
   @computed(
     'apiExampleOutgoingUrlRoot',
     'bufferedModel.{backendPrefix,frontendPrefix}',
-    'exampleSuffix'
+    'exampleSuffix',
   )
   get exampleOutgoingUrl() {
     let root = this.apiExampleOutgoingUrlRoot || '';

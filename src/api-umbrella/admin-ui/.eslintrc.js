@@ -24,7 +24,6 @@ module.exports = {
   rules: {
     'comma-dangle': ['error', 'always-multiline'],
     'no-var': 'error',
-    'sort-imports': 'error',
     'object-shorthand': ['error', 'methods'],
     'no-duplicate-imports': 'error',
     'func-call-spacing': ['error', 'never'],

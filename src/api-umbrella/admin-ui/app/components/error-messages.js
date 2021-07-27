@@ -1,16 +1,15 @@
-import classic from 'ember-classic-decorator';
-import { tagName } from '@ember-decorators/component';
-import { computed } from '@ember/object';
-import { gt } from '@ember/object/computed';
 // eslint-disable-next-line ember/no-classic-components
 import Component from '@ember/component';
+import { computed } from '@ember/object';
+import { gt } from '@ember/object/computed';
+import { tagName } from '@ember-decorators/component';
+import classic from 'ember-classic-decorator';
 import I18n from 'i18n-js';
 import inflection from 'inflection';
 import each from 'lodash-es/each';
 import isArray from 'lodash-es/isArray';
 import marked from 'marked';
 
-// eslint-disable-next-line ember/no-classic-classes
 @classic
 @tagName("")
 export default class ErrorMessages extends Component {

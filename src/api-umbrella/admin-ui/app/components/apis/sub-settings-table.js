@@ -1,15 +1,14 @@
-import classic from 'ember-classic-decorator';
-import { action } from '@ember/object';
-import { tagName } from '@ember-decorators/component';
-import { inject } from '@ember/service';
-import { reads } from '@ember/object/computed';
 // eslint-disable-next-line ember/no-classic-components
 import Component from '@ember/component';
+import { action } from '@ember/object';
+import { reads } from '@ember/object/computed';
+import { inject } from '@ember/service';
+import { tagName } from '@ember-decorators/component';
 // eslint-disable-next-line ember/no-mixins
 import Sortable from 'api-umbrella-admin-ui/mixins/sortable';
 import bootbox from 'bootbox';
+import classic from 'ember-classic-decorator';
 
-// eslint-disable-next-line ember/no-classic-classes
 @classic
 @tagName("")
 export default class SubSettingsTable extends Component.extend(Sortable) {

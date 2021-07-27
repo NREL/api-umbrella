@@ -6,7 +6,6 @@ import { tagName } from "@ember-decorators/component";
 import bootbox from 'bootbox';
 import classic from 'ember-classic-decorator';
 
-// eslint-disable-next-line ember/no-classic-classes
 @tagName("")
 @classic
 export default class ServerTable extends Component {

@@ -1,10 +1,9 @@
-import classic from 'ember-classic-decorator';
-import { action } from '@ember/object';
-import { inject } from '@ember/service';
-import { reads } from '@ember/object/computed';
 import Controller from '@ember/controller';
+import { action } from '@ember/object';
+import { reads } from '@ember/object/computed';
+import { inject } from '@ember/service';
+import classic from 'ember-classic-decorator';
 
-// eslint-disable-next-line ember/no-classic-classes
 @classic
 export default class ApplicationController extends Controller {
   @inject('session')

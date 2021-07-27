@@ -4,7 +4,6 @@ import DataTablesHelpers from 'api-umbrella-admin-ui/utils/data-tables-helpers';
 import classic from 'ember-classic-decorator';
 import escape from 'lodash-es/escape';
 
-// eslint-disable-next-line ember/no-classic-classes
 @classic
 export default class IndexTable extends Component {
   didInsertElement() {

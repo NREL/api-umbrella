@@ -2,7 +2,6 @@ import { underscore } from '@ember/string';
 import JSONSerializer from '@ember-data/serializer/json';
 import classic from 'ember-classic-decorator';
 
-// eslint-disable-next-line ember/no-classic-classes
 @classic
 export default class Application extends JSONSerializer {
   // Use camel-cased attribute names in the JS models, but underscore the

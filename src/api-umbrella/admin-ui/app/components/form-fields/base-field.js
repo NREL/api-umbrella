@@ -1,9 +1,8 @@
-import classic from 'ember-classic-decorator';
-import { computed } from '@ember/object';
 // eslint-disable-next-line ember/no-classic-components
 import Component from '@ember/component';
+import { computed } from '@ember/object';
+import classic from 'ember-classic-decorator';
 
-// eslint-disable-next-line ember/no-classic-classes
 @classic
 class BaseField extends Component {
   @computed('elementId', 'fieldName')

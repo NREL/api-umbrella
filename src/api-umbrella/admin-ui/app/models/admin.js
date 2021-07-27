@@ -1,12 +1,11 @@
-import classic from 'ember-classic-decorator';
 import Model, { attr } from '@ember-data/model';
+import classic from 'ember-classic-decorator';
 import { buildValidations, validator } from 'ember-cp-validations';
 
 const Validations = buildValidations({
   username: validator('presence', true),
 });
 
-// eslint-disable-next-line ember/no-classic-classes
 @classic
 class Admin extends Model.extend(Validations) {
   @attr()

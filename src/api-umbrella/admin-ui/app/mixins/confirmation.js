@@ -1,5 +1,5 @@
-// eslint-disable-next-line ember/no-mixins
 import Mixin from '@ember/object/mixin'
+// eslint-disable-next-line ember/no-mixins
 import ConfirmationMixin from 'ember-onbeforeunload/mixins/confirmation';
 import isEqual from 'lodash-es/isEqual';
 
