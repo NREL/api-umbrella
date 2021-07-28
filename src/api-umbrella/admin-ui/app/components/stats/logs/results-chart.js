@@ -1,5 +1,6 @@
 // eslint-disable-next-line ember/no-classic-components
 import Component from '@ember/component';
+import { action } from '@ember/object';
 import { observes, on } from '@ember-decorators/object';
 import * as echarts from 'echarts/core';
 import classic from 'ember-classic-decorator';
@@ -10,12 +11,9 @@ import debounce from 'lodash-es/debounce';
 export default class ResultsChart extends Component {
   tagName = '';
 
-  didInsert() {
-    this.renderChart();
-  }
-
-  renderChart() {
-    this.chart = echarts.init(this.element, 'api-umbrella-theme');
+  @action
+  didInsert(element) {
+    this.chart = echarts.init(element, 'api-umbrella-theme');
     this.draw();
 
     $(window).on('resize', debounce(this.chart.resize, 100));

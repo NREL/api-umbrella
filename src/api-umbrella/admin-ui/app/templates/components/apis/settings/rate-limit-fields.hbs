@@ -19,7 +19,7 @@
   X-RateLimit-Remaining: 840
   </pre>
   <p>Only one rate limit may return this status information, so it will likely be your primary, publicized rate limit (for example, hourly), and not more granular rate limits you may have assigned (for example, per-second limits).</p>">
-                  {{fa-icon "question-circle"}}<span class="sr-only">Help</span>
+                  <FaIcon @icon="question-circle" /><span class="sr-only">Help</span>
                 </button>
               </th>
               <th></th>
@@ -61,7 +61,7 @@
                     </div>
                   </td>
                   <td class="table-row-actions">
-                    <a href="#" class="remove-action" {{action "deleteRateLimit" rateLimit}}>{{fa-icon "times"}}Remove</a>
+                    <a href="#" class="remove-action" {{action "deleteRateLimit" rateLimit}}><FaIcon @icon="times" />Remove</a>
                   </td>
                 </tr>
               {{/each}}
@@ -70,7 +70,7 @@
             {{/if}}
           </tbody>
         </table>
-        <button type="button" class="btn btn-light btn-sm" {{action "addRateLimit"}}>{{fa-icon "plus-circle"}} Add Rate Limit</button>
+        <button type="button" class="btn btn-light btn-sm" {{action "addRateLimit"}}><FaIcon @icon="plus-circle" /> Add Rate Limit</button>
       </FormFields::FieldWrapper>
     {{/if}}
   </FieldsFor>

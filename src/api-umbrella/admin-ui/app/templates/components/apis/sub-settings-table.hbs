@@ -17,10 +17,10 @@
             <td>{{subSettings.httpMethod}}</td>
             <td>{{subSettings.regex}}</td>
             <td class="table-row-actions" style="width: 90px; white-space: nowrap;">
-              <a href="#" {{action "edit" subSettings}}>{{fa-icon "pencil-alt"}}Edit</a>
-              <a href="#" class="remove-action" {{action "remove" subSettings}}>{{fa-icon "times"}}Remove</a>
+              <a href="#" {{action "edit" subSettings}}><FaIcon @icon="pencil-alt" />Edit</a>
+              <a href="#" class="remove-action" {{action "remove" subSettings}}><FaIcon @icon="times" />Remove</a>
             </td>
-            <td class="reorder-handle">{{fa-icon "bars"}}</td>
+            <td class="reorder-handle"><FaIcon @icon="bars" /></td>
           </tr>
         {{/each}}
       {{else}}
@@ -30,11 +30,11 @@
   </table>
   <div class="row-fluid">
     <div class="span6">
-      <button type="button" class="btn btn-light btn-sm" {{action "add"}}>{{fa-icon "plus-circle"}} Add URL Settings</button>
+      <button type="button" class="btn btn-light btn-sm" {{action "add"}}><FaIcon @icon="plus-circle" /> Add URL Settings</button>
     </div>
     <div class="span6 text-right">
       {{#if this.isReorderable}}
-        <button type="button" class="btn btn-light btn-sm" {{action "reorderCollection" "sub_settings"}}>{{fa-icon "bars"}} <span class="reorder-button-text">Reorder</span></button>
+        <button type="button" class="btn btn-light btn-sm" {{action "reorderCollection" "sub_settings"}}><FaIcon @icon="bars" /> <span class="reorder-button-text">Reorder</span></button>
       {{/if}}
     </div>
   </div>

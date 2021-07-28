@@ -1,6 +1,6 @@
 // eslint-disable-next-line ember/no-classic-components
 import Component from '@ember/component';
-import { computed } from '@ember/object';
+import { action, computed } from '@ember/object';
 import { observes } from '@ember-decorators/object';
 import DataTablesHelpers from 'api-umbrella-admin-ui/utils/data-tables-helpers';
 import classic from 'ember-classic-decorator';
@@ -15,8 +15,9 @@ import tippy from 'tippy.js'
 export default class ResultsTable extends Component {
   tagName = '';
 
-  didInsert() {
-    $(this.element).find('table').DataTable({
+  @action
+  didInsert(element) {
+    $(element).find('table').DataTable({
       searching: false,
       serverSide: true,
       ajax: {
@@ -29,7 +30,7 @@ export default class ResultsTable extends Component {
         }.bind(this),
       },
       drawCallback: () => {
-        $(this.element).find('td').each(function() {
+        $(element).find('td').each(function() {
           if(this.scrollWidth > this.offsetWidth) {
             const $cell = $(this);
             $cell.attr('data-tippy-content', $cell.text());

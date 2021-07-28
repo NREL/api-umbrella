@@ -3,7 +3,7 @@
     <div class="row">
       <div class="col-sm-4">
         <div class="form-control-plaintext form-control-sm">
-          <a id="filter_toggle" data-toggle="collapse" data-target="#filters_ui" href="#">{{fa-icon "caret-down" fixedWidth=true}}{{t "admin.stats.filter_results"}}</a>
+          <a id="filter_toggle" data-toggle="collapse" data-target="#filters_ui" href="#"><FaIcon @icon="caret-down" @fixedWidth={{true}} />{{t "admin.stats.filter_results"}}</a>
         </div>
       </div>
       <div class="col-sm-8 filter-times">
@@ -19,7 +19,7 @@
 
         <div id="reportrange" class="pull-right">
           <button class="btn btn-light btn-sm dropdown-toggle" type="button" aria-haspopup="true" aria-expanded="false">
-            {{fa-icon "calendar"}}
+            <FaIcon @icon="calendar" />
             <span class="text"></span>
           </button>
         </div>

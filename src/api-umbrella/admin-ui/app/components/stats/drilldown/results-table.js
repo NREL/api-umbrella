@@ -1,6 +1,6 @@
 // eslint-disable-next-line ember/no-classic-components
 import Component from '@ember/component';
-import { computed } from '@ember/object';
+import { action, computed } from '@ember/object';
 import { inject } from '@ember/service';
 import { observes } from '@ember-decorators/object';
 import classic from 'ember-classic-decorator';
@@ -16,8 +16,9 @@ export default class ResultsTable extends Component {
   @inject()
   session;
 
-  didInsert() {
-    $(this.element).find('table').DataTable({
+  @action
+  didInsert(element) {
+    $(element).find('table').DataTable({
       searching: false,
       order: [[1, 'desc']],
       data: this.results,

@@ -1,12 +1,10 @@
-import Route from '@ember/routing/route';
 import ConfigPendingChanges from 'api-umbrella-admin-ui/models/config-pending-changes';
+import AuthenticatedRoute from 'api-umbrella-admin-ui/routes/authenticated-route';
 import classic from 'ember-classic-decorator';
-// eslint-disable-next-line ember/no-mixins
-import AuthenticatedRouteMixin from 'ember-simple-auth/mixins/authenticated-route-mixin';
 import $ from 'jquery';
 
 @classic
-export default class PublishRoute extends Route.extend(AuthenticatedRouteMixin) {
+export default class PublishRoute extends AuthenticatedRoute {
   model() {
     return ConfigPendingChanges.fetch();
   }

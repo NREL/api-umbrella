@@ -140,7 +140,6 @@ module ApiUmbrella
       :host => ApiUmbrellaConfig[:web][:default_host],
     }
 
-    puts ApiUmbrellaConfig.inspect
     if(ApiUmbrellaConfig[:web] && ApiUmbrellaConfig[:web][:mailer] && ApiUmbrellaConfig[:web][:mailer][:smtp_settings])
       config.action_mailer.smtp_settings = ApiUmbrellaConfig[:web][:mailer][:smtp_settings]
     end

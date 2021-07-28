@@ -1,5 +1,7 @@
 source "https://rubygems.org"
 
+ruby "~> 2.4.10"
+
 gem "middleman", "~> 4.3.3"
 
 # Assets

@@ -1,6 +1,6 @@
 // eslint-disable-next-line ember/no-classic-components
 import Component from '@ember/component';
-import { computed } from '@ember/object';
+import { action, computed } from '@ember/object';
 import { observes } from '@ember-decorators/object';
 import classic from 'ember-classic-decorator';
 import $ from 'jquery';
@@ -12,8 +12,9 @@ import numeral from 'numeral';
 export default class ResultsTable extends Component {
   tagName = '';
 
-  didInsert() {
-    $(this.element).find('table').DataTable({
+  @action
+  didInsert(element) {
+    $(element).find('table').DataTable({
       searching: false,
       order: [[1, 'desc']],
       data: this.regions,

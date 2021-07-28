@@ -25,9 +25,9 @@ class SubSettings extends Model.extend(Validations) {
   @belongsTo('api/settings', { async: false })
   settings;
 
-  ready() {
+  constructor() {
+    super(...arguments);
     this.setDefaults();
-    super.ready();
   }
 
   setDefaults() {

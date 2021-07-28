@@ -1,5 +1,6 @@
 // eslint-disable-next-line ember/no-classic-components
 import Component from '@ember/component';
+import { action } from '@ember/object';
 import { inject } from '@ember/service';
 import { observes, on } from '@ember-decorators/object';
 import * as echarts from 'echarts/core';
@@ -15,12 +16,9 @@ export default class ResultsMap extends Component {
   @inject()
   router;
 
-  didInsert() {
-    this.renderChart();
-  }
-
-  renderChart() {
-    this.chart = echarts.init(this.element, 'api-umbrella-theme');
+  @action
+  didInsert(element) {
+    this.chart = echarts.init(element, 'api-umbrella-theme');
     this.chart.showLoading();
     this.chart.on('mapselectchanged', this.handleRegionClick.bind(this));
     this.chart.on('click', this.handleCityClick.bind(this));

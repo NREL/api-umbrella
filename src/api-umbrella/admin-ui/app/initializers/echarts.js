@@ -1,7 +1,7 @@
 import { LineChart, MapChart, ScatterChart } from 'echarts/charts';
 import { GeoComponent, GridComponent, TooltipComponent, VisualMapComponent } from 'echarts/components';
-import { CanvasRenderer } from 'echarts/renderers';
 import * as echarts from 'echarts/core';
+import { CanvasRenderer } from 'echarts/renderers';
 
 echarts.use([
   CanvasRenderer,

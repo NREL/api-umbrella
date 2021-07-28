@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-openldap_version="2.5.4"
+openldap_version="2.5.6"
 openldap_hash="155d6e5bb5c79754dfea872575c16f57109cf978"
 
 set -e -u -x

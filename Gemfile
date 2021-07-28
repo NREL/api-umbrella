@@ -1,5 +1,7 @@
 source "https://rubygems.org"
 
+ruby "~> 2.4.10"
+
 gem "rake", "~> 13.0.0"
 
 # Tests
@@ -33,7 +35,7 @@ gem "oj", "~> 3.10"
 
 # Database libraries
 gem "mongoid", "~> 7.3.0"
-gem "elasticsearch", "~> 7.12.0"
+gem "elasticsearch", "~> 7.13.3"
 gem "active_attr", "~> 0.15.0"
 
 # Factories for test database data

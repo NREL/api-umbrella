@@ -1,5 +1,6 @@
 // eslint-disable-next-line ember/no-classic-components
 import Component from '@ember/component';
+import { action } from '@ember/object';
 import { later } from '@ember/runloop';
 import { inject } from '@ember/service';
 import classic from 'ember-classic-decorator';
@@ -20,22 +21,24 @@ export default class BusyBlocker extends Component {
 
   // Hooks
   // ------------------------
-  didInsert() {
+  @action
+  didInsert(element) {
     // Convert animation duration ms to css string value
     let duration = (ANIMATION_DURATION / 1000) + 's';
     let busy = this.busy;
 
     // Hide immediately
-    $(this.element).css('display', 'none');
+    $(element).css('display', 'none');
 
-    this.set('animationElements', $(this.element).find('.busy-blocker__bg, .busy-blocker__content'));
+    this.animationElements = $(element).find('.busy-blocker__bg, .busy-blocker__content');
     // Set the animation duration on the backdrop element
-    $(this.element).find('.busy-blocker__bg').css('animation-duration', duration);
+    $(element).find('.busy-blocker__bg').css('animation-duration', duration);
 
     busy.on('hide', this, this._hide);
     busy.on('show', this, this._show);
   }
 
+  @action
   willDestroyNode() {
     let busy = this.busy;
 
@@ -78,7 +81,7 @@ export default class BusyBlocker extends Component {
       message = options.message;
     }
 
-    this.set('message', message);
+    this.message = message;
 
     $(this.element).css('display', 'block');
     elements.removeClass('fade-out');

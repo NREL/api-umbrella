@@ -1,5 +1,6 @@
 // eslint-disable-next-line ember/no-classic-components
 import Component from '@ember/component';
+import { action } from '@ember/object';
 import classic from 'ember-classic-decorator';
 import $ from 'jquery';
 import escape from 'lodash-es/escape';
@@ -8,8 +9,9 @@ import escape from 'lodash-es/escape';
 export default class IndexTable extends Component {
   tagName = '';
 
-  didInsert() {
-    this.set('table', $(this.element).find('table').DataTable({
+  @action
+  didInsert(element) {
+    this.set('table', $(element).find('table').DataTable({
       serverSide: true,
       ajax: '/api-umbrella/v1/website_backends.json',
       pageLength: 50,

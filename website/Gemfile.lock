@@ -8,8 +8,8 @@ GEM
       tzinfo (~> 1.1)
     addressable (2.8.0)
       public_suffix (>= 2.0.2, < 5.0)
-    autoprefixer-rails (10.2.5.0)
-      execjs (< 2.8.0)
+    autoprefixer-rails (10.2.5.1)
+      execjs (> 0)
     backports (3.21.0)
     bootstrap-sass (3.4.1)
       autoprefixer-rails (>= 5.2.1)
@@ -18,18 +18,18 @@ GEM
       coffee-script-source
       execjs
     coffee-script-source (1.12.2)
-    concurrent-ruby (1.1.8)
+    concurrent-ruby (1.1.9)
     contracts (0.13.0)
     dotenv (2.7.6)
     erubis (2.7.0)
-    execjs (2.7.0)
+    execjs (2.8.1)
     fast_blank (1.0.0)
-    fastimage (2.2.3)
-    ffi (1.15.0)
-    ffi (1.15.0-java)
+    fastimage (2.2.4)
+    ffi (1.15.3)
+    ffi (1.15.3-java)
     font-awesome-sass (4.7.0)
       sass (>= 3.2)
-    haml (5.2.1)
+    haml (5.2.2)
       temple (>= 0.8.0)
       tilt
     hamster (3.0.0)
@@ -92,7 +92,7 @@ GEM
     parallel (1.20.1)
     public_suffix (4.0.6)
     rack (2.2.3)
-    rake (13.0.3)
+    rake (13.0.6)
     rb-fsevent (0.11.0)
     rb-inotify (0.10.1)
       ffi (~> 1.0)
@@ -129,6 +129,9 @@ DEPENDENCIES
   middleman-gh-pages (~> 0.4.1)
   middleman-sprockets (~> 4.1.0)
   mini_racer (~> 0.2)
+
+RUBY VERSION
+   ruby 2.4.10p364
 
 BUNDLED WITH
    1.17.3

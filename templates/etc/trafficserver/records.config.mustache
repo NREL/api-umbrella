@@ -216,7 +216,7 @@ CONFIG proxy.config.net.sock_option_flag_out INT 3
 # Keepalive connections to backend origin servers. Retain some idle connections
 # open to the backend servers to improve performance.
 CONFIG proxy.config.http.keep_alive_no_activity_timeout_out INT {{router.api_backends.keepalive_idle_timeout}}
-CONFIG proxy.config.http.origin_min_keep_alive_connections INT {{router.api_backends.keepalive_connections}}
+CONFIG proxy.config.http.per_server.connection.min INT {{router.api_backends.keepalive_connections}}
 
 # Enable for debug logging.
 # CONFIG proxy.config.diags.debug.enabled INT 1

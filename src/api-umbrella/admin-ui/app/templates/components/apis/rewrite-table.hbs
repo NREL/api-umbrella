@@ -21,10 +21,10 @@
             <td>{{rewrite.frontendMatcher}}</td>
             <td>{{rewrite.backendReplacement}}</td>
             <td class="table-row-actions">
-              <a href="#" {{action "edit" rewrite}}>{{fa-icon "pencil-alt"}}{{t "admin.edit"}}</a>
-              <a href="#" class="remove-action" {{action "remove" rewrite}}>{{fa-icon "times"}}{{t "admin.remove"}}</a>
+              <a href="#" {{action "edit" rewrite}}><FaIcon @icon="pencil-alt" />{{t "admin.edit"}}</a>
+              <a href="#" class="remove-action" {{action "remove" rewrite}}><FaIcon @icon="times" />{{t "admin.remove"}}</a>
             </td>
-            <td class="reorder-handle">{{fa-icon "bars"}}</td>
+            <td class="reorder-handle"><FaIcon @icon="bars" /></td>
           </tr>
         {{/each}}
       {{else}}
@@ -34,11 +34,11 @@
   </table>
   <div class="row-fluid">
     <div class="span6">
-      <button type="button" class="btn btn-light btn-sm" {{action "add"}}>{{fa-icon "plus-circle"}} {{t "admin.api.rewrites.add"}}</button>
+      <button type="button" class="btn btn-light btn-sm" {{action "add"}}><FaIcon @icon="plus-circle" /> {{t "admin.api.rewrites.add"}}</button>
     </div>
     <div class="span6 text-right">
       {{#if this.isReorderable}}
-        <button type="button" id="rewrites_reorder" class="btn btn-light btn-sm" {{action "reorderCollection" "rewrites"}}>{{fa-icon "bars"}} <span class="reorder-button-text">{{t "admin.reorder"}}</span></button>
+        <button type="button" id="rewrites_reorder" class="btn btn-light btn-sm" {{action "reorderCollection" "rewrites"}}><FaIcon @icon="bars" /> <span class="reorder-button-text">{{t "admin.reorder"}}</span></button>
       {{/if}}
     </div>
   </div>

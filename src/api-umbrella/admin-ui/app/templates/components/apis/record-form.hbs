@@ -21,7 +21,7 @@
             {{f.text-field "frontendHost" label="Frontend Host"}}
           </div>
           <div class="col-sm-2 arrow">
-            {{fa-icon "arrow-right" size="2x"}}
+            <FaIcon @icon="arrow-right" @size="2x" />
             <div>rewrite to</div>
           </div>
           <div class="col-sm-5">
@@ -38,7 +38,7 @@
     </fieldset>
 
     <fieldset class="collapsible">
-      <legend><button type="button" class="btn btn-link collapsed" data-toggle="collapse" data-target="#global_settings" aria-controls="global_settings" aria-expanded="false">{{fa-icon "caret-down" fixedWidth=true}}Global Request Settings</button></legend>
+      <legend><button type="button" class="btn btn-link collapsed" data-toggle="collapse" data-target="#global_settings" aria-controls="global_settings" aria-expanded="false"><FaIcon @icon="caret-down" @fixedWidth={{true}} />Global Request Settings</button></legend>
       <div id="global_settings" class="collapse form-horizontal">
         <FieldsFor @model={{this.model.settings}} @style="horizontal-wide-labels" as |f|>
           {{f.text-field "appendQueryString" label="Append Query String Parameters" placeholder="param1=value&param2=value"}}
@@ -51,7 +51,7 @@
     </fieldset>
 
     <fieldset class="collapsible">
-      <legend><button type="button" class="btn btn-link collapsed" data-toggle="collapse" data-target="#sub_settings" aria-controls="sub_settings" aria-expanded="false">{{fa-icon "caret-down" fixedWidth=true}}{{t "admin.api.sub_settings.legend"}}</button></legend>
+      <legend><button type="button" class="btn btn-link collapsed" data-toggle="collapse" data-target="#sub_settings" aria-controls="sub_settings" aria-expanded="false"><FaIcon @icon="caret-down" @fixedWidth={{true}} />{{t "admin.api.sub_settings.legend"}}</button></legend>
       <div id="sub_settings" class="collapse">
         <p class="fieldset-note">{{t "admin.api.sub_settings.note"}}</p>
         <Apis::SubSettingsTable @model={{this.model}} @roleOptions={{this.roleOptions}} />
@@ -59,7 +59,7 @@
     </fieldset>
 
     <fieldset class="collapsible">
-      <legend><button type="button" class="btn btn-link collapsed" data-toggle="collapse" data-target="#rewrites" aria-controls="rewrites" aria-expanded="false">{{fa-icon "caret-down" fixedWidth=true}}{{t "admin.api.rewrites.legend"}}</button></legend>
+      <legend><button type="button" class="btn btn-link collapsed" data-toggle="collapse" data-target="#rewrites" aria-controls="rewrites" aria-expanded="false"><FaIcon @icon="caret-down" @fixedWidth={{true}} />{{t "admin.api.rewrites.legend"}}</button></legend>
       <div id="rewrites" class="collapse">
         <p class="fieldset-note">{{t "admin.api.rewrites.note"}}</p>
         <Apis::RewriteTable @model={{this.model}} />
@@ -67,7 +67,7 @@
     </fieldset>
 
     <fieldset class="collapsible">
-      <legend><button type="button" class="btn btn-link collapsed" data-toggle="collapse" data-target="#advanced_settings" aria-controls="advanced_settings" aria-expanded="false">{{fa-icon "caret-down" fixedWidth=true}}Advanced Settings</button></legend>
+      <legend><button type="button" class="btn btn-link collapsed" data-toggle="collapse" data-target="#advanced_settings" aria-controls="advanced_settings" aria-expanded="false"><FaIcon @icon="caret-down" @fixedWidth={{true}} />Advanced Settings</button></legend>
       <div id="advanced_settings" class="collapse form-horizontal">
         <FieldsFor @model={{this.model}} @style="horizontal-wide-labels" as |f|>
           {{f.select-field "balanceAlgorithm" label="Balance Algorithm" options=this.balanceAlgorithmOptions}}
@@ -95,7 +95,7 @@
 
     <div class="row">
       <div class="col-sm-6">
-        <button type="submit" class="btn btn-lg btn-primary save-button"><span class="btn-label">Save</span><span class="btn-loading-label">{{fa-icon "sync-alt" spin=true}}Saving...</span></button>
+        <button type="submit" class="btn btn-lg btn-primary save-button"><span class="btn-label">Save</span><span class="btn-loading-label"><FaIcon @icon="sync-alt" @spin={{true}} />Saving...</span></button>
       </div>
       <div class="col-sm-6 record-details">
         {{#if this.model.id}}
@@ -106,7 +106,7 @@
     </div>
     {{#if this.model.id}}
       <div class="form-extra-actions">
-        <a href="#" class="remove-action" {{action "delete"}}>{{fa-icon "times"}}Delete API</a>
+        <a href="#" class="remove-action" {{action "delete"}}><FaIcon @icon="times" />Delete API</a>
       </div>
     {{/if}}
   </form>

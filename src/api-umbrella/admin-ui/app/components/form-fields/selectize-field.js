@@ -1,5 +1,6 @@
 import 'selectize';
 
+import { action } from '@ember/object';
 import { observes, on } from '@ember-decorators/object';
 import classic from 'ember-classic-decorator';
 import $ from 'jquery';
@@ -22,8 +23,9 @@ export default class SelectizeField extends BaseField {
     this.addObserver('model.' + this.fieldName, this, this.valueDidChange);
   }
 
-  didInsert() {
-    this.$input = $(this.element).find('#' + this.inputId).selectize({
+  @action
+  didInsert(element) {
+    this.$input = $(element).find('#' + this.inputId).selectize({
       plugins: ['restore_on_backspace', 'remove_button'],
       delimiter: ',',
       options: this.defaultOptions,

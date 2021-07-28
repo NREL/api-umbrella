@@ -21,8 +21,9 @@ export default class IndexTable extends Component {
 
   reorderActive = false;
 
-  didInsert() {
-    this.set('table', $(this.element).find('table').DataTable({
+  @action
+  didInsert(element) {
+    this.table = $(element).find('table').DataTable({
       serverSide: true,
       ajax: '/api-umbrella/v1/apis.json',
       pageLength: 50,
@@ -72,7 +73,7 @@ export default class IndexTable extends Component {
           },
         },
       ],
-    }));
+    });
 
     this.table
       .on('search', (event, settings) => {
@@ -81,7 +82,7 @@ export default class IndexTable extends Component {
         // neighboring rows).
         if(this.reorderActive) {
           if(settings.oPreviousSearch && settings.oPreviousSearch.sSearch) {
-            this.set('reorderActive', false);
+            this.reorderActive = false;
           }
         }
       })
@@ -91,12 +92,12 @@ export default class IndexTable extends Component {
         // work, since it relies on the neighboring rows).
         if(this.reorderActive) {
           if(settings.aaSorting && !isEqual(settings.aaSorting, [[3, 'asc']])) {
-            this.set('reorderActive', false);
+            this.reorderActive = false;
           }
         }
       });
 
-    $(this.element).find('tbody').sortable({
+    $(element).find('tbody').sortable({
       handle: '.reorder-handle',
       placeholder: 'reorder-placeholder',
       helper(event, ui) {
@@ -162,6 +163,6 @@ export default class IndexTable extends Component {
 
   @action
   toggleReorderApis() {
-    this.set('reorderActive', !this.reorderActive);
+    this.reorderActive = !this.reorderActive;
   }
 }

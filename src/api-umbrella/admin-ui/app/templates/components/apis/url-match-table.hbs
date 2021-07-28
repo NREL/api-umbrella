@@ -18,10 +18,10 @@
               <td>{{urlMatch.frontendPrefix}}</td>
               <td>{{urlMatch.backendPrefixWithDefault}}</td>
               <td class="table-row-actions">
-                <a href="#" {{action "edit" urlMatch}}>{{fa-icon "pencil-alt"}}{{t "admin.edit"}}</a>
-                <a href="#" class="remove-action" {{action "remove" urlMatch}}>{{fa-icon "times"}}{{t "admin.remove"}}</a>
+                <a href="#" {{action "edit" urlMatch}}><FaIcon @icon="pencil-alt" />{{t "admin.edit"}}</a>
+                <a href="#" class="remove-action" {{action "remove" urlMatch}}><FaIcon @icon="times" />{{t "admin.remove"}}</a>
               </td>
-              <td class="reorder-handle">{{fa-icon "bars"}}</td>
+              <td class="reorder-handle"><FaIcon @icon="bars" /></td>
             </tr>
           {{/each}}
         {{else}}
@@ -31,11 +31,11 @@
     </table>
     <div class="row">
       <div class="col-6">
-        <button type="button" class="btn btn-light btn-sm" {{action "add"}}>{{fa-icon "plus-circle"}} {{t "admin.api.url_matches.add"}}</button>
+        <button type="button" class="btn btn-light btn-sm" {{action "add"}}><FaIcon @icon="plus-circle" /> {{t "admin.api.url_matches.add"}}</button>
       </div>
       <div class="col-6 text-right">
         {{#if this.isReorderable}}
-          <button type="button" id="url_matches_reorder" class="btn btn-light btn-sm" {{action "reorderCollection" "url_matches"}}>{{fa-icon "bars"}} <span class="reorder-button-text">{{t "admin.reorder"}}</span></button>
+          <button type="button" id="url_matches_reorder" class="btn btn-light btn-sm" {{action "reorderCollection" "url_matches"}}><FaIcon @icon="bars" /> <span class="reorder-button-text">{{t "admin.reorder"}}</span></button>
         {{/if}}
       </div>
     </div>

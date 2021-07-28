@@ -3,6 +3,7 @@ import 'codemirror/mode/javascript/javascript';
 import 'codemirror/mode/xml/xml';
 import 'codemirror/mode/yaml/yaml';
 
+import { action } from '@ember/object';
 import CodeMirror from 'codemirror/lib/codemirror'
 import classic from 'ember-classic-decorator';
 import $ from 'jquery';
@@ -19,8 +20,9 @@ export default class CodemirrorField extends BaseField {
     this.addObserver('model.' + this.fieldName, this, this.valueDidChange);
   }
 
-  didInsert() {
-    let $originalTextarea = $(this.element).find('textarea');
+  @action
+  didInsert(element) {
+    let $originalTextarea = $(element).find('textarea');
     this.codemirror = CodeMirror.fromTextArea($originalTextarea[0], {
       lineNumbers: true,
       mode: $originalTextarea.data('codemirror-mode'),

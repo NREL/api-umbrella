@@ -1,5 +1,6 @@
 // eslint-disable-next-line ember/no-classic-components
 import Component from '@ember/component';
+import { action } from '@ember/object';
 import { once } from '@ember/runloop';
 import { tagName } from "@ember-decorators/component";
 import classic from 'ember-classic-decorator';
@@ -7,6 +8,7 @@ import classic from 'ember-classic-decorator';
 @tagName("")
 @classic
 export default class SelectMenu extends Component {
+  @action
   updateDefaultOnce() {
     // Defer update to within the run loop, to prevent ember warnings about
     // updates within the actual rendering (which can cause poor performance).

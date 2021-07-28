@@ -1,5 +1,7 @@
 source "https://rubygems.org"
 
+ruby "~> 2.4.10"
+
 gem "rails", "~> 4.2.11", ">= 4.2.11.1"
 
 # Rails app server
@@ -39,11 +41,11 @@ gem "mongoid_rails_migrations", "~> 1.2.1"
 gem "mongoid_store", :git => "https://github.com/GUI/mongoid_store.git"
 
 # Elasticsearch
-gem "elasticsearch", "~> 7.12.0"
+gem "elasticsearch", "~> 7.13.3"
 
 # OmniAuth-based authentication
 gem "devise", "~> 4.8.0"
-gem "devise-i18n", "~> 1.9.0"
+gem "devise-i18n", "~> 1.10.0"
 gem "omniauth", "~> 1.9.0"
 gem "omniauth-rails_csrf_protection", "~> 0.1.1"
 gem "omniauth-cas", "~> 1.1.0", :git => "https://github.com/GUI/omniauth-cas.git", :branch => "rexml", :require => false

@@ -1,6 +1,6 @@
 // eslint-disable-next-line ember/no-classic-components
 import Component from '@ember/component';
-import { computed } from '@ember/object';
+import { action, computed } from '@ember/object';
 import { inject } from '@ember/service';
 import DataTablesHelpers from 'api-umbrella-admin-ui/utils/data-tables-helpers';
 import classic from 'ember-classic-decorator';
@@ -15,8 +15,9 @@ export default class IndexTable extends Component {
   @inject('session')
   session;
 
-  didInsert() {
-    let dataTable = $(this.element).find('table').DataTable({
+  @action
+  didInsert(element) {
+    let dataTable = $(element).find('table').DataTable({
       serverSide: true,
       ajax: '/api-umbrella/v1/admins.json',
       pageLength: 50,

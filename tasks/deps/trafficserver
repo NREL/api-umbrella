@@ -7,8 +7,8 @@
 # seems like it might be preferable and remove the need for some of our
 # workarounds, but 8.1.0 breaks some of our assumptions, so for now, we'll hold
 # back on upgrading.
-trafficserver_version="8.0.8"
-trafficserver_hash="e412c14f424456f0b813d1e7a05e6e1d4d428ef85c9186dc657c61abc287a9887fd7cd120e43d8b7f406c8aee8279e5311c2f417a0ff3ba347cc391e6a28afea"
+trafficserver_version="9.0.2"
+trafficserver_hash="6f1ad9989dd9b85df42519e3ded2a0da04bbd1a982e44ded2753b5913d0bc95d20dff255cdcf1862a8193d5041a06d6ad78139d142b8fd53b241cbcf5094edaf"
 
 set -e -u -x
 source ./tasks/helpers.sh

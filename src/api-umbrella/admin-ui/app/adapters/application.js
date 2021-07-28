@@ -1,3 +1,4 @@
+import { inject } from '@ember/service';
 import RESTAdapter from '@ember-data/adapter/rest';
 import classic from 'ember-classic-decorator';
 import flatten from 'lodash-es/flatten';
@@ -7,6 +8,25 @@ import isString from 'lodash-es/isString';
 
 @classic
 export default class Application extends RESTAdapter {
+  @inject session;
+
+  get headers() {
+    const headers = {};
+
+    const data = this.session?.data?.authenticated;
+    if(data) {
+      if(data.api_key) {
+        headers['X-Api-Key'] = data.api_key;
+      }
+
+      if(data.admin_auth_token) {
+        headers['X-Admin-Auth-Token'] = data.admin_auth_token;
+      }
+    }
+
+    return headers;
+  }
+
   // Build the URL using the customizable "urlRoot" attribute that can be set
   // on the model class.
   buildURL(modelName, id, snapshot) {

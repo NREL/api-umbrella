@@ -8,7 +8,7 @@ import classic from 'ember-classic-decorator';
 
 @classic
 export default class FieldWrapper extends Component {
-  tagName = '';
+  tagName = 'div';
 
   canShowErrors = false;
 

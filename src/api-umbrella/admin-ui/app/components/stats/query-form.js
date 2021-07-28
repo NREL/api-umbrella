@@ -41,6 +41,7 @@ export default class QueryForm extends Component {
 
   enableInterval = false;
 
+  @action
   didInsert() {
     let rangeOptions = {};
     let rangeKeys = {};
