@@ -25,7 +25,7 @@ GEM
       i18n (>= 0.7, < 2)
       minitest (~> 5.1)
       tzinfo (~> 1.1)
-    addressable (2.7.0)
+    addressable (2.8.0)
       public_suffix (>= 2.0.2, < 5.0)
     ansi (1.5.0)
     ast (2.4.2)
@@ -163,7 +163,7 @@ PLATFORMS
 DEPENDENCIES
   active_attr (~> 0.15.0)
   activesupport (~> 5.2.4)
-  addressable (~> 2.7.0)
+  addressable (~> 2.8.0)
   awesome_print (~> 1.9.2)
   bcrypt (~> 3.1.12)
   capybara (~> 3.32)

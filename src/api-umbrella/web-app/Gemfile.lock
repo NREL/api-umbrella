@@ -70,7 +70,7 @@ GEM
       minitest (~> 5.1)
       thread_safe (~> 0.3, >= 0.3.4)
       tzinfo (~> 1.1)
-    addressable (2.7.0)
+    addressable (2.8.0)
       public_suffix (>= 2.0.2, < 5.0)
     arel (6.0.4)
     autoprefixer-rails (10.2.5.0)
@@ -321,7 +321,7 @@ PLATFORMS
 
 DEPENDENCIES
   active_attr (~> 0.15.0)
-  addressable (~> 2.7.0)
+  addressable (~> 2.8.0)
   awesome_print (~> 1.8)
   bootstrap (~> 4.5.0)
   brakeman
