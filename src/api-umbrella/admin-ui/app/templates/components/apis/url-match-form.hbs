@@ -28,7 +28,9 @@
         <div><strong>Incoming Frontend Request:</strong> {{this.exampleIncomingUrl}}</div>
         <div><strong>Outgoing Backend Request:</strong> {{this.exampleOutgoingUrl}}</div>
 
+        {{! template-lint-disable require-input-label }}
         <input type="submit" class="hidden-submit-button" tabindex="-1">
+        {{! template-lint-enable require-input-label }}
       </form>
     </modal.body>
     <modal.footer @closeTitle="Cancel" @submitTitle="OK" />

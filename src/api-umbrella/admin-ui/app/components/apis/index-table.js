@@ -14,14 +14,15 @@ import isEqual from 'lodash-es/isEqual';
 
 @classic
 export default class IndexTable extends Component {
+  tagName = '';
+
   @inject('busy')
   busy;
 
   reorderActive = false;
 
-  didInsertElement() {
-    super.didInsertElement(...arguments);
-    this.set('table', this.$().find('table').DataTable({
+  didInsert() {
+    this.set('table', $(this.element).find('table').DataTable({
       serverSide: true,
       ajax: '/api-umbrella/v1/apis.json',
       pageLength: 50,
@@ -95,7 +96,7 @@ export default class IndexTable extends Component {
         }
       });
 
-    this.$().find('tbody').sortable({
+    $(this.element).find('tbody').sortable({
       handle: '.reorder-handle',
       placeholder: 'reorder-placeholder',
       helper(event, ui) {
@@ -121,18 +122,18 @@ export default class IndexTable extends Component {
   @observes('reorderActive')
   handleReorderChange() {
     if(this.reorderActive) {
-      this.$().find('table').addClass('reorder-active');
+      $(this.element).find('table').addClass('reorder-active');
       this.table
         .order([[3, 'asc']])
         .search('')
         .draw();
     } else {
-      this.$().find('table').removeClass('reorder-active');
+      $(this.element).find('table').removeClass('reorder-active');
     }
 
-    let $container = this.$();
+    let $container = $(this.element);
     if($container) {
-      let $buttonText = this.$().find('.reorder-button-text');
+      let $buttonText = $(this.element).find('.reorder-button-text');
       if(this.reorderActive) {
         $buttonText.data('originalText',  $buttonText.text());
         $buttonText.text('Done');

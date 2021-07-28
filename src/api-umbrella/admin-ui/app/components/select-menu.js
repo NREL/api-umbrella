@@ -7,8 +7,7 @@ import classic from 'ember-classic-decorator';
 @tagName("")
 @classic
 export default class SelectMenu extends Component {
-  didRender() {
-    super.didRender(...arguments);
+  updateDefaultOnce() {
     // Defer update to within the run loop, to prevent ember warnings about
     // updates within the actual rendering (which can cause poor performance).
     once(this, this.updateDefault);

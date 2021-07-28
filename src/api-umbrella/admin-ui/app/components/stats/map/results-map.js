@@ -2,7 +2,7 @@
 import Component from '@ember/component';
 import { inject } from '@ember/service';
 import { observes, on } from '@ember-decorators/object';
-import echarts from 'echarts/lib/echarts';
+import * as echarts from 'echarts/core';
 import classic from 'ember-classic-decorator';
 import $ from 'jquery';
 import clone from 'lodash-es/clone';
@@ -10,16 +10,17 @@ import debounce from 'lodash-es/debounce';
 
 @classic
 export default class ResultsMap extends Component {
+  tagName = '';
+
   @inject()
   router;
 
-  didInsertElement() {
-    super.didInsertElement(...arguments);
+  didInsert() {
     this.renderChart();
   }
 
   renderChart() {
-    this.chart = echarts.init(this.$()[0], 'api-umbrella-theme');
+    this.chart = echarts.init(this.element, 'api-umbrella-theme');
     this.chart.showLoading();
     this.chart.on('mapselectchanged', this.handleRegionClick.bind(this));
     this.chart.on('click', this.handleCityClick.bind(this));
@@ -82,7 +83,8 @@ export default class ResultsMap extends Component {
     }
   }
 
-  // eslint-disable-next-line ember/no-on-calls-in-components, ember/no-observers
+  @on('init')
+  // eslint-disable-next-line ember/no-observers
   @observes('allQueryParamValues.region')
   refreshMap() {
     let currentRegion = this.allQueryParamValues.region;
@@ -114,7 +116,8 @@ export default class ResultsMap extends Component {
     });
   }
 
-  // eslint-disable-next-line ember/no-on-calls-in-components, ember/no-observers
+  @on('init')
+  // eslint-disable-next-line ember/no-observers
   @observes('regions')
   refreshData() {
     let currentRegion = this.allQueryParamValues.region;

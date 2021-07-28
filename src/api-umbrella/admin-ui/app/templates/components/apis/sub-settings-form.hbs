@@ -15,7 +15,9 @@
         </FieldsFor>
         <hr class="mt-0">
         <Apis::Settings::CommonFields @model={{this.model.settings}} @roleOptions={{this.roleOptions}} @isSubSettings={{true}} />
+        {{! template-lint-disable require-input-label }}
         <input type="submit" class="hidden-submit-button" tabindex="-1">
+        {{! template-lint-enable require-input-label }}
       </form>
     </modal.body>
     <modal.footer @closeTitle="Cancel" @submitTitle="OK" />

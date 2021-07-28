@@ -1,7 +1,7 @@
 <FormFields::FieldWrapper @model={{this.model}} @style={{this.style}} @fieldName={{this.fieldName}} @inputId={{this.inputId}} @label={{this.label}} @tooltip={{this.tooltip}} @hint={{this.hint}}>
   <MultiselectCheckboxes @options={{this.options}} @selection={{get this.model this.fieldName}} @tagName="div" @valueProperty="id" as |option isSelected|>
     <div class="custom-control custom-checkbox">
-      <Input @type="checkbox" @checked={{isSelected}} @id={{concat this.inputId "-" option.id}} class="custom-control-input" />
+      <Input @type="checkbox" @checked={{isSelected}} id={{concat this.inputId "-" option.id}} class="custom-control-input" />
       <label class="custom-control-label" for="{{this.inputId}}-{{option.id}}">{{option.name}}</label>
     </div>
   </MultiselectCheckboxes>

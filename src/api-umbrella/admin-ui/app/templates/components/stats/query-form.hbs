@@ -1,4 +1,4 @@
-<div ...attributes>
+<div {{did-insert this.didInsert}} ...attributes>
   <form id="filter_form" action="#" method="get" {{action "submit" on="submit"}}>
     <div class="row">
       <div class="col-sm-4">
@@ -44,7 +44,7 @@
           <div id="filter_type_advanced" class="filter-type" style="display: none;">
             <div id="search_field">
               <div class="input-group">
-                <input type="text" name="search" class="form-control" placeholder={{t "admin.stats.advanced_filters_placeholder"}} value={{this.query.params.search}}>
+                <input type="text" name="search" class="form-control" placeholder={{t "admin.stats.advanced_filters_placeholder"}} value={{this.query.params.search}} aria-label="Advanced filters">
                 <span class="input-group-append">
                   <button class="btn btn-primary" type="submit">{{t "admin.stats.filter"}}</button>
                 </span>

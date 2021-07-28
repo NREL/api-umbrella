@@ -5,6 +5,7 @@ import { action } from '@ember/object';
 import Save from 'api-umbrella-admin-ui/mixins/save';
 import classic from 'ember-classic-decorator';
 import I18n from 'i18n-js';
+import $ from 'jquery';
 import escape from 'lodash-es/escape';
 
 @classic
@@ -25,8 +26,8 @@ export default class RecordForm extends Component.extend(Save) {
 
   @action
   apiKeyRevealToggle() {
-    let $key = this.$().find('.api-key');
-    let $toggle = this.$().find('.api-key-reveal-toggle');
+    let $key = $(this.element).find('.api-key');
+    let $toggle = $(this.element).find('.api-key-reveal-toggle');
 
     if($key.data('revealed') === 'true') {
       $key.text($key.data('api-key-preview'));

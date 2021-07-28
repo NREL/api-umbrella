@@ -5,6 +5,8 @@ import classic from 'ember-classic-decorator';
 
 @classic
 class BaseField extends Component {
+  tagName = '';
+
   @computed('elementId', 'fieldName')
   get inputId() {
     return this.elementId + '-' + this.fieldName;

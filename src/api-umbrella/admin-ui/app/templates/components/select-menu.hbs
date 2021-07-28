@@ -1,4 +1,4 @@
-<div ...attributes>
+<div {{did-insert this.updateDefaultOnce}} {{did-update this.updateDefaultOnce}} ...attributes>
   <XSelect @value={{this.value}} @action={{this.action}} @id={{this.inputId}} @class={{this.inputClass}} as |xs|>
     {{#each this.options as |option|}}
       <xs.option @value={{option.id}}>{{option.name}}</xs.option>

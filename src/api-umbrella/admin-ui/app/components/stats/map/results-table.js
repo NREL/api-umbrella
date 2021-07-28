@@ -10,9 +10,10 @@ import numeral from 'numeral';
 
 @classic
 export default class ResultsTable extends Component {
-  didInsertElement() {
-    super.didInsertElement(...arguments);
-    this.$().find('table').DataTable({
+  tagName = '';
+
+  didInsert() {
+    $(this.element).find('table').DataTable({
       searching: false,
       order: [[1, 'desc']],
       data: this.regions,
@@ -59,7 +60,7 @@ export default class ResultsTable extends Component {
   // eslint-disable-next-line ember/no-observers
   @observes('regions')
   refreshData() {
-    let table = this.$().find('table').dataTable().api();
+    let table = $(this.element).find('table').dataTable().api();
     table.clear();
     table.rows.add(this.regions);
     table.draw();

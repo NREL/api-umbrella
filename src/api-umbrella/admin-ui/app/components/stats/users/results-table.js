@@ -12,9 +12,10 @@ import numeral from 'numeral';
 
 @classic
 export default class ResultsTable extends Component {
-  didInsertElement() {
-    super.didInsertElement(...arguments);
-    this.$().find('table').DataTable({
+  tagName = '';
+
+  didInsert() {
+    $(this.element).find('table').DataTable({
       searching: false,
       serverSide: true,
       ajax: {
@@ -92,7 +93,7 @@ export default class ResultsTable extends Component {
   // eslint-disable-next-line ember/no-observers
   @observes('backendQueryParamValues')
   refreshData() {
-    this.$().find('table').DataTable().draw();
+    $(this.element).find('table').DataTable().draw();
   }
 
   @computed('backendQueryParamValues')

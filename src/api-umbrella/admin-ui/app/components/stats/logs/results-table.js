@@ -13,9 +13,10 @@ import tippy from 'tippy.js'
 
 @classic
 export default class ResultsTable extends Component {
-  didInsertElement() {
-    super.didInsertElement(...arguments);
-    this.$().find('table').DataTable({
+  tagName = '';
+
+  didInsert() {
+    $(this.element).find('table').DataTable({
       searching: false,
       serverSide: true,
       ajax: {
@@ -28,7 +29,7 @@ export default class ResultsTable extends Component {
         }.bind(this),
       },
       drawCallback: () => {
-        this.$().find('td').each(function() {
+        $(this.element).find('td').each(function() {
           if(this.scrollWidth > this.offsetWidth) {
             const $cell = $(this);
             $cell.attr('data-tippy-content', $cell.text());
@@ -182,7 +183,7 @@ export default class ResultsTable extends Component {
   // eslint-disable-next-line ember/no-observers
   @observes('backendQueryParamValues')
   refreshData() {
-    this.$().find('table').DataTable().draw();
+    $(this.element).find('table').DataTable().draw();
   }
 
   @computed('backendQueryParamValues')

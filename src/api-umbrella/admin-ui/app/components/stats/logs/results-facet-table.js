@@ -10,7 +10,10 @@ import each from 'lodash-es/each';
 
 @classic
 export default class ResultsFacetTable extends Component {
-  // eslint-disable-next-line ember/no-on-calls-in-components, ember/no-observers
+  tagName = '';
+
+  @on('init')
+  // eslint-disable-next-line ember/no-observers
   @observes('facets')
   setLinks() {
     each(this.facets, function(bucket) {
@@ -22,6 +25,6 @@ export default class ResultsFacetTable extends Component {
 
   @action
   toggleFacetTable() {
-    this.$().find('table').toggle();
+    $(this.element).find('table').toggle();
   }
 }

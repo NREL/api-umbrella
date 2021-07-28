@@ -41,8 +41,7 @@ export default class QueryForm extends Component {
 
   enableInterval = false;
 
-  didInsertElement() {
-    super.didInsertElement(...arguments);
+  didInsert() {
     let rangeOptions = {};
     let rangeKeys = {};
     forEach(this.dateRanges, function(range, key) {

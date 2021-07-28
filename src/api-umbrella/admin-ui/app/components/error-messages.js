@@ -5,7 +5,7 @@ import { gt } from '@ember/object/computed';
 import { tagName } from '@ember-decorators/component';
 import classic from 'ember-classic-decorator';
 import I18n from 'i18n-js';
-import inflection from 'inflection';
+import { titleize, underscore } from 'inflection';
 import each from 'lodash-es/each';
 import isArray from 'lodash-es/isArray';
 import marked from 'marked';
@@ -70,9 +70,9 @@ export default class ErrorMessages extends Component {
       if(error.fullMessage) {
         message += error.fullMessage;
       } else if(error.attribute && error.attribute !== 'base') {
-        let attributeTitle = I18n.t(modelI18nRoot + '.' + inflection.underscore(error.attribute), { defaultValue: false });
+        let attributeTitle = I18n.t(modelI18nRoot + '.' + underscore(error.attribute), { defaultValue: false });
         if(attributeTitle === false) {
-          attributeTitle = inflection.titleize(inflection.underscore(error.attribute));
+          attributeTitle = titleize(underscore(error.attribute));
         }
 
         message += attributeTitle + ': ';

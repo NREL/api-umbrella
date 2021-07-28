@@ -114,7 +114,6 @@ export default class Settings extends Model {
     let roles = compact(value.split(','));
     if(roles.length === 0) { roles = null; }
     this.set('requiredRoles', roles);
-    return value;
   }
 
   @computed('allowedIps')
@@ -130,7 +129,6 @@ export default class Settings extends Model {
     let ips = compact(value.split(/[\r\n]+/));
     if(ips.length === 0) { ips = null; }
     this.set('allowedIps', ips);
-    return value;
   }
 
   @computed('allowedReferers')
@@ -146,7 +144,6 @@ export default class Settings extends Model {
     let referers = compact(value.split(/[\r\n]+/));
     if(referers.length === 0) { referers = null; }
     this.set('allowedReferers', referers);
-    return value;
   }
 
   @computed('passApiKeyHeader', 'passApiKeyQueryParam')

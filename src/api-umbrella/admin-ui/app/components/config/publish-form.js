@@ -11,8 +11,9 @@ import $ from 'jquery';
 
 @classic
 export default class PublishForm extends Component {
-  didInsertElement() {
-    super.didInsertElement(...arguments);
+  tagName = '';
+
+  didInsert() {
     this.publishButton = this.element.querySelector('.publish-button');
     this.$toggleCheckboxesLink = $('#toggle_checkboxes');
     $('#publish_form').on('change', ':checkbox', this.onCheckboxChange.bind(this));
@@ -24,7 +25,7 @@ export default class PublishForm extends Component {
 
     this.onCheckboxChange();
 
-    this.$().find('.diff-active-yaml').each(function() {
+    $(this.element).find('.diff-active-yaml').each(function() {
       let activeYaml = $(this).text();
       let pendingYaml = $(this).siblings('.diff-pending-yaml').text();
 

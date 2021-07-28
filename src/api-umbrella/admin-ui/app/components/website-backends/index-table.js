@@ -6,9 +6,10 @@ import escape from 'lodash-es/escape';
 
 @classic
 export default class IndexTable extends Component {
-  didInsertElement() {
-    super.didInsertElement(...arguments);
-    this.set('table', this.$().find('table').DataTable({
+  tagName = '';
+
+  didInsert() {
+    this.set('table', $(this.element).find('table').DataTable({
       serverSide: true,
       ajax: '/api-umbrella/v1/website_backends.json',
       pageLength: 50,

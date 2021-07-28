@@ -8,12 +8,15 @@ import classic from 'ember-classic-decorator';
 
 @classic
 export default class FieldWrapper extends Component {
+  tagName = '';
+
   canShowErrors = false;
 
   @or('labelForId', 'inputId')
   labelFor;
 
-  // eslint-disable-next-line ember/no-on-calls-in-components, ember/no-observers
+  @on('init')
+  // eslint-disable-next-line ember/no-observers
   @observes('fieldName')
   fieldNameDidChange() {
     let fieldName = this.fieldName;

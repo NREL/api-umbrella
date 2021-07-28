@@ -120,7 +120,6 @@ class ApiUser extends Model.extend(Validations) {
     let roles = compact(value.split(','));
     if(roles.length === 0) { roles = null; }
     this.set('roles', roles);
-    return value;
   }
 }
 

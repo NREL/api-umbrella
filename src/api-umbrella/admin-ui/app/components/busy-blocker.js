@@ -3,12 +3,15 @@ import Component from '@ember/component';
 import { later } from '@ember/runloop';
 import { inject } from '@ember/service';
 import classic from 'ember-classic-decorator';
+import $ from 'jquery';
 
 const ANIMATION_DURATION = 300;
 const DEFAULT_MESSAGE = 'Loading...';
 
 @classic
 export default class BusyBlocker extends Component {
+  tagName = '';
+
   @inject('busy')
   busy;
 
@@ -17,25 +20,23 @@ export default class BusyBlocker extends Component {
 
   // Hooks
   // ------------------------
-  didInsertElement() {
-    super.didInsertElement(...arguments);
+  didInsert() {
     // Convert animation duration ms to css string value
     let duration = (ANIMATION_DURATION / 1000) + 's';
     let busy = this.busy;
 
     // Hide immediately
-    this.$().css('display', 'none');
+    $(this.element).css('display', 'none');
 
-    this.set('animationElements', this.$('.busy-blocker__bg, .busy-blocker__content'));
+    this.set('animationElements', $(this.element).find('.busy-blocker__bg, .busy-blocker__content'));
     // Set the animation duration on the backdrop element
-    this.$('.busy-blocker__bg').css('animation-duration', duration);
+    $(this.element).find('.busy-blocker__bg').css('animation-duration', duration);
 
     busy.on('hide', this, this._hide);
     busy.on('show', this, this._show);
   }
 
-  willDestroyElement() {
-    super.willDestroyElement(...arguments);
+  willDestroyNode() {
     let busy = this.busy;
 
     busy.off('hide', this, this._hide);
@@ -57,7 +58,7 @@ export default class BusyBlocker extends Component {
     elements.addClass('fade-out');
 
     later(this, function hideLoading() {
-      this.$().css('display', 'none');
+      $(this.element).css('display', 'none');
     }, ANIMATION_DURATION);
   }
 
@@ -79,7 +80,7 @@ export default class BusyBlocker extends Component {
 
     this.set('message', message);
 
-    this.$().css('display', 'block');
+    $(this.element).css('display', 'block');
     elements.removeClass('fade-out');
     elements.addClass('fade-in');
   }

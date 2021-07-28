@@ -2,13 +2,15 @@
 import Component from '@ember/component';
 import DataTablesHelpers from 'api-umbrella-admin-ui/utils/data-tables-helpers';
 import classic from 'ember-classic-decorator';
+import $ from 'jquery';
 import escape from 'lodash-es/escape';
 
 @classic
 export default class IndexTable extends Component {
-  didInsertElement() {
-    super.didInsertElement(...arguments);
-    this.$().find('table').DataTable({
+  tagName = '';
+
+  didInsert() {
+    $(this.element).find('table').DataTable({
       serverSide: true,
       ajax: '/api-umbrella/v1/users.json',
       pageLength: 50,

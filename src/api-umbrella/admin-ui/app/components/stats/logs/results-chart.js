@@ -1,26 +1,28 @@
 // eslint-disable-next-line ember/no-classic-components
 import Component from '@ember/component';
 import { observes, on } from '@ember-decorators/object';
-import echarts from 'echarts/lib/echarts';
+import * as echarts from 'echarts/core';
 import classic from 'ember-classic-decorator';
 import $ from 'jquery';
 import debounce from 'lodash-es/debounce';
 
 @classic
 export default class ResultsChart extends Component {
-  didInsertElement() {
-    super.didInsertElement(...arguments);
+  tagName = '';
+
+  didInsert() {
     this.renderChart();
   }
 
   renderChart() {
-    this.chart = echarts.init(this.$()[0], 'api-umbrella-theme');
+    this.chart = echarts.init(this.element, 'api-umbrella-theme');
     this.draw();
 
     $(window).on('resize', debounce(this.chart.resize, 100));
   }
 
-  // eslint-disable-next-line ember/no-on-calls-in-components, ember/no-observers
+  @on('init')
+  // eslint-disable-next-line ember/no-observers
   @observes('hitsOverTime')
   refreshData() {
     let data = []

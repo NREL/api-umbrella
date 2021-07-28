@@ -1,3 +1,10 @@
 <FormFields::FieldWrapper @model={{this.model}} @style={{this.style}} @fieldName={{this.fieldName}} @inputId={{this.inputId}} @labelForId={{this.aceTextInputId}} @label={{this.label}} @tooltip={{this.tooltip}} @hint={{this.hint}}>
-  <OneWayTextarea @value={{get this.model this.fieldName}} @update={{action (mut (get this.model this.fieldName))}} @class="form-control" @data-ace-mode={{this.mode}} />
+  {{! template-lint-disable require-input-label }}
+  <textarea
+    value={{get this.model this.fieldName}}
+    oninput={{action (mut (get this.model this.fieldName)) value="target.value"}}
+    class="form-control"
+    data-ace-mode={{this.mode}}
+  />
+  {{! template-lint-enable require-input-label }}
 </FormFields::FieldWrapper>

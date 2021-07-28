@@ -1,11 +1,18 @@
-import 'echarts/lib/chart/line';
-import 'echarts/lib/chart/map';
-import 'echarts/lib/chart/scatter';
-import 'echarts/lib/component/geo';
-import 'echarts/lib/component/tooltip';
-import 'echarts/lib/component/visualMapContinuous';
+import { LineChart, MapChart, ScatterChart } from 'echarts/charts';
+import { GeoComponent, GridComponent, TooltipComponent, VisualMapComponent } from 'echarts/components';
+import { CanvasRenderer } from 'echarts/renderers';
+import * as echarts from 'echarts/core';
 
-import echarts from 'echarts/lib/echarts';
+echarts.use([
+  CanvasRenderer,
+  GeoComponent,
+  GridComponent,
+  LineChart,
+  MapChart,
+  ScatterChart,
+  TooltipComponent,
+  VisualMapComponent,
+]);
 
 export function initialize() {
   let colorPalette = [
@@ -63,7 +70,6 @@ export function initialize() {
     };
   }
 
-  /*
   echarts.registerTheme('api-umbrella-theme', {
     color: colorPalette,
     graph: {
@@ -96,7 +102,6 @@ export function initialize() {
       },
     },
   });
-  */
 }
 
 export default {

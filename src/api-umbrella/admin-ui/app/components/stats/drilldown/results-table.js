@@ -11,12 +11,13 @@ import numeral from 'numeral';
 
 @classic
 export default class ResultsTable extends Component {
+  tagName = '';
+
   @inject()
   session;
 
-  didInsertElement() {
-    super.didInsertElement(...arguments);
-    this.$().find('table').DataTable({
+  didInsert() {
+    $(this.element).find('table').DataTable({
       searching: false,
       order: [[1, 'desc']],
       data: this.results,
@@ -60,7 +61,7 @@ export default class ResultsTable extends Component {
   // eslint-disable-next-line ember/no-observers
   @observes('results')
   refreshData() {
-    let table = this.$().find('table').dataTable().api();
+    let table = $(this.element).find('table').dataTable().api();
     table.clear();
     table.rows.add(this.results);
     table.draw();

@@ -30,7 +30,7 @@
               {{#each this.model.rateLimits as |rateLimit|}}
                 <tr>
                   <td>
-                    <Input @type="text" @value={{rateLimit.durationInUnits}} class="form-control form-control-sm rate-limit-duration-in-units" />
+                    <Input @type="text" @value={{rateLimit.durationInUnits}} class="form-control form-control-sm rate-limit-duration-in-units" aria-label="Duration" />
                   </td>
                   <td style="text-align: left;">
                     <SelectMenu @value={{rateLimit.durationUnits}} @action={{action (mut rateLimit.durationUnits)}} @options={{this.rateLimitDurationUnitOptions}} @inputClass="custom-select custom-select-sm rate-limit-duration-units" />
@@ -40,7 +40,7 @@
                   </td>
                   <td>
                     <div class="input-group input-group-sm">
-                      <Input @type="text" @value={{rateLimit.limit}} class="form-control rate-limit-limit" />
+                      <Input @type="text" @value={{rateLimit.limit}} class="form-control rate-limit-limit" aria-label="Limit" />
                       <div class="input-group-append">
                         <span class="input-group-text">requests</span>
                       </div>
@@ -48,7 +48,15 @@
                   </td>
                   <td class="text-center">
                     <div class="custom-control custom-radio custom-control-no-label mt-1">
-                      <OneWayRadio @name={{this.uniqueSettingsId}} @id={{concat this.uniqueSettingsId "_" rateLimit.uniqueId}} @value={{rateLimit.responseHeaders}} @option={{true}} @class="rate-limit-response-headers custom-control-input" @update={{action "primaryRateLimitChange" rateLimit}} />
+                      <input
+                        type="radio"
+                        name={{this.uniqueSettingsId}}
+                        id={{concat this.uniqueSettingsId "_" rateLimit.uniqueId}}
+                        value={{rateLimit.responseHeaders}}
+                        option={{true}}
+                        class="rate-limit-response-headers custom-control-input"
+                        onclick={{action "primaryRateLimitChange" rateLimit}}
+                      />
                       <label class="custom-control-label" for="{{this.uniqueSettingsId}}_{{rateLimit.uniqueId}}"><span class="sr-only">Use as primary rate limit</span></label>
                     </div>
                   </td>

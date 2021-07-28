@@ -10,12 +10,13 @@ import escape from 'lodash-es/escape';
 
 @classic
 export default class IndexTable extends Component {
+  tagName = '';
+
   @inject('session')
   session;
 
-  didInsertElement() {
-    super.didInsertElement(...arguments);
-    let dataTable = this.$().find('table').DataTable({
+  didInsert() {
+    let dataTable = $(this.element).find('table').DataTable({
       serverSide: true,
       ajax: '/api-umbrella/v1/admins.json',
       pageLength: 50,

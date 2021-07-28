@@ -2,6 +2,7 @@ import 'selectize';
 
 import { observes, on } from '@ember-decorators/object';
 import classic from 'ember-classic-decorator';
+import $ from 'jquery';
 import uniq from 'lodash-es/uniq';
 
 import BaseField from './base-field';
@@ -21,10 +22,8 @@ export default class SelectizeField extends BaseField {
     this.addObserver('model.' + this.fieldName, this, this.valueDidChange);
   }
 
-  didInsertElement() {
-    super.didInsertElement();
-
-    this.$input = this.$().find('#' + this.inputId).selectize({
+  didInsert() {
+    this.$input = $(this.element).find('#' + this.inputId).selectize({
       plugins: ['restore_on_backspace', 'remove_button'],
       delimiter: ',',
       options: this.defaultOptions,
@@ -47,7 +46,8 @@ export default class SelectizeField extends BaseField {
     this.selectize.$control_input.attr('data-selectize-control-id', controlId);
   }
 
-  // eslint-disable-next-line ember/no-on-calls-in-components, ember/no-observers
+  @on('init')
+  // eslint-disable-next-line ember/no-observers
   @observes('options.@each')
   defaultOptionsDidChange() {
     this.set('defaultOptions', this.options.map((item) => {
