@@ -84,9 +84,8 @@ class ApiUser extends Model.extend(Validations) {
   @belongsTo('api/settings', { async: false })
   settings;
 
-  constructor() {
-    super(...arguments);
-    // this.setDefaults();
+  ready() {
+    this.setDefaults();
   }
 
   setDefaults() {

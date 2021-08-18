@@ -8,6 +8,7 @@ import classic from 'ember-classic-decorator';
 
 @classic
 export default class FieldWrapper extends Component {
+  // eslint-disable-next-line ember/require-tagless-components
   tagName = 'div';
 
   canShowErrors = false;

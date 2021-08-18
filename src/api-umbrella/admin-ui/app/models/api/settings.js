@@ -68,9 +68,8 @@ export default class Settings extends Model {
   @hasMany('api/rate-limit', { async: false })
   rateLimits;
 
-  constructor() {
-    super(...arguments);
-    // this.setDefaults();
+  ready() {
+    this.setDefaults();
   }
 
   setDefaults() {

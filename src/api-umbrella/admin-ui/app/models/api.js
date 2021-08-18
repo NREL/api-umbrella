@@ -75,8 +75,7 @@ class Api extends Model.extend(Validations) {
   @hasMany('api/rewrites', { async: false })
   rewrites;
 
-  constructor() {
-    super(...arguments);
+  ready() {
     this.setDefaults();
   }
 
