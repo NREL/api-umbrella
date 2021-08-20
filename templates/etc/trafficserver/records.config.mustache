@@ -35,6 +35,11 @@ CONFIG proxy.config.diags.output.fatal STRING E
 CONFIG proxy.config.diags.output.alert STRING E
 CONFIG proxy.config.diags.output.emergency STRING E
 
+# Allow longer lines in logging.
+CONFIG proxy.config.log.max_line_size INT 24576;
+CONFIG proxy.config.log.ascii_buffer_size INT 24576;
+CONFIG proxy.config.log.log_buffer_size INT 24576;
+
 {{^log._destination_console?}}
 # Rotate log files with logrotate to be consistent with all the other API
 # Umbrella components.
