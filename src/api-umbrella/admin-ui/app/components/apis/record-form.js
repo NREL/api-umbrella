@@ -27,8 +27,10 @@ export default class RecordForm extends Component.extend(Save) {
   }
 
   @action
-  submitForm() {
+  submitForm(event) {
+    event.preventDefault();
     this.saveRecord({
+      element: event.target,
       transitionToRoute: 'apis',
       message: 'Successfully saved the "' + escape(this.model.name) + '" API backend<br><strong>Note:</strong> Your changes are not yet live. <a href="/admin/#/config/publish">Publish Changes</a> to send your updates live.',
     });

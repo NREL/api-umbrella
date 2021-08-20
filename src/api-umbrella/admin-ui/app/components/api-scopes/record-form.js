@@ -11,8 +11,10 @@ import escape from 'lodash-es/escape';
 @tagName("")
 export default class RecordForm extends Component.extend(Save) {
   @action
-  submitForm() {
+  submitForm(event) {
+    event.preventDefault();
     this.saveRecord({
+      element: event.target,
       transitionToRoute: 'api_scopes',
       message: 'Successfully saved the API scope "' + escape(this.model.name) + '"',
     });

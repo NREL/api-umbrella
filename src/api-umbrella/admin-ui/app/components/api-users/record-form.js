@@ -41,8 +41,10 @@ export default class RecordForm extends Component.extend(Save) {
   }
 
   @action
-  submitForm() {
+  submitForm(event) {
+    event.preventDefault();
     this.saveRecord({
+      element: event.target,
       transitionToRoute: 'api_users',
       message(model) {
         let message = 'Successfully saved the user "' + escape(model.get('email')) + '"';

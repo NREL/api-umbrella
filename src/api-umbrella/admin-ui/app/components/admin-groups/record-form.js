@@ -11,8 +11,10 @@ import escape from 'lodash-es/escape';
 @tagName("")
 export default class RecordForm extends Component.extend(Save) {
   @action
-  submitForm() {
+  submitForm(event) {
+    event.preventDefault();
     this.saveRecord({
+      element: event.target,
       transitionToRoute: 'admin_groups',
       message: 'Successfully saved the admin group "' + escape(this.model.name) + '"',
     });

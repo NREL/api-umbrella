@@ -5,6 +5,7 @@ import Component from '@ember/component';
 import { action } from '@ember/object';
 import { inject } from '@ember/service';
 import { observes } from '@ember-decorators/object';
+import { tracked } from '@glimmer/tracking';
 import DataTablesHelpers from 'api-umbrella-admin-ui/utils/data-tables-helpers';
 import bootbox from 'bootbox';
 import classic from 'ember-classic-decorator';
@@ -14,12 +15,13 @@ import isEqual from 'lodash-es/isEqual';
 
 @classic
 export default class IndexTable extends Component {
-  tagName = '';
+  // eslint-disable-next-line ember/require-tagless-components
+  tagName = 'div';
 
   @inject('busy')
   busy;
 
-  reorderActive = false;
+  @tracked reorderActive = false;
 
   @action
   didInsert(element) {

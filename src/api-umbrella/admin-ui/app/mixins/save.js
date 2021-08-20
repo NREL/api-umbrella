@@ -27,7 +27,7 @@ export default Mixin.create({
   },
 
   saveRecord(options) {
-    const button = this.element.querySelector('.save-button');
+    const button = options.element.querySelector('.save-button');
     LoadingButton.loading(button);
 
     this.setProperties({

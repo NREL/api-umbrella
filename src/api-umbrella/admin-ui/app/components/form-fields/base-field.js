@@ -1,15 +1,22 @@
 // eslint-disable-next-line ember/no-classic-components
 import Component from '@ember/component';
-import { computed } from '@ember/object';
+import { guidFor } from '@ember/object/internals';
+import { tracked } from '@glimmer/tracking';
 import classic from 'ember-classic-decorator';
 
 @classic
 class BaseField extends Component {
   tagName = '';
 
-  @computed('elementId', 'fieldName')
+  @tracked fieldName;
+
+  init() {
+    super.init(...arguments);
+    this.uniqueElementId = guidFor(this);
+  }
+
   get inputId() {
-    return this.elementId + '-' + this.fieldName;
+    return guidFor(this) + '-' + this.fieldName;
   }
 }
 

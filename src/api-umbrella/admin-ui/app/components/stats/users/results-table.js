@@ -16,7 +16,7 @@ export default class ResultsTable extends Component {
 
   @action
   didInsert(element) {
-    $(element).find('table').DataTable({
+    this.table = $(element).find('table').DataTable({
       searching: false,
       serverSide: true,
       ajax: {
@@ -94,7 +94,9 @@ export default class ResultsTable extends Component {
   // eslint-disable-next-line ember/no-observers
   @observes('backendQueryParamValues')
   refreshData() {
-    $(this.element).find('table').DataTable().draw();
+    if(this.table) {
+      this.table.draw();
+    }
   }
 
   @computed('backendQueryParamValues')

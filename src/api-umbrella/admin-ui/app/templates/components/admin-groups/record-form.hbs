@@ -1,7 +1,7 @@
 <div ...attributes>
   <ErrorMessages @model={{this.model}} />
 
-  <form {{action "submitForm" on="submit"}}>
+  <form {{on "submit" this.submitForm}}>
     <FieldsFor @model={{this.model}} @style="horizontal" as |f|>
       <fieldset class="form-horizontal condensed">
         {{f.text-field "name" label="Group Name"}}

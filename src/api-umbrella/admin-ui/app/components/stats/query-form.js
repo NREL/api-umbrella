@@ -394,7 +394,8 @@ export default class QueryForm extends Component {
   }
 
   @action
-  submitForm() {
+  submitForm(event) {
+    event.preventDefault();
     if($('#filter_type_advanced').css('display') === 'none') {
       this.set('search', '');
       this.set('query', JSON.stringify($('#query_builder').queryBuilder('getRules')));

@@ -41,7 +41,8 @@ export default class ServerForm extends Component {
   }
 
   @action
-  submitForm() {
+  submitForm(event) {
+    event.preventDefault();
     this.bufferedModel.applyChanges();
     if(this.model.isNew) {
       this.collection.pushObject(this.model);

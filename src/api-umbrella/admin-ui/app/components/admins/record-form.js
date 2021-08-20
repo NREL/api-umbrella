@@ -19,8 +19,10 @@ export default class RecordForm extends Component.extend(Save) {
   currentAdmin;
 
   @action
-  submitForm() {
+  submitForm(event) {
+    event.preventDefault();
     this.saveRecord({
+      element: event.target,
       transitionToRoute: 'admins',
       message: 'Successfully saved the admin "' + escape(this.model.username) + '"',
     });

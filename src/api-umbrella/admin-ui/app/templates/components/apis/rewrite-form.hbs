@@ -1,8 +1,8 @@
 <div ...attributes>
-  <BsModal @open={{this.openModal}} @onSubmit={{action "submitForm"}} @onHidden={{action "closed"}} @backdropClose={{false}} @size="lg" @fade={{false}} as |modal|>
+  <BsModal @open={{this.openModal}} @onHidden={{action "closed"}} @backdropClose={{false}} @size="lg" @fade={{false}} as |modal|>
     <modal.header @title={{this.modalTitle}} />
     <modal.body>
-      <form {{action "submitForm" on="submit"}}>
+      <form {{on "submit" this.submitForm}}>
         <FieldsFor @model={{this.bufferedModel}} @style="vertical" as |f|>
           <div class="row">
             <div class="col-sm-12">

@@ -184,7 +184,9 @@ export default class ResultsTable extends Component {
   // eslint-disable-next-line ember/no-observers
   @observes('backendQueryParamValues')
   refreshData() {
-    $(this.element).find('table').DataTable().draw();
+    if(this.table) {
+      this.table.draw();
+    }
   }
 
   @computed('backendQueryParamValues')

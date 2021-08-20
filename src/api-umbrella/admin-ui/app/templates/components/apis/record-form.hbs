@@ -1,7 +1,7 @@
 <div ...attributes>
   <ErrorMessages @model={{this.model}} />
 
-  <form {{action "submitForm" on="submit"}}>
+  <form {{on "submit" this.submitForm}}>
     <FieldsFor @model={{this.model}} @style="vertical" as |f|>
       {{f.text-field "name" label=(t "mongoid.attributes.api.name")}}
 
