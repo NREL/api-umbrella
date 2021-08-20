@@ -100,7 +100,7 @@ class Test::Proxy::TestTransferEncoding < Minitest::Test
     response = Typhoeus.get("http://127.0.0.1:9080/api/response-header-value/", http_options.deep_merge({
       :params => {
         "header" => "Transfer-Encoding",
-        "header_value" => "test123"
+        "header_value" => "test123",
       },
     }))
     assert_response_code(400, response)

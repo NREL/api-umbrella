@@ -38,6 +38,6 @@ class WebsiteBackend
   end
 
   def attributes_hash
-    Hash[self.attributes]
+    self.attributes.to_h
   end
 end

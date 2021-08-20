@@ -71,7 +71,7 @@ class Api
   end
 
   def attributes_hash
-    Hash[self.attributes]
+    self.attributes.to_h
   end
 
   def as_json(options = {})
