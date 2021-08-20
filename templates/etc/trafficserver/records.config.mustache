@@ -3,14 +3,6 @@
 LOCAL proxy.local.incoming_ip_to_bind STRING {{trafficserver.host}}
 CONFIG proxy.config.http.server_ports STRING {{trafficserver.port}}
 
-# Disable Trafficserver's ability to modify config files and keep backups. This
-# ensures the live configuration doesn't stray from our installed templates.
-# Otherwise race conditions can happen on reloads between API Umbrella writing
-# the config files, and Trafficserver restoring or rewriting the files with old
-# configuration.
-CONFIG proxy.config.disable_configuration_modification INT 1
-CONFIG proxy.config.admin.number_config_bak INT 0
-
 # Use the special "#-1" value to keep running as the current user (perp will
 # handle switching the user).
 CONFIG proxy.config.admin.user_id STRING #-1
