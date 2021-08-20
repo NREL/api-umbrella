@@ -61,7 +61,7 @@ export default class ResultsTable extends Component {
   // eslint-disable-next-line ember/no-observers
   @observes('regions')
   refreshData() {
-    if (this.table) {
+    if(this.table) {
       this.table.clear();
       this.table.rows.add(this.regions);
       this.table.draw();
