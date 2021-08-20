@@ -57,30 +57,6 @@ export default class ResultsChart extends Component {
       tooltip: {
         trigger: 'axis',
       },
-      toolbox: {
-        orient: 'vertical',
-        iconStyle: {
-          emphasis: {
-            textPosition: 'left',
-            textAlign: 'right',
-          },
-        },
-        feature: {
-          saveAsImage: {
-            title: 'save as image',
-            name: 'api_umbrella_chart',
-            excludeComponents: ['toolbox', 'dataZoom'],
-            pixelRatio: 2,
-          },
-          dataZoom: {
-            yAxisIndex: 'none',
-            title: {
-              zoom: 'zoom',
-              back: 'restore zoom',
-            },
-          },
-        },
-      },
       yAxis: {
         type: 'value',
         min: 0,
@@ -110,25 +86,12 @@ export default class ResultsChart extends Component {
           data: this.chartData,
         },
       ],
-      title: {
-        show: false,
-      },
-      legend: {
-        show: false,
-      },
       grid: {
         show: false,
         left: 90,
         top: 10,
         right: 30,
       },
-      dataZoom: [
-        {
-          type: 'slider',
-          start: 0,
-          end: 100,
-        },
-      ],
     }, true);
   }
 }

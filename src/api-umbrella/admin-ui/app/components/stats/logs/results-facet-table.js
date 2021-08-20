@@ -10,7 +10,8 @@ import each from 'lodash-es/each';
 
 @classic
 export default class ResultsFacetTable extends Component {
-  tagName = '';
+  // eslint-disable-next-line ember/require-tagless-components
+  tagName = 'div';
 
   @on('init')
   // eslint-disable-next-line ember/no-observers

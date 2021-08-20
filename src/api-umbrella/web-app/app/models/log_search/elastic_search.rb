@@ -155,9 +155,9 @@ class LogSearch::ElasticSearch < LogSearch::Base
 
         if(CASE_SENSITIVE_FIELDS.exclude?(rule["field"]) && rule["value"].kind_of?(String))
           if(UPPERCASE_FIELDS.include?(rule["field"]))
-            rule["value"].upcase!
+            rule["value"] = rule["value"].upcase
           else
-            rule["value"].downcase!
+            rule["value"] = rule["value"].downcase
           end
         end
 

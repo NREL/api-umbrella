@@ -14,7 +14,7 @@ export default class ResultsTable extends Component {
 
   @action
   didInsert(element) {
-    $(element).find('table').DataTable({
+    this.table = $(element).find('table').DataTable({
       searching: false,
       order: [[1, 'desc']],
       data: this.regions,
@@ -61,10 +61,11 @@ export default class ResultsTable extends Component {
   // eslint-disable-next-line ember/no-observers
   @observes('regions')
   refreshData() {
-    let table = $(this.element).find('table').dataTable().api();
-    table.clear();
-    table.rows.add(this.regions);
-    table.draw();
+    if (this.table) {
+      this.table.clear();
+      this.table.rows.add(this.regions);
+      this.table.draw();
+    }
   }
 
   @computed('backendQueryParamValues')

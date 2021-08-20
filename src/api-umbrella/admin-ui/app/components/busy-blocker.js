@@ -16,6 +16,7 @@ export default class BusyBlocker extends Component {
   @inject('busy')
   busy;
 
+  containerElement = null;
   animationElements = null;
   message = null;
 
@@ -23,16 +24,18 @@ export default class BusyBlocker extends Component {
   // ------------------------
   @action
   didInsert(element) {
+    this.containerElement = element;
+
     // Convert animation duration ms to css string value
     let duration = (ANIMATION_DURATION / 1000) + 's';
     let busy = this.busy;
 
     // Hide immediately
-    $(element).css('display', 'none');
+    $(this.containerElement).css('display', 'none');
 
     this.animationElements = $(element).find('.busy-blocker__bg, .busy-blocker__content');
     // Set the animation duration on the backdrop element
-    $(element).find('.busy-blocker__bg').css('animation-duration', duration);
+    $(this.containerElement).find('.busy-blocker__bg').css('animation-duration', duration);
 
     busy.on('hide', this, this._hide);
     busy.on('show', this, this._show);
@@ -61,7 +64,7 @@ export default class BusyBlocker extends Component {
     elements.addClass('fade-out');
 
     later(this, function hideLoading() {
-      $(this.element).css('display', 'none');
+      $(this.containerElement).css('display', 'none');
     }, ANIMATION_DURATION);
   }
 
@@ -83,7 +86,7 @@ export default class BusyBlocker extends Component {
 
     this.message = message;
 
-    $(this.element).css('display', 'block');
+    $(this.containerElement).css('display', 'block');
     elements.removeClass('fade-out');
     elements.addClass('fade-in');
   }

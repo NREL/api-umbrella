@@ -17,7 +17,7 @@ export default class ResultsTable extends Component {
 
   @action
   didInsert(element) {
-    $(element).find('table').DataTable({
+    this.table = $(element).find('table').DataTable({
       searching: false,
       serverSide: true,
       ajax: {

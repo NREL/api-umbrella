@@ -20,21 +20,18 @@ export default class ResultsMap extends Component {
   didInsert(element) {
     this.chart = echarts.init(element, 'api-umbrella-theme');
     this.chart.showLoading();
-    this.chart.on('mapselectchanged', this.handleRegionClick.bind(this));
-    this.chart.on('click', this.handleCityClick.bind(this));
+    this.chart.on('click', this.handleMapClick.bind(this));
     this.draw();
 
     $(window).on('resize', debounce(this.chart.resize, 100));
   }
 
-  handleRegionClick(event) {
-    let queryParams = clone(this.presentQueryParamValues);
-    queryParams.region = event.batch[0].name;
-    this.router.transitionTo('stats.map', { queryParams });
-  }
-
-  handleCityClick(event) {
-    if(event.seriesType === 'scatter') {
+  handleMapClick(event) {
+    if(event.seriesType === 'map') {
+      let queryParams = clone(this.presentQueryParamValues);
+      queryParams.region = event.name;
+      this.router.transitionTo('stats.map', { queryParams });
+    } else if(event.seriesType === 'scatter') {
       let currentRegion = this.allQueryParamValues.region.split('-');
       let currentCountry = currentRegion[0];
       currentRegion = currentRegion[1];
@@ -225,6 +222,16 @@ export default class ResultsMap extends Component {
           map: 'region',
           selectedMode: 'single',
           data,
+          emphasis: {
+            label: {
+              show: false,
+            },
+          },
+          select: {
+            label: {
+              show: false,
+            },
+          },
         },
       ];
     }
@@ -240,23 +247,6 @@ export default class ResultsMap extends Component {
           return '<strong>' + label + '</strong><br>Hits: <strong>' + valueDisplay + '</strong>';
         }.bind(this),
       },
-      toolbox: {
-        orient: 'vertical',
-        iconStyle: {
-          emphasis: {
-            textPosition: 'left',
-            textAlign: 'right',
-          },
-        },
-        feature: {
-          saveAsImage: {
-            title: 'save as image',
-            name: 'api_umbrella_chart',
-            excludeComponents: ['toolbox', 'dataZoom'],
-            pixelRatio: 2,
-          },
-        },
-      },
       visualMap: {
         type: 'continuous',
         min: 1,
@@ -269,12 +259,6 @@ export default class ResultsMap extends Component {
       },
       geo: geo,
       series: series,
-      title: {
-        show: false,
-      },
-      legend: {
-        show: false,
-      },
       grid: {
         show: false,
         left: 90,
