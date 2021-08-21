@@ -28,7 +28,8 @@ class Test::Proxy::Dns::TestIpv6 < Minitest::Test
         },
       ]) do
         response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/", http_options)
-        assert_response_code(502, response)
+        assert_response_code(500, response)
+        assert_match("Unknown Host", response.body)
       end
     end
   end
