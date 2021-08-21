@@ -22,10 +22,12 @@ export default class CodemirrorField extends BaseField {
 
   @action
   didInsert(element) {
-    let $originalTextarea = $(element).find('textarea');
-    this.codemirror = CodeMirror.fromTextArea($originalTextarea[0], {
+    const originalTextarea = element.querySelector('textarea');
+    const $originalTextarea = $(originalTextarea);
+
+    this.codemirror = CodeMirror.fromTextArea(originalTextarea, {
       lineNumbers: true,
-      mode: $originalTextarea.data('codemirror-mode'),
+      mode: originalTextarea.dataset.codemirrorMode,
       tabSize: 2,
 
       // Enable auto-refresh plugin to fix codemirror creation fields that may
@@ -45,14 +47,14 @@ export default class CodemirrorField extends BaseField {
       }
 
       inputField.setAttribute('data-codemirror-wrapper-element-id', this.codemirrorWrapperElementId);
-      inputField.setAttribute('data-codemirror-original-textarea-id', $originalTextarea.attr('id'));
+      inputField.setAttribute('data-codemirror-original-textarea-id', originalTextarea.getAttribute('id'));
     }
 
     // Sync the codemirror changes back to the original textarea which will
     // will update the model.
     this.codemirror.on('change', () => {
       this.codemirror.save();
-      $originalTextarea.trigger('change');
+      $originalTextarea.trigger('input');
     });
   }
 
