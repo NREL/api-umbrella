@@ -14,8 +14,8 @@ import BaseField from './base-field';
 export default class CodemirrorField extends BaseField {
   init() {
     super.init();
-    this.set('codemirrorInputFieldId', this.uniqueElementId + '_codemirror_input_field');
-    this.set('codemirrorWrapperElementId', this.uniqueElementId + '_codemirror_wrapper_element');
+    this.set('codemirrorInputFieldId', this.inputId + '_codemirror_input_field');
+    this.set('codemirrorWrapperElementId', this.inputId + '_codemirror_wrapper_element');
     // eslint-disable-next-line ember/no-observers
     this.addObserver('model.' + this.fieldName, this, this.valueDidChange);
   }

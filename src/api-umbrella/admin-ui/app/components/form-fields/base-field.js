@@ -12,7 +12,6 @@ class BaseField extends Component {
 
   init() {
     super.init(...arguments);
-    this.uniqueElementId = guidFor(this);
   }
 
   get inputId() {

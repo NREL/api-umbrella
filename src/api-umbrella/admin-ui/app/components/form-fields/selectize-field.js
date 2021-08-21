@@ -18,7 +18,7 @@ export default class SelectizeField extends BaseField {
 
     this.defaultOptions =  [];
 
-    this.set('selectizeTextInputId', this.uniqueElementId + '-selectize_text_input');
+    this.set('selectizeTextInputId', this.inputId + '-selectize_text_input');
     // eslint-disable-next-line ember/no-observers
     this.addObserver('model.' + this.fieldName, this, this.valueDidChange);
   }
@@ -43,7 +43,7 @@ export default class SelectizeField extends BaseField {
     this.selectize.$control_input.attr('id', this.selectizeTextInputId);
     this.selectize.$control_input.attr('data-raw-input-id', this.inputId);
 
-    let controlId = this.uniqueElementId + '-selectize_control';
+    let controlId = this.inputId + '-selectize_control';
     this.selectize.$control.attr('id', controlId);
     this.selectize.$control_input.attr('data-selectize-control-id', controlId);
   }
