@@ -2,6 +2,7 @@ require_relative "../test_helper"
 
 class Test::Proxy::TestConnectionTimeouts < Minitest::Test
   include ApiUmbrellaTestHelpers::Setup
+  include ApiUmbrellaTestHelpers::RequestBodyStreaming
   parallelize_me!
 
   def setup
@@ -94,7 +95,90 @@ class Test::Proxy::TestConnectionTimeouts < Minitest::Test
     assert_response_code(200, response)
     assert_equal("first", response.body)
     assert_operator(response.total_time, :>=, delay1 + $config["nginx"]["proxy_read_timeout"])
-    assert_operator(response.total_time, :<=, delay1 + $config["nginx"]["proxy_read_timeout"] + 1)
+    assert_operator(response.total_time, :<=, delay1 + $config["nginx"]["proxy_read_timeout"] + 2)
+  end
+
+  def test_request_begins_within_send_timeout
+    delay1 = $config["nginx"]["proxy_send_timeout"] - 2
+    delay2 = $config["nginx"]["proxy_send_timeout"] + 2
+    assert_operator(delay1, :>, 0)
+    assert_operator(delay2, :>, 0)
+    assert_operator(delay2 - delay1, :>, 0)
+    assert_operator(delay2 - delay1, :<, $config["nginx"]["proxy_send_timeout"])
+
+    easy = make_streaming_body_request([
+      {
+        :data => "foo",
+        :sleep => delay1,
+      },
+      {
+        :data => "bar",
+        :sleep => delay2 - delay1,
+      },
+    ])
+
+    assert_equal(200, easy.response_code)
+    data = MultiJson.load(easy.response_body)
+    assert_equal(["foo", "bar"], data.fetch("chunks"))
+    assert_equal(2, data.fetch("chunk_time_gaps").length)
+    assert_in_delta(delay1, data.fetch("chunk_time_gaps")[0], 0.3)
+    assert_in_delta(delay2 - delay1, data.fetch("chunk_time_gaps")[1], 0.3)
+    assert_operator(easy.total_time, :>=, delay2)
+    assert_operator(easy.total_time, :<=, delay2 + 1)
+  end
+
+  def test_request_sends_chunks_at_least_once_per_send_timeout_interval
+    delay1 = 1
+    delay2 = $config["nginx"]["proxy_send_timeout"]
+    assert_operator(delay1, :>, 0)
+    assert_operator(delay2, :>, 0)
+    assert_operator(delay2 - delay1, :>, 0)
+    assert_operator(delay2 - delay1, :<, $config["nginx"]["proxy_send_timeout"])
+
+    easy = make_streaming_body_request([
+      {
+        :data => "foo",
+        :sleep => delay1,
+      },
+      {
+        :data => "bar",
+        :sleep => delay2 - delay1,
+      },
+    ])
+
+    assert_equal(200, easy.response_code)
+    data = MultiJson.load(easy.response_body)
+    assert_equal(["foo", "bar"], data.fetch("chunks"))
+    assert_equal(2, data.fetch("chunk_time_gaps").length)
+    assert_in_delta(delay1, data.fetch("chunk_time_gaps")[0], 0.3)
+    assert_in_delta(delay2 - delay1, data.fetch("chunk_time_gaps")[1], 0.3)
+    assert_operator(easy.total_time, :>=, delay2)
+    assert_operator(easy.total_time, :<=, delay2 + 1)
+  end
+
+  def test_request_closes_when_chunk_delay_exceeds_send_timeout
+    delay1 = 1
+    delay2 = $config["nginx"]["proxy_send_timeout"] + 2
+    assert_operator(delay1, :>, 0)
+    assert_operator(delay2, :>, 0)
+    assert_operator(delay2 - delay1, :>, 0)
+    assert_operator(delay2 - delay1, :>, $config["nginx"]["proxy_send_timeout"])
+
+    easy = make_streaming_body_request([
+      {
+        :data => "foo",
+        :sleep => delay1,
+      },
+      {
+        :data => "bar",
+        :sleep => delay2 - delay1,
+      },
+    ])
+
+    assert_equal(408, easy.response_code)
+    assert_match("Inactivity Timeout", easy.response_body)
+    assert_operator(easy.total_time, :>=, delay1 + $config["nginx"]["proxy_send_timeout"])
+    assert_operator(easy.total_time, :<=, delay1 + $config["nginx"]["proxy_send_timeout"] + 2)
   end
 
   # This is mainly done to ensure that any connection collapsing the cache is
@@ -112,7 +196,7 @@ class Test::Proxy::TestConnectionTimeouts < Minitest::Test
 
     # Wait 1 second to ensure the first GET request is fully established to the
     # backend.
-    sleep 1
+    sleep 1.5
 
     post_thread = Thread.new do
       Thread.current[:response] = Typhoeus.post("http://127.0.0.1:9080/api/delay-sec/#{delay}", http_options)

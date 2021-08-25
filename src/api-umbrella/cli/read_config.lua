@@ -338,28 +338,24 @@ local function set_computed_config()
   --
   -- Notes:
   --
-  -- * The read timeout, or the timeout between bytes being received from a
-  --   backend, is handled with the Trafficserver activity timeouts. We add a
-  --   buffer to this timeout at the nginx layer to allow for Trafficserver to
-  --   handle the real timeout value (so Trafficserver doesn't think the client
-  --   has hung up the connection too early).
+  -- * We buffer the nginx timeouts so that Traffic Server should handle all of
+  --   the real timeouts.
   --
-  --   Note that both "in" and "out" timeouts need to be adjusted based on the
-  --   read timeout (the "in" timeout shouldn't necessarily reflect the
-  --   "proxy_send_timeout"--I think Trafficserver's
-  --   "accept_no_activity_timeout" is closer to nginx's concept of
-  --   "proxy_send_timeout").
-  -- * The send timeout, or the timeout between bytes being received from the
-  --   client request, is handled at the nginx layer. Since this is the initial
-  --   layer receiving the requests, it makes most sense to handle this timeout
-  --   at this first layer.
+  --   Note that proxy_send_timeout in nginx doesn't seem to be effective when
+  --   "proxy_request_buffering" is also off, but we'll still set it with the
+  --   buffered amount anyway (but again, Traffic Server is doing the real
+  --   timeouts).
+  -- * The read timeout (the timeout between bytes being received from a
+  --   backend) is reflected by Traffic Server's "activity_out" timeout.
+  -- * The send timeout (the timeout between bytes being received from the
+  --   client request), is reflected by Traffic Server's "activity_in" timeout.
   config["trafficserver"]["_connect_attempts_timeout"] = config["nginx"]["proxy_connect_timeout"]
   config["trafficserver"]["_post_connect_attempts_timeout"] = config["trafficserver"]["_connect_attempts_timeout"]
   config["trafficserver"]["_transaction_no_activity_timeout_out"] = config["nginx"]["proxy_read_timeout"]
-  config["trafficserver"]["_transaction_no_activity_timeout_in"] = config["nginx"]["proxy_send_timeout"] + 2
-  config["nginx"]["_initial_proxy_connect_timeout"] = config["nginx"]["proxy_connect_timeout"]
+  config["trafficserver"]["_transaction_no_activity_timeout_in"] = config["nginx"]["proxy_send_timeout"]
+  config["nginx"]["_initial_proxy_connect_timeout"] = config["nginx"]["proxy_connect_timeout"] + 2
   config["nginx"]["_initial_proxy_read_timeout"] = config["nginx"]["proxy_read_timeout"] + 2
-  config["nginx"]["_initial_proxy_send_timeout"] = config["nginx"]["proxy_send_timeout"]
+  config["nginx"]["_initial_proxy_send_timeout"] = config["nginx"]["proxy_send_timeout"] + 2
 
   if not config["user"] then
     local euid = unistd.geteuid()
