@@ -698,7 +698,6 @@ server {
 server {
   listen 127.0.0.1:9448 default_server ssl;
   server_name _;
-  ssl on;
   ssl_certificate {{_src_root_dir}}/test/config/ssl_test.crt;
   ssl_certificate_key {{_src_root_dir}}/test/config/ssl_test.key;
 
@@ -717,7 +716,6 @@ server {
 server {
   listen 127.0.0.1:9448 ssl;
   server_name sni1.foo.ooga;
-  ssl on;
   ssl_certificate {{_src_root_dir}}/test/config/ssl_test.crt;
   ssl_certificate_key {{_src_root_dir}}/test/config/ssl_test.key;
 
@@ -729,7 +727,6 @@ server {
 server {
   listen 127.0.0.1:9448 ssl;
   server_name sni2.foo.ooga;
-  ssl on;
   ssl_certificate {{_src_root_dir}}/test/config/ssl_test.crt;
   ssl_certificate_key {{_src_root_dir}}/test/config/ssl_test.key;
 
