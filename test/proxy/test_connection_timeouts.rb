@@ -3,7 +3,11 @@ require_relative "../test_helper"
 class Test::Proxy::TestConnectionTimeouts < Minitest::Test
   include ApiUmbrellaTestHelpers::Setup
   include ApiUmbrellaTestHelpers::RequestBodyStreaming
-  parallelize_me!
+
+  # While these tests can be parallelized, given the timing sensitivities of
+  # them, we will not parallelize them to cut down on flaky tests due to the
+  # timings being skewed by other activity.
+  # parallelize_me!
 
   BUFFER_TIME_LOWER = 0.15
   BUFFER_TIME_UPPER = 1.5
