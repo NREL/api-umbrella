@@ -5,6 +5,9 @@ class Test::Proxy::TestConnectionTimeouts < Minitest::Test
   include ApiUmbrellaTestHelpers::RequestBodyStreaming
   parallelize_me!
 
+  BUFFER_TIME_LOWER = 0.15
+  BUFFER_TIME_UPPER = 1.5
+
   def setup
     super
     setup_server
@@ -39,7 +42,7 @@ class Test::Proxy::TestConnectionTimeouts < Minitest::Test
 
     response = Typhoeus.get("http://127.0.0.1:9080/api/delay-sec/#{delay}", http_options)
     assert_response_code(200, response)
-    assert_operator(response.total_time, :>, connect_timeout)
+    assert_operator(response.total_time, :>, connect_timeout - BUFFER_TIME_LOWER)
   end
 
   def test_connect_timeout_post
@@ -50,7 +53,7 @@ class Test::Proxy::TestConnectionTimeouts < Minitest::Test
 
     response = Typhoeus.post("http://127.0.0.1:9080/api/delay-sec/#{delay}", http_options)
     assert_response_code(200, response)
-    assert_operator(response.total_time, :>, connect_timeout)
+    assert_operator(response.total_time, :>, connect_timeout - BUFFER_TIME_LOWER)
   end
 
   def test_response_begins_within_read_timeout
@@ -64,8 +67,8 @@ class Test::Proxy::TestConnectionTimeouts < Minitest::Test
     response = Typhoeus.post("http://127.0.0.1:9080/api/delays-sec/#{delay1}/#{delay2}", http_options)
     assert_response_code(200, response)
     assert_equal("firstdone", response.body)
-    assert_operator(response.total_time, :>=, delay2)
-    assert_operator(response.total_time, :<=, delay2 + 1)
+    assert_operator(response.total_time, :>=, delay2 - BUFFER_TIME_LOWER)
+    assert_operator(response.total_time, :<=, delay2 + BUFFER_TIME_UPPER)
   end
 
   def test_response_sends_chunks_at_least_once_per_read_timeout_interval
@@ -79,8 +82,8 @@ class Test::Proxy::TestConnectionTimeouts < Minitest::Test
     response = Typhoeus.post("http://127.0.0.1:9080/api/delays-sec/#{delay1}/#{delay2}", http_options)
     assert_response_code(200, response)
     assert_equal("firstdone", response.body)
-    assert_operator(response.total_time, :>=, delay2)
-    assert_operator(response.total_time, :<=, delay2 + 1)
+    assert_operator(response.total_time, :>=, delay2 - BUFFER_TIME_LOWER)
+    assert_operator(response.total_time, :<=, delay2 + BUFFER_TIME_UPPER)
   end
 
   def test_response_closes_when_chunk_delay_exceeds_read_timeout
@@ -94,8 +97,8 @@ class Test::Proxy::TestConnectionTimeouts < Minitest::Test
     response = Typhoeus.post("http://127.0.0.1:9080/api/delays-sec/#{delay1}/#{delay2}", http_options)
     assert_response_code(200, response)
     assert_equal("first", response.body)
-    assert_operator(response.total_time, :>=, delay1 + $config["nginx"]["proxy_read_timeout"])
-    assert_operator(response.total_time, :<=, delay1 + $config["nginx"]["proxy_read_timeout"] + 2)
+    assert_operator(response.total_time, :>=, delay1 + $config["nginx"]["proxy_read_timeout"] - BUFFER_TIME_LOWER)
+    assert_operator(response.total_time, :<=, delay1 + $config["nginx"]["proxy_read_timeout"] + BUFFER_TIME_UPPER)
   end
 
   def test_request_begins_within_send_timeout
@@ -123,8 +126,8 @@ class Test::Proxy::TestConnectionTimeouts < Minitest::Test
     assert_equal(2, data.fetch("chunk_time_gaps").length)
     assert_in_delta(delay1, data.fetch("chunk_time_gaps")[0], 0.3)
     assert_in_delta(delay2 - delay1, data.fetch("chunk_time_gaps")[1], 0.3)
-    assert_operator(easy.total_time, :>=, delay2)
-    assert_operator(easy.total_time, :<=, delay2 + 1)
+    assert_operator(easy.total_time, :>=, delay2 - BUFFER_TIME_LOWER)
+    assert_operator(easy.total_time, :<=, delay2 + BUFFER_TIME_UPPER)
   end
 
   def test_request_sends_chunks_at_least_once_per_send_timeout_interval
@@ -152,8 +155,8 @@ class Test::Proxy::TestConnectionTimeouts < Minitest::Test
     assert_equal(2, data.fetch("chunk_time_gaps").length)
     assert_in_delta(delay1, data.fetch("chunk_time_gaps")[0], 0.3)
     assert_in_delta(delay2 - delay1, data.fetch("chunk_time_gaps")[1], 0.3)
-    assert_operator(easy.total_time, :>=, delay2)
-    assert_operator(easy.total_time, :<=, delay2 + 1)
+    assert_operator(easy.total_time, :>=, delay2 - BUFFER_TIME_LOWER)
+    assert_operator(easy.total_time, :<=, delay2 + BUFFER_TIME_UPPER)
   end
 
   def test_request_closes_when_chunk_delay_exceeds_send_timeout
@@ -177,8 +180,8 @@ class Test::Proxy::TestConnectionTimeouts < Minitest::Test
 
     assert_equal(408, easy.response_code)
     assert_match("Inactivity Timeout", easy.response_body)
-    assert_operator(easy.total_time, :>=, delay1 + $config["nginx"]["proxy_send_timeout"])
-    assert_operator(easy.total_time, :<=, delay1 + $config["nginx"]["proxy_send_timeout"] + 2)
+    assert_operator(easy.total_time, :>=, delay1 + $config["nginx"]["proxy_send_timeout"] - BUFFER_TIME_LOWER)
+    assert_operator(easy.total_time, :<=, delay1 + $config["nginx"]["proxy_send_timeout"] + BUFFER_TIME_UPPER)
   end
 
   # This is mainly done to ensure that any connection collapsing the cache is
@@ -196,7 +199,7 @@ class Test::Proxy::TestConnectionTimeouts < Minitest::Test
 
     # Wait 1 second to ensure the first GET request is fully established to the
     # backend.
-    sleep 1.5
+    sleep 1
 
     post_thread = Thread.new do
       Thread.current[:response] = Typhoeus.post("http://127.0.0.1:9080/api/delay-sec/#{delay}", http_options)
@@ -211,12 +214,12 @@ class Test::Proxy::TestConnectionTimeouts < Minitest::Test
 
     # Sanity check to ensure the 2 requests were made in parallel and
     # overlapped.
-    assert_operator(get_thread[:response].total_time, :>=, delay)
-    assert_operator(get_thread[:response].total_time, :<, delay + 1)
-    assert_operator(post_thread[:response].total_time, :>=, delay)
-    assert_operator(post_thread[:response].total_time, :<, delay + 1)
-    assert_operator(total_time, :>=, delay + 1)
-    assert_operator(total_time, :<, delay + 3)
+    assert_operator(get_thread[:response].total_time, :>=, delay - BUFFER_TIME_LOWER)
+    assert_operator(get_thread[:response].total_time, :<, delay + BUFFER_TIME_UPPER)
+    assert_operator(post_thread[:response].total_time, :>=, delay - BUFFER_TIME_LOWER)
+    assert_operator(post_thread[:response].total_time, :<, delay + BUFFER_TIME_UPPER)
+    assert_operator(total_time, :>=, delay + 1 - BUFFER_TIME_LOWER)
+    assert_operator(total_time, :<, delay + BUFFER_TIME_UPPER * 2)
     assert_operator(total_time, :<, (delay * 2) - 1)
   end
 
