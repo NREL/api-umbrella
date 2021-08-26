@@ -186,12 +186,12 @@ elasticsearch:
   hosts:
     - "http://127.0.0.1:14002"
   embedded_server_env:
-    heap_size: 512m
+    java_opts: -Xms32m -Xmx256m
   index_name_prefix: api-umbrella
   index_partition: monthly
   index_mapping_type: log
-  api_version: 2
-  template_version: 1
+  api_version: 7
+  template_version: 2
   embedded_server_config:
     network:
       host: 127.0.0.1
@@ -209,6 +209,17 @@ elasticsearch:
       breaker:
         fielddata:
           limit: 60%
+    action:
+      destructive_requires_name: false
+    discovery:
+      type: single-node
+    xpack:
+      security:
+        enabled: false
+    ingest:
+      geoip:
+        downloader:
+          enabled: false
   aws_signing_proxy:
     host: 127.0.0.1
     port: 14017

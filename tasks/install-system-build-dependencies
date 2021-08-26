@@ -13,29 +13,9 @@ if [ "${INSTALL_TEST_DEPENDENCIES:-}" == "true" ]; then
 fi
 
 detect_os_release
-if [[ "$ID_NORMALIZED" == "rhel" && ( "$VERSION_ID" == "6" || "$VERSION_ID" == "7" ) ]]; then
+if [[ "$ID_NORMALIZED" == "rhel" && "$VERSION_ID" == "7" ]]; then
   # Dependencies for GCC 7+ for compiling TrafficServer (C++17 required).
   yum -y install centos-release-scl
-
-  # Install some extra repos needed for CentOS 6.
-  if [[ "$VERSION_ID" == "6" ]]; then
-    # Building Go libraries from gopkg.in (which Mora has a dependency on),
-    # requires git 1.7.3+
-    # (https://groups.google.com/d/msg/golang-nuts/RKz9ASmJm3o/o7NcNY6x8U0J).
-    # CentOS 6 doesn't provide this by default, so install git from another repo.
-    if [ ! -f /etc/yum.repos.d/wandisco-git.repo ]; then
-      yum -y install http://opensource.wandisco.com/centos/6/git/x86_64/wandisco-git-release-6-1.noarch.rpm
-    fi
-
-    if [ "${INSTALL_TEST_DEPENDENCIES:-}" == "true" ]; then
-      # python-virtualenv needed for mongo-orchestration during tests isn't
-      # present in CentOS 6's default repo, so we need to install EPEL to get
-      # this.
-      if [ ! -f /etc/yum.repos.d/epel.repo ]; then
-        yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-6.noarch.rpm
-      fi
-    fi
-  fi
 
   yum -y install "${install_dependencies[@]}"
   # Ensure the packages got installed, since yum's exit code isn't always
@@ -44,10 +24,7 @@ if [[ "$ID_NORMALIZED" == "rhel" && ( "$VERSION_ID" == "6" || "$VERSION_ID" == "
 elif [[ "$ID_NORMALIZED" == "debian" ]]; then
   # Dependencies for GCC 7+ or Clang 5+ for compiling TrafficServer (C++17
   # required).
-  if [[ "$ID" == "ubuntu" && "$VERSION_ID" == "16.04" ]]; then
-    DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends install software-properties-common
-    add-apt-repository -y ppa:ubuntu-toolchain-r/test
-  elif [[ "$ID" == "debian" && ( "$VERSION_ID" == "8" || "$VERSION_ID" == "9" ) ]]; then
+  if [[ "$ID" == "debian" && "$VERSION_ID" == "9" ]]; then
     apt-get update
     DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends install curl ca-certificates gnupg
     curl -sS https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add -

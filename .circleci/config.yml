@@ -4,7 +4,7 @@ jobs:
     parallelism: 3
     working_directory: /app
     docker:
-      - image: circleci/buildpack-deps:18.04-browsers
+      - image: circleci/buildpack-deps:bullseye-browsers
         user: root
     steps:
       - checkout

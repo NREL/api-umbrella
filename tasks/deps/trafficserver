@@ -19,13 +19,10 @@ download "https://archive.apache.org/dist/trafficserver/trafficserver-$trafficse
 extract_download "trafficserver-$trafficserver_version.tar.bz2"
 
 detect_os_release
-if [[ "$ID_NORMALIZED" == "rhel" && ( "$VERSION_ID" == "6" || "$VERSION_ID" == "7" ) ]]; then
+if [[ "$ID_NORMALIZED" == "rhel" && "$VERSION_ID" == "7" ]]; then
   export CC=/opt/rh/devtoolset-7/root/usr/bin/gcc
   export CXX=/opt/rh/devtoolset-7/root/usr/bin/g++
-elif [[ "$ID" == "ubuntu" && "$VERSION_ID" == "16.04" ]]; then
-  export CC=gcc-7
-  export CXX=g++-7
-elif [[ "$ID" == "debian" && ( "$VERSION_ID" == "8" || "$VERSION_ID" == "9" ) ]]; then
+elif [[ "$ID" == "debian" && "$VERSION_ID" == "9" ]]; then
   export CC=clang-7
   export CXX=clang++-7
   export CXXFLAGS="-I/usr/lib/llvm-7/include/c++/v1 -stdlib=libc++"

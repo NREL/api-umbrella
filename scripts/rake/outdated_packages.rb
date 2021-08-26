@@ -16,18 +16,6 @@ class OutdatedPackages
     },
     "elasticsearch" => {
       :git => "https://github.com/elasticsearch/elasticsearch.git",
-      :constraint => "~> 2.4",
-    },
-    "elasticsearch5" => {
-      :git => "https://github.com/elasticsearch/elasticsearch.git",
-      :constraint => "~> 5.6",
-    },
-    "elasticsearch6" => {
-      :git => "https://github.com/elasticsearch/elasticsearch.git",
-      :constraint => "~> 6.2",
-    },
-    "elasticsearch7" => {
-      :git => "https://github.com/elasticsearch/elasticsearch.git",
       :constraint => "~> 7.0",
     },
     "golang" => {
@@ -130,9 +118,6 @@ class OutdatedPackages
       :git => "https://github.com/nodejs/node.git",
       :constraint => "~> 14.17",
     },
-    "openldap" => {
-      :git => "https://github.com/openldap/openldap.git",
-    },
     "openresty" => {
       :git => "https://github.com/openresty/openresty.git",
     },
@@ -169,9 +154,6 @@ class OutdatedPackages
     },
     "trafficserver" => {
       :git => "https://github.com/apache/trafficserver.git",
-    },
-    "unbound" => {
-      :http => "https://nlnetlabs.nl/projects/unbound/download/",
     },
     "yarn" => {
       :git => "https://github.com/yarnpkg/yarn.git",
@@ -212,9 +194,6 @@ class OutdatedPackages
       tag.gsub!(/^go/, "")
     when "json_c"
       tag.gsub!(/-\d{8}$/, "")
-    when "openldap"
-      tag.gsub!(/^rel_eng_/, "")
-      tag.tr!("_", ".")
     when "openssl", "ruby"
       tag.tr!("_", ".")
     when "icu4c"

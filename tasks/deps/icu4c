@@ -10,23 +10,16 @@ set -e -u -x
 source ./tasks/helpers.sh
 source ./tasks/helpers/detect_os_release.sh
 
-task_working_dir
-download "https://github.com/unicode-org/icu/releases/download/release-${icu4c_version//./-}/icu4c-${icu4c_version//./_}-src.tgz" "md5" "$icu4c_hash"
-extract_download "icu4c-${icu4c_version//./_}-src.tgz"
-
-# gcc 4.8+ required for C++11 support
-# Python 2.7+ required for building
 detect_os_release
-if [[ "$ID_NORMALIZED" == "rhel" && "$VERSION_ID" == "6" ]]; then
-  export PATH="/opt/rh/python27/root/usr/bin:$PATH"
-  export LD_LIBRARY_PATH="/opt/rh/python27/root/usr/lib64:${LD_LIBRARY_PATH:-}"
-  export CC=/opt/rh/devtoolset-7/root/usr/bin/gcc
-  export CXX=/opt/rh/devtoolset-7/root/usr/bin/g++
-fi
+if [[ "$ID_NORMALIZED" == "rhel" && "$VERSION_ID" == "7" ]]; then
+  task_working_dir
+  download "https://github.com/unicode-org/icu/releases/download/release-${icu4c_version//./-}/icu4c-${icu4c_version//./_}-src.tgz" "md5" "$icu4c_hash"
+  extract_download "icu4c-${icu4c_version//./_}-src.tgz"
 
-cd "icu/source"
-./configure --prefix="$INSTALL_PREFIX_EMBEDDED" --enable-extras=no --enable-tests=no --enable-samples=no
-make -j"$NPROC"
-make install DESTDIR="$STAGE_DIR"
+  cd "icu/source"
+  ./configure --prefix="$INSTALL_PREFIX_EMBEDDED" --enable-extras=no --enable-tests=no --enable-samples=no
+  make -j"$NPROC"
+  make install DESTDIR="$STAGE_DIR"
+fi
 
 stamp
