@@ -16,6 +16,10 @@ class OutdatedPackages
     },
     "elasticsearch" => {
       :git => "https://github.com/elasticsearch/elasticsearch.git",
+      :constraint => "~> 6.0",
+    },
+    "elasticsearch7" => {
+      :git => "https://github.com/elasticsearch/elasticsearch.git",
       :constraint => "~> 7.0",
     },
     "golang" => {

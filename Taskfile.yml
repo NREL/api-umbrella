@@ -606,6 +606,15 @@ tasks:
     generates:
       - ./build/work/stamp/test-deps/bundle
 
+  test-deps:elasticsearch7:
+    cmds:
+      - ./tasks/test-deps/elasticsearch7
+    sources:
+      - ./tasks/test-deps/elasticsearch7
+      - ./tasks/helpers.sh
+    generates:
+      - ./build/work/stamp/test-deps/elasticsearch7
+
   test-deps:glauth:
     cmds:
       - ./tasks/test-deps/glauth
@@ -671,6 +680,7 @@ tasks:
   test-deps:
     cmds:
       - task: test-deps:bundle
+      - task: test-deps:elasticsearch7
       - task: test-deps:glauth
       - task: test-deps:lua:luacheck
       - task: test-deps:lua:penlight

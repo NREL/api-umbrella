@@ -190,8 +190,8 @@ elasticsearch:
   index_name_prefix: api-umbrella
   index_partition: monthly
   index_mapping_type: log
-  api_version: 7
-  template_version: 2
+  api_version: 6
+  template_version: 1
   embedded_server_config:
     network:
       host: 127.0.0.1
@@ -213,13 +213,6 @@ elasticsearch:
       destructive_requires_name: false
     discovery:
       type: single-node
-    xpack:
-      security:
-        enabled: false
-    ingest:
-      geoip:
-        downloader:
-          enabled: false
   aws_signing_proxy:
     host: 127.0.0.1
     port: 14017

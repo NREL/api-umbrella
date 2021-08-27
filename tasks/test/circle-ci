@@ -27,3 +27,13 @@ fi
 # environment variable.
 tests="$(circleci tests glob test/**/test_*.rb | circleci tests split --split-by=timings)"
 env TESTOPTS="--ci-dir=./test/tmp/reports" TESTS="${tests[*]}" N=12 make test
+
+# Run a smaller suite of elasticsearch-related tests against other versions of
+# elasticsearch.
+elasticsearch_tests=(test/admin_ui/**/test_stats_*.rb test/admin_ui/**/test_stats_*.rb test/apis/admin/stats/**/test_*.rb test/apis/v0/test_analytics.rb test/apis
+/v1/analytics/**/test_*.rb test/proxy/logging/**/test_*.rb)
+if [ "$CIRCLE_NODE_INDEX" -eq "0" ]; then
+  env ELASTICSEARCH_TEST_API_VERSION=7 TESTS="${elasticsearch_tests[*]}" N=12 make test
+  env ELASTICSEARCH_TEST_API_VERSION=7 ELASTICSEARCH_TEST_TEMPLATE_VERSION=2 TESTS="${elasticsearch_tests[*]}" N=12 make test
+  env ELASTICSEARCH_TEST_API_VERSION=7 ELASTICSEARCH_TEST_TEMPLATE_VERSION=2 ELASTICSEARCH_TEST_INDEX_PARTITION=daily TESTS="${elasticsearch_tests[*]}" N=12 make test
+fi
