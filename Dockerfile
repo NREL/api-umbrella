@@ -42,6 +42,7 @@ RUN set -x && \
 RUN set -x && \
   if [ "$INSTALL_TEST_DEPENDENCIES" = "true" ]; then \
     apt-get update && \
+    apt-get -y install gnupg2 && \
     curl --silent --show-error --location --fail --retry 3 --output /tmp/google-chrome-stable_current_amd64.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb && \
     (dpkg -i /tmp/google-chrome-stable_current_amd64.deb || apt-get -fy install) && \
     rm -f /tmp/google-chrome-stable_current_amd64.deb && \
