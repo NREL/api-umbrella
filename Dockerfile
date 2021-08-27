@@ -77,7 +77,11 @@ COPY . /app
 RUN make && make clean:dev
 RUN make install DESTDIR="/build/install-destdir"
 
-RUN /app/build/package/scripts/after-install 1
+RUN DESTDIR="/build/install-destdir" /app/build/package/scripts/after-install 1
+
+ENV \
+  PATH="/app/bin:/build/build/work/dev-env/sbin:/build/build/work/dev-env/bin:/build/build/work/test-env/sbin:/build/build/work/test-env/bin:/build/build/work/stage/opt/api-umbrella/sbin:/build/build/work/stage/opt/api-umbrella/bin:/build/build/work/stage/opt/api-umbrella/embedded/sbin:/build/build/work/stage/opt/api-umbrella/embedded/bin:${PATH}" \
+  API_UMBRELLA_ROOT="/build/build/work/stage/opt/api-umbrella"
 
 FROM debian:bullseye AS runtime
 
