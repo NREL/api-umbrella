@@ -90,7 +90,6 @@ if [[ "$ID_NORMALIZED" == "rhel" ]]; then
     perl-Digest-MD5
   )
   test_package_dependencies=(
-    openldap
     unbound
   )
   test_build_dependencies=(
@@ -220,7 +219,6 @@ elif [[ "$ID_NORMALIZED" == "debian" ]]; then
     zlib1g-dev
   )
   test_package_dependencies=(
-    slapd
     unbound
   )
   test_build_dependencies=(

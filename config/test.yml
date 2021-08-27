@@ -85,7 +85,7 @@ mailhog:
   smtp_port: 13102
   api_port: 13103
   ui_port: 13103
-openldap:
+glauth:
   port: 13104
 apiSettings:
   require_https: optional

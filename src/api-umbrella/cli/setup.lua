@@ -256,7 +256,6 @@ local function set_permissions()
       chown(path.join(config["etc_dir"], "test-env"), nil, group)
       chown(path.join(config["etc_dir"], "test-env/mongo-orchestration"), nil, group)
       chown(path.join(config["etc_dir"], "test-env/nginx"), nil, group)
-      chown(path.join(config["etc_dir"], "test-env/openldap"), nil, group)
       chown(path.join(config["etc_dir"], "test-env/unbound"), nil, group)
     end
   end
@@ -305,10 +304,10 @@ local function activate_services()
     active_services["dev-env-ember-server"] = 1
   end
   if config["app_env"] == "test" then
+    active_services["test-env-glauth"] = 1
     active_services["test-env-mailhog"] = 1
     active_services["test-env-mongo-orchestration"] = 1
     active_services["test-env-nginx"] = 1
-    active_services["test-env-openldap"] = 1
     active_services["test-env-unbound"] = 1
   end
 

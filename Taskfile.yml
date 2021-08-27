@@ -606,6 +606,15 @@ tasks:
     generates:
       - ./build/work/stamp/test-deps/bundle
 
+  test-deps:glauth:
+    cmds:
+      - ./tasks/test-deps/glauth
+    sources:
+      - ./tasks/test-deps/glauth
+      - ./tasks/helpers.sh
+    generates:
+      - ./build/work/stamp/test-deps/glauth
+
   test-deps:lua:luacheck:
     deps:
       - deps:luarocks
@@ -662,6 +671,7 @@ tasks:
   test-deps:
     cmds:
       - task: test-deps:bundle
+      - task: test-deps:glauth
       - task: test-deps:lua:luacheck
       - task: test-deps:lua:penlight
       - task: test-deps:mailhog
