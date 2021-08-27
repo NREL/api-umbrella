@@ -18,6 +18,7 @@ if [ "${1}" = "start" ]; then
   fi
 
   cp "{{_embedded_root_dir}}/elasticsearch/config/jvm.options" "{{etc_dir}}/elasticsearch/"
+  sed -i 's#=logs/#={{log_dir}}/elasticsearch/#g' "{{etc_dir}}/elasticsearch/jvm.options"
 
   if [ ! -f "{{etc_dir}}/elasticsearch/elasticsearch.keystore" ]; then
     runtool -e "rc.env" "{{_embedded_root_dir}}/elasticsearch/bin/elasticsearch-keystore" create
