@@ -17,7 +17,11 @@ local function try_query(path, http_options)
 
   local httpc = http.new()
   httpc:set_timeout(45000)
-  httpc:connect(config["mora"]["host"], config["mora"]["port"])
+  httpc:connect({
+    scheme = "http",
+    host = config["mora"]["host"],
+    port = config["mora"]["port"],
+  })
 
   local res, err = httpc:request(http_options)
   if err then

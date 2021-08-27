@@ -42,7 +42,11 @@ function _M.query(path, options)
     end
   end
 
-  local connect_ok, connect_err = httpc:connect(server["host"], server["port"])
+  local connect_ok, connect_err = httpc:connect({
+    scheme = "http",
+    host = server["host"],
+    port = server["port"],
+  })
   if not connect_ok then
     httpc:close()
     return nil, "elasticsearch connect error: " .. (connect_err or "")
