@@ -23,10 +23,11 @@ _luarocks_install() {
   tree_dir="$1"
   package="$2"
   version="$3"
-  extra_args="${4:-}"
+  shift; shift; shift;
+  extra_args=("$@")
 
   set -x
-  "${LUAROCKS_CMD[@]}" --tree="$tree_dir" install "$package" "$version" $extra_args
+  "${LUAROCKS_CMD[@]}" --tree="$tree_dir" install "$package" "$version" "${extra_args[@]}"
   find "$tree_dir/lib" -name "*.so" -exec chrpath -d {} \;
 }
 
@@ -44,11 +45,12 @@ _luarocks_make() {
   tree_dir="$1"
   package_dir="$2"
   rockspec_file="$3"
-  extra_args="${4:-}"
+  shift; shift; shift;
+  extra_args=("$@")
 
   set -x
   cd "$package_dir" || exit 1
-  "${LUAROCKS_CMD[@]}" --tree="$tree_dir" make --local "$rockspec_file" $extra_args
+  "${LUAROCKS_CMD[@]}" --tree="$tree_dir" make --local "$rockspec_file" "${extra_args[@]}"
   find "$tree_dir/lib" -name "*.so" -exec chrpath -d {} \;
 }
 
