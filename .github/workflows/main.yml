@@ -9,11 +9,18 @@ env:
 jobs:
   test:
     runs-on: ubuntu-latest
+    services:
+      registry:
+        image: registry:2
+        ports:
+          - 5000:5000
     steps:
       - uses: actions/checkout@v2
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1.5.1
+        with:
+          driver-opts: network=host
 
       - name: Log in to the Container registry
         uses: docker/login-action@v1.10.0
@@ -26,7 +33,9 @@ jobs:
         id: meta
         uses: docker/metadata-action@v3.5.0
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          images: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+            localhost:5000/nrel/api-umbrella
           flavor: |
             prefix=dev-env-
 
@@ -45,4 +54,4 @@ jobs:
       - name: Lint
         run: docker-compose run --rm app make lint
         env:
-          DOCKER_IMAGE_CACHE_FROM: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }}
+          DOCKER_IMAGE_CACHE_FROM: localhost:5000/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }}
