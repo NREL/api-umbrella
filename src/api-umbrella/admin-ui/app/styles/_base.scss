@@ -141,6 +141,13 @@ a:hover {
   box-shadow: none;
 }
 
+// Workaround for ember-bootstrap 4.9.0 flashing modal backgrounds as solid
+// black when opening and closing:
+// https://github.com/kaliber5/ember-bootstrap/issues/1601
+.modal-backdrop:not(.fade):not(.show) {
+  opacity: $modal-backdrop-opacity;
+}
+
 .ui-pnotify-text p:last-of-type {
   margin-bottom: 0px;
 }

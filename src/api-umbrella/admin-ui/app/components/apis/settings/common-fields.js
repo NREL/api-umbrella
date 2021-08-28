@@ -1,9 +1,14 @@
+// eslint-disable-next-line ember/no-classic-components
 import Component from '@ember/component';
+import { tagName } from "@ember-decorators/component";
 import { t } from 'api-umbrella-admin-ui/utils/i18n';
+import classic from 'ember-classic-decorator';
 
-export default Component.extend({
+@tagName("")
+@classic
+export default class CommonFields extends Component {
   init() {
-    this._super(...arguments);
+    super.init(...arguments);
 
     this.requireHttpsOptions = [
       { id: null, name: t('Inherit (default - required)') },
@@ -39,5 +44,5 @@ export default Component.extend({
       { id: 'all', name: 'All Limits - Both API key rate limits and IP based limits are applied' },
       { id: 'api_key_only', name: 'API Key Only - IP based rate limits are ignored (only API key limits are applied)' },
     ];
-  },
-});
+  }
+}

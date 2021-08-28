@@ -1,5 +1,5 @@
 {{#if this.hasChanges}}
-  <form id="publish_form" {{action "publish" on="submit"}}>
+  <form id="publish_form" {{action "publish" on="submit"}} {{did-insert this.didInsert}}>
     {{#if this.model.config.apis.new}}
       <fieldset>
         <legend>{{this.model.config.apis.new.length}} New API Backends</legend>
@@ -47,7 +47,7 @@
     </div>
 
     <div class="text-center">
-      <button type="submit" class="btn btn-lg btn-primary publish-button"><span class="btn-label">Publish</span><span class="btn-loading-label">{{fa-icon "sync-alt" spin=true}}Publishing...</span></button>
+      <button type="submit" class="btn btn-lg btn-primary publish-button"><span class="btn-label">Publish</span><span class="btn-loading-label"><FaIcon @icon="sync-alt" @spin={{true}} />Publishing...</span></button>
     </div>
   </form>
 {{else}}

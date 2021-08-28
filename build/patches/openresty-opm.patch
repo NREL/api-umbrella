@@ -1,7 +1,7 @@
-diff --git a/bundle/opm-0.0.5/bin/opm b/bundle/opm-0.0.5/bin/opm
+diff --git a/bundle/opm-0.0.6/bin/opm b/bundle/opm-0.0.6/bin/opm
 index 9029225..24a8200 100755
---- a/bundle/opm-0.0.5/bin/opm
-+++ b/bundle/opm-0.0.5/bin/opm
+--- a/bundle/opm-0.0.6/bin/opm
++++ b/bundle/opm-0.0.6/bin/opm
 @@ -97,10 +97,6 @@ if ($cmd eq '-v') {
      exit;
  }

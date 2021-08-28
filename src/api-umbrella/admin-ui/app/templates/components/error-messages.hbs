@@ -1,12 +1,14 @@
-<div id="error_messages">
-  {{#if this.hasErrors}}
-    <div class="alert alert-danger error-messages" role="alert">
-      <h4>Oops! Please check the errors below:</h4>
-      <ul>
-        {{#each this.messages as |message|}}
-          <li>{{! template-lint-disable no-bare-strings no-triple-curlies }}{{{message}}}</li>
-        {{/each}}
-      </ul>
-    </div>
-  {{/if}}
+<div ...attributes>
+  <div id="error_messages">
+    {{#if this.hasErrors}}
+      <div class="alert alert-danger error-messages" role="alert">
+        <h4>Oops! Please check the errors below:</h4>
+        <ul>
+          {{#each this.messages as |message|}}
+            <li>{{! template-lint-disable no-bare-strings no-triple-curlies }}{{{message}}}</li>
+          {{/each}}
+        </ul>
+      </div>
+    {{/if}}
+  </div>
 </div>

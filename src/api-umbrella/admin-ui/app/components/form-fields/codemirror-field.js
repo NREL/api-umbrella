@@ -3,25 +3,31 @@ import 'codemirror/mode/javascript/javascript';
 import 'codemirror/mode/xml/xml';
 import 'codemirror/mode/yaml/yaml';
 
-import BaseField from './base-field';
+import { action } from '@ember/object';
 import CodeMirror from 'codemirror/lib/codemirror'
+import classic from 'ember-classic-decorator';
+import $ from 'jquery';
 
-export default BaseField.extend({
+import BaseField from './base-field';
+
+@classic
+export default class CodemirrorField extends BaseField {
   init() {
-    this._super();
-    this.set('codemirrorInputFieldId', this.elementId + '_codemirror_input_field');
-    this.set('codemirrorWrapperElementId', this.elementId + '_codemirror_wrapper_element');
+    super.init();
+    this.set('codemirrorInputFieldId', this.inputId + '_codemirror_input_field');
+    this.set('codemirrorWrapperElementId', this.inputId + '_codemirror_wrapper_element');
     // eslint-disable-next-line ember/no-observers
     this.addObserver('model.' + this.fieldName, this, this.valueDidChange);
-  },
+  }
 
-  didInsertElement() {
-    this._super();
+  @action
+  didInsert(element) {
+    const originalTextarea = element.querySelector('textarea');
+    const $originalTextarea = $(originalTextarea);
 
-    let $originalTextarea = this.$().find('textarea');
-    this.codemirror = CodeMirror.fromTextArea($originalTextarea[0], {
+    this.codemirror = CodeMirror.fromTextArea(originalTextarea, {
       lineNumbers: true,
-      mode: $originalTextarea.data('codemirror-mode'),
+      mode: originalTextarea.dataset.codemirrorMode,
       tabSize: 2,
 
       // Enable auto-refresh plugin to fix codemirror creation fields that may
@@ -41,16 +47,16 @@ export default BaseField.extend({
       }
 
       inputField.setAttribute('data-codemirror-wrapper-element-id', this.codemirrorWrapperElementId);
-      inputField.setAttribute('data-codemirror-original-textarea-id', $originalTextarea.attr('id'));
+      inputField.setAttribute('data-codemirror-original-textarea-id', originalTextarea.getAttribute('id'));
     }
 
     // Sync the codemirror changes back to the original textarea which will
     // will update the model.
     this.codemirror.on('change', () => {
       this.codemirror.save();
-      $originalTextarea.trigger('change');
+      $originalTextarea.trigger('input');
     });
-  },
+  }
 
   valueDidChange() {
     // Sync any external model changes back to the code mirror input.
@@ -61,5 +67,5 @@ export default BaseField.extend({
         this.codemirror.setValue(newValue);
       }
     }
-  },
-});
+  }
+}

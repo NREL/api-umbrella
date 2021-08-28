@@ -11,16 +11,6 @@ detect_os_release
 core_package_non_build_dependencies=()
 
 if [[ "$ID_NORMALIZED" == "rhel" ]]; then
-  perl_digest_md5_package="perl-Digest-MD5"
-  procps_package="procps-ng"
-  util_linux_package="util-linux"
-
-  if [[ "$VERSION_ID" == "6" ]]; then
-    perl_digest_md5_package="perl"
-    procps_package="procps"
-    util_linux_package="util-linux-ng"
-  fi
-
   core_package_dependencies=(
     # General
     bash
@@ -41,7 +31,6 @@ if [[ "$ID_NORMALIZED" == "rhel" ]]; then
 
     # TrafficServer
     libxml2
-    tcl
 
     # ElasticSearch
     java-1.8.0-openjdk-headless
@@ -54,7 +43,7 @@ if [[ "$ID_NORMALIZED" == "rhel" ]]; then
     initscripts
 
     # For kill used in stop/reopen-logs commands.
-    "$util_linux_package"
+    util-linux
 
     # For pstree used in reopen-logs command.
     psmisc
@@ -103,18 +92,17 @@ if [[ "$ID_NORMALIZED" == "rhel" ]]; then
     rpm-build
     rsync
     tar
-    tcl-devel
     unzip
     xz
 
     # For OpenResty's "opm" CLI.
-    "$perl_digest_md5_package"
+    perl-Digest-MD5
 
     # lualdap
     openldap-devel
-
-    # libbson
-    cmake
+  )
+  test_package_dependencies=(
+    unbound
   )
   test_build_dependencies=(
     # Binary and readelf tests
@@ -124,19 +112,11 @@ if [[ "$ID_NORMALIZED" == "rhel" ]]; then
     # For checking for file descriptor leaks during the tests.
     lsof
 
-    # Unbound
-    bison
-    expat-devel
-    flex
-
     # Fonts for Capybara screenshots.
     urw-fonts
 
     # For pkill/pgrep used for process tests.
-    "$procps_package"
-
-    # OpenLDAP
-    groff
+    procps-ng
 
     # For running lsof tests in Docker as root
     sudo
@@ -147,47 +127,42 @@ if [[ "$ID_NORMALIZED" == "rhel" ]]; then
   )
 
   # Install GCC 7+ for compiling TrafficServer (C++17 required).
-  if [[ "$VERSION_ID" == "6" || "$VERSION_ID" == "7" ]]; then
+  if [[ "$VERSION_ID" == "7" ]]; then
     core_build_dependencies+=(
       centos-release-scl
       devtoolset-7
     )
-  fi
-
-  # Install Python 2.7 for compiling ICU.
-  if [[ "$VERSION_ID" == "6" ]]; then
-    core_build_dependencies+=(
-      centos-release-scl
-      python27
+  else
+    core_package_dependencies+=(
+      libicu-devel
     )
   fi
 elif [[ "$ID_NORMALIZED" == "debian" ]]; then
-  libcurl_version=3
-  libnettle_version=6
-  libreadline_version=7
-  openjdk_version=8
+  libcurl_version=4
+  libffi_version=7
+  libnettle_version=8
+  openjdk_version=11
 
-  if [[ "$ID" == "ubuntu" && "$VERSION_ID" == "18.04" ]]; then
-    libcurl_version=4
-  fi
-
-  if [[ "$ID" == "debian" && "$VERSION_ID" == "8" ]]; then
-    libnettle_version=4
-  fi
-
-  if [[ "$ID" == "debian" && "$VERSION_ID" == "8" ]] || [[ "$ID" == "ubuntu" && "$VERSION_ID" == "16.04" ]]; then
-    libreadline_version=6
-  fi
-
-  if [[ "$ID" == "debian" && "$VERSION_ID" == "8" ]]; then
-    openjdk_version=7
+  if [[ "$ID" == "debian" && "$VERSION_ID" == "10" ]]; then
+    libffi_version=6
+    libnettle_version=6
+  elif [[ "$ID" == "debian" && "$VERSION_ID" == "9" ]]; then
+    libffi_version=6
+    libnettle_version=6
+    openjdk_version=8
+  elif [[ "$ID" == "ubuntu" && "$VERSION_ID" == "20.04" ]]; then
+    libnettle_version=7
+    openjdk_version=16
+  elif [[ "$ID" == "ubuntu" && "$VERSION_ID" == "18.04" ]]; then
+    libffi_version=6
+    libnettle_version=6
   fi
 
   core_package_dependencies=(
     # General
     bash
     libc6
-    libffi6
+    "libffi$libffi_version"
     libncurses5
     libpcre3
     libuuid1
@@ -203,7 +178,6 @@ elif [[ "$ID_NORMALIZED" == "debian" ]]; then
 
     # TrafficServer
     libxml2
-    tcl
 
     # ElasticSearch
     "openjdk-$openjdk_version-jre-headless"
@@ -231,6 +205,8 @@ elif [[ "$ID_NORMALIZED" == "debian" ]]; then
 
     # For prefixed console output (gnu version for strftime support).
     gawk
+
+    libicu-dev
 
     # lua-resty-nettle
     "libnettle$libnettle_version"
@@ -265,7 +241,6 @@ elif [[ "$ID_NORMALIZED" == "debian" ]]; then
     python
     rsync
     tar
-    tcl-dev
     unzip
     uuid-dev
     xz-utils
@@ -273,12 +248,12 @@ elif [[ "$ID_NORMALIZED" == "debian" ]]; then
     # lualdap
     libldap-dev
 
-    # libbson
-    cmake
-
     # For nokogiri dependency (for static-site and tests)
     libxml2-dev
     libxslt-dev
+  )
+  test_package_dependencies=(
+    unbound
   )
   test_build_dependencies=(
     # Binary and readelf tests
@@ -288,31 +263,18 @@ elif [[ "$ID_NORMALIZED" == "debian" ]]; then
     # For checking for file descriptor leaks during the tests.
     lsof
 
-    # Unbound
-    bison
-    flex
-    libexpat-dev
-
     # Fonts for Capybara screenshots.
     gsfonts
 
     # For pkill/pgrep used for process tests.
     procps
 
-    # OpenLDAP
-    groff-base
-
     # For running lsof tests in Docker as root
     sudo
   )
 
   # Install GCC 7+ for compiling TrafficServer (C++17 required).
-  if [[ "$ID" == "ubuntu" && "$VERSION_ID" == "16.04" ]]; then
-    core_build_dependencies+=(
-      gcc-7
-      g++-7
-    )
-  elif [[ "$ID" == "debian" && ( "$VERSION_ID" == "8" || "$VERSION_ID" == "9" ) ]]; then
+  if [[ "$ID" == "debian" && "$VERSION_ID" == "9" ]]; then
     core_build_dependencies+=(
       clang-7
       libc++-7-dev
@@ -337,6 +299,7 @@ all_build_dependencies=(
 # shellcheck disable=SC2034
 all_dependencies=(
   "${all_build_dependencies[@]}"
+  "${test_package_dependencies[@]}"
   "${test_build_dependencies[@]}"
 )
 

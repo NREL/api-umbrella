@@ -1,4 +1,6 @@
+import classic from 'ember-classic-decorator';
+
 import BaseField from './base-field';
 
-export default BaseField.extend({
-});
+@classic
+export default class TextareaField extends BaseField {}

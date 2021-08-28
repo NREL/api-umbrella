@@ -1,36 +1,40 @@
-<BsModal @open={{this.openModal}} @onSubmit={{action "submit"}} @onHidden={{action "closed"}} @backdropClose={{false}} @size="lg" @fade={{false}} as |modal|>
-  <modal.header @title={{this.modalTitle}} />
-  <modal.body>
-    <form {{action "submit" on="submit"}}>
-      <FieldsFor @model={{this.bufferedModel}} @style="vertical" as |f|>
-        <div class="row">
-          <div class="col-sm-12">
-            {{f.select-field "matcherType" label="Matcher Type" options=this.matcherTypeOptions}}
-          </div>
-        </div>
-        <div class="row">
-          <div class="col-sm-3">
-            {{f.select-field "httpMethod" label="HTTP Method" options=this.httpMethodOptions}}
-          </div>
-          <div class="col-sm-9">
-            {{f.text-field "frontendMatcher" label="Frontend Matcher" placeholder="/example/"}}
-          </div>
-        </div>
-        <div class="row">
-          <div class="col-sm-9 offset-sm-3">
-            <div class="arrow arrow-vertical">
-              {{fa-icon "arrow-down" size="2x"}} rewrite to
+<div ...attributes>
+  <BsModal @open={{this.openModal}} @onHidden={{action "closed"}} @backdropClose={{false}} @size="lg" @fade={{false}} as |modal|>
+    <modal.header @title={{this.modalTitle}} />
+    <modal.body>
+      <form {{on "submit" this.submitForm}}>
+        <FieldsFor @model={{this.bufferedModel}} @style="vertical" as |f|>
+          <div class="row">
+            <div class="col-sm-12">
+              {{f.select-field "matcherType" label="Matcher Type" options=this.matcherTypeOptions}}
             </div>
           </div>
-        </div>
-        <div class="row">
-          <div class="col-sm-9 offset-sm-3">
-            {{f.text-field "backendReplacement" label="Backend Replacement" placeholder="/example/"}}
+          <div class="row">
+            <div class="col-sm-3">
+              {{f.select-field "httpMethod" label="HTTP Method" options=this.httpMethodOptions}}
+            </div>
+            <div class="col-sm-9">
+              {{f.text-field "frontendMatcher" label="Frontend Matcher" placeholder="/example/"}}
+            </div>
           </div>
-        </div>
-      </FieldsFor>
-      <input type="submit" class="hidden-submit-button" tabindex="-1">
-    </form>
-  </modal.body>
-  <modal.footer @closeTitle="Cancel" @submitTitle="OK" />
-</BsModal>
+          <div class="row">
+            <div class="col-sm-9 offset-sm-3">
+              <div class="arrow arrow-vertical">
+                <FaIcon @icon="arrow-down" @size="2x" /> rewrite to
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-sm-9 offset-sm-3">
+              {{f.text-field "backendReplacement" label="Backend Replacement" placeholder="/example/"}}
+            </div>
+          </div>
+        </FieldsFor>
+        {{! template-lint-disable require-input-label }}
+        <input type="submit" class="hidden-submit-button" tabindex="-1">
+        {{! template-lint-enable require-input-label }}
+      </form>
+    </modal.body>
+    <modal.footer @closeTitle="Cancel" @submitTitle="OK" />
+  </BsModal>
+</div>

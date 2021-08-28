@@ -1,34 +1,45 @@
-import { sprintf, t } from 'api-umbrella-admin-ui/utils/i18n';
-
+// eslint-disable-next-line ember/no-classic-components
 import Component from '@ember/component';
+import { action } from '@ember/object';
+import { reads } from '@ember/object/computed';
+import { inject } from '@ember/service';
+import { tagName } from '@ember-decorators/component';
 // eslint-disable-next-line ember/no-mixins
 import Save from 'api-umbrella-admin-ui/mixins/save';
-import { computed } from '@ember/object';
-import escape from 'lodash-es/escape';
-import { inject } from '@ember/service';
+import { sprintf, t } from 'api-umbrella-admin-ui/utils/i18n';
 import usernameLabel from 'api-umbrella-admin-ui/utils/username-label';
+import classic from 'ember-classic-decorator';
+import escape from 'lodash-es/escape';
 
-export default Component.extend(Save, {
-  session: inject(),
+@classic
+@tagName("")
+export default class RecordForm extends Component.extend(Save) {
+  @inject()
+  session;
 
-  currentAdmin: computed.reads('session.data.authenticated.admin'),
+  @reads('session.data.authenticated.admin')
+  currentAdmin;
 
-  usernameLabel: computed(usernameLabel),
+  get usernameLabel() {
+    return usernameLabel();
+  }
 
-  actions: {
-    submit() {
-      this.saveRecord({
-        transitionToRoute: 'admins',
-        message: sprintf(t('Successfully saved the admin "%s"'), escape(this.model.username)),
-      });
-    },
+  @action
+  submitForm(event) {
+    event.preventDefault();
+    this.saveRecord({
+      element: event.target,
+      transitionToRoute: 'admins',
+      message: sprintf(t('Successfully saved the admin "%s"'), escape(this.model.username)),
+    });
+  }
 
-    delete() {
-      this.destroyRecord({
-        prompt: sprintf(t('Are you sure you want to delete the admin "%s"?'), escape(this.model.username)),
-        transitionToRoute: 'admins',
-        message: sprintf(t('Successfully deleted the admin "%s"'), escape(this.model.username)),
-      });
-    },
-  },
-});
+  @action
+  delete() {
+    this.destroyRecord({
+      prompt: sprintf(t('Are you sure you want to delete the admin "%s"?'), escape(this.model.username)),
+      transitionToRoute: 'admins',
+      message: sprintf(t('Successfully deleted the admin "%s"'), escape(this.model.username)),
+    });
+  }
+}

@@ -1,17 +1,24 @@
-import $ from 'jquery';
+// eslint-disable-next-line ember/no-classic-components
 import Component from '@ember/component';
-import DataTablesHelpers from 'api-umbrella-admin-ui/utils/data-tables-helpers';
-import { computed } from '@ember/object';
-import escape from 'lodash-es/escape';
+import { action, computed } from '@ember/object';
 import { inject } from '@ember/service';
+import DataTablesHelpers from 'api-umbrella-admin-ui/utils/data-tables-helpers';
 import { t } from 'api-umbrella-admin-ui/utils/i18n';
 import usernameLabel from 'api-umbrella-admin-ui/utils/username-label';
+import classic from 'ember-classic-decorator';
+import $ from 'jquery';
+import escape from 'lodash-es/escape';
 
-export default Component.extend({
-  session: inject('session'),
+@classic
+export default class IndexTable extends Component {
+  tagName = '';
 
-  didInsertElement() {
-    const dataTable = this.$().find('table').DataTable({
+  @inject('session')
+  session;
+
+  @action
+  didInsert(element) {
+    const dataTable = $(element).find('table').DataTable({
       serverSide: true,
       ajax: '/api-umbrella/v1/admins.json',
       pageLength: 50,
@@ -75,16 +82,17 @@ export default Component.extend({
       let params = dataTable.ajax.params();
       delete params.start;
       delete params.length;
-      this.set('csvQueryParams', params);
+      this.set('queryParams', params);
     });
-  },
+  }
 
-  downloadUrl: computed('csvQueryParams', 'session.data.authenticated.api_key', function() {
-    const params = $.param({
-      ...(this.csvQueryParams || {}),
-      api_key: this.session.data.authenticated.api_key,
-    });
+  @computed('queryParams', 'session.data.authenticated.api_key')
+  get downloadUrl() {
+    let params = this.queryParams;
+    if(params) {
+      params = $.param(params);
+    }
 
-    return `/api-umbrella/v1/admins.csv?${params}`;
-  }),
-});
+    return '/api-umbrella/v1/admins.csv?api_key=' + this.session.data.authenticated.api_key + '&' + params;
+  }
+}

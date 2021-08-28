@@ -62,7 +62,8 @@ class Test::Proxy::Dns::TestNegativeCaching < Minitest::Test
       # Make an initial request, which we expect to not succeed, since the
       # hostname is bad.
       wait_for_response("/#{unique_test_id}/", {
-        :code => 502,
+        :code => 500,
+        :body => /Unknown Host/,
       })
 
       # The negative TTL caching begins after TrafficServer sees the first
@@ -76,7 +77,8 @@ class Test::Proxy::Dns::TestNegativeCaching < Minitest::Test
       # Ensure that negative caching is in place and the hostname is still not
       # resolving (despite the DNS being installed now).
       wait_for_response("/#{unique_test_id}/", {
-        :code => 502,
+        :code => 500,
+        :body => /Unknown Host/,
       })
 
       # Wait for the successful response to resolve once the negative TTL has

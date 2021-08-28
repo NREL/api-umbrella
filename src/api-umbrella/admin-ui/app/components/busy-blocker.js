@@ -1,43 +1,53 @@
+// eslint-disable-next-line ember/no-classic-components
 import Component from '@ember/component';
-import { inject } from '@ember/service';
+import { action } from '@ember/object';
 import { later } from '@ember/runloop';
+import { inject } from '@ember/service';
+import classic from 'ember-classic-decorator';
+import $ from 'jquery';
 
 const ANIMATION_DURATION = 300;
 const DEFAULT_MESSAGE = 'Loading...';
 
-export default Component.extend({
-  busy: inject('busy'),
+@classic
+export default class BusyBlocker extends Component {
+  tagName = '';
 
-  classNames: ['busy-blocker'],
-  animationElements: null,
-  message: null,
+  @inject('busy')
+  busy;
 
+  containerElement = null;
+  animationElements = null;
+  message = null;
 
   // Hooks
   // ------------------------
-  didInsertElement() {
+  @action
+  didInsert(element) {
+    this.containerElement = element;
+
     // Convert animation duration ms to css string value
     let duration = (ANIMATION_DURATION / 1000) + 's';
     let busy = this.busy;
 
     // Hide immediately
-    this.$().css('display', 'none');
+    $(this.containerElement).css('display', 'none');
 
-    this.set('animationElements', this.$('.busy-blocker__bg, .busy-blocker__content'));
+    this.animationElements = $(element).find('.busy-blocker__bg, .busy-blocker__content');
     // Set the animation duration on the backdrop element
-    this.$('.busy-blocker__bg').css('animation-duration', duration);
+    $(this.containerElement).find('.busy-blocker__bg').css('animation-duration', duration);
 
     busy.on('hide', this, this._hide);
     busy.on('show', this, this._show);
-  },
+  }
 
-  willDestroyElement() {
+  @action
+  willDestroyNode() {
     let busy = this.busy;
 
     busy.off('hide', this, this._hide);
     busy.off('show', this, this._show);
-  },
-
+  }
 
   // Functions
   // ------------------------
@@ -54,9 +64,9 @@ export default Component.extend({
     elements.addClass('fade-out');
 
     later(this, function hideLoading() {
-      this.$().css('display', 'none');
+      $(this.containerElement).css('display', 'none');
     }, ANIMATION_DURATION);
-  },
+  }
 
   /**
    * Show the busy animation and apply received options.
@@ -74,10 +84,10 @@ export default Component.extend({
       message = options.message;
     }
 
-    this.set('message', message);
+    this.message = message;
 
-    this.$().css('display', 'block');
+    $(this.containerElement).css('display', 'block');
     elements.removeClass('fade-out');
     elements.addClass('fade-in');
-  },
-});
+  }
+}

@@ -1,51 +1,69 @@
-import BufferedProxy from 'ember-buffered-proxy/proxy';
-import Component from '@ember/component';
-import UrlMatch from 'api-umbrella-admin-ui/models/api/url-match';
-import { computed } from '@ember/object';
 import { getOwner } from '@ember/application';
+// eslint-disable-next-line ember/no-classic-components
+import Component from '@ember/component';
+import { action, computed } from '@ember/object';
+import { tagName } from '@ember-decorators/component';
+import UrlMatch from 'api-umbrella-admin-ui/models/api/url-match';
+import BufferedProxy from 'ember-buffered-proxy/proxy';
+import classic from 'ember-classic-decorator';
 
-export default Component.extend({
-  openModal: false,
-  exampleSuffix: 'example.json?param=value',
+@classic
+@tagName("")
+export default class UrlMatchForm extends Component {
+  openModal = false;
+  exampleSuffix = 'example.json?param=value';
 
-  modalTitle: computed('model.isNew', function() {
+  @computed('model.isNew')
+  get modalTitle() {
     if(this.model.isNew) {
       return 'Add Matching URL Prefix';
     } else {
       return 'Edit Matching URL Prefix';
     }
-  }),
+  }
 
-  bufferedModel: computed('model', function() {
+  @computed('model')
+  get bufferedModel() {
     let owner = getOwner(this).ownerInjection();
     return BufferedProxy.extend(UrlMatch.validationClass).create(owner, { content: this.model });
-  }),
+  }
 
-  exampleIncomingUrl: computed('apiExampleIncomingUrlRoot', 'bufferedModel.frontendPrefix', 'exampleSuffix', function() {
+  @computed(
+    'apiExampleIncomingUrlRoot',
+    'bufferedModel.frontendPrefix',
+    'exampleSuffix',
+  )
+  get exampleIncomingUrl() {
     let root = this.apiExampleIncomingUrlRoot || '';
     let prefix = this.bufferedModel.get('frontendPrefix') || '';
     return root + prefix + this.exampleSuffix;
-  }),
+  }
 
-  exampleOutgoingUrl: computed('apiExampleOutgoingUrlRoot', 'bufferedModel.{backendPrefix,frontendPrefix}', 'exampleSuffix', function() {
+  @computed(
+    'apiExampleOutgoingUrlRoot',
+    'bufferedModel.{backendPrefix,frontendPrefix}',
+    'exampleSuffix',
+  )
+  get exampleOutgoingUrl() {
     let root = this.apiExampleOutgoingUrlRoot || '';
     let prefix = this.bufferedModel.get('backendPrefix') || this.bufferedModel.get('frontendPrefix') || '';
     return root + prefix + this.exampleSuffix;
-  }),
+  }
 
-  actions: {
-    submit() {
-      this.bufferedModel.applyChanges();
-      if(this.model.isNew) {
-        this.collection.pushObject(this.model);
-      }
+  @action
+  submitForm(event) {
+    event.preventDefault();
+    this.bufferedModel.applyChanges();
+    if(this.model.isNew) {
+      this.collection.pushObject(this.model);
+    }
 
-      this.set('openModal', false);
-    },
+    this.set('openModal', false);
+  }
 
-    closed() {
-      this.bufferedModel.discardChanges();
-      this.set('openModal', false);
-    },
-  },
-});
+  @action
+  closed() {
+    this.bufferedModel.discardChanges();
+    this.set('openModal', false);
+  }
+}

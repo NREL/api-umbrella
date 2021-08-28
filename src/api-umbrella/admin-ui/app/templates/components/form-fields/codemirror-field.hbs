@@ -1,3 +1,11 @@
-<FormFields::FieldWrapper @model={{this.model}} @style={{this.style}} @fieldName={{this.fieldName}} @inputId={{this.inputId}} @labelForId={{this.codemirrorInputFieldId}} @label={{this.label}} @tooltip={{this.tooltip}} @hint={{this.hint}}>
-  <OneWayTextarea @value={{get this.model this.fieldName}} @update={{action (mut (get this.model this.fieldName))}} @class="form-control" @data-codemirror-mode={{this.mode}} />
+<FormFields::FieldWrapper @model={{this.model}} @style={{this.style}} @fieldName={{this.fieldName}} @inputId={{this.inputId}} @labelForId={{this.codemirrorInputFieldId}} @label={{this.label}} @tooltip={{this.tooltip}} @hint={{this.hint}} {{did-insert this.didInsert}}>
+  {{! template-lint-disable require-input-label }}
+  <textarea
+    id={{this.inputId}}
+    value={{get this.model this.fieldName}}
+    oninput={{action (mut (get this.model this.fieldName)) value="target.value"}}
+    class="form-control"
+    data-codemirror-mode={{this.mode}}
+  />
+  {{! template-lint-enable require-input-label }}
 </FormFields::FieldWrapper>

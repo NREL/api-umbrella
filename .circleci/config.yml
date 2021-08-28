@@ -4,7 +4,7 @@ jobs:
     parallelism: 3
     working_directory: /app
     docker:
-      - image: circleci/buildpack-deps:18.04-browsers
+      - image: circleci/buildpack-deps:bullseye-browsers
         user: root
     steps:
       - checkout
@@ -24,7 +24,7 @@ jobs:
       - run: touch -c build/work/stamp/bootstrap-*
       # Build all the API Umbrella software dependencies.
       - run: ./configure
-      - run: make all test-deps
+      - run: env NOKOGIRI_USE_SYSTEM_LIBRARIES=true make all test-deps
       - run: make clean:dev
       # Cache the staged build data and task checksums of what's been
       # completed.

@@ -1,7 +1,10 @@
+import classic from 'ember-classic-decorator';
+
 import Base from './base';
 
-export default Base.extend({
-  queryParams: {
+@classic
+export default class UsersRoute extends Base {
+  queryParams = {
     date_range: {
       refreshModel: true,
     },
@@ -17,9 +20,9 @@ export default Base.extend({
     search: {
       refreshModel: true,
     },
-  },
+  };
 
   model() {
     return {};
-  },
-});
+  }
+}

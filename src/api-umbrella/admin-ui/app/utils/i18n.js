@@ -14,6 +14,6 @@ function sprintf(...args) {
 }
 
 export {
-  t,
   sprintf,
+  t,
 }

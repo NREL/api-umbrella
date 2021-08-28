@@ -1,14 +1,16 @@
 import Controller from '@ember/controller';
+import classic from 'ember-classic-decorator';
 
-export default Controller.extend({
-  search: '',
-  interval: 'day',
-  prefix: '0/',
-  region: 'world',
-  date_range: '30d',
-  start_at: '',
-  end_at: '',
-  query: JSON.stringify({
+@classic
+export default class BaseController extends Controller {
+  search = '';
+  interval = 'day';
+  prefix = '0/';
+  region = 'world';
+  date_range = '30d';
+  start_at = '';
+  end_at = '';
+  query = JSON.stringify({
     condition: 'AND',
     rules: [{
       field: 'gatekeeper_denied_code',
@@ -18,5 +20,5 @@ export default Controller.extend({
       type: 'string',
       value: null,
     }],
-  }),
-});
+  });
+}

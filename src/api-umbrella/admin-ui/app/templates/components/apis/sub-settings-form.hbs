@@ -1,21 +1,25 @@
-<BsModal @open={{this.openModal}} @onSubmit={{action "submit"}} @onHidden={{action "closed"}} @backdropClose={{false}} @size="xl" @fade={{false}} as |modal|>
-  <modal.header @title={{this.modalTitle}} />
-  <modal.body>
-    <form {{action "submit" on="submit"}}>
-      <FieldsFor @model={{this.bufferedModel}} @style="vertical" as |f|>
-        <div class="row">
-          <div class="col-sm-3">
-            {{f.select-field "httpMethod" label="HTTP Method" options=this.httpMethodOptions}}
+<div ...attributes>
+  <BsModal @open={{this.openModal}} @onHidden={{action "closed"}} @backdropClose={{false}} @size="xl" @fade={{false}} as |modal|>
+    <modal.header @title={{this.modalTitle}} />
+    <modal.body>
+      <form {{on "submit" this.submitForm}}>
+        <FieldsFor @model={{this.bufferedModel}} @style="vertical" as |f|>
+          <div class="row">
+            <div class="col-sm-3">
+              {{f.select-field "httpMethod" label="HTTP Method" options=this.httpMethodOptions}}
+            </div>
+            <div class="col-sm-9">
+              {{f.text-field "regex" label="Regex" placeholder="^/example.*param1=.+"}}
+            </div>
           </div>
-          <div class="col-sm-9">
-            {{f.text-field "regex" label="Regex" placeholder="^/example.*param1=.+"}}
-          </div>
-        </div>
-      </FieldsFor>
-      <hr class="mt-0">
-      <Apis::Settings::CommonFields @model={{this.model.settings}} @roleOptions={{this.roleOptions}} @isSubSettings={{true}} />
-      <input type="submit" class="hidden-submit-button" tabindex="-1">
-    </form>
-  </modal.body>
-  <modal.footer @closeTitle="Cancel" @submitTitle="OK" />
-</BsModal>
+        </FieldsFor>
+        <hr class="mt-0">
+        <Apis::Settings::CommonFields @model={{this.model.settings}} @roleOptions={{this.roleOptions}} @isSubSettings={{true}} />
+        {{! template-lint-disable require-input-label }}
+        <input type="submit" class="hidden-submit-button" tabindex="-1">
+        {{! template-lint-enable require-input-label }}
+      </form>
+    </modal.body>
+    <modal.footer @closeTitle="Cancel" @submitTitle="OK" />
+  </BsModal>
+</div>

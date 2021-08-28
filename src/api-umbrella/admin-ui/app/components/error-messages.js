@@ -1,12 +1,19 @@
+// eslint-disable-next-line ember/no-classic-components
 import Component from '@ember/component';
 import { computed } from '@ember/object';
+import { gt } from '@ember/object/computed';
+import { tagName } from '@ember-decorators/component';
+import { t } from 'api-umbrella-admin-ui/utils/i18n';
+import classic from 'ember-classic-decorator';
 import each from 'lodash-es/each';
 import isArray from 'lodash-es/isArray';
 import marked from 'marked';
-import { t } from 'api-umbrella-admin-ui/utils/i18n';
 
-export default Component.extend({
-  messages: computed('model.{constructor.modelName,clientErrors,serverErrors}', function() {
+@classic
+@tagName("")
+export default class ErrorMessages extends Component {
+  @computed('model.{constructor.modelName,clientErrors,serverErrors}')
+  get messages() {
     let errors = [];
 
     let clientErrors = this.model.clientErrors;
@@ -78,7 +85,8 @@ export default Component.extend({
     });
 
     return messages;
-  }),
+  }
 
-  hasErrors: computed.gt('messages.length', 0),
-});
+  @gt('messages.length', 0)
+  hasErrors;
+}

@@ -1,11 +1,13 @@
-import $ from 'jquery';
 import EmberObject from '@ember/object';
 import Evented from '@ember/object/evented';
+import classic from 'ember-classic-decorator';
+import $ from 'jquery';
 import { Promise } from 'rsvp';
 
-let ConfigPendingChanges = EmberObject.extend(Evented, {
-  config: null,
-});
+@classic
+class ConfigPendingChanges extends EmberObject.extend(Evented) {
+  config = null;
+}
 
 ConfigPendingChanges.reopenClass({
   urlRoot: '/api-umbrella/v1/config/pending_changes.json',

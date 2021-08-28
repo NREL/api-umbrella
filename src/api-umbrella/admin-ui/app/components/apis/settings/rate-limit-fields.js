@@ -1,14 +1,20 @@
+// eslint-disable-next-line ember/no-classic-components
 import Component from '@ember/component';
-import bootbox from 'bootbox';
-import { computed } from '@ember/object';
+import { action, computed } from '@ember/object';
 import { inject } from '@ember/service';
+import { tagName } from "@ember-decorators/component";
+import bootbox from 'bootbox';
+import classic from 'ember-classic-decorator';
 import uniqueId from 'lodash-es/uniqueId';
 
-export default Component.extend({
-  store: inject(),
+@tagName("")
+@classic
+export default class RateLimitFields extends Component {
+  @inject()
+  store;
 
   init() {
-    this._super(...arguments);
+    super.init(...arguments);
 
     this.rateLimitModeOptions = [
       { id: null, name: 'Default rate limits' },
@@ -27,36 +33,38 @@ export default Component.extend({
       { id: 'apiKey', name: 'API Key' },
       { id: 'ip', name: 'IP Address' },
     ];
-  },
+  }
 
-  uniqueSettingsId: computed(function() {
+  @computed
+  get uniqueSettingsId() {
     return uniqueId('api_settings_');
-  }),
+  }
 
-  actions: {
-    primaryRateLimitChange(selectedRateLimit) {
-      let rateLimits = this.model.rateLimits;
-      rateLimits.forEach(function(rateLimit) {
-        if(rateLimit === selectedRateLimit) {
-          rateLimit.set('responseHeaders', true);
-        } else {
-          rateLimit.set('responseHeaders', false);
-        }
-      });
-    },
+  @action
+  primaryRateLimitChange(selectedRateLimit) {
+    let rateLimits = this.model.rateLimits;
+    rateLimits.forEach(function(rateLimit) {
+      if(rateLimit === selectedRateLimit) {
+        rateLimit.set('responseHeaders', true);
+      } else {
+        rateLimit.set('responseHeaders', false);
+      }
+    });
+  }
 
-    addRateLimit() {
-      let collection = this.model.rateLimits;
-      collection.pushObject(this.store.createRecord('api/rate-limit'));
-    },
+  @action
+  addRateLimit() {
+    let collection = this.model.rateLimits;
+    collection.pushObject(this.store.createRecord('api/rate-limit'));
+  }
 
-    deleteRateLimit(rateLimit) {
-      let collection = this.model.rateLimits;
-      bootbox.confirm('Are you sure you want to remove this rate limit?', function(result) {
-        if(result) {
-          collection.removeObject(rateLimit);
-        }
-      });
-    },
-  },
-});
+  @action
+  deleteRateLimit(rateLimit) {
+    let collection = this.model.rateLimits;
+    bootbox.confirm('Are you sure you want to remove this rate limit?', function(result) {
+      if(result) {
+        collection.removeObject(rateLimit);
+      }
+    });
+  }
+}

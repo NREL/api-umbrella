@@ -1,8 +1,8 @@
-import Model, { attr, belongsTo, hasMany } from '@ember-data/model';
-import { buildValidations, validator } from 'ember-cp-validations';
-
 import { computed } from '@ember/object';
+import Model, { attr, belongsTo, hasMany } from '@ember-data/model';
 import { t } from 'api-umbrella-admin-ui/utils/i18n';
+import classic from 'ember-classic-decorator';
+import { buildValidations, validator } from 'ember-cp-validations';
 
 const Validations = buildValidations({
   name: validator('presence', {
@@ -37,48 +37,90 @@ const Validations = buildValidations({
   ],
 });
 
-export default Model.extend(Validations, {
-  name: attr(),
-  backendProtocol: attr('string', { defaultValue: 'http' }),
-  frontendHost: attr(),
-  backendHost: attr(),
-  balanceAlgorithm: attr('string', { defaultValue: 'least_conn' }),
-  createdAt: attr(),
-  updatedAt: attr(),
-  creator: attr(),
-  updater: attr(),
-  organizationName: attr(),
-  statusDescription: attr(),
-  rootApiScope: attr(),
-  apiScopes: attr(),
-  adminGroups: attr(),
+@classic
+class Api extends Model.extend(Validations) {
+  @attr()
+  name;
 
-  servers: hasMany('api/server', { async: false }),
-  urlMatches: hasMany('api/url-match', { async: false }),
-  settings: belongsTo('api/settings', { async: false }),
-  subSettings: hasMany('api/sub-settings', { async: false }),
-  rewrites: hasMany('api/rewrites', { async: false }),
+  @attr('string', { defaultValue: 'http' })
+  backendProtocol;
+
+  @attr()
+  frontendHost;
+
+  @attr()
+  backendHost;
+
+  @attr('string', { defaultValue: 'least_conn' })
+  balanceAlgorithm;
+
+  @attr()
+  createdAt;
+
+  @attr()
+  updatedAt;
+
+  @attr()
+  creator;
+
+  @attr()
+  updater;
+
+  @attr()
+  organizationName;
+
+  @attr()
+  statusDescription;
+
+  @attr()
+  rootApiScope;
+
+  @attr()
+  apiScopes;
+
+  @attr()
+  adminGroups;
+
+  @hasMany('api/server', { async: false })
+  servers;
+
+  @hasMany('api/url-match', { async: false })
+  urlMatches;
+
+  @belongsTo('api/settings', { async: false })
+  settings;
+
+  @hasMany('api/sub-settings', { async: false })
+  subSettings;
+
+  @hasMany('api/rewrites', { async: false })
+  rewrites;
 
   ready() {
     this.setDefaults();
-    this._super();
-  },
+  }
 
   setDefaults() {
     if(!this.settings) {
       this.set('settings', this.store.createRecord('api/settings'));
     }
-  },
+  }
 
-  exampleIncomingUrlRoot: computed('frontendHost', function() {
+  @computed('frontendHost')
+  get exampleIncomingUrlRoot() {
     return 'https://' + (this.frontendHost || '');
-  }),
+  }
 
-  exampleOutgoingUrlRoot: computed('backendHost', 'backendProtocol', 'fontendHost', 'frontendHost', function() {
+  @computed('backendHost', 'backendProtocol', 'fontendHost', 'frontendHost')
+  get exampleOutgoingUrlRoot() {
     return this.backendProtocol + '://' + (this.backendHost || this.frontendHost || '');
-  }),
-}).reopenClass({
+  }
+}
+
+Api.reopenClass({
   urlRoot: '/api-umbrella/v1/apis',
   singlePayloadKey: 'api',
   arrayPayloadKey: 'data',
 });
+
+export default Api;

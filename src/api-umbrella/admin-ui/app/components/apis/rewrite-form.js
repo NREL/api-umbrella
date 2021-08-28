@@ -1,14 +1,19 @@
-import BufferedProxy from 'ember-buffered-proxy/proxy';
-import Component from '@ember/component';
-import Rewrite from 'api-umbrella-admin-ui/models/api/rewrite';
-import { computed } from '@ember/object';
 import { getOwner } from '@ember/application';
+// eslint-disable-next-line ember/no-classic-components
+import Component from '@ember/component';
+import { action, computed } from '@ember/object';
+import { tagName } from '@ember-decorators/component';
+import Rewrite from 'api-umbrella-admin-ui/models/api/rewrite';
+import BufferedProxy from 'ember-buffered-proxy/proxy';
+import classic from 'ember-classic-decorator';
 
-export default Component.extend({
-  openModal: false,
+@classic
+@tagName("")
+export default class RewriteForm extends Component {
+  openModal = false;
 
   init() {
-    this._super(...arguments);
+    super.init(...arguments);
 
     this.matcherTypeOptions = [
       { id: 'route', name: 'Route Pattern' },
@@ -27,34 +32,37 @@ export default Component.extend({
       { id: 'CONNECT', name: 'CONNECT' },
       { id: 'PATCH', name: 'PATCH' },
     ];
-  },
+  }
 
-  modalTitle: computed('model.isNew', function() {
+  @computed('model.isNew')
+  get modalTitle() {
     if(this.model.isNew) {
       return 'Add Matching URL Prefix';
     } else {
       return 'Edit Matching URL Prefix';
     }
-  }),
+  }
 
-  bufferedModel: computed('model', function() {
+  @computed('model')
+  get bufferedModel() {
     let owner = getOwner(this).ownerInjection();
     return BufferedProxy.extend(Rewrite.validationClass).create(owner, { content: this.model });
-  }),
+  }
 
-  actions: {
-    submit() {
-      this.bufferedModel.applyChanges();
-      if(this.model.isNew) {
-        this.collection.pushObject(this.model);
-      }
+  @action
+  submitForm(event) {
+    event.preventDefault();
+    this.bufferedModel.applyChanges();
+    if(this.model.isNew) {
+      this.collection.pushObject(this.model);
+    }
 
-      this.set('openModal', false);
-    },
+    this.set('openModal', false);
+  }
 
-    closed() {
-      this.bufferedModel.discardChanges();
-      this.set('openModal', false);
-    },
-  },
-});
+  @action
+  closed() {
+    this.bufferedModel.discardChanges();
+    this.set('openModal', false);
+  }
+}

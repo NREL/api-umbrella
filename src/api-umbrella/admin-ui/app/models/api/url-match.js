@@ -1,8 +1,8 @@
+import { or } from '@ember/object/computed';
 import Model, { attr } from '@ember-data/model';
-import { buildValidations, validator } from 'ember-cp-validations';
-
-import { computed } from '@ember/object';
 import { t } from 'api-umbrella-admin-ui/utils/i18n';
+import classic from 'ember-classic-decorator';
+import { buildValidations, validator } from 'ember-cp-validations';
 
 const Validations = buildValidations({
   frontendPrefix: [
@@ -29,11 +29,20 @@ const Validations = buildValidations({
   ],
 });
 
-export default Model.extend(Validations, {
-  frontendPrefix: attr(),
-  backendPrefix: attr(),
+@classic
+class UrlMatch extends Model.extend(Validations) {
+  @attr()
+  frontendPrefix;
 
-  backendPrefixWithDefault: computed.or('backendPrefix', 'frontendPrefix'),
-}).reopenClass({
+  @attr()
+  backendPrefix;
+
+  @or('backendPrefix', 'frontendPrefix')
+  backendPrefixWithDefault;
+}
+
+UrlMatch.reopenClass({
   validationClass: Validations,
 });
+
+export default UrlMatch;

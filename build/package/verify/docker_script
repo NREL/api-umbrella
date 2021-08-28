@@ -45,11 +45,7 @@ elif [[ "$ID_NORMALIZED" == "debian" ]]; then
     socat \
     sudo
 fi
-if [[ "$ID_NORMALIZED" == "rhel" && "$VERSION_ID" == "6" ]]; then
-  gem install bundler --no-rdoc --no-ri --version "< 2.0"
-else
-  gem install bundler --no-document --version "< 2.0"
-fi
+gem install bundler --no-document --version "< 2.0"
 
 # Perform an out-of-source build (so the same source directory can be used for
 # multiple parallel docker builds).

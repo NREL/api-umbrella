@@ -1,25 +1,31 @@
-import $ from 'jquery';
+// eslint-disable-next-line ember/no-classic-components
 import Component from '@ember/component';
+import { action } from '@ember/object';
+import { observes, on } from '@ember-decorators/object';
+import classic from 'ember-classic-decorator';
+import $ from 'jquery';
 import clone from 'lodash-es/clone';
 import compact from 'lodash-es/compact';
 import each from 'lodash-es/each';
-// eslint-disable-next-line ember/no-observers
-import { observer } from '@ember/object';
-import { on } from '@ember/object/evented';
 
-export default Component.extend({
-  // eslint-disable-next-line ember/no-on-calls-in-components, ember/no-observers
-  setLinks: on('init', observer('facets', function() {
+@classic
+export default class ResultsFacetTable extends Component {
+  // eslint-disable-next-line ember/require-tagless-components
+  tagName = 'div';
+
+  @on('init')
+  // eslint-disable-next-line ember/no-observers
+  @observes('facets')
+  setLinks() {
     each(this.facets, function(bucket) {
       let params = clone(this.presentQueryParamValues);
       params.search = compact([params.search, this.field + ':"' + bucket.key + '"']).join(' AND ');
       bucket.link = '#/stats/logs?' + $.param(params);
     }.bind(this));
-  })),
+  }
 
-  actions: {
-    toggleFacetTable() {
-      this.$().find('table').toggle();
-    },
-  },
-});
+  @action
+  toggleFacetTable() {
+    $(this.element).find('table').toggle();
+  }
+}

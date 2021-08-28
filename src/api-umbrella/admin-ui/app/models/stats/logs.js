@@ -1,14 +1,16 @@
-import $ from 'jquery';
 import EmberObject from '@ember/object';
 import Evented from '@ember/object/evented';
+import classic from 'ember-classic-decorator';
+import $ from 'jquery';
 import { Promise } from 'rsvp';
 
-let Logs = EmberObject.extend(Evented, {
-  hits_over_time: null,
-  stats: null,
-  facets: null,
-  logs: null,
-});
+@classic
+class Logs extends EmberObject.extend(Evented) {
+  hits_over_time = null;
+  stats = null;
+  facets = null;
+  logs = null;
+}
 
 Logs.reopenClass({
   urlRoot: '/admin/stats/search.json',

@@ -1,12 +1,17 @@
+// eslint-disable-next-line ember/no-classic-components
 import Component from '@ember/component';
+import { action } from '@ember/object';
 // eslint-disable-next-line ember/no-mixins
 import Save from 'api-umbrella-admin-ui/mixins/save';
-import escape from 'lodash-es/escape';
 import { t } from 'api-umbrella-admin-ui/utils/i18n';
+import classic from 'ember-classic-decorator';
+import $ from 'jquery';
+import escape from 'lodash-es/escape';
 
-export default Component.extend(Save, {
+@classic
+export default class RecordForm extends Component.extend(Save) {
   init() {
-    this._super(...arguments);
+    super.init(...arguments);
 
     this.throttleByIpOptions = [
       { id: false, name: 'Rate limit by API key' },
@@ -17,52 +22,54 @@ export default Component.extend(Save, {
       { id: true, name: 'Enabled' },
       { id: false, name: 'Disabled' },
     ];
-  },
+  }
 
-  actions: {
-    apiKeyRevealToggle() {
-      let $key = this.$().find('.api-key');
-      let $toggle = this.$().find('.api-key-reveal-toggle');
+  @action
+  apiKeyRevealToggle() {
+    let $key = $(this.element).find('.api-key');
+    let $toggle = $(this.element).find('.api-key-reveal-toggle');
 
-      if($key.data('revealed') === 'true') {
-        $key.text($key.data('api-key-preview'));
-        $key.data('revealed', 'false');
-        $toggle.text(t('(reveal)'));
-      } else {
-        $key.text($key.data('api-key'));
-        $key.data('revealed', 'true');
-        $toggle.text(t('(hide)'));
-      }
-    },
+    if($key.data('revealed') === 'true') {
+      $key.text($key.data('api-key-preview'));
+      $key.data('revealed', 'false');
+      $toggle.text(t('(reveal)'));
+    } else {
+      $key.text($key.data('api-key'));
+      $key.data('revealed', 'true');
+      $toggle.text(t('(hide)'));
+    }
+  }
 
-    submit() {
-      const isNew = this.model.get('isNew');
-      this.saveRecord({
-        transitionToRoute: 'api_users',
-        message(model) {
-          let message = '<p>Successfully saved the user "' + escape(model.get('email')) + '"</p>';
-          if(isNew && model.get('apiKey')) {
-            message += '<p style="font-size: 18px;"><strong>API Key:</strong> <code>' + escape(model.get('apiKey')) + '</code></p>';
-            message += '<p><strong>Note:</strong> This API key will not be displayed again, so make note of it if needed.</p>';
-          }
+  @action
+  submitForm(event) {
+    event.preventDefault();
+    const isNew = this.model.get('isNew');
+    this.saveRecord({
+      element: event.target,
+      transitionToRoute: 'api_users',
+      message(model) {
+        let message = '<p>Successfully saved the user "' + escape(model.get('email')) + '"</p>';
+        if(isNew && model.get('apiKey')) {
+          message += '<p style="font-size: 18px;"><strong>API Key:</strong> <code>' + escape(model.get('apiKey')) + '</code></p>';
+          message += '<p><strong>Note:</strong> This API key will not be displayed again, so make note of it if needed.</p>';
+        }
 
-          return message;
-        },
-        messageHide(model) {
-          if(isNew && model.get('apiKey')) {
-            return false;
-          } else {
-            return true;
-          }
-        },
-        messageWidth(model) {
-          if(isNew && model.get('apiKey')) {
-            return '500px';
-          } else {
-            return undefined;
-          }
-        },
-      });
-    },
-  },
-});
+        return message;
+      },
+      messageHide(model) {
+        if(isNew && model.get('apiKey')) {
+          return false;
+        } else {
+          return true;
+        }
+      },
+      messageWidth(model) {
+        if(isNew && model.get('apiKey')) {
+          return '500px';
+        } else {
+          return undefined;
+        }
+      },
+    });
+  }
+}

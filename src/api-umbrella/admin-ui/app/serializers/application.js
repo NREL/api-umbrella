@@ -1,12 +1,14 @@
-import JSONSerializer from '@ember-data/serializer/json';
 import { underscore } from '@ember/string';
+import JSONSerializer from '@ember-data/serializer/json';
+import classic from 'ember-classic-decorator';
 
-export default JSONSerializer.extend({
+@classic
+export default class Application extends JSONSerializer {
   // Use camel-cased attribute names in the JS models, but underscore the
   // attribute names for any server-side communication.
   keyForAttribute(attr) {
     return underscore(attr);
-  },
+  }
 
   // For single records, look for the data under the customizable
   // "singlePayloadKey" attribute name on the response.
@@ -16,8 +18,8 @@ export default JSONSerializer.extend({
       payload = payload[key];
     }
 
-    return this._super(store, primaryModelClass, payload, id, requestType);
-  },
+    return super.normalizeSingleResponse(store, primaryModelClass, payload, id, requestType);
+  }
 
   // For multiple records, look for the data under the customizable
   // "arrayPayloadKey" attribute name on the response.
@@ -27,8 +29,8 @@ export default JSONSerializer.extend({
       payload = payload[key];
     }
 
-    return this._super(store, primaryModelClass, payload, id, requestType);
-  },
+    return super.normalizeArrayResponse(store, primaryModelClass, payload, id, requestType);
+  }
 
   // When serializing a record, use the customizable "singlePayloadKey"
   // attribute name for the root key.
@@ -37,7 +39,7 @@ export default JSONSerializer.extend({
     if(key) {
       hash[key] = this.serialize(snapshot, options);
     } else {
-      this._super(...arguments);
+      super.serializeIntoHash(...arguments);
     }
-  },
-});
+  }
+}

@@ -1,20 +1,27 @@
+import { computed } from '@ember/object';
 import Model, { attr } from '@ember-data/model';
-// eslint-disable-next-line ember/no-observers
-import { computed, observer } from '@ember/object';
-
-import moment from 'moment-timezone';
+import { observes } from '@ember-decorators/object';
+import classic from 'ember-classic-decorator';
 import uniqueId from 'lodash-es/uniqueId';
+import moment from 'moment-timezone';
 
-export default Model.extend({
-  duration: attr('number'),
-  limitBy: attr(),
-  limit: attr(),
-  responseHeaders: attr(),
+@classic
+export default class RateLimit extends Model {
+  @attr('number')
+  duration;
+
+  @attr()
+  limitBy;
+
+  @attr()
+  limit;
+
+  @attr()
+  responseHeaders;
 
   ready() {
     this.setDefaults();
-    this._super();
-  },
+  }
 
   setDefaults() {
     let duration = this.duration;
@@ -46,18 +53,20 @@ export default Model.extend({
         });
       }
     }
-  },
+  }
 
   // eslint-disable-next-line ember/no-observers
-  durationInUnitsDidChange: observer('durationInUnits', 'durationUnits', function() {
+  @observes('durationInUnits', 'durationUnits')
+  durationInUnitsDidChange() {
     if(this.durationUnits) {
       let inUnits = parseInt(this.durationInUnits, 10);
       let units = this.durationUnits;
       this.set('duration', moment.duration(inUnits, units).asMilliseconds());
     }
-  }),
+  }
 
-  uniqueId: computed(function() {
+  @computed
+  get uniqueId() {
     return uniqueId('rate_limit_');
-  }),
-});
+  }
+}

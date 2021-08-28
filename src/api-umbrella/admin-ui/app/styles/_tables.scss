@@ -39,20 +39,32 @@ table.dataTable.table thead .sorting_disabled {
 }
 
 table.dataTable.table thead .sorting {
+  .fa-sort {
+    display: inline-block;
+  }
+
   .fa-sort-up,
   .fa-sort-down {
     display: none;
   }
 }
 
-table.dataTable.table thead .sorting_asc {
+table.dataTable.table thead .sorting.sorting_asc {
+  .fa-sort-up {
+    display: inline-block;
+  }
+
   .fa-sort,
   .fa-sort-down {
     display: none;
   }
 }
 
-table.dataTable.table thead .sorting_desc {
+table.dataTable.table thead .sorting.sorting_desc {
+  .fa-sort-down {
+    display: inline-block;
+  }
+
   .fa-sort,
   .fa-sort-up {
     display: none;

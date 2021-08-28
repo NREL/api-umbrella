@@ -1,27 +1,28 @@
-import $ from 'jquery';
+// eslint-disable-next-line ember/no-classic-components
 import Component from '@ember/component';
+import { action } from '@ember/object';
+import { observes, on } from '@ember-decorators/object';
+import * as echarts from 'echarts/core';
+import classic from 'ember-classic-decorator';
+import $ from 'jquery';
 import debounce from 'lodash-es/debounce';
-import echarts from 'echarts/lib/echarts';
-// eslint-disable-next-line ember/no-observers
-import { observer } from '@ember/object';
-import { on } from '@ember/object/evented';
 
-export default Component.extend({
-  classNames: ['stats-drilldown-results-chart'],
+@classic
+export default class ResultsChart extends Component {
+  tagName = '';
 
-  didInsertElement() {
-    this.renderChart();
-  },
-
-  renderChart() {
-    this.chart = echarts.init(this.$()[0], 'api-umbrella-theme');
+  @action
+  didInsert(element) {
+    this.chart = echarts.init(element, 'api-umbrella-theme');
     this.draw();
 
     $(window).on('resize', debounce(this.chart.resize, 100));
-  },
+  }
 
-  // eslint-disable-next-line ember/no-on-calls-in-components, ember/no-observers
-  refreshData: on('init', observer('hitsOverTime', function() {
+  @on('init')
+  // eslint-disable-next-line ember/no-observers
+  @observes('hitsOverTime')
+  refreshData() {
     let data = []
     let labels = [];
 
@@ -58,7 +59,7 @@ export default Component.extend({
     });
 
     this.draw();
-  })),
+  }
 
   draw() {
     if(!this.chart || !this.chartData) {
@@ -69,30 +70,6 @@ export default Component.extend({
       animation: false,
       tooltip: {
         trigger: 'axis',
-      },
-      toolbox: {
-        orient: 'vertical',
-        iconStyle: {
-          emphasis: {
-            textPosition: 'left',
-            textAlign: 'right',
-          },
-        },
-        feature: {
-          saveAsImage: {
-            title: 'save as image',
-            name: 'api_umbrella_chart',
-            excludeComponents: ['toolbox', 'dataZoom'],
-            pixelRatio: 2,
-          },
-          dataZoom: {
-            yAxisIndex: 'none',
-            title: {
-              zoom: 'zoom',
-              back: 'restore zoom',
-            },
-          },
-        },
       },
       yAxis: {
         type: 'value',
@@ -106,25 +83,12 @@ export default Component.extend({
         data: this.chartLabels,
       },
       series: this.chartData,
-      title: {
-        show: false,
-      },
-      legend: {
-        show: false,
-      },
       grid: {
         show: false,
         left: 90,
         top: 10,
         right: 30,
       },
-      dataZoom: [
-        {
-          type: 'slider',
-          start: 0,
-          end: 100,
-        },
-      ],
     }, true);
-  },
-});
+  }
+}

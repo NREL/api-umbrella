@@ -33,16 +33,29 @@ module ApiUmbrellaTestHelpers
       Timeout.timeout(15) do
         loop do
           response = Typhoeus.get("http://127.0.0.1:9080#{path}", http_options)
+          matched = false
           if(response.code == options.fetch(:code))
-            if(options[:local_interface_ip])
-              assert_response_code(200, response)
-              data = MultiJson.load(response.body)
-              if(options[:local_interface_ip] == data["local_interface_ip"])
-                break
-              end
-            else
-              break
+            matched = true
+          end
+
+          if matched && options[:local_interface_ip]
+            matched = false
+            assert_response_code(200, response)
+            data = MultiJson.load(response.body)
+            if(options[:local_interface_ip] == data["local_interface_ip"])
+              matched = true
             end
+          end
+
+          if matched && options[:body]
+            matched = false
+            if options[:body].match(response.body)
+              matched = true
+            end
+          end
+
+          if matched
+            break
           end
 
           sleep 0.1

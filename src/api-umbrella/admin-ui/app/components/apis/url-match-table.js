@@ -1,28 +1,37 @@
+// eslint-disable-next-line ember/no-classic-components
 import Component from '@ember/component';
-import bootbox from 'bootbox';
+import { action } from '@ember/object';
 import { inject } from '@ember/service';
+import { tagName } from '@ember-decorators/component';
+import bootbox from 'bootbox';
+import classic from 'ember-classic-decorator';
 
-export default Component.extend({
-  store: inject(),
-  openModal: false,
+@classic
+@tagName("")
+export default class UrlMatchTable extends Component {
+  @inject()
+  store;
 
-  actions: {
-    add() {
-      this.set('urlMatchModel', this.store.createRecord('api/url-match'));
-      this.set('openModal', true);
-    },
+  openModal = false;
 
-    edit(urlMatch) {
-      this.set('urlMatchModel', urlMatch);
-      this.set('openModal', true);
-    },
+  @action
+  add() {
+    this.set('urlMatchModel', this.store.createRecord('api/url-match'));
+    this.set('openModal', true);
+  }
 
-    remove(urlMatch) {
-      bootbox.confirm('Are you sure you want to remove this URL prefix?', function(response) {
-        if(response) {
-          this.model.urlMatches.removeObject(urlMatch);
-        }
-      }.bind(this));
-    },
-  },
-});
+  @action
+  edit(urlMatch) {
+    this.set('urlMatchModel', urlMatch);
+    this.set('openModal', true);
+  }
+
+  @action
+  remove(urlMatch) {
+    bootbox.confirm('Are you sure you want to remove this URL prefix?', function(response) {
+      if(response) {
+        this.model.urlMatches.removeObject(urlMatch);
+      }
+    }.bind(this));
+  }
+}

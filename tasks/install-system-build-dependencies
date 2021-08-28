@@ -13,7 +13,7 @@ if [ "${INSTALL_TEST_DEPENDENCIES:-}" == "true" ]; then
 fi
 
 detect_os_release
-if [[ "$ID_NORMALIZED" == "rhel" && ( "$VERSION_ID" == "6" || "$VERSION_ID" == "7" ) ]]; then
+if [[ "$ID_NORMALIZED" == "rhel" && "$VERSION_ID" == "7" ]]; then
   # Dependencies for GCC 7+ for compiling TrafficServer (C++17 required).
   yum -y install centos-release-scl
 
@@ -24,10 +24,7 @@ if [[ "$ID_NORMALIZED" == "rhel" && ( "$VERSION_ID" == "6" || "$VERSION_ID" == "
 elif [[ "$ID_NORMALIZED" == "debian" ]]; then
   # Dependencies for GCC 7+ or Clang 5+ for compiling TrafficServer (C++17
   # required).
-  if [[ "$ID" == "ubuntu" && "$VERSION_ID" == "16.04" ]]; then
-    DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends install software-properties-common
-    add-apt-repository -y ppa:ubuntu-toolchain-r/test
-  elif [[ "$ID" == "debian" && ( "$VERSION_ID" == "8" || "$VERSION_ID" == "9" ) ]]; then
+  if [[ "$ID" == "debian" && "$VERSION_ID" == "9" ]]; then
     apt-get update
     DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends install curl ca-certificates gnupg
     curl -sS https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add -

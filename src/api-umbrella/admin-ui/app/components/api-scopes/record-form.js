@@ -1,29 +1,39 @@
+// eslint-disable-next-line ember/no-classic-components
 import Component from '@ember/component';
+import { action } from '@ember/object';
+import { reads } from '@ember/object/computed';
+import { inject } from '@ember/service';
+import { tagName } from '@ember-decorators/component';
 // eslint-disable-next-line ember/no-mixins
 import Save from 'api-umbrella-admin-ui/mixins/save';
-import { computed } from '@ember/object';
+import classic from 'ember-classic-decorator';
 import escape from 'lodash-es/escape';
-import { inject } from '@ember/service';
 
-export default Component.extend(Save, {
-  session: inject(),
+@classic
+@tagName("")
+export default class RecordForm extends Component.extend(Save) {
+  @inject()
+  session;
 
-  currentAdmin: computed.reads('session.data.authenticated.admin'),
+  @reads('session.data.authenticated.admin')
+  currentAdmin;
 
-  actions: {
-    submit() {
-      this.saveRecord({
-        transitionToRoute: 'api_scopes',
-        message: 'Successfully saved the API scope "' + escape(this.model.name) + '"',
-      });
-    },
+  @action
+  submitForm(event) {
+    event.preventDefault();
+    this.saveRecord({
+      element: event.target,
+      transitionToRoute: 'api_scopes',
+      message: 'Successfully saved the API scope "' + escape(this.model.name) + '"',
+    });
+  }
 
-    delete() {
-      this.destroyRecord({
-        prompt: 'Are you sure you want to delete the API scope "' + escape(this.model.name) + '"?',
-        transitionToRoute: 'api_scopes',
-        message: 'Successfully deleted the API scope "' + escape(this.model.name) + '"',
-      });
-    },
-  },
-});
+  @action
+  delete() {
+    this.destroyRecord({
+      prompt: 'Are you sure you want to delete the API scope "' + escape(this.model.name) + '"?',
+      transitionToRoute: 'api_scopes',
+      message: 'Successfully deleted the API scope "' + escape(this.model.name) + '"',
+    });
+  }
+}

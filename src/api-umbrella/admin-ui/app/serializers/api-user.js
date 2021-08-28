@@ -1,8 +1,10 @@
-import ApplicationSerializer from 'api-umbrella-admin-ui/serializers/application';
 import { EmbeddedRecordsMixin } from '@ember-data/serializer/rest';
+import ApplicationSerializer from 'api-umbrella-admin-ui/serializers/application';
+import classic from 'ember-classic-decorator';
 
-export default ApplicationSerializer.extend(EmbeddedRecordsMixin, {
-  attrs: {
+@classic
+export default class ApiUser extends ApplicationSerializer.extend(EmbeddedRecordsMixin) {
+  attrs = {
     settings: { embedded: 'always' },
-  },
-});
+  }
+}

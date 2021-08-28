@@ -1,10 +1,18 @@
-import 'echarts/lib/chart/line';
-import 'echarts/lib/chart/map';
-import 'echarts/lib/chart/scatter';
-import 'echarts/lib/component/geo';
-import 'echarts/lib/component/tooltip';
-import 'echarts/lib/component/visualMapContinuous';
-import echarts from 'echarts/lib/echarts';
+import { LineChart, MapChart, ScatterChart } from 'echarts/charts';
+import { GeoComponent, GridComponent, TooltipComponent, VisualMapComponent } from 'echarts/components';
+import * as echarts from 'echarts/core';
+import { CanvasRenderer } from 'echarts/renderers';
+
+echarts.use([
+  CanvasRenderer,
+  GeoComponent,
+  GridComponent,
+  LineChart,
+  MapChart,
+  ScatterChart,
+  TooltipComponent,
+  VisualMapComponent,
+]);
 
 export function initialize() {
   let colorPalette = [

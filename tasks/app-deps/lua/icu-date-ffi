@@ -5,12 +5,19 @@ lua_icu_date_ffi_hash="53fecec4d7d38b6866f700236fe352b1"
 
 set -e -u -x
 source ./tasks/helpers.sh
+source ./tasks/helpers/detect_os_release.sh
 source ./tasks/helpers/lua.sh
 
 task_working_dir
 download "https://github.com/GUI/lua-icu-date-ffi/archive/$lua_icu_date_ffi_version.tar.gz" "md5" "$lua_icu_date_ffi_hash"
 extract_download "$lua_icu_date_ffi_version.tar.gz"
 
-luarocks_make "lua-icu-date-ffi-$lua_icu_date_ffi_version" "icu-date-ffi-git-1.rockspec"
+detect_os_release
+extra_args=()
+if [[ "$ID_NORMALIZED" == "rhel" && "$VERSION_ID" == "7" ]]; then
+  extra_args=("ICU_DIR=$STAGE_EMBEDDED_DIR")
+fi
+
+luarocks_make "lua-icu-date-ffi-$lua_icu_date_ffi_version" "icu-date-ffi-git-1.rockspec" "${extra_args[@]}"
 
 stamp
