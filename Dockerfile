@@ -87,13 +87,12 @@ COPY src/api-umbrella/admin-ui /app/src/api-umbrella/admin-ui
 COPY tasks/app/admin-ui/build /app/tasks/app/admin-ui/
 RUN make app:admin-ui:build && make clean:dev
 
+COPY LICENSE.txt /app/
+COPY bin /app/bin
 COPY src /app/src
+COPY tasks /app/tasks
+COPY templates /app/templates
 RUN make && make clean:dev
-
-COPY . /app
-RUN make && make clean:dev
-
-RUN DESTDIR="/build/build/work/stage" /app/build/package/scripts/after-install 1
 
 ###
 # Test
@@ -109,7 +108,7 @@ WORKDIR /app
 # https://github.com/CircleCI-Public/circleci-dockerfiles/blob/c24e69355b400aaba34a1ddfc55cdb1fef9dedff/buildpack-deps/images/xenial/browsers/Dockerfile#L47
 RUN set -x && \
   apt-get update && \
-  apt-get -y install gnupg2 && \
+  apt-get -y install curl gnupg2 unzip && \
   curl --silent --show-error --location --fail --retry 3 --output /tmp/google-chrome-stable_current_amd64.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb && \
   (dpkg -i /tmp/google-chrome-stable_current_amd64.deb || apt-get -fy install) && \
   rm -f /tmp/google-chrome-stable_current_amd64.deb && \
@@ -140,11 +139,19 @@ COPY tasks/clean/dev /app/tasks/clean/dev
 COPY --from=build /build /build
 
 COPY Gemfile Gemfile.lock /app/
+COPY tasks/deps/bundler tasks/deps/ruby tasks/deps/rubygems /app/tasks/deps/
 COPY tasks/test-deps/bundle /app/tasks/test-deps/
 RUN make test-deps:bundle && make clean:dev
 
+COPY tasks/test-deps/elasticsearch7 /app/tasks/test-deps/
+RUN make test-deps:elasticsearch7 && make clean:dev
+
+COPY tasks/deps/libmaxminddb tasks/deps/luarocks tasks/deps/openresty /app/tasks/deps/
 COPY tasks/test-deps /app/tasks/test-deps
 RUN make test-deps && make clean:dev
+
+RUN groupadd -r api-umbrella && \
+  useradd -r -g api-umbrella -s /sbin/nologin -d /opt/api-umbrella -c "API Umbrella user" api-umbrella
 
 ENV \
   PATH="/app/bin:/build/build/work/dev-env/sbin:/build/build/work/dev-env/bin:/build/build/work/test-env/sbin:/build/build/work/test-env/bin:/build/build/work/stage/opt/api-umbrella/sbin:/build/build/work/stage/opt/api-umbrella/bin:/build/build/work/stage/opt/api-umbrella/embedded/sbin:/build/build/work/stage/opt/api-umbrella/embedded/bin:${PATH}" \
