@@ -35,12 +35,12 @@ jobs:
         uses: docker/build-push-action@v2.7.0
         with:
           target: test
+          pull: true
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }}
           cache-to: type=inline
-          load: true
 
       - name: Lint
         run: docker-compose run --rm app make lint
