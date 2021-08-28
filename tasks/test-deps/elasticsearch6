@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+
+elasticsearch6_version="6.8.18"
+elasticsearch6_hash="ccad55b5fe77c80245b268faf7962e749acb5c25d7a2f5345d2b076e1a856c612d67348449a96eb5fda39c9b17a81b13c21c1dcce4b705668c88b2278a186de1"
+
+set -e -u -x
+source ./tasks/helpers.sh
+
+task_working_dir
+download "https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-$elasticsearch6_version.tar.gz" "sha512" "$elasticsearch6_hash"
+extract_download "elasticsearch-$elasticsearch6_version.tar.gz"
+
+mkdir -p "$TEST_INSTALL_PREFIX/elasticsearch6"
+rsync -a -v --checksum \
+  --delete-after \
+  --delete-excluded \
+  --exclude "modules/ingest-geoip*" \
+  --exclude "modules/x-*" \
+  "elasticsearch-$elasticsearch6_version/" \
+  "$TEST_INSTALL_PREFIX/elasticsearch6/"
+# Fix jdk directories being chmod 750.
+find "$TEST_INSTALL_PREFIX/elasticsearch6/" -type d -print0 | xargs -0 chmod 755
+chmod -R o+r "$TEST_INSTALL_PREFIX/elasticsearch6/config"
+"$TEST_INSTALL_PREFIX/elasticsearch6/bin/elasticsearch-keystore" create
+chmod 660 "$TEST_INSTALL_PREFIX/elasticsearch6/config/elasticsearch.keystore"
+
+stamp

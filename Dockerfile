@@ -143,6 +143,9 @@ COPY tasks/deps/bundler tasks/deps/ruby tasks/deps/rubygems /app/tasks/deps/
 COPY tasks/test-deps/bundle /app/tasks/test-deps/
 RUN make test-deps:bundle && make clean:dev
 
+COPY tasks/test-deps/elasticsearch6 /app/tasks/test-deps/
+RUN make test-deps:elasticsearch6 && make clean:dev
+
 COPY tasks/test-deps/elasticsearch7 /app/tasks/test-deps/
 RUN make test-deps:elasticsearch7 && make clean:dev
 

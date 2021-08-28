@@ -1,27 +1,21 @@
 #!/usr/bin/env bash
 
-elasticsearch_version="6.8.18"
-elasticsearch_hash="4dd177b54bb093fafd87cfbece49a43955f396d1"
+elasticsearch_version="2.4.6"
+elasticsearch_hash="c3441bef89cd91206edf3cf3bd5c4b62550e60a9"
 
 set -e -u -x
 source ./tasks/helpers.sh
 
 task_working_dir
-download "https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-$elasticsearch_version.tar.gz" "sha1" "$elasticsearch_hash"
+download "https://download.elastic.co/elasticsearch/elasticsearch/elasticsearch-$elasticsearch_version.tar.gz" "sha1" "$elasticsearch_hash"
 extract_download "elasticsearch-$elasticsearch_version.tar.gz"
 
 mkdir -p "$STAGE_EMBEDDED_DIR/elasticsearch"
 rsync -a -v --checksum \
   --delete-after \
   --delete-excluded \
-  --exclude "modules/ingest-geoip*" \
-  --exclude "modules/x-*" \
   "elasticsearch-$elasticsearch_version/" \
   "$STAGE_EMBEDDED_DIR/elasticsearch/"
-# Fix jdk directories being chmod 750.
-find "$STAGE_EMBEDDED_DIR/elasticsearch/" -type d -print0 | xargs -0 chmod 755
-chmod -R o+r "$STAGE_EMBEDDED_DIR/elasticsearch/config"
-"$STAGE_EMBEDDED_DIR/elasticsearch/bin/elasticsearch-keystore" create
-chmod 660 "$STAGE_EMBEDDED_DIR/elasticsearch/config/elasticsearch.keystore"
+mkdir -p "$STAGE_EMBEDDED_DIR/elasticsearch/plugins"
 
 stamp

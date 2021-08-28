@@ -190,7 +190,7 @@ elasticsearch:
   index_name_prefix: api-umbrella
   index_partition: monthly
   index_mapping_type: log
-  api_version: 6
+  api_version: 2
   template_version: 1
   embedded_server_config:
     network:
@@ -209,10 +209,6 @@ elasticsearch:
       breaker:
         fielddata:
           limit: 60%
-    action:
-      destructive_requires_name: false
-    discovery:
-      type: single-node
   aws_signing_proxy:
     host: 127.0.0.1
     port: 14017

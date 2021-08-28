@@ -16,7 +16,11 @@ class OutdatedPackages
     },
     "elasticsearch" => {
       :git => "https://github.com/elasticsearch/elasticsearch.git",
-      :constraint => "~> 6.0",
+      :constraint => "~> 2.4",
+    },
+    "elasticsearch6" => {
+      :git => "https://github.com/elasticsearch/elasticsearch.git",
+      :constraint => "~> 6.2",
     },
     "elasticsearch7" => {
       :git => "https://github.com/elasticsearch/elasticsearch.git",
