@@ -49,9 +49,7 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
-          cache-to: |
-            type=gha,mode=max
-            type=inline
+          cache-to: type=gha,mode=max
 
       # - name: Pull
       #   run: docker pull "$DOCKER_IMAGE_CACHE_FROM"
