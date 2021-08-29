@@ -153,6 +153,8 @@ COPY tasks/deps/libmaxminddb tasks/deps/luarocks tasks/deps/openresty /app/tasks
 COPY tasks/test-deps /app/tasks/test-deps
 RUN make test-deps && make clean:dev
 
+COPY --from=build /app /app
+
 RUN groupadd -r api-umbrella && \
   useradd -r -g api-umbrella -s /sbin/nologin -d /opt/api-umbrella -c "API Umbrella user" api-umbrella
 
