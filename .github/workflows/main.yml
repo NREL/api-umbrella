@@ -48,15 +48,17 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }}
-          cache-to: type=inline
+          cache-from: type=gha
+          cache-to: |
+            type=gha,mode=max
+            type=inline
 
-            # - name: Pull
-            #   run: docker pull "$DOCKER_IMAGE_CACHE_FROM"
-            #   env:
-            #     COMPOSE_DOCKER_CLI_BUILD: 1
-            #     DOCKER_BUILDKIT: 1
-            #     DOCKER_IMAGE_CACHE_FROM: localhost:5000/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }}
+      # - name: Pull
+      #   run: docker pull "$DOCKER_IMAGE_CACHE_FROM"
+      #   env:
+      #     COMPOSE_DOCKER_CLI_BUILD: 1
+      #     DOCKER_BUILDKIT: 1
+      #     DOCKER_IMAGE_CACHE_FROM: localhost:5000/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }}
 
       - name: Lint
         run: docker run --rm -it "$DOCKER_IMAGE_CACHE_FROM" make lint
