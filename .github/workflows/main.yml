@@ -33,29 +33,19 @@ jobs:
         id: meta
         uses: docker/metadata-action@v3.5.0
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          images: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+            localhost:5000/nrel/api-umbrella
           flavor: |
             prefix=dev-env-
 
-      - name: Build
+      - name: Build and push
+        id: docker_build
         uses: docker/build-push-action@v2.7.0
         with:
           target: test
           pull: true
           push: false
-          load: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }}
-          cache-to: type=inline
-
-      - name: Push
-        uses: docker/build-push-action@v2.7.0
-        with:
-          target: test
-          pull: false
-          push: true
-          load: false
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }}
@@ -64,4 +54,6 @@ jobs:
       - name: Lint
         run: docker-compose run --rm app make lint
         env:
+          COMPOSE_DOCKER_CLI_BUILD: 1
+          DOCKER_BUILDKIT: 1
           DOCKER_IMAGE_CACHE_FROM: localhost:5000/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }}
