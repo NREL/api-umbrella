@@ -39,6 +39,14 @@ jobs:
           flavor: |
             prefix=dev-env-
 
+      - name: Extract metadata (tags, labels) for Docker
+        id: build_cache_meta
+        uses: docker/metadata-action@v3.5.0
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          flavor: |
+            prefix=build-cache-
+
       - name: Build and push
         id: docker_build
         uses: docker/build-push-action@v2.7.0
@@ -48,8 +56,8 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.build_cache_meta.outputs.version }}
+          cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.build_cache_meta.outputs.version }},mode=max
 
       # - name: Pull
       #   run: docker pull "$DOCKER_IMAGE_CACHE_FROM"
@@ -59,7 +67,7 @@ jobs:
       #     DOCKER_IMAGE_CACHE_FROM: localhost:5000/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }}
 
       - name: Lint
-        run: docker run --rm -it "$DOCKER_IMAGE_CACHE_FROM" make lint
+        run: docker run --rm "$DOCKER_IMAGE_CACHE_FROM" make lint
         env:
           COMPOSE_DOCKER_CLI_BUILD: 1
           DOCKER_BUILDKIT: 1
