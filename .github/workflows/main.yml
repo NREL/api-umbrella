@@ -67,7 +67,7 @@ jobs:
       #     DOCKER_IMAGE_CACHE_FROM: localhost:5000/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }}
 
       - name: Lint
-        run: docker run --rm "$DOCKER_IMAGE_CACHE_FROM" make lint
+        run: docker run --rm --volume "$(pwd)/.git:/app/.git" "$DOCKER_IMAGE_CACHE_FROM" make lint
         env:
           COMPOSE_DOCKER_CLI_BUILD: 1
           DOCKER_BUILDKIT: 1
