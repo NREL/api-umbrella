@@ -5,6 +5,9 @@ on: [push, pull_request]
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: nrel/api-umbrella
+  DOCKER_BUILDKIT: 1
+  TESTS_GLOB: "test/**/test_*.rb"
+  ELASTICSEARCH_TESTS_GLOB: "test/admin_ui/**/test_stats_*.rb test/admin_ui/**/test_stats_*.rb test/apis/admin/stats/**/test_*.rb test/apis/v0/test_analytics.rb test/apis/v1/analytics/**/test_*.rb test/proxy/logging/**/test_*.rb"
 
 jobs:
   build:
@@ -53,6 +56,7 @@ jobs:
           cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.build_cache_meta.outputs.version }},mode=max
 
   lint:
+    needs: [build]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -68,13 +72,146 @@ jobs:
       - name: Pull
         run: docker pull "$DOCKER_IMAGE_CACHE_FROM"
         env:
-          COMPOSE_DOCKER_CLI_BUILD: 1
-          DOCKER_BUILDKIT: 1
           DOCKER_IMAGE_CACHE_FROM: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }}
 
       - name: Lint
         run: docker run --rm --volume "$(pwd)/.git:/app/.git" "$DOCKER_IMAGE_CACHE_FROM" make lint
         env:
-          COMPOSE_DOCKER_CLI_BUILD: 1
-          DOCKER_BUILDKIT: 1
+          DOCKER_IMAGE_CACHE_FROM: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }}
+
+  test:
+    needs: [build]
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        ci_node_total: [6]
+        ci_node_index: [0, 1, 2, 3, 4, 5]
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v3.5.0
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          flavor: |
+            prefix=dev-env-
+
+      - name: Pull
+        run: docker pull "$DOCKER_IMAGE_CACHE_FROM"
+        env:
+          DOCKER_IMAGE_CACHE_FROM: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }}
+
+      - name: Test
+        run: |
+          curl -sL "https://github.com/leonid-shevtsov/split_tests/releases/download/${SPLIT_TEST_VERSION}/split_tests.linux.gz" | gzip -d > /usr/local/bin/split_tests
+          chmod +x /usr/local/bin/split_tests
+
+          tests=$(./split_tests --glob "${{ env.TESTS_GLOB }}" --split-total=${CI_NODE_TOTAL} --split-index=${CI_NODE_INDEX})
+          docker run --rm \
+            -e TESTS="${tests}" \
+            "$DOCKER_IMAGE_CACHE_FROM" \
+            make test
+        env:
+          DOCKER_IMAGE_CACHE_FROM: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }}
+          SPLIT_TEST_VERSION: v0.3.0
+          CI_NODE_TOTAL: ${{ matrix.ci_node_total }}
+          CI_NODE_INDEX: ${{ matrix.ci_node_index }}
+
+  test_elasticsearch_v6:
+    needs: [build]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v3.5.0
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          flavor: |
+            prefix=dev-env-
+
+      - name: Pull
+        run: docker pull "$DOCKER_IMAGE_CACHE_FROM"
+        env:
+          DOCKER_IMAGE_CACHE_FROM: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }}
+
+      - name: Test
+        run: |
+          shopt -s globstar
+          tests=(${{ env.ELASTICSEARCH_TESTS_GLOB }})
+          docker run --rm \
+            -e ELASTICSEARCH_TEST_API_VERSION=6 \
+            -e ELASTICSEARCH_TEST_TEMPLATE_VERSION=2 \
+            -e TESTS="${tests[*]}" \
+            "$DOCKER_IMAGE_CACHE_FROM" \
+            make test
+        env:
+          DOCKER_IMAGE_CACHE_FROM: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }}
+
+  test_elasticsearch_v7:
+    needs: [build]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v3.5.0
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          flavor: |
+            prefix=dev-env-
+
+      - name: Pull
+        run: docker pull "$DOCKER_IMAGE_CACHE_FROM"
+        env:
+          DOCKER_IMAGE_CACHE_FROM: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }}
+
+      - name: Test
+        run: |
+          shopt -s globstar
+          tests=(${{ env.ELASTICSEARCH_TESTS_GLOB }})
+          docker run --rm \
+            -e ELASTICSEARCH_TEST_API_VERSION=7 \
+            -e ELASTICSEARCH_TEST_TEMPLATE_VERSION=2 \
+            -e TESTS="${tests[*]}" \
+            "$DOCKER_IMAGE_CACHE_FROM" \
+            make test
+        env:
+          DOCKER_IMAGE_CACHE_FROM: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }}
+
+  test_elasticsearch_v7_daily:
+    needs: [build]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v3.5.0
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          flavor: |
+            prefix=dev-env-
+
+      - name: Pull
+        run: docker pull "$DOCKER_IMAGE_CACHE_FROM"
+        env:
+          DOCKER_IMAGE_CACHE_FROM: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }}
+
+      - name: Test
+        run: |
+          shopt -s globstar
+          tests=(${{ env.ELASTICSEARCH_TESTS_GLOB }})
+          docker run --rm \
+            -e ELASTICSEARCH_TEST_API_VERSION=7 \
+            -e ELASTICSEARCH_TEST_TEMPLATE_VERSION=2 \
+            -e ELASTICSEARCH_TEST_INDEX_PARTITION=daily \
+            -e TESTS="${tests[*]}" \
+            "$DOCKER_IMAGE_CACHE_FROM" \
+            make test
+        env:
           DOCKER_IMAGE_CACHE_FROM: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }}
