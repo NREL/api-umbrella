@@ -119,6 +119,22 @@ jobs:
           CI_NODE_TOTAL: ${{ matrix.ci_node_total }}
           CI_NODE_INDEX: ${{ matrix.ci_node_index }}
 
+      - name: Archive test reports
+        uses: actions/upload-artifact@v2
+        if: ${{ always() }}
+        with:
+          name: test-reports
+          path: test/tmp/reports
+
+      - name: Archive test logs
+        uses: actions/upload-artifact@v2
+        if: ${{ always() }}
+        with:
+          name: test-logs
+          path: |
+            test/tmp/run/api-umbrella-root/var/log
+            test/tmp/capybara
+
   test_elasticsearch_v6:
     needs: [build]
     runs-on: ubuntu-latest
@@ -150,6 +166,22 @@ jobs:
             make test
         env:
           DOCKER_IMAGE_CACHE_FROM: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }}
+
+      - name: Archive test reports
+        uses: actions/upload-artifact@v2
+        if: ${{ always() }}
+        with:
+          name: test-reports
+          path: test/tmp/reports
+
+      - name: Archive test logs
+        uses: actions/upload-artifact@v2
+        if: ${{ always() }}
+        with:
+          name: test-logs
+          path: |
+            test/tmp/run/api-umbrella-root/var/log
+            test/tmp/capybara
 
   test_elasticsearch_v7:
     needs: [build]
@@ -183,6 +215,22 @@ jobs:
         env:
           DOCKER_IMAGE_CACHE_FROM: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }}
 
+      - name: Archive test reports
+        uses: actions/upload-artifact@v2
+        if: ${{ always() }}
+        with:
+          name: test-reports
+          path: test/tmp/reports
+
+      - name: Archive test logs
+        uses: actions/upload-artifact@v2
+        if: ${{ always() }}
+        with:
+          name: test-logs
+          path: |
+            test/tmp/run/api-umbrella-root/var/log
+            test/tmp/capybara
+
   test_elasticsearch_v7_daily:
     needs: [build]
     runs-on: ubuntu-latest
@@ -215,3 +263,19 @@ jobs:
             make test
         env:
           DOCKER_IMAGE_CACHE_FROM: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }}
+
+      - name: Archive test reports
+        uses: actions/upload-artifact@v2
+        if: ${{ always() }}
+        with:
+          name: test-reports
+          path: test/tmp/reports
+
+      - name: Archive test logs
+        uses: actions/upload-artifact@v2
+        if: ${{ always() }}
+        with:
+          name: test-logs
+          path: |
+            test/tmp/run/api-umbrella-root/var/log
+            test/tmp/capybara
