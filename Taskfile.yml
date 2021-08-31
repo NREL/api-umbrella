@@ -24,6 +24,8 @@ version: "3"
 
 output: interleaved
 
+run: when_changed
+
 tasks:
   deps:bundler:
     deps:
