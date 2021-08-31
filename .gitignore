@@ -32,7 +32,8 @@
 /deploy/tmp
 /log/*
 /test/reports
-/test/tmp
+/test/tmp/*
+!/test/tmp/.keep
 /ci_cache
 /vendor
 /website/build

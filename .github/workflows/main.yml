@@ -110,6 +110,7 @@ jobs:
 
           tests=$(split_tests --glob "${{ env.TESTS_GLOB }}" --split-total=${CI_NODE_TOTAL} --split-index=${CI_NODE_INDEX})
           docker run --rm \
+            -v "$(pwd)/test/tmp:/app/test/tmp" \
             -e TESTOPTS="--ci-dir=./test/tmp/reports" \
             -e TESTS="${tests}" \
             "$DOCKER_IMAGE_CACHE_FROM" \
@@ -125,7 +126,7 @@ jobs:
         if: ${{ always() }}
         with:
           name: test-reports
-          path: test/tmp/reports/**/*
+          path: test/tmp/reports
 
       - name: Archive test logs
         uses: actions/upload-artifact@v2
@@ -133,8 +134,8 @@ jobs:
         with:
           name: test-logs
           path: |
-            test/tmp/run/api-umbrella-root/var/log/**/*
-            test/tmp/capybara/**/*
+            test/tmp/run/api-umbrella-root/var/log
+            test/tmp/capybara
 
   test_elasticsearch_v6:
     needs: [build]
@@ -160,6 +161,7 @@ jobs:
           shopt -s globstar
           tests=(${{ env.ELASTICSEARCH_TESTS_GLOB }})
           docker run --rm \
+            -v "$(pwd)/test/tmp:/app/test/tmp" \
             -e ELASTICSEARCH_TEST_API_VERSION=6 \
             -e ELASTICSEARCH_TEST_TEMPLATE_VERSION=2 \
             -e TESTOPTS="--ci-dir=./test/tmp/reports" \
@@ -174,7 +176,7 @@ jobs:
         if: ${{ always() }}
         with:
           name: test-reports
-          path: test/tmp/reports/**/*
+          path: test/tmp/reports
 
       - name: Archive test logs
         uses: actions/upload-artifact@v2
@@ -182,8 +184,8 @@ jobs:
         with:
           name: test-logs
           path: |
-            test/tmp/run/api-umbrella-root/var/log/**/*
-            test/tmp/capybara/**/*
+            test/tmp/run/api-umbrella-root/var/log
+            test/tmp/capybara
 
   test_elasticsearch_v7:
     needs: [build]
@@ -209,6 +211,7 @@ jobs:
           shopt -s globstar
           tests=(${{ env.ELASTICSEARCH_TESTS_GLOB }})
           docker run --rm \
+            -v "$(pwd)/test/tmp:/app/test/tmp" \
             -e ELASTICSEARCH_TEST_API_VERSION=7 \
             -e ELASTICSEARCH_TEST_TEMPLATE_VERSION=2 \
             -e TESTOPTS="--ci-dir=./test/tmp/reports" \
@@ -223,7 +226,7 @@ jobs:
         if: ${{ always() }}
         with:
           name: test-reports
-          path: test/tmp/reports/**/*
+          path: test/tmp/reports
 
       - name: Archive test logs
         uses: actions/upload-artifact@v2
@@ -231,8 +234,8 @@ jobs:
         with:
           name: test-logs
           path: |
-            test/tmp/run/api-umbrella-root/var/log/**/*
-            test/tmp/capybara/**/*
+            test/tmp/run/api-umbrella-root/var/log
+            test/tmp/capybara
 
   test_elasticsearch_v7_daily:
     needs: [build]
@@ -258,6 +261,7 @@ jobs:
           shopt -s globstar
           tests=(${{ env.ELASTICSEARCH_TESTS_GLOB }})
           docker run --rm \
+            -v "$(pwd)/test/tmp:/app/test/tmp" \
             -e ELASTICSEARCH_TEST_API_VERSION=7 \
             -e ELASTICSEARCH_TEST_TEMPLATE_VERSION=2 \
             -e ELASTICSEARCH_TEST_INDEX_PARTITION=daily \
@@ -273,7 +277,7 @@ jobs:
         if: ${{ always() }}
         with:
           name: test-reports
-          path: test/tmp/reports/**/*
+          path: test/tmp/reports
 
       - name: Archive test logs
         uses: actions/upload-artifact@v2
@@ -281,5 +285,5 @@ jobs:
         with:
           name: test-logs
           path: |
-            test/tmp/run/api-umbrella-root/var/log/**/*
-            test/tmp/capybara/**/*
+            test/tmp/run/api-umbrella-root/var/log
+            test/tmp/capybara
