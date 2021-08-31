@@ -162,7 +162,7 @@ module ApiUmbrellaTestHelpers
           $elasticsearch_process.environment["PATH"] = "#{File.join(API_UMBRELLA_SRC_ROOT, "build/work/test-env/elasticsearch#{elasticsearch_test_api_version}/bin")}:#{ENV["PATH"]}"
           $elasticsearch_process.environment["ES_PATH_CONF"] = elasticsearch_config_dir
           $elasticsearch_process.environment["ES_JAVA_HOME"] = `readlink -m "$(which java)/../.."`.strip
-          $elasticsearch_process.environment["ES_JAVA_OPTS"] = "-Xms#{$config["elasticsearch"]["embedded_server_env"]["heap_size"]} -Xmx#{$config["elasticsearch"]["embedded_server_env"]["heap_size"]}"
+          $elasticsearch_process.environment["ES_JAVA_OPTS"] = $config["elasticsearch"]["embedded_server_env"]["java_opts"]
           $elasticsearch_process.leader = true
           $elasticsearch_process.start
         end
