@@ -19,6 +19,7 @@ proxy_next_upstream error;
 
 # Don't buffer proxied requests to allow for streaming APIs.
 proxy_buffering off;
+proxy_request_buffering off;
 
 location @banned_pit {
   echo_sleep {{ban.response.delay}};

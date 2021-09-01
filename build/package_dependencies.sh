@@ -41,7 +41,6 @@ if [[ "$ID_NORMALIZED" == "rhel" ]]; then
 
     # TrafficServer
     libxml2
-    tcl
 
     # ElasticSearch
     java-1.8.0-openjdk-headless
@@ -103,7 +102,6 @@ if [[ "$ID_NORMALIZED" == "rhel" ]]; then
     rpm-build
     rsync
     tar
-    tcl-devel
     unzip
     xz
 
@@ -203,7 +201,6 @@ elif [[ "$ID_NORMALIZED" == "debian" ]]; then
 
     # TrafficServer
     libxml2
-    tcl
 
     # ElasticSearch
     "openjdk-$openjdk_version-jre-headless"

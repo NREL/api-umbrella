@@ -42,7 +42,8 @@ class Test::Proxy::Dns::TestCustomServer < Minitest::Test
       },
     ]) do
       response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/", http_options)
-      assert_response_code(502, response)
+      assert_response_code(500, response)
+      assert_match("Unknown Host", response.body)
 
       set_dns_records(["#{unique_test_hostname} 60 A 127.0.0.1"])
 
@@ -103,7 +104,8 @@ class Test::Proxy::Dns::TestCustomServer < Minitest::Test
 
       set_dns_records([])
       wait_for_response("/#{unique_test_id}/", {
-        :code => 502,
+        :code => 500,
+        :body => /Unknown Host/,
       })
       duration = Time.now.utc - start_time
       min_duration = ttl - TTL_BUFFER_NEG

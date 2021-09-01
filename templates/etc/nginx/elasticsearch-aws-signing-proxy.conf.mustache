@@ -61,6 +61,7 @@ http {
       access_by_lua_file '{{_src_root_dir}}/src/api-umbrella/elasticsearch-aws-signing-proxy/proxy.lua';
 
       proxy_buffering off;
+      proxy_request_buffering off;
       set $backend_upstream "https://{{elasticsearch.aws_signing_proxy.aws_host}}:443";
       proxy_pass $backend_upstream;
     }
