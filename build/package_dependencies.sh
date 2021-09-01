@@ -141,18 +141,18 @@ elif [[ "$ID_NORMALIZED" == "debian" ]]; then
   libcurl_version=4
   libffi_version=7
   libnettle_version=8
+  libreadline_version=8
 
   if [[ "$ID" == "debian" && ( "$VERSION_ID" == "9" || "$VERSION_ID" == "10" ) ]]; then
     libffi_version=6
     libnettle_version=6
-  elif [[ "$ID" == "debian" && "$VERSION_ID" == "9" ]]; then
-    libffi_version=6
-    libnettle_version=6
+    libreadline_version=7
   elif [[ "$ID" == "ubuntu" && "$VERSION_ID" == "20.04" ]]; then
     libnettle_version=7
   elif [[ "$ID" == "ubuntu" && "$VERSION_ID" == "18.04" ]]; then
     libffi_version=6
     libnettle_version=6
+    libreadline_version=7
   fi
 
   core_package_dependencies=(
