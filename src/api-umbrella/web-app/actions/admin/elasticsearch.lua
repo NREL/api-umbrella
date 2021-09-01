@@ -13,7 +13,11 @@ function _M.elasticsearch(self)
 
   -- Proxy to the elasticsearch server.
   local httpc = http.new()
-  local ok, err = httpc:connect(config["elasticsearch"]["_first_server"]["host"], config["elasticsearch"]["_first_server"]["port"])
+  local ok, err = httpc:connect({
+    scheme = "http",
+    host = config["elasticsearch"]["_first_server"]["host"],
+    port = config["elasticsearch"]["_first_server"]["port"],
+  })
   if not ok then
     ngx.log(ngx.ERR, err)
     return
