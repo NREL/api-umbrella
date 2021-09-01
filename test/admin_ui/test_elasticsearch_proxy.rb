@@ -51,8 +51,9 @@ class Test::AdminUi::TestElasticsearchProxy < Minitest::Capybara::Test
         "Cookie" => "_api_umbrella_session=#{selenium_cookie_named("_api_umbrella_session").fetch(:value)}",
       },
     }))
-    assert_response_code(405, response)
-    assert_includes(response.body, "Incorrect HTTP method")
+    assert_response_code(301, response)
+    assert_equal("/admin/elasticsearch/_plugin/foobar/", response.headers["Location"])
+    assert_match(%r{URL=/admin/elasticsearch/_plugin/foobar/}, response.body)
     assert_equal(response.body.bytesize, response.headers["Content-Length"].to_i)
   end
 end
