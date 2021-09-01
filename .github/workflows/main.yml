@@ -121,6 +121,10 @@ jobs:
           CI_NODE_TOTAL: ${{ matrix.ci_node_total }}
           CI_NODE_INDEX: ${{ matrix.ci_node_index }}
 
+      - name: Artifact permissions
+        if: ${{ always() }}
+        run: sudo chmod 755 test/tmp/artifacts/log/* && sudo chmod 644 test/tmp/artifacts/log/*/*
+
       - name: Archive artifacts
         uses: actions/upload-artifact@v2
         if: ${{ always() }}
@@ -163,6 +167,10 @@ jobs:
             make test
         env:
           DOCKER_IMAGE_CACHE_FROM: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }}
+
+      - name: Artifact permissions
+        if: ${{ always() }}
+        run: sudo chmod 755 test/tmp/artifacts/log/* && sudo chmod 644 test/tmp/artifacts/log/*/*
 
       - name: Archive artifacts
         uses: actions/upload-artifact@v2
@@ -207,6 +215,10 @@ jobs:
         env:
           DOCKER_IMAGE_CACHE_FROM: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }}
 
+      - name: Artifact permissions
+        if: ${{ always() }}
+        run: sudo chmod 755 test/tmp/artifacts/log/* && sudo chmod 644 test/tmp/artifacts/log/*/*
+
       - name: Archive artifacts
         uses: actions/upload-artifact@v2
         if: ${{ always() }}
@@ -250,6 +262,10 @@ jobs:
             make test
         env:
           DOCKER_IMAGE_CACHE_FROM: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }}
+
+      - name: Artifact permissions
+        if: ${{ always() }}
+        run: sudo chmod 755 test/tmp/artifacts/log/* && sudo chmod 644 test/tmp/artifacts/log/*/*
 
       - name: Archive artifacts
         uses: actions/upload-artifact@v2

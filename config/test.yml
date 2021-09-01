@@ -95,6 +95,3 @@ _test_config:
   default_null_override_string: foobar
   default_empty_hash_override_hash:
     baz: qux
-# Looser umask in tests, so files can be read if mounting docker volumes on the
-# host.
-umask: "0022"
