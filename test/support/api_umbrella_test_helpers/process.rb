@@ -196,7 +196,6 @@ module ApiUmbrellaTestHelpers
 
             print "."
             sleep 2
-            puts `find test/tmp -type f -exec ls -lh {} \\;`
           end
         end
 
