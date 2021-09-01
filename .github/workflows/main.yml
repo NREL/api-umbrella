@@ -125,7 +125,7 @@ jobs:
         uses: actions/upload-artifact@v2
         if: ${{ always() }}
         with:
-          name: test-artifacts
+          name: test-artifacts-matrix-${{ matrix.ci_node_index }}
           path: |
             test/tmp/artifacts/**/*
             !test/tmp/artifacts/**/log/*/lock
@@ -168,7 +168,7 @@ jobs:
         uses: actions/upload-artifact@v2
         if: ${{ always() }}
         with:
-          name: test-artifacts
+          name: test-artifacts-elasticsearch-v6
           path: |
             test/tmp/artifacts/**/*
             !test/tmp/artifacts/**/log/*/lock
@@ -211,7 +211,7 @@ jobs:
         uses: actions/upload-artifact@v2
         if: ${{ always() }}
         with:
-          name: test-artifacts
+          name: test-artifacts-elasticsearch-v7
           path: |
             test/tmp/artifacts/**/*
             !test/tmp/artifacts/**/log/*/lock
@@ -255,7 +255,7 @@ jobs:
         uses: actions/upload-artifact@v2
         if: ${{ always() }}
         with:
-          name: test-artifacts
+          name: test-artifacts-elasticsearch-v7-daily
           path: |
             test/tmp/artifacts/**/*
             !test/tmp/artifacts/**/log/*/lock
