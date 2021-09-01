@@ -185,7 +185,10 @@ local function write_templates()
 
         local _, extension = path.splitext(template_path)
         if extension == ".mustache" then
+          ngx.log(ngx.ERR, "lustache render: ", template_path)
+          ngx.log(ngx.ERR, "lustache template: ", content)
           content = lustache:render(mustache_unescape(content), config)
+          ngx.log(ngx.ERR, "lustache rendered: ", content)
         end
 
         local install_filename = path.basename(install_path)
