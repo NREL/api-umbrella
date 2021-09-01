@@ -41,7 +41,7 @@ rsync -a -v --delete-after \
   "$APP_CORE_RELEASE_DIR/src/api-umbrella/web-app/.bundle/"
 
 # Fix the bundle path so it's relative and works within the release directory.
-PATH="$STAGE_EMBEDDED_PATH" BUNDLE_APP_CONFIG="$APP_CORE_RELEASE_DIR/src/api-umbrella/web-app/.bundle" bundle config --local path "../../../vendor/bundle"
+(cd "$APP_CORE_RELEASE_DIR/src/api-umbrella/web-app" && PATH="$STAGE_EMBEDDED_PATH" BUNDLE_APP_CONFIG="$APP_CORE_RELEASE_DIR/src/api-umbrella/web-app/.bundle" bundle config --local path "../../../vendor/bundle")
 
 # Add symlinks for the release.
 (cd "$APP_CORE_DIR" && ln -snf releases/0 ./current)
