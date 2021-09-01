@@ -139,10 +139,6 @@ local function ensure_geoip_db()
 end
 
 local function set_template_permissions(file_path, install_filename, install_path)
-  if config["user"] and string.find(install_path, "etc/trafficserver") ~= nil then
-    chown(file_path, config["user"])
-  end
-
   if config["group"] then
     chown(file_path, nil, config["group"])
   end
