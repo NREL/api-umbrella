@@ -1,21 +1,20 @@
 #!/usr/bin/env bash
 
 elasticsearch6_version="6.8.18"
-elasticsearch6_hash="ccad55b5fe77c80245b268faf7962e749acb5c25d7a2f5345d2b076e1a856c612d67348449a96eb5fda39c9b17a81b13c21c1dcce4b705668c88b2278a186de1"
+elasticsearch6_hash="11981c316b65e7d407b85dffd70506a5f08b472b064f8f382d9a864f220b63792bf8f23b5e2485627f49f21d2ee5a966542e8c955acc4b3ac37094750e7c409c"
 
 set -e -u -x
 source ./tasks/helpers.sh
 
 task_working_dir
-download "https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-$elasticsearch6_version.tar.gz" "sha512" "$elasticsearch6_hash"
-extract_download "elasticsearch-$elasticsearch6_version.tar.gz"
+download "https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-oss-$elasticsearch6_version.tar.gz" "sha512" "$elasticsearch6_hash"
+extract_download "elasticsearch-oss-$elasticsearch6_version.tar.gz"
 
 mkdir -p "$TEST_INSTALL_PREFIX/elasticsearch6"
 rsync -a -v --checksum \
   --delete-after \
   --delete-excluded \
   --exclude "modules/ingest-geoip*" \
-  --exclude "modules/x-*" \
   "elasticsearch-$elasticsearch6_version/" \
   "$TEST_INSTALL_PREFIX/elasticsearch6/"
 # Fix jdk directories being chmod 750.

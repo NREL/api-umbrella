@@ -24,7 +24,7 @@ class OutdatedPackages
     },
     "elasticsearch7" => {
       :git => "https://github.com/elasticsearch/elasticsearch.git",
-      :constraint => "~> 7.0",
+      :constraint => "~> 7.10.0",
     },
     "glauth" => {
       :git => "https://github.com/glauth/glauth.git",

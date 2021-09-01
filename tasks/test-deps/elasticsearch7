@@ -1,27 +1,26 @@
 #!/usr/bin/env bash
 
-elasticsearch7_version="7.14.0"
-elasticsearch7_hash="13f5ba7a60d7c3c0e6d45042b7bb506ca655bc344f8e3f10f4d60dd507fc9a8fce7023b91e7dfafa8c7a351f5ab1dc010336c887b290f984814a4159775dd393"
+elasticsearch7_version="7.10.2"
+elasticsearch7_hash="7b63237996569ccdc7c9d9e7cc097fcb23865396eddac30e5f02543484220d2fc70a7285b430877e5e76a5d8716d9682de9fc40d5e57a08f331e82011fc59756"
 
 set -e -u -x
 source ./tasks/helpers.sh
 
 task_working_dir
-download "https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-$elasticsearch7_version-no-jdk-linux-x86_64.tar.gz" "sha512" "$elasticsearch7_hash"
-extract_download "elasticsearch-$elasticsearch7_version-no-jdk-linux-x86_64.tar.gz"
+download "https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-oss-$elasticsearch7_version-no-jdk-linux-x86_64.tar.gz" "sha512" "$elasticsearch7_hash"
+extract_download "elasticsearch-oss-$elasticsearch7_version-no-jdk-linux-x86_64.tar.gz"
 
 mkdir -p "$TEST_INSTALL_PREFIX/elasticsearch7"
 rsync -a -v --checksum \
   --delete-after \
   --delete-excluded \
   --exclude "modules/ingest-geoip*" \
-  --exclude "modules/x-*" \
   "elasticsearch-$elasticsearch7_version/" \
   "$TEST_INSTALL_PREFIX/elasticsearch7/"
 # Fix jdk directories being chmod 750.
 find "$TEST_INSTALL_PREFIX/elasticsearch7/" -type d -print0 | xargs -0 chmod 755
 chmod -R o+r "$TEST_INSTALL_PREFIX/elasticsearch7/config"
-ES_JAVA_HOME="$(readlink -m "$(which java)/../..")" "$TEST_INSTALL_PREFIX/elasticsearch7/bin/elasticsearch-keystore" create
+JAVA_HOME="$(readlink -m "$(which java)/../..")" "$TEST_INSTALL_PREFIX/elasticsearch7/bin/elasticsearch-keystore" create
 chmod 660 "$TEST_INSTALL_PREFIX/elasticsearch7/config/elasticsearch.keystore"
 
 stamp
