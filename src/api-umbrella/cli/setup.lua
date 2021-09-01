@@ -138,7 +138,7 @@ local function ensure_geoip_db()
   end
 end
 
-local function set_template_permissions(file_path, install_filename, install_path)
+local function set_template_permissions(file_path, install_filename)
   if config["group"] then
     chown(file_path, nil, config["group"])
   end
@@ -198,12 +198,12 @@ local function write_templates()
           local install_dir = path.dirname(install_path)
           local temp_path = path.tmpname()
           file.write(temp_path, content)
-          set_template_permissions(temp_path, install_filename, install_path)
+          set_template_permissions(temp_path, install_filename)
 
           dir.makepath(install_dir)
           file.move(temp_path, install_path)
         else
-          set_template_permissions(install_path, install_filename, install_path)
+          set_template_permissions(install_path, install_filename)
         end
       end
     end
