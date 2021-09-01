@@ -100,6 +100,13 @@ if [[ "$ID_NORMALIZED" == "rhel" ]]; then
 
     # lualdap
     openldap-devel
+
+    # libbson
+    cmake
+
+    # For nokogiri dependency (for static-site and tests)
+    libxml2-devel
+    libxslt-devel
   )
   test_package_dependencies=(
     unbound
@@ -121,9 +128,6 @@ if [[ "$ID_NORMALIZED" == "rhel" ]]; then
     # For running lsof tests in Docker as root
     sudo
 
-    # For nokogiri dependency (for static-site and tests)
-    libxml2-devel
-    libxslt-devel
   )
 
   # Install GCC 7+ for compiling TrafficServer (C++17 required).
@@ -241,6 +245,9 @@ elif [[ "$ID_NORMALIZED" == "debian" ]]; then
 
     # lualdap
     libldap-dev
+
+    # libbson
+    cmake
 
     # For nokogiri dependency (for static-site and tests)
     libxml2-dev
