@@ -204,14 +204,31 @@ local function write_templates()
           -- processes never read a half-written file.
           local install_dir = path.dirname(install_path)
           local temp_path = path.tmpname()
+          ngx.log(ngx.ERR, "writing to temp path: ", temp_path)
           file.write(temp_path, "")
           set_template_permissions(temp_path, install_filename, install_path)
           file.write(temp_path, content)
 
+          local result, err = shell_blocking_capture_combined({ "ls", "-lh", install_dir })
+          ngx.log(ngx.ERR, "pre make path: ", result["output"])
+
           dir.makepath(install_dir)
+
+          local result, err = shell_blocking_capture_combined({ "ls", "-lh", install_dir })
+          ngx.log(ngx.ERR, "post make path: ", result["output"])
+
           file.move(temp_path, install_path)
+          ngx.log(ngx.ERR, "moving temp path to install path: ", install_path)
+
+          local result, err = shell_blocking_capture_combined({ "ls", "-lh", install_dir })
+          ngx.log(ngx.ERR, "post file.move: ", result["output"])
         else
+          local result, err = shell_blocking_capture_combined({ "ls", "-lh", install_dir })
+          ngx.log(ngx.ERR, "pre set perms only: ", result["output"])
           set_template_permissions(install_path, install_filename, install_path)
+
+          local result, err = shell_blocking_capture_combined({ "ls", "-lh", install_dir })
+          ngx.log(ngx.ERR, "post set perms only: ", result["output"])
         end
       end
     end
