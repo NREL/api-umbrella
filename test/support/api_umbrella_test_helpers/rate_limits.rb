@@ -95,6 +95,11 @@ module ApiUmbrellaTestHelpers
     end
 
     def make_requests(path, count, options = {})
+      hydra_options = {}
+      if options[:max_concurrency]
+        hydra_options[:max_concurrency] = options.delete(:max_concurrency)
+      end
+
       http_opts = keyless_http_options.deep_merge({
         :headers => {},
       })
@@ -111,7 +116,7 @@ module ApiUmbrellaTestHelpers
         http_opts.deep_merge!(options[:http_options])
       end
 
-      hydra = Typhoeus::Hydra.new
+      hydra = Typhoeus::Hydra.new(hydra_options)
       requests = Array.new(count) do
         request = Typhoeus::Request.new("http://127.0.0.1:9080#{path}", http_opts)
         hydra.queue(request)
