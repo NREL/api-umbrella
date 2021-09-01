@@ -465,6 +465,7 @@ local function set_computed_config()
 
   if config["app_env"] == "test" then
     config["_test_env_install_dir"] = path.join(src_root_dir, "build/work/test-env")
+    config["log_dir"] = path.join(src_root_dir, "test/tmp/artifacts/log")
   end
 end
 

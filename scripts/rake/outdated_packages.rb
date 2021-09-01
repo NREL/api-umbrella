@@ -14,7 +14,18 @@ class OutdatedPackages
     },
     "elasticsearch" => {
       :git => "https://github.com/elasticsearch/elasticsearch.git",
-      :constraint => "~> 7.0",
+      :constraint => "~> 2.4",
+    },
+    "elasticsearch6" => {
+      :git => "https://github.com/elasticsearch/elasticsearch.git",
+      :constraint => "~> 6.2",
+    },
+    "elasticsearch7" => {
+      :git => "https://github.com/elasticsearch/elasticsearch.git",
+      :constraint => "~> 7.10.0",
+    },
+    "glauth" => {
+      :git => "https://github.com/glauth/glauth.git",
     },
     "icu4c" => {
       :git => "https://github.com/unicode-org/icu.git",

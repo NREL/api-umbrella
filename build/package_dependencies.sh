@@ -141,18 +141,15 @@ elif [[ "$ID_NORMALIZED" == "debian" ]]; then
   libcurl_version=4
   libffi_version=7
   libnettle_version=8
-  openjdk_version=11
 
-  if [[ "$ID" == "debian" && "$VERSION_ID" == "10" ]]; then
+  if [[ "$ID" == "debian" && ( "$VERSION_ID" == "9" || "$VERSION_ID" == "10" ) ]]; then
     libffi_version=6
     libnettle_version=6
   elif [[ "$ID" == "debian" && "$VERSION_ID" == "9" ]]; then
     libffi_version=6
     libnettle_version=6
-    openjdk_version=8
   elif [[ "$ID" == "ubuntu" && "$VERSION_ID" == "20.04" ]]; then
     libnettle_version=7
-    openjdk_version=16
   elif [[ "$ID" == "ubuntu" && "$VERSION_ID" == "18.04" ]]; then
     libffi_version=6
     libnettle_version=6
@@ -178,9 +175,6 @@ elif [[ "$ID_NORMALIZED" == "debian" ]]; then
 
     # TrafficServer
     libxml2
-
-    # ElasticSearch
-    "openjdk-$openjdk_version-jre-headless"
 
     # rsyslog omelasticsearch
     "libcurl$libcurl_version"
@@ -284,6 +278,26 @@ elif [[ "$ID_NORMALIZED" == "debian" ]]; then
     core_package_non_build_dependencies+=(
       libc++1
       libc++abi1
+    )
+  fi
+
+  # Since we're still bundling Elasticsearch v2, this depends on an older JDK
+  # version not available in newer Debian releases.
+  if [[ "$ID" == "debian" && ( "$VERSION_ID" == "10" || "$VERSION_ID" == "11" ) ]]; then
+    apt-get update
+    apt-get -y install curl gnupg2
+    echo "deb https://adoptopenjdk.jfrog.io/adoptopenjdk/deb/ $VERSION_CODENAME main" > /etc/apt/sources.list.d/adoptopenjdk.list
+    curl -fsSL https://adoptopenjdk.jfrog.io/adoptopenjdk/api/gpg/key/public | apt-key add -
+    apt-get update
+
+    core_package_dependencies+=(
+      # ElasticSearch
+      "adoptopenjdk-8-hotspot-jre"
+    )
+  else
+    core_package_dependencies+=(
+      # ElasticSearch
+      "openjdk-8-jre-headless"
     )
   fi
 else
