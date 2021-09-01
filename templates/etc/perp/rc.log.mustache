@@ -26,7 +26,12 @@ if [ "${1}" = "start" ]; then
   # Create the log directory.
   dirs=("$log_dir")
   runtool mkdir -p "${dirs[@]}"
-  chmod 750 "${dirs[@]}"
+  {{#_test_env?}}
+    chmod 755 "${dirs[@]}"
+  {{/_test_env?}}
+  {{^_test_env?}}
+    chmod 750 "${dirs[@]}"
+  {{/_test_env?}}
   if [ -n "$api_umbrella_user" ]; then
     chown $api_umbrella_user:$api_umbrella_group "${dirs[@]}"
   fi

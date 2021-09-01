@@ -92,7 +92,7 @@ Capybara.default_driver = :selenium_chrome_headless
 Capybara.default_max_wait_time = 5
 Capybara.run_server = false
 Capybara.app_host = "https://127.0.0.1:9081"
-Capybara.save_path = File.join(API_UMBRELLA_SRC_ROOT, "test/tmp/capybara")
+Capybara.save_path = File.join(API_UMBRELLA_SRC_ROOT, "test/tmp/artifacts/capybara")
 
 # Since we're using custom styled checkboxes and radios, the actual inputs
 # aren't visible. So enable this option so that Capybara will fallback to
