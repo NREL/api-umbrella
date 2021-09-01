@@ -104,6 +104,15 @@ Capybara.save_path = File.join(API_UMBRELLA_SRC_ROOT, "test/tmp/artifacts/capyba
 # "check" and "uncheck".
 Capybara.automatic_label_click = true
 
+# Attempted workaround for "fill_in" sometimes not clearing existing input:
+# https://github.com/teamcapybara/capybara/issues/2419#issuecomment-738798878
+#
+# This seems to crop up most frequently with the
+# Test::AdminUi::TestApis#test_form test not properly clearing the "Frontend
+# Host" field, so we end up with both the default value 127.0.0.1 plus the new
+# value, of api.foo.com all in one string ("127.0.0.1api.foo.com").
+Capybara.default_set_options = { :clear => :backspace }
+
 Capybara::Screenshot.prune_strategy = :keep_last_run
 
 Capybara::Chromedriver::Logger.raise_js_errors = true
