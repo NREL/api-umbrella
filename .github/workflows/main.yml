@@ -113,6 +113,7 @@ jobs:
             -v "$(pwd)/test/tmp/artifacts:/app/test/tmp/artifacts" \
             -e TESTOPTS="--ci-dir=./test/tmp/artifacts/reports" \
             -e TESTS="${tests}" \
+            -e MAXMIND_LICENSE_KEY="${MAXMIND_LICENSE_KEY}" \
             "$DOCKER_IMAGE_CACHE_FROM" \
             make test
         env:
@@ -120,10 +121,11 @@ jobs:
           SPLIT_TEST_VERSION: v0.3.0
           CI_NODE_TOTAL: ${{ matrix.ci_node_total }}
           CI_NODE_INDEX: ${{ matrix.ci_node_index }}
+          MAXMIND_LICENSE_KEY: ${{ secrets.MAXMIND_LICENSE_KEY }}
 
       - name: Artifact permissions
         if: ${{ always() }}
-        run: sudo chmod 755 test/tmp/artifacts/log/* && sudo chmod 644 test/tmp/artifacts/log/*/*
+        run: sudo chmod -R 777 test/tmp/artifacts
 
       - name: Archive artifacts
         uses: actions/upload-artifact@v2
@@ -163,14 +165,16 @@ jobs:
             -e ELASTICSEARCH_TEST_TEMPLATE_VERSION=2 \
             -e TESTOPTS="--ci-dir=./test/tmp/artifacts/reports" \
             -e TESTS="${tests[*]}" \
+            -e MAXMIND_LICENSE_KEY="${MAXMIND_LICENSE_KEY}" \
             "$DOCKER_IMAGE_CACHE_FROM" \
             make test
         env:
           DOCKER_IMAGE_CACHE_FROM: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }}
+          MAXMIND_LICENSE_KEY: ${{ secrets.MAXMIND_LICENSE_KEY }}
 
       - name: Artifact permissions
         if: ${{ always() }}
-        run: sudo chmod 755 test/tmp/artifacts/log/* && sudo chmod 644 test/tmp/artifacts/log/*/*
+        run: sudo chmod -R 777 test/tmp/artifacts
 
       - name: Archive artifacts
         uses: actions/upload-artifact@v2
@@ -210,14 +214,16 @@ jobs:
             -e ELASTICSEARCH_TEST_TEMPLATE_VERSION=2 \
             -e TESTOPTS="--ci-dir=./test/tmp/artifacts/reports" \
             -e TESTS="${tests[*]}" \
+            -e MAXMIND_LICENSE_KEY="${MAXMIND_LICENSE_KEY}" \
             "$DOCKER_IMAGE_CACHE_FROM" \
             make test
         env:
           DOCKER_IMAGE_CACHE_FROM: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }}
+          MAXMIND_LICENSE_KEY: ${{ secrets.MAXMIND_LICENSE_KEY }}
 
       - name: Artifact permissions
         if: ${{ always() }}
-        run: sudo chmod 755 test/tmp/artifacts/log/* && sudo chmod 644 test/tmp/artifacts/log/*/*
+        run: sudo chmod -R 777 test/tmp/artifacts
 
       - name: Archive artifacts
         uses: actions/upload-artifact@v2
@@ -258,14 +264,16 @@ jobs:
             -e ELASTICSEARCH_TEST_INDEX_PARTITION=daily \
             -e TESTOPTS="--ci-dir=./test/tmp/artifacts/reports" \
             -e TESTS="${tests[*]}" \
+            -e MAXMIND_LICENSE_KEY="${MAXMIND_LICENSE_KEY}" \
             "$DOCKER_IMAGE_CACHE_FROM" \
             make test
         env:
           DOCKER_IMAGE_CACHE_FROM: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }}
+          MAXMIND_LICENSE_KEY: ${{ secrets.MAXMIND_LICENSE_KEY }}
 
       - name: Artifact permissions
         if: ${{ always() }}
-        run: sudo chmod 755 test/tmp/artifacts/log/* && sudo chmod 644 test/tmp/artifacts/log/*/*
+        run: sudo chmod -R 777 test/tmp/artifacts
 
       - name: Archive artifacts
         uses: actions/upload-artifact@v2

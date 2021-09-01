@@ -24,7 +24,7 @@ module ApiUmbrellaTestHelpers
       end
 
       start_time = Time.now.utc
-      FileUtils.rm_rf(Dir.glob(File.join(TEST_ARTIFACTS_ROOT, "*"), File::FNM_DOTMATCH) - [File.join(TEST_ARTIFACTS_ROOT, "."), File.join(TEST_ARTIFACTS_ROOT, "..")])
+      FileUtils.rm_rf(Dir.glob(File.join(TEST_ARTIFACTS_ROOT, "*"), File::FNM_DOTMATCH) - [File.join(TEST_ARTIFACTS_ROOT, "."), File.join(TEST_ARTIFACTS_ROOT, ".."), File.join(TEST_ARTIFACTS_ROOT, "reports")])
       FileUtils.mkdir_p(TEST_ARTIFACTS_ROOT)
       FileUtils.rm_rf(Dir.glob(File.join(TEST_RUN_ROOT, "*"), File::FNM_DOTMATCH) - [File.join(TEST_RUN_ROOT, "."), File.join(TEST_RUN_ROOT, "..")])
       FileUtils.mkdir_p(TEST_RUN_API_UMBRELLA_ROOT)
