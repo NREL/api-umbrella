@@ -54,6 +54,11 @@ function _M.processes()
   processes()
 end
 
+function _M.db_setup()
+  local db_setup = require "api-umbrella.cli.db_setup"
+  db_setup()
+end
+
 function _M.migrate()
   local migrate = require "api-umbrella.cli.migrate"
   migrate()
@@ -110,6 +115,10 @@ parser:command("reopen-logs")
 parser:command("processes")
   :description("List the status of the processes running under API Umbrella.")
   :action(_M.processes)
+
+parser:command("db-setup")
+  :description("Run the initial database setup task.")
+  :action(_M.db_setup)
 
 parser:command("migrate")
   :description("Run the database migrations task.")

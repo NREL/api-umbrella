@@ -9,21 +9,6 @@ class OutdatedPackages
       :git => "https://github.com/NREL/api-umbrella-static-site.git",
       :git_ref => "master",
     },
-    "bundler" => {
-      :git => "https://github.com/bundler/bundler.git",
-    },
-    "elasticsearch" => {
-      :git => "https://github.com/elasticsearch/elasticsearch.git",
-      :constraint => "~> 2.4",
-    },
-    "elasticsearch6" => {
-      :git => "https://github.com/elasticsearch/elasticsearch.git",
-      :constraint => "~> 6.2",
-    },
-    "elasticsearch7" => {
-      :git => "https://github.com/elasticsearch/elasticsearch.git",
-      :constraint => "~> 7.10.0",
-    },
     "glauth" => {
       :git => "https://github.com/glauth/glauth.git",
     },
@@ -170,16 +155,13 @@ class OutdatedPackages
     "perp" => {
       :http => "http://b0llix.net/perp/site.cgi?page=download",
     },
+    "public_suffix_list" => {
+      :git => "https://github.com/publicsuffix/list.git",
+      :git_ref => "master",
+    },
     "postgresql" => {
       :git => "https://github.com/postgres/postgres.git",
       :constraint => "~> 10.6",
-    },
-    "ruby" => {
-      :git => "https://github.com/ruby/ruby.git",
-      :constraint => "~> 2.6.5",
-    },
-    "rubygems" => {
-      :git => "https://github.com/rubygems/rubygems.git",
     },
     "rsyslog" => {
       :git => "https://github.com/rsyslog/rsyslog.git",
@@ -231,9 +213,7 @@ class OutdatedPackages
 
     # Project-specific normalizations.
     case(name)
-    when "json_c"
-      tag.gsub!(/-\d{8}$/, "")
-    when "openssl", "ruby"
+    when "openssl"
       tag.tr!("_", ".")
     when "icu4c"
       tag.tr!("-", ".")
@@ -313,8 +293,6 @@ class OutdatedPackages
         tags.select! { |tag| tag =~ /^1\.1\.0[a-z]?$/ }
       when "mailhog"
         tags.reject! { |tag| tag =~ /^0\.0\d$/ }
-      when "rubygems"
-        tags.reject! { |tag| tag == "1000" }
       end
 
       tags.compact!

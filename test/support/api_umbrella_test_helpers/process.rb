@@ -31,19 +31,6 @@ module ApiUmbrellaTestHelpers
 
       original_env = ENV.to_hash
       begin
-        # Wipe any bundler environment variables before executing sub-shells to
-        # prevent confusion between the test bundler environment and the
-        # web-app's bundler environment.
-        #
-        # We're manually removing all these rather than using
-        # Bundler.with_clean_env or with_original_env, since those don't quite
-        # work for our case. Bundler's approach restores the original
-        # environment, which omits any ENV customizations we may have actually
-        # intended. It also doesn't work quite right since Rake::TestTask
-        # triggers these scripts via a ruby system() call, so there's multiple
-        # layers of shells, which confuses what's the "original" environment.
-        ENV.delete_if { |key, value| key =~ /\A(GEM_|BUNDLE_|BUNDLER_|RUBY)/ }
-
         elasticsearch_test_api_version = nil
         if ENV["ELASTICSEARCH_TEST_API_VERSION"]
           elasticsearch_test_api_version = ENV["ELASTICSEARCH_TEST_API_VERSION"].to_i
@@ -81,7 +68,6 @@ module ApiUmbrellaTestHelpers
             "elasticsearch" => {
               "api_version" => elasticsearch_test_api_version,
             },
-            "services" => $config["services"] - ["log_db"],
           })
         end
         if elasticsearch_test_template_version
@@ -133,42 +119,24 @@ module ApiUmbrellaTestHelpers
           exit build.exit_code
         end
 
-        # Optionally run a different version of Elasticsearch to the test suite
-        # can be tested against multiple versions of the database.
-        if elasticsearch_test_api_version
-          args = ["runtool"]
-          if($config["user"])
-            args += ["-u", $config["user"]]
-          end
-          args += ["elasticsearch"]
+        ActiveRecord::Base.establish_connection({
+          :adapter => "postgresql",
+          :host => $config["postgresql"]["host"],
+          :port => $config["postgresql"]["port"],
+          :database => "postgres",
+          :username => "postgres",
+          :password => "dev_password",
+        })
+        ActiveRecord::Base.connection.execute("DROP DATABASE IF EXISTS #{ActiveRecord::Base.connection.quote_column_name($config["postgresql"]["database"])}")
 
-          elasticsearch_config_dir = File.join(API_UMBRELLA_SRC_ROOT, "build/work/test-env/elasticsearch#{elasticsearch_test_api_version}/config")
-          FileUtils.mkdir_p($config["elasticsearch"]["embedded_server_config"]["path"]["logs"])
-          FileUtils.mkdir_p($config["elasticsearch"]["embedded_server_config"]["path"]["data"])
-          FileUtils.mkdir_p(File.join(elasticsearch_config_dir, "scripts"))
-          if(::Process.euid == 0)
-            if elasticsearch_test_api_version >= 7
-              FileUtils.chown($config["user"], nil, File.join(API_UMBRELLA_SRC_ROOT, "build/work/test-env/elasticsearch#{elasticsearch_test_api_version}/logs"))
-            end
-            FileUtils.chown($config["user"], nil, $config["elasticsearch"]["embedded_server_config"]["path"]["logs"])
-            FileUtils.chown($config["user"], nil, $config["elasticsearch"]["embedded_server_config"]["path"]["data"])
-            FileUtils.chmod_R("o+r", elasticsearch_config_dir)
-          end
-          log_file = File.open(File.join($config["elasticsearch"]["embedded_server_config"]["path"]["logs"], "current"), "w+")
-          log_file.sync = true
-
-          elasticsearch_config_path = File.join(elasticsearch_config_dir, "elasticsearch.yml")
-          File.open(elasticsearch_config_path, "w") { |f| f.write(YAML.dump($config["elasticsearch"]["embedded_server_config"])) }
-
-          $elasticsearch_process = ChildProcess.build(*args)
-          $elasticsearch_process.io.stdout = $elasticsearch_process.io.stderr = log_file
-          $elasticsearch_process.environment["PATH"] = "#{File.join(API_UMBRELLA_SRC_ROOT, "build/work/test-env/elasticsearch#{elasticsearch_test_api_version}/bin")}:#{ENV["PATH"]}"
-          $elasticsearch_process.environment["JAVA_HOME"] = `readlink -m "$(which java)/../.."`.strip
-          $elasticsearch_process.environment["ES_PATH_CONF"] = elasticsearch_config_dir
-          $elasticsearch_process.environment["ES_JAVA_OPTS"] = "-Xms32m -Xmx256m"
-          $elasticsearch_process.leader = true
-          $elasticsearch_process.start
-        end
+        db_setup = ChildProcess.build(File.join(API_UMBRELLA_SRC_ROOT, "bin/api-umbrella"), "db-setup")
+        db_setup.io.inherit!
+        db_setup.environment["API_UMBRELLA_EMBEDDED_ROOT"] = EMBEDDED_ROOT
+        db_setup.environment["API_UMBRELLA_CONFIG"] = CONFIG
+        db_setup.environment["DB_USERNAME"] = "postgres"
+        db_setup.environment["DB_PASSWORD"] = "dev_password"
+        db_setup.start
+        db_setup.wait
 
         # Spin up API Umbrella and the embedded databases as a background
         # process.
@@ -189,7 +157,7 @@ module ApiUmbrellaTestHelpers
         progress = Thread.new do
           print "Waiting for api-umbrella to start..."
           loop do
-            if($api_umbrella_process.crashed? || ($elasticsearch_process && $elasticsearch_process.crashed?))
+            if($api_umbrella_process.crashed?)
               health.stop
               break
             end
@@ -208,8 +176,6 @@ module ApiUmbrellaTestHelpers
         # If anything exited unsuccessfully, abort tests.
         if(health.crashed? || $api_umbrella_process.crashed?)
           raise "Did not start api-umbrella process for integration tests"
-        elsif($elasticsearch_process && $elasticsearch_process.crashed?)
-          raise "Did not start elasticsearch process for integration tests"
         end
 
         # Once API Umbrella is started, read the config from the runtime file.
@@ -245,11 +211,6 @@ module ApiUmbrellaTestHelpers
     end
 
     def stop
-      if($elasticsearch_process && $elasticsearch_process.alive?)
-        puts "Stopping elasticsearch..."
-        $elasticsearch_process.stop
-      end
-
       if($api_umbrella_process && $api_umbrella_process.alive?)
         puts "Stopping api-umbrella..."
 

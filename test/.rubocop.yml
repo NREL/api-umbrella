@@ -9,7 +9,6 @@ Style/GlobalVars:
   AllowedVariables:
     - $api_umbrella_process
     - $config
-    - $elasticsearch_process
 
 Style/ClassVars:
   Enabled: false

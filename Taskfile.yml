@@ -27,15 +27,6 @@ output: interleaved
 run: when_changed
 
 tasks:
-  deps:elasticsearch:
-    cmds:
-      - ./tasks/deps/elasticsearch
-    sources:
-      - ./tasks/deps/elasticsearch
-      - ./tasks/helpers.sh
-    generates:
-      - ./build/work/stamp/deps/elasticsearch
-
   deps:icu4c:
     cmds:
       - ./tasks/deps/icu4c
@@ -134,14 +125,14 @@ tasks:
     generates:
       - ./build/work/stamp/deps/perp
 
-  deps:postgresql:
+  deps:public_suffix_list:
     cmds:
-      - ./tasks/deps/postgresql
+      - ./tasks/deps/public_suffix_list
     sources:
-      - ./tasks/deps/postgresql
+      - ./tasks/deps/public_suffix_list
       - ./tasks/helpers.sh
     generates:
-      - ./build/work/stamp/deps/postgresql
+      - ./build/work/stamp/deps/public_suffix_list
     method: checksum
 
   deps:rsyslog:
@@ -181,7 +172,6 @@ tasks:
 
   deps:
     cmds:
-      - task: deps:elasticsearch
       - task: deps:icu4c
       - task: deps:libbson
       - task: deps:libcidr
@@ -189,23 +179,10 @@ tasks:
       - task: deps:luarocks
       - task: deps:openresty
       - task: deps:perp
-      - task: deps:postgresql
+      - task: deps:public_suffix_list
       - task: deps:rsyslog
       - task: deps:runit_svlogd
       - task: deps:trafficserver
-
-  build-deps:bundler:
-    deps:
-      - build-deps:rubygems
-    cmds:
-      - ./tasks/build-deps/bundler
-    sources:
-      - ./build/work/stamp/build-deps/rubygems
-      - ./tasks/build-deps/bundler
-      - ./tasks/helpers.sh
-    generates:
-      - ./build/work/stamp/build-deps/bundler
-    method: checksum
 
   build-deps:nodejs:
     cmds:
@@ -215,29 +192,6 @@ tasks:
       - ./tasks/helpers.sh
     generates:
       - ./build/work/stamp/build-deps/nodejs
-
-  build-deps:ruby:
-    cmds:
-      - ./tasks/build-deps/ruby
-    sources:
-      - ./tasks/build-deps/ruby
-      - ./tasks/helpers.sh
-    generates:
-      - ./build/work/stamp/build-deps/ruby
-    method: checksum
-
-  build-deps:rubygems:
-    deps:
-      - build-deps:ruby
-    cmds:
-      - ./tasks/build-deps/rubygems
-    sources:
-      - ./build/work/stamp/build-deps/ruby
-      - ./tasks/build-deps/rubygems
-      - ./tasks/helpers.sh
-    generates:
-      - ./build/work/stamp/build-deps/rubygems
-    method: checksum
 
   build-deps:yarn:
     deps:
@@ -253,7 +207,6 @@ tasks:
 
   build-deps:
     cmds:
-      - task: build-deps:bundler
       - task: build-deps:yarn
 
   app-deps:admin-ui:yarn:
@@ -769,12 +722,10 @@ tasks:
   app:static-site:
     deps:
       - build-deps:nodejs
-      - build-deps:bundler
     cmds:
       - ./tasks/app/static-site
     sources:
       - ./build/work/stamp/build-deps/nodejs
-      - ./build/work/stamp/build-deps/bundler
       - ./tasks/app/static-site
       - ./tasks/helpers.sh
     generates:
@@ -807,36 +758,15 @@ tasks:
       - task: app
 
   test-deps:bundle:
-    deps:
-      - build-deps:bundler
     cmds:
       - ./tasks/test-deps/bundle
     sources:
-      - ./build/work/stamp/build-deps/bundler
       - ./Gemfile
       - ./Gemfile.lock
       - ./tasks/test-deps/bundle
       - ./tasks/helpers.sh
     generates:
       - ./build/work/stamp/test-deps/bundle
-
-  test-deps:elasticsearch6:
-    cmds:
-      - ./tasks/test-deps/elasticsearch6
-    sources:
-      - ./tasks/test-deps/elasticsearch6
-      - ./tasks/helpers.sh
-    generates:
-      - ./build/work/stamp/test-deps/elasticsearch6
-
-  test-deps:elasticsearch7:
-    cmds:
-      - ./tasks/test-deps/elasticsearch7
-    sources:
-      - ./tasks/test-deps/elasticsearch7
-      - ./tasks/helpers.sh
-    generates:
-      - ./build/work/stamp/test-deps/elasticsearch7
 
   test-deps:glauth:
     cmds:
@@ -894,8 +824,6 @@ tasks:
   test-deps:
     cmds:
       - task: test-deps:bundle
-      - task: test-deps:elasticsearch6
-      - task: test-deps:elasticsearch7
       - task: test-deps:glauth
       - task: test-deps:lua:luacheck
       - task: test-deps:lua:penlight

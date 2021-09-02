@@ -21,9 +21,6 @@ RUN ./configure
 
 COPY tasks/clean/dev /app/tasks/clean/dev
 
-COPY tasks/deps/bundler tasks/deps/ruby tasks/deps/rubygems /app/tasks/deps/
-RUN make deps:bundler && make clean:dev
-
 COPY tasks/deps/perp /app/tasks/deps/
 RUN make deps:perp && make clean:dev
 
@@ -46,15 +43,6 @@ RUN make deps:icu4c && make clean:dev
 
 COPY tasks/deps/luarocks /app/tasks/deps/
 RUN make deps:luarocks && make clean:dev
-
-COPY tasks/deps/mora /app/tasks/deps/
-RUN make deps:mora && make clean:dev
-
-COPY tasks/deps/mongodb /app/tasks/deps/
-RUN make deps:mongodb && make clean:dev
-
-COPY tasks/deps/elasticsearch /app/tasks/deps/
-RUN make deps:elasticsearch && make clean:dev
 
 COPY tasks/deps /app/tasks/deps
 RUN make deps && make clean:dev
@@ -88,6 +76,7 @@ RUN make app:admin-ui:build && make clean:dev
 COPY LICENSE.txt /app/
 COPY bin /app/bin
 COPY config /app/config
+COPY locale /app/locale
 COPY src /app/src
 COPY tasks /app/tasks
 COPY templates /app/templates
@@ -138,15 +127,8 @@ COPY tasks/clean/dev /app/tasks/clean/dev
 COPY --from=build /build /build
 
 COPY Gemfile Gemfile.lock /app/
-COPY tasks/deps/bundler tasks/deps/ruby tasks/deps/rubygems /app/tasks/deps/
 COPY tasks/test-deps/bundle /app/tasks/test-deps/
 RUN make test-deps:bundle && make clean:dev
-
-COPY tasks/test-deps/elasticsearch6 /app/tasks/test-deps/
-RUN make test-deps:elasticsearch6 && make clean:dev
-
-COPY tasks/test-deps/elasticsearch7 /app/tasks/test-deps/
-RUN make test-deps:elasticsearch7 && make clean:dev
 
 COPY tasks/deps/libmaxminddb tasks/deps/luarocks tasks/deps/openresty /app/tasks/deps/
 COPY tasks/test-deps /app/tasks/test-deps
@@ -195,7 +177,7 @@ COPY --from=build /app/build/package_dependencies.sh /tmp/install/build/package_
 COPY --from=build /app/tasks/helpers/detect_os_release.sh /tmp/install/tasks/helpers/detect_os_release.sh
 RUN set -x && \
   apt-get update && \
-  bash -c 'source /tmp/install/build/package_dependencies.sh && DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends install "${core_package_dependencies[@]}"' && \
+  bash -c 'source /tmp/install/build/package_dependencies.sh && DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends install "${core_runtime_dependencies[@]}"' && \
   /tmp/install/build/package/scripts/after-install 1 && \
   rm -rf /tmp/install /var/lib/apt/lists/*
 

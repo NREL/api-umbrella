@@ -270,12 +270,6 @@ local function activate_services()
   available_services = invert_table(available_services)
 
   local active_services = {}
-  if config["_service_general_db_enabled?"] then
-    active_services["postgresql"] = 1
-  end
-  if config["_service_log_db_enabled?"] then
-    active_services["elasticsearch"] = 1
-  end
   if config["_service_elasticsearch_aws_signing_proxy_enabled?"] then
     active_services["elasticsearch-aws-signing-proxy"] = 1
   end

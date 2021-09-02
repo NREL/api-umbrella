@@ -61,7 +61,8 @@ module ApiUmbrellaTestHelpers
             :host => $config["postgresql"]["host"],
             :port => $config["postgresql"]["port"],
             :database => $config["postgresql"]["database"],
-            :username => "api-umbrella",
+            :username => $config["postgresql"]["username"],
+            :password => $config["postgresql"]["password"],
             :pool => 50,
             :schema_search_path => "api_umbrella, public",
             :variables => {

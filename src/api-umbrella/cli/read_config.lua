@@ -1,5 +1,4 @@
 local array_includes = require "api-umbrella.utils.array_includes"
-local array_last = require "api-umbrella.utils.array_last"
 local deep_defaults = require "api-umbrella.utils.deep_defaults"
 local deep_merge_overwrite_arrays = require "api-umbrella.utils.deep_merge_overwrite_arrays"
 local dir = require "pl.dir"
@@ -397,30 +396,14 @@ local function set_computed_config()
     log = {
       ["_destination_console?"] = (config["log"]["destination"] == "console"),
     },
-    mongodb = {
-      _database = plutils.split(array_last(plutils.split(config["mongodb"]["url"], "/", true)), "?", true)[1],
-      embedded_server_config = {
-        storage = {
-          dbPath = path.join(config["db_dir"], "mongodb"),
-        },
-      },
-    },
     elasticsearch = {
       _first_server = config["elasticsearch"]["_servers"][1],
-      embedded_server_config = {
-        path = {
-          data = path.join(config["db_dir"], "elasticsearch"),
-          logs = path.join(config["log_dir"], "elasticsearch"),
-        },
-      },
       ["_index_partition_monthly?"] = (config["elasticsearch"]["index_partition"] == "monthly"),
       ["_index_partition_daily?"] = (config["elasticsearch"]["index_partition"] == "daily"),
       ["_template_version_v1?"] = (config["elasticsearch"]["template_version"] == 1),
       ["_template_version_v2?"] = (config["elasticsearch"]["template_version"] == 2),
       ["_api_version_lte_2?"] = (config["elasticsearch"]["api_version"] <= 2),
     },
-    ["_service_general_db_enabled?"] = array_includes(config["services"], "general_db"),
-    ["_service_log_db_enabled?"] = array_includes(config["services"], "log_db"),
     ["_service_elasticsearch_aws_signing_proxy_enabled?"] = array_includes(config["services"], "elasticsearch_aws_signing_proxy"),
     ["_service_router_enabled?"] = array_includes(config["services"], "router"),
     ["_service_auto_ssl_enabled?"] = array_includes(config["services"], "auto_ssl"),
@@ -443,24 +426,6 @@ local function set_computed_config()
       dir = path.join(embedded_root_dir, "apps/static-site/current"),
       build_dir = path.join(embedded_root_dir, "apps/static-site/current/build"),
     },
-  })
-
-  if config["elasticsearch"]["api_version"] <= 2 then
-    deep_merge_overwrite_arrays(config, {
-      elasticsearch = {
-        embedded_server_config = {
-          path = {
-            conf = path.join(config["etc_dir"], "elasticsearch"),
-            scripts = path.join(config["etc_dir"], "elasticsearch_scripts"),
-          },
-        },
-      },
-    })
-  end
-
-  deep_merge_overwrite_arrays(config, {
-    _mongodb_yaml = lyaml.dump({ config["mongodb"]["embedded_server_config"] }),
-    _elasticsearch_yaml = lyaml.dump({ config["elasticsearch"]["embedded_server_config"] }),
   })
 
   if config["app_env"] == "development" then

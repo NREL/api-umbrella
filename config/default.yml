@@ -1,7 +1,5 @@
 app_env: production
 services:
-  - general_db
-  - log_db
   - router
   - web
 user: api-umbrella
@@ -205,8 +203,8 @@ dns_resolver:
   # aren't IPv6 compatible.
   allow_ipv6: false
 postgresql:
-  host: 127.0.0.1
-  port: 14011
+  host: postgres
+  port: 5432
   database: api_umbrella
   username: api_umbrella_app
   password:
@@ -219,49 +217,14 @@ postgresql:
   auto_ssl:
     username: api_umbrella_auto_ssl
     password:
-  embedded_server_config:
-    listen_addresses: 127.0.0.1
-    port: 14011
-mongodb:
-  url: "mongodb://127.0.0.1:14001/api_umbrella"
-  read_preference: primaryPreferred
-  embedded_server_config:
-    processManagement:
-      fork: false
-    net:
-      bindIp: 127.0.0.1
-      port: 14001
-mora:
-  host: 127.0.0.1
-  port: 14004
-  timeout: 0
 elasticsearch:
   hosts:
-    - "http://127.0.0.1:14002"
-  embedded_server_env:
-    java_opts: -Xms32m -Xmx256m
+    - "http://elasticsearch:9200"
   index_name_prefix: api-umbrella
-  index_partition: monthly
+  index_partition: daily
   index_mapping_type: log
-  api_version: 2
-  template_version: 1
-  embedded_server_config:
-    network:
-      host: 127.0.0.1
-    http:
-      port: 14002
-    transport:
-      tcp:
-        port: 14003
-    cluster:
-      name: api-umbrella
-    indices:
-      fielddata:
-        cache:
-          size: 40%
-      breaker:
-        fielddata:
-          limit: 60%
+  api_version: 6
+  template_version: 2
   aws_signing_proxy:
     host: 127.0.0.1
     port: 14017

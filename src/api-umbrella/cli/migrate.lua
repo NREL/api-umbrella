@@ -13,6 +13,7 @@ config["postgresql"]["password"] = config["postgresql"]["migrations"]["password"
 local db = require("lapis.db")
 local file = require "pl.file"
 local migrations = require("lapis.db.migrations")
+local shell_blocking_run = require("shell-games").run
 local path = require "pl.path"
 local pg_utils = require "api-umbrella.utils.pg_utils"
 
@@ -35,8 +36,28 @@ return function()
     setenv("PGUSER", config["postgresql"]["migrations"]["username"])
     setenv("PGPASSWORD", config["postgresql"]["migrations"]["password"])
     local schema_path = path.join(os.getenv("API_UMBRELLA_SRC_ROOT"), "db/schema.sql")
-    os.execute("pg_dump --schema-only --no-privileges --no-owner --file=" .. schema_path)
+    local _, err = shell_blocking_run({
+      "pg_dump",
+      "--schema-only",
+      "--no-privileges",
+      "--no-owner",
+      "--file", schema_path,
+    })
+    if err then
+      print(err)
+      os.exit(1)
+    end
 
-    os.execute([[sed -e 's/^\(COMMENT ON EXTENSION\)/-- \1/g' -i ]] .. schema_path)
+    _, err = shell_blocking_run({
+      "sed",
+      "-e",
+      [['s/^\(COMMENT ON EXTENSION\)/-- \1/g']],
+      "-i",
+      schema_path,
+    })
+    if err then
+      print(err)
+      os.exit(1)
+    end
   end
 end

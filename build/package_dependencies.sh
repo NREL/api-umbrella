@@ -8,10 +8,8 @@ source_dir="$(dirname "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)")"
 source "$source_dir/tasks/helpers/detect_os_release.sh"
 detect_os_release
 
-core_package_non_build_dependencies=()
-
 if [[ "$ID_NORMALIZED" == "rhel" ]]; then
-  core_package_dependencies=(
+  core_runtime_dependencies=(
     # General
     bash
     glibc
@@ -51,11 +49,6 @@ if [[ "$ID_NORMALIZED" == "rhel" ]]; then
     # For OpenResty's "resty" CLI.
     perl
     perl-Time-HiRes
-
-    # Postgresql
-    readline
-    tzdata
-    glibc-common
 
     # For prefixed console output (gnu version for strftime support).
     gawk
@@ -104,11 +97,15 @@ if [[ "$ID_NORMALIZED" == "rhel" ]]; then
     # libbson
     cmake
 
+    # For tests and building static site.
+    ruby-devel
+    rubygem-bundler
+
     # For nokogiri dependency (for static-site and tests)
     libxml2-devel
     libxslt-devel
   )
-  test_package_dependencies=(
+  test_runtime_dependencies=(
     unbound
   )
   test_build_dependencies=(
@@ -128,38 +125,46 @@ if [[ "$ID_NORMALIZED" == "rhel" ]]; then
     # For running lsof tests in Docker as root
     sudo
 
+    # Postgres Ruby client for tests
+    libpq-devel
   )
 
-  # Install GCC 7+ for compiling TrafficServer (C++17 required).
   if [[ "$VERSION_ID" == "7" ]]; then
+    # Install GCC 7+ for compiling TrafficServer (C++17 required).
     core_build_dependencies+=(
       centos-release-scl
       devtoolset-7
     )
   else
-    core_package_dependencies+=(
+    core_runtime_dependencies+=(
+      # lua-icu-date-ffi
       libicu-devel
+
+      # lua-psl
+      libpsl
+    )
+
+    core_build_dependencies+=(
+      # lua-psl
+      libpsl-devel
     )
   fi
 elif [[ "$ID_NORMALIZED" == "debian" ]]; then
   libcurl_version=4
   libffi_version=7
   libnettle_version=8
-  libreadline_version=8
 
   if [[ "$ID" == "debian" && ( "$VERSION_ID" == "9" || "$VERSION_ID" == "10" ) ]]; then
     libffi_version=6
     libnettle_version=6
-    libreadline_version=7
   elif [[ "$ID" == "ubuntu" && "$VERSION_ID" == "20.04" ]]; then
     libnettle_version=7
   elif [[ "$ID" == "ubuntu" && "$VERSION_ID" == "18.04" ]]; then
     libffi_version=6
     libnettle_version=6
-    libreadline_version=7
   fi
 
-  core_package_dependencies=(
+  core_runtime_dependencies=(
     # General
     bash
     libc6
@@ -196,14 +201,10 @@ elif [[ "$ID_NORMALIZED" == "debian" ]]; then
     # For OpenResty's "resty" CLI.
     perl
 
-    # Postgresql
-    "libreadline$libreadline_version"
-    tzdata
-    locales-all
-
     # For prefixed console output (gnu version for strftime support).
     gawk
 
+    # lua-icu-date-ffi
     libicu-dev
 
     # lua-resty-nettle
@@ -211,6 +212,9 @@ elif [[ "$ID_NORMALIZED" == "debian" ]]; then
 
     # lualdap
     libldap-2.4-2
+
+    # lua-psl
+    libpsl5
   )
   core_build_dependencies=(
     autoconf
@@ -242,6 +246,7 @@ elif [[ "$ID_NORMALIZED" == "debian" ]]; then
     unzip
     uuid-dev
     xz-utils
+    zlib1g-dev
 
     # lualdap
     libldap-dev
@@ -249,11 +254,18 @@ elif [[ "$ID_NORMALIZED" == "debian" ]]; then
     # libbson
     cmake
 
+    # For tests and building static site.
+    ruby-dev
+    ruby-bundler
+
     # For nokogiri dependency (for static-site and tests)
     libxml2-dev
     libxslt-dev
+
+    # lua-psl
+    libpsl-dev
   )
-  test_package_dependencies=(
+  test_runtime_dependencies=(
     unbound
   )
   test_build_dependencies=(
@@ -272,6 +284,9 @@ elif [[ "$ID_NORMALIZED" == "debian" ]]; then
 
     # For running lsof tests in Docker as root
     sudo
+
+    # Postgres Ruby client for tests
+    libpq-dev
   )
 
   # Install GCC 7+ for compiling TrafficServer (C++17 required).
@@ -282,9 +297,9 @@ elif [[ "$ID_NORMALIZED" == "debian" ]]; then
       libc++abi-7-dev
     )
 
-    core_package_non_build_dependencies+=(
-      libc++1
-      libc++abi1
+    core_runtime_dependencies+=(
+      libc++1-7
+      libc++abi1-7
     )
   fi
 
@@ -297,12 +312,12 @@ elif [[ "$ID_NORMALIZED" == "debian" ]]; then
     curl -fsSL https://adoptopenjdk.jfrog.io/adoptopenjdk/api/gpg/key/public | apt-key add -
     apt-get update
 
-    core_package_dependencies+=(
+    core_runtime_dependencies+=(
       # ElasticSearch
       "adoptopenjdk-8-hotspot-jre"
     )
   else
-    core_package_dependencies+=(
+    core_runtime_dependencies+=(
       # ElasticSearch
       "openjdk-8-jre-headless"
     )
@@ -313,19 +328,13 @@ else
 fi
 
 all_build_dependencies=(
-  "${core_package_dependencies[@]}"
+  "${core_runtime_dependencies[@]}"
   "${core_build_dependencies[@]}"
 )
 
 # shellcheck disable=SC2034
 all_dependencies=(
   "${all_build_dependencies[@]}"
-  "${test_package_dependencies[@]}"
+  "${test_runtime_dependencies[@]}"
   "${test_build_dependencies[@]}"
 )
-
-if [ "${#core_package_non_build_dependencies[@]}" != 0 ]; then
-  core_package_dependencies+=(
-    "${core_package_non_build_dependencies[@]}"
-  )
-fi

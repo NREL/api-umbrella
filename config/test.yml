@@ -61,29 +61,12 @@ router:
 rsyslog:
   port: 13014
 postgresql:
-  port: 13006
   database: api_umbrella_test
-  embedded_server_config:
-    port: 13006
-mongodb:
-  url: "mongodb://127.0.0.1:13001/api_umbrella_test"
-  embedded_server_config:
-    net:
-      port: 13001
-    storage:
-      journal:
-        enabled: false
-mora:
-  port: 13004
-elasticsearch:
-  hosts:
-    - "http://127.0.0.1:13002"
-  embedded_server_config:
-    http:
-      port: 13002
-    transport:
-      tcp:
-        port: 13003
+  password: dev_password
+  migrations:
+    password: dev_password
+  auto_ssl:
+    password: dev_password
 unbound:
   port: 13100
   control_port: 13101

@@ -44,7 +44,7 @@ elif [ "$package_type" == "deb" ]; then
 fi
 
 if [ "$PACKAGE" == "core" ]; then
-  for dep in "${core_package_dependencies[@]}"; do
+  for dep in "${core_runtime_dependencies[@]}"; do
     fpm_args+=("-d" "$dep")
   done
 
