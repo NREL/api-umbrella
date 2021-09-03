@@ -93,7 +93,7 @@ GEM
     faraday-net_http_persistent (1.2.0)
     faraday-patron (1.0.0)
     faraday-rack (1.0.0)
-    ffi (1.15.3)
+    ffi (1.15.4)
     i18n (1.8.10)
       concurrent-ruby (~> 1.0)
     launchy (2.5.0)
