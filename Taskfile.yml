@@ -125,16 +125,6 @@ tasks:
     generates:
       - ./build/work/stamp/deps/perp
 
-  deps:public_suffix_list:
-    cmds:
-      - ./tasks/deps/public_suffix_list
-    sources:
-      - ./tasks/deps/public_suffix_list
-      - ./tasks/helpers.sh
-    generates:
-      - ./build/work/stamp/deps/public_suffix_list
-    method: checksum
-
   deps:rsyslog:
     deps:
       - deps:libestr
@@ -179,7 +169,6 @@ tasks:
       - task: deps:luarocks
       - task: deps:openresty
       - task: deps:perp
-      - task: deps:public_suffix_list
       - task: deps:rsyslog
       - task: deps:runit_svlogd
       - task: deps:trafficserver

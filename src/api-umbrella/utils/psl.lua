@@ -1,3 +1,3 @@
 local psl = require "psl"
 
-return psl.builtin()
+return psl.latest()

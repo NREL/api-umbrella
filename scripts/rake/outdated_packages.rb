@@ -155,10 +155,6 @@ class OutdatedPackages
     "perp" => {
       :http => "http://b0llix.net/perp/site.cgi?page=download",
     },
-    "public_suffix_list" => {
-      :git => "https://github.com/publicsuffix/list.git",
-      :git_ref => "master",
-    },
     "postgresql" => {
       :git => "https://github.com/postgres/postgres.git",
       :constraint => "~> 10.6",
