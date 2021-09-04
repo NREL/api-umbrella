@@ -59,6 +59,9 @@ class OutdatedPackages
     "lua_libcidr_ffi" => {
       :git => "https://github.com/GUI/lua-libcidr-ffi.git",
     },
+    "lua_lrexlib_pcre" => {
+      :luarock => "lrexlib-pcre",
+    },
     "lua_luacheck" => {
       :luarock => "luacheck",
     },
@@ -106,6 +109,7 @@ class OutdatedPackages
     },
     "lua_resty_nettle" => {
       :git => "https://github.com/bungle/lua-resty-nettle.git",
+      :constraint => "~> 1.5",
     },
     "lua_resty_openidc" => {
       :git => "https://github.com/zmartzone/lua-resty-openidc.git",

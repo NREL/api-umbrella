@@ -23,7 +23,7 @@ gem "minitest-ci", "~> 3.4.0"
 gem "rubocop", "~> 1.4", :require => false
 
 # Running background processes
-gem "childprocess", "~> 3.0.0"
+gem "childprocess"
 
 # Making HTTP requests
 gem "typhoeus", "~> 1.4.0"
@@ -33,16 +33,16 @@ gem "multi_json", "~> 1.15.0"
 gem "oj", "~> 3.10"
 
 # Database libraries
-gem "activerecord", "~> 6.0.0", :require => "active_record"
+gem "activerecord", "~> 6.1.4", :require => "active_record"
 gem "pg", "~> 1.2.2"
 gem "elasticsearch", "~> 7.13.3"
 gem "active_attr", "~> 0.15.0"
 
 # Factories for test database data
-gem "factory_bot", "~> 6.1.0"
+gem "factory_bot", "~> 6.2.0"
 
 # Deleting database data between tests.
-gem "database_cleaner-active_record", "~> 1.8.0"
+gem "database_cleaner-active_record", "~> 2.0.1"
 
 # Programmatically generate Rails session cookies.
 gem "rails_compatible_cookies_utils", "~> 0.1.0"
@@ -62,7 +62,7 @@ gem "capybara-screenshot", "~> 1.0.22"
 gem "nokogiri", "~> 1.10"
 
 # Useful additions
-gem "activesupport", "~> 6.0.0"
+gem "activesupport", "~> 6.1.4"
 
 # Generating fake strings and data.
 gem "faker", "~> 2.12"

@@ -3,8 +3,8 @@
 lua_cbson_version="3dc85e5a2b78829fa70beeb320037052b086d0e8"
 lua_cbson_hash="556670f8540cbaf93c66660740e131d0"
 
-lua_resty_moongoo_version="acedcad2dc7cd049cd50bd8aa32cbc31d8670564"
-lua_resty_moongoo_hash="6924fade8de3ad2ea950cf680d951275"
+lua_resty_moongoo_version="4139a95f1cd70b62a27f6822ca06ae0d9a67d3a8"
+lua_resty_moongoo_hash="08503123320b0de975e13885fa092e10"
 
 set -e -u -x
 source ./tasks/helpers.sh

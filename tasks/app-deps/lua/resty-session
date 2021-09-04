@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-lua_resty_session_version="3.7"
+lua_resty_session_version="3.8"
 
 set -e -u -x
 source ./tasks/helpers.sh
