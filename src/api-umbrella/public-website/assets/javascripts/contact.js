@@ -1,7 +1,8 @@
-import $ from 'jquery';
 import Modal from 'bootstrap/js/src/modal';
 import escapeHtml from 'escape-html';
-import 'parsleyjs';
+import serialize from 'form-serialize';
+import 'whatwg-fetch'
+import 'promise-polyfill/src/polyfill';
 
 const defaults = {};
 const options = {
@@ -17,49 +18,72 @@ const modalEl = document.getElementById('alert_modal');
 const modalMessageEl = document.getElementById('alert_modal_message');
 const modal = new Modal(modalEl);
 
-const form = $("#api_umbrella_contact_form");
-form.parsley();
-form.submit(function(event) {
+const formEl = document.getElementById('api_umbrella_contact_form');
+formEl.addEventListener('submit', function(event) {
   event.preventDefault();
 
-  const submitButton = document.querySelector('#api_umbrella_contact_form button[type=submit]');
-  const submitButtonOrig = submitButton.innerHTML;
+  if (!formEl.checkValidity()) {
+    formEl.classList.add('was-validated')
+    return false;
+  }
+
+  const submitButtonEl = formEl.querySelector('button[type=submit]');
+  const submitButtonOrig = submitButtonEl.innerHTML;
   setTimeout(function() {
-    submitButton.disabled = true;
-    submitButton.innerText = 'Sending...';
+    submitButtonEl.disabled = true;
+    submitButtonEl.innerText = 'Sending...';
   }, 0);
 
-  $.ajax({
-    url: '/api-umbrella/v1/contact.json?api_key=' + options.apiKey,
-    type: 'POST',
-    data: $(this).serialize(),
-    dataType: 'json',
-  }).done(function(response) {
-    form.trigger('reset');
+  fetch(`/api-umbrella/v1/contact.json?api_key=${options.apiKey}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(serialize(formEl, { hash: true })),
+  }).then(function(response) {
+    const contentType = error.response.headers.get('Content-Type');
+    if (!contentType || !contentType.includes('application/json')) {
+      throw new Error('Response is not JSON');
+    }
+
+    return response.json();
+  }).then(function(data) {
+    if (!response.ok) {
+      throw { responseData: data };
+    }
+
+    formEl.reset();
 
     modalMessageEl.innerText = 'Thanks for sending your message. We\'ll be in touch.';
     modal.show();
-  }).fail(function(xhr, message, error) {
+  }).catch(function(error) {
     const messages = [];
     let messageStr = '';
-    if (xhr.responseJSON && xhr.responseJSON.errors) {
-      $.each(xhr.responseJSON.errors, function(idx, error) {
-        if (error.full_message || error.message) {
-          messages.push(escapeHtml(error.full_message || error.message));
+    try {
+      if(error?.responseData?.errors) {
+        for (let i = 0; i < error.responseData.errors.length; i++) {
+          const err = error.responseData.errors[i];
+          if (err.full_message || err.message) {
+            messages.push(escapeHtml(err.full_message || err.message));
+          }
         }
-      });
-    }
-    if (xhr.responseJSON && xhr.responseJSON.error && xhr.responseJSON.error.message) {
-      messages.push(escapeHtml(xhr.responseJSON.error.message));
-    }
-    if (messages && messages.length > 0) {
-      messageStr = '<br><ul><li>' + messages.join('</li><li>') + '</li></ul>';
+      }
+
+      if (error?.responseData?.error?.message) {
+        messages.push(escapeHtml(error.responseData.error.message));
+      }
+
+      if (messages && messages.length > 0) {
+        messageStr = `<br><ul><li>${messages.join('</li><li>')}</li></ul>`;
+      }
+    } catch(e) {
+      console.error(e);
     }
 
-    modalMessageEl.innerHTML = 'Sending your message unexpectedly failed.' + messageStr + '<br>Please try again or <a href="' + escapeHtml(options.issuesUrl) + '">file an issue</a> for assistance.';
+    modalMessageEl.innerHTML = `Sending your message unexpectedly failed.${messageStr}<br>Please try again or <a href="${escapeHtml(options.issuesUrl)}">file an issue</a> for assistance.`;
     modal.show();
-  }).always(function() {
-    submitButton.disabled = false;
-    submitButton.innerHTML = submitButtonOrig;
+  }).finally(function() {
+    submitButtonEl.disabled = false;
+    submitButtonEl.innerHTML = submitButtonOrig;
   });
 });

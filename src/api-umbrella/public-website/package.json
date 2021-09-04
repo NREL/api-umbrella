@@ -2,8 +2,9 @@
   "dependencies": {
     "bootstrap": "^5.1.0",
     "escape-html": "^1.0.3",
-    "jquery": "^3.6.0",
-    "parsleyjs": "^2.9.2",
-    "postcss-cli": "^7.1.2"
+    "form-serialize": "^0.7.2",
+    "postcss-cli": "^7.1.2",
+    "promise-polyfill": "^8.2.0",
+    "whatwg-fetch": "^3.6.2"
   }
 }

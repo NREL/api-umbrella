@@ -1,0 +1,11 @@
+@import "bootstrap/scss/_functions";
+
+.api-umbrella-embed {
+  // Reset styles to avoid conflicts with other web page styles from the
+  // surrounding page.
+  * {
+    all: revert
+  }
+
+  @import "bootstrap/scss/bootstrap";
+}
