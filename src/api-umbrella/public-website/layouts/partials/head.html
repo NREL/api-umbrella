@@ -1,0 +1,6 @@
+<head>
+  {{ $options := (dict "includePaths" (slice "node_modules/bootstrap/scss")) }}
+  {{ $css := resources.Get "stylesheets/application.scss" | resources.ToCSS $options | resources.PostCSS -}}
+  {{ $secureCSS := $css | resources.Fingerprint "sha512" -}}
+  <link rel="stylesheet" href="{{ $secureCSS.Permalink | relURL }}" integrity="{{ $secureCSS.Data.Integrity }}" crossorigin="anonymous">
+</head>
