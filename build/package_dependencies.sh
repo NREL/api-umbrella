@@ -54,7 +54,7 @@ if [[ "$ID_NORMALIZED" == "rhel" ]]; then
     gawk
 
     # lua-resty-nettle
-    nettle
+    nettle-devel
 
     # lualdap
     openldap
@@ -152,16 +152,11 @@ if [[ "$ID_NORMALIZED" == "rhel" ]]; then
 elif [[ "$ID_NORMALIZED" == "debian" ]]; then
   libcurl_version=4
   libffi_version=7
-  libnettle_version=8
 
   if [[ "$ID" == "debian" && ( "$VERSION_ID" == "9" || "$VERSION_ID" == "10" ) ]]; then
     libffi_version=6
-    libnettle_version=6
-  elif [[ "$ID" == "ubuntu" && "$VERSION_ID" == "20.04" ]]; then
-    libnettle_version=7
   elif [[ "$ID" == "ubuntu" && "$VERSION_ID" == "18.04" ]]; then
     libffi_version=6
-    libnettle_version=6
   fi
 
   core_runtime_dependencies=(
@@ -208,7 +203,7 @@ elif [[ "$ID_NORMALIZED" == "debian" ]]; then
     libicu-dev
 
     # lua-resty-nettle
-    "libnettle$libnettle_version"
+    "nettle-dev"
 
     # lualdap
     libldap-2.4-2

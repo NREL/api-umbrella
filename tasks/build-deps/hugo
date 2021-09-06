@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+hugo_version="0.88.1"
+hugo_hash="80cbb0b12a03838a1f053849c9d3accad1f328a8ea824294d57f9a0c6f89620b"
+
+set -e -u -x
+source ./tasks/helpers.sh
+
+task_working_dir
+download "https://github.com/gohugoio/hugo/releases/download/v${hugo_version}/hugo_${hugo_version}_Linux-64bit.tar.gz" "sha256" "$hugo_hash"
+extract_download "hugo_${hugo_version}_Linux-64bit.tar.gz"
+
+install -D -m 755 "hugo" "$DEV_INSTALL_PREFIX/bin/hugo"
+
+stamp

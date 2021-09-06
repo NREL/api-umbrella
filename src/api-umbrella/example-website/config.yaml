@@ -3,7 +3,7 @@ languageCode: en-us
 title: My New Hugo Site
 params:
   githubRepoUrl: https://github.com/NREL/api-umbrella
-  apiUmbrellaApiKey:
+  apiUmbrellaApiKey: DEMO_KEY
 markup:
   goldmark:
     renderer:

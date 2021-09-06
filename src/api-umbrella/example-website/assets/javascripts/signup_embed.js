@@ -39,25 +39,28 @@ if(!options.registrationSource) {
 }
 
 let signupFormTemplate = `
-  <p>Sign up for an application programming interface (API) key to access and use web services available on the Data.gov developer network.</p>
+  <p>Sign up for an application programming interface (API) key to access and use web services.</p>
   <p class="required-fields"><abbr title="Required" class="required"><span class="abbr-required">*</span></abbr> Required fields</p>
-  <form id="api_umbrella_signup_form" role="form">
+  <form id="api_umbrella_signup_form" novalidate>
     <div class="row mb-3">
       <label class="col-sm-4 col-form-label text-end" for="user_first_name"><abbr title="Required" class="required"><span class="abbr-required">*</span></abbr> First Name</label>
       <div class="col-sm-8">
-        <input class="form-control" id="user_first_name" name="user[first_name]" size="50" type="text" required />
+        <input class="form-control" id="user_first_name" aria-describedby="user_first_name_feedback" name="user[first_name]" size="50" type="text" required />
+        <div id="user_first_name_feedback" class="invalid-feedback">Fill out this field.</div>
       </div>
     </div>
     <div class="row mb-3">
       <label class="col-sm-4 col-form-label text-end" for="user_last_name"><abbr title="Required" class="required"><span class="abbr-required">*</span></abbr> Last Name</label>
       <div class="col-sm-8">
-        <input class="form-control" id="user_last_name" name="user[last_name]" size="50" type="text" required />
+        <input class="form-control" id="user_last_name" aria-describedby="user_last_name_feedback"  name="user[last_name]" size="50" type="text" required />
+        <div id="user_last_name_feedback" class="invalid-feedback">Fill out this field.</div>
       </div>
     </div>
     <div class="row mb-3">
       <label class="col-sm-4 col-form-label text-end" for="user_email"><abbr title="Required" class="required"><span class="abbr-required">*</span></abbr> Email</label>
       <div class="col-sm-8">
-        <input class="form-control" id="user_email" name="user[email]" size="50" type="email" required />
+        <input class="form-control" id="user_email" aria-describedby="user_email_feedback" name="user[email]" size="50" type="email" required />
+        <div id="user_email_feedback" class="invalid-feedback">Enter an email address.</div>
       </div>
     </div>
 `;
@@ -67,7 +70,8 @@ if(options.websiteInput) {
     <div class="row mb-3">
       <label class="col-sm-4 col-form-label text-end" for="user_website">Website<br />(optional)</label>
       <div class="col-sm-8">
-        <input class="form-control" id="user_website" name="user[website]" size="50" type="url" placeholder="http://" />
+        <input class="form-control" id="user_website" aria-describedby="user_website_feedback" name="user[website]" size="50" type="url" placeholder="http://" />
+        <div id="user_website_feedback" class="invalid-feedback">Enter a URL.</div>
       </div>
     </div>
   `;
@@ -87,7 +91,9 @@ if(options.termsCheckbox) {
     <div class="row mb-3">
       <div class="col-sm-8 offset-sm-4">
         <div class="form-check">
-          <label class="form-check-label"><input id="user_terms_and_conditions" name="user[terms_and_conditions]" type="checkbox" class="form-check-input" value="true" required data-parsley-error-message="You must agree to the terms and conditions to signup" />I have read and agree to the <a href="${escapeHtml(options.termsUrl)}" onclick="window.open(this.href, &#x27;api_umbrella_terms&#x27;, &#x27;height=500,width=790,menubar=no,toolbar=no,location=no,personalbar=no,status=no,resizable=yes,scrollbars=yes&#x27;); return false;" title="Opens new window to terms and conditions">terms and conditions</a>.</label>
+          <input id="user_terms_and_conditions" aria-describedby="user_terms_and_conditions_feedback" name="user[terms_and_conditions]" type="checkbox" class="form-check-input" value="true" required />
+          <label class="form-check-label">I have read and agree to the <a href="${escapeHtml(options.termsUrl)}" onclick="window.open(this.href, &#x27;api_umbrella_terms&#x27;, &#x27;height=500,width=790,menubar=no,toolbar=no,location=no,personalbar=no,status=no,resizable=yes,scrollbars=yes&#x27;); return false;" title="Opens new window to terms and conditions">terms and conditions</a>.</label>
+          <div id="user_terms_and_conditions_feedback" class="invalid-feedback">You must agree to the terms and conditions to signup.</div>
         </div>
       </div>
     </div>

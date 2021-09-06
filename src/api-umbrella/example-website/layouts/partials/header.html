@@ -6,12 +6,12 @@
     </button>
     <div class="collapse navbar-collapse" id="navbarNav">
       <ul class="navbar-nav">
-        <li class="nav-item ">
-          <a href="/docs/" class="nav-link">API Docs</a>
-        </li>
-        <li class="nav-item">
-          <a href="/signup/" class="nav-link">API Key Signup</a>
-        </li>
+        {{ $currentPage := . }}
+        {{ range .Site.Menus.main }}
+          <li class="nav-item">
+            <a class="nav-link{{if or ($currentPage.IsMenuCurrent "main" .) ($currentPage.HasMenuCurrent "main" .) }} active{{end}}" href="{{ .URL }}" title="{{ .Title }}">{{ .Name }}</a>
+          </li>
+        {{ end }}
       </ul>
     </div>
   </div>

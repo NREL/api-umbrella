@@ -173,6 +173,15 @@ tasks:
       - task: deps:runit_svlogd
       - task: deps:trafficserver
 
+  build-deps:hugo:
+    cmds:
+      - ./tasks/build-deps/hugo
+    sources:
+      - ./tasks/build-deps/hugo
+      - ./tasks/helpers.sh
+    generates:
+      - ./build/work/stamp/build-deps/hugo
+
   build-deps:nodejs:
     cmds:
       - ./tasks/build-deps/nodejs
@@ -196,6 +205,7 @@ tasks:
 
   build-deps:
     cmds:
+      - task: build-deps:hugo
       - task: build-deps:yarn
 
   app-deps:admin-ui:yarn:
@@ -708,18 +718,6 @@ tasks:
       - ./build/work/stamp/app/locale
     method: checksum
 
-  app:static-site:
-    deps:
-      - build-deps:nodejs
-    cmds:
-      - ./tasks/app/static-site
-    sources:
-      - ./build/work/stamp/build-deps/nodejs
-      - ./tasks/app/static-site
-      - ./tasks/helpers.sh
-    generates:
-      - ./build/work/stamp/app/static-site
-
   app:web-app:precompile:
     deps:
       - app-deps:web-app:yarn
@@ -737,7 +735,6 @@ tasks:
   app:
     cmds:
       - task: app:core
-      - task: app:static-site
 
   all:
     cmds:

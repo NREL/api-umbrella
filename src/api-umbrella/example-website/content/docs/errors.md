@@ -1,7 +1,6 @@
 ---
 title: General Web Service Errors
-hidden_child: true
-
+generalDocs: true
 ---
 
 Certain, general errors will be returned in a standardized way from all API Umbrella web services. Additional, service-specific error messages may also be returned (see individual service documentation for those details). The following list describes the general errors any application may return:

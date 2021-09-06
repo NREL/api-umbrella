@@ -1,0 +1,3 @@
+{{ range (where (where .Site.RegularPages "Section" "docs") "Params.generalDocs" "!=" true) }}
+  <h3><a href="{{ .RelPermalink }}">{{ .Title }}</a></h3>
+{{ end }}

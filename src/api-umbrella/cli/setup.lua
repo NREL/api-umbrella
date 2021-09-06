@@ -289,6 +289,7 @@ local function activate_services()
   end
   if config["app_env"] == "development" then
     active_services["dev-env-ember-server"] = 1
+    active_services["dev-env-example-website-hugo"] = 1
   end
   if config["app_env"] == "test" then
     active_services["test-env-glauth"] = 1
