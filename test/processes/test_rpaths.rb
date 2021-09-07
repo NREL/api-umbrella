@@ -26,7 +26,7 @@ class Test::Processes::TestRpaths < Minitest::Test
     bins += Dir.glob(File.join($config["_embedded_root_dir"], "libexec/**/*.so"))
     bins += Dir.glob(File.join($config["_embedded_root_dir"], "openresty/**/bin/**/*"))
     bins += Dir.glob(File.join($config["_embedded_root_dir"], "openresty/**/sbin/**/*"))
-    bins += Dir.glob(File.join($config["_embedded_root_dir"], "apps/core/shared/vendor/**/*.so"))
+    bins += Dir.glob(File.join($config["_embedded_root_dir"], "app/vendor/**/*.so"))
     bins.map! { |path| File.realpath(path) }
     bins.select! { |path| File.file?(path) }
     bins.reject! { |path| `file #{path}` =~ /(text executable|ASCII)/ }
@@ -40,7 +40,7 @@ class Test::Processes::TestRpaths < Minitest::Test
       "/embedded/openresty/nginx/sbin/nginx",
       "/embedded/libexec/trafficserver/header_rewrite.so",
       # LuaRock
-      "/embedded/apps/core/shared/vendor/lua/lib/lua/5.1/yaml.so",
+      "/embedded/app/vendor/lua/lib/lua/5.1/yaml.so",
     ].each do |expected_path_end|
       assert(bins.find { |path| path.end_with?(expected_path_end) }, "Expected #{bins.inspect} to include #{expected_path_end.inspect}")
     end

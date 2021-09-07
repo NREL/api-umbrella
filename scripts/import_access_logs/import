@@ -11,7 +11,7 @@ if [ -z "${API_UMBRELLA_EMBEDDED_ROOT:-}" ]; then
 fi
 
 if [ -z "${API_UMBRELLA_SRC_ROOT:-}" ]; then
-  export API_UMBRELLA_SRC_ROOT="${API_UMBRELLA_EMBEDDED_ROOT}/apps/core/current"
+  export API_UMBRELLA_SRC_ROOT="${API_UMBRELLA_EMBEDDED_ROOT}/app"
 fi
 
 if [ -z "${API_UMBRELLA_RUNTIME_CONFIG:-}" ]; then
@@ -27,8 +27,8 @@ export PATH=$API_UMBRELLA_EMBEDDED_ROOT/sbin:$API_UMBRELLA_EMBEDDED_ROOT/bin:$PA
 # Note that we purposefully don't use any of the default Lua load paths (like
 # /usr/local) so that other Lua packages on the system aren't picked up (since
 # they might conflict).
-export LUA_PATH="$API_UMBRELLA_EMBEDDED_ROOT/apps/core/shared/vendor/share/lua/5.1/?.lua;\
-$API_UMBRELLA_EMBEDDED_ROOT/apps/core/shared/vendor/share/lua/5.1/?/init.lua;\
+export LUA_PATH="$API_UMBRELLA_EMBEDDED_ROOT/app/vendor/share/lua/5.1/?.lua;\
+$API_UMBRELLA_EMBEDDED_ROOT/app/vendor/share/lua/5.1/?/init.lua;\
 $API_UMBRELLA_EMBEDDED_ROOT/openresty/lualib/?.lua;\
 $API_UMBRELLA_EMBEDDED_ROOT/openresty/lualib/?/init.lua;\
 $API_UMBRELLA_EMBEDDED_ROOT/openresty/luajit/share/luajit-2.1.0-beta2/?.lua;\
@@ -38,7 +38,7 @@ $API_UMBRELLA_EMBEDDED_ROOT/openresty/luajit/share/lua/5.1/?/init.lua"
 if [ -n "$API_UMBRELLA_SRC_ROOT" ]; then
   export LUA_PATH="$API_UMBRELLA_SRC_ROOT/src/?.lua;$LUA_PATH"
 fi
-export LUA_CPATH="$API_UMBRELLA_EMBEDDED_ROOT/apps/core/shared/vendor/lib/lua/5.1/?.so;\
+export LUA_CPATH="$API_UMBRELLA_EMBEDDED_ROOT/app/vendor/lib/lua/5.1/?.so;\
 $API_UMBRELLA_EMBEDDED_ROOT/openresty/lualib/?.so;\
 $API_UMBRELLA_EMBEDDED_ROOT/openresty/luajit/lib/lua/5.1/?.so"
 

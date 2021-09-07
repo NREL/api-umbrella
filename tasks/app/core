@@ -4,7 +4,7 @@ set -e -u -x
 source ./tasks/helpers.sh
 
 # Copy all the API Umbrella source into the release directory.
-mkdir -p "$APP_CORE_RELEASE_DIR"
+mkdir -p "$APP_DIR"
 rsync -a \
   --delete-after \
   --delete-excluded \
@@ -23,35 +23,31 @@ rsync -a \
   --include=/src/*** \
   --exclude=* \
   "$SOURCE_DIR/" \
-  "$APP_CORE_RELEASE_DIR/"
+  "$APP_DIR/"
 
 # Add build pieces from the other tasks into the release directory (eg,
 # compiled assets).
-mkdir -p "$APP_CORE_RELEASE_DIR/build/dist"
+mkdir -p "$APP_DIR/build/dist"
 rsync -a --delete-after \
   "$WORK_DIR/tasks/app/admin-ui/build/_persist/dist/" \
-  "$APP_CORE_RELEASE_DIR/build/dist/admin-ui/"
+  "$APP_DIR/build/dist/admin-ui/"
 rsync -a --delete-after \
   "$WORK_DIR/tasks/app/example-website/build/_persist/public/" \
-  "$APP_CORE_RELEASE_DIR/build/dist/example-website/"
+  "$APP_DIR/build/dist/example-website/"
 rsync -a --delete-after \
   "$WORK_DIR/tasks/app/locale/_persist/json/" \
-  "$APP_CORE_RELEASE_DIR/build/dist/locale/"
+  "$APP_DIR/build/dist/locale/"
 rsync -a --delete-after \
   "$WORK_DIR/tasks/app/web-app/precompile/_persist/assets/dist/" \
-  "$APP_CORE_RELEASE_DIR/build/dist/web-assets/"
-
-# Add symlinks for the release.
-(cd "$APP_CORE_DIR" && ln -snf releases/0 ./current)
-(cd "$APP_CORE_DIR/releases/0" && ln -snf ../../shared/vendor ./vendor)
+  "$APP_DIR/build/dist/web-assets/"
 
 # Add symlinks for bin files into the release.
 mkdir -p "$STAGE_PREFIX_DIR/bin"
 (
   cd "$STAGE_PREFIX_DIR/bin"
-  ln -snf ../embedded/apps/core/current/bin/api-umbrella ./api-umbrella
-  ln -snf ../embedded/apps/core/current/bin/api-umbrella-env ./api-umbrella-env
-  ln -snf ../embedded/apps/core/current/bin/api-umbrella-exec ./api-umbrella-exec
+  ln -snf ../embedded/app/bin/api-umbrella ./api-umbrella
+  ln -snf ../embedded/app/bin/api-umbrella-env ./api-umbrella-env
+  ln -snf ../embedded/app/bin/api-umbrella-exec ./api-umbrella-exec
 )
 
 stamp

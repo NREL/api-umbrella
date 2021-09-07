@@ -33,7 +33,7 @@ _luarocks_install() {
 
 luarocks_install() {
   set +x
-  _luarocks_install "$APP_CORE_VENDOR_LUA_DIR" "$@"
+  _luarocks_install "$APP_VENDOR_LUA_DIR" "$@"
 }
 
 test_luarocks_install() {
@@ -56,7 +56,7 @@ _luarocks_make() {
 
 luarocks_make() {
   set +x
-  _luarocks_make "$APP_CORE_VENDOR_LUA_DIR" "$@"
+  _luarocks_make "$APP_VENDOR_LUA_DIR" "$@"
 }
 
 _opm_install() {
@@ -72,7 +72,7 @@ _opm_install() {
 
 opm_install() {
   set +x
-  _opm_install "$APP_CORE_VENDOR_LUA_DIR" "$@"
+  _opm_install "$APP_VENDOR_LUA_DIR" "$@"
 }
 
 test_opm_install() {

@@ -35,12 +35,10 @@ STAGE_EMBEDDED_PATH="$STAGE_EMBEDDED_DIR/bin:$DEFAULT_PATH"
 DEV_PATH="$DEV_INSTALL_PREFIX/bin:$STAGE_EMBEDDED_PATH"
 
 # Where to install app-level vendor dependencies.
-APP_CORE_DIR="$STAGE_EMBEDDED_DIR/apps/core"
-APP_CORE_RELEASE_DIR="$APP_CORE_DIR/releases/0"
-APP_CORE_VENDOR_DIR="$APP_CORE_DIR/shared/vendor"
-APP_CORE_VENDOR_BUNDLE_DIR="$APP_CORE_VENDOR_DIR/bundle"
-APP_CORE_VENDOR_LUA_DIR="$APP_CORE_VENDOR_DIR/lua"
-APP_CORE_VENDOR_LUA_SHARE_DIR="$APP_CORE_VENDOR_LUA_DIR/share/lua/5.1"
+APP_DIR="$STAGE_EMBEDDED_DIR/app"
+APP_VENDOR_DIR="$APP_DIR/shared/vendor"
+APP_VENDOR_LUA_DIR="$APP_VENDOR_DIR/lua"
+APP_VENDOR_LUA_SHARE_DIR="$APP_VENDOR_LUA_DIR/share/lua/5.1"
 
 # Determine the sub-path for the currently executing task. This can be used for
 # generating unique directories for the current task.

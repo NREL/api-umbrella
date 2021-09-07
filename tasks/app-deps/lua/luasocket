@@ -17,6 +17,6 @@ extract_download "$lua_luasocket_version.tar.gz"
 # for anything).
 cd "luasocket-$lua_luasocket_version"
 sed -i -e "s%local socket = require.*%local socket = {}%" src/url.lua
-install -D -m 644 src/url.lua "$APP_CORE_VENDOR_LUA_SHARE_DIR/socket/url.lua"
+install -D -m 644 src/url.lua "$APP_VENDOR_LUA_SHARE_DIR/socket/url.lua"
 
 stamp

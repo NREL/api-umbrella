@@ -26,13 +26,6 @@ else
   install -D -m 644 "$SOURCE_DIR/build/package/files/etc/api-umbrella/api-umbrella.yml" "$destdir/etc/api-umbrella/api-umbrella.yml"
 fi
 
-(
-  cd "$destdir$install_prefix/embedded/apps/core"
-  rm -rf "releases/$release_timestamp"
-  mv releases/0 "releases/$release_timestamp"
-  ln -snf "releases/$release_timestamp" ./current
-)
-
 mkdir -p \
   "$destdir/usr/bin" \
   "$destdir/var/log" \

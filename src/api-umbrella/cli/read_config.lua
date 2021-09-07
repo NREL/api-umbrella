@@ -423,7 +423,7 @@ local function set_computed_config()
       },
     },
     static_site = {
-      build_dir = path.join(embedded_root_dir, "apps/core/current/build/dist/example-website"),
+      build_dir = path.join(embedded_root_dir, "app/build/dist/example-website"),
     },
   })
 
