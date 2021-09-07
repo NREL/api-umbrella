@@ -40,14 +40,6 @@ RSpec.shared_examples("installed") do
     expect(subject).to be_grouped_into("root")
   end
 
-  it "installs a sudoers.d file" do
-    subject = file("/etc/sudoers.d/api-umbrella")
-    expect(subject).to be_file
-    expect(subject).to be_mode(440)
-    expect(subject).to be_owned_by("root")
-    expect(subject).to be_grouped_into("root")
-  end
-
   it "installs a api-umbrella.yml file" do
     subject = file("/etc/api-umbrella/api-umbrella.yml")
     expect(subject).to be_file
@@ -70,33 +62,6 @@ RSpec.shared_examples("installed") do
     expect(subject).to belong_to_group("api-umbrella")
     expect(subject).to have_home_directory("/opt/api-umbrella")
     expect(subject).to have_login_shell("/sbin/nologin")
-  end
-
-  it "sets up the api-umbrella-deploy user's home directory and empty ssh keys file" do
-    subject = user("api-umbrella-deploy")
-    expect(subject).to exist
-    expect(subject).to belong_to_group("api-umbrella-deploy")
-    expect(subject).to have_home_directory("/home/api-umbrella-deploy")
-    expect(subject).to have_login_shell("/bin/bash")
-
-    subject = file("/home/api-umbrella-deploy")
-    expect(subject).to be_directory
-    expect(subject).to be_mode(700)
-    expect(subject).to be_owned_by("api-umbrella-deploy")
-    expect(subject).to be_grouped_into("api-umbrella-deploy")
-
-    subject = file("/home/api-umbrella-deploy/.ssh")
-    expect(subject).to be_directory
-    expect(subject).to be_mode(700)
-    expect(subject).to be_owned_by("api-umbrella-deploy")
-    expect(subject).to be_grouped_into("api-umbrella-deploy")
-
-    subject = file("/home/api-umbrella-deploy/.ssh/authorized_keys")
-    expect(subject).to be_file
-    expect(subject).to be_mode(600)
-    expect(subject).to be_owned_by("api-umbrella-deploy")
-    expect(subject).to be_grouped_into("api-umbrella-deploy")
-    expect(subject.content).to eql("")
   end
 end
 
@@ -594,7 +559,6 @@ describe "api-umbrella" do
     [
       "/etc/init.d/api-umbrella",
       "/etc/logrotate.d/api-umbrella",
-      "/etc/sudoers.d/api-umbrella",
       "/opt/api-umbrella/embedded",
       "/usr/bin/api-umbrella",
       "/var/log/api-umbrella",
