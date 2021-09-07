@@ -50,8 +50,9 @@ RUN make deps && make clean:dev
 COPY tasks/build-deps /app/tasks/build-deps
 RUN make build-deps && make clean:dev
 
-COPY tasks/app/static-site /app/tasks/app/
-RUN make app:static-site && make clean:dev
+COPY src/api-umbrella/example-website/package.json src/api-umbrella/example-website/yarn.lock /app/src/api-umbrella/example-website/
+COPY tasks/app-deps/example-website/yarn /app/tasks/app-deps/example-website/
+RUN make app-deps:example-website:yarn && make clean:dev
 
 COPY src/api-umbrella/admin-ui/.yarnrc src/api-umbrella/admin-ui/package.json src/api-umbrella/admin-ui/yarn.lock /app/src/api-umbrella/admin-ui/
 COPY tasks/app-deps/admin-ui/yarn /app/tasks/app-deps/admin-ui/
@@ -63,6 +64,10 @@ RUN make app-deps:web-app:yarn && make clean:dev
 
 COPY tasks/app-deps /app/tasks/app-deps
 RUN make app-deps && make clean:dev
+
+COPY src/api-umbrella/example-website /app/src/api-umbrella/example-website
+COPY tasks/app/example-website/build /app/tasks/app/example-website/
+RUN make app:example-website:build && make clean:dev
 
 COPY src/api-umbrella/web-app/assets /app/src/api-umbrella/web-app/assets
 COPY src/api-umbrella/web-app/webpack.config.js /app/src/api-umbrella/web-app/webpack.config.js

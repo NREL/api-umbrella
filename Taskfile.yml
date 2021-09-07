@@ -223,6 +223,20 @@ tasks:
     generates:
       - ./build/work/stamp/app-deps/admin-ui/yarn
 
+  app-deps:example-website:yarn:
+    deps:
+      - build-deps:yarn
+    cmds:
+      - ./tasks/app-deps/example-website/yarn
+    sources:
+      - ./build/work/stamp/build-deps/yarn
+      - ./src/api-umbrella/example-website/package.json
+      - ./src/api-umbrella/example-website/yarn.lock
+      - ./tasks/app-deps/example-website/yarn
+      - ./tasks/helpers.sh
+    generates:
+      - ./build/work/stamp/app-deps/example-website/yarn
+
   app-deps:lua:argparse:
     deps:
       - deps:luarocks
@@ -638,6 +652,7 @@ tasks:
   app-deps:
     cmds:
       - task: app-deps:admin-ui:yarn
+      - task: app-deps:example-website:yarn
       - task: app-deps:lua:argparse
       - task: app-deps:lua:bcrypt
       - task: app-deps:lua:cmsgpack
@@ -691,18 +706,35 @@ tasks:
   app:core:
     deps:
       - app:admin-ui:build
+      - app:example-website:build
       - app:locale
       - app:web-app:precompile
     cmds:
       - ./tasks/app/core
     sources:
       - ./build/work/stamp/app/admin-ui/build
+      - ./build/work/stamp/app/example-website/build
       - ./build/work/stamp/app/locale
       - ./build/work/stamp/app/web-app/precompile
       - ./tasks/app/core
       - ./tasks/helpers.sh
     generates:
       - ./build/work/stamp/app/core
+
+  app:example-website:build:
+    deps:
+      - app-deps:example-website:yarn
+    cmds:
+      - ./tasks/app/example-website/build
+    sources:
+      - ./build/work/stamp/app-deps/example-website/yarn
+      - ./src/api-umbrella/example-website/assets/**/*
+      - ./src/api-umbrella/example-website/content/**/*
+      - ./src/api-umbrella/example-website/layouts/**/*
+      - ./tasks/app/example-website/build
+      - ./tasks/helpers.sh
+    generates:
+      - ./build/work/stamp/app/example-website/build
 
   app:locale:
     deps:
@@ -819,6 +851,7 @@ tasks:
   lint:js:
     deps:
       - app-deps:admin-ui:yarn
+      - app-deps:example-website:yarn
       - app-deps:web-app:yarn
     cmds:
       - ./tasks/lint/js

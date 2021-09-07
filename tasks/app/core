@@ -32,6 +32,9 @@ rsync -a --delete-after \
   "$WORK_DIR/tasks/app/admin-ui/build/_persist/dist/" \
   "$APP_CORE_RELEASE_DIR/build/dist/admin-ui/"
 rsync -a --delete-after \
+  "$WORK_DIR/tasks/app/example-website/build/_persist/public/" \
+  "$APP_CORE_RELEASE_DIR/build/dist/example-website/"
+rsync -a --delete-after \
   "$WORK_DIR/tasks/app/locale/_persist/json/" \
   "$APP_CORE_RELEASE_DIR/build/dist/locale/"
 rsync -a --delete-after \

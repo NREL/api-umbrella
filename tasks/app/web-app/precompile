@@ -22,6 +22,6 @@ rsync -a -v \
 
 node_modules_dir="$WORK_DIR/tasks/app-deps/web-app/yarn/_persist/node_modules"
 ln -s "$node_modules_dir" ./node_modules
-PATH="$DEV_INSTALL_PREFIX/bin:$DEFAULT_PATH" ./node_modules/.bin/webpack
+PATH="$DEV_PATH" ./node_modules/.bin/webpack
 
 stamp

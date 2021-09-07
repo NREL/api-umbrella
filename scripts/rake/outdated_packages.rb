@@ -5,10 +5,6 @@ require "uri"
 
 class OutdatedPackages
   REPOS = {
-    "api_umbrella_static_site" => {
-      :git => "https://github.com/NREL/api-umbrella-static-site.git",
-      :git_ref => "master",
-    },
     "glauth" => {
       :git => "https://github.com/glauth/glauth.git",
     },

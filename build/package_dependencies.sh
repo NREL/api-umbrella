@@ -100,10 +100,6 @@ if [[ "$ID_NORMALIZED" == "rhel" ]]; then
     # For tests and building static site.
     ruby-devel
     rubygem-bundler
-
-    # For nokogiri dependency (for static-site and tests)
-    libxml2-devel
-    libxslt-devel
   )
   test_runtime_dependencies=(
     unbound
@@ -127,6 +123,10 @@ if [[ "$ID_NORMALIZED" == "rhel" ]]; then
 
     # Postgres Ruby client for tests
     libpq-devel
+
+    # For nokogiri dependency
+    libxml2-devel
+    libxslt-devel
   )
 
   if [[ "$VERSION_ID" == "7" ]]; then
@@ -253,10 +253,6 @@ elif [[ "$ID_NORMALIZED" == "debian" ]]; then
     ruby-dev
     ruby-bundler
 
-    # For nokogiri dependency (for static-site and tests)
-    libxml2-dev
-    libxslt-dev
-
     # lua-psl
     libpsl-dev
   )
@@ -282,6 +278,10 @@ elif [[ "$ID_NORMALIZED" == "debian" ]]; then
 
     # Postgres Ruby client for tests
     libpq-dev
+
+    # For nokogiri dependency
+    libxml2-dev
+    libxslt-dev
   )
 
   # Install GCC 7+ for compiling TrafficServer (C++17 required).
