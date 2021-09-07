@@ -11,7 +11,7 @@ style.type = 'text/css';
 style.href = params.stylesheetPath;
 (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(style);
 
-const webSiteRoot = '<%= ENV["WEB_SITE_ROOT"] %>';
+const webSiteRoot = params.webSiteRoot.replace(/\/$/, '');
 
 const defaults = {
   containerSelector: '#api_umbrella_signup',
@@ -126,15 +126,15 @@ signupFormTemplate += `
   </form>
 `;
 
-const container = document.querySelector(options.containerSelector);
-container.classList.add('api-umbrella-embed');
-container.innerHTML = signupFormTemplate;
+const containerEl = document.querySelector(options.containerSelector);
+containerEl.classList.add('api-umbrella-embed');
+containerEl.innerHTML = signupFormTemplate;
 
-const modalEl = container.querySelector('.alert-modal');
+const modalEl = containerEl.querySelector('.alert-modal');
 const modalMessageEl = modalEl.querySelector('.alert-modal-message');
 const modal = new Modal(modalEl);
 
-const formEl = container.querySelector('form');
+const formEl = containerEl.querySelector('form');
 formEl.addEventListener('submit', function(event) {
   event.preventDefault();
 
@@ -174,13 +174,20 @@ formEl.addEventListener('submit', function(event) {
     },
     body: JSON.stringify(data),
   }).then(function(response) {
-    const contentType = error.response.headers.get('Content-Type');
+    const contentType = response.headers.get('Content-Type');
+    console.info('contentType: ', contentType);
     if (!contentType || !contentType.includes('application/json')) {
       throw new Error('Response is not JSON');
     }
 
-    return response.json();
-  }).then(function(data) {
+    return response.json().then(function(data) {
+      return {
+        response,
+        data,
+      }
+    });
+  }).then(function({ response, data}) {
+    console.info('response.ok: ', response.ok);
     if (!response.ok) {
       throw { responseData: data };
     }
@@ -196,7 +203,7 @@ formEl.addEventListener('submit', function(event) {
     } else {
       confirmationTemplate += `
         <p>Your API key for <strong>${escapeHtml(user.email)}</strong> is:</p>
-        <code class="signup-key">${escapeHtml(user.api_key)}</code>
+        <pre class="signup-key"><code>${escapeHtml(user.api_key)}</code></pre>
         <p>You can start using this key to make web service requests. Simply pass your key in the URL when making a web request. Here's an example:</p>
         <pre class="signup-example"><a href="${escapeHtml(data.options.example_api_url)}">${data.options.example_api_url_formatted_html}</a></pre>
       `;
@@ -211,8 +218,8 @@ formEl.addEventListener('submit', function(event) {
       </div>
     `;
 
-    $(options.containerSelector).html(confirmationTemplate);
-    $(options.containerSelector)[0].scrollIntoView();
+    containerEl.innerHTML = confirmationTemplate;
+    containerEl.scrollIntoView();
   }).catch(function(error) {
     const messages = [];
     let messageStr = '';
@@ -230,8 +237,10 @@ formEl.addEventListener('submit', function(event) {
         messages.push(escapeHtml(error.responseData.error.message));
       }
 
-      if (messages && messages.length > 0) {
+      if (messages.length > 0) {
         messageStr = `<br><ul><li>${messages.join('</li><li>')}</li></ul>`;
+      } else {
+        console.error(error);
       }
     } catch(e) {
       console.error(e);

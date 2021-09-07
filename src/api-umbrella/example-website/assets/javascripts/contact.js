@@ -41,13 +41,18 @@ formEl.addEventListener('submit', function(event) {
     },
     body: JSON.stringify(serialize(formEl, { hash: true })),
   }).then(function(response) {
-    const contentType = error.response.headers.get('Content-Type');
+    const contentType = response.headers.get('Content-Type');
     if (!contentType || !contentType.includes('application/json')) {
       throw new Error('Response is not JSON');
     }
 
-    return response.json();
-  }).then(function(data) {
+    return response.json().then(function(data) {
+      return {
+        response,
+        data,
+      }
+    });
+  }).then(function({ response, data}) {
     if (!response.ok) {
       throw { responseData: data };
     }
@@ -73,8 +78,10 @@ formEl.addEventListener('submit', function(event) {
         messages.push(escapeHtml(error.responseData.error.message));
       }
 
-      if (messages && messages.length > 0) {
+      if (messages.length > 0) {
         messageStr = `<br><ul><li>${messages.join('</li><li>')}</li></ul>`;
+      } else {
+        console.error(error);
       }
     } catch(e) {
       console.error(e);

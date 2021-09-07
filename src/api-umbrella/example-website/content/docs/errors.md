@@ -18,35 +18,35 @@ Certain, general errors will be returned in a standardized way from all API Umbr
       <th class="doc-parameter-name" scope="row">API_KEY_MISSING</th>
       <td class="doc-parameter-name">403</td>
       <td class="doc-parameter-description">
-        An API key was not supplied. See <%= link_to("API key usage", "/docs/api-key.html") %> for details on how to pass your API key to the API.
+        An API key was not supplied. See <a href="/docs/api-key/">API key usage</a> for details on how to pass your API key to the API.
       </td>
     </tr>
     <tr>
       <th class="doc-parameter-name" scope="row">API_KEY_INVALID</th>
       <td class="doc-parameter-name">403</td>
       <td class="doc-parameter-description">
-        An invalid API key was supplied. Double check that the API key being passed in is valid, or <%= link_to("signup", "/signup.html") %> for an API key.
+        An invalid API key was supplied. Double check that the API key being passed in is valid, or <a href="/signup/">signup</a> for an API key.
       </td>
     </tr>
     <tr>
       <th class="doc-parameter-name" scope="row">API_KEY_DISABLED</th>
       <td class="doc-parameter-name">403</td>
       <td class="doc-parameter-description">
-        The API key supplied has been disabled by an administrator. Please <%= link_to("contact us", "/contact.html") %> for assistance.
+        The API key supplied has been disabled by an administrator. Please <a href="/contact/">contact us</a> for assistance.
       </td>
     </tr>
     <tr>
       <th class="doc-parameter-name" scope="row">API_KEY_UNAUTHORIZED</th>
       <td class="doc-parameter-name">403</td>
       <td class="doc-parameter-description">
-        The API key supplied is not authorized to access the given service. Please <%= link_to("contact us", "/contact.html") %> for assistance.
+        The API key supplied is not authorized to access the given service. Please <a href="/contact/">contact us</a> for assistance.
       </td>
     </tr>
     <tr>
       <th class="doc-parameter-name" scope="row">API_KEY_UNVERIFIED</th>
       <td class="doc-parameter-name">403</td>
       <td class="doc-parameter-description">
-        The API key supplied has not been verified yet. Please check your e-mail to verify the API key. Please <%= link_to("contact us", "/contact.html") %> for assistance.
+        The API key supplied has not been verified yet. Please check your e-mail to verify the API key. Please <a href="/contact/">contact us</a> for assistance.
       </td>
     </tr>
     <tr>
@@ -60,7 +60,7 @@ Certain, general errors will be returned in a standardized way from all API Umbr
       <th class="doc-parameter-name" scope="row">OVER_RATE_LIMIT</th>
       <td class="doc-parameter-name">429</td>
       <td class="doc-parameter-description">
-        The API key has exceeded the rate limits. See <%= link_to("rate limits", "/docs/rate-limits.html") %> for more details or <%= link_to("contact us", "/contact.html") %> for assistance.
+        The API key has exceeded the rate limits. See <a href="/docs/rate-limits/">rate limits</a> for more details or <a href="/contact/">contact us</a> for assistance.
       </td>
     </tr>
     <tr>

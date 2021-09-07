@@ -22,6 +22,8 @@ if [ "${1}" = "start" ]; then
       --port "{{static_site.port}}" \
       --verbose \
       --verboseLog \
+      --baseURL "https://localhost:{{https_port}}/" \
+      --appendPort=false \
       --debug
 fi
 
