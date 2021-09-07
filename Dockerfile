@@ -62,6 +62,9 @@ COPY src/api-umbrella/web-app/package.json src/api-umbrella/web-app/yarn.lock /a
 COPY tasks/app-deps/web-app/yarn /app/tasks/app-deps/web-app/
 RUN make app-deps:web-app:yarn && make clean:dev
 
+COPY tasks/app-deps/lua /app/tasks/app-deps/lua
+RUN make app-deps:lua && make clean:dev
+
 COPY tasks/app-deps /app/tasks/app-deps
 RUN make app-deps && make clean:dev
 

@@ -635,24 +635,8 @@ tasks:
     generates:
       - ./build/work/stamp/app-deps/lua/shell-games
 
-  app-deps:web-app:yarn:
-    deps:
-      - build-deps:yarn
+  app-deps:lua:
     cmds:
-      - ./tasks/app-deps/web-app/yarn
-    sources:
-      - ./build/work/stamp/build-deps/yarn
-      - ./src/api-umbrella/web-app/package.json
-      - ./src/api-umbrella/web-app/yarn.lock
-      - ./tasks/app-deps/web-app/yarn
-      - ./tasks/helpers.sh
-    generates:
-      - ./build/work/stamp/app-deps/web-app/yarn
-
-  app-deps:
-    cmds:
-      - task: app-deps:admin-ui:yarn
-      - task: app-deps:example-website:yarn
       - task: app-deps:lua:argparse
       - task: app-deps:lua:bcrypt
       - task: app-deps:lua:cmsgpack
@@ -682,6 +666,26 @@ tasks:
       - task: app-deps:lua:resty-uuid
       - task: app-deps:lua:resty-validation
       - task: app-deps:lua:shell-games
+
+  app-deps:web-app:yarn:
+    deps:
+      - build-deps:yarn
+    cmds:
+      - ./tasks/app-deps/web-app/yarn
+    sources:
+      - ./build/work/stamp/build-deps/yarn
+      - ./src/api-umbrella/web-app/package.json
+      - ./src/api-umbrella/web-app/yarn.lock
+      - ./tasks/app-deps/web-app/yarn
+      - ./tasks/helpers.sh
+    generates:
+      - ./build/work/stamp/app-deps/web-app/yarn
+
+  app-deps:
+    cmds:
+      - task: app-deps:admin-ui:yarn
+      - task: app-deps:example-website:yarn
+      - task: app-deps:lua
       - task: app-deps:web-app:yarn
 
   app:admin-ui:build:
