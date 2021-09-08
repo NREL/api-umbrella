@@ -82,6 +82,27 @@ jobs:
   test:
     needs: [build]
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:10
+        env:
+          POSTGRES_PASSWORD: dev_password
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      elasticsearch:
+        image: docker.elastic.co/elasticsearch/elasticsearch-oss:6.8.18
+        env:
+          ES_JAVA_OPTS: "-Xms32m -Xmx256m"
+          discovery.type: single-node
+          cluster.routing.allocation.disk.threshold_enabled: "false"
+        options: >-
+          --health-cmd "curl -fsS http://localhost:9200/_cluster/health"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     strategy:
       fail-fast: false
       matrix:
@@ -136,58 +157,30 @@ jobs:
             test/tmp/artifacts/**/*
             !test/tmp/artifacts/**/log/*/lock
 
-  test_elasticsearch_v6:
-    needs: [build]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-
-      - name: Extract metadata (tags, labels) for Docker
-        id: meta
-        uses: docker/metadata-action@v3.5.0
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          flavor: |
-            prefix=dev-env-
-
-      - name: Pull
-        run: docker pull "$DOCKER_IMAGE_CACHE_FROM"
-        env:
-          DOCKER_IMAGE_CACHE_FROM: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }}
-
-      - name: Test
-        run: |
-          shopt -s globstar
-          tests=(${{ env.ELASTICSEARCH_TESTS_GLOB }})
-          docker run --rm \
-            -v "$(pwd)/test/tmp/artifacts:/app/test/tmp/artifacts" \
-            -e ELASTICSEARCH_TEST_API_VERSION=6 \
-            -e ELASTICSEARCH_TEST_TEMPLATE_VERSION=2 \
-            -e TESTOPTS="--ci-dir=./test/tmp/artifacts/reports" \
-            -e TESTS="${tests[*]}" \
-            -e MAXMIND_LICENSE_KEY="${MAXMIND_LICENSE_KEY}" \
-            "$DOCKER_IMAGE_CACHE_FROM" \
-            make test
-        env:
-          DOCKER_IMAGE_CACHE_FROM: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }}
-          MAXMIND_LICENSE_KEY: ${{ secrets.MAXMIND_LICENSE_KEY }}
-
-      - name: Artifact permissions
-        if: ${{ always() }}
-        run: sudo chmod -R 777 test/tmp/artifacts
-
-      - name: Archive artifacts
-        uses: actions/upload-artifact@v2
-        if: ${{ always() }}
-        with:
-          name: test-artifacts-elasticsearch-v6
-          path: |
-            test/tmp/artifacts/**/*
-            !test/tmp/artifacts/**/log/*/lock
-
   test_elasticsearch_v7:
     needs: [build]
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:10
+        env:
+          POSTGRES_PASSWORD: dev_password
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      elasticsearch:
+        image: docker.elastic.co/elasticsearch/elasticsearch-oss:7.10.2
+        env:
+          ES_JAVA_OPTS: "-Xms32m -Xmx256m"
+          discovery.type: single-node
+          cluster.routing.allocation.disk.threshold_enabled: "false"
+        options: >-
+          --health-cmd "curl -fsS http://localhost:9200/_cluster/health"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - uses: actions/checkout@v2
 
@@ -237,6 +230,27 @@ jobs:
   test_elasticsearch_v7_daily:
     needs: [build]
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:10
+        env:
+          POSTGRES_PASSWORD: dev_password
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      elasticsearch:
+        image: docker.elastic.co/elasticsearch/elasticsearch-oss:7.10.2
+        env:
+          ES_JAVA_OPTS: "-Xms32m -Xmx256m"
+          discovery.type: single-node
+          cluster.routing.allocation.disk.threshold_enabled: "false"
+        options: >-
+          --health-cmd "curl -fsS http://localhost:9200/_cluster/health"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - uses: actions/checkout@v2
 
