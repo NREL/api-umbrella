@@ -131,6 +131,7 @@ jobs:
 
           tests=$(split_tests --glob "${{ env.TESTS_GLOB }}" --split-total=${CI_NODE_TOTAL} --split-index=${CI_NODE_INDEX})
           docker run --rm \
+            --network "${{ job.services.postgres.network }}" \
             -v "$(pwd)/test/tmp/artifacts:/app/test/tmp/artifacts" \
             -e TESTOPTS="--ci-dir=./test/tmp/artifacts/reports" \
             -e TESTS="${tests}" \
@@ -202,6 +203,7 @@ jobs:
           shopt -s globstar
           tests=(${{ env.ELASTICSEARCH_TESTS_GLOB }})
           docker run --rm \
+            --network "${{ job.services.postgres.network }}" \
             -v "$(pwd)/test/tmp/artifacts:/app/test/tmp/artifacts" \
             -e ELASTICSEARCH_TEST_API_VERSION=7 \
             -e ELASTICSEARCH_TEST_TEMPLATE_VERSION=2 \
@@ -272,6 +274,7 @@ jobs:
           shopt -s globstar
           tests=(${{ env.ELASTICSEARCH_TESTS_GLOB }})
           docker run --rm \
+            --network "${{ job.services.postgres.network }}" \
             -v "$(pwd)/test/tmp/artifacts:/app/test/tmp/artifacts" \
             -e ELASTICSEARCH_TEST_API_VERSION=7 \
             -e ELASTICSEARCH_TEST_TEMPLATE_VERSION=2 \
