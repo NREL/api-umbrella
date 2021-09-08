@@ -35,7 +35,7 @@ Pass the API key into the `api_key` GET query string parameter:
 curl 'https://example.com/example.json?api_key=YOUR_KEY_HERE'
 ```
 
-*Note:* The GET query parameter may be used for non-GET requests (such as POST and PUT).
+_Note:_ The GET query parameter may be used for non-GET requests (such as POST and PUT).
 
 ### HTTP Basic Auth Username
 

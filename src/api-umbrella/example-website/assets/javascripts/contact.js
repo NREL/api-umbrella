@@ -1,96 +1,107 @@
-import Modal from 'bootstrap/js/src/modal';
-import escapeHtml from 'escape-html';
-import serialize from 'form-serialize';
-import 'whatwg-fetch'
-import 'promise-polyfill/src/polyfill';
+import Modal from "bootstrap/js/src/modal";
+import escapeHtml from "escape-html";
+import serialize from "form-serialize";
+import "whatwg-fetch";
+import "promise-polyfill/src/polyfill";
 
 const defaults = {};
 const options = {
   ...defaults,
-  ...(apiUmbrellaContactOptions || {}),
+  ...(window.apiUmbrellaContactOptions || {}),
 };
 
-if(!options.apiKey) {
-  alert('apiUmbrellaSignupOptions.apiKey must be set');
+if (!options.apiKey) {
+  // eslint-disable-next-line no-alert
+  alert("apiUmbrellaSignupOptions.apiKey must be set");
 }
 
-const modalEl = document.getElementById('alert_modal');
-const modalMessageEl = document.getElementById('alert_modal_message');
+const modalEl = document.getElementById("alert_modal");
+const modalMessageEl = document.getElementById("alert_modal_message");
 const modal = new Modal(modalEl);
 
-const formEl = document.getElementById('api_umbrella_contact_form');
-formEl.addEventListener('submit', function(event) {
+const formEl = document.getElementById("api_umbrella_contact_form");
+formEl.addEventListener("submit", (event) => {
   event.preventDefault();
 
   if (!formEl.checkValidity()) {
-    formEl.classList.add('was-validated')
+    formEl.classList.add("was-validated");
     return false;
   }
 
-  const submitButtonEl = formEl.querySelector('button[type=submit]');
+  const submitButtonEl = formEl.querySelector("button[type=submit]");
   const submitButtonOrig = submitButtonEl.innerHTML;
-  setTimeout(function() {
+  setTimeout(() => {
     submitButtonEl.disabled = true;
-    submitButtonEl.innerText = 'Sending...';
+    submitButtonEl.innerText = "Sending...";
   }, 0);
 
-  fetch(`/api-umbrella/v1/contact.json?api_key=${options.apiKey}`, {
-    method: 'POST',
+  return fetch(`/api-umbrella/v1/contact.json?api_key=${options.apiKey}`, {
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json'
+      "Content-Type": "application/json",
     },
     body: JSON.stringify(serialize(formEl, { hash: true })),
-  }).then(function(response) {
-    const contentType = response.headers.get('Content-Type');
-    if (!contentType || !contentType.includes('application/json')) {
-      throw new Error('Response is not JSON');
-    }
-
-    return response.json().then(function(data) {
-      return {
-        response,
-        data,
+  })
+    .then((response) => {
+      const contentType = response.headers.get("Content-Type");
+      if (!contentType || !contentType.includes("application/json")) {
+        throw new Error("Response is not JSON");
       }
-    });
-  }).then(function({ response, data}) {
-    if (!response.ok) {
-      throw { responseData: data };
-    }
 
-    formEl.reset();
+      return response.json().then((data) => {
+        return {
+          response,
+          data,
+        };
+      });
+    })
+    .then(({ response, data }) => {
+      if (!response.ok) {
+        // eslint-disable-next-line no-throw-literal
+        throw { responseData: data };
+      }
 
-    modalMessageEl.innerText = 'Thanks for sending your message. We\'ll be in touch.';
-    modal.show();
-  }).catch(function(error) {
-    const messages = [];
-    let messageStr = '';
-    try {
-      if(error?.responseData?.errors) {
-        for (let i = 0; i < error.responseData.errors.length; i++) {
-          const err = error.responseData.errors[i];
-          if (err.full_message || err.message) {
-            messages.push(escapeHtml(err.full_message || err.message));
+      formEl.reset();
+
+      modalMessageEl.innerText =
+        "Thanks for sending your message. We'll be in touch.";
+      modal.show();
+    })
+    .catch((error) => {
+      const messages = [];
+      let messageStr = "";
+      try {
+        if (error?.responseData?.errors) {
+          for (let i = 0; i < error.responseData.errors.length; i += 1) {
+            const err = error.responseData.errors[i];
+            if (err.full_message || err.message) {
+              messages.push(escapeHtml(err.full_message || err.message));
+            }
           }
         }
+
+        if (error?.responseData?.error?.message) {
+          messages.push(escapeHtml(error.responseData.error.message));
+        }
+
+        if (messages.length > 0) {
+          messageStr = `<br><ul><li>${messages.join("</li><li>")}</li></ul>`;
+        } else {
+          // eslint-disable-next-line no-console
+          console.error(error);
+        }
+      } catch (e) {
+        // eslint-disable-next-line no-console
+        console.error(e);
       }
 
-      if (error?.responseData?.error?.message) {
-        messages.push(escapeHtml(error.responseData.error.message));
-      }
-
-      if (messages.length > 0) {
-        messageStr = `<br><ul><li>${messages.join('</li><li>')}</li></ul>`;
-      } else {
-        console.error(error);
-      }
-    } catch(e) {
-      console.error(e);
-    }
-
-    modalMessageEl.innerHTML = `Sending your message unexpectedly failed.${messageStr}<br>Please try again or <a href="${escapeHtml(options.issuesUrl)}">file an issue</a> for assistance.`;
-    modal.show();
-  }).finally(function() {
-    submitButtonEl.disabled = false;
-    submitButtonEl.innerHTML = submitButtonOrig;
-  });
+      modalMessageEl.innerHTML = `Sending your message unexpectedly failed.${messageStr}<br>Please try again or <a href="${escapeHtml(
+        options.issuesUrl
+      )}">file an issue</a> for assistance.`;
+      modal.show();
+    })
+    .finally(() => {
+      submitButtonEl.disabled = false;
+      submitButtonEl.innerHTML = submitButtonOrig;
+    });
 });

@@ -4,7 +4,7 @@
   // Reset styles to avoid conflicts with other web page styles from the
   // surrounding page.
   * {
-    all: revert
+    all: revert;
   }
 
   @import "bootstrap/scss/bootstrap";

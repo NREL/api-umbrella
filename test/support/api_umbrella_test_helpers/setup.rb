@@ -311,22 +311,20 @@ module ApiUmbrellaTestHelpers
         self.api_umbrella_process.reload
         @@current_override_config = config.deep_dup
         Timeout.timeout(50) do
-          begin
-            self.api_umbrella_process.wait_for_config_version("file_config_version", config["version"], config)
-          rescue MultiJson::ParseError => e
-            # If the configuration changes involve changes to the
-            # "active_config" shdict size, then this can result in the API
-            # configuration being temporarily unpublished during reloads. In
-            # these cases, the publishing process may temporarily throw errors,
-            # since the "state" and "health" endpoints may temporarily go
-            # missing. So in these cases, retry and wait for the configuration
-            # publishing to take effect again.
-            if(previous_override_config.dig("nginx", "shared_dicts", "active_config") || @@current_override_config.dig("nginx", "shared_dicts", "active_config"))
-              sleep 0.1
-              retry
-            else
-              raise e
-            end
+          self.api_umbrella_process.wait_for_config_version("file_config_version", config["version"], config)
+        rescue MultiJson::ParseError => e
+          # If the configuration changes involve changes to the
+          # "active_config" shdict size, then this can result in the API
+          # configuration being temporarily unpublished during reloads. In
+          # these cases, the publishing process may temporarily throw errors,
+          # since the "state" and "health" endpoints may temporarily go
+          # missing. So in these cases, retry and wait for the configuration
+          # publishing to take effect again.
+          if(previous_override_config.dig("nginx", "shared_dicts", "active_config") || @@current_override_config.dig("nginx", "shared_dicts", "active_config"))
+            sleep 0.1
+            retry
+          else
+            raise e
           end
         end
 

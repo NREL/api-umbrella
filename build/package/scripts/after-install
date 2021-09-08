@@ -35,7 +35,6 @@ if [ "$configure" = "true" ]; then
   auto_ssl_group=api-umbrella-auto-ssl
   destdir="${DESTDIR:-}"
   prefix_dir="$destdir${PREFIX:-/opt/api-umbrella}"
-  embedded_dir=$prefix_dir/embedded
 
   if [ -n "$destdir" ]; then
     mkdir -p "$destdir/usr/bin"

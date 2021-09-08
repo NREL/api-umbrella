@@ -78,6 +78,7 @@ Certain, general errors will be returned in a standardized way from all API Umbr
 The error response body will contain an error code value from the table above and a brief description of the error. The descriptions are subject to change, so it's suggested any error handling use the HTTP status code or the error code value for error handling (and not the content of the message description).
 
 ### Error Message Response Formats
+
 Depending on the detected format of the request, the error message response may be returned in JSON, XML, CSV, or HTML. Requests of an unknown format will return errors in JSON format.
 
 #### JSON Example

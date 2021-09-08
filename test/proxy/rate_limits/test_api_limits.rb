@@ -202,26 +202,24 @@ class Test::Proxy::RateLimits::TestApiLimits < Minitest::Test
     assert_equal("3", response.headers["x-ratelimit-limit"])
 
     self.config_publish_lock.synchronize do
-      begin
-        original_config = PublishedConfig.active_config
-        config = original_config.deep_dup
+      original_config = PublishedConfig.active_config
+      config = original_config.deep_dup
 
-        # Find the already published "lower" api backend, change its rate
-        # limits, and republish.
-        api = config["apis"].find { |a| a["name"] == "#{unique_test_class_id} - Lower" }
-        assert_equal(3, api["settings"]["rate_limits"][0]["limit"])
-        api["settings"]["rate_limits"][0]["limit"] = 80
-        PublishedConfig.create!(:config => config).wait_until_live
+      # Find the already published "lower" api backend, change its rate
+      # limits, and republish.
+      api = config["apis"].find { |a| a["name"] == "#{unique_test_class_id} - Lower" }
+      assert_equal(3, api["settings"]["rate_limits"][0]["limit"])
+      api["settings"]["rate_limits"][0]["limit"] = 80
+      PublishedConfig.create!(:config => config).wait_until_live
 
-        # Make sure any local worker cache is cleared across all possible
-        # worker processes.
-        responses = exercise_all_workers("/#{unique_test_class_id}/lower/info/", http_opts)
-        responses.each do |resp|
-          assert_equal("80", resp.headers["x-ratelimit-limit"])
-        end
-      ensure
-        PublishedConfig.create!(:config => original_config).wait_until_live
+      # Make sure any local worker cache is cleared across all possible
+      # worker processes.
+      responses = exercise_all_workers("/#{unique_test_class_id}/lower/info/", http_opts)
+      responses.each do |resp|
+        assert_equal("80", resp.headers["x-ratelimit-limit"])
       end
+    ensure
+      PublishedConfig.create!(:config => original_config).wait_until_live
     end
 
     response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/lower/info/", http_opts)

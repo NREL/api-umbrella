@@ -153,7 +153,8 @@ COPY test /app/test
 COPY website/Gemfile website/Rakefile website/config.rb /app/website/
 
 RUN ln -snf "/app/build/work/tasks/app-deps/admin-ui/yarn/_persist/node_modules" "/app/src/api-umbrella/admin-ui/node_modules"
-RUN ln -snf "/app/build/work/tasks/app-deps/web-app/bundle/_persist/.bundle" "/app/src/api-umbrella/web-app/.bundle"
+RUN ln -snf "/app/build/work/tasks/app-deps/example-website/yarn/_persist/node_modules" "/app/src/api-umbrella/example-website/node_modules"
+RUN ln -snf "/app/build/work/tasks/app-deps/web-app/yarn/_persist/node_modules" "/app/src/api-umbrella/web-app/node_modules"
 
 ENV \
   PATH="/app/bin:/build/build/work/dev-env/sbin:/build/build/work/dev-env/bin:/build/build/work/test-env/sbin:/build/build/work/test-env/bin:/build/build/work/stage/opt/api-umbrella/sbin:/build/build/work/stage/opt/api-umbrella/bin:/build/build/work/stage/opt/api-umbrella/embedded/sbin:/build/build/work/stage/opt/api-umbrella/embedded/bin:${PATH}" \

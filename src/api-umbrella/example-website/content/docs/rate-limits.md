@@ -31,7 +31,7 @@ X-RateLimit-Remaining: 998
 
 The hourly counters for your API key reset on a rolling basis.
 
-*Example:* If you made 500 requests at 10:15AM and 500 requests at 10:25AM, your API key would become temporarily blocked. This temporary block of your API key would cease at 11:15AM, at which point you could make 500 requests. At 11:25AM, you could then make another 500 requests.
+_Example:_ If you made 500 requests at 10:15AM and 500 requests at 10:25AM, your API key would become temporarily blocked. This temporary block of your API key would cease at 11:15AM, at which point you could make 500 requests. At 11:25AM, you could then make another 500 requests.
 
 ## Rate Limit Error Response
 

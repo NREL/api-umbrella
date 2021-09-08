@@ -6,10 +6,6 @@ source ./tasks/helpers.sh
 destdir="${DESTDIR:-}"
 install_prefix="$PREFIX"
 
-# Define a timestamped release name for our app installations. Base this on the
-# last git commit timestamp so installs are consistent for each git commit.
-release_timestamp=$(date -d "$(git log --max-count=1 --date=iso --format=%cd)" -u "+%Y%m%d%H%M%S")
-
 mkdir -p "$destdir$install_prefix"
 rsync -a -v "$STAGE_PREFIX_DIR/" "$destdir$install_prefix/"
 install -D -m 755 "$SOURCE_DIR/build/package/files/etc/init.d/api-umbrella" "$destdir/etc/init.d/api-umbrella"
