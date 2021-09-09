@@ -36,7 +36,7 @@ DEV_PATH="$DEV_INSTALL_PREFIX/bin:$STAGE_EMBEDDED_PATH"
 
 # Where to install app-level vendor dependencies.
 APP_DIR="$STAGE_EMBEDDED_DIR/app"
-APP_VENDOR_DIR="$APP_DIR/shared/vendor"
+APP_VENDOR_DIR="$APP_DIR/vendor"
 APP_VENDOR_LUA_DIR="$APP_VENDOR_DIR/lua"
 APP_VENDOR_LUA_SHARE_DIR="$APP_VENDOR_LUA_DIR/share/lua/5.1"
 
