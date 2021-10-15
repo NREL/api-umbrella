@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-lua_luaposix_version="35.0-1"
+lua_luaposix_version="35.1-1"
 
 set -e -u -x
 source ./tasks/helpers.sh
