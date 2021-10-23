@@ -28,7 +28,7 @@
           </tr>
         {{/each}}
       {{else}}
-        <tr class="empty"><td colspan="6">{{t "No request rewrites have been added yet. Click \"%{add}\" below to get started." add=(t "Add Rewrite")}}</td></tr>
+        <tr class="empty"><td colspan="6">{{sprintf (t "No request rewrites have been added yet. Click \"%s\" below to get started.") (t "Add Rewrite")}}</td></tr>
       {{/if}}
     </tbody>
   </table>

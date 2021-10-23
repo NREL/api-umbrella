@@ -27,7 +27,7 @@
               {{#if this.currentAdmin.permissions.admin_manage}}
                 <LinkTo @route="admins" class="dropdown-item"><FaIcon @icon="user" @fixedWidth={{true}} /> {{t "Admin Accounts"}}</LinkTo>
                 <div class="dropdown-divider"></div>
-                <div role="presentation" class="dropdown-header">{{t "admin.nav.permissions_management"}}</div>
+                <div role="presentation" class="dropdown-header">{{t "Permissions Management"}}</div>
                 <LinkTo @route="api_scopes" class="dropdown-item"><FaIcon @icon="lock" @fixedWidth={{true}} /> {{t "API Scopes"}}</LinkTo>
                 <LinkTo @route="admin_groups" class="dropdown-item"><FaIcon @icon="users" @fixedWidth={{true}} /> {{t "Admin Groups"}}</LinkTo>
               {{/if}}
