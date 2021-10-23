@@ -1,55 +1,51 @@
-import 'jquery-ui/ui/widgets/sortable';
-
 import { computed } from '@ember/object';
 import { guidFor } from '@ember/object/internals';
 import Mixin from '@ember/object/mixin'
-import $ from 'jquery';
+import Sortable from 'sortablejs';
+import { t } from 'api-umbrella-admin-ui/utils/i18n';
 
 // eslint-disable-next-line ember/no-new-mixins
 export default Mixin.create({
   isReorderable: computed('sortableCollection.length', function() {
-    let length = this.sortableCollection.length;
+    const length = this.sortableCollection.length;
     return (length && length > 1);
   }),
 
   updateSortOrder(indexes) {
     this.sortableCollection.forEach(function(record) {
-      let index = indexes[guidFor(record)];
+      const index = indexes[guidFor(record)];
       record.set('sortOrder', index + 1);
     });
   },
 
   actions: {
     reorderCollection(containerId) {
-      let $container = $('#' + containerId);
-      let $buttonText = $container.find('.reorder-button-text');
+      const container = document.getElementById(containerId);
+      const buttonText = container.querySelector('.reorder-button-text');
 
-      if($container.hasClass('reorder-active')) {
-        $buttonText.text($buttonText.data('originalText'));
+      if(container.classList.contains('reorder-active')) {
+        buttonText.innerText = buttonText.dataset.originalText;
+        container.classList.remove('reorder-active');
       } else {
-        $buttonText.data('originalText',  $buttonText.text());
-        $buttonText.text('Done');
+        buttonText.dataset.originalText = buttonText.innerText;
+        buttonText.innerText = t('Done');
+        container.classList.add('reorder-active');
       }
 
-      $container.toggleClass('reorder-active');
-
-      let self = this;
-      $container.find('tbody').sortable({
+      const tbody = container.querySelector('tbody');
+      const sortable = Sortable.create(tbody, {
         handle: '.reorder-handle',
-        placeholder: 'reorder-placeholder',
-        helper(event, ui) {
-          ui.children().each(function() {
-            $(this).width($(this).width());
-          });
-          return ui;
-        },
-        stop() {
-          let indexes = {};
-          $(this).find('tr').each(function(index) {
-            indexes[$(this).data('guid')] = index;
-          });
+        ghostClass: 'reorder-placeholder',
+        animation: 200,
+        onUpdate: (event) => {
+          const indexes = {};
+          const rows = tbody.querySelectorAll('tr');
+          for (let i = 0; i < rows.length; i++) {
+            const row = rows[i];
+            indexes[row.dataset.guid] = i;
+          }
 
-          self.updateSortOrder(indexes);
+          this.updateSortOrder(indexes);
         },
       });
     },
