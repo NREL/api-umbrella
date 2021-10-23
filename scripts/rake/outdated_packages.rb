@@ -8,6 +8,9 @@ class OutdatedPackages
     "glauth" => {
       :git => "https://github.com/glauth/glauth.git",
     },
+    "hugo" => {
+      :git => "https://github.com/gohugoio/hugo.git",
+    },
     "icu4c" => {
       :git => "https://github.com/unicode-org/icu.git",
     },
