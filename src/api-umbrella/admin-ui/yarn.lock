@@ -5486,7 +5486,7 @@ ember-bootstrap@^4.9.0:
     silent-error "^1.0.1"
     tracked-toolbox "^1.2.3"
 
-ember-buffered-proxy@~2.0.0-beta.0:
+ember-buffered-proxy@~2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/ember-buffered-proxy/-/ember-buffered-proxy-2.0.0.tgz#24843a0ced529887fde8b4a1cde5b11b1a696172"
   integrity sha512-xnVtIFIbuhwSwULVxqGuw1SVLC39eikrH9v/LWZYRarfI/oZ3ptPAHcr2cirRF4q2/pVkMpup4XWHo+oGLaY8w==
@@ -6011,10 +6011,9 @@ ember-cookies@^0.5.0:
     ember-cli-babel "^7.1.0"
     ember-getowner-polyfill "^1.1.0 || ^2.0.0"
 
-ember-cp-validations@~4.0.0-beta.6:
+ember-cp-validations@GUI/ember-cp-validations#issue-698-isHTMLSafe:
   version "4.0.0-beta.12"
-  resolved "https://registry.yarnpkg.com/ember-cp-validations/-/ember-cp-validations-4.0.0-beta.12.tgz#27c7e79e36194b8bb55c5c97421b2671f0abf58c"
-  integrity sha512-GHOJm2pjan4gOOBFecs7PdEf86vnWgTPCtfqwyqf3wlN0CihYf+mHZhjnnN6R1fnPDn+qLwByl6gJq7il115dw==
+  resolved "https://codeload.github.com/GUI/ember-cp-validations/tar.gz/b10e5ce2f3dfe4a9f27ff3db8df4f388f7370586"
   dependencies:
     ember-cli-babel "^7.1.2"
     ember-require-module "^0.3.0"
