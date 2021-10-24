@@ -261,7 +261,7 @@ class Test::Proxy::RateLimits::TestDistributedRateLimits < Minitest::Test
       :duration => 50 * 60 * 1000, # 50 minutes
       :accuracy => 1 * 60 * 1000, # 1 minute
       :limit => 1005,
-      :time => Time.now.utc - 8 * 60 * 60, # 8 hours ago
+      :time => Time.now.utc - (8 * 60 * 60), # 8 hours ago
     }
 
     responses = make_requests("/#{unique_test_class_id}/specific/hello/long-duration-bucket/", 4, options)
@@ -275,7 +275,7 @@ class Test::Proxy::RateLimits::TestDistributedRateLimits < Minitest::Test
       :duration => 50 * 60 * 1000, # 50 minutes
       :accuracy => 1 * 60 * 1000, # 1 minute
       :limit => 1005,
-      :time => Time.now.utc - 48 * 60 * 60, # 48 hours ago
+      :time => Time.now.utc - (48 * 60 * 60), # 48 hours ago
     }
 
     responses = make_requests("/#{unique_test_class_id}/specific/hello/long-duration-bucket/", 3, options)
@@ -292,13 +292,13 @@ class Test::Proxy::RateLimits::TestDistributedRateLimits < Minitest::Test
       :limit => 1001,
     }
 
-    options[:time] = time - 40 * 60 # 40 minutes ago
+    options[:time] = time - (40 * 60) # 40 minutes ago
     set_distributed_count(3, options)
 
-    options[:time] = time - 45 * 60 # 45 minutes ago
+    options[:time] = time - (45 * 60) # 45 minutes ago
     set_distributed_count(97, options)
 
-    options[:time] = time - 51 * 60 # 51 minutes ago
+    options[:time] = time - (51 * 60) # 51 minutes ago
     set_distributed_count(41, options)
 
     # Trigger an nginx reload by setting new configuration. While we're not

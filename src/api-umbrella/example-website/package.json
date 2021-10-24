@@ -1,7 +1,8 @@
 {
   "scripts": {
     "lint:js": "eslint --ignore-path .gitignore .",
-    "lint": "yarn lint:js"
+    "lint": "yarn lint:js",
+    "prettier:check": "prettier --ignore-path .gitignore --check ."
   },
   "dependencies": {
     "bootstrap": "^5.1.0",

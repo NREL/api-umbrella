@@ -223,7 +223,7 @@ class Test::Proxy::TestConnectionTimeouts < Minitest::Test
     assert_operator(post_thread[:response].total_time, :>=, delay - BUFFER_TIME_LOWER)
     assert_operator(post_thread[:response].total_time, :<, delay + BUFFER_TIME_UPPER)
     assert_operator(total_time, :>=, delay + 1 - BUFFER_TIME_LOWER)
-    assert_operator(total_time, :<, delay + BUFFER_TIME_UPPER * 2)
+    assert_operator(total_time, :<, delay + (BUFFER_TIME_UPPER * 2))
     assert_operator(total_time, :<, (delay * 2) - 1)
   end
 

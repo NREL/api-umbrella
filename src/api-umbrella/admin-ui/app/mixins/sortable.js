@@ -1,8 +1,8 @@
 import { computed } from '@ember/object';
 import { guidFor } from '@ember/object/internals';
 import Mixin from '@ember/object/mixin'
-import Sortable from 'sortablejs';
 import { t } from 'api-umbrella-admin-ui/utils/i18n';
+import Sortable from 'sortablejs';
 
 // eslint-disable-next-line ember/no-new-mixins
 export default Mixin.create({
@@ -33,14 +33,14 @@ export default Mixin.create({
       }
 
       const tbody = container.querySelector('tbody');
-      const sortable = Sortable.create(tbody, {
+      Sortable.create(tbody, {
         handle: '.reorder-handle',
         ghostClass: 'reorder-placeholder',
         animation: 200,
-        onUpdate: (event) => {
+        onUpdate: () => {
           const indexes = {};
           const rows = tbody.querySelectorAll('tr');
-          for (let i = 0; i < rows.length; i++) {
+          for(let i = 0; i < rows.length; i++) {
             const row = rows[i];
             indexes[row.dataset.guid] = i;
           }

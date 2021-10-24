@@ -14,7 +14,7 @@ set -x
 (
   cd "$SOURCE_DIR/src/api-umbrella/example-website"
   PATH="$DEV_PATH" yarn run lint
-  PATH="$DEV_PATH" yarn run prettier --check .
+  PATH="$DEV_PATH" yarn run prettier:check
 )
 
 (

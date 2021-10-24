@@ -319,7 +319,7 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
   end
 
   def test_logs_requests_that_time_out
-    time_out_delay = $config["nginx"]["proxy_read_timeout"] * 1000 + 3500
+    time_out_delay = ($config["nginx"]["proxy_read_timeout"] * 1000) + 3500
     response = Typhoeus.get("http://127.0.0.1:9080/api/delay/#{time_out_delay}", log_http_options)
     assert_response_code(504, response)
 

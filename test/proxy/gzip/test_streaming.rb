@@ -18,7 +18,7 @@ class Test::Proxy::Gzip::TestStreaming < Minitest::Test
 
       current_chunk_at = Time.now.utc
       if(last_chunk_at)
-        chunk_time_gaps << current_chunk_at.to_f - last_chunk_at.to_f
+        chunk_time_gaps << (current_chunk_at.to_f - last_chunk_at.to_f)
       end
       last_chunk_at = current_chunk_at
     end
@@ -66,7 +66,7 @@ class Test::Proxy::Gzip::TestStreaming < Minitest::Test
 
       current_chunk_at = Time.now.utc
       if(last_chunk_at)
-        chunk_time_gaps << current_chunk_at.to_f - last_chunk_at.to_f
+        chunk_time_gaps << (current_chunk_at.to_f - last_chunk_at.to_f)
       end
       last_chunk_at = current_chunk_at
     end

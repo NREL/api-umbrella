@@ -249,7 +249,7 @@ module ApiUmbrellaSharedTests
         # Set the order indexes to 2, 12, etc. This helps test to ensure that
         # we're sorting the order indexes base on integer value (so 2 < 12),
         # and not string value (where "12" < "2").
-        order_index = index * 10 + 2
+        order_index = (index * 10) + 2
         params[:order][order_index] = { :column => index, :dir => order }
       end
 
