@@ -17,9 +17,6 @@
 # Ignore bundler config
 /.bundle
 
-# Ignore Circle CI items, so the GitHub pages publish task can work.
-/.ruby-version
-
 # Build task checksums
 /.task
 

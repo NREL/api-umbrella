@@ -749,13 +749,6 @@ tasks:
     cmds:
       - ./tasks/test/default
 
-  test:circle-ci:
-    deps:
-      - all
-      - test-deps
-    cmds:
-      - ./tasks/test/circle-ci
-
   clean:dev:
     cmds:
       - ./tasks/clean/dev
