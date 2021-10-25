@@ -84,6 +84,7 @@ RUN make app:admin-ui:build && make clean:dev
 COPY LICENSE.txt /app/
 COPY bin /app/bin
 COPY config /app/config
+COPY db /app/db
 COPY locale /app/locale
 COPY src /app/src
 COPY tasks /app/tasks
