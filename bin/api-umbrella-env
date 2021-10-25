@@ -17,19 +17,7 @@ if [ -z "${API_UMBRELLA_SRC_ROOT:-}" ]; then
     source="$(readlink "$source")"
     [[ $source != /* ]] && source="$dir/$source"
   done
-  dir="$(cd -P "$(dirname "$(dirname "$source")")" && pwd)"
-
-  # If the current path is a timestamped directory inside the "releases"
-  # directory, then prefer the "current" symlink that points to the current
-  # release. This better ensures that this path can work, even if deployments
-  # are done which gets rid of the current timestamp directory.
-  current_symlink="$(dirname "$(dirname "$dir")")/current"
-  export API_UMBRELLA_SRC_ROOT
-  if [ -L "$current_symlink" ]; then
-    API_UMBRELLA_SRC_ROOT="$current_symlink"
-  else
-    API_UMBRELLA_SRC_ROOT="$dir"
-  fi
+  export API_UMBRELLA_SRC_ROOT="$(cd -P "$(dirname "$(dirname "$source")")" && pwd)"
 fi
 
 # Determine the default root of the API Umbrella installation (where all of our
