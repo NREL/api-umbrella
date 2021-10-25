@@ -11,7 +11,8 @@ task_working_dir
 mkdir -p _persist
 cd _persist
 
-rsync -a -v \
+rsync -a \
+  --itemize-changes \
   --delete \
   --delete-excluded \
   --include=/assets/*** \

@@ -6,8 +6,14 @@ source ./tasks/helpers.sh
 # Copy all the API Umbrella source into the release directory.
 mkdir -p "$APP_DIR"
 rsync -a \
-  --delete-after \
+  --itemize-changes \
+  --delete \
   --delete-excluded \
+  --filter='protect /vendor/***' \
+  --filter='protect /build/dist/admin-ui/***' \
+  --filter='protect /build/dist/example-website/***' \
+  --filter='protect /build/dist/locale/***' \
+  --filter='protect /build/dist/web-assets/***' \
   --filter=":- $SOURCE_DIR/.gitignore" \
   --include=/templates/etc/perp/.boot \
   --exclude=.* \
@@ -28,16 +34,28 @@ rsync -a \
 # Add build pieces from the other tasks into the release directory (eg,
 # compiled assets).
 mkdir -p "$APP_DIR/build/dist"
-rsync -a --delete-after \
+rsync -a \
+  --itemize-changes \
+  --delete \
+  --delete-excluded \
   "$WORK_DIR/tasks/app/admin-ui/build/_persist/dist/" \
   "$APP_DIR/build/dist/admin-ui/"
-rsync -a --delete-after \
+rsync -a \
+  --itemize-changes \
+  --delete \
+  --delete-excluded \
   "$WORK_DIR/tasks/app/example-website/build/_persist/public/" \
   "$APP_DIR/build/dist/example-website/"
-rsync -a --delete-after \
+rsync -a \
+  --itemize-changes \
+  --delete \
+  --delete-excluded \
   "$WORK_DIR/tasks/app/locale/_persist/json/" \
   "$APP_DIR/build/dist/locale/"
-rsync -a --delete-after \
+rsync -a \
+  --itemize-changes \
+  --delete \
+  --delete-excluded \
   "$WORK_DIR/tasks/app/web-app/precompile/_persist/assets/dist/" \
   "$APP_DIR/build/dist/web-assets/"
 
@@ -49,5 +67,6 @@ mkdir -p "$STAGE_PREFIX_DIR/bin"
   ln -snf ../embedded/app/bin/api-umbrella-env ./api-umbrella-env
   ln -snf ../embedded/app/bin/api-umbrella-exec ./api-umbrella-exec
 )
+
 
 stamp

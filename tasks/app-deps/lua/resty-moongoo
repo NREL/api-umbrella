@@ -27,7 +27,7 @@ download "https://github.com/isage/lua-resty-moongoo/archive/$lua_resty_moongoo_
 extract_download "$lua_resty_moongoo_version.tar.gz"
 cd "lua-resty-moongoo-$lua_resty_moongoo_version"
 mkdir -p "$APP_VENDOR_LUA_SHARE_DIR/resty/moongoo"
-rsync -a -v --checksum --delete-after ./lib/resty/moongoo.lua "$APP_VENDOR_LUA_SHARE_DIR/resty/moongoo.lua"
-rsync -a -v --checksum --delete-after ./lib/resty/moongoo/ "$APP_VENDOR_LUA_SHARE_DIR/resty/moongoo/"
+rsync -a --itemize-changes --checksum --delete ./lib/resty/moongoo.lua "$APP_VENDOR_LUA_SHARE_DIR/resty/moongoo.lua"
+rsync -a --itemize-changes --checksum --delete ./lib/resty/moongoo/ "$APP_VENDOR_LUA_SHARE_DIR/resty/moongoo/"
 
 stamp

@@ -10,7 +10,8 @@ task_working_dir
 # directory.
 mkdir -p app
 cd app
-rsync -a -v \
+rsync -a \
+  --itemize-changes \
   --delete \
   --delete-excluded \
   --filter=":- $SOURCE_DIR/src/api-umbrella/admin-ui/.gitignore" \
