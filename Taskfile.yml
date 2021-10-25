@@ -902,12 +902,6 @@ tasks:
       - task: test-deps
       - ./tasks/test/default
 
-  test:circle-ci:
-    cmds:
-      - task: all
-      - task: test-deps
-      - ./tasks/test/circle-ci
-
   clean:dev:
     cmds:
       - ./tasks/clean/dev

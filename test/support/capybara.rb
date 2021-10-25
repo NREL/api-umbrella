@@ -52,13 +52,7 @@ def capybara_register_driver(driver_name, options = {})
     # Use /tmp instead of /dev/shm for Docker environments where /dev/shm is
     # too small:
     # https://github.com/GoogleChrome/puppeteer/blob/v1.10.0/docs/troubleshooting.md#tips
-    #
-    # Don't add arg in CircleCI environment, since it has stopped working
-    # there:
-    # https://discuss.circleci.com/t/fontconfig-error-on-node-10-browsers/29029/8
-    if ENV["CI"] != "true"
-      driver_options.args << "--disable-dev-shm-usage"
-    end
+    driver_options.args << "--disable-dev-shm-usage"
 
     # Use a static user agent for some session tests.
     driver_options.args << "--user-agent=#{ApiUmbrellaTestHelpers::AdminAuth::STATIC_USER_AGENT}"
