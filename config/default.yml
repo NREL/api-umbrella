@@ -40,9 +40,17 @@ nginx:
       size: 3m
     api_users:
       size: 3m
+    api_users_misses:
+      size: 2m
+    api_users_locks:
+      size: 256k
+    api_users_ipc:
+      size: 256k
     geocode_city_cache:
       size: 100k
     interval_locks:
+      size: 20k
+    jobs:
       size: 20k
     locks:
       size: 20k
@@ -62,6 +70,8 @@ gatekeeper:
     - getParam
     - basicAuthUsername
   api_key_cache: true
+  api_key_min_length: 4
+  api_key_max_length: 60
 trafficserver:
   host: 127.0.0.1
   port: 14009

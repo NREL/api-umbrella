@@ -21,7 +21,7 @@ local function status_response(quick)
   end
 
   -- Check to see if the users have been loaded.
-  if ngx.shared.api_users:get("last_fetched_version") then
+  if ngx.shared.jobs:get("api_users_last_fetched_version") then
     response["details"]["api_users"] = "green"
   end
 

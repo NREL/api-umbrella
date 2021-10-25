@@ -1,5 +1,6 @@
 local ApiRole = require "api-umbrella.web-app.models.api_role"
 local ApiUserSettings = require "api-umbrella.web-app.models.api_user_settings"
+local api_key_prefixer = require("api-umbrella.utils.api_key_prefixer").prefix
 local api_user_policy = require "api-umbrella.web-app.policies.api_user_policy"
 local cjson = require "cjson"
 local config = require "api-umbrella.proxy.models.file_config"
@@ -17,8 +18,6 @@ local validation_ext = require "api-umbrella.web-app.utils.validation_ext"
 local db_null = db.NULL
 local json_null = cjson.null
 local validate_field = model_ext.validate_field
-
-local API_KEY_PREFIX_LENGTH = 16
 
 local ApiUser
 ApiUser = model_ext.new_class("api_users", {
@@ -233,7 +232,7 @@ ApiUser = model_ext.new_class("api_users", {
     local encrypted, iv = encryptor.encrypt(api_key, values["id"])
     values["api_key_encrypted"] = encrypted
     values["api_key_encrypted_iv"] = iv
-    values["api_key_prefix"] = string.sub(api_key, 1, API_KEY_PREFIX_LENGTH)
+    values["api_key_prefix"] = api_key_prefixer(api_key)
   end,
 
   before_validate = function(_, values)
@@ -312,7 +311,5 @@ ApiUser = model_ext.new_class("api_users", {
     })
   end,
 })
-
-ApiUser.API_KEY_PREFIX_LENGTH = API_KEY_PREFIX_LENGTH
 
 return ApiUser

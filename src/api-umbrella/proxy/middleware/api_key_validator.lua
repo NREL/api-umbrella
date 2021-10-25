@@ -17,10 +17,6 @@ return function(settings)
     return nil, "api_key_invalid"
   end
 
-  -- Store the api key on the user object for easier access (the user object
-  -- doesn't contain it directly, to save memory storage in the lookup table).
-  user["api_key"] = api_key
-
   -- Store user details for logging.
   ngx.ctx.user_id = user["id"]
   ngx.ctx.user_email = user["email"]

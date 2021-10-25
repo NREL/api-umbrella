@@ -20,6 +20,7 @@ if [[ "$ID_NORMALIZED" == "rhel" ]]; then
     ncurses-libs
     openssl
     pcre
+    postgresql
     zlib
 
     # geoip-auto-updater
@@ -170,6 +171,7 @@ elif [[ "$ID_NORMALIZED" == "debian" ]]; then
     libyaml-0-2
     logrotate
     openssl
+    postgresql-client
     zlib1g
 
     # geoip-auto-updater

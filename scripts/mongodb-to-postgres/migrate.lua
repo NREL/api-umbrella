@@ -2,6 +2,7 @@ local read_config = require "api-umbrella.cli.read_config"
 read_config({ write = true })
 
 local aes = require "resty.aes"
+local api_key_prefixer = require("api-umbrella.utils.api_key_prefixer").prefix
 local argparse = require "argparse"
 local cbson = require "cbson"
 local cjson = require "cjson"
@@ -23,7 +24,6 @@ local split = require("ngx.re").split
 local utf8 = require "lua-utf8"
 local uuid_generate = require("resty.uuid").generate_random
 
-local API_KEY_PREFIX_LENGTH = 16
 local admin_usernames = {}
 local api_key_user_ids = {}
 local args = {}
@@ -705,7 +705,7 @@ local function migrate_api_users()
     local encrypted, iv = encryptor.encrypt(api_key, row["id"])
     row["api_key_encrypted"] = encrypted
     row["api_key_encrypted_iv"] = iv
-    row["api_key_prefix"] = string.sub(api_key, 1, API_KEY_PREFIX_LENGTH)
+    row["api_key_prefix"] = api_key_prefixer(api_key)
     row["api_key"] = nil
 
     local roles = row["roles"]

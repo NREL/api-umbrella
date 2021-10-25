@@ -60,8 +60,12 @@ http {
 
   lua_shared_dict active_config {{nginx.shared_dicts.active_config.size}};
   lua_shared_dict api_users {{nginx.shared_dicts.api_users.size}};
+  lua_shared_dict api_users_misses {{nginx.shared_dicts.api_users_misses.size}};
+  lua_shared_dict api_users_locks {{nginx.shared_dicts.api_users_locks.size}};
+  lua_shared_dict api_users_ipc {{nginx.shared_dicts.api_users_ipc.size}};
   lua_shared_dict geocode_city_cache {{nginx.shared_dicts.geocode_city_cache.size}};
   lua_shared_dict interval_locks {{nginx.shared_dicts.interval_locks.size}};
+  lua_shared_dict jobs {{nginx.shared_dicts.jobs.size}};
   lua_shared_dict locks {{nginx.shared_dicts.locks.size}};
   lua_shared_dict stats {{nginx.shared_dicts.stats.size}};
   {{#nginx.lua_ssl_trusted_certificate}}

@@ -1,6 +1,7 @@
 local config = require "api-umbrella.proxy.models.file_config"
 local deep_merge_overwrite_arrays = require "api-umbrella.utils.deep_merge_overwrite_arrays"
 
+local api_key_prefixer = require("api-umbrella.utils.api_key_prefixer").prefix
 local interval_lock = require "api-umbrella.utils.interval_lock"
 local pg_utils = require "api-umbrella.utils.pg_utils"
 local random_token = require "api-umbrella.utils.random_token"
@@ -118,7 +119,7 @@ local function seed_api_keys()
       local encrypted, iv = encryptor.encrypt(api_key, user["id"])
       user["api_key_encrypted"] = encrypted
       user["api_key_encrypted_iv"] = iv
-      user["api_key_prefix"] = string.sub(api_key, 1, 16)
+      user["api_key_prefix"] = api_key_prefixer(api_key)
     end
 
     local roles = user["roles"]

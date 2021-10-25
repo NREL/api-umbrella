@@ -1,20 +1,39 @@
-local cmsgpack = require "cmsgpack"
+local api_key_prefixer = require("api-umbrella.utils.api_key_prefixer").prefix
+local cache_computed_settings = require("api-umbrella.proxy.utils").cache_computed_settings
 local config = require "api-umbrella.proxy.models.file_config"
 local hmac = require "api-umbrella.utils.hmac"
-local invert_table = require "api-umbrella.utils.invert_table"
-local lrucache = require "resty.lrucache.pureffi"
+local mlcache = require "resty.mlcache"
 local nillify_json_nulls = require "api-umbrella.utils.nillify_json_nulls"
 local pg_utils = require "api-umbrella.utils.pg_utils"
-local shcache = require "shcache"
-local utils = require "api-umbrella.proxy.utils"
 
-local cache_computed_settings = utils.cache_computed_settings
+local api_key_cache_enabled = config["gatekeeper"]["api_key_cache"]
+local api_key_min_length = config["gatekeeper"]["api_key_min_length"]
+local api_key_max_length = config["gatekeeper"]["api_key_max_length"]
 
 local _M = {}
 
-local function lookup_user(api_key)
-  local api_key_hash = hmac(api_key)
-  local result, err = pg_utils.query("SELECT * FROM api_users_flattened WHERE api_key_hash = :api_key_hash", { api_key_hash = api_key_hash })
+local cache, cache_err = mlcache.new("u", "api_users", {
+    lru_size = 1000,
+    ttl = 60 * 60 * 24,
+    resurrect_ttl = 60 * 60 * 24,
+    neg_ttl = 60 * 60 * 24,
+    shm_miss = "api_users_misses",
+    shm_locks = "api_users_locks",
+    ipc_shm = "api_users_ipc",
+})
+if not cache then
+  ngx.log(ngx.ERR, "failed to create api_users mlcache: ", cache_err)
+  return nil
+end
+
+_M.cache = cache
+
+local function fetch_user(api_key_prefix, api_key)
+  -- Since api_key_prefix has a uniqueness constraint in the database, we can
+  -- do the initial lookup based on this. We'll still need to validate the full
+  -- key afterwards, but this makes lookups for non-existent keys cheaper,
+  -- since we don't have to perform the hash if the prefix doesn't exist.
+  local result, err = pg_utils.query("SELECT * FROM api_users_flattened WHERE api_key_prefix = :api_key_prefix", { api_key_prefix = api_key_prefix })
   if not result then
     ngx.log(ngx.ERR, "failed to fetch user from database: ", err)
     return nil
@@ -25,11 +44,11 @@ local function lookup_user(api_key)
     return nil
   end
 
-  -- Invert the array of roles into a hashy table for more optimized
-  -- lookups (so we can just check if the key exists, rather than
-  -- looping over each value).
-  if user["roles"] then
-    user["roles"] = invert_table(user["roles"])
+  -- Verify that the record with the matching key prefix actually matches the
+  -- full API key (via the hash).
+  local api_key_hash = hmac(api_key)
+  if user["api_key_hash"] ~= api_key_hash then
+    return nil
   end
 
   if user["settings"] then
@@ -37,47 +56,31 @@ local function lookup_user(api_key)
     cache_computed_settings(user["settings"])
   end
 
+  -- Remove pieces that don't need to be stored.
+  user["api_key_prefix"] = nil
+  user["api_key_hash"] = nil
+
   return user
 end
 
-local local_cache = lrucache.new(500)
-
-local EMPTY_DATA = "_EMPTY_"
-
 function _M.get(api_key)
-  if not config["gatekeeper"]["api_key_cache"] then
-    return lookup_user(api_key)
-  end
-
-  local user = local_cache:get(api_key)
-  if user then
-    if user == EMPTY_DATA then
-      return nil
-    else
-      return user
-    end
-  end
-
-  local shared_cache, err = shcache:new(ngx.shared.api_users, {
-    encode = cmsgpack.pack,
-    decode = cmsgpack.unpack,
-    external_lookup = lookup_user,
-    external_lookup_arg = api_key,
-  }, {
-    positive_ttl = 0,
-    negative_ttl = 0,
-  })
-
-  if err then
-    ngx.log(ngx.ERR, "failed to initialize shared cache for users: ", err)
+  -- Validate that the key being passed in isn't too short or too long to avoid
+  -- unnecessary lookups/caching for obviously invalid values.
+  local len = string.len(api_key)
+  if len < api_key_min_length or len > api_key_max_length then
     return nil
   end
 
-  user = shared_cache:load(api_key)
-  if user then
-    local_cache:set(api_key, user, 2)
-  else
-    local_cache:set(api_key, EMPTY_DATA, 2)
+  local api_key_prefix = api_key_prefixer(api_key)
+
+  if not api_key_cache_enabled then
+    return fetch_user(api_key_prefix, api_key)
+  end
+
+  local user, err = cache:get(api_key, nil, fetch_user, api_key_prefix, api_key)
+  if err then
+    ngx.log(ngx.ERR, "api key cache lookup failed: ", err)
+    return nil
   end
 
   return user

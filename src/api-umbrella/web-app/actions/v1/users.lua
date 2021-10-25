@@ -1,4 +1,5 @@
 local ApiUser = require "api-umbrella.web-app.models.api_user"
+local api_key_prefixer = require "api-umbrella.utils.api_key_prefixer"
 local api_user_admin_notification_mailer = require "api-umbrella.web-app.mailers.api_user_admin_notification"
 local api_user_policy = require "api-umbrella.web-app.policies.api_user_policy"
 local api_user_welcome_mailer = require "api-umbrella.web-app.mailers.api_user_welcome"
@@ -121,7 +122,7 @@ function _M.index(self)
       "first_name",
       "last_name",
       "email",
-      { name = "api_key_prefix", prefix_length = ApiUser.API_KEY_PREFIX_LENGTH },
+      { name = "api_key_prefix", prefix_length = api_key_prefixer.API_KEY_PREFIX_LENGTH },
       "registration_source",
       db.raw("api_users_roles.api_role_id"),
     },

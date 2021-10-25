@@ -1,10 +1,3 @@
---
--- PostgreSQL database dump
---
-
--- Dumped from database version 10.13
--- Dumped by pg_dump version 10.13
-
 SET statement_timeout = 0;
 SET lock_timeout = 0;
 SET idle_in_transaction_session_timeout = 0;
@@ -35,20 +28,6 @@ CREATE SCHEMA audit;
 --
 
 COMMENT ON SCHEMA audit IS 'Out-of-table audit/history logging tables and trigger functions';
-
-
---
--- Name: plpgsql; Type: EXTENSION; Schema: -; Owner: -
---
-
-CREATE EXTENSION IF NOT EXISTS plpgsql WITH SCHEMA pg_catalog;
-
-
---
--- Name: EXTENSION plpgsql; Type: COMMENT; Schema: -; Owner: -
---
-
--- COMMENT ON EXTENSION plpgsql IS 'PL/pgSQL procedural language';
 
 
 --
@@ -582,8 +561,6 @@ CREATE AGGREGATE api_umbrella.array_accum(anyarray) (
 
 SET default_tablespace = '';
 
-SET default_with_oids = false;
-
 --
 -- Name: admin_groups; Type: TABLE; Schema: api_umbrella; Owner: -
 --
@@ -1086,17 +1063,15 @@ CREATE TABLE api_umbrella.rate_limits (
 
 CREATE VIEW api_umbrella.api_users_flattened AS
  SELECT u.id,
-    u.version,
+    u.api_key_prefix,
     u.api_key_hash,
-    u.api_key_encrypted,
-    u.api_key_encrypted_iv,
     u.email,
     u.email_verified,
     u.registration_source,
     u.throttle_by_ip,
-    date_part('epoch'::text, u.disabled_at) AS disabled_at,
-    date_part('epoch'::text, u.created_at) AS created_at,
-    json_build_object('allowed_ips', s.allowed_ips, 'allowed_referers', s.allowed_referers, 'rate_limit_mode', s.rate_limit_mode, 'rate_limits', ( SELECT json_agg(r2.*) AS json_agg
+    (date_part('epoch'::text, u.disabled_at))::integer AS disabled_at,
+    (date_part('epoch'::text, u.created_at))::integer AS created_at,
+    jsonb_build_object('allowed_ips', s.allowed_ips, 'allowed_referers', s.allowed_referers, 'rate_limit_mode', s.rate_limit_mode, 'rate_limits', ( SELECT jsonb_agg(r2.*) AS jsonb_agg
            FROM ( SELECT r.duration,
                     r.accuracy,
                     r.limit_by,
@@ -1105,7 +1080,7 @@ CREATE VIEW api_umbrella.api_users_flattened AS
                     r.response_headers
                    FROM api_umbrella.rate_limits r
                   WHERE (r.api_user_settings_id = s.id)) r2)) AS settings,
-    ARRAY( SELECT ar.api_role_id
+    ( SELECT jsonb_object_agg(ar.api_role_id, true) AS jsonb_object_agg
            FROM api_umbrella.api_users_roles ar
           WHERE (ar.api_user_id = u.id)) AS roles
    FROM (api_umbrella.api_users u
@@ -2709,3 +2684,10 @@ ALTER TABLE ONLY api_umbrella.rate_limits
 -- PostgreSQL database dump complete
 --
 
+INSERT INTO api_umbrella.lapis_migrations (name) VALUES ('1498350289');
+INSERT INTO api_umbrella.lapis_migrations (name) VALUES ('1554823736');
+INSERT INTO api_umbrella.lapis_migrations (name) VALUES ('1560722058');
+INSERT INTO api_umbrella.lapis_migrations (name) VALUES ('1560888068');
+INSERT INTO api_umbrella.lapis_migrations (name) VALUES ('1595106665');
+INSERT INTO api_umbrella.lapis_migrations (name) VALUES ('1596759299');
+INSERT INTO api_umbrella.lapis_migrations (name) VALUES ('1635022846');

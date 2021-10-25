@@ -102,6 +102,9 @@ class OutdatedPackages
     "lua_resty_mail" => {
       :git => "https://github.com/GUI/lua-resty-mail.git",
     },
+    "lua_resty_mlcache" => {
+      :git => "https://github.com/thibaultcha/lua-resty-mlcache.git",
+    },
     "lua_resty_moongoo" => {
       :git => "https://github.com/isage/lua-resty-moongoo.git",
       :git_ref => "master",
@@ -115,10 +118,6 @@ class OutdatedPackages
     },
     "lua_resty_session" => {
       :git => "https://github.com/bungle/lua-resty-session.git",
-    },
-    "lua_resty_shcache" => {
-      :git => "https://github.com/cloudflare/lua-resty-shcache.git",
-      :git_ref => "master",
     },
     "lua_resty_txid" => {
       :git => "https://github.com/GUI/lua-resty-txid.git",

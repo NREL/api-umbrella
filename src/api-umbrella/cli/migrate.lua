@@ -13,9 +13,11 @@ config["postgresql"]["password"] = config["postgresql"]["migrations"]["password"
 local db = require("lapis.db")
 local file = require "pl.file"
 local migrations = require("lapis.db.migrations")
-local shell_blocking_run = require("shell-games").run
 local path = require "pl.path"
 local pg_utils = require "api-umbrella.utils.pg_utils"
+local shell_blocking = require("shell-games")
+local split = require("ngx.re").split
+local startswith = require("pl.stringx").startswith
 
 return function()
   db.query("SET search_path = api_umbrella, public")
@@ -36,7 +38,7 @@ return function()
     setenv("PGUSER", config["postgresql"]["migrations"]["username"])
     setenv("PGPASSWORD", config["postgresql"]["migrations"]["password"])
     local schema_path = path.join(os.getenv("API_UMBRELLA_SRC_ROOT"), "db/schema.sql")
-    local _, err = shell_blocking_run({
+    local _, err = shell_blocking.run({
       "pg_dump",
       "--schema-only",
       "--no-privileges",
@@ -48,16 +50,39 @@ return function()
       os.exit(1)
     end
 
-    _, err = shell_blocking_run({
-      "sed",
-      "-e",
-      [['s/^\(COMMENT ON EXTENSION\)/-- \1/g']],
-      "-i",
-      schema_path,
-    })
-    if err then
-      print(err)
+    local schema_sql = file.read(schema_path, true)
+    local lines, split_err = split(schema_sql, "\n")
+    if split_err then
+      print(split_err)
       os.exit(1)
     end
+
+    local clean_lines = {}
+    local removing_comments = true
+    for _, line in ipairs(lines) do
+      if not removing_comments or (line ~= "" and not startswith(line, "--")) then
+        if startswith(line, "COMMENT ON EXTENSION") then
+          line = "-- " .. line
+        end
+
+        table.insert(clean_lines, line)
+        removing_comments = false
+      end
+    end
+
+
+    local migrations_result, migrations_err = pg_utils.query("SELECT name FROM api_umbrella.lapis_migrations ORDER BY name")
+    if migrations_err then
+      print(migrations_err)
+      os.exit(1)
+    end
+
+    local migrations_sql = {}
+    for _, migration in ipairs(migrations_result) do
+      table.insert(migrations_sql, "INSERT INTO api_umbrella.lapis_migrations (name) VALUES (" .. pg_utils.escape_literal(migration["name"]) .. ");")
+    end
+
+    schema_sql = table.concat(clean_lines, "\n") .. "\n\n" .. table.concat(migrations_sql, "\n") .. "\n"
+    file.write(schema_path, schema_sql, true)
   end
 end
