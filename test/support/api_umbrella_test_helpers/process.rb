@@ -1,4 +1,5 @@
 require "ipaddr"
+require "open3"
 require "singleton"
 require "support/api_umbrella_test_helpers/shell"
 
@@ -129,14 +130,16 @@ module ApiUmbrellaTestHelpers
         })
         ActiveRecord::Base.connection.execute("DROP DATABASE IF EXISTS #{ActiveRecord::Base.connection.quote_column_name($config["postgresql"]["database"])}")
 
-        db_setup = ChildProcess.build(File.join(API_UMBRELLA_SRC_ROOT, "bin/api-umbrella"), "db-setup")
-        db_setup.io.inherit!
-        db_setup.environment["API_UMBRELLA_EMBEDDED_ROOT"] = EMBEDDED_ROOT
-        db_setup.environment["API_UMBRELLA_CONFIG"] = CONFIG
-        db_setup.environment["DB_USERNAME"] = "postgres"
-        db_setup.environment["DB_PASSWORD"] = "dev_password"
-        db_setup.start
-        db_setup.wait
+        db_setup_output, db_setup_status = Open3.capture2e({
+          "API_UMBRELLA_EMBEDDED_ROOT" => EMBEDDED_ROOT,
+          "API_UMBRELLA_CONFIG" => CONFIG,
+          "DB_USERNAME" => "postgres",
+          "DB_PASSWORD" => "dev_password",
+        }, File.join(API_UMBRELLA_SRC_ROOT, "bin/api-umbrella"), "db-setup")
+        unless db_setup_status.success?
+          warn "Error: Database setup failed:\n\n#{db_setup_output}"
+          exit db_setup_status.exitstatus
+        end
 
         # Spin up API Umbrella and the embedded databases as a background
         # process.
@@ -148,7 +151,7 @@ module ApiUmbrellaTestHelpers
         $api_umbrella_process.start
 
         # Run the health command to wait for API Umbrella to fully startup.
-        health = ChildProcess.build(File.join(API_UMBRELLA_SRC_ROOT, "bin/api-umbrella"), "health", "--wait-for-status", "green", "--wait-timeout", "90")
+        health = ChildProcess.build(File.join(API_UMBRELLA_SRC_ROOT, "bin/api-umbrella"), "health", "--wait-for-status", "green", "--wait-timeout", "50")
         health.io.inherit!
         health.environment["API_UMBRELLA_EMBEDDED_ROOT"] = EMBEDDED_ROOT
         health.environment["API_UMBRELLA_CONFIG"] = CONFIG
