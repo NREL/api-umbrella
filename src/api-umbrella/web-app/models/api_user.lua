@@ -6,15 +6,21 @@ local config = require "api-umbrella.proxy.models.file_config"
 local db = require "lapis.db"
 local encryptor = require "api-umbrella.utils.encryptor"
 local hmac = require "api-umbrella.utils.hmac"
+local is_hash = require "api-umbrella.utils.is_hash"
 local json_array_fields = require "api-umbrella.web-app.utils.json_array_fields"
 local json_null_default = require "api-umbrella.web-app.utils.json_null_default"
+local lyaml = require "lyaml"
 local model_ext = require "api-umbrella.web-app.utils.model_ext"
+local nillify_yaml_nulls = require "api-umbrella.utils.nillify_yaml_nulls"
+local pg_encode_json = require("pgmoon.json").encode_json
+local pretty_yaml_dump = require "api-umbrella.web-app.utils.pretty_yaml_dump"
 local random_token = require "api-umbrella.utils.random_token"
 local t = require("api-umbrella.web-app.utils.gettext").gettext
 local time = require "api-umbrella.utils.time"
 local validation_ext = require "api-umbrella.web-app.utils.validation_ext"
 
 local db_null = db.NULL
+local db_raw = db.raw
 local json_null = cjson.null
 local validate_field = model_ext.validate_field
 
@@ -106,6 +112,14 @@ ApiUser = model_ext.new_class("api_users", {
     end
   end,
 
+  metadata_yaml_string = function(self)
+    if not self._metadata_yaml_string and self.metadata then
+      self._metadata_yaml_string = pretty_yaml_dump(self.metadata)
+    end
+
+    return self._metadata_yaml_string
+  end,
+
   as_json = function(self, options)
     local updated_at = time.postgres_to_timestamp(self.updated_at)
     local data = {
@@ -148,6 +162,8 @@ ApiUser = model_ext.new_class("api_users", {
       data["registration_origin"] = json_null_default(self.registration_origin)
       data["registration_referer"] = json_null_default(self.registration_referer)
       data["registration_user_agent"] = json_null_default(self.registration_user_agent)
+      data["metadata"] = json_null_default(self.metadata)
+      data["metadata_yaml_string"] = json_null_default(self:metadata_yaml_string())
 
       if options and options["allow_api_key"] and self:admin_can_view_api_key() then
         data["api_key"] = json_null_default(self:api_key_decrypted())
@@ -250,6 +266,19 @@ ApiUser = model_ext.new_class("api_users", {
     elseif values["terms_and_conditions"] and values["terms_and_conditions"] ~= db_null then
       values["terms_and_conditions"] = false
     end
+
+    if values["metadata_yaml_string"] then
+      local ok, field_data = pcall(lyaml.load, values["metadata_yaml_string"])
+      if ok then
+        if is_hash(field_data) then
+          nillify_yaml_nulls(field_data)
+        end
+        values["metadata"] = field_data
+      else
+        values["_metadata_yaml_string_parse_error"] = string.format(t("YAML parsing error: %s"), (field_data or ""))
+      end
+    end
+
   end,
 
   validate = function(self, data)
@@ -299,7 +328,18 @@ ApiUser = model_ext.new_class("api_users", {
       })
     end
 
+    if data["_metadata_yaml_string_parse_error"] then
+      model_ext.add_error(errors, "settings.metadata_yaml_string", t("Metadata YAML strings"), data["_metadata_yaml_string_parse_error"])
+    end
+
+
     return errors
+  end,
+
+  before_save = function(_, values)
+    if is_hash(values["metadata"]) and values["metadata"] ~= db_null then
+      values["metadata"] = db_raw(pg_encode_json(values["metadata"]))
+    end
   end,
 
   after_save = function(self, values)

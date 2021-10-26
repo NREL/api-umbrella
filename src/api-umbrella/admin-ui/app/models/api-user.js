@@ -44,6 +44,7 @@ export default Model.extend(Validations, {
   registrationUserAgent: attr(),
   registrationReferer: attr(),
   registrationOrigin: attr(),
+  metadataYamlString: attr(),
 
   settings: belongsTo('api/settings', { async: false }),
 
