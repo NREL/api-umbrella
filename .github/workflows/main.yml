@@ -146,17 +146,25 @@ jobs:
           MAXMIND_LICENSE_KEY: ${{ secrets.MAXMIND_LICENSE_KEY }}
 
       - name: Artifact permissions
-        if: ${{ always() }}
+        if: ${{ failure() }}
         run: sudo chmod -R 777 test/tmp/artifacts
 
+      - name: Dump docker logs on failure
+        if: ${{ failure() }}
+        uses: jwalton/gh-docker-logs@v2.0.2
+        with:
+          dest: test/tmp/artifacts/docker-logs
+
+      - name: Compress artifacts
+        if: ${{ failure() }}
+        run: tar -cvzf ./test/tmp/artifacts.tar.gz ./test/tmp/artifacts
+
       - name: Archive artifacts
+        if: ${{ failure() }}
         uses: actions/upload-artifact@v2
-        if: ${{ always() }}
         with:
           name: test-artifacts-matrix-${{ matrix.ci_node_index }}
-          path: |
-            test/tmp/artifacts/**/*
-            !test/tmp/artifacts/**/log/*/lock
+          path: test/tmp/artifacts.tar.gz
 
   test_elasticsearch_v7:
     needs: [build]
@@ -217,17 +225,25 @@ jobs:
           MAXMIND_LICENSE_KEY: ${{ secrets.MAXMIND_LICENSE_KEY }}
 
       - name: Artifact permissions
-        if: ${{ always() }}
+        if: ${{ failure() }}
         run: sudo chmod -R 777 test/tmp/artifacts
 
+      - name: Dump docker logs on failure
+        if: ${{ failure() }}
+        uses: jwalton/gh-docker-logs@v2.0.2
+        with:
+          dest: test/tmp/artifacts/docker-logs
+
+      - name: Compress artifacts
+        if: ${{ failure() }}
+        run: tar -cvzf ./test/tmp/artifacts.tar.gz ./test/tmp/artifacts
+
       - name: Archive artifacts
+        if: ${{ failure() }}
         uses: actions/upload-artifact@v2
-        if: ${{ always() }}
         with:
           name: test-artifacts-elasticsearch-v7
-          path: |
-            test/tmp/artifacts/**/*
-            !test/tmp/artifacts/**/log/*/lock
+          path: test/tmp/artifacts.tar.gz
 
   test_elasticsearch_v7_daily:
     needs: [build]
@@ -289,14 +305,22 @@ jobs:
           MAXMIND_LICENSE_KEY: ${{ secrets.MAXMIND_LICENSE_KEY }}
 
       - name: Artifact permissions
-        if: ${{ always() }}
+        if: ${{ failure() }}
         run: sudo chmod -R 777 test/tmp/artifacts
 
+      - name: Dump docker logs on failure
+        if: ${{ failure() }}
+        uses: jwalton/gh-docker-logs@v2.0.2
+        with:
+          dest: test/tmp/artifacts/docker-logs
+
+      - name: Compress artifacts
+        if: ${{ failure() }}
+        run: tar -cvzf ./test/tmp/artifacts.tar.gz ./test/tmp/artifacts
+
       - name: Archive artifacts
+        if: ${{ failure() }}
         uses: actions/upload-artifact@v2
-        if: ${{ always() }}
         with:
           name: test-artifacts-elasticsearch-v7-daily
-          path: |
-            test/tmp/artifacts/**/*
-            !test/tmp/artifacts/**/log/*/lock
+          path: test/tmp/artifacts.tar.gz
