@@ -12,7 +12,6 @@ class Test::Proxy::ApiKeyValidation::TestValidation < Minitest::Test
 
   def test_does_not_accept_invalid_keys_that_share_a_prefix
     user = FactoryBot.create(:api_user, {
-      :api_key => "30f2fa3ea7400013f36bb6becf3f92d68b583751",
       :settings => FactoryBot.build(:api_user_settings, {
         :rate_limit_mode => "unlimited",
       }),
