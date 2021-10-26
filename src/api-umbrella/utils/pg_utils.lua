@@ -242,19 +242,19 @@ function _M.query(query, values, options)
   return result, err
 end
 
-function _M.insert(table_name, values)
+function _M.insert(table_name, values, options)
   local query = "INSERT INTO " .. _M.escape_identifier(table_name) .. " " .. encode_values(values)
-  return _M.query(query)
+  return _M.query(query, nil, options)
 end
 
-function _M.update(table_name, where, values)
+function _M.update(table_name, where, values, options)
   local query = "UPDATE " .. _M.escape_identifier(table_name) .. " SET " .. encode_assigns(values) .. " WHERE " .. encode_where(where)
-  return _M.query(query)
+  return _M.query(query, nil, options)
 end
 
-function _M.delete(table_name, where)
+function _M.delete(table_name, where, options)
   local query = "DELETE FROM " .. _M.escape_identifier(table_name) .. " WHERE " .. encode_where(where)
-  return _M.query(query)
+  return _M.query(query, nil, options)
 end
 
 return _M
