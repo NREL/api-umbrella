@@ -17,7 +17,8 @@ if [ -z "${API_UMBRELLA_SRC_ROOT:-}" ]; then
     source="$(readlink "$source")"
     [[ $source != /* ]] && source="$dir/$source"
   done
-  export API_UMBRELLA_SRC_ROOT="$(cd -P "$(dirname "$(dirname "$source")")" && pwd)"
+  API_UMBRELLA_SRC_ROOT="$(cd -P "$(dirname "$(dirname "$source")")" && pwd)"
+  export API_UMBRELLA_SRC_ROOT
 fi
 
 # Determine the default root of the API Umbrella installation (where all of our
