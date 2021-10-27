@@ -262,11 +262,15 @@ local function set_computed_config()
   -- nameservers, but fallback to nameservers defined in resolv.conf, and then
   -- Google's DNS servers if nothing else is defined.
   local nameservers
+  local resolv_conf_nameservers
   if config["dns_resolver"] and config["dns_resolver"]["nameservers"] then
     nameservers = config["dns_resolver"]["nameservers"]
   end
-  if is_empty(nameservers) then
-    nameservers = read_resolv_conf_nameservers()
+  if is_empty(nameservers) or config["app_env"] == "test" then
+    resolv_conf_nameservers = read_resolv_conf_nameservers()
+    if is_empty(nameservers) then
+      nameservers = resolv_conf_nameservers
+    end
   end
   if is_empty(nameservers) then
     nameservers = { "8.8.8.8", "8.8.4.4" }
@@ -290,6 +294,13 @@ local function set_computed_config()
   config["dns_resolver"]["_nameservers_nginx"] = table.concat(config["dns_resolver"]["_nameservers_nginx"], " ")
   config["dns_resolver"]["_nameservers_trafficserver"] = config["dns_resolver"]["_nameservers_nginx"]
   config["dns_resolver"]["nameservers"] = nil
+
+  if config["app_env"] == "test" then
+    config["dns_resolver"]["_nameservers_unbound"] = {}
+    for _, nameserver in ipairs(resolv_conf_nameservers) do
+      table.insert(config["dns_resolver"]["_nameservers_unbound"], nameserver)
+    end
+  end
 
   if not config["dns_resolver"]["allow_ipv6"] then
     config["dns_resolver"]["_nameservers_nginx"] = config["dns_resolver"]["_nameservers_nginx"] .. " ipv6=off"
