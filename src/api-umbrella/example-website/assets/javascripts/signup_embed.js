@@ -98,7 +98,7 @@ if (options.termsCheckbox) {
       <div class="col-sm-8 offset-sm-4">
         <div class="form-check">
           <input id="user_terms_and_conditions" aria-describedby="user_terms_and_conditions_feedback" name="user[terms_and_conditions]" type="checkbox" class="form-check-input" value="true" required />
-          <label class="form-check-label">I have read and agree to the <a href="${escapeHtml(
+          <label class="form-check-label" for="user_terms_and_conditions">I have read and agree to the <a href="${escapeHtml(
             options.termsUrl
           )}" onclick="window.open(this.href, &#x27;api_umbrella_terms&#x27;, &#x27;height=500,width=790,menubar=no,toolbar=no,location=no,personalbar=no,status=no,resizable=yes,scrollbars=yes&#x27;); return false;" title="Opens new window to terms and conditions">terms and conditions</a>.</label>
           <div id="user_terms_and_conditions_feedback" class="invalid-feedback">You must agree to the terms and conditions to signup.</div>

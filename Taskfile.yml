@@ -732,6 +732,7 @@ tasks:
       - ./tasks/app/example-website/build
     sources:
       - ./build/work/stamp/app-deps/example-website/yarn
+      - ./src/api-umbrella/example-website/config.yaml
       - ./src/api-umbrella/example-website/assets/**/*
       - ./src/api-umbrella/example-website/content/**/*
       - ./src/api-umbrella/example-website/layouts/**/*

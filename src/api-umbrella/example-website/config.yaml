@@ -1,4 +1,4 @@
-baseURL: http://example.org/
+baseURL: /
 languageCode: en-us
 title: My New Hugo Site
 params:
