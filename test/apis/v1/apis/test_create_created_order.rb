@@ -9,7 +9,7 @@ class Test::Apis::V1::Apis::TestCreateCreatedOrder < Minitest::Test
     setup_server
 
     # Reset the sequence between every test run to test sequence behavior.
-    DatabaseCleaner.clean_with(:truncation, :only => ["api_backends"], :reset_ids => true)
+    DatabaseDeleter.connection.execute("TRUNCATE TABLE api_backends RESTART IDENTITY CASCADE")
   end
 
   def test_starts_at_1

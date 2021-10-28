@@ -55,10 +55,6 @@ GEM
     colorize (0.8.1)
     concurrent-ruby (1.1.9)
     crass (1.0.6)
-    database_cleaner-active_record (2.0.1)
-      activerecord (>= 5.a)
-      database_cleaner-core (~> 2.0.0)
-    database_cleaner-core (2.0.1)
     elasticsearch (7.13.3)
       elasticsearch-api (= 7.13.3)
       elasticsearch-transport (= 7.13.3)
@@ -185,7 +181,6 @@ DEPENDENCIES
   capybara-screenshot (~> 1.0.22)
   childprocess
   concurrent-ruby (~> 1.1.1)
-  database_cleaner-active_record (~> 2.0.1)
   elasticsearch (~> 7.13.3)
   encryptor (~> 3.0.0)
   factory_bot (~> 6.2.0)
