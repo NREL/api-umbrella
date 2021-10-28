@@ -23,6 +23,8 @@ $$ LANGUAGE plpgsql;
 DO $$
   BEGIN
     IF EXISTS(SELECT 1 FROM pg_roles WHERE rolname = 'api_umbrella_owner') THEN
+      ALTER SCHEMA api_umbrella OWNER TO api_umbrella_owner;
+      ALTER SCHEMA audit OWNER TO api_umbrella_owner;
       PERFORM pg_temp.ensure_schema_owner('api_umbrella', 'api_umbrella_owner');
       PERFORM pg_temp.ensure_schema_owner('audit', 'api_umbrella_owner');
     END IF;
