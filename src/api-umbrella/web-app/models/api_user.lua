@@ -268,17 +268,20 @@ ApiUser = model_ext.new_class("api_users", {
     end
 
     if values["metadata_yaml_string"] then
-      local ok, field_data = pcall(lyaml.load, values["metadata_yaml_string"])
-      if ok then
-        if is_hash(field_data) then
-          nillify_yaml_nulls(field_data)
-        end
-        values["metadata"] = field_data
+      if values["metadata_yaml_string"] == db_null then
+        values["metadata"] = db_null
       else
-        values["_metadata_yaml_string_parse_error"] = string.format(t("YAML parsing error: %s"), (field_data or ""))
+        local ok, field_data = pcall(lyaml.load, values["metadata_yaml_string"])
+        if ok then
+          if is_hash(field_data) then
+            nillify_yaml_nulls(field_data)
+          end
+          values["metadata"] = field_data
+        else
+          values["_metadata_yaml_string_parse_error"] = string.format(t("YAML parsing error: %s"), (field_data or ""))
+        end
       end
     end
-
   end,
 
   validate = function(self, data)
@@ -328,10 +331,13 @@ ApiUser = model_ext.new_class("api_users", {
       })
     end
 
-    if data["_metadata_yaml_string_parse_error"] then
-      model_ext.add_error(errors, "settings.metadata_yaml_string", t("Metadata YAML strings"), data["_metadata_yaml_string_parse_error"])
+    if data["metadata"] and not is_hash(data["metadata"]) and data["metadata"] ~= db_null then
+      model_ext.add_error(errors, "metadata", t("Metadata"), t("unexpected type (must be a hash)"))
     end
 
+    if data["_metadata_yaml_string_parse_error"] then
+      model_ext.add_error(errors, "metadata_yaml_string", t("Metadata"), data["_metadata_yaml_string_parse_error"])
+    end
 
     return errors
   end,

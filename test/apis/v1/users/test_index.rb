@@ -21,6 +21,9 @@ class Test::Apis::V1::Users::TestIndex < Minitest::Test
       :email_verified => true,
       :first_name => "Foo",
       :last_name => "Bar",
+      :metadata => {
+        "foo" => "bar",
+      },
       :registration_ip => "127.0.0.10",
       :registration_origin => "http://example.com",
       :registration_referer => "http://example.com/foo",
@@ -62,6 +65,8 @@ class Test::Apis::V1::Users::TestIndex < Minitest::Test
     assert_equal(false, record_data.fetch("enabled"))
     assert_equal("Foo", record_data.fetch("first_name"))
     assert_equal("Bar", record_data.fetch("last_name"))
+    assert_equal({ "foo" => "bar" }, record_data.fetch("metadata"))
+    assert_equal("foo: bar", record_data.fetch("metadata_yaml_string"))
     assert_equal("127.0.0.10", record_data.fetch("registration_ip"))
     assert_equal("http://example.com", record_data.fetch("registration_origin"))
     assert_equal("http://example.com/foo", record_data.fetch("registration_referer"))
@@ -277,6 +282,8 @@ class Test::Apis::V1::Users::TestIndex < Minitest::Test
       "first_name",
       "id",
       "last_name",
+      "metadata",
+      "metadata_yaml_string",
       "registration_ip",
       "registration_origin",
       "registration_referer",

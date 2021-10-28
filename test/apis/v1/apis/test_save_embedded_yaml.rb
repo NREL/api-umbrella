@@ -20,8 +20,20 @@ class Test::Apis::V1::Apis::TestSaveEmbeddedYaml < Minitest::Test
         assert_embedded_yaml_non_hash(action, field)
       end
 
+      define_method("test_#{field}_#{action}_null") do
+        assert_embedded_yaml_null(action, field)
+      end
+
+      define_method("test_#{field}_#{action}_empty_string") do
+        assert_embedded_yaml_empty_string(action, field)
+      end
+
       define_method("test_#{field}_#{action}_valid") do
         assert_embedded_yaml_valid(action, field)
+      end
+
+      define_method("test_#{field}_#{action}_json") do
+        assert_json_data(action, field)
       end
     end
   end
@@ -64,6 +76,44 @@ class Test::Apis::V1::Apis::TestSaveEmbeddedYaml < Minitest::Test
     }, data["errors"])
   end
 
+  def assert_embedded_yaml_null(action, field)
+    attributes = attributes_for(action)
+    attributes["settings"] = FactoryBot.attributes_for(:api_backend_settings, {
+      :"#{field}_yaml_strings" => nil,
+    }).deep_stringify_keys
+
+    response = create_or_update(action, attributes)
+    case action
+    when :create
+      assert_response_code(201, response)
+      data = MultiJson.load(response.body)
+      api = ApiBackend.find(data["api"]["id"])
+    when :update
+      assert_response_code(204, response)
+      api = ApiBackend.find(attributes["id"])
+    end
+    assert_equal({}, api.settings[field])
+  end
+
+  def assert_embedded_yaml_empty_string(action, field)
+    attributes = attributes_for(action)
+    attributes["settings"] = FactoryBot.attributes_for(:api_backend_settings, {
+      :"#{field}_yaml_strings" => "",
+    }).deep_stringify_keys
+
+    response = create_or_update(action, attributes)
+    case action
+    when :create
+      assert_response_code(201, response)
+      data = MultiJson.load(response.body)
+      api = ApiBackend.find(data["api"]["id"])
+    when :update
+      assert_response_code(204, response)
+      api = ApiBackend.find(attributes["id"])
+    end
+    assert_equal({}, api.settings[field])
+  end
+
   def assert_embedded_yaml_valid(action, field)
     attributes = attributes_for(action)
     attributes["settings"] = FactoryBot.attributes_for(:api_backend_settings, {
@@ -96,6 +146,60 @@ class Test::Apis::V1::Apis::TestSaveEmbeddedYaml < Minitest::Test
     # Check how the saved input is then output in the YAML string fields. Since
     # the data is stored unsorted (due to JSONB storage), we always sort the
     # output in alphabetical order of keys.
+    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/apis/#{api.id}.json", http_options.deep_merge(admin_token))
+    assert_response_code(200, response)
+    data = MultiJson.load(response.body)
+    assert_equal({
+      "api_key_invalid" => {
+        "a" => 3,
+        "b" => 2,
+        "foo" => "bar",
+        "g" => true,
+        "status_code" => 422,
+        "z" => 1,
+      },
+    }, data.fetch("api").fetch("settings").fetch(field.to_s))
+    assert_equal({
+      "api_key_invalid" => "a: 3\nb: 2\nfoo: bar\ng: true\nstatus_code: 422\nz: 1",
+    }, data.fetch("api").fetch("settings").fetch("#{field}_yaml_strings"))
+  end
+
+  def assert_json_data(action, field)
+    attributes = attributes_for(action)
+    attributes["settings"] = FactoryBot.attributes_for(:api_backend_settings, {
+      field => {
+        :api_key_invalid => {
+          :z => 1,
+          :status_code => 422,
+          :foo => "bar",
+          :g => true,
+          :b => 2,
+          :a => 3,
+        },
+      },
+    }).deep_stringify_keys
+
+    response = create_or_update(action, attributes)
+    case action
+    when :create
+      assert_response_code(201, response)
+      data = MultiJson.load(response.body)
+      api = ApiBackend.find(data["api"]["id"])
+    when :update
+      assert_response_code(204, response)
+      api = ApiBackend.find(attributes["id"])
+    end
+    assert_equal({
+      "api_key_invalid" => {
+        "a" => 3,
+        "b" => 2,
+        "foo" => "bar",
+        "g" => true,
+        "status_code" => 422,
+        "z" => 1,
+      },
+    }, api.settings[field])
+
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/apis/#{api.id}.json", http_options.deep_merge(admin_token))
     assert_response_code(200, response)
     data = MultiJson.load(response.body)

@@ -81,7 +81,7 @@ class Test::Apis::V1::Users::TestCreate < Minitest::Test
     assert_equal("*", response.headers["Access-Control-Allow-Origin"])
   end
 
-  def test_permits_private_fields_as_admin
+  def test_permits_private_roles_field_as_admin
     attributes = FactoryBot.attributes_for(:api_user, :roles => ["admin"])
     response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(admin_token).deep_merge({
       :headers => { "Content-Type" => "application/json" },
@@ -95,7 +95,7 @@ class Test::Apis::V1::Users::TestCreate < Minitest::Test
     assert_equal(["admin"], user.roles)
   end
 
-  def test_ignores_private_fields_as_non_admin
+  def test_ignores_private_roles_field_as_non_admin
     attributes = FactoryBot.attributes_for(:api_user, :roles => ["admin"])
     response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(non_admin_key_creator_api_key).deep_merge({
       :headers => { "Content-Type" => "application/json" },
@@ -107,6 +107,62 @@ class Test::Apis::V1::Users::TestCreate < Minitest::Test
     assert_equal([], data["user"]["roles"])
     user = ApiUser.find(data["user"]["id"])
     assert_equal([], user.roles)
+  end
+
+  def test_permits_private_metadata_field_as_admin
+    attributes = FactoryBot.attributes_for(:api_user, :metadata => { "foo" => "bar" })
+    response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(admin_token).deep_merge({
+      :headers => { "Content-Type" => "application/json" },
+      :body => MultiJson.dump(:user => attributes),
+    }))
+    assert_response_code(201, response)
+
+    data = MultiJson.load(response.body)
+    assert_equal({ "foo" => "bar" }, data["user"]["metadata"])
+    user = ApiUser.find(data["user"]["id"])
+    assert_equal({ "foo" => "bar" }, user.metadata)
+  end
+
+  def test_ignores_private_metadata_field_as_non_admin
+    attributes = FactoryBot.attributes_for(:api_user, :metadata => { "foo" => "bar" })
+    response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(non_admin_key_creator_api_key).deep_merge({
+      :headers => { "Content-Type" => "application/json" },
+      :body => MultiJson.dump(:user => attributes),
+    }))
+    assert_response_code(201, response)
+
+    data = MultiJson.load(response.body)
+    assert_nil(data["user"]["metadata"])
+    user = ApiUser.find(data["user"]["id"])
+    assert_nil(user.metadata)
+  end
+
+  def test_permits_private_metadata_yaml_string_field_as_admin
+    attributes = FactoryBot.attributes_for(:api_user, :metadata_yaml_string => "foo: bar")
+    response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(admin_token).deep_merge({
+      :headers => { "Content-Type" => "application/json" },
+      :body => MultiJson.dump(:user => attributes),
+    }))
+    assert_response_code(201, response)
+
+    data = MultiJson.load(response.body)
+    assert_equal({ "foo" => "bar" }, data["user"]["metadata"])
+    user = ApiUser.find(data["user"]["id"])
+    assert_equal({ "foo" => "bar" }, user.metadata)
+  end
+
+  def test_ignores_private_metadata_yaml_string_field_as_non_admin
+    attributes = FactoryBot.attributes_for(:api_user, :metadata_yaml_string => "foo: bar")
+    response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(non_admin_key_creator_api_key).deep_merge({
+      :headers => { "Content-Type" => "application/json" },
+      :body => MultiJson.dump(:user => attributes),
+    }))
+    assert_response_code(201, response)
+
+    data = MultiJson.load(response.body)
+    assert_nil(data["user"]["metadata"])
+    user = ApiUser.find(data["user"]["id"])
+    assert_nil(user.metadata)
   end
 
   def test_registration_source_default
