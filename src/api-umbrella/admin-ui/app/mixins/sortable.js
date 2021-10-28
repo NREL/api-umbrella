@@ -2,13 +2,13 @@ import { computed } from '@ember/object';
 import { guidFor } from '@ember/object/internals';
 import Mixin from '@ember/object/mixin'
 import { t } from 'api-umbrella-admin-ui/utils/i18n';
-import Sortable from 'sortablejs';
+import sortable from 'html5sortable/dist/html5sortable.es';
 
 // eslint-disable-next-line ember/no-new-mixins
 export default Mixin.create({
-  isReorderable: computed('sortableCollection.length', function() {
+  isReorderable: computed('sortableCollection.[]', function() {
     const length = this.sortableCollection.length;
-    return (length && length > 1);
+    return (length > 1);
   }),
 
   updateSortOrder(indexes) {
@@ -33,20 +33,21 @@ export default Mixin.create({
       }
 
       const tbody = container.querySelector('tbody');
-      Sortable.create(tbody, {
+      sortable(tbody, {
+        items: 'tr',
         handle: '.reorder-handle',
-        ghostClass: 'reorder-placeholder',
-        animation: 200,
-        onUpdate: () => {
-          const indexes = {};
-          const rows = tbody.querySelectorAll('tr');
-          for(let i = 0; i < rows.length; i++) {
-            const row = rows[i];
-            indexes[row.dataset.guid] = i;
-          }
+        forcePlaceholderSize: true,
+        placeholderClass: 'reorder-placeholder',
+      });
+      tbody.addEventListener('sortupdate', () => {
+        const indexes = {};
+        const rows = tbody.querySelectorAll('tr');
+        for(let i = 0; i < rows.length; i++) {
+          const row = rows[i];
+          indexes[row.dataset.guid] = i;
+        }
 
-          this.updateSortOrder(indexes);
-        },
+        this.updateSortOrder(indexes);
       });
     },
   },

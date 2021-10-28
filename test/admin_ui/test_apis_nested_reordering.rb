@@ -50,11 +50,13 @@ class Test::AdminUi::TestApisNestedReordering < Minitest::Capybara::Test
     find("legend button", :text => /Sub-URL Request Settings/).click
     find("button", :text => /Add URL Settings/).click
     assert_selector(".modal-content")
+    refute_selector "#sub_settings_reorder"
     within(".modal-content") do
       select "OPTIONS", :from => "HTTP Method"
       fill_in "Regex", :with => "^/foo.*"
       click_button("OK")
     end
+    refute_selector "#sub_settings_reorder"
     find("button", :text => /Add URL Settings/).click
     assert_selector(".modal-content")
     within(".modal-content") do
@@ -62,11 +64,13 @@ class Test::AdminUi::TestApisNestedReordering < Minitest::Capybara::Test
       fill_in "Regex", :with => "^/bar.*"
       click_button("OK")
     end
+    assert_selector "#sub_settings_reorder"
 
     # Advanced Requests Rewriting
     find("legend button", :text => /Advanced Requests Rewriting/).click
     find("button", :text => /Add Rewrite/).click
     assert_selector(".modal-content")
+    refute_selector "#rewrites_reorder"
     within(".modal-content") do
       select "Regular Expression", :from => "Matcher Type"
       select "PUT", :from => "HTTP Method"
@@ -74,6 +78,7 @@ class Test::AdminUi::TestApisNestedReordering < Minitest::Capybara::Test
       fill_in "Backend Replacement", :with => "foo"
       click_button("OK")
     end
+    refute_selector "#rewrites_reorder"
     find("button", :text => /Add Rewrite/).click
     assert_selector(".modal-content")
     within(".modal-content") do
@@ -83,6 +88,7 @@ class Test::AdminUi::TestApisNestedReordering < Minitest::Capybara::Test
       fill_in "Backend Replacement", :with => "bar"
       click_button("OK")
     end
+    assert_selector "#rewrites_reorder"
 
     click_button("Save")
     assert_text("Successfully saved")
@@ -134,11 +140,11 @@ class Test::AdminUi::TestApisNestedReordering < Minitest::Capybara::Test
       assert_text("^/bar.*")
     end
     click_button "sub_settings_reorder"
-    assert_selector("#sub_settings_table tbody tr:first-child td:nth-child(2)", :text => "^/foo.*")
-    handle = find("#sub_settings_table tbody td:nth-child(2)", :text => "/bar").find(:xpath, "..").find("td.reorder-handle")
-    browser = page.driver.browser
-    browser.action.drag_and_drop_by(handle.native, 0, -50).perform
-    assert_selector("#sub_settings_table tbody tr:first-child td:nth-child(2)", :text => "^/bar.*")
+    assert_selector("#sub_settings_table tbody tr:nth-child(1) td:nth-child(2)", :text => "^/foo.*")
+    handle = find("#sub_settings_table tbody tr:nth-child(2) td:nth-child(2)", :text => "/bar").find(:xpath, "..").find(".reorder-handle")
+    target = find("#sub_settings_table tbody tr:nth-child(1)")
+    handle.drag_to(target)
+    assert_selector("#sub_settings_table tbody tr:nth-child(1) td:nth-child(2)", :text => "^/bar.*")
 
     find("legend button", :text => /Advanced Requests Rewriting/).click
     within("#rewrites_table tbody tr:nth-child(1)") do
@@ -148,11 +154,11 @@ class Test::AdminUi::TestApisNestedReordering < Minitest::Capybara::Test
       assert_text("bar")
     end
     click_button "rewrites_reorder"
-    assert_selector("#rewrites_table tbody tr:first-child td:nth-child(3)", :text => "foo")
-    handle = find("#rewrites_table tbody td:nth-child(3)", :text => "bar").find(:xpath, "..").find("td.reorder-handle")
-    browser = page.driver.browser
-    browser.action.drag_and_drop_by(handle.native, 0, -50).perform
-    assert_selector("#rewrites_table tbody tr:first-child td:nth-child(3)", :text => "bar")
+    assert_selector("#rewrites_table tbody tr:nth-child(1) td:nth-child(3)", :text => "foo")
+    handle = find("#rewrites_table tbody tr:nth-child(2) td:nth-child(3)", :text => "bar").find(:xpath, "..").find(".reorder-handle")
+    target = find("#rewrites_table tbody tr:nth-child(1)")
+    handle.drag_to(target)
+    assert_selector("#rewrites_table tbody tr:nth-child(1) td:nth-child(3)", :text => "bar")
 
     click_button("Save")
     assert_text("Successfully saved")
