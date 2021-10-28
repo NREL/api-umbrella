@@ -47,7 +47,7 @@
     <fieldset class="form-horizontal">
       <legend>Advanced</legend>
 
-      {{f.codemirror-field "metadataYamlString" label=(t "Custom Metadata") tooltip=(marked (t "<a href=\"http://en.wikipedia.org/wiki/YAML\" target=\"_blank\">YAML</a> definition of the Handlebars variables available to the error templates.\n\nDefault data:\n\n```\nstatus_code: 403\ncode: API_KEY_MISSING\nmessage: No api_key was supplied. Get one at {{signup_url}}\n```")) mode="text/x-yaml"}}
+      {{f.codemirror-field "metadataYamlString" label=(t "Custom Metadata") tooltip=(marked (t "<a href=\"http://en.wikipedia.org/wiki/YAML\" target=\"_blank\">YAML</a> definition of custom metadata to assign to this user account.\n\nExample:\n\n```yaml\nmarketing_opt_out: true\ngithub_profile: https://github.com/username\n```")) mode="text/x-yaml"}}
     </fieldset>
 
     <div class="row">
