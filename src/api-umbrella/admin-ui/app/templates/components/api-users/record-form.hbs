@@ -45,6 +45,12 @@
         {{f.select-field "enabled" label="Account Enabled" options=this.enabledOptions}}
       </fieldset>
 
+      <fieldset class="form-horizontal">
+        <legend>Advanced</legend>
+
+        {{f.codemirror-field "metadataYamlString" label=(t "Custom Metadata") tooltip=(marked (t "<a href=\"http://en.wikipedia.org/wiki/YAML\" target=\"_blank\">YAML</a> definition of custom metadata to assign to this user account.\n\nExample:\n\n```yaml\nmarketing_opt_out: true\ngithub_profile: https://github.com/username\n```")) mode="text/x-yaml"}}
+      </fieldset>
+
       <div class="row">
         <div class="col-sm-6">
           <button type="submit" class="btn btn-lg btn-primary save-button"><span class="btn-label">Save</span><span class="btn-loading-label"><FaIcon @icon="sync-alt" @spin={{true}} />Saving...</span></button>

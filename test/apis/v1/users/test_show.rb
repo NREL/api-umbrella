@@ -35,6 +35,8 @@ class Test::Apis::V1::Users::TestShow < Minitest::Test
       "first_name",
       "id",
       "last_name",
+      "metadata",
+      "metadata_yaml_string",
       "registration_ip",
       "registration_origin",
       "registration_referer",

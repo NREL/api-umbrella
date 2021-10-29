@@ -91,6 +91,9 @@ class ApiUser extends Model.extend(Validations) {
   @attr()
   registrationOrigin;
 
+  @attr()
+  metadataYamlString;
+
   @belongsTo('api/settings', { async: false })
   settings;
 

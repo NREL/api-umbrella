@@ -276,6 +276,8 @@ function _M.api_user_params(self)
         throttle_by_ip = input["throttle_by_ip"],
         enabled = input["enabled"],
         role_ids = input["roles"],
+        metadata = input["metadata"],
+        metadata_yaml_string = input["metadata_yaml_string"],
       }))
 
       if input["settings"] then
