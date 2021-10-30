@@ -6,25 +6,11 @@ openresty_version="1.19.9.1"
 openresty_hash="ca013bd756f4e2a723c84cbf05dd0bdd"
 openssl_version="1.1.0l"
 openssl_hash="74a2f756c64fd7386a29184dc0344f4831192d61dc2481a93a4c5dd727f41148"
-# PCRE 8.21+ required for OpenResty's JIT regex support.
-#
-# We can likely drop compiling our own version and use the system version once
-# we no longer need to support CentOS 6 (currently on PCRE 7.8).
-pcre_version="8.45"
-pcre_hash="4452288e6a0eefb2ab11d36010a1eebb"
 
 set -e -u -x
 source ./tasks/helpers.sh
 
 task_working_dir
-
-download "https://ftp.pcre.org/pub/pcre/pcre-$pcre_version.tar.bz2" "md5" "$pcre_hash"
-extract_download "pcre-$pcre_version.tar.bz2"
-# Force pcre to statically link due to issues that prevent this from happening
-# by default in OpenResty 1.15.8. Shouldn't be necessary in next version of
-# OpenResty.
-# https://github.com/openresty/lua-resty-core/issues/258#issuecomment-524031472
-static_pcre_flags="-Wl,-u,pcre_version"
 
 download "https://www.openssl.org/source/old/1.1.0/openssl-$openssl_version.tar.gz" "sha256" "$openssl_hash"
 extract_download "openssl-$openssl_version.tar.gz"
@@ -48,13 +34,10 @@ patch -p1 < "$SOURCE_DIR/build/patches/openresty-cli.patch"
 ./configure \
   --prefix="$INSTALL_PREFIX_EMBEDDED/openresty" \
   --with-cc-opt="-I$STAGE_EMBEDDED_DIR/include" \
-  --with-ld-opt="-L$STAGE_EMBEDDED_DIR/lib $static_pcre_flags" \
+  --with-ld-opt="-L$STAGE_EMBEDDED_DIR/lib" \
   --error-log-path=stderr \
   --with-ipv6 \
   --with-openssl="../openssl-$openssl_version" \
-  --with-pcre="../pcre-$pcre_version" \
-  --with-pcre-opt=-g \
-  --with-pcre-conf-opt="--disable-cpp --enable-jit --enable-utf --enable-unicode-properties" \
   --with-pcre-jit \
   --without-http_rds_json_module \
   --without-http_rds_csv_module \
