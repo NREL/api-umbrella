@@ -1,5 +1,6 @@
 local dir = require "pl.dir"
 local escape_regex = require "api-umbrella.utils.escape_regex"
+local etlua = require "etlua"
 local file = require "pl.file"
 local geoip_download_if_missing_or_old = require("api-umbrella.utils.geoip").download_if_missing_or_old
 local invert_table = require "api-umbrella.utils.invert_table"
@@ -177,7 +178,7 @@ local function write_templates()
       end
 
       if process then
-        local path_parts, path_match_err = ngx.re.match(template_path, [[^]] .. escape_regex(template_root .. "/") .. [[((.+?)([^/]+?))(?:\.(mustache))?$]], "jo")
+        local path_parts, path_match_err = ngx.re.match(template_path, [[^]] .. escape_regex(template_root .. "/") .. [[((.+?)([^/]+?))(?:\.(mustache|etlua))?$]], "jo")
         if not path_parts then
           print("path not matched: " .. template_path)
           os.exit(1)
@@ -194,6 +195,13 @@ local function write_templates()
 
           if template_ext == "mustache" then
             content = lustache:render(mustache_unescape(content), config)
+          elseif template_ext == "etlua" then
+            local render_err
+            content, render_err = etlua.render(content, { config = config })
+            if render_err then
+              print("template compile error in " .. template_path ..": " .. render_err)
+              os.exit(1)
+            end
           end
 
           -- Only write the file if it differs from the existing file. This helps
@@ -265,6 +273,9 @@ local function set_permissions()
     chown(path_join(config["etc_dir"], "nginx"), nil, group)
     chown(path_join(config["etc_dir"], "perp"), nil, group)
     chown(path_join(config["etc_dir"], "trafficserver"), nil, group)
+    chown(path_join(config["etc_dir"], "haproxy"), user, group)
+    chown(path_join(config["etc_dir"], "haproxy/haproxy.cfg"), user, group)
+    chown(path_join(config["etc_dir"], "haproxy/dataplaneapi.hcl"), user, group)
 
     if config["app_env"] == "test" then
       chown(path_join(config["etc_dir"], "test-env"), nil, group)
@@ -299,6 +310,8 @@ local function activate_services()
     active_services["nginx"] = 1
     active_services["rsyslog"] = 1
     active_services["trafficserver"] = 1
+    active_services["haproxy"] = 1
+    active_services["haproxy-dataplaneapi"] = 1
   end
   if config["_service_auto_ssl_enabled?"] then
     active_services["nginx-auto-ssl"] = 1

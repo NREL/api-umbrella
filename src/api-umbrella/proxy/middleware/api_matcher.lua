@@ -1,6 +1,5 @@
 local config = require "api-umbrella.proxy.models.file_config"
 local matches_hostname = require "api-umbrella.utils.matches_hostname"
-local random_num = require "api-umbrella.utils.random_num"
 local stringx = require "pl.stringx"
 local utils = require "api-umbrella.proxy.utils"
 
@@ -93,19 +92,8 @@ return function(active_config)
       end
     end
 
-
-    local server_index
-    if api["_servers_count"] == 1 then
-      server_index = 1
-    else
-      server_index = random_num(1, api["_servers_count"])
-    end
-    local server = api["servers"][server_index]
-
     ngx.ctx.proxy_host = host
-    ngx.ctx.proxy_server_scheme = api["backend_protocol"] or "http"
-    ngx.ctx.proxy_server_host = server["host"]
-    ngx.ctx.proxy_server_port = server["port"]
+    ngx.ctx.proxy_api_backend_id = api["id"]
 
     return api, url_match
   else

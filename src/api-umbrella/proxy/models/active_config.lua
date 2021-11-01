@@ -1,14 +1,14 @@
-local cidr = require "libcidr-ffi"
 local config = require "api-umbrella.proxy.models.file_config"
 local escape_regex = require "api-umbrella.utils.escape_regex"
+local haproxy_config_template = require "api-umbrella.proxy.haproxy_config_template"
 local host_normalize = require "api-umbrella.utils.host_normalize"
+local http = require "resty.http"
 local int64 = require "api-umbrella.utils.int64"
 local json_encode = require "api-umbrella.utils.json_encode"
 local mustache_unescape = require "api-umbrella.utils.mustache_unescape"
 local packed_shared_dict = require "api-umbrella.utils.packed_shared_dict"
 local plutils = require "pl.utils"
 local psl = require "api-umbrella.utils.psl"
-local random_token = require "api-umbrella.utils.random_token"
 local startswith = require("pl.stringx").startswith
 local tablex = require "pl.tablex"
 local utils = require "api-umbrella.proxy.utils"
@@ -69,19 +69,6 @@ local function cache_computed_api(api)
       url_match["_backend_prefix_contains_frontend_prefix"] = false
       if startswith(url_match["backend_prefix"], url_match["frontend_prefix"]) then
         url_match["_backend_prefix_contains_frontend_prefix"] = true
-      end
-    end
-  end
-
-  if api["servers"] then
-    api["_servers_count"] = #api["servers"]
-    for _, server in ipairs(api["servers"]) do
-      if server["host"] then
-        if cidr.from_str(server["host"]) then
-          server["_host_is_ip?"] = true
-        elseif config["dns_resolver"]["_etc_hosts"][server["host"]] then
-          server["_host_is_local_alias?"] = true
-        end
       end
     end
   end
@@ -197,12 +184,17 @@ local function parse_apis(apis)
 end
 
 local function parse_website_backend(website_backend)
-  if not website_backend["_id"] then
-    website_backend["_id"] = random_token(32)
+  if not website_backend["id"] then
+    website_backend["id"] = ngx.md5(json_encode(website_backend))
   end
 
   if website_backend["frontend_host"] then
     set_hostname_regex(website_backend, "frontend_host")
+  end
+
+  website_backend["_backend_host"] = website_backend["backend_host"]
+  if not website_backend["_backend_host"] then
+    website_backend["_backend_host"] = website_backend["server_host"]
   end
 end
 
@@ -323,6 +315,62 @@ local function get_combined_website_backends(file_config, db_config)
   return all_website_backends
 end
 
+local function set_haproxy_config(active_config)
+  local haproxy_config, haproxy_err = haproxy_config_template({
+    config = config,
+    api_backends = active_config["apis"],
+    website_backends = active_config["websites"],
+  })
+  if haproxy_err then
+    return nil, "haproxy config template error: " .. (haproxy_err .. "")
+  end
+
+  local httpc = http.new()
+
+  local connect_ok, connect_err = httpc:connect({
+    scheme = "http",
+    host = "127.0.0.1",
+    port = config["haproxy"]["dataplaneapi"]["port"],
+  })
+  if not connect_ok then
+    httpc:close()
+    return nil, "haproxy dataplaneapi connect error: " .. (connect_err or "")
+  end
+
+  local res, err = httpc:request({
+    method = "POST",
+    headers = {
+     ["Authorization"] = "Basic " .. ngx.encode_base64("admin:adminpwd"),
+     ["Content-Type"] = "text/plain",
+    },
+    path = "/v2/services/haproxy/configuration/raw",
+    query = {
+      skip_version = "true",
+      force_reload = "true",
+    },
+    body = haproxy_config,
+  })
+  if err then
+    httpc:close()
+    return nil, "haproxy dataplaneapi request error: " .. (err or "")
+  end
+
+  local body, body_err = res:read_body()
+  if body_err then
+    httpc:close()
+    return nil, "haproxy dataplaneapi read body error: " .. (body_err or "")
+  end
+  ngx.log(ngx.ERR, "STATUS: ", res.status)
+  ngx.log(ngx.ERR, "HEADERS: ", json_encode(res.headers))
+  ngx.log(ngx.ERR, "BODY: ", body)
+
+  local keepalive_ok, keepalive_err = httpc:set_keepalive()
+  if not keepalive_ok then
+    httpc:close()
+    return nil, "haproxy dataplaneapi keepalive error: " .. (keepalive_err or "")
+  end
+end
+
 function _M.set(db_config)
   local file_config = config
   if not db_config then
@@ -334,6 +382,8 @@ function _M.set(db_config)
 
   local active_config = build_active_config(apis, website_backends)
   local previous_packed_config = ngx.shared.active_config:get("packed_data")
+
+  set_haproxy_config(active_config)
 
   local set_ok, set_err = safe_set_packed(ngx.shared.active_config, "packed_data", active_config)
   if not set_ok then

@@ -30,9 +30,6 @@ fi
 
 cd "trafficserver-$trafficserver_version"
 
-# Patch so GET/HEAD requests aren't retried if the connection was ever established.
-patch -p1 < "$SOURCE_DIR/build/patches/trafficserver-retries.patch"
-
 SPHINXBUILD=false ./configure \
   --disable-tests \
   --disable-silent-rules \

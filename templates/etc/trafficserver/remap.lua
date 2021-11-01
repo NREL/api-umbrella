@@ -1,7 +1,7 @@
 function do_remap()
-  ts.client_request.set_url_host(ts.client_request.header["X-Api-Umbrella-Backend-Server-Host"])
-  ts.client_request.set_url_port(ts.client_request.header["X-Api-Umbrella-Backend-Server-Port"])
-  ts.client_request.set_url_scheme(ts.client_request.header["X-Api-Umbrella-Backend-Server-Scheme"])
+  -- ts.client_request.set_url_host(ts.client_request.header["X-Api-Umbrella-Backend-Server-Host"])
+  -- ts.client_request.set_url_port(ts.client_request.header["X-Api-Umbrella-Backend-Server-Port"])
+  -- ts.client_request.set_url_scheme(ts.client_request.header["X-Api-Umbrella-Backend-Server-Scheme"])
 
   -- For cache key purposes, allow HEAD requests to re-use the cache key for
   -- GET requests (since HEAD queries can be answered from cached GET data).
@@ -17,7 +17,8 @@ function do_remap()
     -- port, so by re-setting the cache key based on the full URL here, this
     -- also helps ensure the backend port is included (so backends running on
     -- separate ports are kept separate).
-    ts.client_request.get_url(),
+    -- ts.client_request.get_url(),
+    ts.client_request.header["X-Api-Umbrella-Backend-Id"],
 
     -- Include the HTTP method (GET, POST, etc) in the cache key. This prevents
     -- delayed processing when long-running GET and POSTs are running against

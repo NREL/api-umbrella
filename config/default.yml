@@ -79,6 +79,12 @@ trafficserver:
     size: 256M
   embedded_server_config:
     records: []
+haproxy:
+  host: 127.0.0.1
+  port: 14000
+  dataplaneapi:
+    host: 127.0.0.1
+    port: 14001
 api_server:
   host: 127.0.0.1
   port: 14010

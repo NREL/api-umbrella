@@ -27,6 +27,28 @@ output: interleaved
 run: when_changed
 
 tasks:
+  deps:haproxy:
+    deps:
+      - deps:openresty
+    cmds:
+      - ./tasks/deps/haproxy
+    sources:
+      - ./tasks/deps/haproxy
+      - ./tasks/helpers.sh
+    generates:
+      - ./build/work/stamp/deps/haproxy
+
+  deps:haproxy-dataplaneapi:
+    deps:
+      - deps:openresty
+    cmds:
+      - ./tasks/deps/haproxy-dataplaneapi
+    sources:
+      - ./tasks/deps/haproxy-dataplaneapi
+      - ./tasks/helpers.sh
+    generates:
+      - ./build/work/stamp/deps/haproxy-dataplaneapi
+
   deps:icu4c:
     cmds:
       - ./tasks/deps/icu4c
@@ -162,6 +184,8 @@ tasks:
 
   deps:
     cmds:
+      - task: deps:haproxy
+      - task: deps:haproxy-dataplaneapi
       - task: deps:icu4c
       - task: deps:libbson
       - task: deps:libcidr

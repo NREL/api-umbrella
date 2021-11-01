@@ -42,10 +42,10 @@ function do_global_send_request()
   -- Remove temporary HTTP headers used to send information from nginx to
   -- Traffic Server, since these headers aren't actually needed by the
   -- underlying API backend.
-  ts.server_request.header["X-Api-Umbrella-Backend-Server-Scheme"] = nil
-  ts.server_request.header["X-Api-Umbrella-Backend-Server-Host"] = nil
-  ts.server_request.header["X-Api-Umbrella-Backend-Server-Port"] = nil
-  ts.server_request.header["X-Api-Umbrella-Allow-Authorization-Caching"] = nil
+  -- ts.server_request.header["X-Api-Umbrella-Backend-Server-Scheme"] = nil
+  -- ts.server_request.header["X-Api-Umbrella-Backend-Server-Host"] = nil
+  -- ts.server_request.header["X-Api-Umbrella-Backend-Server-Port"] = nil
+  -- ts.server_request.header["X-Api-Umbrella-Allow-Authorization-Caching"] = nil
 
   return 0
 end
