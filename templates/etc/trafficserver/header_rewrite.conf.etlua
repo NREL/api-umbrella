@@ -1,0 +1,20 @@
+cond %{SEND_REQUEST_HDR_HOOK}
+cond %{CLIENT-HEADER:X-Api-Umbrella-Backend-Authorization} /./
+set-header Authorization %{HEADER:X-Api-Umbrella-Backend-Authorization}
+rm-header X-Api-Umbrella-Backend-Authorization
+
+cond %{READ_RESPONSE_HDR_HOOK}
+cond %{HEADER:Surrogate-Control} /./
+set-header X-Api-Umbrella-Orig-Cache-Control %{HEADER:Cache-Control}
+set-header Cache-Control %{HEADER:Surrogate-Control}
+rm-header Surrogate-Control
+
+cond %{SEND_RESPONSE_HDR_HOOK}
+cond %{HEADER:X-Api-Umbrella-Orig-Cache-Control} /./
+set-header Cache-Control %{HEADER:X-Api-Umbrella-Orig-Cache-Control}
+rm-header X-Api-Umbrella-Orig-Cache-Control
+
+cond %{READ_RESPONSE_HDR_HOOK}
+cond %{HEADER:Set-Cookie} /./
+rm-cookie x-api-umbrella-strip-cookie
+

@@ -54,7 +54,7 @@ class Test::Proxy::TestBasicAuthPassthrough < Minitest::Test
     response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/add-auth-header/info/", http_options)
     assert_response_code(200, response)
     data = MultiJson.load(response.body)
-    refute(data["headers"]["x-api-umbrella-orig-authorization"])
+    refute(data["headers"]["x-api-umbrella-backend-authorization"])
     refute(data["headers"]["x-api-umbrella-allow-authorization-caching"])
   end
 end

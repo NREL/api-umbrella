@@ -344,6 +344,24 @@ local function set_computed_config()
     config["analytics"]["outputs"] = { config["analytics"]["adapter"] }
   end
 
+  config["_strip_response_cookie_lines"] = {}
+  if config["strip_response_cookies"] then
+    for _, cookie_name_regex in ipairs(config["strip_response_cookies"]) do
+      local cookie_line_regex, regex_err = ngx.re.gsub(cookie_name_regex, [[(?<!\\)\$]], "=", "jo")
+      ngx.log(ngx.ERR, "cookie_line_regex: ", cookie_line_regex)
+      ngx.log(ngx.ERR, "regex_err: ", regex_err)
+
+      if cookie_line_regex == cookie_name_regex then
+        cookie_line_regex = cookie_line_regex .. "[^=]*="
+      end
+
+      cookie_line_regex = "^[^=]*" .. cookie_line_regex
+
+      ngx.log(ngx.ERR, "cookie_line_regex: ", cookie_line_regex)
+      table.insert(config["_strip_response_cookie_lines"], cookie_line_regex)
+    end
+  end
+
   -- Setup the request/response timeouts for the different pieces of the stack.
   -- Since we traverse multiple proxies, we want to make sure the timeouts of
   -- the different proxies are kept in sync.

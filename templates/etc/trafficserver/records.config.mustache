@@ -206,8 +206,8 @@ CONFIG proxy.config.http.keep_alive_no_activity_timeout_out INT {{router.api_bac
 CONFIG proxy.config.http.per_server.connection.min INT {{router.api_backends.keepalive_connections}}
 
 # Enable for debug logging.
-# CONFIG proxy.config.diags.debug.enabled INT 1
-# CONFIG proxy.config.diags.debug.tags STRING .*
+CONFIG proxy.config.diags.debug.enabled INT 1
+CONFIG proxy.config.diags.debug.tags STRING .*
 
 # Additional custom configuration
 {{#trafficserver.embedded_server_config.records}}

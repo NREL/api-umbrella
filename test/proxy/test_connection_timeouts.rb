@@ -28,7 +28,7 @@ class Test::Proxy::TestConnectionTimeouts < Minitest::Test
     ]) do
       response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/down", http_options)
 
-      assert_response_code(502, response)
+      assert_response_code(503, response)
       assert_operator(response.total_time, :<, 1)
     end
   end

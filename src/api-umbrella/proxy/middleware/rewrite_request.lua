@@ -130,8 +130,8 @@ end
 
 local function set_http_basic_auth(settings)
   if settings["_http_basic_auth_header"] then
-    ngx.req.set_header("Authorization", settings["_http_basic_auth_header"])
-    ngx.req.set_header("X-Api-Umbrella-Allow-Authorization-Caching", "true")
+    ngx.req.clear_header("Authorization")
+    ngx.req.set_header("X-Api-Umbrella-Backend-Authorization", settings["_http_basic_auth_header"])
   end
 end
 

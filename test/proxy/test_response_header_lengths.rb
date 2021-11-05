@@ -18,7 +18,7 @@ class Test::Proxy::TestResponseHeaderLengths < Minitest::Test
     }))
 
     assert_response_code(200, response)
-    assert_equal(7900, response.headers.fetch("X-Foo1").bytesize)
+    assert_equal(7900, response.headers.fetch("x-foo1").bytesize)
     assert_operator(response.response_headers.bytesize, :>, 8100)
     assert_operator(response.response_headers.bytesize, :<, 8192)
   end
@@ -32,10 +32,10 @@ class Test::Proxy::TestResponseHeaderLengths < Minitest::Test
     }))
 
     assert_response_code(200, response)
-    assert_equal(50, response.headers.fetch("X-Foo1").bytesize)
-    assert_equal(50, response.headers.fetch("X-Foo2").bytesize)
-    assert_equal(50, response.headers.fetch("X-Foo129").bytesize)
-    assert_equal(50, response.headers.fetch("X-Foo130").bytesize)
+    assert_equal(50, response.headers.fetch("x-foo1").bytesize)
+    assert_equal(50, response.headers.fetch("x-foo2").bytesize)
+    assert_equal(50, response.headers.fetch("x-foo129").bytesize)
+    assert_equal(50, response.headers.fetch("x-foo130").bytesize)
     assert_operator(response.response_headers.bytesize, :>, 8100)
     assert_operator(response.response_headers.bytesize, :<, 8192)
   end
