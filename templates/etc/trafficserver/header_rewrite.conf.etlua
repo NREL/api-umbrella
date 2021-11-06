@@ -15,6 +15,5 @@ set-header Cache-Control %{HEADER:X-Api-Umbrella-Orig-Cache-Control}
 rm-header X-Api-Umbrella-Orig-Cache-Control
 
 cond %{READ_RESPONSE_HDR_HOOK}
-cond %{HEADER:Set-Cookie} /./
-rm-cookie x-api-umbrella-strip-cookie
-
+cond %{HEADER:Set-Cookie} /^[ ,]*$/
+rm-header Set-Cookie

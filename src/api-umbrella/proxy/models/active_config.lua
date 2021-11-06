@@ -56,6 +56,14 @@ local function cache_computed_api(api)
     api["_backend_host_normalized"] = host_normalize(api["backend_host"])
   end
 
+  if api["servers"] then
+    for index, server in ipairs(api["servers"]) do
+      if not server["id"] then
+        server["id"] = api["id"] .. "-" .. index
+      end
+    end
+  end
+
   if api["url_matches"] then
     for _, url_match in ipairs(api["url_matches"]) do
       url_match["_frontend_prefix_regex"] = "^" .. escape_regex(url_match["frontend_prefix"])
@@ -315,11 +323,50 @@ local function get_combined_website_backends(file_config, db_config)
   return all_website_backends
 end
 
-local function set_haproxy_config(active_config)
+local function haproxy_version()
+  local httpc = http.new()
+
+  local connect_ok, connect_err = httpc:connect({
+    scheme = "http",
+    host = "127.0.0.1",
+    port = config["haproxy"]["config_version_port"],
+  })
+  if not connect_ok then
+    httpc:close()
+    return nil, "haproxy config-version connect error: " .. (connect_err or "")
+  end
+
+  local res, err = httpc:request({
+    method = "GET",
+    path = "/",
+  })
+  if err then
+    httpc:close()
+    return nil, "haproxy config-version request error: " .. (err or "")
+  end
+
+  local body, body_err = res:read_body()
+  if body_err then
+    httpc:close()
+    return nil, "haproxy dataplaneapi read body error: " .. (body_err or "")
+  end
+  ngx.log(ngx.ERR, "CONFIG-VERSION STATUS: ", res.status)
+  ngx.log(ngx.ERR, "CONFIG-VERSION HEADERS: ", json_encode(res.headers))
+  ngx.log(ngx.ERR, "CONFIG-VERSION BODY: ", body)
+
+  local keepalive_ok, keepalive_err = httpc:set_keepalive()
+  if not keepalive_ok then
+    httpc:close()
+    return nil, "haproxy config-version keepalive error: " .. (keepalive_err or "")
+  end
+end
+
+local function set_haproxy_config(active_config, config_version)
   local haproxy_config, haproxy_err = haproxy_config_template({
     config = config,
     api_backends = active_config["apis"],
     website_backends = active_config["websites"],
+    config_version = config_version
   })
   if haproxy_err then
     return nil, "haproxy config template error: " .. (haproxy_err .. "")
@@ -336,6 +383,9 @@ local function set_haproxy_config(active_config)
     httpc:close()
     return nil, "haproxy dataplaneapi connect error: " .. (connect_err or "")
   end
+
+  ngx.log(ngx.ERR, "BEFORE CONFIG-VERSION: ", config_version)
+  haproxy_version()
 
   local res, err = httpc:request({
     method = "POST",
@@ -364,6 +414,56 @@ local function set_haproxy_config(active_config)
   ngx.log(ngx.ERR, "HEADERS: ", json_encode(res.headers))
   ngx.log(ngx.ERR, "BODY: ", body)
 
+  ngx.log(ngx.ERR, "AFTER CONFIG-VERSION: ", config_version)
+  haproxy_version()
+
+  ngx.sleep(0.5)
+
+  ngx.log(ngx.ERR, "AFTER SLEEP CONFIG-VERSION: ", config_version)
+  haproxy_version()
+
+  -- local res, err = httpc:request({
+  --   method = "GET",
+  --   headers = {
+  --    ["Authorization"] = "Basic " .. ngx.encode_base64("admin:adminpwd"),
+  --   },
+  --   path = "/v2/services/haproxy/configuration/version",
+  -- })
+  -- if err then
+  --   httpc:close()
+  --   return nil, "haproxy dataplaneapi request error: " .. (err or "")
+  -- end
+
+  -- local body, body_err = res:read_body()
+  -- if body_err then
+  --   httpc:close()
+  --   return nil, "haproxy dataplaneapi read body error: " .. (body_err or "")
+  -- end
+  -- ngx.log(ngx.ERR, "AFTER SLEEP VERSION STATUS: ", res.status)
+  -- ngx.log(ngx.ERR, "AFTER SLEEP VERSION HEADERS: ", json_encode(res.headers))
+  -- ngx.log(ngx.ERR, "AFTER SLEEP VERSION BODY: ", body)
+
+  -- local res, err = httpc:request({
+  --   method = "GET",
+  --   headers = {
+  --    ["Authorization"] = "Basic " .. ngx.encode_base64("admin:adminpwd"),
+  --   },
+  --   path = "/v2/services/haproxy/reloads",
+  -- })
+  -- if err then
+  --   httpc:close()
+  --   return nil, "haproxy dataplaneapi request error: " .. (err or "")
+  -- end
+
+  -- local body, body_err = res:read_body()
+  -- if body_err then
+  --   httpc:close()
+  --   return nil, "haproxy dataplaneapi read body error: " .. (body_err or "")
+  -- end
+  -- ngx.log(ngx.ERR, "RELOADS STATUS: ", res.status)
+  -- ngx.log(ngx.ERR, "RELOADS HEADERS: ", json_encode(res.headers))
+  -- ngx.log(ngx.ERR, "RELOADS BODY: ", body)
+
   local keepalive_ok, keepalive_err = httpc:set_keepalive()
   if not keepalive_ok then
     httpc:close()
@@ -383,7 +483,17 @@ function _M.set(db_config)
   local active_config = build_active_config(apis, website_backends)
   local previous_packed_config = ngx.shared.active_config:get("packed_data")
 
-  set_haproxy_config(active_config)
+  local db_version = db_config["version"]
+  if db_version then
+    db_version = int64.to_string(db_version)
+  end
+  ngx.log(ngx.ERR, "db_version: ", db_version)
+
+  local file_version = file_config["version"]
+
+  local config_version = (db_version or "") .. ":" .. (file_version or "")
+
+  set_haproxy_config(active_config, config_version)
 
   local set_ok, set_err = safe_set_packed(ngx.shared.active_config, "packed_data", active_config)
   if not set_ok then
@@ -414,16 +524,12 @@ function _M.set(db_config)
     end
   end
 
-  local db_version = db_config["version"]
-  if db_version then
-    db_version = int64.to_string(db_version)
-  end
   set_ok, set_err = ngx.shared.active_config:safe_set("db_version", db_version)
   if not set_ok then
     ngx.log(ngx.ERR, "failed to set 'db_version' in 'active_config' shared dict: ", set_err)
   end
 
-  set_ok, set_err = ngx.shared.active_config:safe_set("file_version", file_config["version"])
+  set_ok, set_err = ngx.shared.active_config:safe_set("file_version", file_version)
   if not set_ok then
     ngx.log(ngx.ERR, "failed to set 'file_version' in 'active_config' shared dict: ", set_err)
   end

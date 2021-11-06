@@ -23,6 +23,7 @@ trafficserver:
   port: 13009
 haproxy:
   port: 13000
+  config_version_port: 13002
   dataplaneapi:
     port: 13001
 api_server:

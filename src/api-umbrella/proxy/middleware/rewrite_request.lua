@@ -2,17 +2,19 @@ local config = require "api-umbrella.proxy.models.file_config"
 local is_empty = require "api-umbrella.utils.is_empty"
 local lustache = require "lustache"
 local plutils = require "pl.utils"
+local re_split = require("ngx.re").split
 local stringx = require "pl.stringx"
 local tablex = require "pl.tablex"
 local utils = require "api-umbrella.proxy.utils"
 local xpcall_error_handler = require "api-umbrella.utils.xpcall_error_handler"
 
 local gsub = ngx.re.gsub
+local re_find = ngx.re.find
+local re_match = ngx.re.match
 local keys = tablex.keys
 local set_uri = utils.set_uri
 local size = tablex.size
 local split = plutils.split
-local strip = stringx.strip
 
 local function pass_api_key(settings)
   local api_key = ngx.ctx.api_key
@@ -137,37 +139,42 @@ end
 
 local function strip_cookies(api)
   local cookie_header = ngx.var.http_cookie
-  if not cookie_header then return end
+  if not cookie_header then
+    return
+  end
+
+  if api["id"] == "api-umbrella-web-app-backend" and #config["strip_request_cookies"] == 0 then
+    return
+  end
 
   local strips = {}
-  if config["strip_cookies"] then
-    for _, strip_regex in ipairs(config["strip_cookies"]) do
-      table.insert(strips, strip_regex)
-    end
+  for _, strip_regex in ipairs(config["strip_request_cookies"]) do
+    table.insert(strips, strip_regex)
   end
   if api["id"] ~= "api-umbrella-web-app-backend" then
-    table.insert(strips, "^_api_umbrella_session$")
-    table.insert(strips, "^_api_umbrella_csrf_token$")
+    table.insert(strips, "^_api_umbrella_session=")
+    table.insert(strips, "^_api_umbrella_csrf_token=")
   end
-  if #strips == 0 then return end
 
-  local cookies = split(cookie_header, "; *")
+  local cookies, split_err = re_split(cookie_header, "; *", "jo")
+  if split_err then
+    ngx.log(ngx.ERR, "regex error: ", split_err)
+    return
+  end
+
   local kept_cookies = {}
-
   for _, cookie in ipairs(cookies) do
-    local cookie_name = string.match(cookie, "(.-)=")
     local remove_cookie = false
 
-    if cookie_name then
-      cookie_name = strip(cookie_name)
-      for _, strip_regex in ipairs(strips) do
-        local matches, match_err = ngx.re.match(cookie_name, strip_regex, "io")
-        if matches then
-          remove_cookie = true
-          break
-        elseif match_err then
-          ngx.log(ngx.ERR, "regex error: ", match_err)
-        end
+    for _, strip_regex in ipairs(strips) do
+      local find_from, _, find_err = re_find(cookie, strip_regex, "io")
+      if find_err then
+        ngx.log(ngx.ERR, "regex error: ", find_err)
+      end
+
+      if find_from then
+        remove_cookie = true
+        break
       end
     end
 
@@ -176,7 +183,7 @@ local function strip_cookies(api)
     end
   end
 
-  if is_empty(kept_cookies) then
+  if #kept_cookies == 0 then
     ngx.req.clear_header("Cookie")
   else
     ngx.req.set_header("Cookie", table.concat(kept_cookies, "; "))
@@ -212,7 +219,7 @@ local function url_rewrites(api)
           args_length = size(args)
         end
 
-        local matches, match_err = ngx.re.match(path, rewrite["_frontend_path_regex"])
+        local matches, match_err = re_match(path, rewrite["_frontend_path_regex"])
         if matches then
           if rewrite["_frontend_args_length"] then
             if rewrite["_frontend_args_allow_wildcards"] or args_length == rewrite["_frontend_args_length"] then

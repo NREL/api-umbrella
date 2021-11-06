@@ -1,8 +1,8 @@
 global
   master-worker
-  server-state-file <%- config["run_dir"] %>/haproxy-server-state
+  server-state-file <%- config["run_dir"] %>/haproxy/server-state
   log stdout format raw local0 debug
-  stats socket <%- config["run_dir"] %>/haproxy.sock level admin expose-fd listeners
+  stats socket <%- config["run_dir"] %>/haproxy/stats.sock level admin expose-fd listeners
   tune.http.maxhdr 200
   tune.bufsize 65536
 
@@ -85,8 +85,8 @@ defaults
     # http-response set-header X-Api-Umbrella-Orig-Cache-Control %[res.hdr(Cache-Control)] if surrogate_control_header_present
     # http-response set-header Cache-Control %[res.hdr(Surrogate-Control)] if surrogate_control_header_present
 
-    <% for _, cookie_regex in ipairs(config["_strip_response_cookie_lines"]) do %>
-      http-response replace-header Set-Cookie '<%- cookie_regex %>' 'x-api-umbrella-strip-cookie'
+    <% for _, cookie_regex in ipairs(config["strip_response_cookies"]) do %>
+      http-response replace-header Set-Cookie '<%- cookie_regex %>' ' '
     <% end %>
 
     <% for _, api_backend in ipairs(api_backends) do %>
@@ -98,4 +98,8 @@ defaults
       acl 'website_backend_match_<%- website_backend["id"] %>' req.hdr(X-Api-Umbrella-Website-Backend-Id) -m str '<%- website_backend["id"] %>'
       use_backend 'website-backend-<%- website_backend["id"] %>' if 'website_backend_match_<%- website_backend["id"] %>'
     <% end %>
+
+  # frontend config-version
+  #   bind 127.0.0.1:<%- config["haproxy"]["config_version_port"] %>
+  #   http-request return content-type text/plain string '<%- config_version %>'
 <% end %>

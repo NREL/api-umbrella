@@ -82,6 +82,7 @@ trafficserver:
 haproxy:
   host: 127.0.0.1
   port: 14000
+  config_version_port: 14002
   dataplaneapi:
     host: 127.0.0.1
     port: 14001
@@ -250,10 +251,10 @@ analytics:
   adapter: elasticsearch
   timezone: UTC
   log_request_url_query_params_separately: false
-strip_cookies:
-  - ^__utm.*$
-  - ^_ga$
-  - ^is_returning$
+strip_request_cookies:
+  - ^__utm[^=]*=
+  - ^_ga=
+  - ^is_returning=
 strip_response_cookies: []
 strip_server_header: false
 site_name: API Umbrella

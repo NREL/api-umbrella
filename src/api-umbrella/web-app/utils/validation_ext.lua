@@ -3,7 +3,7 @@ local common_validations = require "api-umbrella.web-app.utils.common_validation
 local db_null = require("lapis.db").NULL
 local is_array = require "api-umbrella.utils.is_array"
 local is_hash = require "api-umbrella.utils.is_hash"
-local match = ngx.re.match
+local re_find = ngx.re.find
 local validation = require "resty.validation"
 
 local function db_null_optional(default)
@@ -81,13 +81,21 @@ end
 
 local function not_regex(regex, options)
   return function(value)
-    return match(value, regex, options) == nil
+    local find_from, _, find_err = re_find(value, regex, options)
+    if find_err then
+      ngx.log(ngx.ERR, "regex error: ", find_err)
+    end
+    return find_from == nil
   end
 end
 
 local function uuid()
   return function(value)
-    return match(value, common_validations.uuid, "ijo") ~= nil
+    local find_from, _, find_err = re_find(value, common_validations.uuid, "ijo")
+    if find_err then
+      ngx.log(ngx.ERR, "regex error: ", find_err)
+    end
+    return find_from ~= nil
   end
 end
 

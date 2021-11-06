@@ -18,6 +18,7 @@ local db_raw = db.raw
 local deepcompare = tablex.deepcompare
 local deepcopy = tablex.deepcopy
 local json_null = cjson.null
+local re_find = ngx.re.find
 local table_values = tablex.values
 
 local as_json_options = {
@@ -92,8 +93,14 @@ local function config_for_comparison(object)
     compare_object = {}
     for key, value in pairs(object) do
       -- Exclude various keys and any "*_id" fields from the comparison record.
-      if not compare_exclude_keys[key] and not ngx.re.match(key, "_ids?$", "jo") then
-        compare_object[key] = config_for_comparison(value)
+      if not compare_exclude_keys[key] then
+        local find_from, _, find_err = re_find(key, "_ids?$", "jo")
+        if find_err then
+          ngx.log(ngx.ERR, "regex error: ", find_err)
+        end
+        if not find_from then
+          compare_object[key] = config_for_comparison(value)
+        end
       end
     end
 

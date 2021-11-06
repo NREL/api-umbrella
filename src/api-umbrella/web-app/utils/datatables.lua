@@ -14,6 +14,7 @@ local table_keys = require("pl.tablex").keys
 local validation_ext = require "api-umbrella.web-app.utils.validation_ext"
 
 local add_error = model_ext.add_error
+local re_find = ngx.re.find
 local validate_field = model_ext.validate_field
 
 local _M = {}
@@ -22,11 +23,11 @@ local function build_search_where(escaped_table_name, search_fields, search_valu
   local where = {}
 
   -- Always search on the "id" field, but only for exact matches.
-  local uuid_matches, uuid_match_err = ngx.re.match(search_value, common_validations.uuid, "ijo")
-  if uuid_matches then
+  local uuid_find_from, _, uuid_find_err = re_find(search_value, common_validations.uuid, "ijo")
+  if uuid_find_from then
     table.insert(where, db.interpolate_query(escaped_table_name .. ".id = ?", string.lower(search_value)))
-  elseif uuid_match_err then
-    ngx.log(ngx.ERR, "regex error: ", uuid_match_err)
+  elseif uuid_find_err then
+    ngx.log(ngx.ERR, "regex error: ", uuid_find_err)
   end
 
   -- Perform wildcard, case-insensitive searches on all the other fields.

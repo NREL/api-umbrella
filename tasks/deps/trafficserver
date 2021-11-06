@@ -1,14 +1,7 @@
 #!/usr/bin/env bash
 
-# Don't upgrade to 8.1.0 yet, since I believe these changes to connection
-# timeouts affect some of our workaround logic related to
-# proxy.config.http.connect_attempts_timeout and
-# proxy.config.http.connect_attempts_max_retries. The new behavior actually
-# seems like it might be preferable and remove the need for some of our
-# workarounds, but 8.1.0 breaks some of our assumptions, so for now, we'll hold
-# back on upgrading.
-trafficserver_version="9.1.0"
-trafficserver_hash="52c5ee7c3ed2124a29273a2333e0a0d6656db35d573b7908789485848e831628be3c7a724ce66914bc9b1ebe0ba8ef5a3e324c1af4cae8e12887d15f8ad55e64"
+trafficserver_version="9.1.1"
+trafficserver_hash="dcff67cfd4b9f2d1f93b14489497852acab4c6ca7150e069d6eecce17f1e7ae7f961c47fde053565009b239507b0be2941cccc0389047494728c848dd308f907"
 
 set -e -u -x
 source ./tasks/helpers.sh
@@ -35,8 +28,7 @@ SPHINXBUILD=false ./configure \
   --disable-silent-rules \
   --disable-maintainer-mode \
   --disable-dependency-tracking \
-  --prefix="$INSTALL_PREFIX_EMBEDDED" \
-  --with-luajit="$STAGE_EMBEDDED_DIR/openresty/luajit"
+  --prefix="$INSTALL_PREFIX_EMBEDDED"
 make -j"$NPROC"
 make install DESTDIR="$STAGE_DIR"
 chrpath -d "$STAGE_EMBEDDED_DIR/lib/libtscore.so"

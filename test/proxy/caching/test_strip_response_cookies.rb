@@ -119,8 +119,8 @@ class Test::Proxy::Caching::TestStripResponseCookies < Minitest::Test
 
     override_config({
       "strip_response_cookies" => [
-        "^foo[0-9]$",
-        "^Expires$",
+        "^foo[0-9]=",
+        "^Expires=",
       ],
     }) do
       assert_cacheable("/api/cacheable-set-cookie/", {
@@ -213,7 +213,7 @@ class Test::Proxy::Caching::TestStripResponseCookies < Minitest::Test
       }))
       assert_nil(response.headers["Set-Cookie"])
 
-      # Strips no cookies when at least 1 cookie won't be stripped.
+      # Strips specific cookies, while keeping non-matching cookies.
       response = Typhoeus.get("http://127.0.0.1:9080/api/cacheable-set-cookie/", http_options.deep_merge({
         :params => {
           :unique_test_id => "#{unique_test_id}-#{next_unique_number}",
@@ -226,10 +226,7 @@ class Test::Proxy::Caching::TestStripResponseCookies < Minitest::Test
           ],
         }),
       }))
-      assert_equal([
-        "foo0=bar",
-        "fooa=bar",
-      ], response.headers["Set-Cookie"])
+      assert_equal("fooa=bar", response.headers["Set-Cookie"])
 
       # Parses cookies with commas in the argument values.
       response = Typhoeus.get("http://127.0.0.1:9080/api/cacheable-set-cookie/", http_options.deep_merge({
