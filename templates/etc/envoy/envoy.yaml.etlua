@@ -1,0 +1,17 @@
+node:
+  cluster: test-cluster
+  id: test-id
+
+dynamic_resources:
+  cds_config:
+    path: <%- config["run_dir"] %>/envoy/cds.json
+    resource_api_version: V3
+  lds_config:
+    path: <%- config["run_dir"] %>/envoy/lds.json
+    resource_api_version: V3
+
+admin:
+  address:
+    socket_address:
+      address: <%- config["envoy"]["admin"]["host"] %>
+      port_value: <%- config["envoy"]["admin"]["port"] %>

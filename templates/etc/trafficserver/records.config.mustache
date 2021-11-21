@@ -76,15 +76,6 @@ CONFIG proxy.config.http.connect_attempts_rr_retries INT 3
 CONFIG proxy.config.http.connect_attempts_max_retries INT 3
 CONFIG proxy.config.http.connect_attempts_max_retries_dead_server INT 1
 
-# Don't use keepalive connections for POST requests, since those can't safely be retried.
-#
-# While with proper keepalive tuning, these can mostly work, there may still be
-# edge cases where a dead keepalive connection is used. Since we may not be in
-# total control of the reliability of the network or underlying API backend
-# connections, disable these to be safer. Since POSTs are likely less frequent,
-# we'll take the performance penalty on these requests to be safer.
-CONFIG proxy.config.http.keep_alive_post_out INT 0
-
 # Don't consider the backend down, even if some requests timeout. We don't want
 # some bad API requests to mark the entire backend as being down.
 CONFIG proxy.config.http.down_server.cache_time INT 0
@@ -169,28 +160,6 @@ CONFIG proxy.config.url_remap.pristine_host_hdr INT 1
 
 # Set the DNS nameservers.
 CONFIG proxy.config.dns.resolv_conf STRING NULL
-CONFIG proxy.config.dns.nameservers STRING {{dns_resolver._nameservers_trafficserver}}
-
-{{#dns_resolver.allow_ipv6}}
-CONFIG proxy.config.hostdb.ip_resolve STRING client;ipv4;ipv6
-{{/dns_resolver.allow_ipv6}}
-{{^dns_resolver.allow_ipv6}}
-# Note that the "only" value is used, although this does what "none" is
-# documented to: https://github.com/apache/trafficserver/issues/3880
-CONFIG proxy.config.hostdb.ip_resolve STRING ipv4;only
-{{/dns_resolver.allow_ipv6}}
-
-{{#dns_resolver.max_stale}}
-# Allow old DNS results to be used while new ones are fetched in the background
-# (this also helps ensure things remain up, even if DNS goes down temporarily).
-CONFIG proxy.config.hostdb.serve_stale_for INT {{dns_resolver.max_stale}}
-{{/dns_resolver.max_stale}}
-
-{{#dns_resolver.negative_ttl}}
-# For hosts that don't exist, remember the invalid DNS responses for a bit to
-# prevent repeated DNS queries for non-existent hosts.
-CONFIG proxy.config.hostdb.fail.timeout INT {{dns_resolver.negative_ttl}}
-{{/dns_resolver.negative_ttl}}
 
 # Use more standard round-robin for DNS results (rather than sticky).
 CONFIG proxy.config.hostdb.strict_round_robin INT 1
@@ -199,11 +168,6 @@ CONFIG proxy.config.hostdb.strict_round_robin INT 1
 # keepalive hangups.
 CONFIG proxy.config.net.sock_option_flag_in INT 7
 CONFIG proxy.config.net.sock_option_flag_out INT 3
-
-# Keepalive connections to backend origin servers. Retain some idle connections
-# open to the backend servers to improve performance.
-CONFIG proxy.config.http.keep_alive_no_activity_timeout_out INT {{router.api_backends.keepalive_idle_timeout}}
-CONFIG proxy.config.http.per_server.connection.min INT {{router.api_backends.keepalive_connections}}
 
 # Enable for debug logging.
 # CONFIG proxy.config.diags.debug.enabled INT 1

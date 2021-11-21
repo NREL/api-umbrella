@@ -16,6 +16,7 @@ local xpcall_error_handler = require "api-umbrella.utils.xpcall_error_handler"
 
 local chmod = stat.chmod
 local chown = unistd.chown
+local file_write = file.write
 local path_basename = path.basename
 local path_exists = path.exists
 local path_join = path.join
@@ -77,10 +78,20 @@ local function prepare()
     config["log_dir"],
     config["run_dir"],
     config["tmp_dir"],
+    path_join(config["run_dir"], "envoy"),
   }
 
   for _, directory in ipairs(dirs) do
     dir.makepath(directory)
+  end
+
+  local lds_path = path_join(config["run_dir"], "envoy/lds.json")
+  local cds_path = path_join(config["run_dir"], "envoy/cds.json")
+  if not path_exists(lds_path) then
+    file_write(lds_path, "{}")
+  end
+  if not path_exists(cds_path) then
+    file_write(cds_path, "{}")
   end
 end
 
@@ -307,11 +318,10 @@ local function activate_services()
     if config["geoip"]["_enabled"] then
       active_services["geoip-auto-updater"] = 1
     end
+    active_services["envoy"] = 1
     active_services["nginx"] = 1
     active_services["rsyslog"] = 1
     active_services["trafficserver"] = 1
-    active_services["haproxy"] = 1
-    active_services["haproxy-dataplaneapi"] = 1
   end
   if config["_service_auto_ssl_enabled?"] then
     active_services["nginx-auto-ssl"] = 1

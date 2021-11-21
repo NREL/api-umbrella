@@ -92,8 +92,7 @@ return function(active_config)
       end
     end
 
-    ngx.ctx.proxy_host = host
-    ngx.ctx.proxy_api_backend_id = api["id"]
+    ngx.ctx.backend_host = host
 
     return api, url_match
   else

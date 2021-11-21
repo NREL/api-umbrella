@@ -21,10 +21,9 @@ nginx:
   proxy_send_timeout: 9
 trafficserver:
   port: 13009
-haproxy:
+envoy:
   port: 13000
-  config_version_port: 13002
-  dataplaneapi:
+  admin:
     port: 13001
 api_server:
   port: 13010

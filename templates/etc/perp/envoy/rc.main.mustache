@@ -16,14 +16,14 @@ if [ "${1}" = "start" ]; then
     run_args+=("-u" "$api_umbrella_user")
   fi
 
-  dirs=("{{run_dir}}/haproxy")
+  dirs=("{{run_dir}}/envoy")
   mkdir -p "${dirs[@]}"
   chmod 750 "${dirs[@]}"
   if [ -n "$api_umbrella_user" ]; then
     chown $api_umbrella_user:$api_umbrella_group "${dirs[@]}"
   fi
 
-  exec runtool "${run_args[@]}" haproxy -f "{{etc_dir}}/haproxy/haproxy.cfg" -W -dD
+  exec runtool "${run_args[@]}" envoy -c "{{etc_dir}}/envoy/envoy.yaml" --enable-fine-grain-logging --log-level debug
 fi
 
 exit 0

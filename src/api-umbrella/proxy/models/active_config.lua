@@ -1,12 +1,14 @@
 local config = require "api-umbrella.proxy.models.file_config"
 local escape_regex = require "api-umbrella.utils.escape_regex"
-local haproxy_config_template = require "api-umbrella.proxy.haproxy_config_template"
+local file_write = require("pl.file").write
 local host_normalize = require "api-umbrella.utils.host_normalize"
 local http = require "resty.http"
 local int64 = require "api-umbrella.utils.int64"
+local json_decode = require("cjson").decode
 local json_encode = require "api-umbrella.utils.json_encode"
 local mustache_unescape = require "api-umbrella.utils.mustache_unescape"
 local packed_shared_dict = require "api-umbrella.utils.packed_shared_dict"
+local path_join = require("pl.path").join
 local plutils = require "pl.utils"
 local psl = require "api-umbrella.utils.psl"
 local startswith = require("pl.stringx").startswith
@@ -323,151 +325,267 @@ local function get_combined_website_backends(file_config, db_config)
   return all_website_backends
 end
 
-local function haproxy_version()
-  local httpc = http.new()
+local function set_envoy_config(active_config, config_version)
+  local virtual_hosts = {}
 
+  local cds = {
+    version_info = config_version,
+    resources = {
+    },
+  }
+
+  for _, api_backend in ipairs(active_config["apis"]) do
+    local cluster_name = "api-backend-cluster-" .. api_backend["id"]
+    local resource = {
+      ["@type"] = "type.googleapis.com/envoy.config.cluster.v3.Cluster",
+      name = cluster_name,
+      type = "STRICT_DNS",
+      dns_resolution_config = {
+        resolvers = config["dns_resolver"]["_nameservers_envoy"],
+      },
+      respect_dns_ttl = true,
+      ignore_health_on_host_removal = true,
+      load_assignment = {
+        cluster_name = cluster_name,
+        endpoints = {
+          lb_endpoints = {},
+        },
+      },
+    }
+
+    if api_backend["balance_algorithm"] == "least_conn" then
+      resource["lb_policy"] = "LEAST_REQUEST"
+    elseif api_backend["balance_algorithm"] == "round_robin" then
+      resource["lb_policy"] = "ROUND_ROBIN"
+    elseif api_backend["balance_algorithm"] == "ip_hash" then
+      resource["lb_policy"] = "RING_HASH"
+    end
+
+    for _, server in ipairs(api_backend["servers"]) do
+      table.insert(resource["load_assignment"]["endpoints"]["lb_endpoints"], {
+        endpoint = {
+          address = {
+            socket_address = {
+              address = server["host"],
+              port_value = server["port"],
+            },
+          },
+        },
+      })
+    end
+
+    if api_backend["backend_protocol"] == "https" then
+      resource["transport_socket"] = {
+        name = "envoy.transport_sockets.tls",
+        typed_config = {
+          ["@type"] = "type.googleapis.com/envoy.extensions.transport_sockets.tls.v3.UpstreamTlsContext",
+          sni = api_backend["backend_host"],
+        },
+      }
+    end
+
+    table.insert(cds["resources"], resource)
+
+    table.insert(virtual_hosts, {
+      name = "api-backend-" .. api_backend["id"],
+      domains = { "api-backend-" .. api_backend["id"] },
+      routes = {
+        match = {
+          prefix = "/",
+        },
+        route = {
+          cluster = cluster_name,
+          host_rewrite_header = "X-Api-Umbrella-Backend-Host",
+        },
+      },
+      request_headers_to_add = {
+        {
+          header = {
+            key = "Authorization",
+            value = "%REQ(X-Api-Umbrella-Backend-Authorization)%",
+          },
+          append = false,
+        },
+      },
+      request_headers_to_remove = {
+        "X-Api-Umbrella-Backend-Authorization",
+      },
+    })
+  end
+
+  for _, website_backend in ipairs(active_config["websites"]) do
+    local cluster_name = "website-backend-cluster-" .. website_backend["id"]
+    local resource = {
+      ["@type"] = "type.googleapis.com/envoy.config.cluster.v3.Cluster",
+      name = cluster_name,
+      type = "STRICT_DNS",
+      dns_resolution_config = {
+        resolvers = config["dns_resolver"]["_nameservers_envoy"],
+      },
+      respect_dns_ttl = true,
+      ignore_health_on_host_removal = true,
+      lb_policy = "LEAST_REQUEST",
+      load_assignment = {
+        cluster_name = cluster_name,
+        endpoints = {
+          lb_endpoints = {
+            {
+              endpoint = {
+                address = {
+                  socket_address = {
+                    address = website_backend["server_host"],
+                    port_value = website_backend["server_port"],
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    }
+
+    if website_backend["backend_protocol"] == "https" then
+      resource["transport_socket"] = {
+        name = "envoy.transport_sockets.tls",
+        typed_config = {
+          ["@type"] = "type.googleapis.com/envoy.extensions.transport_sockets.tls.v3.UpstreamTlsContext",
+          sni = website_backend["_backend_host"],
+        },
+      }
+    end
+
+    table.insert(cds["resources"], resource)
+
+    table.insert(virtual_hosts, {
+      name = "website-backend-" .. website_backend["id"],
+      domains = { "website-backend-" .. website_backend["id"] },
+      routes = {
+        match = {
+          prefix = "/",
+        },
+        route = {
+          cluster = cluster_name,
+          host_rewrite_header = "X-Api-Umbrella-Backend-Host",
+        },
+      },
+    })
+  end
+
+  local rds_path = path_join(config["run_dir"], "envoy/rds.json")
+
+  local lds = {
+    version_info = config_version,
+    resources = {
+      {
+        ["@type"] = "type.googleapis.com/envoy.config.listener.v3.Listener",
+        name = "listener",
+        address = {
+          socket_address = {
+            address = config["envoy"]["host"],
+            port_value = config["envoy"]["port"],
+          },
+        },
+        filter_chains = {
+          {
+            filters = {
+              {
+                name = "envoy.http_connection_manager",
+                typed_config = {
+                  ["@type"] = "type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager",
+                  stat_prefix = "router",
+                  http_filters = {
+                    name = "envoy.filters.http.router",
+                  },
+                  rds = {
+                    config_source = {
+                      path = rds_path,
+                      resource_api_version = "V3",
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  }
+
+  local lds_path = path_join(config["run_dir"], "envoy/lds.json")
+  local cds_path = path_join(config["run_dir"], "envoy/cds.json")
+
+  local rds = {
+    version_info = config_version,
+    resources = {
+      ["@type"] = "type.googleapis.com/envoy.config.route.v3.RouteConfiguration",
+      virtual_hosts = virtual_hosts,
+    }
+  }
+
+  file_write(cds_path .. ".tmp", json_encode(cds))
+  file_write(rds_path .. ".tmp", json_encode(rds))
+  file_write(lds_path .. ".tmp", json_encode(lds))
+
+  os.rename(cds_path .. ".tmp", cds_path)
+  os.rename(rds_path .. ".tmp", rds_path)
+  os.rename(lds_path .. ".tmp", lds_path)
+
+  local httpc = http.new()
   local connect_ok, connect_err = httpc:connect({
     scheme = "http",
-    host = "127.0.0.1",
-    port = config["haproxy"]["config_version_port"],
+    host = config["envoy"]["admin"]["host"],
+    port = config["envoy"]["admin"]["port"],
   })
+
   if not connect_ok then
     httpc:close()
-    return nil, "haproxy config-version connect error: " .. (connect_err or "")
+    return nil, "envoy admin connect error: " .. (connect_err or "")
   end
 
-  local res, err = httpc:request({
-    method = "GET",
-    path = "/",
-  })
-  if err then
-    httpc:close()
-    return nil, "haproxy config-version request error: " .. (err or "")
-  end
+  local done = false
+  local stats_body
+  for i = 1, 50 do
+    local res, err = httpc:request({
+      method = "GET",
+      path = "/stats?format=json&filter=\\.version_text$",
+    })
+    if err then
+      httpc:close()
+      return nil, "envoy admin request error: " .. (err or "")
+    end
 
-  local body, body_err = res:read_body()
-  if body_err then
-    httpc:close()
-    return nil, "haproxy dataplaneapi read body error: " .. (body_err or "")
+    local stats_body_err
+    stats_body, stats_body_err = res:read_body()
+    if stats_body_err then
+      httpc:close()
+      return nil, "envoy admin read body error: " .. (stats_body_err or "")
+    end
+
+    local stats = json_decode(stats_body)
+    for _, stat in ipairs(stats["stats"]) do
+      if stat["value"] == config_version then
+        done = true
+      else
+        done = false
+        break
+      end
+    end
+
+    if done then
+      break
+    else
+      ngx.sleep(0.1)
+    end
   end
-  ngx.log(ngx.ERR, "CONFIG-VERSION STATUS: ", res.status)
-  ngx.log(ngx.ERR, "CONFIG-VERSION HEADERS: ", json_encode(res.headers))
-  ngx.log(ngx.ERR, "CONFIG-VERSION BODY: ", body)
 
   local keepalive_ok, keepalive_err = httpc:set_keepalive()
   if not keepalive_ok then
     httpc:close()
-    return nil, "haproxy config-version keepalive error: " .. (keepalive_err or "")
-  end
-end
-
-local function set_haproxy_config(active_config, config_version)
-  local haproxy_config, haproxy_err = haproxy_config_template({
-    config = config,
-    api_backends = active_config["apis"],
-    website_backends = active_config["websites"],
-    config_version = config_version
-  })
-  if haproxy_err then
-    return nil, "haproxy config template error: " .. (haproxy_err .. "")
+    return nil, "envoy admin keepalive error: " .. (keepalive_err or "")
   end
 
-  local httpc = http.new()
-
-  local connect_ok, connect_err = httpc:connect({
-    scheme = "http",
-    host = "127.0.0.1",
-    port = config["haproxy"]["dataplaneapi"]["port"],
-  })
-  if not connect_ok then
-    httpc:close()
-    return nil, "haproxy dataplaneapi connect error: " .. (connect_err or "")
-  end
-
-  ngx.log(ngx.ERR, "BEFORE CONFIG-VERSION: ", config_version)
-  haproxy_version()
-
-  local res, err = httpc:request({
-    method = "POST",
-    headers = {
-     ["Authorization"] = "Basic " .. ngx.encode_base64("admin:adminpwd"),
-     ["Content-Type"] = "text/plain",
-    },
-    path = "/v2/services/haproxy/configuration/raw",
-    query = {
-      skip_version = "true",
-      force_reload = "true",
-    },
-    body = haproxy_config,
-  })
-  if err then
-    httpc:close()
-    return nil, "haproxy dataplaneapi request error: " .. (err or "")
-  end
-
-  local body, body_err = res:read_body()
-  if body_err then
-    httpc:close()
-    return nil, "haproxy dataplaneapi read body error: " .. (body_err or "")
-  end
-  ngx.log(ngx.ERR, "STATUS: ", res.status)
-  ngx.log(ngx.ERR, "HEADERS: ", json_encode(res.headers))
-  ngx.log(ngx.ERR, "BODY: ", body)
-
-  ngx.log(ngx.ERR, "AFTER CONFIG-VERSION: ", config_version)
-  haproxy_version()
-
-  ngx.sleep(0.5)
-
-  ngx.log(ngx.ERR, "AFTER SLEEP CONFIG-VERSION: ", config_version)
-  haproxy_version()
-
-  -- local res, err = httpc:request({
-  --   method = "GET",
-  --   headers = {
-  --    ["Authorization"] = "Basic " .. ngx.encode_base64("admin:adminpwd"),
-  --   },
-  --   path = "/v2/services/haproxy/configuration/version",
-  -- })
-  -- if err then
-  --   httpc:close()
-  --   return nil, "haproxy dataplaneapi request error: " .. (err or "")
-  -- end
-
-  -- local body, body_err = res:read_body()
-  -- if body_err then
-  --   httpc:close()
-  --   return nil, "haproxy dataplaneapi read body error: " .. (body_err or "")
-  -- end
-  -- ngx.log(ngx.ERR, "AFTER SLEEP VERSION STATUS: ", res.status)
-  -- ngx.log(ngx.ERR, "AFTER SLEEP VERSION HEADERS: ", json_encode(res.headers))
-  -- ngx.log(ngx.ERR, "AFTER SLEEP VERSION BODY: ", body)
-
-  -- local res, err = httpc:request({
-  --   method = "GET",
-  --   headers = {
-  --    ["Authorization"] = "Basic " .. ngx.encode_base64("admin:adminpwd"),
-  --   },
-  --   path = "/v2/services/haproxy/reloads",
-  -- })
-  -- if err then
-  --   httpc:close()
-  --   return nil, "haproxy dataplaneapi request error: " .. (err or "")
-  -- end
-
-  -- local body, body_err = res:read_body()
-  -- if body_err then
-  --   httpc:close()
-  --   return nil, "haproxy dataplaneapi read body error: " .. (body_err or "")
-  -- end
-  -- ngx.log(ngx.ERR, "RELOADS STATUS: ", res.status)
-  -- ngx.log(ngx.ERR, "RELOADS HEADERS: ", json_encode(res.headers))
-  -- ngx.log(ngx.ERR, "RELOADS BODY: ", body)
-
-  local keepalive_ok, keepalive_err = httpc:set_keepalive()
-  if not keepalive_ok then
-    httpc:close()
-    return nil, "haproxy dataplaneapi keepalive error: " .. (keepalive_err or "")
+  if not done then
+    return nil, "envoy admin timed out waiting for configuration to be live. Waiting for: " .. (config_version or "") .. ". Last stats: " .. (stats_body or "")
   end
 end
 
@@ -487,13 +605,15 @@ function _M.set(db_config)
   if db_version then
     db_version = int64.to_string(db_version)
   end
-  ngx.log(ngx.ERR, "db_version: ", db_version)
 
   local file_version = file_config["version"]
 
   local config_version = (db_version or "") .. ":" .. (file_version or "")
 
-  set_haproxy_config(active_config, config_version)
+  local _, envoy_err = set_envoy_config(active_config, config_version)
+  if envoy_err then
+    ngx.log(ngx.ERR, "set envoy error: ", envoy_err)
+  end
 
   local set_ok, set_err = safe_set_packed(ngx.shared.active_config, "packed_data", active_config)
   if not set_ok then

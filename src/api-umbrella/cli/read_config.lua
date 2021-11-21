@@ -315,22 +315,31 @@ local function set_computed_config()
   -- the OpenBSD resolv.conf format of "[IP]:port".
   config["dns_resolver"]["_nameservers"] = {}
   config["dns_resolver"]["_nameservers_nginx"] = {}
-  config["dns_resolver"]["_nameservers_haproxy"] = {}
+  config["dns_resolver"]["_nameservers_envoy"] = {}
   for _, nameserver in ipairs(nameservers) do
     local ip, port = string.match(nameserver, "^%[(.+)%]:(%d+)$")
     if ip and port then
       nameserver = { ip, port }
       table.insert(config["dns_resolver"]["_nameservers_nginx"], ip .. ":" .. port)
-      table.insert(config["dns_resolver"]["_nameservers_haproxy"], ip .. ":" .. port)
+      table.insert(config["dns_resolver"]["_nameservers_envoy"], {
+        socket_address = {
+          address = ip,
+          port_value = tonumber(port),
+        }
+      })
     else
       table.insert(config["dns_resolver"]["_nameservers_nginx"], nameserver)
-      table.insert(config["dns_resolver"]["_nameservers_haproxy"], nameserver .. ":53")
+      table.insert(config["dns_resolver"]["_nameservers_envoy"], {
+        socket_address = {
+          address = nameserver,
+          port_value = 53,
+        }
+      })
     end
 
     table.insert(config["dns_resolver"]["_nameservers"], nameserver)
   end
   config["dns_resolver"]["_nameservers_nginx"] = table.concat(config["dns_resolver"]["_nameservers_nginx"], " ")
-  config["dns_resolver"]["_nameservers_trafficserver"] = config["dns_resolver"]["_nameservers_nginx"]
   config["dns_resolver"]["nameservers"] = nil
 
   if config["app_env"] == "test" then
@@ -406,9 +415,9 @@ local function set_computed_config()
   --   backend) is reflected by Traffic Server's "activity_out" timeout.
   -- * The send timeout (the timeout between bytes being received from the
   --   client request), is reflected by Traffic Server's "activity_in" timeout.
-  config["haproxy"]["_timeout_connect"] = config["nginx"]["proxy_connect_timeout"]
-  config["haproxy"]["_timeout_client"] = config["nginx"]["proxy_send_timeout"]
-  config["haproxy"]["_timeout_server"] = config["nginx"]["proxy_read_timeout"]
+  -- config["haproxy"]["_timeout_connect"] = config["nginx"]["proxy_connect_timeout"]
+  -- config["haproxy"]["_timeout_client"] = config["nginx"]["proxy_send_timeout"]
+  -- config["haproxy"]["_timeout_server"] = config["nginx"]["proxy_read_timeout"]
   config["trafficserver"]["_connect_attempts_timeout"] = config["nginx"]["proxy_connect_timeout"] + 2
   config["trafficserver"]["_post_connect_attempts_timeout"] = config["trafficserver"]["_connect_attempts_timeout"] + 2
   config["trafficserver"]["_transaction_no_activity_timeout_out"] = config["nginx"]["proxy_read_timeout"] + 2

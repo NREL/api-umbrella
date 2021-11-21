@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+
+envoy_version="1.20.0"
+
+set -e -u -x
+source ./tasks/helpers.sh
+
+task_working_dir
+
+if [ ! -f _persist/downloads/envoy.tar ]; then
+  mkdir -p _persist/downloads
+  crane export "envoyproxy/envoy-distroless:v${envoy_version}" _persist/downloads/envoy.tar
+fi
+
+tar -xof "_persist/downloads/envoy.tar" usr/local/bin/envoy
+
+install -D -m 755 usr/local/bin/envoy "$STAGE_EMBEDDED_DIR/bin/envoy"
+
+stamp

@@ -27,27 +27,16 @@ output: interleaved
 run: when_changed
 
 tasks:
-  deps:haproxy:
+  deps:envoy:
     deps:
-      - deps:openresty
+      - build-deps:crane
     cmds:
-      - ./tasks/deps/haproxy
+      - ./tasks/deps/envoy
     sources:
-      - ./tasks/deps/haproxy
+      - ./tasks/deps/envoy
       - ./tasks/helpers.sh
     generates:
-      - ./build/work/stamp/deps/haproxy
-
-  deps:haproxy-dataplaneapi:
-    deps:
-      - deps:openresty
-    cmds:
-      - ./tasks/deps/haproxy-dataplaneapi
-    sources:
-      - ./tasks/deps/haproxy-dataplaneapi
-      - ./tasks/helpers.sh
-    generates:
-      - ./build/work/stamp/deps/haproxy-dataplaneapi
+      - ./build/work/stamp/deps/envoy
 
   deps:icu4c:
     cmds:
@@ -181,8 +170,7 @@ tasks:
 
   deps:
     cmds:
-      - task: deps:haproxy
-      - task: deps:haproxy-dataplaneapi
+      - task: deps:envoy
       - task: deps:icu4c
       - task: deps:libbson
       - task: deps:libcidr
@@ -193,6 +181,15 @@ tasks:
       - task: deps:rsyslog
       - task: deps:runit_svlogd
       - task: deps:trafficserver
+
+  build-deps:crane:
+    cmds:
+      - ./tasks/build-deps/crane
+    sources:
+      - ./tasks/build-deps/crane
+      - ./tasks/helpers.sh
+    generates:
+      - ./build/work/stamp/build-deps/crane
 
   build-deps:hugo:
     cmds:
@@ -226,6 +223,7 @@ tasks:
 
   build-deps:
     cmds:
+      - task: build-deps:crane
       - task: build-deps:hugo
       - task: build-deps:yarn
 

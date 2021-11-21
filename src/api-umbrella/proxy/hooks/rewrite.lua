@@ -85,6 +85,7 @@ ngx.ctx.uri_path = uri_path
 local function route()
   ngx.var.proxy_host_header = ngx.ctx.proxy_host
   ngx.var.proxy_request_uri = ngx.ctx.request_uri
+  ngx.req.set_header("X-Api-Umbrella-Backend-Host", ngx.ctx.backend_host)
   ngx.req.set_header("X-Forwarded-Proto", ngx.ctx.protocol)
   ngx.req.set_header("X-Forwarded-Port", ngx.ctx.port)
 end
@@ -94,8 +95,7 @@ local function route_to_api(api, url_match)
 
   ngx.ctx.matched_api = api
   ngx.ctx.matched_api_url_match = url_match
-
-  ngx.req.set_header("X-Api-Umbrella-Api-Backend-Id", api["id"])
+  ngx.ctx.proxy_host = "api-backend-" .. api["id"]
 
   route()
 end
@@ -103,10 +103,8 @@ end
 local function route_to_website(website)
   redirect_matches_to_https(website["website_backend_required_https_regex"] or config["router"]["website_backend_required_https_regex_default"])
 
-  local host = website["backend_host"] or ngx.ctx.host
-  ngx.ctx.proxy_host = host
-
-  ngx.req.set_header("X-Api-Umbrella-Website-Backend-Id", website["id"])
+  ngx.ctx.proxy_host = "website-backend-" .. website["id"]
+  ngx.ctx.backend_host = website["backend_host"] or ngx.ctx.host
 
   route()
 end
