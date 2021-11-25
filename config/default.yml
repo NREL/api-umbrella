@@ -250,10 +250,10 @@ analytics:
   adapter: elasticsearch
   timezone: UTC
   log_request_url_query_params_separately: false
-strip_request_cookies:
-  - ^__utm[^=]*=
-  - ^_ga=
-  - ^is_returning=
+strip_cookies:
+  - ^__utm.*$
+  - ^_ga$
+  - ^is_returning$
 strip_response_cookies: []
 strip_server_header: false
 site_name: API Umbrella

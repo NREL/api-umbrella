@@ -1,0 +1,3 @@
+<% if config["_strip_response_cookies_regex"] then -%>
+<%- config["_strip_response_cookies_regex"] -%>
+<% end -%>

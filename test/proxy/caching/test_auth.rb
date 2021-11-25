@@ -60,11 +60,22 @@ class Test::Proxy::Caching::TestAuth < Minitest::Test
   end
 
   def test_ignores_internal_authorization_headers_set_externally
-    refute_cacheable("/api/cacheable-cache-control-max-age/", {
-      :userpwd => "something:",
+    response = Typhoeus.get("http://127.0.0.1:9080/api/info/", http_options.deep_merge({
       :headers => {
-        "X-Api-Umbrella-Allow-Authorization-Caching" => "true",
+        "Authorization" => "foobar",
       },
-    })
+    }))
+    assert_response_code(200, response)
+    data = MultiJson.load(response.body)
+    assert_equal("foobar", data["headers"]["authorization"])
+
+    response = Typhoeus.get("http://127.0.0.1:9080/api/info/", http_options.deep_merge({
+      :headers => {
+        "X-Api-Umbrella-Backend-Authorization" => "foobar",
+      },
+    }))
+    assert_response_code(200, response)
+    data = MultiJson.load(response.body)
+    assert_nil(data["headers"]["authorization"])
   end
 end

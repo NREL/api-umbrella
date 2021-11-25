@@ -1,19 +1,32 @@
+# If API Umbrella is injecting a static Authorization header into each
+# request (to authenticate against the API backend), then we still want to
+# allow caching of the responses, even though authorized responses aren't
+# normally cached. So we don't actually set the "Authorization" header (to
+# allow for caching) and only swap headers when making the actual request.
 cond %{SEND_REQUEST_HDR_HOOK}
 cond %{CLIENT-HEADER:X-Api-Umbrella-Backend-Authorization} /./
 set-header Authorization %{HEADER:X-Api-Umbrella-Backend-Authorization}
 rm-header X-Api-Umbrella-Backend-Authorization
 
+# Support a private Surrogate-Control header (taking precedence over the
+# normal Cache-Control header) to allow API backends to return this header
+# to only control API Umbrella's caching layer, while having different
+# Cache-Control settings for public caches.
+#
+# We support this by shifting the Surrogate-Control header into place as the
+# normal Cache-Control header, so Traffic Server will parse the surrogate
+# header for all the normal TTL information. We'll then restore the original
+# Cache-Control header in do_global_send_response().
 cond %{READ_RESPONSE_HDR_HOOK}
 cond %{HEADER:Surrogate-Control} /./
 set-header X-Api-Umbrella-Orig-Cache-Control %{HEADER:Cache-Control}
 set-header Cache-Control %{HEADER:Surrogate-Control}
 rm-header Surrogate-Control
 
+# Restore the original Cache-Control header that was potentially shifted to
+# a different header to allow Surrogate-Control support in
+# do_global_read_response().
 cond %{SEND_RESPONSE_HDR_HOOK}
 cond %{HEADER:X-Api-Umbrella-Orig-Cache-Control} /./
 set-header Cache-Control %{HEADER:X-Api-Umbrella-Orig-Cache-Control}
 rm-header X-Api-Umbrella-Orig-Cache-Control
-
-cond %{READ_RESPONSE_HDR_HOOK}
-cond %{HEADER:Set-Cookie} /^[ ,]*$/
-rm-header Set-Cookie

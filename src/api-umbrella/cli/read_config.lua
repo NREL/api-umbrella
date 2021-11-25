@@ -15,6 +15,7 @@ local plutils = require "pl.utils"
 local random_token = require "api-umbrella.utils.random_token"
 local stat = require "posix.sys.stat"
 local stringx = require "pl.stringx"
+local table_copy = require("pl.tablex").copy
 local unistd = require "posix.unistd"
 local url = require "socket.url"
 
@@ -140,40 +141,6 @@ local function read_system_config()
   end
 
   nillify_yaml_nulls(config)
-end
-
--- Translate regexes targeting cooking names to actually match full cookie
--- values. This is due to some limitations in where we're matching these, so
--- that they can be matched against the full cookie line, without first parsing
--- out the cookie name by itself.
---
--- For example, this will take a matcher like: "^foo$" and make sure it can
--- match a string like "foo=bar" (where the cookie value is also present).
-local function full_cookie_regexes(cookie_name_regexes)
-  local full_regexes = {}
-  if cookie_name_regexes then
-    for _, cookie_name_regex in ipairs(cookie_name_regexes) do
-      -- Replace any non-escaped "$"s (so not, "\$" which would indicate an
-      -- actual dollar sign character), with a "=". Since we want to match only
-      -- the cookie name, match up to the "=" sign that indicates the end of
-      -- the cookie name.
-      local cookie_full_regex, _, regex_err = re_gsub(cookie_name_regex, [[(?<!\\)\$]], "=", "jo")
-      if regex_err then
-        ngx.log(ngx.ERR, "regex error: ", regex_err)
-      else
-        -- If the original regex didn't have a "$" to indicate the end of the
-        -- string, then allow matching any non-equal character up to the equal
-        -- sign.
-        if cookie_full_regex == cookie_name_regex then
-          cookie_full_regex = cookie_full_regex .. "[^=]*="
-        end
-
-        table.insert(full_regexes, cookie_full_regex)
-      end
-    end
-  end
-
-  return full_regexes
 end
 
 -- After all the primary config is read from files and combined, perform
@@ -388,8 +355,17 @@ local function set_computed_config()
     config["analytics"]["outputs"] = { config["analytics"]["adapter"] }
   end
 
-  if config["strip_cookies"] then
-    ngx.log(ngx.ERR, "'strip_cookies' is no longer supported. Use 'strip_request_cookies' instead.")
+  local strip_request_cookies = table_copy(config["strip_cookies"])
+  table.insert(strip_request_cookies, "^_api_umbrella_session$")
+  table.insert(strip_request_cookies, "^_api_umbrella_csrf_token$")
+  config["_strip_request_cookies_regex_non_web_app_backends"] = table.concat(strip_request_cookies, "|")
+
+  if not is_empty(config["strip_cookies"]) then
+    config["_strip_request_cookies_regex_web_app_backend"] = table.concat(config["strip_cookies"], "|")
+  end
+
+  if not is_empty(config["strip_response_cookies"]) then
+    config["_strip_response_cookies_regex"] = table.concat(config["strip_response_cookies"], "|")
   end
 
   -- Setup the request/response timeouts for the different pieces of the stack.

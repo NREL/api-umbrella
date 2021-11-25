@@ -160,9 +160,12 @@ tasks:
       - ./build/work/stamp/deps/runit_svlogd
 
   deps:trafficserver:
+    deps:
+      - deps:openresty
     cmds:
       - ./tasks/deps/trafficserver
     sources:
+      - ./build/work/stamp/deps/openresty
       - ./tasks/deps/trafficserver
       - ./tasks/helpers.sh
     generates:
@@ -353,19 +356,19 @@ tasks:
     generates:
       - ./build/work/stamp/app-deps/lua/libcidr-ffi
 
-  app-deps:lua:lrexlib-pcre:
+  app-deps:lua:lrexlib-pcre2:
     deps:
       - deps:luarocks
     cmds:
-      - ./tasks/app-deps/lua/lrexlib-pcre
+      - ./tasks/app-deps/lua/lrexlib-pcre2
     sources:
       - ./build/work/stamp/deps/luarocks
-      - ./tasks/app-deps/lua/lrexlib-pcre
-      - ./tasks/app-deps/lua/lrexlib-pcre-2.9.1-1.rockspec
+      - ./tasks/app-deps/lua/lrexlib-pcre2
+      - ./tasks/app-deps/lua/lrexlib-pcre2-2.9.1-1.rockspec
       - ./tasks/helpers.sh
       - ./tasks/helpers/lua.sh
     generates:
-      - ./build/work/stamp/app-deps/lua/lrexlib-pcre
+      - ./build/work/stamp/app-deps/lua/lrexlib-pcre2
     method: checksum
 
   app-deps:lua:lualdap:
@@ -663,7 +666,7 @@ tasks:
       - task: app-deps:lua:inspect
       - task: app-deps:lua:lapis
       - task: app-deps:lua:libcidr-ffi
-      - task: app-deps:lua:lrexlib-pcre
+      - task: app-deps:lua:lrexlib-pcre2
       - task: app-deps:lua:lualdap
       - task: app-deps:lua:luaposix
       - task: app-deps:lua:luasocket

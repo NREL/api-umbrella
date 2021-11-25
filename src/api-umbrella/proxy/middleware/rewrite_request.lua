@@ -143,17 +143,15 @@ local function strip_cookies(api)
     return
   end
 
-  if api["id"] == "api-umbrella-web-app-backend" and #config["strip_request_cookies"] == 0 then
-    return
+  local strip_request_cookie_regex
+  if api["id"] == "api-umbrella-web-app-backend" then
+    strip_request_cookie_regex = config["_strip_request_cookies_regex_web_app_backend"]
+  else
+    strip_request_cookie_regex = config["_strip_request_cookies_regex_non_web_app_backends"]
   end
 
-  local strips = {}
-  for _, strip_regex in ipairs(config["strip_request_cookies"]) do
-    table.insert(strips, strip_regex)
-  end
-  if api["id"] ~= "api-umbrella-web-app-backend" then
-    table.insert(strips, "^_api_umbrella_session=")
-    table.insert(strips, "^_api_umbrella_csrf_token=")
+  if not strip_request_cookie_regex then
+    return
   end
 
   local cookies, split_err = re_split(cookie_header, "; *", "jo")
@@ -164,21 +162,14 @@ local function strip_cookies(api)
 
   local kept_cookies = {}
   for _, cookie in ipairs(cookies) do
-    local remove_cookie = false
+    local cookie_name = string.match(cookie, "(.-)=")
 
-    for _, strip_regex in ipairs(strips) do
-      local find_from, _, find_err = re_find(cookie, strip_regex, "io")
-      if find_err then
-        ngx.log(ngx.ERR, "regex error: ", find_err)
-      end
-
-      if find_from then
-        remove_cookie = true
-        break
-      end
+    local find_from, _, find_err = re_find(cookie_name, strip_request_cookie_regex, "ijo")
+    if find_err then
+      ngx.log(ngx.ERR, "regex error: ", find_err)
     end
 
-    if not remove_cookie then
+    if not find_from then
       table.insert(kept_cookies, cookie)
     end
   end

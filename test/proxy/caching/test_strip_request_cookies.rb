@@ -53,8 +53,8 @@ class Test::Proxy::Caching::TestStripRequestCookies < Minitest::Test
     })
 
     override_config({
-      "strip_request_cookies" => [
-        "^foo[0-9]=",
+      "strip_cookies" => [
+        "^foo[0-9]$",
       ],
     }) do
       assert_cacheable("/api/cacheable-cache-control-max-age/", {

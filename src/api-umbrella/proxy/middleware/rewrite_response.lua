@@ -44,26 +44,6 @@ local function set_cache_header()
   end
 end
 
-local function strip_cookies()
-  local set_cookies = ngx.header["Set-Cookie"]
-
-  if type(set_cookies) == "table" then
-    local cookies_changed = false
-    local keep_cookies = {}
-    for _, cookie in ipairs(set_cookies) do
-      if cookie == "" then
-        cookies_changed = true
-      else
-        table.insert(keep_cookies, cookie)
-      end
-    end
-
-    if cookies_changed then
-      ngx.header["Set-Cookie"] = keep_cookies
-    end
-  end
-end
-
 local function set_default_headers(settings)
   if settings["_default_response_headers"] then
     local existing_headers = ngx.resp.get_headers()
@@ -191,7 +171,6 @@ end
 
 return function(settings)
   set_cache_header()
-  strip_cookies()
 
   if settings then
     set_default_headers(settings)

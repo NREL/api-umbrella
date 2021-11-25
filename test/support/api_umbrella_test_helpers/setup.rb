@@ -327,6 +327,12 @@ module ApiUmbrellaTestHelpers
             raise e
           end
         end
+
+        # Restart trafficserver when changing the response stripping config,
+        # since that alters Trafficserver's plugin.config, requiring a restart.
+        if(previous_override_config["strip_response_cookies"] || @@current_override_config["strip_response_cookies"])
+          self.api_umbrella_process.restart_trafficserver
+        end
       end
     end
 

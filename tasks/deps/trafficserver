@@ -28,7 +28,8 @@ SPHINXBUILD=false ./configure \
   --disable-silent-rules \
   --disable-maintainer-mode \
   --disable-dependency-tracking \
-  --prefix="$INSTALL_PREFIX_EMBEDDED"
+  --prefix="$INSTALL_PREFIX_EMBEDDED" \
+  --with-luajit="$STAGE_EMBEDDED_DIR/openresty/luajit"
 make -j"$NPROC"
 make install DESTDIR="$STAGE_DIR"
 chrpath -d "$STAGE_EMBEDDED_DIR/lib/libtscore.so"

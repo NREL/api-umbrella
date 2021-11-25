@@ -20,6 +20,7 @@ if [[ "$ID_NORMALIZED" == "rhel" ]]; then
     ncurses-libs
     openssl
     pcre
+    pcre2
     postgresql
     zlib
 
@@ -80,6 +81,7 @@ if [[ "$ID_NORMALIZED" == "rhel" ]]; then
     openssl-devel
     patch
     pcre-devel
+    pcre2-devel
     pkgconfig
     python
     readline-devel
@@ -167,6 +169,7 @@ elif [[ "$ID_NORMALIZED" == "debian" ]]; then
     "libffi$libffi_version"
     libncurses5
     libpcre3
+    libpcre2-8-0
     libuuid1
     libyaml-0-2
     logrotate
@@ -227,6 +230,7 @@ elif [[ "$ID_NORMALIZED" == "debian" ]]; then
     libjansson-dev
     libncurses5-dev
     libpcre3-dev
+    libpcre2-dev
     libreadline-dev
     libssl-dev
     libtool

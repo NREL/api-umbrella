@@ -494,7 +494,9 @@ local function set_envoy_config(active_config, config_version)
                   ["@type"] = "type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager",
                   stat_prefix = "router",
                   http_filters = {
-                    name = "envoy.filters.http.router",
+                    {
+                      name = "envoy.filters.http.router",
+                    },
                   },
                   rds = {
                     config_source = {

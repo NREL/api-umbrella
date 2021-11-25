@@ -44,7 +44,6 @@ if ($banned_user_agent) {
 # Clear any headers used inside API Umbrella that should not be possible to set
 # by an external client.
 more_clear_input_headers X-Api-Umbrella-Backend-Authorization;
-more_clear_input_headers X-Api-Umbrella-Allow-Authorization-Caching;
 
 {{#_development_env?}}
   location /livereload.js {
