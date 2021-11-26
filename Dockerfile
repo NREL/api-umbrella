@@ -44,6 +44,10 @@ RUN make deps:icu4c && make clean:dev
 COPY tasks/deps/luarocks /app/tasks/deps/
 RUN make deps:luarocks && make clean:dev
 
+COPY tasks/build-deps/crane /app/tasks/build-deps/
+COPY tasks/deps/envoy /app/tasks/deps/
+RUN make deps:envoy && make clean:dev
+
 COPY tasks/deps /app/tasks/deps
 RUN make deps && make clean:dev
 

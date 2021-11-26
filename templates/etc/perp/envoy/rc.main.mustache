@@ -23,7 +23,7 @@ if [ "${1}" = "start" ]; then
     chown $api_umbrella_user:$api_umbrella_group "${dirs[@]}"
   fi
 
-  exec runtool "${run_args[@]}" envoy -c "{{etc_dir}}/envoy/envoy.yaml" --enable-fine-grain-logging --log-level debug
+  exec runtool "${run_args[@]}" envoy -c "{{etc_dir}}/envoy/envoy.yaml"
 fi
 
 exit 0

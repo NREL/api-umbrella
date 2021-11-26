@@ -9,7 +9,7 @@ task_working_dir
 
 if [ ! -f _persist/downloads/envoy.tar ]; then
   mkdir -p _persist/downloads
-  crane export "envoyproxy/envoy-distroless:v${envoy_version}" _persist/downloads/envoy.tar
+  PATH="$DEV_PATH" crane export "envoyproxy/envoy-distroless:v${envoy_version}" _persist/downloads/envoy.tar
 fi
 
 tar -xof "_persist/downloads/envoy.tar" usr/local/bin/envoy
