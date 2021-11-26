@@ -110,12 +110,9 @@ return function(api_user, options)
   if is_empty(from) then
     from = "noreply@" .. config["web"]["default_host"]
   end
-  if not is_empty(options["email_from_name"]) then
-    from = options["email_from_name"] .. " <" .. from .. ">"
-  end
 
   local data = {
-    hi = t("Hi %s,"),
+    hi = t("Hi,"),
     greeting = t("Your API key for %s is:"),
     api_key = api_key,
     account_email = t("Account Email: %s"),
@@ -127,14 +124,14 @@ return function(api_user, options)
   }
 
   local data_text = table_copy(data)
-  data_text["hi"] = string.format(data["hi"], api_user.first_name)
+  data_text["hi"] = data["hi"]
   data_text["greeting"] = string.format(data["greeting"], api_user.email)
   data_text["account_email"] = string.format(data["account_email"], api_user.email)
   data_text["account_id"] = string.format(data["account_id"], api_user.id)
   data_text["support"] = string.format(data["support"], t("contact us") .. " ( " .. options["contact_url"] .. " )")
 
   local data_html = table_copy(data)
-  data_html["hi"] = string.format(data["hi"], escape_html(api_user.first_name))
+  data_html["hi"] = data["hi"]
   data_html["greeting"] = string.format(data["greeting"], "<strong>" .. escape_html(api_user.email) .."</strong>")
   data_html["account_email"] = string.format(data["account_email"], escape_html(api_user.email))
   data_html["account_id"] = string.format(data["account_id"], escape_html(api_user.id))
@@ -149,7 +146,7 @@ return function(api_user, options)
     headers = config["web"]["mailer"]["headers"],
     from = from,
     to = { api_user.email },
-    subject = string.format(t("Your %s API key"), options["site_name"]),
+    subject = t("Your API key"),
     text = template_text(data_text),
     html = template_html(data_html),
   })

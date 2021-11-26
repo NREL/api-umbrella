@@ -188,8 +188,8 @@ class Test::Apis::V1::Users::TestCreateWelcomeEmail < Minitest::Test
     assert_equal([user.email], message.fetch("Content").fetch("Headers").fetch("To"))
 
     # Greeting
-    assert_match("Hi #{user.first_name},</p>", message.fetch("_mime_parts").fetch("text/html").fetch("_body"))
-    assert_match("Hi #{user.first_name},", message.fetch("_mime_parts").fetch("text/plain").fetch("_body"))
+    assert_match("Hi,</p>", message.fetch("_mime_parts").fetch("text/html").fetch("_body"))
+    assert_match("Hi,", message.fetch("_mime_parts").fetch("text/plain").fetch("_body"))
 
     assert_match("Your API key for <strong>#{user.email}</strong> is:</p>", message.fetch("_mime_parts").fetch("text/html").fetch("_body"))
     assert_match("Your API key for #{user.email} is:", message.fetch("_mime_parts").fetch("text/plain").fetch("_body"))
@@ -200,7 +200,7 @@ class Test::Apis::V1::Users::TestCreateWelcomeEmail < Minitest::Test
     assert_match(user.api_key, message.fetch("_mime_parts").fetch("text/plain").fetch("_body"))
 
     # Subject
-    assert_equal(["Your API Umbrella API key"], message.fetch("Content").fetch("Headers").fetch("Subject"))
+    assert_equal(["Your API key"], message.fetch("Content").fetch("Headers").fetch("Subject"))
 
     # From
     assert_equal(["noreply@localhost"], message.fetch("Content").fetch("Headers").fetch("From"))
@@ -272,10 +272,10 @@ class Test::Apis::V1::Users::TestCreateWelcomeEmail < Minitest::Test
       assert_match(user.api_key, message.fetch("_mime_parts").fetch("text/plain").fetch("_body"))
 
       # Subject
-      assert_equal(["Your External Example API key"], message.fetch("Content").fetch("Headers").fetch("Subject"))
+      assert_equal(["Your API key"], message.fetch("Content").fetch("Headers").fetch("Subject"))
 
       # From
-      assert_equal(["Tester <test@example.com>"], message.fetch("Content").fetch("Headers").fetch("From"))
+      assert_equal(["test@example.com"], message.fetch("Content").fetch("Headers").fetch("From"))
 
       # URL Example
       assert_match("Here's an example", message.fetch("_mime_parts").fetch("text/html").fetch("_body"))
@@ -307,8 +307,8 @@ class Test::Apis::V1::Users::TestCreateWelcomeEmail < Minitest::Test
     message = messages.first
 
     # Greeting
-    assert_match("Hi Test&amp;First,</p>", message.fetch("_mime_parts").fetch("text/html").fetch("_body"))
-    assert_match("Hi Test&First,", message.fetch("_mime_parts").fetch("text/plain").fetch("_body"))
+    assert_match("Hi,</p>", message.fetch("_mime_parts").fetch("text/html").fetch("_body"))
+    assert_match("Hi,", message.fetch("_mime_parts").fetch("text/plain").fetch("_body"))
 
     assert_match("Your API key for <strong>foo&lt;script&gt;&amp;bar@example.com</strong> is:</p>", message.fetch("_mime_parts").fetch("text/html").fetch("_body"))
     assert_match("Your API key for foo<script>&bar@example.com is:", message.fetch("_mime_parts").fetch("text/plain").fetch("_body"))
