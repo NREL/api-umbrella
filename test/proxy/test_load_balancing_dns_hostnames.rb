@@ -13,7 +13,6 @@ class Test::Proxy::TestLoadBalancingDnsHostnames < Minitest::Test
       override_config_set({
         "dns_resolver" => {
           "nameservers" => ["[127.0.0.1]:#{$config["unbound"]["port"]}"],
-          "max_stale" => 0,
           "negative_ttl" => false,
         },
       })
@@ -29,7 +28,6 @@ class Test::Proxy::TestLoadBalancingDnsHostnames < Minitest::Test
     override_config({
       "dns_resolver" => {
         "nameservers" => ["[127.0.0.1]:#{$config["unbound"]["port"]}"],
-        "max_stale" => 0,
         "negative_ttl" => false,
       },
     }) do
@@ -67,7 +65,6 @@ class Test::Proxy::TestLoadBalancingDnsHostnames < Minitest::Test
     override_config({
       "dns_resolver" => {
         "nameservers" => ["[127.0.0.1]:#{$config["unbound"]["port"]}"],
-        "max_stale" => 0,
         "negative_ttl" => false,
       },
     }) do

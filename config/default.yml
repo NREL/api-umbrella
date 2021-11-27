@@ -210,9 +210,6 @@ log:
   destination: file
 dns_resolver:
   negative_ttl: 60
-  max_stale: 86400
-  timeout: 2000
-  retries: 3
   # This default could be revisited, but historically we didn't resolve AAAA
   # records for API backends, so for compatibility keep this disabled by
   # default. Enabling may also break certain hosting environments that still

@@ -336,11 +336,6 @@ local function build_envoy_cluster(cluster_name, options)
     },
     dns_lookup_family = "V4_PREFERRED",
     respect_dns_ttl = true,
-    -- dns_refresh_rate = "1s",
-    -- dns_failure_refresh_rate = {
-    --   base_interval = "1s",
-    --   max_interval = "2s",
-    -- },
     ignore_health_on_host_removal = true,
     load_assignment = {
       cluster_name = cluster_name,
@@ -352,6 +347,21 @@ local function build_envoy_cluster(cluster_name, options)
 
   if not config["dns_resolver"]["allow_ipv6"] then
     resource["dns_lookup_family"] = "V4_ONLY"
+  end
+
+  -- Use the "negative_ttl" time as Envoy's DNS refresh rate. Since we have
+  -- "respect_dns_ttl" enabled, successful DNS requests will use that refresh
+  -- rate instead of this one. So effectively the "dns_refresh_rate" should
+  -- only be used in failure situations, so we can use this to provide a TTL
+  -- for negative responses.
+  --
+  -- Envoy also supports the more explicit "dns_failure_refresh_rate" option,
+  -- but that includes an exponential backoff algorithm, with random jitter,
+  -- making it harder to test against. To to replicate how our "negative_ttl"
+  -- has worked under other DNS situations, we will use this "dns_refresh_rate"
+  -- (which doesn't do backoff or jitter).
+  if config["dns_resolver"]["negative_ttl"] then
+    resource["dns_refresh_rate"] = config["dns_resolver"]["negative_ttl"] .. "s"
   end
 
   local servers

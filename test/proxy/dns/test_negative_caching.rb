@@ -14,7 +14,6 @@ class Test::Proxy::Dns::TestNegativeCaching < Minitest::Test
       override_config_set({
         "dns_resolver" => {
           "nameservers" => ["[127.0.0.1]:#{$config["unbound"]["port"]}"],
-          "max_stale" => 0,
           "negative_ttl" => NEGATIVE_TTL,
         },
       })
@@ -40,7 +39,6 @@ class Test::Proxy::Dns::TestNegativeCaching < Minitest::Test
     override_config({
       "dns_resolver" => {
         "nameservers" => ["[127.0.0.1]:#{$config["unbound"]["port"]}"],
-        "max_stale" => 0,
         "negative_ttl" => negative_ttl,
       },
     }) do

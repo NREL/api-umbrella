@@ -20,7 +20,6 @@ class Test::Proxy::Dns::TestCustomServer < Minitest::Test
       override_config_set({
         "dns_resolver" => {
           "nameservers" => ["[127.0.0.1]:#{$config["unbound"]["port"]}"],
-          "max_stale" => 0,
           "negative_ttl" => false,
         },
       })
@@ -85,7 +84,7 @@ class Test::Proxy::Dns::TestCustomServer < Minitest::Test
     end
   end
 
-  def test_failed_host_down_after_ttl_expires
+  def test_disappearing_host_records_keeps_stale_indefinitely
     ttl = 4
     prepend_api_backends([
       {
@@ -100,19 +99,19 @@ class Test::Proxy::Dns::TestCustomServer < Minitest::Test
         :code => 200,
         :local_interface_ip => "127.0.0.1",
       })
-      start_time = Time.now.utc
 
       set_dns_records([])
-      wait_for_response("/#{unique_test_id}/", {
-        :code => 503,
-        :body => /no healthy upstream/,
-      })
-      duration = Time.now.utc - start_time
-      min_duration = ttl - TTL_BUFFER_NEG
-      max_duration = ttl + TTL_BUFFER_POS
-      assert_operator(min_duration, :>, 0)
-      assert_operator(duration, :>=, min_duration)
-      assert_operator(duration, :<, max_duration)
+
+      request_count = 0
+      run_until = Time.now + (ttl * 2) + TTL_BUFFER_POS
+      while Time.now <= run_until
+        response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/", http_options)
+        request_count += 1
+        assert_response_code(200, response)
+        sleep 0.1
+      end
+
+      assert_operator(request_count, :>, 10)
     end
   end
 
