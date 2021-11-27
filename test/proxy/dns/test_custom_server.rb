@@ -43,7 +43,7 @@ class Test::Proxy::Dns::TestCustomServer < Minitest::Test
     ]) do
       response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/", http_options)
       assert_response_code(503, response)
-      assert_match("No server is available", response.body)
+      assert_match("no healthy upstream", response.body)
 
       set_dns_records(["#{unique_test_hostname} 60 A 127.0.0.1"])
 
@@ -105,7 +105,7 @@ class Test::Proxy::Dns::TestCustomServer < Minitest::Test
       set_dns_records([])
       wait_for_response("/#{unique_test_id}/", {
         :code => 503,
-        :body => /No server is available/,
+        :body => /no healthy upstream/,
       })
       duration = Time.now.utc - start_time
       min_duration = ttl - TTL_BUFFER_NEG
@@ -161,6 +161,7 @@ class Test::Proxy::Dns::TestCustomServer < Minitest::Test
       },
     ]) do
       records = @local_interface_ips.map { |ip| "#{unique_test_hostname} 60 A #{ip}" }
+      puts records.inspect
       set_dns_records(records)
       wait_for_response("/#{unique_test_id}/", {
         :code => 200,

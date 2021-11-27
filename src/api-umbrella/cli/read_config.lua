@@ -21,7 +21,6 @@ local url = require "socket.url"
 
 local chmod = stat.chmod
 local chown = unistd.chown
-local re_gsub = ngx.re.gsub
 local split = plutils.split
 local strip = stringx.strip
 local url_parse = url.parse

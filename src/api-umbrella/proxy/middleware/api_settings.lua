@@ -47,8 +47,8 @@ return function(api)
           end
 
           break
-        elseif match_err then
-          ngx.log(ngx.ERR, "regex error: ", match_err)
+        elseif find_err then
+          ngx.log(ngx.ERR, "regex error: ", find_err)
         end
       end
     end

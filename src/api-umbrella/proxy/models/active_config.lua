@@ -19,6 +19,7 @@ local xpcall_error_handler = require "api-umbrella.utils.xpcall_error_handler"
 local append_array = utils.append_array
 local cache_computed_settings = utils.cache_computed_settings
 local deepcopy = tablex.deepcopy
+local re_find = ngx.re.find
 local safe_set_packed = packed_shared_dict.safe_set_packed
 local size = tablex.size
 local split = plutils.split
@@ -325,6 +326,139 @@ local function get_combined_website_backends(file_config, db_config)
   return all_website_backends
 end
 
+local function build_envoy_cluster(cluster_name, options)
+  local resource = {
+    ["@type"] = "type.googleapis.com/envoy.config.cluster.v3.Cluster",
+    name = cluster_name,
+    type = "STRICT_DNS",
+    dns_resolution_config = {
+      resolvers = config["dns_resolver"]["_nameservers_envoy"],
+    },
+    dns_lookup_family = "V4_PREFERRED",
+    respect_dns_ttl = true,
+    -- dns_refresh_rate = "1s",
+    -- dns_failure_refresh_rate = {
+    --   base_interval = "1s",
+    --   max_interval = "2s",
+    -- },
+    ignore_health_on_host_removal = true,
+    load_assignment = {
+      cluster_name = cluster_name,
+      endpoints = {
+        lb_endpoints = {},
+      },
+    },
+  }
+
+  if not config["dns_resolver"]["allow_ipv6"] then
+    resource["dns_lookup_family"] = "V4_ONLY"
+  end
+
+  local servers
+  local tls_sni
+
+  if options["api_backend"] then
+    if options["api_backend"]["balance_algorithm"] == "least_conn" then
+      resource["lb_policy"] = "LEAST_REQUEST"
+    elseif options["api_backend"]["balance_algorithm"] == "round_robin" then
+      resource["lb_policy"] = "ROUND_ROBIN"
+    elseif options["api_backend"]["balance_algorithm"] == "ip_hash" then
+      resource["lb_policy"] = "RING_HASH"
+    end
+
+    servers = options["api_backend"]["servers"]
+
+    if options["api_backend"]["backend_protocol"] == "https" then
+      tls_sni =  options["api_backend"]["backend_host"]
+    end
+  end
+
+  if options["website_backend"] then
+    resource["lb_policy"] = "LEAST_REQUEST"
+
+    servers = {
+      {
+        host = options["website_backend"]["server_host"],
+        port = options["website_backend"]["server_port"]
+      },
+    }
+
+    if options["website_backend"]["backend_protocol"] == "https" then
+      tls_sni = options["website_backend"]["_backend_host"]
+    end
+  end
+
+  if servers then
+    local any_servers_ipv6 = false
+    local any_servers_hostname = false
+
+    for _, server in ipairs(servers) do
+      local host = server["host"]
+      if string.find(host, ":", nil, true) then
+        any_servers_ipv6 = true
+        server["_host_type"] = "ipv6"
+      else
+        local find_from, _, find_err = re_find(host, [[^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$]], "jo")
+        if find_err then
+          ngx.log(ngx.ERR, "regex error: ", find_err)
+        end
+
+        if find_from then
+          server["_host_type"] = "ipv4"
+        else
+          any_servers_hostname = true
+          server["_host_type"] = "hostname"
+        end
+      end
+    end
+
+    -- Envoy does not currently support a mixture of IPv6 and hostnames:
+    --
+    -- https://github.com/envoyproxy/envoy/issues/18606
+    -- https://github.com/envoyproxy/envoy/pull/18945
+    --
+    -- If only IP addresses are detected, then use Envoy's "STATIC" mode to
+    -- properly connect to IPv6 addresses. But if there is a mixture of IPv6
+    -- and hostnames, ignore the IPv6 addresses, and just use the hostnames as
+    -- a temporary workaround (but hopefully we can revisit this once this is
+    -- fixed in Envoy).
+    if any_servers_ipv6 then
+      if not any_servers_hostname then
+        resource["type"] = "STATIC"
+      end
+    end
+
+    for _, server in ipairs(servers) do
+      if any_servers_ipv6 and any_servers_hostname and server["_host_type"] == "ipv6" then
+        ngx.log(ngx.WARN, "API backend '" .. resource["name"] .. "' has a mixture of IPv6 and non-IPv6 servers. This configuration is not yet supported. Ignoring IPv6 servers.")
+      else
+        table.insert(resource["load_assignment"]["endpoints"]["lb_endpoints"], {
+          endpoint = {
+            address = {
+              socket_address = {
+                address = server["host"],
+                port_value = server["port"],
+              },
+            },
+          },
+        })
+      end
+    end
+  end
+
+  if tls_sni then
+    resource["transport_socket"] = {
+      name = "envoy.transport_sockets.tls",
+      typed_config = {
+        ["@type"] = "type.googleapis.com/envoy.extensions.transport_sockets.tls.v3.UpstreamTlsContext",
+        sni = tls_sni,
+      },
+    }
+  end
+
+  return resource
+end
+
 local function set_envoy_config(active_config, config_version)
   local virtual_hosts = {}
 
@@ -335,56 +469,10 @@ local function set_envoy_config(active_config, config_version)
   }
 
   for _, api_backend in ipairs(active_config["apis"]) do
-    local cluster_name = "api-backend-cluster-" .. api_backend["id"]
-    local resource = {
-      ["@type"] = "type.googleapis.com/envoy.config.cluster.v3.Cluster",
-      name = cluster_name,
-      type = "STRICT_DNS",
-      dns_resolution_config = {
-        resolvers = config["dns_resolver"]["_nameservers_envoy"],
-      },
-      respect_dns_ttl = true,
-      ignore_health_on_host_removal = true,
-      load_assignment = {
-        cluster_name = cluster_name,
-        endpoints = {
-          lb_endpoints = {},
-        },
-      },
-    }
-
-    if api_backend["balance_algorithm"] == "least_conn" then
-      resource["lb_policy"] = "LEAST_REQUEST"
-    elseif api_backend["balance_algorithm"] == "round_robin" then
-      resource["lb_policy"] = "ROUND_ROBIN"
-    elseif api_backend["balance_algorithm"] == "ip_hash" then
-      resource["lb_policy"] = "RING_HASH"
-    end
-
-    for _, server in ipairs(api_backend["servers"]) do
-      table.insert(resource["load_assignment"]["endpoints"]["lb_endpoints"], {
-        endpoint = {
-          address = {
-            socket_address = {
-              address = server["host"],
-              port_value = server["port"],
-            },
-          },
-        },
-      })
-    end
-
-    if api_backend["backend_protocol"] == "https" then
-      resource["transport_socket"] = {
-        name = "envoy.transport_sockets.tls",
-        typed_config = {
-          ["@type"] = "type.googleapis.com/envoy.extensions.transport_sockets.tls.v3.UpstreamTlsContext",
-          sni = api_backend["backend_host"],
-        },
-      }
-    end
-
-    table.insert(cds["resources"], resource)
+    local cluster_resource = build_envoy_cluster("api-backend-cluster-" .. api_backend["id"], {
+      api_backend = api_backend,
+    })
+    table.insert(cds["resources"], cluster_resource)
 
     table.insert(virtual_hosts, {
       name = "api-backend-" .. api_backend["id"],
@@ -394,7 +482,7 @@ local function set_envoy_config(active_config, config_version)
           prefix = "/",
         },
         route = {
-          cluster = cluster_name,
+          cluster = cluster_resource["name"],
           host_rewrite_header = "X-Api-Umbrella-Backend-Host",
         },
       },
@@ -414,47 +502,10 @@ local function set_envoy_config(active_config, config_version)
   end
 
   for _, website_backend in ipairs(active_config["websites"]) do
-    local cluster_name = "website-backend-cluster-" .. website_backend["id"]
-    local resource = {
-      ["@type"] = "type.googleapis.com/envoy.config.cluster.v3.Cluster",
-      name = cluster_name,
-      type = "STRICT_DNS",
-      dns_resolution_config = {
-        resolvers = config["dns_resolver"]["_nameservers_envoy"],
-      },
-      respect_dns_ttl = true,
-      ignore_health_on_host_removal = true,
-      lb_policy = "LEAST_REQUEST",
-      load_assignment = {
-        cluster_name = cluster_name,
-        endpoints = {
-          lb_endpoints = {
-            {
-              endpoint = {
-                address = {
-                  socket_address = {
-                    address = website_backend["server_host"],
-                    port_value = website_backend["server_port"],
-                  },
-                },
-              },
-            },
-          },
-        },
-      },
-    }
-
-    if website_backend["backend_protocol"] == "https" then
-      resource["transport_socket"] = {
-        name = "envoy.transport_sockets.tls",
-        typed_config = {
-          ["@type"] = "type.googleapis.com/envoy.extensions.transport_sockets.tls.v3.UpstreamTlsContext",
-          sni = website_backend["_backend_host"],
-        },
-      }
-    end
-
-    table.insert(cds["resources"], resource)
+    local cluster_resource = build_envoy_cluster("website-backend-cluster-" .. website_backend["id"], {
+      website_backend = website_backend,
+    })
+    table.insert(cds["resources"], cluster_resource)
 
     table.insert(virtual_hosts, {
       name = "website-backend-" .. website_backend["id"],
@@ -464,7 +515,7 @@ local function set_envoy_config(active_config, config_version)
           prefix = "/",
         },
         route = {
-          cluster = cluster_name,
+          cluster = cluster_resource["name"],
           host_rewrite_header = "X-Api-Umbrella-Backend-Host",
         },
       },
@@ -546,7 +597,7 @@ local function set_envoy_config(active_config, config_version)
 
   local done = false
   local stats_body
-  for i = 1, 50 do
+  for _ = 1, 50 do
     local res, err = httpc:request({
       method = "GET",
       path = "/stats?format=json&filter=\\.version_text$",

@@ -31,11 +31,11 @@ class Test::Proxy::Dns::TestNegativeCaching < Minitest::Test
   end
 
   def test_negative_ttl_can_be_configured
-    negative_ttl = 3
+    negative_ttl = 2
 
     # Ensure this negative TTL is different enough than the default that we can
     # distinguish the results in tests.
-    assert_operator(negative_ttl, :<=, (NEGATIVE_TTL - TTL_BUFFER_POS).floor)
+    assert_operator(negative_ttl + TTL_BUFFER_POS, :<, NEGATIVE_TTL - TTL_BUFFER_NEG)
 
     override_config({
       "dns_resolver" => {
@@ -62,8 +62,8 @@ class Test::Proxy::Dns::TestNegativeCaching < Minitest::Test
       # Make an initial request, which we expect to not succeed, since the
       # hostname is bad.
       wait_for_response("/#{unique_test_id}/", {
-        :code => 500,
-        :body => /Unknown Host/,
+        :code => 503,
+        :body => /no healthy upstream/,
       })
 
       # The negative TTL caching begins after TrafficServer sees the first
@@ -77,8 +77,8 @@ class Test::Proxy::Dns::TestNegativeCaching < Minitest::Test
       # Ensure that negative caching is in place and the hostname is still not
       # resolving (despite the DNS being installed now).
       wait_for_response("/#{unique_test_id}/", {
-        :code => 500,
-        :body => /Unknown Host/,
+        :code => 503,
+        :body => /no healthy upstream/,
       })
 
       # Wait for the successful response to resolve once the negative TTL has
@@ -91,6 +91,7 @@ class Test::Proxy::Dns::TestNegativeCaching < Minitest::Test
       # Sanity check the results to ensure the results fit within the expected
       # negative TTL values.
       duration = Time.now.utc - start_time
+      puts duration.inspect
       min_duration = negative_ttl - TTL_BUFFER_NEG
       max_duration = negative_ttl + TTL_BUFFER_POS
       assert_operator(min_duration, :>, 0)

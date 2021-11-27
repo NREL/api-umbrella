@@ -22,6 +22,7 @@ files["templates/etc/trafficserver"] = {
     "TS_LUA_CACHE_LOOKUP_HIT_FRESH",
     "TS_LUA_CACHE_LOOKUP_HIT_STALE",
     "TS_LUA_REMAP_DID_REMAP",
+    "__init__",
     "do_global_read_request",
     "do_global_read_response",
     "do_global_send_request",
