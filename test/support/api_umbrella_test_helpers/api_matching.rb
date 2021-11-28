@@ -14,7 +14,7 @@ module ApiUmbrellaTestHelpers
       assert_response_code(200, response)
       assert_equal("application/json", response.headers["content-type"])
       data = MultiJson.load(response.body)
-      assert_equal(backend, data["headers"]["x-backend"])
+      assert_equal(backend, data["headers"]["x-test-backend"])
     end
 
     def assert_backend_host_path_match(host, path, response)

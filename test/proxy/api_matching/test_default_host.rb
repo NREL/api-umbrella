@@ -16,7 +16,7 @@ class Test::Proxy::ApiMatching::TestDefaultHost < Minitest::Test
           :url_matches => [{ :frontend_prefix => "/", :backend_prefix => "/" }],
           :settings => {
             :headers => [
-              { :key => "X-Backend", :value => "host-default" },
+              { :key => "X-Test-Backend", :value => "host-default" },
             ],
           },
         },
@@ -27,7 +27,7 @@ class Test::Proxy::ApiMatching::TestDefaultHost < Minitest::Test
           :url_matches => [{ :frontend_prefix => "/", :backend_prefix => "/" }],
           :settings => {
             :headers => [
-              { :key => "X-Backend", :value => "host-other" },
+              { :key => "X-Test-Backend", :value => "host-other" },
             ],
           },
         },
