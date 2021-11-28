@@ -478,6 +478,17 @@ local function set_envoy_config(active_config, config_version)
     },
   }
 
+  local request_headers_to_remove = {
+    "x-api-umbrella-backend-authorization",
+    "x-api-umbrella-backend-host",
+    "x-envoy-expected-rq-timeout-ms",
+    "x-envoy-internal",
+  }
+
+  local response_headers_to_remove = {
+    "x-envoy-upstream-service-time",
+  }
+
   for _, api_backend in ipairs(active_config["apis"]) do
     local cluster_resource = build_envoy_cluster("api-backend-cluster-" .. api_backend["id"], {
       api_backend = api_backend,
@@ -493,21 +504,20 @@ local function set_envoy_config(active_config, config_version)
         },
         route = {
           cluster = cluster_resource["name"],
-          host_rewrite_header = "X-Api-Umbrella-Backend-Host",
+          host_rewrite_header = "x-api-umbrella-backend-host",
         },
       },
       request_headers_to_add = {
         {
           header = {
             key = "Authorization",
-            value = "%REQ(X-Api-Umbrella-Backend-Authorization)%",
+            value = "%REQ(x-api-umbrella-backend-authorization)%",
           },
           append = false,
         },
       },
-      request_headers_to_remove = {
-        "X-Api-Umbrella-Backend-Authorization",
-      },
+      request_headers_to_remove = request_headers_to_remove,
+      response_headers_to_remove = response_headers_to_remove,
     })
   end
 
@@ -526,9 +536,11 @@ local function set_envoy_config(active_config, config_version)
         },
         route = {
           cluster = cluster_resource["name"],
-          host_rewrite_header = "X-Api-Umbrella-Backend-Host",
+          host_rewrite_header = "x-api-umbrella-backend-host",
         },
       },
+      request_headers_to_remove = request_headers_to_remove,
+      response_headers_to_remove = response_headers_to_remove,
     })
   end
 
@@ -554,6 +566,10 @@ local function set_envoy_config(active_config, config_version)
                 typed_config = {
                   ["@type"] = "type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager",
                   stat_prefix = "router",
+                  common_http_protocol_options = {
+                    max_headers_count = 200,
+                  },
+                  generate_request_id = false,
                   http_filters = {
                     {
                       name = "envoy.filters.http.router",
@@ -565,6 +581,12 @@ local function set_envoy_config(active_config, config_version)
                       resource_api_version = "V3",
                     },
                   },
+
+                  -- Enable this option, since Envoy is sitting behind other
+                  -- proxies.
+                  -- https://www.envoyproxy.io/docs/envoy/latest/configuration/best_practices/level_two#best-practices-level2
+                  -- https://www.envoyproxy.io/docs/envoy/latest/api-v3/extensions/filters/network/http_connection_manager/v3/http_connection_manager.proto#envoy-v3-api-field-extensions-filters-network-http-connection-manager-v3-httpconnectionmanager-stream-error-on-invalid-http-message
+                  stream_error_on_invalid_http_message = true,
                 },
               },
             },

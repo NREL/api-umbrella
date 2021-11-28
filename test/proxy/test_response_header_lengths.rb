@@ -61,4 +61,34 @@ class Test::Proxy::TestResponseHeaderLengths < Minitest::Test
 
     assert_response_code(502, response)
   end
+
+  def test_accepts_below_max_response_headers_count
+    # Envoy's maximum number of response HTTP headers is set to 200. But due to
+    # other headers that may be part of the original response (eg, "Date",
+    # "Transfer-Encoding"), the actual limit of custom headers sent by our API
+    # backend may be lower. Plus, the nginx layer may add other headers to the
+    # response, so the exact number of headers may also vary, which is why
+    # we're leaving this imprecise.
+    response = Typhoeus.get("http://127.0.0.1:9080/api/response-headers-length/", http_options.deep_merge({
+      :params => {
+        :header_length => 2,
+        :header_count => 196,
+      },
+    }))
+
+    assert_response_code(200, response)
+    assert_equal(203, response.headers.length)
+  end
+
+  def test_rejects_above_max_response_headers_count
+    response = Typhoeus.get("http://127.0.0.1:9080/api/response-headers-length/", http_options.deep_merge({
+      :params => {
+        :header_length => 2,
+        :header_count => 197,
+      },
+    }))
+
+    assert_response_code(502, response)
+    assert_match("upstream connect error or disconnect/reset before headers. reset reason: protocol error", response.body)
+  end
 end

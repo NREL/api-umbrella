@@ -39,12 +39,23 @@ class Test::Proxy::TestRequestHeaderLengths < Minitest::Test
     assert_response_code(400, response)
   end
 
-  def test_no_limit_on_number_of_headers
-    response = make_request_with_header_lengths(:size => 12000, :line_length => 24, :num_headers => 150)
+  def test_accepts_below_max_request_headers_count
+    # Envoy's maximum number of request HTTP headers is set to 200. But due to
+    # other headers API Umbrella adds, the actual external limit may be lower
+    # (the exact number of headers may also vary, which is why we're leaving
+    # this imprecise).
+    response = make_request_with_header_lengths(:size => 12000, :line_length => 24, :num_headers => 195)
 
     assert_response_code(200, response)
     data = MultiJson.load(response.body)
-    assert_operator(data["headers"].length, :>=, 150)
+    assert_equal(data["headers"].length, 200)
+  end
+
+  def test_rejects_above_max_request_headers_count
+    response = make_request_with_header_lengths(:size => 12000, :line_length => 24, :num_headers => 196)
+
+    assert_response_code(431, response)
+    assert_match("Request Header Fields Too Large", response.body)
   end
 
   private
