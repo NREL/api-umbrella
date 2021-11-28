@@ -469,24 +469,30 @@ local function build_envoy_cluster(cluster_name, options)
   return resource
 end
 
+local function build_envoy_virtual_host(options)
+  local virtual_host = {
+    name = options["domain"],
+    domains = { options["domain"] },
+    routes = {
+      match = {
+        prefix = "/",
+      },
+      route = {
+        cluster = options["cluster"],
+        host_rewrite_header = "x-api-umbrella-backend-host",
+      },
+    },
+  }
+
+  return virtual_host
+end
+
 local function set_envoy_config(active_config, config_version)
   local virtual_hosts = {}
 
   local cds = {
     version_info = config_version,
-    resources = {
-    },
-  }
-
-  local request_headers_to_remove = {
-    "x-api-umbrella-backend-authorization",
-    "x-api-umbrella-backend-host",
-    "x-envoy-expected-rq-timeout-ms",
-    "x-envoy-internal",
-  }
-
-  local response_headers_to_remove = {
-    "x-envoy-upstream-service-time",
+    resources = {},
   }
 
   for _, api_backend in ipairs(active_config["apis"]) do
@@ -495,30 +501,11 @@ local function set_envoy_config(active_config, config_version)
     })
     table.insert(cds["resources"], cluster_resource)
 
-    table.insert(virtual_hosts, {
-      name = "api-backend-" .. api_backend["id"],
-      domains = { "api-backend-" .. api_backend["id"] },
-      routes = {
-        match = {
-          prefix = "/",
-        },
-        route = {
-          cluster = cluster_resource["name"],
-          host_rewrite_header = "x-api-umbrella-backend-host",
-        },
-      },
-      request_headers_to_add = {
-        {
-          header = {
-            key = "Authorization",
-            value = "%REQ(x-api-umbrella-backend-authorization)%",
-          },
-          append = false,
-        },
-      },
-      request_headers_to_remove = request_headers_to_remove,
-      response_headers_to_remove = response_headers_to_remove,
+    local virtual_host = build_envoy_virtual_host({
+      domain = "api-backend-" .. api_backend["id"],
+      cluster = cluster_resource["name"],
     })
+    table.insert(virtual_hosts, virtual_host)
   end
 
   for _, website_backend in ipairs(active_config["websites"]) do
@@ -527,21 +514,11 @@ local function set_envoy_config(active_config, config_version)
     })
     table.insert(cds["resources"], cluster_resource)
 
-    table.insert(virtual_hosts, {
-      name = "website-backend-" .. website_backend["id"],
-      domains = { "website-backend-" .. website_backend["id"] },
-      routes = {
-        match = {
-          prefix = "/",
-        },
-        route = {
-          cluster = cluster_resource["name"],
-          host_rewrite_header = "x-api-umbrella-backend-host",
-        },
-      },
-      request_headers_to_remove = request_headers_to_remove,
-      response_headers_to_remove = response_headers_to_remove,
+    local virtual_host = build_envoy_virtual_host({
+      domain = "website-backend-" .. website_backend["id"],
+      cluster = cluster_resource["name"],
     })
+    table.insert(virtual_hosts, virtual_host)
   end
 
   local rds_path = path_join(config["run_dir"], "envoy/rds.json")
@@ -604,6 +581,20 @@ local function set_envoy_config(active_config, config_version)
     resources = {
       ["@type"] = "type.googleapis.com/envoy.config.route.v3.RouteConfiguration",
       virtual_hosts = virtual_hosts,
+      request_headers_to_remove = {
+        "x-envoy-expected-rq-timeout-ms",
+        "x-envoy-internal",
+
+        -- Note: This backend host header isn't necessary for backends to
+        -- receive and ideally we'd strip it. However, removing it breaks our
+        -- ability to use it int he "host_rewrite_header" option. So we will
+        -- pass it along to API backends unless Envoy allows for better
+        -- ordering of this in the future.
+        -- "x-api-umbrella-backend-host",
+      },
+      response_headers_to_remove = {
+        "x-envoy-upstream-service-time",
+      },
     }
   }
 
