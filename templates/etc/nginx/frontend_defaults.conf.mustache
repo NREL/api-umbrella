@@ -61,3 +61,5 @@ more_clear_input_headers X-Api-Umbrella-Backend-Authorization;
     proxy_pass http://127.0.0.1:{{ember_server.port}};
   }
 {{/_development_env?}}
+
+merge_slashes off;

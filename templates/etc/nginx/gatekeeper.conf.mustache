@@ -15,7 +15,6 @@ proxy_send_timeout {{nginx._initial_proxy_send_timeout}}s;
 gunzip on;
 
 set $proxy_host_header "";
-set $proxy_request_uri "";
 
 rewrite_by_lua_file '{{_src_root_dir}}/src/api-umbrella/proxy/hooks/rewrite.lua';
 access_by_lua_file '{{_src_root_dir}}/src/api-umbrella/proxy/hooks/access.lua';
@@ -33,6 +32,6 @@ proxy_set_header Connection "";
 proxy_set_header Host $proxy_host_header;
 proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
 proxy_set_header X-Api-Umbrella-Real-Ip $remote_addr;
-proxy_pass http://api_umbrella_trafficserver_backend$proxy_request_uri;
+proxy_pass http://api_umbrella_trafficserver_backend;
 
 proxy_redirect off;

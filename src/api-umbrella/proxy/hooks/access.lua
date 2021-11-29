@@ -101,5 +101,3 @@ err = rewrite_request(user, api, settings)
 if err then
   return error_handler(err, settings)
 end
-
-ngx.var.proxy_request_uri = ngx.ctx.request_uri

@@ -212,13 +212,10 @@ function _M.set_uri(new_path, new_args)
   local ngx_ctx = ngx.ctx
 
   if new_path then
-    -- Update the cached variable, which is used for ngx.ctx.request_uri and
-    -- eventually set as the URL in proxy_pass (via $proxy_request_uri).
-    --
-    -- Note that we can't use ngx.req.set_uri, since it can't be used to set
-    -- and proxy URLs with special characters (like spaces):
-    -- https://github.com/openresty/lua-nginx-module/issues/1676
-    ngx_ctx.uri_path = new_path
+    ngx.req.set_uri(new_path)
+
+    -- Update the cached variable.
+    ngx_ctx.uri_path = ngx.var.uri
   end
 
   if new_args then

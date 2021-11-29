@@ -8,3 +8,4 @@ proxy_send_timeout {{nginx._initial_proxy_send_timeout}}s;
 proxy_http_version 1.1;
 proxy_set_header Connection "";
 proxy_set_header Host $host;
+merge_slashes off;

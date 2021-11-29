@@ -1,6 +1,7 @@
 local api_matcher = require "api-umbrella.proxy.middleware.api_matcher"
 local config = require "api-umbrella.proxy.models.file_config"
 local error_handler = require "api-umbrella.proxy.error_handler"
+local escape_uri_non_ascii = require "api-umbrella.utils.escape_uri_non_ascii"
 local host_normalize = require "api-umbrella.utils.host_normalize"
 local packed_shared_dict = require "api-umbrella.utils.packed_shared_dict"
 local redirect_matches_to_https = require "api-umbrella.utils.redirect_matches_to_https"
@@ -58,7 +59,6 @@ end
 -- Cache various "ngx.var" lookups that are repeated throughout the stack,
 -- so they don't allocate duplicate memory during the request, and since
 -- ngx.var lookups are apparently somewhat expensive.
-ngx.ctx.args = ngx_var.args
 ngx.ctx.arg_api_key = ngx_var.arg_api_key
 ngx.ctx.host = real_host
 ngx.ctx.host_normalized = host_normalize(real_host)
@@ -69,22 +69,22 @@ ngx.ctx.remote_addr = ngx_var.remote_addr
 ngx.ctx.remote_user = ngx_var.remote_user
 ngx.ctx.request_method = string.lower(ngx.var.request_method)
 
+local args = ngx_var.args
+if args then
+  args = escape_uri_non_ascii(args)
+end
+ngx.ctx.args = args
+
 local request_uri = ngx_var.request_uri
 ngx.ctx.original_request_uri = request_uri
 ngx.ctx.request_uri = request_uri
 
--- Extract the path portion of the URL from request_uri (instead of
--- ngx.var.uri) so it's escaped as passed in (ngx.var.uri is unescaped).
-local uri_path, _, gsub_err = ngx.re.gsub(request_uri, [[\?.*]], "", "jo")
-if gsub_err then
-  ngx.log(ngx.ERR, "regex error: ", gsub_err)
-end
+local uri_path = ngx_var.uri
 ngx.ctx.original_uri_path = uri_path
 ngx.ctx.uri_path = uri_path
 
 local function route()
   ngx.var.proxy_host_header = ngx.ctx.proxy_host
-  ngx.var.proxy_request_uri = ngx.ctx.request_uri
   ngx.req.set_header("X-Api-Umbrella-Backend-Host", ngx.ctx.backend_host)
   ngx.req.set_header("X-Forwarded-Proto", ngx.ctx.protocol)
   ngx.req.set_header("X-Forwarded-Port", ngx.ctx.port)
