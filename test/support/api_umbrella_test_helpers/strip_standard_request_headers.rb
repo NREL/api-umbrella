@@ -10,6 +10,7 @@ module ApiUmbrellaTestHelpers
         "user-agent",
         "via",
         "x-api-key",
+        "x-api-umbrella-backend-host",
         "x-api-umbrella-real-ip",
         "x-api-umbrella-request-id",
         "x-api-user-id",
