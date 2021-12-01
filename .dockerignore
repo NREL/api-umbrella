@@ -29,5 +29,6 @@ docs/_build
 src/api-umbrella/admin-ui/dist
 src/api-umbrella/admin-ui/tmp
 src/api-umbrella/admin-ui/node_modules
+src/api-umbrella/admin-ui/*.log
 src/api-umbrella/admin-ui/bower_components
 src/api-umbrella/admin-ui/.eslintcache

@@ -1,92 +1,94 @@
-<ErrorMessages @model={{this.model}} />
+<div ...attributes>
+  <ErrorMessages @model={{this.model}} />
 
-<form {{action "submit" on="submit"}}>
-  <FieldsFor @model={{this.model}} @style="horizontal" as |f|>
-    <fieldset class="form-horizontal condensed">
-      <legend>User Info</legend>
+  <form {{on "submit" this.submitForm}}>
+    <FieldsFor @model={{this.model}} @style="horizontal" as |f|>
+      <fieldset class="form-horizontal condensed">
+        <legend>User Info</legend>
 
-      {{#if this.currentAdmin.permissions.admin_manage}}
-        {{f.text-field "username" label=(t "mongoid.attributes.admin.username")}}
-        {{#unless this.session.data.authenticated.username_is_email}}
-          {{f.text-field "email" label=(t "mongoid.attributes.admin.email")}}
-        {{/unless}}
-      {{else}}
-        {{f.static-field "username" label=(t "mongoid.attributes.admin.username")}}
-        {{#unless this.session.data.authenticated.username_is_email}}
-          {{f.static-field "email" label=(t "mongoid.attributes.admin.email")}}
-        {{/unless}}
-      {{/if}}
-      {{#if this.model.name}}
-        {{f.static-field "name" label=(t "mongoid.attributes.admin.name")}}
-      {{/if}}
-      {{#if this.currentAdmin.permissions.admin_manage}}
-        {{f.textarea-field "notes" label=(t "mongoid.attributes.admin.notes")}}
-        {{#if this.model.id}}
-          {{#unless this.model.currentSignInAt}}
-            {{f.checkbox-field "sendInviteEmail" label="Resend invite email"}}
+        {{#if this.currentAdmin.permissions.admin_manage}}
+          {{f.text-field "username" label=(t "mongoid.attributes.admin.username")}}
+          {{#unless this.session.data.authenticated.username_is_email}}
+            {{f.text-field "email" label=(t "mongoid.attributes.admin.email")}}
           {{/unless}}
         {{else}}
-          {{f.checkbox-field "sendInviteEmail" label="Send invite email"}}
+          {{f.static-field "username" label=(t "mongoid.attributes.admin.username")}}
+          {{#unless this.session.data.authenticated.username_is_email}}
+            {{f.static-field "email" label=(t "mongoid.attributes.admin.email")}}
+          {{/unless}}
         {{/if}}
-      {{else}}
-        {{f.static-field "notes" label=(t "mongoid.attributes.admin.notes")}}
-      {{/if}}
-    </fieldset>
-
-    {{#if this.model.authenticationToken}}
-      {{#if this.session.data.authenticated.local_auth_enabled}}
+        {{#if this.model.name}}
+          {{f.static-field "name" label=(t "mongoid.attributes.admin.name")}}
+        {{/if}}
         {{#if this.currentAdmin.permissions.admin_manage}}
-          <fieldset class="form-horizontal condensed">
-            <legend>{{t "devise.passwords.edit.change_your_password"}}</legend>
-
-            {{f.password-field "currentPassword" label=(t "mongoid.attributes.admin.current_password")}}
-            {{f.password-field "password" label=(t "devise.passwords.edit.new_password") hint=(t "devise.passwords.password_length_hint" min=this.session.data.authenticated.password_length_min)}}
-            {{f.password-field "passwordConfirmation" label=(t "devise.passwords.edit.confirm_new_password")}}
-          </fieldset>
-        {{/if}}
-      {{/if}}
-
-      <fieldset class="form-horizontal condensed">
-        <legend>Admin API Access</legend>
-
-        {{#f.static-field "authenticationToken" label=(t "mongoid.attributes.admin.authentication_token")}}
-          <span class="api-key">{{this.model.authenticationToken}}</span>
-        {{/f.static-field}}
-      </fieldset>
-    {{/if}}
-
-    {{#if this.currentAdmin.permissions.admin_manage}}
-      <fieldset class="form-horizontal condensed">
-        <legend>Permissions</legend>
-
-        {{f.checkboxes-field "groupIds" label=(t "mongoid.attributes.admin.groups") options=this.groupOptions}}
-        {{#if this.currentAdmin.superuser}}
-          {{f.checkbox-field "superuser" label=(t "mongoid.attributes.admin.superuser")}}
+          {{f.textarea-field "notes" label=(t "mongoid.attributes.admin.notes")}}
+          {{#if this.model.id}}
+            {{#unless this.model.currentSignInAt}}
+              {{f.checkbox-field "sendInviteEmail" label="Resend invite email"}}
+            {{/unless}}
+          {{else}}
+            {{f.checkbox-field "sendInviteEmail" label="Send invite email"}}
+          {{/if}}
+        {{else}}
+          {{f.static-field "notes" label=(t "mongoid.attributes.admin.notes")}}
         {{/if}}
       </fieldset>
-    {{/if}}
 
-    <div class="row">
-      <div class="col-sm-6">
-        {{#if this.currentAdmin.permissions.admin_manage}}
-          <button type="submit" class="btn btn-lg btn-primary save-button"><span class="btn-label">Save</span><span class="btn-loading-label">{{fa-icon "sync-alt" spin=true}}Saving...</span></button>
+      {{#if this.model.authenticationToken}}
+        {{#if this.session.data.authenticated.local_auth_enabled}}
+          {{#if this.currentAdmin.permissions.admin_manage}}
+            <fieldset class="form-horizontal condensed">
+              <legend>{{t "devise.passwords.edit.change_your_password"}}</legend>
+
+              {{f.password-field "currentPassword" label=(t "mongoid.attributes.admin.current_password")}}
+              {{f.password-field "password" label=(t "devise.passwords.edit.new_password") hint=(t "devise.passwords.password_length_hint" min=this.session.data.authenticated.password_length_min)}}
+              {{f.password-field "passwordConfirmation" label=(t "devise.passwords.edit.confirm_new_password")}}
+            </fieldset>
+          {{/if}}
         {{/if}}
-      </div>
-      <div class="col-sm-6 record-details">
-        {{#if this.model.id}}
-          Created: {{format-date this.model.createdAt}} by {{this.model.creator.username}}<br>
-          Last Updated: {{format-date this.model.updatedAt}} by {{this.model.updater.username}}<br>
-          {{#if this.model.currentSignInAt}}Last Login: {{format-date this.model.currentSignInAt}} from {{this.model.currentSignInIp}} via {{this.model.currentSignInProvider}}<br>{{/if}}
-          Logged in: {{this.model.signInCount}} times<br>
-        {{/if}}
-      </div>
-    </div>
-    {{#if this.currentAdmin.permissions.admin_manage}}
-      {{#if this.model.id}}
-        <div class="form-extra-actions">
-          <a href="#" class="remove-action" {{action "delete"}}>{{fa-icon "times"}}Delete Admin</a>
+
+        <fieldset class="form-horizontal condensed">
+          <legend>Admin API Access</legend>
+
+          {{#f.static-field "authenticationToken" label=(t "mongoid.attributes.admin.authentication_token")}}
+            <span class="api-key">{{this.model.authenticationToken}}</span>
+          {{/f.static-field}}
+        </fieldset>
+      {{/if}}
+
+      {{#if this.currentAdmin.permissions.admin_manage}}
+        <fieldset class="form-horizontal condensed">
+          <legend>Permissions</legend>
+
+          {{f.checkboxes-field "groupIds" label=(t "mongoid.attributes.admin.groups") options=this.groupOptions}}
+          {{#if this.currentAdmin.superuser}}
+            {{f.checkbox-field "superuser" label=(t "mongoid.attributes.admin.superuser")}}
+          {{/if}}
+        </fieldset>
+      {{/if}}
+
+      <div class="row">
+        <div class="col-sm-6">
+          {{#if this.currentAdmin.permissions.admin_manage}}
+            <button type="submit" class="btn btn-lg btn-primary save-button"><span class="btn-label">Save</span><span class="btn-loading-label"><FaIcon @icon="sync-alt" @spin={{true}} />Saving...</span></button>
+          {{/if}}
         </div>
+        <div class="col-sm-6 record-details">
+          {{#if this.model.id}}
+            Created: {{format-date this.model.createdAt}} by {{this.model.creator.username}}<br>
+            Last Updated: {{format-date this.model.updatedAt}} by {{this.model.updater.username}}<br>
+            {{#if this.model.currentSignInAt}}Last Login: {{format-date this.model.currentSignInAt}} from {{this.model.currentSignInIp}} via {{this.model.currentSignInProvider}}<br>{{/if}}
+            Logged in: {{this.model.signInCount}} times<br>
+          {{/if}}
+        </div>
+      </div>
+      {{#if this.currentAdmin.permissions.admin_manage}}
+        {{#if this.model.id}}
+          <div class="form-extra-actions">
+            <a href="#" class="remove-action" {{action "delete"}}><FaIcon @icon="times" />Delete Admin</a>
+          </div>
+        {{/if}}
       {{/if}}
-    {{/if}}
-  </FieldsFor>
-</form>
+    </FieldsFor>
+  </form>
+</div>

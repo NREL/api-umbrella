@@ -1,111 +1,113 @@
-<ErrorMessages @model={{this.model}} />
+<div ...attributes>
+  <ErrorMessages @model={{this.model}} />
 
-<form {{action "submit" on="submit"}}>
-  <FieldsFor @model={{this.model}} @style="vertical" as |f|>
-    {{f.text-field "name" label=(t "mongoid.attributes.api.name")}}
+  <form {{on "submit" this.submitForm}}>
+    <FieldsFor @model={{this.model}} @style="vertical" as |f|>
+      {{f.text-field "name" label=(t "mongoid.attributes.api.name")}}
+
+      <fieldset>
+        <legend>{{t "admin.api.servers.legend"}}</legend>
+        <p class="fieldset-note">{{t "admin.api.servers.note"}}</p>
+        {{f.select-field "backendProtocol" label=(t "mongoid.attributes.api.backend_protocol") options=this.backendProtocolOptions}}
+
+        <Apis::ServerTable @model={{this.model}} />
+      </fieldset>
+
+      <fieldset>
+        <legend>{{t "admin.api.host.legend"}}</legend>
+        <p class="fieldset-note">{{t "admin.api.host.note"}}</p>
+        <div class="row">
+          <div class="col-sm-5">
+            {{f.text-field "frontendHost" label="Frontend Host"}}
+          </div>
+          <div class="col-sm-2 arrow">
+            <FaIcon @icon="arrow-right" @size="2x" />
+            <div>rewrite to</div>
+          </div>
+          <div class="col-sm-5">
+            {{f.text-field "backendHost" label="Backend Host" placeholder="api.example.com"}}
+          </div>
+        </div>
+      </fieldset>
+    </FieldsFor>
 
     <fieldset>
-      <legend>{{t "admin.api.servers.legend"}}</legend>
-      <p class="fieldset-note">{{t "admin.api.servers.note"}}</p>
-      {{f.select-field "backendProtocol" label=(t "mongoid.attributes.api.backend_protocol") options=this.backendProtocolOptions}}
-
-      <Apis::ServerTable @model={{this.model}} />
+      <legend>{{t "admin.api.url_matches.legend"}}</legend>
+      <p class="fieldset-note">{{t "admin.api.url_matches.note"}}</p>
+      <Apis::UrlMatchTable @model={{this.model}} />
     </fieldset>
 
-    <fieldset>
-      <legend>{{t "admin.api.host.legend"}}</legend>
-      <p class="fieldset-note">{{t "admin.api.host.note"}}</p>
-      <div class="row">
-        <div class="col-sm-5">
-          {{f.text-field "frontendHost" label="Frontend Host"}}
-        </div>
-        <div class="col-sm-2 arrow">
-          {{fa-icon "arrow-right" size="2x"}}
-          <div>rewrite to</div>
-        </div>
-        <div class="col-sm-5">
-          {{f.text-field "backendHost" label="Backend Host" placeholder="api.example.com"}}
-        </div>
+    <fieldset class="collapsible">
+      <legend><button type="button" class="btn btn-link collapsed" data-toggle="collapse" data-target="#global_settings" aria-controls="global_settings" aria-expanded="false"><FaIcon @icon="caret-down" @fixedWidth={{true}} />Global Request Settings</button></legend>
+      <div id="global_settings" class="collapse form-horizontal">
+        <FieldsFor @model={{this.model.settings}} @style="horizontal-wide-labels" as |f|>
+          {{f.text-field "appendQueryString" label="Append Query String Parameters" placeholder="param1=value&param2=value"}}
+          {{f.textarea-field "headersString" label="Set Request Headers" placeholder="X-Example-Header: value"}}
+          {{f.text-field "httpBasicAuth" label="HTTP Basic Authentication" placeholder="username:password"}}
+        </FieldsFor>
+
+        <Apis::Settings::CommonFields @model={{this.model.settings}} @roleOptions={{this.roleOptions}} />
       </div>
     </fieldset>
-  </FieldsFor>
 
-  <fieldset>
-    <legend>{{t "admin.api.url_matches.legend"}}</legend>
-    <p class="fieldset-note">{{t "admin.api.url_matches.note"}}</p>
-    <Apis::UrlMatchTable @model={{this.model}} />
-  </fieldset>
+    <fieldset class="collapsible">
+      <legend><button type="button" class="btn btn-link collapsed" data-toggle="collapse" data-target="#sub_settings" aria-controls="sub_settings" aria-expanded="false"><FaIcon @icon="caret-down" @fixedWidth={{true}} />{{t "admin.api.sub_settings.legend"}}</button></legend>
+      <div id="sub_settings" class="collapse">
+        <p class="fieldset-note">{{t "admin.api.sub_settings.note"}}</p>
+        <Apis::SubSettingsTable @model={{this.model}} @roleOptions={{this.roleOptions}} />
+      </div>
+    </fieldset>
 
-  <fieldset class="collapsible">
-    <legend><button type="button" class="btn btn-link collapsed" data-toggle="collapse" data-target="#global_settings" aria-controls="global_settings" aria-expanded="false">{{fa-icon "caret-down" fixedWidth=true}}Global Request Settings</button></legend>
-    <div id="global_settings" class="collapse form-horizontal">
-      <FieldsFor @model={{this.model.settings}} @style="horizontal-wide-labels" as |f|>
-        {{f.text-field "appendQueryString" label="Append Query String Parameters" placeholder="param1=value&param2=value"}}
-        {{f.textarea-field "headersString" label="Set Request Headers" placeholder="X-Example-Header: value"}}
-        {{f.text-field "httpBasicAuth" label="HTTP Basic Authentication" placeholder="username:password"}}
-      </FieldsFor>
+    <fieldset class="collapsible">
+      <legend><button type="button" class="btn btn-link collapsed" data-toggle="collapse" data-target="#rewrites" aria-controls="rewrites" aria-expanded="false"><FaIcon @icon="caret-down" @fixedWidth={{true}} />{{t "admin.api.rewrites.legend"}}</button></legend>
+      <div id="rewrites" class="collapse">
+        <p class="fieldset-note">{{t "admin.api.rewrites.note"}}</p>
+        <Apis::RewriteTable @model={{this.model}} />
+      </div>
+    </fieldset>
 
-      <Apis::Settings::CommonFields @model={{this.model.settings}} @roleOptions={{this.roleOptions}} />
+    <fieldset class="collapsible">
+      <legend><button type="button" class="btn btn-link collapsed" data-toggle="collapse" data-target="#advanced_settings" aria-controls="advanced_settings" aria-expanded="false"><FaIcon @icon="caret-down" @fixedWidth={{true}} />Advanced Settings</button></legend>
+      <div id="advanced_settings" class="collapse form-horizontal">
+        <FieldsFor @model={{this.model}} @style="horizontal-wide-labels" as |f|>
+          {{f.select-field "balanceAlgorithm" label="Balance Algorithm" options=this.balanceAlgorithmOptions}}
+        </FieldsFor>
+
+        <FieldsFor @model={{this.model.settings.errorTemplates}} @style="horizontal-wide-labels" as |f|>
+          <h4>{{t "mongoid.attributes.api/settings.error_templates"}}</h4>
+          {{f.codemirror-field "json" label=(t "admin.api.settings.error_templates_json") tooltip=(t "admin.api.settings.error_templates_json_tooltip_markdown") mode="application/json"}}
+          {{f.codemirror-field "xml" label=(t "admin.api.settings.error_templates_xml") tooltip=(t "admin.api.settings.error_templates_xml_tooltip_markdown") mode="application/xml"}}
+          {{f.codemirror-field "csv" label=(t "admin.api.settings.error_templates_csv") tooltip=(t "admin.api.settings.error_templates_csv_tooltip_markdown") mode="text/plain"}}
+        </FieldsFor>
+
+        <FieldsFor @model={{this.model.settings.errorDataYamlStrings}} @style="horizontal-wide-labels" as |f|>
+          <h4>{{t "mongoid.attributes.api/settings.error_data"}}</h4>
+          {{f.codemirror-field "common" label=(t "admin.api.settings.error_data_common") tooltip=(t "admin.api.settings.error_data_common_tooltip_markdown") mode="text/x-yaml"}}
+          {{f.codemirror-field "api_key_missing" label=(t "admin.api.settings.error_data_api_key_missing") tooltip=(t "admin.api.settings.error_data_api_key_missing_tooltip_markdown") mode="text/x-yaml"}}
+          {{f.codemirror-field "api_key_invalid" label=(t "admin.api.settings.error_data_api_key_invalid") tooltip=(t "admin.api.settings.error_data_api_key_invalid_tooltip_markdown") mode="text/x-yaml"}}
+          {{f.codemirror-field "api_key_disabled" label=(t "admin.api.settings.error_data_api_key_disabled") tooltip=(t "admin.api.settings.error_data_api_key_disabled_tooltip_markdown") mode="text/x-yaml"}}
+          {{f.codemirror-field "api_key_unauthorized" label=(t "admin.api.settings.error_data_api_key_unauthorized") tooltip=(t "admin.api.settings.error_data_api_key_unauthorized_tooltip_markdown") mode="text/x-yaml"}}
+          {{f.codemirror-field "over_rate_limit" label=(t "admin.api.settings.error_data_over_rate_limit") tooltip=(t "admin.api.settings.error_data_over_rate_limit_tooltip_markdown") mode="text/x-yaml"}}
+          {{f.codemirror-field "https_required" label=(t "admin.api.settings.error_data_https_required") tooltip=(t "admin.api.settings.error_data_https_required_tooltip_markdown") mode="text/x-yaml"}}
+        </FieldsFor>
+      </div>
+    </fieldset>
+
+    <div class="row">
+      <div class="col-sm-6">
+        <button type="submit" class="btn btn-lg btn-primary save-button"><span class="btn-label">Save</span><span class="btn-loading-label"><FaIcon @icon="sync-alt" @spin={{true}} />Saving...</span></button>
+      </div>
+      <div class="col-sm-6 record-details">
+        {{#if this.model.id}}
+          Created: {{format-date this.model.createdAt}} by {{this.model.creator.username}}<br>
+          Last Updated: {{format-date this.model.updatedAt}} by {{this.model.updater.username}}<br>
+        {{/if}}
+      </div>
     </div>
-  </fieldset>
-
-  <fieldset class="collapsible">
-    <legend><button type="button" class="btn btn-link collapsed" data-toggle="collapse" data-target="#sub_settings" aria-controls="sub_settings" aria-expanded="false">{{fa-icon "caret-down" fixedWidth=true}}{{t "admin.api.sub_settings.legend"}}</button></legend>
-    <div id="sub_settings" class="collapse">
-      <p class="fieldset-note">{{t "admin.api.sub_settings.note"}}</p>
-      <Apis::SubSettingsTable @model={{this.model}} @roleOptions={{this.roleOptions}} />
-    </div>
-  </fieldset>
-
-  <fieldset class="collapsible">
-    <legend><button type="button" class="btn btn-link collapsed" data-toggle="collapse" data-target="#rewrites" aria-controls="rewrites" aria-expanded="false">{{fa-icon "caret-down" fixedWidth=true}}{{t "admin.api.rewrites.legend"}}</button></legend>
-    <div id="rewrites" class="collapse">
-      <p class="fieldset-note">{{t "admin.api.rewrites.note"}}</p>
-      <Apis::RewriteTable @model={{this.model}} />
-    </div>
-  </fieldset>
-
-  <fieldset class="collapsible">
-    <legend><button type="button" class="btn btn-link collapsed" data-toggle="collapse" data-target="#advanced_settings" aria-controls="advanced_settings" aria-expanded="false">{{fa-icon "caret-down" fixedWidth=true}}Advanced Settings</button></legend>
-    <div id="advanced_settings" class="collapse form-horizontal">
-      <FieldsFor @model={{this.model}} @style="horizontal-wide-labels" as |f|>
-        {{f.select-field "balanceAlgorithm" label="Balance Algorithm" options=this.balanceAlgorithmOptions}}
-      </FieldsFor>
-
-      <FieldsFor @model={{this.model.settings.errorTemplates}} @style="horizontal-wide-labels" as |f|>
-        <h4>{{t "mongoid.attributes.api/settings.error_templates"}}</h4>
-        {{f.codemirror-field "json" label=(t "admin.api.settings.error_templates_json") tooltip=(t "admin.api.settings.error_templates_json_tooltip_markdown") mode="application/json"}}
-        {{f.codemirror-field "xml" label=(t "admin.api.settings.error_templates_xml") tooltip=(t "admin.api.settings.error_templates_xml_tooltip_markdown") mode="application/xml"}}
-        {{f.codemirror-field "csv" label=(t "admin.api.settings.error_templates_csv") tooltip=(t "admin.api.settings.error_templates_csv_tooltip_markdown") mode="text/plain"}}
-      </FieldsFor>
-
-      <FieldsFor @model={{this.model.settings.errorDataYamlStrings}} @style="horizontal-wide-labels" as |f|>
-        <h4>{{t "mongoid.attributes.api/settings.error_data"}}</h4>
-        {{f.codemirror-field "common" label=(t "admin.api.settings.error_data_common") tooltip=(t "admin.api.settings.error_data_common_tooltip_markdown") mode="text/x-yaml"}}
-        {{f.codemirror-field "api_key_missing" label=(t "admin.api.settings.error_data_api_key_missing") tooltip=(t "admin.api.settings.error_data_api_key_missing_tooltip_markdown") mode="text/x-yaml"}}
-        {{f.codemirror-field "api_key_invalid" label=(t "admin.api.settings.error_data_api_key_invalid") tooltip=(t "admin.api.settings.error_data_api_key_invalid_tooltip_markdown") mode="text/x-yaml"}}
-        {{f.codemirror-field "api_key_disabled" label=(t "admin.api.settings.error_data_api_key_disabled") tooltip=(t "admin.api.settings.error_data_api_key_disabled_tooltip_markdown") mode="text/x-yaml"}}
-        {{f.codemirror-field "api_key_unauthorized" label=(t "admin.api.settings.error_data_api_key_unauthorized") tooltip=(t "admin.api.settings.error_data_api_key_unauthorized_tooltip_markdown") mode="text/x-yaml"}}
-        {{f.codemirror-field "over_rate_limit" label=(t "admin.api.settings.error_data_over_rate_limit") tooltip=(t "admin.api.settings.error_data_over_rate_limit_tooltip_markdown") mode="text/x-yaml"}}
-        {{f.codemirror-field "https_required" label=(t "admin.api.settings.error_data_https_required") tooltip=(t "admin.api.settings.error_data_https_required_tooltip_markdown") mode="text/x-yaml"}}
-      </FieldsFor>
-    </div>
-  </fieldset>
-
-  <div class="row">
-    <div class="col-sm-6">
-      <button type="submit" class="btn btn-lg btn-primary save-button"><span class="btn-label">Save</span><span class="btn-loading-label">{{fa-icon "sync-alt" spin=true}}Saving...</span></button>
-    </div>
-    <div class="col-sm-6 record-details">
-      {{#if this.model.id}}
-        Created: {{format-date this.model.createdAt}} by {{this.model.creator.username}}<br>
-        Last Updated: {{format-date this.model.updatedAt}} by {{this.model.updater.username}}<br>
-      {{/if}}
-    </div>
-  </div>
-  {{#if this.model.id}}
-    <div class="form-extra-actions">
-      <a href="#" class="remove-action" {{action "delete"}}>{{fa-icon "times"}}Delete API</a>
-    </div>
-  {{/if}}
-</form>
+    {{#if this.model.id}}
+      <div class="form-extra-actions">
+        <a href="#" class="remove-action" {{action "delete"}}><FaIcon @icon="times" />Delete API</a>
+      </div>
+    {{/if}}
+  </form>
+</div>

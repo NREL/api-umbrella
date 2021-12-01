@@ -95,7 +95,7 @@ class Test::Processes::TestFilePermissions < Minitest::Test
   def test_etc_trafficserver_dir
     stat = File.stat(File.join($config["etc_dir"], "trafficserver"))
     assert_equal("40750", stat.mode.to_s(8))
-    assert_owner(stat)
+    assert_process_owner(stat)
     assert_group(stat)
   end
 

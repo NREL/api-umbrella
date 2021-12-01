@@ -1,9 +1,9 @@
 import 'jquery-ui/ui/widgets/sortable';
 
-import $ from 'jquery';
-import Mixin from '@ember/object/mixin'
 import { computed } from '@ember/object';
 import { guidFor } from '@ember/object/internals';
+import Mixin from '@ember/object/mixin'
+import $ from 'jquery';
 
 // eslint-disable-next-line ember/no-new-mixins
 export default Mixin.create({

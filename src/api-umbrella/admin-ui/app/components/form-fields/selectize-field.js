@@ -1,29 +1,31 @@
 import 'selectize';
 
-import BaseField from './base-field';
-// eslint-disable-next-line ember/no-observers
-import { observer } from '@ember/object';
-import { on } from '@ember/object/evented';
+import { action } from '@ember/object';
+import { observes, on } from '@ember-decorators/object';
+import classic from 'ember-classic-decorator';
+import $ from 'jquery';
 import uniq from 'lodash-es/uniq';
 
-export default BaseField.extend({
-  optionValuePath: 'id',
-  optionLabelPath: 'id',
+import BaseField from './base-field';
+
+@classic
+export default class SelectizeField extends BaseField {
+  optionValuePath = 'id';
+  optionLabelPath = 'id';
 
   init() {
-    this._super(...arguments);
+    super.init(...arguments);
 
     this.defaultOptions =  [];
 
-    this.set('selectizeTextInputId', this.elementId + '-selectize_text_input');
+    this.set('selectizeTextInputId', this.inputId + '-selectize_text_input');
     // eslint-disable-next-line ember/no-observers
     this.addObserver('model.' + this.fieldName, this, this.valueDidChange);
-  },
+  }
 
-  didInsertElement() {
-    this._super();
-
-    this.$input = this.$().find('#' + this.inputId).selectize({
+  @action
+  didInsert(element) {
+    this.$input = $(element).find('#' + this.inputId).selectize({
       plugins: ['restore_on_backspace', 'remove_button'],
       delimiter: ',',
       options: this.defaultOptions,
@@ -41,13 +43,15 @@ export default BaseField.extend({
     this.selectize.$control_input.attr('id', this.selectizeTextInputId);
     this.selectize.$control_input.attr('data-raw-input-id', this.inputId);
 
-    let controlId = this.elementId + '-selectize_control';
+    let controlId = this.inputId + '-selectize_control';
     this.selectize.$control.attr('id', controlId);
     this.selectize.$control_input.attr('data-selectize-control-id', controlId);
-  },
+  }
 
-  // eslint-disable-next-line ember/no-on-calls-in-components, ember/no-observers
-  defaultOptionsDidChange: on('init', observer('options.@each', function() {
+  @on('init')
+  // eslint-disable-next-line ember/no-observers
+  @observes('options.@each')
+  defaultOptionsDidChange() {
     this.set('defaultOptions', this.options.map((item) => {
       return {
         id: item.get(this.optionValuePath),
@@ -62,7 +66,7 @@ export default BaseField.extend({
 
       this.selectize.refreshOptions(false);
     }
-  })),
+  }
 
   // Sync the selectize input with the value binding if the value changes
   // externally.
@@ -92,11 +96,12 @@ export default BaseField.extend({
         this.selectize.setValue(values);
       }
     }
-  },
+  }
 
   willDestroyElement() {
+    super.willDestroyElement(...arguments);
     if(this.selectize) {
       this.selectize.destroy();
     }
-  },
-});
+  }
+}

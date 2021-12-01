@@ -1,42 +1,44 @@
-<ErrorMessages @model={{this.model}} />
+<div ...attributes>
+  <ErrorMessages @model={{this.model}} />
 
-<form {{action "submit" on="submit"}}>
-  <FieldsFor @model={{this.model}} @style="horizontal" as |f|>
-    <fieldset class="form-horizontal condensed">
-      {{f.text-field "name" label="Group Name"}}
-      {{f.checkboxes-field "apiScopeIds" label="Scopes" options=this.apiScopeOptions}}
-      {{f.checkboxes-field "permissionIds" label="Permissions" options=this.permissionOptions}}
+  <form {{on "submit" this.submitForm}}>
+    <FieldsFor @model={{this.model}} @style="horizontal" as |f|>
+      <fieldset class="form-horizontal condensed">
+        {{f.text-field "name" label="Group Name"}}
+        {{f.checkboxes-field "apiScopeIds" label="Scopes" options=this.apiScopeOptions}}
+        {{f.checkboxes-field "permissionIds" label="Permissions" options=this.permissionOptions}}
 
-      {{#if this.model.id}}
-        {{#f.static-field "admins" label="Admins"}}
-          {{#if this.model.admins}}
-            <ul>
-              {{#each this.model.admins as |admin|}}
-                <li><LinkTo @route="admins.edit" @model={{admin.id}}>{{admin.username}}</LinkTo> (Last Login: {{#if admin.current_sign_in_at}}{{format-date admin.current_sign_in_at}}{{else}}Never{{/if}})</li>
-              {{/each}}
-            </ul>
-          {{else}}
-            None
-          {{/if}}
-        {{/f.static-field}}
-      {{/if}}
-    </fieldset>
-
-    <div class="row">
-      <div class="col-sm-6">
-        <button type="submit" class="btn btn-lg btn-primary save-button"><span class="btn-label">Save</span><span class="btn-loading-label">{{fa-icon "sync-alt" spin=true}}Saving...</span></button>
-      </div>
-      <div class="col-sm-6 record-details">
         {{#if this.model.id}}
-          Created: {{format-date this.model.createdAt}} by {{this.model.creator.username}}<br>
-          Last Updated: {{format-date this.model.updatedAt}} by {{this.model.updater.username}}<br>
+          {{#f.static-field "admins" label="Admins"}}
+            {{#if this.model.admins}}
+              <ul>
+                {{#each this.model.admins as |admin|}}
+                  <li><LinkTo @route="admins.edit" @model={{admin.id}}>{{admin.username}}</LinkTo> (Last Login: {{#if admin.current_sign_in_at}}{{format-date admin.current_sign_in_at}}{{else}}Never{{/if}})</li>
+                {{/each}}
+              </ul>
+            {{else}}
+              None
+            {{/if}}
+          {{/f.static-field}}
         {{/if}}
+      </fieldset>
+
+      <div class="row">
+        <div class="col-sm-6">
+          <button type="submit" class="btn btn-lg btn-primary save-button"><span class="btn-label">Save</span><span class="btn-loading-label"><FaIcon @icon="sync-alt" @spin={{true}} />Saving...</span></button>
+        </div>
+        <div class="col-sm-6 record-details">
+          {{#if this.model.id}}
+            Created: {{format-date this.model.createdAt}} by {{this.model.creator.username}}<br>
+            Last Updated: {{format-date this.model.updatedAt}} by {{this.model.updater.username}}<br>
+          {{/if}}
+        </div>
       </div>
-    </div>
-    {{#if this.model.id}}
-      <div class="form-extra-actions">
-        <a href="#" class="remove-action" {{action "delete"}}>{{fa-icon "times"}}Delete Admin Group</a>
-      </div>
-    {{/if}}
-  </FieldsFor>
-</form>
+      {{#if this.model.id}}
+        <div class="form-extra-actions">
+          <a href="#" class="remove-action" {{action "delete"}}><FaIcon @icon="times" />Delete Admin Group</a>
+        </div>
+      {{/if}}
+    </FieldsFor>
+  </form>
+</div>

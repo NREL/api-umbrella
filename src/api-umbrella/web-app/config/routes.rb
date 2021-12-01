@@ -1,6 +1,10 @@
-require "api_umbrella/elasticsearch_proxy"
+unless ENV["RAILS_ASSETS_PRECOMPILE"]
+  require "api_umbrella/elasticsearch_proxy"
+end
 
 Rails.application.routes.draw do
+  break if ENV["RAILS_ASSETS_PRECOMPILE"]
+
   # Add a simple health-check endpoint to see if this app is up.
   get "/_web-app-health", :to => proc { [200, {}, ["OK"]] }
 

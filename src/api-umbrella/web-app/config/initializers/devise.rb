@@ -12,7 +12,9 @@ Devise.setup do |config|
   # Configure the e-mail address which will be shown in Devise::Mailer,
   # note that it will be overwritten if you use your own mailer class
   # with default "from" parameter.
-  config.mailer_sender = "noreply@#{ApiUmbrellaConfig[:web][:default_host]}"
+  unless ENV["RAILS_ASSETS_PRECOMPILE"]
+    config.mailer_sender = "noreply@#{ApiUmbrellaConfig[:web][:default_host]}"
+  end
 
   # Configure the class responsible to send e-mails.
   # config.mailer = 'Devise::Mailer'
@@ -156,12 +158,16 @@ Devise.setup do |config|
 
   # ==> Configuration for :validatable
   # Range for password length.
-  config.password_length = ApiUmbrellaConfig[:web][:admin][:password_length_min]..ApiUmbrellaConfig[:web][:admin][:password_length_max]
+  unless ENV["RAILS_ASSETS_PRECOMPILE"]
+    config.password_length = ApiUmbrellaConfig[:web][:admin][:password_length_min]..ApiUmbrellaConfig[:web][:admin][:password_length_max]
+  end
 
   # Email regex used to validate email formats. It simply asserts that
   # one (and only one) @ exists in the given string. This is mainly
   # to give user feedback and not to assert the e-mail validity.
-  config.email_regexp = ::Regexp.new(ApiUmbrellaConfig[:web][:admin][:email_regex], ::Regexp::IGNORECASE)
+  unless ENV["RAILS_ASSETS_PRECOMPILE"]
+    config.email_regexp = ::Regexp.new(ApiUmbrellaConfig[:web][:admin][:email_regex], ::Regexp::IGNORECASE)
+  end
 
   # ==> Configuration for :timeoutable
   # The time you want to timeout the user session without activity. After this
@@ -257,56 +263,58 @@ Devise.setup do |config|
       :form => Admin::Admins::OmniauthCustomFormsController.action(:developer)
   end
 
-  ApiUmbrellaConfig[:web][:admin][:auth_strategies][:enabled].each do |strategy|
-    case(strategy)
-    when "facebook"
-      require "omniauth-facebook"
-      config.omniauth :facebook,
-        ApiUmbrellaConfig[:web][:admin][:auth_strategies][:facebook][:client_id],
-        ApiUmbrellaConfig[:web][:admin][:auth_strategies][:facebook][:client_secret],
-        :scope => "email",
-        :info_fields => "name,email,verified"
-    when "cas"
-      require "omniauth-cas"
-      config.omniauth :cas,
-        ApiUmbrellaConfig[:web][:admin][:auth_strategies][:cas][:options]
-    when "github"
-      require "omniauth-github"
-      config.omniauth :github,
-        ApiUmbrellaConfig[:web][:admin][:auth_strategies][:github][:client_id],
-        ApiUmbrellaConfig[:web][:admin][:auth_strategies][:github][:client_secret],
-        :scope => "user:email"
-    when "gitlab"
-      require "omniauth-gitlab"
-      config.omniauth :gitlab,
-        ApiUmbrellaConfig[:web][:admin][:auth_strategies][:gitlab][:client_id],
-        ApiUmbrellaConfig[:web][:admin][:auth_strategies][:gitlab][:client_secret],
-        :scope => "read_user"
-    when "google"
-      require "omniauth-google-oauth2"
-      config.omniauth :google_oauth2,
-        ApiUmbrellaConfig[:web][:admin][:auth_strategies][:google][:client_id],
-        ApiUmbrellaConfig[:web][:admin][:auth_strategies][:google][:client_secret],
-        :prompt => "select_account",
-        :scope => "userinfo.email"
-    when "ldap"
-      require "omniauth-ldap"
-      config.omniauth :ldap,
-        ApiUmbrellaConfig[:web][:admin][:auth_strategies][:ldap][:options].merge({
-          :form => Admin::Admins::OmniauthCustomFormsController.action(:ldap),
-        })
-    when "max.gov"
-      require "omniauth-cas"
-      config.omniauth :cas,
-        :host => "login.max.gov",
-        :login_url => "/cas/login#{if(ApiUmbrellaConfig[:web][:admin][:auth_strategies][:"max.gov"][:require_mfa]) then "?securityLevel=securePlus2" end}",
-        :service_validate_url => "/cas/serviceValidate",
-        :logout_url => "/cas/logout",
-        :ssl => true
-    when "local"
-      # Ignore
-    else
-      raise "Unknown authentication strategy enabled in config: #{strategy.inspect}"
+  unless ENV["RAILS_ASSETS_PRECOMPILE"]
+    ApiUmbrellaConfig[:web][:admin][:auth_strategies][:enabled].each do |strategy|
+      case(strategy)
+      when "facebook"
+        require "omniauth-facebook"
+        config.omniauth :facebook,
+          ApiUmbrellaConfig[:web][:admin][:auth_strategies][:facebook][:client_id],
+          ApiUmbrellaConfig[:web][:admin][:auth_strategies][:facebook][:client_secret],
+          :scope => "email",
+          :info_fields => "name,email,verified"
+      when "cas"
+        require "omniauth-cas"
+        config.omniauth :cas,
+          ApiUmbrellaConfig[:web][:admin][:auth_strategies][:cas][:options]
+      when "github"
+        require "omniauth-github"
+        config.omniauth :github,
+          ApiUmbrellaConfig[:web][:admin][:auth_strategies][:github][:client_id],
+          ApiUmbrellaConfig[:web][:admin][:auth_strategies][:github][:client_secret],
+          :scope => "user:email"
+      when "gitlab"
+        require "omniauth-gitlab"
+        config.omniauth :gitlab,
+          ApiUmbrellaConfig[:web][:admin][:auth_strategies][:gitlab][:client_id],
+          ApiUmbrellaConfig[:web][:admin][:auth_strategies][:gitlab][:client_secret],
+          :scope => "read_user"
+      when "google"
+        require "omniauth-google-oauth2"
+        config.omniauth :google_oauth2,
+          ApiUmbrellaConfig[:web][:admin][:auth_strategies][:google][:client_id],
+          ApiUmbrellaConfig[:web][:admin][:auth_strategies][:google][:client_secret],
+          :prompt => "select_account",
+          :scope => "userinfo.email"
+      when "ldap"
+        require "omniauth-ldap"
+        config.omniauth :ldap,
+          ApiUmbrellaConfig[:web][:admin][:auth_strategies][:ldap][:options].merge({
+            :form => Admin::Admins::OmniauthCustomFormsController.action(:ldap),
+          })
+      when "max.gov"
+        require "omniauth-cas"
+        config.omniauth :cas,
+          :host => "login.max.gov",
+          :login_url => "/cas/login#{if(ApiUmbrellaConfig[:web][:admin][:auth_strategies][:"max.gov"][:require_mfa]) then "?securityLevel=securePlus2" end}",
+          :service_validate_url => "/cas/serviceValidate",
+          :logout_url => "/cas/logout",
+          :ssl => true
+      when "local"
+        # Ignore
+      else
+        raise "Unknown authentication strategy enabled in config: #{strategy.inspect}"
+      end
     end
   end
 

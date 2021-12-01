@@ -1,10 +1,32 @@
+import { inject } from '@ember/service';
 import RESTAdapter from '@ember-data/adapter/rest';
+import classic from 'ember-classic-decorator';
 import flatten from 'lodash-es/flatten';
 import isArray from 'lodash-es/isArray';
 import isPlainObject from 'lodash-es/isPlainObject';
 import isString from 'lodash-es/isString';
 
-export default RESTAdapter.extend({
+@classic
+export default class Application extends RESTAdapter {
+  @inject session;
+
+  get headers() {
+    const headers = {};
+
+    const data = this.session?.data?.authenticated;
+    if(data) {
+      if(data.api_key) {
+        headers['X-Api-Key'] = data.api_key;
+      }
+
+      if(data.admin_auth_token) {
+        headers['X-Admin-Auth-Token'] = data.admin_auth_token;
+      }
+    }
+
+    return headers;
+  }
+
   // Build the URL using the customizable "urlRoot" attribute that can be set
   // on the model class.
   buildURL(modelName, id, snapshot) {
@@ -16,9 +38,9 @@ export default RESTAdapter.extend({
 
       return url;
     } else {
-      return this._super(...arguments);
+      return super.buildURL(...arguments);
     }
-  },
+  }
 
   // Ember data requires that errors from the API be returned as an array. This
   // normalizes some of our different error responses, so they're always an
@@ -29,8 +51,8 @@ export default RESTAdapter.extend({
       this.normalizePayloadErrors(payload, 'error');
     }
 
-    return this._super(...arguments);
-  },
+    return super.handleResponse(...arguments);
+  }
 
   normalizePayloadErrors(payload, key) {
     if(payload && payload[key]) {
@@ -75,5 +97,5 @@ export default RESTAdapter.extend({
         delete payload[key];
       }
     }
-  },
-});
+  }
+}

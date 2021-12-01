@@ -1,14 +1,17 @@
 import 'daterangepicker';
 
-import $ from 'jquery';
+// eslint-disable-next-line ember/no-classic-components
 import Component from '@ember/component';
+import { action } from '@ember/object';
+import { inject } from '@ember/service';
+import { tagName } from '@ember-decorators/component';
+import { observes } from '@ember-decorators/object';
+import classic from 'ember-classic-decorator';
 import I18n from 'i18n-js';
+import $ from 'jquery';
 import QueryBuilder from 'jQuery-QueryBuilder';
 import forEach from 'lodash-es/forEach';
-import { inject } from '@ember/service';
 import moment from 'moment-timezone';
-// eslint-disable-next-line ember/no-observers
-import { observer } from '@ember/object';
 
 QueryBuilder.define('filter-description', function() {
   this.on('afterUpdateRuleFilter afterUpdateRuleOperator', function(e, rule) {
@@ -30,12 +33,16 @@ QueryBuilder.define('filter-description', function() {
   });
 });
 
-export default Component.extend({
-  session: inject('session'),
+@classic
+@tagName("")
+export default class QueryForm extends Component {
+  @inject('session')
+  session;
 
-  enableInterval: false,
+  enableInterval = false;
 
-  didInsertElement() {
+  @action
+  didInsert() {
     let rangeOptions = {};
     let rangeKeys = {};
     forEach(this.dateRanges, function(range, key) {
@@ -300,10 +307,11 @@ export default Component.extend({
     } else if(this.search) {
       this.send('toggleFilterType', 'advanced');
     }
-  },
+  }
 
   // eslint-disable-next-line ember/no-observers
-  updateQueryBuilderRules: observer('query', function() {
+  @observes('query')
+  updateQueryBuilderRules() {
     let query = this.query;
     let rules;
     if(query) {
@@ -315,10 +323,11 @@ export default Component.extend({
     } else {
       $('#query_builder').queryBuilder('reset');
     }
-  }),
+  }
 
   // eslint-disable-next-line ember/no-observers
-  updateDateRange: observer('allQueryParamValues.start_at', 'allQueryParamValues.end_at', function() {
+  @observes('allQueryParamValues.start_at', 'allQueryParamValues.end_at')
+  updateDateRange() {
     let start = moment(this.allQueryParamValues.start_at, 'YYYY-MM-DD');
     let end = moment(this.allQueryParamValues.end_at, 'YYYY-MM-DD');
 
@@ -326,15 +335,15 @@ export default Component.extend({
     this.dateRangePicker.setStartDate(start);
     this.dateRangePicker.setEndDate(end);
     $('#reportrange span.text').html(start.format('ll') + ' - ' + end.format('ll'));
-  }),
+  }
 
   handleDateRangeCalendarShow() {
     this.set('calendarShown', true);
-  },
+  }
 
   handleDateRangeCalendarHide() {
     this.set('calendarShown', false);
-  },
+  }
 
   handleDateRangeApply(event, picker) {
     // If the user selects a predefined date range (like "Last 7 Days"), then
@@ -371,26 +380,28 @@ export default Component.extend({
         date_range: '30d',
       });
     }
-  },
+  }
 
-  actions: {
-    toggleFilterType(type) {
-      $('.filter-type').hide();
-      $('#filter_type_' + type).show();
-    },
+  @action
+  toggleFilterType(type) {
+    $('.filter-type').hide();
+    $('#filter_type_' + type).show();
+  }
 
-    clickInterval(interval) {
-      this.set('interval', interval);
-    },
+  @action
+  clickInterval(interval) {
+    this.set('interval', interval);
+  }
 
-    submit() {
-      if($('#filter_type_advanced').css('display') === 'none') {
-        this.set('search', '');
-        this.set('query', JSON.stringify($('#query_builder').queryBuilder('getRules')));
-      } else {
-        this.set('query', '');
-        this.set('search', $('#filter_form input[name=search]').val());
-      }
-    },
-  },
-});
+  @action
+  submitForm(event) {
+    event.preventDefault();
+    if($('#filter_type_advanced').css('display') === 'none') {
+      this.set('search', '');
+      this.set('query', JSON.stringify($('#query_builder').queryBuilder('getRules')));
+    } else {
+      this.set('query', '');
+      this.set('search', $('#filter_form input[name=search]').val());
+    }
+  }
+}

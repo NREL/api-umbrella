@@ -1,5 +1,6 @@
-import config from '../config/environment';
 import { defaultStack } from '@pnotify/core';
+
+import config from '../config/environment';
 
 export function initialize() {
   if(config.integrationTestMode === true) {

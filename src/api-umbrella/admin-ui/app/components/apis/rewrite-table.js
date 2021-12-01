@@ -1,33 +1,43 @@
+// eslint-disable-next-line ember/no-classic-components
 import Component from '@ember/component';
+import { action } from '@ember/object';
+import { reads } from '@ember/object/computed';
+import { inject } from '@ember/service';
+import { tagName } from '@ember-decorators/component';
 // eslint-disable-next-line ember/no-mixins
 import Sortable from 'api-umbrella-admin-ui/mixins/sortable';
 import bootbox from 'bootbox';
-import { computed } from '@ember/object';
-import { inject } from '@ember/service';
+import classic from 'ember-classic-decorator';
 
-export default Component.extend(Sortable, {
-  store: inject(),
-  openModal: false,
+@classic
+@tagName("")
+export default class RewriteTable extends Component.extend(Sortable) {
+  @inject()
+  store;
 
-  sortableCollection: computed.reads('model.rewrites'),
+  openModal = false;
 
-  actions: {
-    add() {
-      this.set('rewriteModel', this.store.createRecord('api/rewrite'));
-      this.set('openModal', true);
-    },
+  @reads('model.rewrites')
+  sortableCollection;
 
-    edit(rewrite) {
-      this.set('rewriteModel', rewrite);
-      this.set('openModal', true);
-    },
+  @action
+  add() {
+    this.set('rewriteModel', this.store.createRecord('api/rewrite'));
+    this.set('openModal', true);
+  }
 
-    remove(rewrite) {
-      bootbox.confirm('Are you sure you want to remove this rewrite?', function(response) {
-        if(response) {
-          this.model.rewrites.removeObject(rewrite);
-        }
-      }.bind(this));
-    },
-  },
-});
+  @action
+  edit(rewrite) {
+    this.set('rewriteModel', rewrite);
+    this.set('openModal', true);
+  }
+
+  @action
+  remove(rewrite) {
+    bootbox.confirm('Are you sure you want to remove this rewrite?', function(response) {
+      if(response) {
+        this.model.rewrites.removeObject(rewrite);
+      }
+    }.bind(this));
+  }
+}

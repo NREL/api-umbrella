@@ -1,15 +1,21 @@
-import $ from 'jquery';
+// eslint-disable-next-line ember/no-classic-components
 import Component from '@ember/component';
-import JsDiff from 'diff';
-import LoadingButton from 'api-umbrella-admin-ui/utils/loading-button';
-import bootbox from 'bootbox';
-import { computed } from '@ember/object';
+import { action, computed } from '@ember/object';
 import { run } from '@ember/runloop';
 import { success } from '@pnotify/core';
+import LoadingButton from 'api-umbrella-admin-ui/utils/loading-button';
+import bootbox from 'bootbox';
+import Diff from 'diff';
+import classic from 'ember-classic-decorator';
+import $ from 'jquery';
 
-export default Component.extend({
-  didInsertElement() {
-    this.publishButton = this.element.querySelector('.publish-button');
+@classic
+export default class PublishForm extends Component {
+  tagName = '';
+
+  @action
+  didInsert(element) {
+    this.publishButton = element.querySelector('.publish-button');
     this.$toggleCheckboxesLink = $('#toggle_checkboxes');
     $('#publish_form').on('change', ':checkbox', this.onCheckboxChange.bind(this));
 
@@ -20,11 +26,11 @@ export default Component.extend({
 
     this.onCheckboxChange();
 
-    this.$().find('.diff-active-yaml').each(function() {
+    $(element).find('.diff-active-yaml').each(function() {
       let activeYaml = $(this).text();
       let pendingYaml = $(this).siblings('.diff-pending-yaml').text();
 
-      let diff = JsDiff.diffWords(activeYaml, pendingYaml);
+      let diff = Diff.diffWords(activeYaml, pendingYaml);
 
       let fragment = document.createDocumentFragment();
       for(let i = 0; i < diff.length; i++) {
@@ -51,7 +57,7 @@ export default Component.extend({
       let diffOutput = $(this).siblings('.config-diff');
       diffOutput.html(fragment);
     });
-  },
+  }
 
   onCheckboxChange() {
     let $unchecked = $('#publish_form :checkbox:not(:checked)');
@@ -69,9 +75,13 @@ export default Component.extend({
         this.publishButton.disabled = true;
       }
     }
-  },
+  }
 
-  hasChanges: computed('model.config.apis.{new.@each,modified.@each,deleted.@each}', 'model.config.website_backends.{new.@each,modified.@each,deleted.@each}', function() {
+  @computed(
+    'model.config.apis.{new.@each,modified.@each,deleted.@each}',
+    'model.config.website_backends.{new.@each,modified.@each,deleted.@each}',
+  )
+  get hasChanges() {
     let newApis = this.model.config.apis.new;
     let modifiedApis = this.model.config.apis.modified;
     let deletedApis = this.model.config.apis.deleted;
@@ -84,56 +94,56 @@ export default Component.extend({
     } else {
       return false;
     }
-  }),
+  }
 
-  actions: {
-    toggleAllCheckboxes() {
-      let $checkboxes = $('#publish_form :checkbox');
-      let $unchecked = $('#publish_form :checkbox').not(':checked');
+  @action
+  toggleAllCheckboxes() {
+    let $checkboxes = $('#publish_form :checkbox');
+    let $unchecked = $('#publish_form :checkbox').not(':checked');
 
-      if($unchecked.length > 0) {
-        $checkboxes.prop('checked', true);
-      } else {
-        $checkboxes.prop('checked', false);
+    if($unchecked.length > 0) {
+      $checkboxes.prop('checked', true);
+    } else {
+      $checkboxes.prop('checked', false);
+    }
+
+    this.onCheckboxChange();
+  }
+
+  @action
+  publish() {
+    let form = $('#publish_form');
+
+    LoadingButton.loading(this.publishButton);
+
+    $.ajax({
+      url: '/api-umbrella/v1/config/publish',
+      type: 'POST',
+      data: form.serialize(),
+    }).then(run.bind(this, function() {
+      LoadingButton.reset(this.publishButton);
+      success({
+        title: 'Published',
+        text: 'Successfully published the configuration<br>Changes should be live in a few seconds...',
+        textTrusted: true,
+      });
+
+      this.refreshCurrentRouteController();
+    }), function(response) {
+      let message = '<h3>Error</h3>';
+      try {
+        let errors = response.responseJSON.errors;
+        for(const prop in errors) {
+          message += prop + ': ' + errors[prop].join(', ') + '<br>';
+        }
+      } catch(e) {
+        message = 'An unexpected error occurred: ' + response.responseText;
       }
 
-      this.onCheckboxChange();
-    },
-
-    publish() {
-      let form = $('#publish_form');
-
-      LoadingButton.loading(this.publishButton);
-
-      $.ajax({
-        url: '/api-umbrella/v1/config/publish',
-        type: 'POST',
-        data: form.serialize(),
-      }).then(run.bind(this, function() {
-        LoadingButton.reset(this.publishButton);
-        success({
-          title: 'Published',
-          text: 'Successfully published the configuration<br>Changes should be live in a few seconds...',
-          textTrusted: true,
-        });
-
-        this.refreshCurrentRouteController();
-      }), function(response) {
-        let message = '<h3>Error</h3>';
-        try {
-          let errors = response.responseJSON.errors;
-          for(let prop in errors) {
-            message += prop + ': ' + errors[prop].join(', ') + '<br>';
-          }
-        } catch(e) {
-          message = 'An unexpected error occurred: ' + response.responseText;
-        }
-
-        LoadingButton.reset(this.publishButton);
-        // eslint-disable-next-line no-console
-        console.error(message);
-        bootbox.alert(message);
-      });
-    },
-  },
-});
+      LoadingButton.reset(this.publishButton);
+      // eslint-disable-next-line no-console
+      console.error(message);
+      bootbox.alert(message);
+    });
+  }
+}

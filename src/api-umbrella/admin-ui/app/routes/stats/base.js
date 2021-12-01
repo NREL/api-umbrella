@@ -1,13 +1,14 @@
-import $ from 'jquery';
-// eslint-disable-next-line ember/no-mixins
-import AuthenticatedRouteMixin from 'ember-simple-auth/mixins/authenticated-route-mixin';
-import Route from '@ember/routing/route';
+import { action } from '@ember/object';
+import AuthenticatedRoute from 'api-umbrella-admin-ui/routes/authenticated-route';
 import bootbox from 'bootbox';
+import classic from 'ember-classic-decorator';
+import $ from 'jquery';
 import cloneDeep from 'lodash-es/cloneDeep';
-import moment from 'moment-timezone';
 import omit from 'lodash-es/omit';
+import moment from 'moment-timezone';
 
-export default Route.extend(AuthenticatedRouteMixin, {
+@classic
+export default class BaseRoute extends AuthenticatedRoute {
   setupController(controller, model) {
     controller.set('model', model);
     controller.set('dateRanges', this.dateRanges);
@@ -17,10 +18,10 @@ export default Route.extend(AuthenticatedRouteMixin, {
 
     $('ul.navbar-nav li').removeClass('active');
     $('ul.navbar-nav li.nav-analytics').addClass('active');
-  },
+  }
 
   beforeModel() {
-    this._super(...arguments);
+    super.beforeModel(...arguments);
 
     let timezone = this.session.data.authenticated.analytics_timezone;
     let dateRanges = {
@@ -87,8 +88,7 @@ export default Route.extend(AuthenticatedRouteMixin, {
     this.set('dateRanges', dateRanges);
     this.set('allQueryParamValues', allParams);
     this.set('backendQueryParamValues', omit(allParams, ['date_range']));
-  },
-
+  }
 
   validateParams(params) {
     let valid = true;
@@ -118,12 +118,17 @@ export default Route.extend(AuthenticatedRouteMixin, {
     }
 
     return valid;
-  },
+  }
 
-  actions: {
-    queryParamsDidChange(changed, present) {
-      this._super(...arguments);
-      this.set('presentQueryParamValues', present);
-    },
-  },
-});
+  @action
+  queryParamsDidChange(changed, present) {
+    // TODO: This call to super is within an action, and has to refer to the parent
+    // class's actions to be safe. This should be refactored to call a normal method
+    // on the parent class. If the parent class has not been converted to native
+    // classes, it may need to be refactored as well. See
+    // https: //github.com/scalvert/ember-native-class-codemod/blob/master/README.md
+    // for more details.
+    super.actions.queryParamsDidChange.call(this, ...arguments);
+    this.set('presentQueryParamValues', present);
+  }
+}

@@ -1,43 +1,45 @@
-<Apis::RewriteForm @model={{this.rewriteModel}} @collection={{this.model.rewrites}} @openModal={{this.openModal}} />
+<div ...attributes>
+  <Apis::RewriteForm @model={{this.rewriteModel}} @collection={{this.model.rewrites}} @openModal={{this.openModal}} />
 
-<table id="rewrites_table" class="table table-striped table-sm">
-  <thead>
-    <tr>
-      <th style="width: 135px;">Matching Type</th>
-      <th style="width: 125px;">HTTP Method</th>
-      <th>From</th>
-      <th>To</th>
-      <th></th>
-      <th class="reorder-handle"></th>
-    </tr>
-  </thead>
-  <tbody>
-    {{#if this.model.rewrites}}
-      {{#each this.model.rewrites as |rewrite|}}
-        <tr data-guid={{guid-for rewrite}}>
-          <td>{{rewrite.matcherType}}</td>
-          <td>{{rewrite.httpMethod}}</td>
-          <td>{{rewrite.frontendMatcher}}</td>
-          <td>{{rewrite.backendReplacement}}</td>
-          <td class="table-row-actions">
-            <a href="#" {{action "edit" rewrite}}>{{fa-icon "pencil-alt"}}{{t "admin.edit"}}</a>
-            <a href="#" class="remove-action" {{action "remove" rewrite}}>{{fa-icon "times"}}{{t "admin.remove"}}</a>
-          </td>
-          <td class="reorder-handle">{{fa-icon "bars"}}</td>
-        </tr>
-      {{/each}}
-    {{else}}
-      <tr class="empty"><td colspan="6">{{t "admin.api.rewrites.empty_list" add=(t "admin.api.rewrites.add")}}</td></tr>
-    {{/if}}
-  </tbody>
-</table>
-<div class="row-fluid">
-  <div class="span6">
-    <button type="button" class="btn btn-light btn-sm" {{action "add"}}>{{fa-icon "plus-circle"}} {{t "admin.api.rewrites.add"}}</button>
-  </div>
-  <div class="span6 text-right">
-    {{#if this.isReorderable}}
-      <button type="button" id="rewrites_reorder" class="btn btn-light btn-sm" {{action "reorderCollection" "rewrites"}}>{{fa-icon "bars"}} <span class="reorder-button-text">{{t "admin.reorder"}}</span></button>
-    {{/if}}
+  <table id="rewrites_table" class="table table-striped table-sm">
+    <thead>
+      <tr>
+        <th style="width: 135px;">Matching Type</th>
+        <th style="width: 125px;">HTTP Method</th>
+        <th>From</th>
+        <th>To</th>
+        <th></th>
+        <th class="reorder-handle"></th>
+      </tr>
+    </thead>
+    <tbody>
+      {{#if this.model.rewrites}}
+        {{#each this.model.rewrites as |rewrite|}}
+          <tr data-guid={{guid-for rewrite}}>
+            <td>{{rewrite.matcherType}}</td>
+            <td>{{rewrite.httpMethod}}</td>
+            <td>{{rewrite.frontendMatcher}}</td>
+            <td>{{rewrite.backendReplacement}}</td>
+            <td class="table-row-actions">
+              <a href="#" {{action "edit" rewrite}}><FaIcon @icon="pencil-alt" />{{t "admin.edit"}}</a>
+              <a href="#" class="remove-action" {{action "remove" rewrite}}><FaIcon @icon="times" />{{t "admin.remove"}}</a>
+            </td>
+            <td class="reorder-handle"><FaIcon @icon="bars" /></td>
+          </tr>
+        {{/each}}
+      {{else}}
+        <tr class="empty"><td colspan="6">{{t "admin.api.rewrites.empty_list" add=(t "admin.api.rewrites.add")}}</td></tr>
+      {{/if}}
+    </tbody>
+  </table>
+  <div class="row-fluid">
+    <div class="span6">
+      <button type="button" class="btn btn-light btn-sm" {{action "add"}}><FaIcon @icon="plus-circle" /> {{t "admin.api.rewrites.add"}}</button>
+    </div>
+    <div class="span6 text-right">
+      {{#if this.isReorderable}}
+        <button type="button" id="rewrites_reorder" class="btn btn-light btn-sm" {{action "reorderCollection" "rewrites"}}><FaIcon @icon="bars" /> <span class="reorder-button-text">{{t "admin.reorder"}}</span></button>
+      {{/if}}
+    </div>
   </div>
 </div>

@@ -3,14 +3,6 @@
 LOCAL proxy.local.incoming_ip_to_bind STRING {{trafficserver.host}}
 CONFIG proxy.config.http.server_ports STRING {{trafficserver.port}}
 
-# Disable Trafficserver's ability to modify config files and keep backups. This
-# ensures the live configuration doesn't stray from our installed templates.
-# Otherwise race conditions can happen on reloads between API Umbrella writing
-# the config files, and Trafficserver restoring or rewriting the files with old
-# configuration.
-CONFIG proxy.config.disable_configuration_modification INT 1
-CONFIG proxy.config.admin.number_config_bak INT 0
-
 # Use the special "#-1" value to keep running as the current user (perp will
 # handle switching the user).
 CONFIG proxy.config.admin.user_id STRING #-1
@@ -42,6 +34,11 @@ CONFIG proxy.config.diags.output.error STRING E
 CONFIG proxy.config.diags.output.fatal STRING E
 CONFIG proxy.config.diags.output.alert STRING E
 CONFIG proxy.config.diags.output.emergency STRING E
+
+# Allow longer lines in logging.
+CONFIG proxy.config.log.max_line_size INT 24576;
+CONFIG proxy.config.log.ascii_buffer_size INT 24576;
+CONFIG proxy.config.log.log_buffer_size INT 24576;
 
 {{^log._destination_console?}}
 # Rotate log files with logrotate to be consistent with all the other API
@@ -75,19 +72,9 @@ CONFIG proxy.config.http.transaction_no_activity_timeout_out INT {{trafficserver
 
 # Retry connections if the connection was never established (eg, if the API
 # backend was temporarily down or a keepalive connection was killed).
-#
-# Note that this would normally retry in the event the API backend is slow to
-# respond, since the connection timeout is actually for when the first byte
-# back is received (https://issues.apache.org/jira/browse/TS-242). But we don't
-# usually want to retry in the case the backend is slow to respond, since that
-# might indicate the backend is already struggling or the specific request is
-# slow/problematic. So we configure nginx's timeout in front to be shorter than
-# our "connect_attempts_timeout" timeout here, which should ensure that
-# long-running connections get closed earlier and connect_attempts_timeout is
-# never hit. So this should ensure that this retry only kicks if there were
-# brief connectivity issues (where the connect failed quickly).
-CONFIG proxy.config.http.connect_attempts_max_retries INT 5
-CONFIG proxy.config.http.connect_attempts_max_retries_dead_server INT 3
+CONFIG proxy.config.http.connect_attempts_rr_retries INT 3
+CONFIG proxy.config.http.connect_attempts_max_retries INT 3
+CONFIG proxy.config.http.connect_attempts_max_retries_dead_server INT 1
 
 # Don't use keepalive connections for POST requests, since those can't safely be retried.
 #
@@ -216,7 +203,7 @@ CONFIG proxy.config.net.sock_option_flag_out INT 3
 # Keepalive connections to backend origin servers. Retain some idle connections
 # open to the backend servers to improve performance.
 CONFIG proxy.config.http.keep_alive_no_activity_timeout_out INT {{router.api_backends.keepalive_idle_timeout}}
-CONFIG proxy.config.http.origin_min_keep_alive_connections INT {{router.api_backends.keepalive_connections}}
+CONFIG proxy.config.http.per_server.connection.min INT {{router.api_backends.keepalive_connections}}
 
 # Enable for debug logging.
 # CONFIG proxy.config.diags.debug.enabled INT 1

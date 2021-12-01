@@ -1,10 +1,10 @@
-import LoadingButton from 'api-umbrella-admin-ui/utils/loading-button';
 import Mixin from '@ember/object/mixin'
-import bootbox from 'bootbox';
 import { inject } from '@ember/service';
-import isFunction from 'lodash-es/isFunction';
-import scrollTo from 'jquery.scrollto';
 import { success } from '@pnotify/core';
+import LoadingButton from 'api-umbrella-admin-ui/utils/loading-button';
+import bootbox from 'bootbox';
+import scrollTo from 'jquery.scrollto';
+import isFunction from 'lodash-es/isFunction';
 
 // eslint-disable-next-line ember/no-new-mixins
 export default Mixin.create({
@@ -27,7 +27,7 @@ export default Mixin.create({
   },
 
   saveRecord(options) {
-    const button = this.element.querySelector('.save-button');
+    const button = options.element.querySelector('.save-button');
     LoadingButton.loading(button);
 
     this.setProperties({

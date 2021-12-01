@@ -1,19 +1,21 @@
-<div class="toggle-facet-table"><a href="#" {{action "toggleFacetTable"}}>{{this.label}}</a></div>
-<table class="table table-sm facet-table" style="display: none;">
-  <thead>
-    <tr>
-      <th>User</th>
-      <th class="value">Hits</th>
-      <th></th>
-    </tr>
-  </thead>
-  <tbody>
-    {{#each this.facets as |facet|}}
+<div ...attributes>
+  <div class="toggle-facet-table"><a href="#" {{action "toggleFacetTable"}}>{{this.label}}</a></div>
+  <table class="table table-sm facet-table" style="display: none;">
+    <thead>
       <tr>
-        <td><a href={{facet.link}}>{{facet.key}}</a></td>
-        <td class="value">{{format-number facet.count}}</td>
-        <td class="value">{{facet.percent}}%</td>
+        <th>User</th>
+        <th class="value">Hits</th>
+        <th></th>
       </tr>
-    {{/each}}
-  </tbody>
-</table>
+    </thead>
+    <tbody>
+      {{#each this.facets as |facet|}}
+        <tr>
+          <td><a href={{facet.link}}>{{facet.key}}</a></td>
+          <td class="value">{{format-number facet.count}}</td>
+          <td class="value">{{facet.percent}}%</td>
+        </tr>
+      {{/each}}
+    </tbody>
+  </table>
+</div>

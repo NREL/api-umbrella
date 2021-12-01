@@ -46,7 +46,8 @@ class Test::Proxy::Dns::TestStaleCaching < Minitest::Test
       set_dns_records([], ["local-zone: '#{unique_test_hostname}' always_nxdomain"])
       start_time = Time.now.utc
       wait_for_response("/#{unique_test_id}/stale-caching-down-after-ttl-expires/", {
-        :code => 502,
+        :code => 500,
+        :body => /Unknown Host/,
       })
       duration = Time.now.utc - start_time
       min_duration = ttl - TTL_BUFFER_NEG
@@ -77,7 +78,8 @@ class Test::Proxy::Dns::TestStaleCaching < Minitest::Test
       set_dns_records([], ["local-zone: '#{unique_test_hostname}' always_refuse"])
       start_time = Time.now.utc
       wait_for_response("/#{unique_test_id}/stale-caching-down-after-ttl-expires/", {
-        :code => 502,
+        :code => 500,
+        :body => /Unknown Host/,
       })
       duration = Time.now.utc - start_time
       min_duration = ttl + MAX_STALE - TTL_BUFFER_NEG

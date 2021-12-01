@@ -1,28 +1,30 @@
-<ErrorMessages @model={{this.model}} />
+<div ...attributes>
+  <ErrorMessages @model={{this.model}} />
 
-<form {{action "submit" on="submit"}}>
-  <FieldsFor @model={{this.model}} @style="horizontal" as |f|>
-    <fieldset class="form-horizontal condensed">
-      {{f.text-field "name" label="Name"}}
-      {{f.text-field "host" label="Host"}}
-      {{f.text-field "pathPrefix" label="Path Prefix"}}
-    </fieldset>
+  <form {{on "submit" this.submitForm}}>
+    <FieldsFor @model={{this.model}} @style="horizontal" as |f|>
+      <fieldset class="form-horizontal condensed">
+        {{f.text-field "name" label="Name"}}
+        {{f.text-field "host" label="Host"}}
+        {{f.text-field "pathPrefix" label="Path Prefix"}}
+      </fieldset>
 
-    <div class="row">
-      <div class="col-sm-6">
-        <button type="submit" class="btn btn-lg btn-primary save-button"><span class="btn-label">Save</span><span class="btn-loading-label">{{fa-icon "sync-alt" spin=true}}Saving...</span></button>
+      <div class="row">
+        <div class="col-sm-6">
+          <button type="submit" class="btn btn-lg btn-primary save-button"><span class="btn-label">Save</span><span class="btn-loading-label"><FaIcon @icon="sync-alt" spin={{true}} />Saving...</span></button>
+        </div>
+        <div class="col-sm-6 record-details">
+          {{#if this.model.id}}
+            Created: {{format-date this.model.createdAt}} by {{this.model.creator.username}}<br>
+            Last Updated: {{format-date this.model.updatedAt}} by {{this.model.updater.username}}<br>
+          {{/if}}
+        </div>
       </div>
-      <div class="col-sm-6 record-details">
-        {{#if this.model.id}}
-          Created: {{format-date this.model.createdAt}} by {{this.model.creator.username}}<br>
-          Last Updated: {{format-date this.model.updatedAt}} by {{this.model.updater.username}}<br>
-        {{/if}}
-      </div>
-    </div>
-    {{#if this.model.id}}
-      <div class="form-extra-actions">
-        <a href="#" class="remove-action" {{action "delete"}}>{{fa-icon "times"}}Delete API Scope</a>
-      </div>
-    {{/if}}
-  </FieldsFor>
-</form>
+      {{#if this.model.id}}
+        <div class="form-extra-actions">
+          <a href="#" class="remove-action" {{action "delete"}}><FaIcon @icon="times" />Delete API Scope</a>
+        </div>
+      {{/if}}
+    </FieldsFor>
+  </form>
+</div>

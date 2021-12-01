@@ -319,7 +319,7 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
   end
 
   def test_logs_requests_that_time_out
-    time_out_delay = $config["nginx"]["proxy_connect_timeout"] * 1000 + 3500
+    time_out_delay = $config["nginx"]["proxy_read_timeout"] * 1000 + 3500
     response = Typhoeus.get("http://127.0.0.1:9080/api/delay/#{time_out_delay}", log_http_options)
     assert_response_code(504, response)
 
@@ -331,7 +331,7 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
     # mainly want to ensure it's how long the request was open before timing
     # out, rather than the response time of the underlying API (since it timed
     # out and was never completed).
-    expected_timeout_response_time = $config["nginx"]["proxy_connect_timeout"] * 1000
+    expected_timeout_response_time = $config["nginx"]["proxy_read_timeout"] * 1000
     assert_in_delta(expected_timeout_response_time, record["response_time"], 2100)
     assert_operator(expected_timeout_response_time, :<, time_out_delay)
   end

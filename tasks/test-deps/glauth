@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+glauth_version="2.0.0"
+glauth_hash="dd0c29249f08cef59b025c530cc180a1d919bab771668604bf3d4215aa73c70a"
+
+set -e -u -x
+source ./tasks/helpers.sh
+
+task_working_dir
+download "https://github.com/glauth/glauth/releases/download/v$glauth_version/glauth64" "sha256" "$glauth_hash"
+
+install -D -m 755 _persist/downloads/glauth64 "$TEST_INSTALL_PREFIX/bin/glauth"
+
+stamp

@@ -1,16 +1,23 @@
-import $ from 'jquery';
+// eslint-disable-next-line ember/no-classic-components
 import Component from '@ember/component';
-import DataTablesHelpers from 'api-umbrella-admin-ui/utils/data-tables-helpers';
-import I18n from 'i18n-js';
-import { computed } from '@ember/object';
-import escape from 'lodash-es/escape';
+import { action, computed } from '@ember/object';
 import { inject } from '@ember/service';
+import DataTablesHelpers from 'api-umbrella-admin-ui/utils/data-tables-helpers';
+import classic from 'ember-classic-decorator';
+import I18n from 'i18n-js';
+import $ from 'jquery';
+import escape from 'lodash-es/escape';
 
-export default Component.extend({
-  session: inject('session'),
+@classic
+export default class IndexTable extends Component {
+  tagName = '';
 
-  didInsertElement() {
-    let dataTable = this.$().find('table').DataTable({
+  @inject('session')
+  session;
+
+  @action
+  didInsert(element) {
+    let dataTable = $(element).find('table').DataTable({
       serverSide: true,
       ajax: '/api-umbrella/v1/admins.json',
       pageLength: 50,
@@ -62,14 +69,15 @@ export default Component.extend({
       delete params.length;
       this.set('queryParams', params);
     }.bind(this));
-  },
+  }
 
-  downloadUrl: computed('queryParams', 'session.data.authenticated.api_key', function() {
+  @computed('queryParams', 'session.data.authenticated.api_key')
+  get downloadUrl() {
     let params = this.queryParams;
     if(params) {
       params = $.param(params);
     }
 
     return '/api-umbrella/v1/admins.csv?api_key=' + this.session.data.authenticated.api_key + '&' + params;
-  }),
-});
+  }
+}

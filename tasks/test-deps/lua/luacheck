@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-lua_luacheck_version="0.24.0-2"
+lua_luacheck_version="0.25.0-1"
 
 set -e -u -x
 source ./tasks/helpers.sh

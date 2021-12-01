@@ -21,39 +21,6 @@ module.exports = function(environment) {
       // Here you can pass flags/options to your application instance
       // when it is created
     },
-
-    fontawesome: {
-      icons: {
-        'free-solid-svg-icons': [
-          'arrow-down',
-          'arrow-right',
-          'bars',
-          'calendar',
-          'caret-down',
-          'cog',
-          'lock',
-          'map-marker-alt',
-          'pencil-alt',
-          'plus',
-          'plus-circle',
-          'question-circle',
-          'signal',
-          'sitemap',
-          'sort',
-          'sort-down',
-          'sort-up',
-          'sync-alt',
-          'times',
-          'upload',
-          'user',
-          'users',
-        ],
-        'free-regular-svg-icons': [
-          'file',
-          'folder',
-        ],
-      },
-    },
   };
 
   if(environment === 'development') {

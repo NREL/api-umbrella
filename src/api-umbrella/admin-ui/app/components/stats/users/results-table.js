@@ -1,17 +1,22 @@
-// eslint-disable-next-line ember/no-observers
-import { computed, observer } from '@ember/object';
-
-import $ from 'jquery';
+// eslint-disable-next-line ember/no-classic-components
 import Component from '@ember/component';
+import { action, computed } from '@ember/object';
+import { observes } from '@ember-decorators/object';
 import DataTablesHelpers from 'api-umbrella-admin-ui/utils/data-tables-helpers';
+import classic from 'ember-classic-decorator';
+import $ from 'jquery';
 import clone from 'lodash-es/clone';
 import escape from 'lodash-es/escape';
 import extend from 'lodash-es/extend';
 import numeral from 'numeral';
 
-export default Component.extend({
-  didInsertElement() {
-    this.$().find('table').DataTable({
+@classic
+export default class ResultsTable extends Component {
+  tagName = '';
+
+  @action
+  didInsert(element) {
+    this.table = $(element).find('table').DataTable({
       searching: false,
       serverSide: true,
       ajax: {
@@ -84,14 +89,18 @@ export default Component.extend({
         },
       ],
     });
-  },
+  }
 
   // eslint-disable-next-line ember/no-observers
-  refreshData: observer('backendQueryParamValues', function() {
-    this.$().find('table').DataTable().draw();
-  }),
+  @observes('backendQueryParamValues')
+  refreshData() {
+    if(this.table) {
+      this.table.draw();
+    }
+  }
 
-  downloadUrl: computed('backendQueryParamValues', function() {
+  @computed('backendQueryParamValues')
+  get downloadUrl() {
     return '/admin/stats/users.csv?' + $.param(this.backendQueryParamValues);
-  }),
-});
+  }
+}

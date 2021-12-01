@@ -1,3 +1,5 @@
+return if ENV["RAILS_ASSETS_PRECOMPILE"]
+
 Rails.application.config.after_initialize do
   I18n.backend.available_locales
   translations = I18n.backend.send(:translations)

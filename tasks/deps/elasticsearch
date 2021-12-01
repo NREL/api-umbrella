@@ -11,7 +11,11 @@ download "https://download.elastic.co/elasticsearch/elasticsearch/elasticsearch-
 extract_download "elasticsearch-$elasticsearch_version.tar.gz"
 
 mkdir -p "$STAGE_EMBEDDED_DIR/elasticsearch"
-rsync -a -v --checksum --delete-after "elasticsearch-$elasticsearch_version/" "$STAGE_EMBEDDED_DIR/elasticsearch/"
+rsync -a -v --checksum \
+  --delete-after \
+  --delete-excluded \
+  "elasticsearch-$elasticsearch_version/" \
+  "$STAGE_EMBEDDED_DIR/elasticsearch/"
 mkdir -p "$STAGE_EMBEDDED_DIR/elasticsearch/plugins"
 
 stamp

@@ -1,9 +1,11 @@
 import Controller from '@ember/controller';
+import { action } from '@ember/object';
+import classic from 'ember-classic-decorator';
 
-export default Controller.extend({
-  actions: {
-    refreshCurrentRouteController(){
-      this.send('refreshCurrentRoute');
-    },
-  },
-});
+@classic
+export default class PublishController extends Controller {
+  @action
+  refreshCurrentRouteController() {
+    this.send('refreshCurrentRoute');
+  }
+}

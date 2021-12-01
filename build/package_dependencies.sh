@@ -11,16 +11,6 @@ detect_os_release
 core_package_non_build_dependencies=()
 
 if [[ "$ID_NORMALIZED" == "rhel" ]]; then
-  perl_digest_md5_package="perl-Digest-MD5"
-  procps_package="procps-ng"
-  util_linux_package="util-linux"
-
-  if [[ "$VERSION_ID" == "6" ]]; then
-    perl_digest_md5_package="perl"
-    procps_package="procps"
-    util_linux_package="util-linux-ng"
-  fi
-
   core_package_dependencies=(
     # General
     bash
@@ -41,7 +31,6 @@ if [[ "$ID_NORMALIZED" == "rhel" ]]; then
 
     # TrafficServer
     libxml2
-    tcl
 
     # ElasticSearch
     java-1.8.0-openjdk-headless
@@ -54,7 +43,7 @@ if [[ "$ID_NORMALIZED" == "rhel" ]]; then
     initscripts
 
     # For kill used in stop/reopen-logs commands.
-    "$util_linux_package"
+    util-linux
 
     # For pstree used in reopen-logs command.
     psmisc
@@ -94,12 +83,14 @@ if [[ "$ID_NORMALIZED" == "rhel" ]]; then
     rpm-build
     rsync
     tar
-    tcl-devel
     unzip
     xz
 
     # For OpenResty's "opm" CLI.
-    "$perl_digest_md5_package"
+    perl-Digest-MD5
+  )
+  test_package_dependencies=(
+    unbound
   )
   test_build_dependencies=(
     # Binary and readelf tests
@@ -112,56 +103,42 @@ if [[ "$ID_NORMALIZED" == "rhel" ]]; then
     # For checking for file descriptor leaks during the tests.
     lsof
 
-    # Unbound
-    bison
-    expat-devel
-    flex
-
     # Fonts for Capybara screenshots.
     urw-fonts
 
     # For pkill/pgrep used for process tests.
-    "$procps_package"
-
-    # OpenLDAP
-    groff
+    procps-ng
 
     # For running lsof tests in Docker as root
     sudo
   )
 
   # Install GCC 7+ for compiling TrafficServer (C++17 required).
-  if [[ "$VERSION_ID" == "6" || "$VERSION_ID" == "7" ]]; then
+  if [[ "$VERSION_ID" == "7" ]]; then
     core_build_dependencies+=(
       centos-release-scl
       devtoolset-7
     )
-  fi
-
-  # Install Python 2.7 for compiling ICU.
-  if [[ "$VERSION_ID" == "6" ]]; then
-    core_build_dependencies+=(
-      centos-release-scl
-      python27
+  else
+    core_package_dependencies+=(
+      libicu-devel
     )
   fi
 elif [[ "$ID_NORMALIZED" == "debian" ]]; then
-  libcurl_version=3
-  openjdk_version=8
+  libcurl_version=4
+  libffi_version=7
 
-  if [[ "$ID" == "ubuntu" && "$VERSION_ID" == "18.04" ]]; then
-    libcurl_version=4
-  fi
-
-  if [[ "$ID" == "debian" && "$VERSION_ID" == "8" ]]; then
-    openjdk_version=7
+  if [[ "$ID" == "debian" && ( "$VERSION_ID" == "9" || "$VERSION_ID" == "10" ) ]]; then
+    libffi_version=6
+  elif [[ "$ID" == "ubuntu" && "$VERSION_ID" == "18.04" ]]; then
+    libffi_version=6
   fi
 
   core_package_dependencies=(
     # General
     bash
     libc6
-    libffi6
+    "libffi$libffi_version"
     libncurses5
     libpcre3
     libuuid1
@@ -177,10 +154,6 @@ elif [[ "$ID_NORMALIZED" == "debian" ]]; then
 
     # TrafficServer
     libxml2
-    tcl
-
-    # ElasticSearch
-    "openjdk-$openjdk_version-jre-headless"
 
     # rsyslog omelasticsearch
     "libcurl$libcurl_version"
@@ -204,6 +177,8 @@ elif [[ "$ID_NORMALIZED" == "debian" ]]; then
 
     # For prefixed console output (gnu version for strftime support).
     gawk
+
+    libicu-dev
   )
   core_build_dependencies=(
     autoconf
@@ -229,10 +204,13 @@ elif [[ "$ID_NORMALIZED" == "debian" ]]; then
     python
     rsync
     tar
-    tcl-dev
     unzip
     uuid-dev
     xz-utils
+    zlib1g-dev
+  )
+  test_package_dependencies=(
+    unbound
   )
   test_build_dependencies=(
     # Binary and readelf tests
@@ -240,16 +218,10 @@ elif [[ "$ID_NORMALIZED" == "debian" ]]; then
     binutils
 
     # For installing the mongo-orchestration test dependency.
-    python-virtualenv
     virtualenv
 
     # For checking for file descriptor leaks during the tests.
     lsof
-
-    # Unbound
-    bison
-    flex
-    libexpat-dev
 
     # Fonts for Capybara screenshots.
     gsfonts
@@ -257,20 +229,12 @@ elif [[ "$ID_NORMALIZED" == "debian" ]]; then
     # For pkill/pgrep used for process tests.
     procps
 
-    # OpenLDAP
-    groff-base
-
     # For running lsof tests in Docker as root
     sudo
   )
 
   # Install GCC 7+ for compiling TrafficServer (C++17 required).
-  if [[ "$ID" == "ubuntu" && "$VERSION_ID" == "16.04" ]]; then
-    core_build_dependencies+=(
-      gcc-7
-      g++-7
-    )
-  elif [[ "$ID" == "debian" && ( "$VERSION_ID" == "8" || "$VERSION_ID" == "9" ) ]]; then
+  if [[ "$ID" == "debian" && "$VERSION_ID" == "9" ]]; then
     core_build_dependencies+=(
       clang-7
       libc++-7-dev
@@ -280,6 +244,26 @@ elif [[ "$ID_NORMALIZED" == "debian" ]]; then
     core_package_non_build_dependencies+=(
       libc++1
       libc++abi1
+    )
+  fi
+
+  # Since we're still bundling Elasticsearch v2, this depends on an older JDK
+  # version not available in newer Debian releases.
+  if [[ "$ID" == "debian" && ( "$VERSION_ID" == "10" || "$VERSION_ID" == "11" ) ]]; then
+    apt-get update
+    apt-get -y install curl gnupg2
+    echo "deb https://adoptopenjdk.jfrog.io/adoptopenjdk/deb/ $VERSION_CODENAME main" > /etc/apt/sources.list.d/adoptopenjdk.list
+    curl -fsSL https://adoptopenjdk.jfrog.io/adoptopenjdk/api/gpg/key/public | apt-key add -
+    apt-get update
+
+    core_package_dependencies+=(
+      # ElasticSearch
+      "adoptopenjdk-8-hotspot-jre"
+    )
+  else
+    core_package_dependencies+=(
+      # ElasticSearch
+      "openjdk-8-jre-headless"
     )
   fi
 else
@@ -295,6 +279,7 @@ all_build_dependencies=(
 # shellcheck disable=SC2034
 all_dependencies=(
   "${all_build_dependencies[@]}"
+  "${test_package_dependencies[@]}"
   "${test_build_dependencies[@]}"
 )
 

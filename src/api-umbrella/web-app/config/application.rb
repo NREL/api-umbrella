@@ -44,7 +44,7 @@ module ApiUmbrella
       # If no config environment variable is set and we're not using the
       # default runtime config file, then fall back to the default.yml file at
       # the top-level of the api-umbrella repo.
-      if(config_files.blank?)
+      if(config_files.blank? && !ENV["RAILS_ASSETS_PRECOMPILE"])
         config_files << File.expand_path("../../../../config/default.yml", __dir__)
 
         if(Rails.env.test?)
@@ -67,30 +67,34 @@ module ApiUmbrella
       ::ApiUmbrellaConfig = config
       # rubocop:enable Naming/ConstantName
 
-      require "js_locale_helper"
+      unless ENV["RAILS_ASSETS_PRECOMPILE"]
+        require "js_locale_helper"
+      end
     end
 
     # Instead of loading from a mongoid.yml file, load the Mongoid config in
     # code, where it's easier to merge settings from our API Umbrella
     # configuration.
-    initializer "mongoid-config", :after => "mongoid.load-config" do
-      config = {
-        :clients => {
-          :default => {
-            :uri => ApiUmbrellaConfig[:mongodb][:url],
-            :options => {
-              :read => {
-                :mode => ApiUmbrellaConfig[:mongodb][:read_preference].to_s.underscore.to_sym,
+    unless ENV["RAILS_ASSETS_PRECOMPILE"]
+      initializer "mongoid-config", :after => "mongoid.load-config" do
+        config = {
+          :clients => {
+            :default => {
+              :uri => ApiUmbrellaConfig[:mongodb][:url],
+              :options => {
+                :read => {
+                  :mode => ApiUmbrellaConfig[:mongodb][:read_preference].to_s.underscore.to_sym,
+                },
+                :truncate_logs => false,
               },
-              :truncate_logs => false,
             },
           },
-        },
-      }
+        }
 
-      Mongoid::Clients.disconnect
-      Mongoid::Clients.clear
-      Mongoid.load_configuration(config)
+        Mongoid::Clients.disconnect
+        Mongoid::Clients.clear
+        Mongoid.load_configuration(config)
+      end
     end
 
     # Settings in config/environments/* take precedence over those specified here.
@@ -136,9 +140,12 @@ module ApiUmbrella
     config.active_job.queue_adapter = :delayed_job
 
     config.action_mailer.raise_delivery_errors = true
-    config.action_mailer.default_url_options = {
-      :host => ApiUmbrellaConfig[:web][:default_host],
-    }
+
+    if(ApiUmbrellaConfig[:web] && ApiUmbrellaConfig[:web][:default_host])
+      config.action_mailer.default_url_options = {
+        :host => ApiUmbrellaConfig[:web][:default_host],
+      }
+    end
 
     if(ApiUmbrellaConfig[:web] && ApiUmbrellaConfig[:web][:mailer] && ApiUmbrellaConfig[:web][:mailer][:smtp_settings])
       config.action_mailer.smtp_settings = ApiUmbrellaConfig[:web][:mailer][:smtp_settings]

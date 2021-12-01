@@ -1,41 +1,43 @@
-<Apis::UrlMatchForm @model={{this.urlMatchModel}} @collection={{this.model.urlMatches}} @apiExampleIncomingUrlRoot={{this.model.exampleIncomingUrlRoot}} @apiExampleOutgoingUrlRoot={{this.model.exampleOutgoingUrlRoot}} @openModal={{this.openModal}} />
+<div ...attributes>
+  <Apis::UrlMatchForm @model={{this.urlMatchModel}} @collection={{this.model.urlMatches}} @apiExampleIncomingUrlRoot={{this.model.exampleIncomingUrlRoot}} @apiExampleOutgoingUrlRoot={{this.model.exampleOutgoingUrlRoot}} @openModal={{this.openModal}} />
 
-<div id="url_matches">
-  <table id="url_matches_table" class="table table-striped table-sm">
-    <thead>
-      <tr>
-        <th>Frontend Prefix</th>
-        <th>Backend Prefix</th>
-        <th></th>
-        <th class="reorder-handle"></th>
-      </tr>
-    </thead>
-    <tbody>
-      {{#if this.model.urlMatches}}
-        {{#each this.model.urlMatches as |urlMatch|}}
-          <tr data-guid={{guid-for urlMatch}}>
-            <td>{{urlMatch.frontendPrefix}}</td>
-            <td>{{urlMatch.backendPrefixWithDefault}}</td>
-            <td class="table-row-actions">
-              <a href="#" {{action "edit" urlMatch}}>{{fa-icon "pencil-alt"}}{{t "admin.edit"}}</a>
-              <a href="#" class="remove-action" {{action "remove" urlMatch}}>{{fa-icon "times"}}{{t "admin.remove"}}</a>
-            </td>
-            <td class="reorder-handle">{{fa-icon "bars"}}</td>
-          </tr>
-        {{/each}}
-      {{else}}
-        <tr class="empty"><td colspan="3">{{t "admin.api.url_matches.empty_list" add=(t "admin.api.url_matches.add")}}</td></tr>
-      {{/if}}
-    </tbody>
-  </table>
-  <div class="row">
-    <div class="col-6">
-      <button type="button" class="btn btn-light btn-sm" {{action "add"}}>{{fa-icon "plus-circle"}} {{t "admin.api.url_matches.add"}}</button>
-    </div>
-    <div class="col-6 text-right">
-      {{#if this.isReorderable}}
-        <button type="button" id="url_matches_reorder" class="btn btn-light btn-sm" {{action "reorderCollection" "url_matches"}}>{{fa-icon "bars"}} <span class="reorder-button-text">{{t "admin.reorder"}}</span></button>
-      {{/if}}
+  <div id="url_matches">
+    <table id="url_matches_table" class="table table-striped table-sm">
+      <thead>
+        <tr>
+          <th>Frontend Prefix</th>
+          <th>Backend Prefix</th>
+          <th></th>
+          <th class="reorder-handle"></th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#if this.model.urlMatches}}
+          {{#each this.model.urlMatches as |urlMatch|}}
+            <tr data-guid={{guid-for urlMatch}}>
+              <td>{{urlMatch.frontendPrefix}}</td>
+              <td>{{urlMatch.backendPrefixWithDefault}}</td>
+              <td class="table-row-actions">
+                <a href="#" {{action "edit" urlMatch}}><FaIcon @icon="pencil-alt" />{{t "admin.edit"}}</a>
+                <a href="#" class="remove-action" {{action "remove" urlMatch}}><FaIcon @icon="times" />{{t "admin.remove"}}</a>
+              </td>
+              <td class="reorder-handle"><FaIcon @icon="bars" /></td>
+            </tr>
+          {{/each}}
+        {{else}}
+          <tr class="empty"><td colspan="3">{{t "admin.api.url_matches.empty_list" add=(t "admin.api.url_matches.add")}}</td></tr>
+        {{/if}}
+      </tbody>
+    </table>
+    <div class="row">
+      <div class="col-6">
+        <button type="button" class="btn btn-light btn-sm" {{action "add"}}><FaIcon @icon="plus-circle" /> {{t "admin.api.url_matches.add"}}</button>
+      </div>
+      <div class="col-6 text-right">
+        {{#if this.isReorderable}}
+          <button type="button" id="url_matches_reorder" class="btn btn-light btn-sm" {{action "reorderCollection" "url_matches"}}><FaIcon @icon="bars" /> <span class="reorder-button-text">{{t "admin.reorder"}}</span></button>
+        {{/if}}
+      </div>
     </div>
   </div>
 </div>

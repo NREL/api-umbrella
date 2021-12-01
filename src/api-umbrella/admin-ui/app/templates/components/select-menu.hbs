@@ -1,5 +1,5 @@
-<XSelect @value={{this.value}} @action={{this.action}} @id={{this.inputId}} @class={{this.inputClass}} as |xs|>
-  {{#each this.options as |option|}}
-    <xs.option @value={{option.id}}>{{option.name}}</xs.option>
+<NativeSelectBox @value={{@value}} @onSelect={{this.handleSelect}} id={{@inputId}} class={{@inputClass}} as |sb|>
+  {{#each @options as |opt|}}
+    <sb.Option @value={{opt.id}}>{{opt.name}}</sb.Option>
   {{/each}}
-</XSelect>
+</NativeSelectBox>

@@ -1,6 +1,6 @@
 import Model, { attr } from '@ember-data/model';
+import classic from 'ember-classic-decorator';
 import { buildValidations, validator } from 'ember-cp-validations';
-
 import I18n from 'i18n-js';
 
 const Validations = buildValidations({
@@ -25,17 +25,37 @@ const Validations = buildValidations({
   ],
 });
 
-export default Model.extend(Validations, {
-  frontendHost: attr(),
-  backendProtocol: attr('string', { defaultValue: 'http' }),
-  serverHost: attr(),
-  serverPort: attr('number', { defaultValue: 80 }),
-  createdAt: attr(),
-  updatedAt: attr(),
-  creator: attr(),
-  updater: attr(),
-}).reopenClass({
+@classic
+class WebsiteBackend extends Model.extend(Validations) {
+  @attr()
+  frontendHost;
+
+  @attr('string', { defaultValue: 'http' })
+  backendProtocol;
+
+  @attr()
+  serverHost;
+
+  @attr('number', { defaultValue: 80 })
+  serverPort;
+
+  @attr()
+  createdAt;
+
+  @attr()
+  updatedAt;
+
+  @attr()
+  creator;
+
+  @attr()
+  updater;
+}
+
+WebsiteBackend.reopenClass({
   urlRoot: '/api-umbrella/v1/website_backends',
   singlePayloadKey: 'website_backend',
   arrayPayloadKey: 'data',
 });
+
+export default WebsiteBackend;

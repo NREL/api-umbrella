@@ -610,7 +610,6 @@ server {
     more_set_headers "Content-Encoding: 12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890";
     more_set_headers "Content-Type: 12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890";
     more_set_headers "Server: 12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890";
-    more_set_headers "Transfer-Encoding: 12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890";
     echo $random;
   }
 
@@ -623,6 +622,122 @@ server {
       end
 
       ngx.print("Hello")
+    }
+  }
+
+  location /response-header-value/ {
+    content_by_lua_block {
+      ngx.header[ngx.var.arg_header] = ngx.var.arg_header_value
+      ngx.print("OK")
+    }
+  }
+
+  location /request-body-streaming/ {
+    content_by_lua_block {
+      local cjson = require "cjson"
+
+      ngx.update_time()
+      local timer = ngx.now()
+
+      -- Drop down to raw sockets to see how chunks are received in a streaming
+      -- fashion. Based on chunked handling from openresty test suite:
+      -- https://github.com/openresty/lua-nginx-module/blob/89818721fefa3bac9aec99dd622ee4547a9794d9/t/116-raw-req-socket.t#L785
+      local sock, err = ngx.req.socket(true)
+      if not sock then
+        ngx.log(ngx.ERR, "failed to new: ", err)
+        return
+      end
+      local function error_exit(...)
+        ngx.log(ngx.ERR, ...)
+        return ngx.exit(400)
+      end
+
+      -- Actually begin the response before the request has been received
+      -- entirely. This is to ensure that when testing a longer
+      -- "proxy_send_timeout" we don't end up hitting the "proxy_ready_timeout"
+      -- sooner, which is expecting some type of response back.
+      local ok, err = sock:send(
+        "HTTP/1.1 200 OK\r\n" ..
+        "Connection: close\r\n" ..
+        "Content-Type: application/json\r\n"
+      )
+      if not ok then
+        error_exit("failed to send response: ", err)
+      end
+
+      local MAX_CHUNKS = 1000
+      local eof = false
+      local chunks = {}
+      local chunk_time_gaps = {}
+      for i = 1, MAX_CHUNKS do
+        local line, err = sock:receive()
+        if not line then
+          error_exit("failed to receive chunk size: ", err)
+        end
+
+        local size = tonumber(line, 16)
+        if not size then
+          error_exit("bad chunk size: ", line)
+        end
+
+        if size == 0 then -- last chunk
+          -- receive the last line
+          line, err = sock:receive()
+          if not line then
+            error_exit("failed to receive last chunk: ", err)
+          end
+
+          if line ~= "" then
+            error_exit("bad last chunk: ", line)
+          end
+
+          eof = true
+          break
+        end
+
+        local chunk, err = sock:receive(size)
+        if not chunk then
+          error_exit("failed to receive chunk of size ", size, ": ", err)
+        end
+
+        local data, err = sock:receive(2)
+        if not data then
+          error_exit("failed to receive chunk terminator: ", err)
+        end
+
+        if data ~= "\r\n" then
+          error_exit("bad chunk terminator: ", data)
+        end
+
+        ngx.update_time()
+        table.insert(chunk_time_gaps, ngx.now() - timer)
+        timer = ngx.now()
+
+        chunks[i] = chunk
+
+        -- Send periodic headers on the response to ensure we don't hit the
+        -- shorter "proxy_read_timeout" in tests.
+        local ok, err = sock:send("X-Foo: test\r\n")
+        if not ok then
+          error_exit("failed to send response: ", err)
+        end
+      end
+
+      if not eof then
+        error_exit("too many chunks (more than ", MAX_CHUNKS, ")")
+      end
+
+      local body = cjson.encode({
+        chunks = chunks,
+        chunk_time_gaps = chunk_time_gaps,
+      })
+      local ok, err = sock:send(
+        "Content-Length: " .. #body .. "\r\n\r\n" ..
+        body
+      )
+      if not ok then
+        error_exit("failed to send response: ", err)
+      end
     }
   }
 
@@ -692,7 +807,6 @@ server {
 server {
   listen 127.0.0.1:9448 default_server ssl;
   server_name _;
-  ssl on;
   ssl_certificate {{_src_root_dir}}/test/config/ssl_test.crt;
   ssl_certificate_key {{_src_root_dir}}/test/config/ssl_test.key;
 
@@ -711,7 +825,6 @@ server {
 server {
   listen 127.0.0.1:9448 ssl;
   server_name sni1.foo.ooga;
-  ssl on;
   ssl_certificate {{_src_root_dir}}/test/config/ssl_test.crt;
   ssl_certificate_key {{_src_root_dir}}/test/config/ssl_test.key;
 
@@ -723,7 +836,6 @@ server {
 server {
   listen 127.0.0.1:9448 ssl;
   server_name sni2.foo.ooga;
-  ssl on;
   ssl_certificate {{_src_root_dir}}/test/config/ssl_test.crt;
   ssl_certificate_key {{_src_root_dir}}/test/config/ssl_test.key;
 

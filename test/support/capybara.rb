@@ -51,13 +51,7 @@ def capybara_register_driver(driver_name, options = {})
     # Use /tmp instead of /dev/shm for Docker environments where /dev/shm is
     # too small:
     # https://github.com/GoogleChrome/puppeteer/blob/v1.10.0/docs/troubleshooting.md#tips
-    #
-    # Don't add arg in CircleCI environment, since it has stopped working
-    # there:
-    # https://discuss.circleci.com/t/fontconfig-error-on-node-10-browsers/29029/8
-    if ENV["CI"] != "true"
-      driver_options.args << "--disable-dev-shm-usage"
-    end
+    driver_options.args << "--disable-dev-shm-usage"
 
     # Set download path for Chrome >= 77
     driver_options.add_preference(:download, :default_directory => ApiUmbrellaTestHelpers::Downloads::DOWNLOADS_ROOT)
@@ -92,13 +86,22 @@ Capybara.default_driver = :selenium_chrome_headless
 Capybara.default_max_wait_time = 5
 Capybara.run_server = false
 Capybara.app_host = "https://127.0.0.1:9081"
-Capybara.save_path = File.join(API_UMBRELLA_SRC_ROOT, "test/tmp/capybara")
+Capybara.save_path = File.join(API_UMBRELLA_SRC_ROOT, "test/tmp/artifacts/capybara")
 
 # Since we're using custom styled checkboxes and radios, the actual inputs
 # aren't visible. So enable this option so that Capybara will fallback to
 # searching and clicking on the label for the associated checkbox when calling
 # "check" and "uncheck".
 Capybara.automatic_label_click = true
+
+# Attempted workaround for "fill_in" sometimes not clearing existing input:
+# https://github.com/teamcapybara/capybara/issues/2419#issuecomment-738798878
+#
+# This seems to crop up most frequently with the
+# Test::AdminUi::TestApis#test_form test not properly clearing the "Frontend
+# Host" field, so we end up with both the default value 127.0.0.1 plus the new
+# value, of api.foo.com all in one string ("127.0.0.1api.foo.com").
+Capybara.default_set_options = { :clear => :backspace }
 
 Capybara::Screenshot.prune_strategy = :keep_last_run
 

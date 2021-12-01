@@ -1,21 +1,31 @@
 import 'jquery-ui/ui/widgets/sortable';
 
-import $ from 'jquery';
+// eslint-disable-next-line ember/no-classic-components
 import Component from '@ember/component';
+import { action } from '@ember/object';
+import { inject } from '@ember/service';
+import { observes } from '@ember-decorators/object';
+import { tracked } from '@glimmer/tracking';
 import DataTablesHelpers from 'api-umbrella-admin-ui/utils/data-tables-helpers';
 import bootbox from 'bootbox';
+import classic from 'ember-classic-decorator';
+import $ from 'jquery';
 import escape from 'lodash-es/escape';
-import { inject } from '@ember/service';
 import isEqual from 'lodash-es/isEqual';
-// eslint-disable-next-line ember/no-observers
-import { observer } from '@ember/object';
 
-export default Component.extend({
-  busy: inject('busy'),
-  reorderActive: false,
+@classic
+export default class IndexTable extends Component {
+  // eslint-disable-next-line ember/require-tagless-components
+  tagName = 'div';
 
-  didInsertElement() {
-    this.set('table', this.$().find('table').DataTable({
+  @inject('busy')
+  busy;
+
+  @tracked reorderActive = false;
+
+  @action
+  didInsert(element) {
+    this.table = $(element).find('table').DataTable({
       serverSide: true,
       ajax: '/api-umbrella/v1/apis.json',
       pageLength: 50,
@@ -65,7 +75,7 @@ export default Component.extend({
           },
         },
       ],
-    }));
+    });
 
     this.table
       .on('search', (event, settings) => {
@@ -74,7 +84,7 @@ export default Component.extend({
         // neighboring rows).
         if(this.reorderActive) {
           if(settings.oPreviousSearch && settings.oPreviousSearch.sSearch) {
-            this.set('reorderActive', false);
+            this.reorderActive = false;
           }
         }
       })
@@ -84,12 +94,12 @@ export default Component.extend({
         // work, since it relies on the neighboring rows).
         if(this.reorderActive) {
           if(settings.aaSorting && !isEqual(settings.aaSorting, [[3, 'asc']])) {
-            this.set('reorderActive', false);
+            this.reorderActive = false;
           }
         }
       });
 
-    this.$().find('tbody').sortable({
+    $(element).find('tbody').sortable({
       handle: '.reorder-handle',
       placeholder: 'reorder-placeholder',
       helper(event, ui) {
@@ -109,23 +119,24 @@ export default Component.extend({
         this.saveReorder(row.data('id'), moveAfterId);
       },
     });
-  },
+  }
 
   // eslint-disable-next-line ember/no-observers
-  handleReorderChange: observer('reorderActive', function() {
+  @observes('reorderActive')
+  handleReorderChange() {
     if(this.reorderActive) {
-      this.$().find('table').addClass('reorder-active');
+      $(this.element).find('table').addClass('reorder-active');
       this.table
         .order([[3, 'asc']])
         .search('')
         .draw();
     } else {
-      this.$().find('table').removeClass('reorder-active');
+      $(this.element).find('table').removeClass('reorder-active');
     }
 
-    let $container = this.$();
+    let $container = $(this.element);
     if($container) {
-      let $buttonText = this.$().find('.reorder-button-text');
+      let $buttonText = $(this.element).find('.reorder-button-text');
       if(this.reorderActive) {
         $buttonText.data('originalText',  $buttonText.text());
         $buttonText.text('Done');
@@ -133,7 +144,7 @@ export default Component.extend({
         $buttonText.text($buttonText.data('originalText'));
       }
     }
-  }),
+  }
 
   saveReorder(id, moveAfterId) {
     this.busy.show();
@@ -150,11 +161,10 @@ export default Component.extend({
       bootbox.alert('An unexpected error occurred. Please try again.');
       this.table.draw();
     });
-  },
+  }
 
-  actions: {
-    toggleReorderApis() {
-      this.set('reorderActive', !this.reorderActive);
-    },
-  },
-});
+  @action
+  toggleReorderApis() {
+    this.reorderActive = !this.reorderActive;
+  }
+}

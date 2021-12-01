@@ -1,9 +1,8 @@
 import * as PNotifyBootstrap4 from '@pnotify/bootstrap4';
+import { defaultModules, defaults } from '@pnotify/core';
 import * as PNotifyFontAwesome5 from '@pnotify/font-awesome5';
 import * as PNotifyFontAwesome5Fix from '@pnotify/font-awesome5-fix';
 import * as PNotifyMobile from '@pnotify/mobile';
-
-import { defaultModules, defaults } from '@pnotify/core';
 
 export function initialize() {
   defaults.width = '400px';

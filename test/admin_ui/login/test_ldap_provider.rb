@@ -23,9 +23,12 @@ class Test::AdminUi::Login::TestLdapProvider < Minitest::Capybara::Test
               "options" => {
                 "title" => "Planet Express",
                 "host" => "127.0.0.1",
-                "port" => $config["openldap"]["port"],
+                "port" => $config["glauth"]["port"],
                 "base" => "dc=planetexpress,dc=com",
                 "uid" => "uid",
+                "method" => "plain",
+                "bind_dn" => "uid=admin,dc=planetexpress,dc=com",
+                "password" => "admin",
               },
             },
           },

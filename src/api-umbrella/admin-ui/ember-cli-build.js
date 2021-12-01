@@ -39,6 +39,7 @@ module.exports = function(defaults) {
     postcssOptions: {
       compile: {
         enabled: false,
+        map: false,
       },
       filter: {
         enabled: true,

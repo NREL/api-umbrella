@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 
-golang_version="1.15.5"
-golang_hash="9a58494e8da722c3aef248c9227b0e9c528c7318309827780f16220998180a0d"
-mora_version="8127901857cf88d3f0902708b25ad930354973a3"
-mora_hash="b86cea913596370cd58fce89b23acd97"
+golang_version="1.17.2"
+golang_hash="f242a9db6a0ad1846de7b6d94d507915d14062660616a61ef7c808a76e4f1676"
+mora_version="93e6c2cdeb3b2a6fd735b22e3d1e4078d1934c71"
+mora_hash="4c0c53def4fb285f7d388d5290376523"
 
 set -e -u -x
 source ./tasks/helpers.sh

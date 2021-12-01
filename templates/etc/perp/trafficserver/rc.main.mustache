@@ -16,7 +16,7 @@ if [ "${1}" = "start" ]; then
     run_args+=("-u" "$api_umbrella_user")
   fi
 
-  dirs=("{{etc_dir}}/trafficserver" "{{etc_dir}}/trafficserver/snapshots" "{{var_dir}}/trafficserver")
+  dirs=("{{var_dir}}/trafficserver")
   mkdir -p "${dirs[@]}"
   chmod 750 "${dirs[@]}"
   if [ -n "$api_umbrella_user" ]; then

@@ -1,14 +1,16 @@
-import $ from 'jquery';
 import EmberObject from '@ember/object';
 import Evented from '@ember/object/evented';
+import classic from 'ember-classic-decorator';
+import $ from 'jquery';
 import { Promise } from 'rsvp';
 
-let Map = EmberObject.extend(Evented, {
-  hits_over_time: null,
-  stats: null,
-  facets: null,
-  logs: null,
-});
+@classic
+class Map extends EmberObject.extend(Evented) {
+  hits_over_time = null;
+  stats = null;
+  facets = null;
+  logs = null;
+}
 
 Map.reopenClass({
   urlRoot: '/admin/stats/map.json',

@@ -1,70 +1,72 @@
-<ErrorMessages @model={{this.model}} />
+<div ...attributes>
+  <ErrorMessages @model={{this.model}} />
 
-<form {{action "submit" on="submit"}}>
-  <FieldsFor @model={{this.model}} @style="horizontal" as |f|>
-    <fieldset class="form-horizontal condensed">
-      <legend>User Info</legend>
+  <form {{on "submit" this.submitForm}}>
+    <FieldsFor @model={{this.model}} @style="horizontal" as |f|>
+      <fieldset class="form-horizontal condensed">
+        <legend>User Info</legend>
 
-      {{f.text-field "email" label="E-mail"}}
-      {{f.text-field "firstName" label="First Name"}}
-      {{f.text-field "lastName" label="Last Name"}}
-      {{f.textarea-field "useDescription" label="Purpose"}}
+        {{f.text-field "email" label="E-mail"}}
+        {{f.text-field "firstName" label="First Name"}}
+        {{f.text-field "lastName" label="Last Name"}}
+        {{f.textarea-field "useDescription" label="Purpose"}}
 
-      {{#if this.model.id}}
-        {{#f.static-field "createdAt" label="Signed Up"}}
-          {{format-date this.model.createdAt}}
-        {{/f.static-field}}
-        {{#f.static-field "apiKey" label="API Key"}}
-          {{#if this.model.apiKey}}
-            <span class="api-key" data-api-key={{this.model.apiKey}} data-api-key-preview={{this.model.apiKeyPreview}}>{{this.model.apiKeyPreview}}</span> <a href="#" {{action "apiKeyRevealToggle"}} class="api-key-reveal-toggle">{{t "admin.reveal_action"}}</a>
-          {{else}}
-            <span class="api-key">{{this.model.apiKeyPreview}}</span>
+        {{#if this.model.id}}
+          {{#f.static-field "createdAt" label="Signed Up"}}
+            {{format-date this.model.createdAt}}
+          {{/f.static-field}}
+          {{#f.static-field "apiKey" label="API Key"}}
+            {{#if this.model.apiKey}}
+              <span class="api-key" data-api-key={{this.model.apiKey}} data-api-key-preview={{this.model.apiKeyPreview}}>{{this.model.apiKeyPreview}}</span> <a href="#" {{action "apiKeyRevealToggle"}} class="api-key-reveal-toggle">{{t "admin.reveal_action"}}</a>
+            {{else}}
+              <span class="api-key">{{this.model.apiKeyPreview}}</span>
+            {{/if}}
+          {{/f.static-field}}
+          {{f.static-field "id" label="User ID"}}
+          {{f.static-field "registrationSource" label="Registration Source"}}
+        {{else}}
+          {{f.checkbox-field "termsAndConditions" label=(html-safe "User agrees to the <a href=\"/account/terms\" onclick=\"window.open(this.href, 'api_download_popup', 'height=500,width=790,menubar=no,toolbar=no,location=no,personalbar=no,status=no,resizable=yes,scrollbars=yes'); return false;\" title=\"Opens new window to terms and conditions\">terms and conditions</a>")}}
+          {{f.checkbox-field "sendWelcomeEmail" label="Send user welcome e-mail with API key information"}}
+        {{/if}}
+      </fieldset>
+
+      <fieldset class="form-horizontal">
+        <legend>Rate Limiting</legend>
+        <Apis::Settings::RateLimitFields @model={{this.model.settings}} />
+        {{f.select-field "throttleByIp" label="Limit By" options=this.throttleByIpOptions}}
+      </fieldset>
+
+      <fieldset class="form-horizontal">
+        <legend>Permissions</legend>
+
+        {{f.selectize-field "rolesString" label="Roles" options=this.roleOptions}}
+        <Apis::Settings::AllowedIpsFields @model={{this.model.settings}} />
+        <Apis::Settings::AllowedReferersFields @model={{this.model.settings}} />
+        {{f.select-field "enabled" label="Account Enabled" options=this.enabledOptions}}
+      </fieldset>
+
+      <div class="row">
+        <div class="col-sm-6">
+          <button type="submit" class="btn btn-lg btn-primary save-button"><span class="btn-label">Save</span><span class="btn-loading-label"><FaIcon @icon="sync-alt" @spin={{true}} />Saving...</span></button>
+        </div>
+        <div class="col-sm-6 record-details">
+          Created: {{format-date this.model.createdAt}}{{#if this.model.creator}} by {{this.model.creator.username}}{{/if}}<br>
+          Last Updated: {{format-date this.model.updatedAt}}{{#if this.model.updater}} by {{this.model.updater.username}}{{/if}}<br>
+          E-mail Verified: {{this.model.emailVerified}}<br>
+          {{#if this.model.registrationIp}}
+            Registration IP: {{this.model.registrationIp}}<br>
           {{/if}}
-        {{/f.static-field}}
-        {{f.static-field "id" label="User ID"}}
-        {{f.static-field "registrationSource" label="Registration Source"}}
-      {{else}}
-        {{f.checkbox-field "termsAndConditions" label=(html-safe "User agrees to the <a href=\"/account/terms\" onclick=\"window.open(this.href, 'api_download_popup', 'height=500,width=790,menubar=no,toolbar=no,location=no,personalbar=no,status=no,resizable=yes,scrollbars=yes'); return false;\" title=\"Opens new window to terms and conditions\">terms and conditions</a>")}}
-        {{f.checkbox-field "sendWelcomeEmail" label="Send user welcome e-mail with API key information"}}
-      {{/if}}
-    </fieldset>
-
-    <fieldset class="form-horizontal">
-      <legend>Rate Limiting</legend>
-      <Apis::Settings::RateLimitFields @model={{this.model.settings}} />
-      {{f.select-field "throttleByIp" label="Limit By" options=this.throttleByIpOptions}}
-    </fieldset>
-
-    <fieldset class="form-horizontal">
-      <legend>Permissions</legend>
-
-      {{f.selectize-field "rolesString" label="Roles" options=this.roleOptions}}
-      <Apis::Settings::AllowedIpsFields @model={{this.model.settings}} />
-      <Apis::Settings::AllowedReferersFields @model={{this.model.settings}} />
-      {{f.select-field "enabled" label="Account Enabled" options=this.enabledOptions}}
-    </fieldset>
-
-    <div class="row">
-      <div class="col-sm-6">
-        <button type="submit" class="btn btn-lg btn-primary save-button"><span class="btn-label">Save</span><span class="btn-loading-label">{{fa-icon "sync-alt" spin=true}}Saving...</span></button>
+          {{#if this.model.registrationUserAgent}}
+            Registration User Agent: {{this.model.registrationUserAgent}}<br>
+          {{/if}}
+          {{#if this.model.registrationReferer}}
+            Registration Referer: {{this.model.registrationReferer}}<br>
+          {{/if}}
+          {{#if this.model.registrationOrigin}}
+            Registration Origin: {{this.model.registrationOrigin}}<br>
+          {{/if}}
+        </div>
       </div>
-      <div class="col-sm-6 record-details">
-        Created: {{format-date this.model.createdAt}}{{#if this.model.creator}} by {{this.model.creator.username}}{{/if}}<br>
-        Last Updated: {{format-date this.model.updatedAt}}{{#if this.model.updater}} by {{this.model.updater.username}}{{/if}}<br>
-        E-mail Verified: {{this.model.emailVerified}}<br>
-        {{#if this.model.registrationIp}}
-          Registration IP: {{this.model.registrationIp}}<br>
-        {{/if}}
-        {{#if this.model.registrationUserAgent}}
-          Registration User Agent: {{this.model.registrationUserAgent}}<br>
-        {{/if}}
-        {{#if this.model.registrationReferer}}
-          Registration Referer: {{this.model.registrationReferer}}<br>
-        {{/if}}
-        {{#if this.model.registrationOrigin}}
-          Registration Origin: {{this.model.registrationOrigin}}<br>
-        {{/if}}
-      </div>
-    </div>
-  </FieldsFor>
-</form>
+    </FieldsFor>
+  </form>
+</div>

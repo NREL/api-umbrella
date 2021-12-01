@@ -1,8 +1,8 @@
+import { or } from '@ember/object/computed';
 import Model, { attr } from '@ember-data/model';
+import classic from 'ember-classic-decorator';
 import { buildValidations, validator } from 'ember-cp-validations';
-
 import I18n from 'i18n-js';
-import { computed } from '@ember/object';
 
 const Validations = buildValidations({
   frontendPrefix: [
@@ -21,12 +21,23 @@ const Validations = buildValidations({
   ],
 });
 
-export default Model.extend(Validations, {
-  sortOrder: attr('number'),
-  frontendPrefix: attr(),
-  backendPrefix: attr(),
+@classic
+class UrlMatch extends Model.extend(Validations) {
+  @attr('number')
+  sortOrder;
 
-  backendPrefixWithDefault: computed.or('backendPrefix', 'frontendPrefix'),
-}).reopenClass({
+  @attr()
+  frontendPrefix;
+
+  @attr()
+  backendPrefix;
+
+  @or('backendPrefix', 'frontendPrefix')
+  backendPrefixWithDefault;
+}
+
+UrlMatch.reopenClass({
   validationClass: Validations,
 });
+
+export default UrlMatch;

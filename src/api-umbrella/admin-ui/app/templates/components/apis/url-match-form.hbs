@@ -1,34 +1,38 @@
-<BsModal @open={{this.openModal}} @onSubmit={{action "submit"}} @onHidden={{action "closed"}} @backdropClose={{false}} @size="lg" @fade={{false}} as |modal|>
-  <modal.header @title={{this.modalTitle}} />
-  <modal.body>
-    <form {{action "submit" on="submit"}}>
-      <FieldsFor @model={{this.bufferedModel}} @style="vertical" as |f|>
-        <div class="row">
-          <div class="col-sm-5">
-            {{f.text-field "frontendPrefix" label="Frontend Prefix" placeholder="/example/"}}
+<div ...attributes>
+  <BsModal @open={{this.openModal}} @onHidden={{action "closed"}} @backdropClose={{false}} @size="lg" @fade={{false}} as |modal|>
+    <modal.header @title={{this.modalTitle}} />
+    <modal.body>
+      <form {{on "submit" this.submitForm}}>
+        <FieldsFor @model={{this.bufferedModel}} @style="vertical" as |f|>
+          <div class="row">
+            <div class="col-sm-5">
+              {{f.text-field "frontendPrefix" label="Frontend Prefix" placeholder="/example/"}}
+            </div>
+            <div class="col-sm-2 arrow">
+              <FaIcon @icon="arrow-right" @size="2x" />
+              <div>rewrite to</div>
+            </div>
+            <div class="col-sm-5">
+              {{f.text-field "backendPrefix" label="Backend Prefix" placeholder="/example/"}}
+            </div>
           </div>
-          <div class="col-sm-2 arrow">
-            {{fa-icon "arrow-right" size="2x"}}
-            <div>rewrite to</div>
-          </div>
-          <div class="col-sm-5">
-            {{f.text-field "backendPrefix" label="Backend Prefix" placeholder="/example/"}}
-          </div>
-        </div>
-      </FieldsFor>
+        </FieldsFor>
 
-      {{#unless this.id}}
-        <p class="alert alert-info">
-          <strong>Tip:</strong> We recommend using trailing slashes when configuring these URL prefixes when possible (for example, using <code>/wind/</code> instead of <code>/wind</code>). While not necessary, this helps prevent future overlapping conflicts (for example, if someone later wants to set up <code>/windmill/</code>).
-        </p>
-      {{/unless}}
+        {{#unless this.id}}
+          <p class="alert alert-info">
+            <strong>Tip:</strong> We recommend using trailing slashes when configuring these URL prefixes when possible (for example, using <code>/wind/</code> instead of <code>/wind</code>). While not necessary, this helps prevent future overlapping conflicts (for example, if someone later wants to set up <code>/windmill/</code>).
+          </p>
+        {{/unless}}
 
-      <h4>Example:</h4>
-      <div><strong>Incoming Frontend Request:</strong> {{this.exampleIncomingUrl}}</div>
-      <div><strong>Outgoing Backend Request:</strong> {{this.exampleOutgoingUrl}}</div>
+        <h4>Example:</h4>
+        <div><strong>Incoming Frontend Request:</strong> {{this.exampleIncomingUrl}}</div>
+        <div><strong>Outgoing Backend Request:</strong> {{this.exampleOutgoingUrl}}</div>
 
-      <input type="submit" class="hidden-submit-button" tabindex="-1">
-    </form>
-  </modal.body>
-  <modal.footer @closeTitle="Cancel" @submitTitle="OK" />
-</BsModal>
+        {{! template-lint-disable require-input-label }}
+        <input type="submit" class="hidden-submit-button" tabindex="-1">
+        {{! template-lint-enable require-input-label }}
+      </form>
+    </modal.body>
+    <modal.footer @closeTitle="Cancel" @submitTitle="OK" />
+  </BsModal>
+</div>

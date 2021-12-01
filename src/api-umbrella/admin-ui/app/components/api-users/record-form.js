@@ -1,12 +1,17 @@
+// eslint-disable-next-line ember/no-classic-components
 import Component from '@ember/component';
-import I18n from 'i18n-js';
+import { action } from '@ember/object';
 // eslint-disable-next-line ember/no-mixins
 import Save from 'api-umbrella-admin-ui/mixins/save';
+import classic from 'ember-classic-decorator';
+import I18n from 'i18n-js';
+import $ from 'jquery';
 import escape from 'lodash-es/escape';
 
-export default Component.extend(Save, {
+@classic
+export default class RecordForm extends Component.extend(Save) {
   init() {
-    this._super(...arguments);
+    super.init(...arguments);
 
     this.throttleByIpOptions = [
       { id: false, name: 'Rate limit by API key' },
@@ -17,36 +22,38 @@ export default Component.extend(Save, {
       { id: true, name: 'Enabled' },
       { id: false, name: 'Disabled' },
     ];
-  },
+  }
 
-  actions: {
-    apiKeyRevealToggle() {
-      let $key = this.$().find('.api-key');
-      let $toggle = this.$().find('.api-key-reveal-toggle');
+  @action
+  apiKeyRevealToggle() {
+    let $key = $(this.element).find('.api-key');
+    let $toggle = $(this.element).find('.api-key-reveal-toggle');
 
-      if($key.data('revealed') === 'true') {
-        $key.text($key.data('api-key-preview'));
-        $key.data('revealed', 'false');
-        $toggle.text(I18n.t('admin.reveal_action'));
-      } else {
-        $key.text($key.data('api-key'));
-        $key.data('revealed', 'true');
-        $toggle.text(I18n.t('admin.hide_action'));
-      }
-    },
+    if($key.data('revealed') === 'true') {
+      $key.text($key.data('api-key-preview'));
+      $key.data('revealed', 'false');
+      $toggle.text(I18n.t('admin.reveal_action'));
+    } else {
+      $key.text($key.data('api-key'));
+      $key.data('revealed', 'true');
+      $toggle.text(I18n.t('admin.hide_action'));
+    }
+  }
 
-    submit() {
-      this.saveRecord({
-        transitionToRoute: 'api_users',
-        message(model) {
-          let message = 'Successfully saved the user "' + escape(model.get('email')) + '"';
-          if(model.get('apiKey')) {
-            message += '<br>API Key: <code>' + escape(model.get('apiKey')) + '</code>';
-          }
+  @action
+  submitForm(event) {
+    event.preventDefault();
+    this.saveRecord({
+      element: event.target,
+      transitionToRoute: 'api_users',
+      message(model) {
+        let message = 'Successfully saved the user "' + escape(model.get('email')) + '"';
+        if(model.get('apiKey')) {
+          message += '<br>API Key: <code>' + escape(model.get('apiKey')) + '</code>';
+        }
 
-          return message;
-        },
-      });
-    },
-  },
-});
+        return message;
+      },
+    });
+  }
+}

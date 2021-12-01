@@ -2,16 +2,8 @@
 
 set -e -u -x
 source ./tasks/helpers.sh
-source ./tasks/helpers/detect_os_release.sh
 
 task_working_dir
-
-detect_os_release
-if [[ "$ID_NORMALIZED" == "rhel" && "$VERSION_ID" == "6" ]]; then
-  # GCC 4.6+ for compiling libsass/sassc
-  export CC=/opt/rh/devtoolset-7/root/usr/bin/gcc
-  export CXX=/opt/rh/devtoolset-7/root/usr/bin/g++
-fi
 
 # Install into the task's special _persist directory so the installed gems dir
 # isn't cleaned between runs for development purposes.

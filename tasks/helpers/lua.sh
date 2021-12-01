@@ -11,10 +11,6 @@ LUAROCKS_CMD=(
   "LD_LIBRARY_PATH=$STAGE_EMBEDDED_DIR/openresty/luajit/lib:$STAGE_EMBEDDED_DIR/lib"
   "$LUA_PREFIX/bin/luarocks"
 )
-LUAROCKS_VARS=(
-  "PSL_DIR=$STAGE_EMBEDDED_DIR"
-  "ICU_DIR=$STAGE_EMBEDDED_DIR"
-)
 OPM_CMD=(
   env
   "LUA_PATH=$LUA_PREFIX/openresty/lualib/?.lua;$LUA_PREFIX/openresty/lualib/?/init.lua;;"
@@ -27,9 +23,11 @@ _luarocks_install() {
   tree_dir="$1"
   package="$2"
   version="$3"
+  shift; shift; shift;
+  extra_args=("$@")
 
   set -x
-  "${LUAROCKS_CMD[@]}" --tree="$tree_dir" install "$package" "$version" "${LUAROCKS_VARS[@]}"
+  "${LUAROCKS_CMD[@]}" --tree="$tree_dir" install "$package" "$version" "${extra_args[@]}"
   find "$tree_dir/lib" -name "*.so" -exec chrpath -d {} \;
 }
 
@@ -47,10 +45,12 @@ _luarocks_make() {
   tree_dir="$1"
   package_dir="$2"
   rockspec_file="$3"
+  shift; shift; shift;
+  extra_args=("$@")
 
   set -x
   cd "$package_dir" || exit 1
-  "${LUAROCKS_CMD[@]}" --tree="$tree_dir" make --local "$rockspec_file" "${LUAROCKS_VARS[@]}"
+  "${LUAROCKS_CMD[@]}" --tree="$tree_dir" make --local "$rockspec_file" "${extra_args[@]}"
   find "$tree_dir/lib" -name "*.so" -exec chrpath -d {} \;
 }
 

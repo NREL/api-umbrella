@@ -1,13 +1,20 @@
+// eslint-disable-next-line ember/no-classic-components
 import Component from '@ember/component';
-import I18n from 'i18n-js';
 import { computed } from '@ember/object';
+import { gt } from '@ember/object/computed';
+import { tagName } from '@ember-decorators/component';
+import classic from 'ember-classic-decorator';
+import I18n from 'i18n-js';
+import { titleize, underscore } from 'inflection';
 import each from 'lodash-es/each';
-import inflection from 'inflection';
 import isArray from 'lodash-es/isArray';
 import marked from 'marked';
 
-export default Component.extend({
-  messages: computed('model.{constructor.modelName,clientErrors,serverErrors}', function() {
+@classic
+@tagName("")
+export default class ErrorMessages extends Component {
+  @computed('model.{constructor.modelName,clientErrors,serverErrors}')
+  get messages() {
     let errors = [];
     let modelI18nRoot = 'mongoid.attributes.' + this.model.constructor.modelName.replace('-', '_');
 
@@ -63,9 +70,9 @@ export default Component.extend({
       if(error.fullMessage) {
         message += error.fullMessage;
       } else if(error.attribute && error.attribute !== 'base') {
-        let attributeTitle = I18n.t(modelI18nRoot + '.' + inflection.underscore(error.attribute), { defaultValue: false });
+        let attributeTitle = I18n.t(modelI18nRoot + '.' + underscore(error.attribute), { defaultValue: false });
         if(attributeTitle === false) {
-          attributeTitle = inflection.titleize(inflection.underscore(error.attribute));
+          attributeTitle = titleize(underscore(error.attribute));
         }
 
         message += attributeTitle + ': ';
@@ -82,7 +89,8 @@ export default Component.extend({
     });
 
     return messages;
-  }),
+  }
 
-  hasErrors: computed.gt('messages.length', 0),
-});
+  @gt('messages.length', 0)
+  hasErrors;
+}

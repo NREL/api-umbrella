@@ -1,11 +1,13 @@
-{{yield (hash
-  checkbox-field=(component "form-fields/checkbox-field" model=this.model style=this.style)
-  checkboxes-field=(component "form-fields/checkboxes-field" model=this.model style=this.style)
-  codemirror-field=(component "form-fields/codemirror-field" model=this.model style=this.style)
-  select-field=(component "form-fields/select-field" model=this.model style=this.style)
-  selectize-field=(component "form-fields/selectize-field" model=this.model style=this.style)
-  text-field=(component "form-fields/text-field" model=this.model style=this.style)
-  textarea-field=(component "form-fields/textarea-field" model=this.model style=this.style)
-  password-field=(component "form-fields/password-field" model=this.model style=this.style)
-  static-field=(component "form-fields/static-field" model=this.model style=this.style)
-)}}
+<div ...attributes>
+  {{yield (hash
+    checkbox-field=(component "form-fields/checkbox-field" model=this.model style=this.style)
+    checkboxes-field=(component "form-fields/checkboxes-field" model=this.model style=this.style)
+    codemirror-field=(component "form-fields/codemirror-field" model=this.model style=this.style)
+    select-field=(component "form-fields/select-field" model=this.model style=this.style)
+    selectize-field=(component "form-fields/selectize-field" model=this.model style=this.style)
+    text-field=(component "form-fields/text-field" model=this.model style=this.style)
+    textarea-field=(component "form-fields/textarea-field" model=this.model style=this.style)
+    password-field=(component "form-fields/password-field" model=this.model style=this.style)
+    static-field=(component "form-fields/static-field" model=this.model style=this.style)
+  )}}
+</div>

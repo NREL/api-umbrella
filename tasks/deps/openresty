@@ -2,16 +2,16 @@
 
 ngx_http_geoip2_module_version="3.3"
 ngx_http_geoip2_module_hash="9f2c77f4d897e87992c2f7ec7516949c"
-openresty_version="1.19.3.1"
-openresty_hash="5744e4ecfc0137e3d5f7b7e349077c49"
+openresty_version="1.19.9.1"
+openresty_hash="ca013bd756f4e2a723c84cbf05dd0bdd"
 openssl_version="1.1.0l"
 openssl_hash="74a2f756c64fd7386a29184dc0344f4831192d61dc2481a93a4c5dd727f41148"
 # PCRE 8.21+ required for OpenResty's JIT regex support.
 #
 # We can likely drop compiling our own version and use the system version once
 # we no longer need to support CentOS 6 (currently on PCRE 7.8).
-pcre_version="8.44"
-pcre_hash="cf7326204cc46c755b5b2608033d9d24"
+pcre_version="8.45"
+pcre_hash="4452288e6a0eefb2ab11d36010a1eebb"
 
 set -e -u -x
 source ./tasks/helpers.sh

@@ -25,7 +25,6 @@ class Test::Proxy::Caching::TestHttpMethods < Minitest::Test
       :method => "HEAD",
       :params => {
         :unique_test_id => unique_test_id,
-        :unique_duplicate_test_id => @cacheable_duplicate_test_id,
       },
     })).run
     assert_response_code(200, response)

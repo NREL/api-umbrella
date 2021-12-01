@@ -10,6 +10,7 @@ module ApiUmbrellaTestHelpers
     EMBEDDED_ROOT = File.join(API_UMBRELLA_SRC_ROOT, "build/work/stage/opt/api-umbrella/embedded").freeze
     TEST_RUN_ROOT = File.join(API_UMBRELLA_SRC_ROOT, "test/tmp/run")
     TEST_RUN_API_UMBRELLA_ROOT = File.join(TEST_RUN_ROOT, "api-umbrella-root")
+    TEST_ARTIFACTS_ROOT = File.join(API_UMBRELLA_SRC_ROOT, "test/tmp/artifacts")
     DEFAULT_CONFIG_PATH = File.join(API_UMBRELLA_SRC_ROOT, "config/default.yml").freeze
     CONFIG_PATH = File.join(API_UMBRELLA_SRC_ROOT, "config/test.yml").freeze
     CONFIG_COMPUTED_PATH = File.join(TEST_RUN_ROOT, "test_computed.yml").freeze
@@ -23,6 +24,8 @@ module ApiUmbrellaTestHelpers
       end
 
       start_time = Time.now.utc
+      FileUtils.rm_rf(Dir.glob(File.join(TEST_ARTIFACTS_ROOT, "*"), File::FNM_DOTMATCH) - [File.join(TEST_ARTIFACTS_ROOT, "."), File.join(TEST_ARTIFACTS_ROOT, ".."), File.join(TEST_ARTIFACTS_ROOT, "reports")])
+      FileUtils.mkdir_p(TEST_ARTIFACTS_ROOT)
       FileUtils.rm_rf(Dir.glob(File.join(TEST_RUN_ROOT, "*"), File::FNM_DOTMATCH) - [File.join(TEST_RUN_ROOT, "."), File.join(TEST_RUN_ROOT, "..")])
       FileUtils.mkdir_p(TEST_RUN_API_UMBRELLA_ROOT)
 
@@ -106,7 +109,7 @@ module ApiUmbrellaTestHelpers
               "embedded_server_config" => {
                 "path" => {
                   "data" => File.join(TEST_RUN_API_UMBRELLA_ROOT, "var/db/elasticsearch-#{dir_suffix}"),
-                  "logs" => File.join(TEST_RUN_API_UMBRELLA_ROOT, "var/log/elasticsearch-#{dir_suffix}"),
+                  "logs" => File.join(TEST_ARTIFACTS_ROOT, "log/elasticsearch-#{dir_suffix}"),
                 },
               },
             },
@@ -160,8 +163,9 @@ module ApiUmbrellaTestHelpers
           $elasticsearch_process = ChildProcess.build(*args)
           $elasticsearch_process.io.stdout = $elasticsearch_process.io.stderr = log_file
           $elasticsearch_process.environment["PATH"] = "#{File.join(API_UMBRELLA_SRC_ROOT, "build/work/test-env/elasticsearch#{elasticsearch_test_api_version}/bin")}:#{ENV["PATH"]}"
+          $elasticsearch_process.environment["JAVA_HOME"] = `readlink -m "$(which java)/../.."`.strip
           $elasticsearch_process.environment["ES_PATH_CONF"] = elasticsearch_config_dir
-          $elasticsearch_process.environment["ES_JAVA_OPTS"] = "-Xms#{$config["elasticsearch"]["embedded_server_env"]["heap_size"]} -Xmx#{$config["elasticsearch"]["embedded_server_env"]["heap_size"]}"
+          $elasticsearch_process.environment["ES_JAVA_OPTS"] = "-Xms32m -Xmx256m"
           $elasticsearch_process.leader = true
           $elasticsearch_process.start
         end

@@ -3,6 +3,7 @@ proxy_set_header X-Api-Umbrella-Request-ID $x_api_umbrella_request_id;
 
 # Don't buffer proxied requests to allow for streaming APIs.
 proxy_buffering off;
+proxy_request_buffering off;
 
 # Set proxy timeouts.
 proxy_connect_timeout {{nginx._initial_proxy_connect_timeout}}s;

@@ -1,4 +1,5 @@
 import Model, { attr, belongsTo } from '@ember-data/model';
+import classic from 'ember-classic-decorator';
 import { buildValidations, validator } from 'ember-cp-validations';
 
 const Validations = buildValidations({
@@ -10,23 +11,33 @@ const Validations = buildValidations({
   ],
 });
 
-export default Model.extend(Validations, {
-  sortOrder: attr('number'),
-  httpMethod: attr(),
-  regex: attr(),
+@classic
+class SubSettings extends Model.extend(Validations) {
+  @attr('number')
+  sortOrder;
 
-  settings: belongsTo('api/settings', { async: false }),
+  @attr()
+  httpMethod;
+
+  @attr()
+  regex;
+
+  @belongsTo('api/settings', { async: false })
+  settings;
 
   ready() {
     this.setDefaults();
-    this._super();
-  },
+  }
 
   setDefaults() {
     if(!this.settings) {
       this.set('settings', this.store.createRecord('api/settings'));
     }
-  },
-}).reopenClass({
+  }
+}
+
+SubSettings.reopenClass({
   validationClass: Validations,
 });
+
+export default SubSettings;

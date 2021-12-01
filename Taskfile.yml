@@ -20,9 +20,11 @@
 #   triggers a rebuild of openresty (1st level dependency) and luarocks (2nd
 #   level dependency).
 
-version: "2"
+version: "3"
 
 output: interleaved
+
+run: when_changed
 
 tasks:
   deps:bundler:
@@ -36,7 +38,6 @@ tasks:
       - ./tasks/helpers.sh
     generates:
       - ./build/work/stamp/deps/bundler
-    method: checksum
 
   deps:elasticsearch:
     cmds:
@@ -46,7 +47,6 @@ tasks:
       - ./tasks/helpers.sh
     generates:
       - ./build/work/stamp/deps/elasticsearch
-    method: checksum
 
   deps:icu4c:
     cmds:
@@ -56,7 +56,6 @@ tasks:
       - ./tasks/helpers.sh
     generates:
       - ./build/work/stamp/deps/icu4c
-    method: checksum
 
   deps:libcidr:
     cmds:
@@ -66,7 +65,6 @@ tasks:
       - ./tasks/helpers.sh
     generates:
       - ./build/work/stamp/deps/libcidr
-    method: checksum
 
   deps:libestr:
     cmds:
@@ -76,7 +74,6 @@ tasks:
       - ./tasks/helpers.sh
     generates:
       - ./build/work/stamp/deps/libestr
-    method: checksum
 
   deps:libfastjson:
     cmds:
@@ -86,7 +83,6 @@ tasks:
       - ./tasks/helpers.sh
     generates:
       - ./build/work/stamp/deps/libfastjson
-    method: checksum
 
   deps:libmaxminddb:
     cmds:
@@ -96,7 +92,6 @@ tasks:
       - ./tasks/helpers.sh
     generates:
       - ./build/work/stamp/deps/libmaxminddb
-    method: checksum
 
   deps:luarocks:
     deps:
@@ -109,7 +104,6 @@ tasks:
       - ./tasks/helpers.sh
     generates:
       - ./build/work/stamp/deps/luarocks
-    method: checksum
 
   deps:mongodb:
     cmds:
@@ -119,7 +113,6 @@ tasks:
       - ./tasks/helpers.sh
     generates:
       - ./build/work/stamp/deps/mongodb
-    method: checksum
 
   deps:mora:
     cmds:
@@ -129,7 +122,6 @@ tasks:
       - ./tasks/helpers.sh
     generates:
       - ./build/work/stamp/deps/mora
-    method: checksum
 
   deps:openresty:
     deps:
@@ -142,7 +134,6 @@ tasks:
       - ./tasks/helpers.sh
     generates:
       - ./build/work/stamp/deps/openresty
-    method: checksum
 
   deps:perp:
     cmds:
@@ -152,7 +143,6 @@ tasks:
       - ./tasks/helpers.sh
     generates:
       - ./build/work/stamp/deps/perp
-    method: checksum
 
   deps:rsyslog:
     deps:
@@ -167,7 +157,6 @@ tasks:
       - ./tasks/helpers.sh
     generates:
       - ./build/work/stamp/deps/rsyslog
-    method: checksum
 
   deps:ruby:
     cmds:
@@ -177,7 +166,6 @@ tasks:
       - ./tasks/helpers.sh
     generates:
       - ./build/work/stamp/deps/ruby
-    method: checksum
 
   deps:rubygems:
     deps:
@@ -190,7 +178,6 @@ tasks:
       - ./tasks/helpers.sh
     generates:
       - ./build/work/stamp/deps/rubygems
-    method: checksum
 
   deps:runit_svlogd:
     cmds:
@@ -200,7 +187,6 @@ tasks:
       - ./tasks/helpers.sh
     generates:
       - ./build/work/stamp/deps/runit_svlogd
-    method: checksum
 
   deps:trafficserver:
     deps:
@@ -213,7 +199,6 @@ tasks:
       - ./tasks/helpers.sh
     generates:
       - ./build/work/stamp/deps/trafficserver
-    method: checksum
 
   deps:
     cmds:
@@ -238,7 +223,6 @@ tasks:
       - ./tasks/helpers.sh
     generates:
       - ./build/work/stamp/build-deps/nodejs
-    method: checksum
 
   build-deps:yarn:
     deps:
@@ -251,7 +235,6 @@ tasks:
       - ./tasks/helpers.sh
     generates:
       - ./build/work/stamp/build-deps/yarn
-    method: checksum
 
   build-deps:
     cmds:
@@ -271,7 +254,6 @@ tasks:
       - ./tasks/helpers.sh
     generates:
       - ./build/work/stamp/app-deps/admin-ui/yarn
-    method: checksum
 
   app-deps:lua:argparse:
     deps:
@@ -285,7 +267,6 @@ tasks:
       - ./tasks/helpers/lua.sh
     generates:
       - ./build/work/stamp/app-deps/lua/argparse
-    method: checksum
 
   app-deps:lua:cmsgpack:
     deps:
@@ -299,7 +280,6 @@ tasks:
       - ./tasks/helpers/lua.sh
     generates:
       - ./build/work/stamp/app-deps/lua/cmsgpack
-    method: checksum
 
   app-deps:lua:icu-date-ffi:
     deps:
@@ -315,7 +295,6 @@ tasks:
       - ./tasks/helpers/lua.sh
     generates:
       - ./build/work/stamp/app-deps/lua/icu-date-ffi
-    method: checksum
 
   app-deps:lua:inspect:
     deps:
@@ -329,7 +308,6 @@ tasks:
       - ./tasks/helpers/lua.sh
     generates:
       - ./build/work/stamp/app-deps/lua/inspect
-    method: checksum
 
   app-deps:lua:libcidr-ffi:
     deps:
@@ -345,7 +323,6 @@ tasks:
       - ./tasks/helpers/lua.sh
     generates:
       - ./build/work/stamp/app-deps/lua/libcidr-ffi
-    method: checksum
 
   app-deps:lua:luaposix:
     deps:
@@ -359,7 +336,6 @@ tasks:
       - ./tasks/helpers/lua.sh
     generates:
       - ./build/work/stamp/app-deps/lua/luaposix
-    method: checksum
 
   app-deps:lua:luasocket:
     deps:
@@ -373,7 +349,6 @@ tasks:
       - ./tasks/helpers/lua.sh
     generates:
       - ./build/work/stamp/app-deps/lua/luasocket
-    method: checksum
 
   app-deps:lua:lustache:
     deps:
@@ -387,7 +362,6 @@ tasks:
       - ./tasks/helpers/lua.sh
     generates:
       - ./build/work/stamp/app-deps/lua/lustache
-    method: checksum
 
   app-deps:lua:lyaml:
     deps:
@@ -401,7 +375,6 @@ tasks:
       - ./tasks/helpers/lua.sh
     generates:
       - ./build/work/stamp/app-deps/lua/lyaml
-    method: checksum
 
   app-deps:lua:penlight:
     deps:
@@ -415,7 +388,6 @@ tasks:
       - ./tasks/helpers/lua.sh
     generates:
       - ./build/work/stamp/app-deps/lua/penlight
-    method: checksum
 
   app-deps:lua:resty-auto-ssl:
     deps:
@@ -429,7 +401,6 @@ tasks:
       - ./tasks/helpers/lua.sh
     generates:
       - ./build/work/stamp/app-deps/lua/resty-auto-ssl
-    method: checksum
 
   app-deps:lua:resty-http:
     deps:
@@ -443,7 +414,6 @@ tasks:
       - ./tasks/helpers/lua.sh
     generates:
       - ./build/work/stamp/app-deps/lua/resty-http
-    method: checksum
 
   app-deps:lua:resty-logger-socket:
     deps:
@@ -457,7 +427,6 @@ tasks:
       - ./tasks/helpers/lua.sh
     generates:
       - ./build/work/stamp/app-deps/lua/resty-logger-socket
-    method: checksum
 
   app-deps:lua:resty-shcache:
     deps:
@@ -471,7 +440,6 @@ tasks:
       - ./tasks/helpers/lua.sh
     generates:
       - ./build/work/stamp/app-deps/lua/resty-shcache
-    method: checksum
 
   app-deps:lua:resty-txid:
     deps:
@@ -485,7 +453,6 @@ tasks:
       - ./tasks/helpers/lua.sh
     generates:
       - ./build/work/stamp/app-deps/lua/resty-txid
-    method: checksum
 
   app-deps:lua:resty-uuid:
     deps:
@@ -499,7 +466,6 @@ tasks:
       - ./tasks/helpers/lua.sh
     generates:
       - ./build/work/stamp/app-deps/lua/resty-uuid
-    method: checksum
 
   app-deps:lua:shell-games:
     deps:
@@ -513,7 +479,6 @@ tasks:
       - ./tasks/helpers/lua.sh
     generates:
       - ./build/work/stamp/app-deps/lua/shell-games
-    method: checksum
 
   app-deps:web-app:bundle:
     deps:
@@ -529,7 +494,6 @@ tasks:
       - ./tasks/helpers/lua.sh
     generates:
       - ./build/work/stamp/app-deps/web-app/bundle
-    method: checksum
 
   app-deps:
     cmds:
@@ -571,7 +535,6 @@ tasks:
       - ./tasks/helpers.sh
     generates:
       - ./build/work/stamp/app/admin-ui/build
-    method: checksum
 
   app:core:
     deps:
@@ -586,7 +549,6 @@ tasks:
       - ./tasks/helpers.sh
     generates:
       - ./build/work/stamp/app/core
-    method: checksum
 
   app:static-site:
     deps:
@@ -601,7 +563,6 @@ tasks:
       - ./tasks/helpers.sh
     generates:
       - ./build/work/stamp/app/static-site
-    method: checksum
 
   app:web-app:precompile:
     deps:
@@ -620,7 +581,6 @@ tasks:
       - ./tasks/helpers.sh
     generates:
       - ./build/work/stamp/app/web-app/precompile
-    method: checksum
 
   app:
     cmds:
@@ -647,17 +607,6 @@ tasks:
       - ./tasks/helpers.sh
     generates:
       - ./build/work/stamp/test-deps/bundle
-    method: checksum
-
-  test-deps:elasticsearch5:
-    cmds:
-      - ./tasks/test-deps/elasticsearch5
-    sources:
-      - ./tasks/test-deps/elasticsearch5
-      - ./tasks/helpers.sh
-    generates:
-      - ./build/work/stamp/test-deps/elasticsearch5
-    method: checksum
 
   test-deps:elasticsearch6:
     cmds:
@@ -667,7 +616,6 @@ tasks:
       - ./tasks/helpers.sh
     generates:
       - ./build/work/stamp/test-deps/elasticsearch6
-    method: checksum
 
   test-deps:elasticsearch7:
     cmds:
@@ -677,7 +625,15 @@ tasks:
       - ./tasks/helpers.sh
     generates:
       - ./build/work/stamp/test-deps/elasticsearch7
-    method: checksum
+
+  test-deps:glauth:
+    cmds:
+      - ./tasks/test-deps/glauth
+    sources:
+      - ./tasks/test-deps/glauth
+      - ./tasks/helpers.sh
+    generates:
+      - ./build/work/stamp/test-deps/glauth
 
   test-deps:lua:luacheck:
     deps:
@@ -691,7 +647,6 @@ tasks:
       - ./tasks/helpers/lua.sh
     generates:
       - ./build/work/stamp/test-deps/lua/luacheck
-    method: checksum
 
   test-deps:lua:penlight:
     deps:
@@ -705,7 +660,6 @@ tasks:
       - ./tasks/helpers/lua.sh
     generates:
       - ./build/work/stamp/test-deps/lua/penlight
-    method: checksum
 
   test-deps:mailhog:
     cmds:
@@ -715,7 +669,6 @@ tasks:
       - ./tasks/helpers.sh
     generates:
       - ./build/work/stamp/test-deps/mailhog
-    method: checksum
 
   test-deps:mongo-orchestration:
     cmds:
@@ -725,17 +678,6 @@ tasks:
       - ./tasks/helpers.sh
     generates:
       - ./build/work/stamp/test-deps/mongo-orchestration
-    method: checksum
-
-  test-deps:openldap:
-    cmds:
-      - ./tasks/test-deps/openldap
-    sources:
-      - ./tasks/test-deps/openldap
-      - ./tasks/helpers.sh
-    generates:
-      - ./build/work/stamp/test-deps/openldap
-    method: checksum
 
   test-deps:shellcheck:
     cmds:
@@ -745,31 +687,18 @@ tasks:
       - ./tasks/helpers.sh
     generates:
       - ./build/work/stamp/test-deps/shellcheck
-    method: checksum
-
-  test-deps:unbound:
-    cmds:
-      - ./tasks/test-deps/unbound
-    sources:
-      - ./tasks/test-deps/unbound
-      - ./tasks/helpers.sh
-    generates:
-      - ./build/work/stamp/test-deps/unbound
-    method: checksum
 
   test-deps:
     cmds:
       - task: test-deps:bundle
-      - task: test-deps:elasticsearch5
       - task: test-deps:elasticsearch6
       - task: test-deps:elasticsearch7
+      - task: test-deps:glauth
       - task: test-deps:lua:luacheck
       - task: test-deps:lua:penlight
       - task: test-deps:mailhog
       - task: test-deps:mongo-orchestration
-      - task: test-deps:openldap
       - task: test-deps:shellcheck
-      - task: test-deps:unbound
 
   lint:js:
     deps:
@@ -819,13 +748,6 @@ tasks:
       - test-deps
     cmds:
       - ./tasks/test/default
-
-  test:circle-ci:
-    deps:
-      - all
-      - test-deps
-    cmds:
-      - ./tasks/test/circle-ci
 
   clean:dev:
     cmds:

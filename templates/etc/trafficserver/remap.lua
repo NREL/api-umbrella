@@ -13,6 +13,12 @@ function do_remap()
   end
 
   local cache_key = {
+    -- Note that by default, the cache key doesn't include the backend server
+    -- port, so by re-setting the cache key based on the full URL here, this
+    -- also helps ensure the backend port is included (so backends running on
+    -- separate ports are kept separate).
+    ts.client_request.get_url(),
+
     -- Include the HTTP method (GET, POST, etc) in the cache key. This prevents
     -- delayed processing when long-running GET and POSTs are running against
     -- the same URL:  https://issues.apache.org/jira/browse/TS-3431
@@ -24,12 +30,6 @@ function do_remap()
     -- to be part of the cache key to keep underling servers and virtual hosts
     -- cached separately.
     ts.client_request.header["Host"],
-
-    -- Note that by default, the cache key doesn't include the backend server
-    -- port, so by re-setting the cache key based on the full URL here, this
-    -- also helps ensure the backend port is included (so backends running on
-    -- separate ports are kept separate).
-    ts.client_request.get_url(),
   }
   ts.http.set_cache_lookup_url(table.concat(cache_key, "/"))
 

@@ -1,22 +1,24 @@
-<div class="row number-highlights">
-  <div class="col-sm-3 number-highlight">
-    <strong>{{format-number this.stats.total_hits format="0,0"}}</strong>
-    <small>{{inflect "hit" this.stats.total_hits}}</small>
-  </div>
-  <div class="col-sm-3 number-highlight">
-    <strong>{{format-number this.stats.total_users format="0,0"}}</strong>
-    <small>unique {{inflect "user" this.stats.total_users}}</small>
+<div ...attributes>
+  <div class="row number-highlights">
+    <div class="col-sm-3 number-highlight">
+      <strong>{{format-number this.stats.total_hits format="0,0"}}</strong>
+      <small>{{inflect "hit" this.stats.total_hits}}</small>
+    </div>
+    <div class="col-sm-3 number-highlight">
+      <strong>{{format-number this.stats.total_users format="0,0"}}</strong>
+      <small>unique {{inflect "user" this.stats.total_users}}</small>
 
-    <Stats::Logs::ResultsFacetTable @label="view top users" @field="user_email" @facets={{this.aggregations.users}} @presentQueryParamValues={{this.presentQueryParamValues}} />
-  </div>
-  <div class="col-sm-3 number-highlight">
-    <strong>{{format-number this.stats.total_ips format="0,0"}}</strong>
-    <small>unique ip {{inflect "address" this.stats.total_ips}}</small>
+      <Stats::Logs::ResultsFacetTable @label="view top users" @field="user_email" @facets={{this.aggregations.users}} @presentQueryParamValues={{this.presentQueryParamValues}} />
+    </div>
+    <div class="col-sm-3 number-highlight">
+      <strong>{{format-number this.stats.total_ips format="0,0"}}</strong>
+      <small>unique ip {{inflect "address" this.stats.total_ips}}</small>
 
-    <Stats::Logs::ResultsFacetTable @label="view top ips" @field="request_ip" @facets={{this.aggregations.ips}} @presentQueryParamValues={{this.presentQueryParamValues}} />
-  </div>
-  <div class="col-sm-3 number-highlight">
-    <strong>{{format-number this.stats.average_response_time format="0,0"}} <span class="units">ms</span></strong>
-    <small>average response time</small>
+      <Stats::Logs::ResultsFacetTable @label="view top ips" @field="request_ip" @facets={{this.aggregations.ips}} @presentQueryParamValues={{this.presentQueryParamValues}} />
+    </div>
+    <div class="col-sm-3 number-highlight">
+      <strong>{{format-number this.stats.average_response_time format="0,0"}} <span class="units">ms</span></strong>
+      <small>average response time</small>
+    </div>
   </div>
 </div>

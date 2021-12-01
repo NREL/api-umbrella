@@ -1,19 +1,23 @@
-<BsModal @open={{this.openModal}} @onShow={{action "open"}} @onSubmit={{action "submit"}} @onHidden={{action "closed"}} @backdropClose={{false}} @size="lg" @fade={{false}} as |modal|>
-  <modal.header @title={{this.modalTitle}} />
-  <modal.body>
-    <form {{action "submit" on="submit"}}>
-      <FieldsFor @model={{this.bufferedModel}} @style="vertical" as |f|>
-        <div class="row">
-          <div class="col-sm-10">
-            {{f.text-field "host" label="Host" placeholder="api.example.com"}}
+<div ...attributes>
+  <BsModal @open={{this.openModal}} @onShow={{action "open"}} @onHidden={{action "closed"}} @backdropClose={{false}} @size="lg" @fade={{false}} as |modal|>
+    <modal.header @title={{this.modalTitle}} />
+    <modal.body>
+      <form {{on "submit" this.submitForm}}>
+        <FieldsFor @model={{this.bufferedModel}} @style="vertical" as |f|>
+          <div class="row">
+            <div class="col-sm-10">
+              {{f.text-field "host" label="Host" placeholder="api.example.com"}}
+            </div>
+            <div class="col-sm-2">
+              {{f.text-field "port" label="Port"}}
+            </div>
           </div>
-          <div class="col-sm-2">
-            {{f.text-field "port" label="Port"}}
-          </div>
-        </div>
-      </FieldsFor>
-      <input type="submit" class="hidden-submit-button" tabindex="-1">
-    </form>
-  </modal.body>
-  <modal.footer @closeTitle="Cancel" @submitTitle="OK" />
-</BsModal>
+        </FieldsFor>
+        {{! template-lint-disable require-input-label }}
+        <input type="submit" class="hidden-submit-button" tabindex="-1">
+        {{! template-lint-enable require-input-label }}
+      </form>
+    </modal.body>
+    <modal.footer @closeTitle="Cancel" @submitTitle="OK" />
+  </BsModal>
+</div>

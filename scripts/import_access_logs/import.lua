@@ -120,7 +120,11 @@ local function flush_bulk_commands()
 
   local httpc = http.new()
   httpc:set_timeout(120000)
-  httpc:connect(config["elasticsearch"]["_first_server"]["host"], config["elasticsearch"]["_first_server"]["port"])
+  httpc:connect({
+    scheme = "http",
+    host = config["elasticsearch"]["_first_server"]["host"],
+    port = config["elasticsearch"]["_first_server"]["port"],
+  })
 
   local res, err = httpc:request({
     method = "POST",

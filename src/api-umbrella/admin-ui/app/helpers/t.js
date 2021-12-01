@@ -1,6 +1,6 @@
-import I18n from 'i18n-js';
-import { assign } from '@ember/polyfills';
 import { helper } from '@ember/component/helper';
+import { assign } from '@ember/polyfills';
+import I18n from 'i18n-js';
 
 export function t(params, options) {
   let key = params[0];

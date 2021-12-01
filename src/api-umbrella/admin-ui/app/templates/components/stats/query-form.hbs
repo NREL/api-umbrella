@@ -1,174 +1,176 @@
-<form id="filter_form" action="#" method="get" {{action "submit" on="submit"}}>
-  <div class="row">
-    <div class="col-sm-4">
-      <div class="form-control-plaintext form-control-sm">
-        <a id="filter_toggle" data-toggle="collapse" data-target="#filters_ui" href="#">{{fa-icon "caret-down" fixedWidth=true}}{{t "admin.stats.filter_results"}}</a>
-      </div>
-    </div>
-    <div class="col-sm-8 filter-times">
-      {{#if this.enableInterval}}
-        <BsButtonGroup @value={{this.interval}} @onChange={{action (mut this.interval)}} @type="radio" @size="sm" @id="interval_buttons" as |bg|>
-          <bg.button @type="light" @value="minute">{{t "admin.stats.minute"}}</bg.button>
-          <bg.button @type="light" @value="hour">{{t "admin.stats.hour"}}</bg.button>
-          <bg.button @type="light" @value="day">{{t "admin.stats.day"}}</bg.button>
-          <bg.button @type="light" @value="week">{{t "admin.stats.week"}}</bg.button>
-          <bg.button @type="light" @value="month">{{t "admin.stats.month"}}</bg.button>
-        </BsButtonGroup>
-      {{/if}}
-
-      <div id="reportrange" class="pull-right">
-        <button class="btn btn-light btn-sm dropdown-toggle" type="button" aria-haspopup="true" aria-expanded="false">
-          {{fa-icon "calendar"}}
-          <span class="text"></span>
-        </button>
-      </div>
-    </div>
-  </div>
-  <div class="row">
-    <div class="col-sm-12 advanced-filter">
-      <div id="filters_ui" class="collapse show">
-        <div id="filter_type_builder" class="filter-type">
-          <div id="query_builder"></div>
-          <div class="row">
-            <div class="col-sm-6">
-              <button class="btn btn-primary btn-sm" type="submit">{{t "admin.stats.filter"}}</button>
-            </div>
-            <div class="col-sm-6 text-right">
-              <div class="form-control-plaintext form-control-sm">
-                <a href="#" {{action "toggleFilterType" "advanced"}} class="filter-type-toggle">{{t "admin.stats.switch_advanced_filters"}}</a>
-              </div>
-            </div>
-          </div>
+<div {{did-insert this.didInsert}} ...attributes>
+  <form id="filter_form" action="#" method="get" {{on "submit" this.submitForm}}>
+    <div class="row">
+      <div class="col-sm-4">
+        <div class="form-control-plaintext form-control-sm">
+          <a id="filter_toggle" data-toggle="collapse" data-target="#filters_ui" href="#"><FaIcon @icon="caret-down" @fixedWidth={{true}} />{{t "admin.stats.filter_results"}}</a>
         </div>
-        <div id="filter_type_advanced" class="filter-type" style="display: none;">
-          <div id="search_field">
-            <div class="input-group">
-              <input type="text" name="search" class="form-control" placeholder={{t "admin.stats.advanced_filters_placeholder"}} value={{this.query.params.search}}>
-              <span class="input-group-append">
-                <button class="btn btn-primary" type="submit">{{t "admin.stats.filter"}}</button>
-              </span>
-            </div>
+      </div>
+      <div class="col-sm-8 filter-times">
+        {{#if this.enableInterval}}
+          <BsButtonGroup @value={{this.interval}} @onChange={{action (mut this.interval)}} @type="radio" @size="sm" @id="interval_buttons" as |bg|>
+            <bg.button @type="light" @value="minute">{{t "admin.stats.minute"}}</bg.button>
+            <bg.button @type="light" @value="hour">{{t "admin.stats.hour"}}</bg.button>
+            <bg.button @type="light" @value="day">{{t "admin.stats.day"}}</bg.button>
+            <bg.button @type="light" @value="week">{{t "admin.stats.week"}}</bg.button>
+            <bg.button @type="light" @value="month">{{t "admin.stats.month"}}</bg.button>
+          </BsButtonGroup>
+        {{/if}}
+
+        <div id="reportrange" class="pull-right">
+          <button class="btn btn-light btn-sm dropdown-toggle" type="button" aria-haspopup="true" aria-expanded="false">
+            <FaIcon @icon="calendar" />
+            <span class="text"></span>
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-sm-12 advanced-filter">
+        <div id="filters_ui" class="collapse show">
+          <div id="filter_type_builder" class="filter-type">
+            <div id="query_builder"></div>
             <div class="row">
               <div class="col-sm-6">
-                <div class="form-control-plaintext form-control-sm text-muted">{{! template-lint-disable no-bare-strings no-triple-curlies }}{{{t "admin.stats.advanced_filters_tip"}}}</div>
+                <button class="btn btn-primary btn-sm" type="submit">{{t "admin.stats.filter"}}</button>
               </div>
               <div class="col-sm-6 text-right">
                 <div class="form-control-plaintext form-control-sm">
-                  <a href="#" {{action "toggleFilterType" "builder"}} class="filter-type-toggle">{{t "admin.stats.switch_simple_filters"}}</a>
+                  <a href="#" {{action "toggleFilterType" "advanced"}} class="filter-type-toggle">{{t "admin.stats.switch_advanced_filters"}}</a>
                 </div>
               </div>
             </div>
-            <div id="query_syntax_help_content" style="display: none;">
-              <p>{{! template-lint-disable no-bare-strings no-triple-curlies }}{{{t "admin.stats.advanced_filters_help_content"}}}</p>
-              <p>{{t "admin.stats.example"}}:</p>
-              <pre class="code-block">request_method:"POST" AND response_status:[400 TO *]</pre>
-              <p>{{t "admin.stats.available_fields"}}:</p>
-              <table class="table table-sm query-syntax-help">
-                <thead>
-                  <tr>
-                    <th>{{t "admin.stats.field"}}</th>
-                    <th class="example">{{t "admin.stats.example"}}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td>request_at</td>
-                    <td class="example">2013-11-06T20:02:53.752Z</td>
-                  </tr>
-                  <tr>
-                    <td>request_method</td>
-                    <td class="example">GET</td>
-                  </tr>
-                  <tr>
-                    <td>request_url</td>
-                    <td class="example">http://api.data.gov/nrel/alt-fuel-stations/v1.json?limit=2</td>
-                  </tr>
-                  <tr>
-                    <td>request_scheme</td>
-                    <td class="example">http</td>
-                  </tr>
-                  <tr>
-                    <td>request_host</td>
-                    <td class="example">api.data.gov</td>
-                  </tr>
-                  <tr>
-                    <td>request_path</td>
-                    <td class="example">/nrel/alt-fuel-stations/v1.json</td>
-                  </tr>
-                  <tr>
-                    <td>request_path_hierarchy</td>
-                    <td class="example">/nrel/alt-fuel-stations/v1</td>
-                  </tr>
-                  <tr>
-                    <td>request_user_agent</td>
-                    <td class="example">curl/7.33.0</td>
-                  </tr>
-                  <tr>
-                    <td>request_user_agent_type</td>
-                    <td class="example">Library</td>
-                  </tr>
-                  <tr>
-                    <td>request_user_agent_family</td>
-                    <td class="example">cURL</td>
-                  </tr>
-                  <tr>
-                    <td>request_accept_encoding</td>
-                    <td class="example">deflate, gzip</td>
-                  </tr>
-                  <tr>
-                    <td>request_ip</td>
-                    <td class="example">93.184.216.119</td>
-                  </tr>
-                  <tr>
-                    <td>request_ip_country</td>
-                    <td class="example">US</td>
-                  </tr>
-                  <tr>
-                    <td>request_ip_region</td>
-                    <td class="example">CO</td>
-                  </tr>
-                  <tr>
-                    <td>request_ip_city</td>
-                    <td class="example">Golden</td>
-                  </tr>
-                  <tr>
-                    <td>response_status</td>
-                    <td class="example">200</td>
-                  </tr>
-                  <tr>
-                    <td>response_content_type</td>
-                    <td class="example">application/json; charset=utf-8</td>
-                  </tr>
-                  <tr>
-                    <td>response_content_encoding</td>
-                    <td class="example">gzip</td>
-                  </tr>
-                  <tr>
-                    <td>response_transfer_encoding</td>
-                    <td class="example">chunked</td>
-                  </tr>
-                  <tr>
-                    <td>response_server</td>
-                    <td class="example">nginx/1.4.2</td>
-                  </tr>
-                  <tr>
-                    <td>api_key</td>
-                    <td class="example">DEMO_KEY</td>
-                  </tr>
-                  <tr>
-                    <td>user_email</td>
-                    <td class="example">demo.api_keys@data.gov</td>
-                  </tr>
-                  <tr>
-                    <td>user_id</td>
-                    <td class="example">ad2d94b6-e0f8-4e26-b1a6-1bc6b12f3d76</td>
-                  </tr>
-                </tbody>
-              </table>
+          </div>
+          <div id="filter_type_advanced" class="filter-type" style="display: none;">
+            <div id="search_field">
+              <div class="input-group">
+                <input type="text" name="search" class="form-control" placeholder={{t "admin.stats.advanced_filters_placeholder"}} value={{this.query.params.search}} aria-label="Advanced filters">
+                <span class="input-group-append">
+                  <button class="btn btn-primary" type="submit">{{t "admin.stats.filter"}}</button>
+                </span>
+              </div>
+              <div class="row">
+                <div class="col-sm-6">
+                  <div class="form-control-plaintext form-control-sm text-muted">{{! template-lint-disable no-bare-strings no-triple-curlies }}{{{t "admin.stats.advanced_filters_tip"}}}</div>
+                </div>
+                <div class="col-sm-6 text-right">
+                  <div class="form-control-plaintext form-control-sm">
+                    <a href="#" {{action "toggleFilterType" "builder"}} class="filter-type-toggle">{{t "admin.stats.switch_simple_filters"}}</a>
+                  </div>
+                </div>
+              </div>
+              <div id="query_syntax_help_content" style="display: none;">
+                <p>{{! template-lint-disable no-bare-strings no-triple-curlies }}{{{t "admin.stats.advanced_filters_help_content"}}}</p>
+                <p>{{t "admin.stats.example"}}:</p>
+                <pre class="code-block">request_method:"POST" AND response_status:[400 TO *]</pre>
+                <p>{{t "admin.stats.available_fields"}}:</p>
+                <table class="table table-sm query-syntax-help">
+                  <thead>
+                    <tr>
+                      <th>{{t "admin.stats.field"}}</th>
+                      <th class="example">{{t "admin.stats.example"}}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>request_at</td>
+                      <td class="example">2013-11-06T20:02:53.752Z</td>
+                    </tr>
+                    <tr>
+                      <td>request_method</td>
+                      <td class="example">GET</td>
+                    </tr>
+                    <tr>
+                      <td>request_url</td>
+                      <td class="example">http://api.data.gov/nrel/alt-fuel-stations/v1.json?limit=2</td>
+                    </tr>
+                    <tr>
+                      <td>request_scheme</td>
+                      <td class="example">http</td>
+                    </tr>
+                    <tr>
+                      <td>request_host</td>
+                      <td class="example">api.data.gov</td>
+                    </tr>
+                    <tr>
+                      <td>request_path</td>
+                      <td class="example">/nrel/alt-fuel-stations/v1.json</td>
+                    </tr>
+                    <tr>
+                      <td>request_path_hierarchy</td>
+                      <td class="example">/nrel/alt-fuel-stations/v1</td>
+                    </tr>
+                    <tr>
+                      <td>request_user_agent</td>
+                      <td class="example">curl/7.33.0</td>
+                    </tr>
+                    <tr>
+                      <td>request_user_agent_type</td>
+                      <td class="example">Library</td>
+                    </tr>
+                    <tr>
+                      <td>request_user_agent_family</td>
+                      <td class="example">cURL</td>
+                    </tr>
+                    <tr>
+                      <td>request_accept_encoding</td>
+                      <td class="example">deflate, gzip</td>
+                    </tr>
+                    <tr>
+                      <td>request_ip</td>
+                      <td class="example">93.184.216.119</td>
+                    </tr>
+                    <tr>
+                      <td>request_ip_country</td>
+                      <td class="example">US</td>
+                    </tr>
+                    <tr>
+                      <td>request_ip_region</td>
+                      <td class="example">CO</td>
+                    </tr>
+                    <tr>
+                      <td>request_ip_city</td>
+                      <td class="example">Golden</td>
+                    </tr>
+                    <tr>
+                      <td>response_status</td>
+                      <td class="example">200</td>
+                    </tr>
+                    <tr>
+                      <td>response_content_type</td>
+                      <td class="example">application/json; charset=utf-8</td>
+                    </tr>
+                    <tr>
+                      <td>response_content_encoding</td>
+                      <td class="example">gzip</td>
+                    </tr>
+                    <tr>
+                      <td>response_transfer_encoding</td>
+                      <td class="example">chunked</td>
+                    </tr>
+                    <tr>
+                      <td>response_server</td>
+                      <td class="example">nginx/1.4.2</td>
+                    </tr>
+                    <tr>
+                      <td>api_key</td>
+                      <td class="example">DEMO_KEY</td>
+                    </tr>
+                    <tr>
+                      <td>user_email</td>
+                      <td class="example">demo.api_keys@data.gov</td>
+                    </tr>
+                    <tr>
+                      <td>user_id</td>
+                      <td class="example">ad2d94b6-e0f8-4e26-b1a6-1bc6b12f3d76</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
-</form>
+  </form>
+</div>

@@ -49,7 +49,7 @@ class ConfigVersion
 
   def self.pending_config
     {
-      "apis" => Api.sorted.all.map { |api| Hash[api.attributes] },
+      "apis" => Api.sorted.all.map { |api| api.attributes.to_h },
     }
   end
 

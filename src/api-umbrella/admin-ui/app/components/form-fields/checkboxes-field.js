@@ -1,5 +1,8 @@
+import { classNames } from '@ember-decorators/component';
+import classic from 'ember-classic-decorator';
+
 import BaseField from './base-field';
 
-export default BaseField.extend({
-  classNames: ['form-fields-checkboxes-field'],
-});
+@classic
+@classNames('form-fields-checkboxes-field')
+export default class CheckboxesField extends BaseField {}
