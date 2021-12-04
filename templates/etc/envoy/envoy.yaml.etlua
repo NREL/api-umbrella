@@ -21,3 +21,4 @@ layered_runtime:
     - name: static_layer
       static_layer:
         envoy.reloadable_features.max_response_headers_count: 200
+        envoy.reloadable_features.sanitize_http_header_referer: false
