@@ -18,7 +18,7 @@ source ./tasks/helpers.sh
 
 task_working_dir
 
-download "https://ftp.pcre.org/pub/pcre/pcre-$pcre_version.tar.bz2" "md5" "$pcre_hash"
+download "http://ftp.cs.stanford.edu/pub/exim/pcre/pcre-$pcre_version.tar.bz2" "md5" "$pcre_hash"
 extract_download "pcre-$pcre_version.tar.bz2"
 # Force pcre to statically link due to issues that prevent this from happening
 # by default in OpenResty 1.15.8. Shouldn't be necessary in next version of
