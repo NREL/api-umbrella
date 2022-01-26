@@ -60,10 +60,7 @@ local template_html, template_html_err = etlua.compile([[
     <p><%- greeting %></p>
     <code class="signup-key"><%- api_key %></code>
 
-    <% if example_api_url and example_api_url_formatted_html then %>
-      <p><%- example_instruction %></p>
-      <pre><a href="<%= example_api_url %>"><%- example_api_url_formatted_html %></a></pre>
-    <% end %>
+    <p><%- example_instruction %></p>
 
     <div class="signup-footer">
       <p><%- support %></p>
@@ -84,11 +81,7 @@ local template_text, template_text_err = etlua.compile([[
 
 <%- api_key %>
 
-<% if example_api_url then %>
 <%- example_instruction %>
-
-<%- example_api_url %>
-<% end %>
 
 <%- support %>
 
@@ -113,13 +106,13 @@ return function(api_user, options)
 
   local data = {
     hi = t("Hi,"),
-    greeting = t("Your API key for %s is:"),
+    greeting = t("You are receiving this email to confirm the creation of an API key. If you did not request this, please disregard this email. Your API key for %s is:"),
     api_key = api_key,
     account_email = t("Account Email: %s"),
     account_id = t("Account ID: %s"),
     example_api_url = options["example_api_url"],
     example_api_url_formatted_html = options["example_api_url_formatted_html"],
-    example_instruction = t("You can start using this key to make web service requests. Simply pass your key in the URL when making a web request. Here's an example:"),
+    example_instruction = t("You can start using this key to make web service requests by referring to the relevant agency's API documentation. This API key is for your use and should not be shared."),
     support = t("For additional support, please %s. When contacting us, please tell us what API you're accessing and provide the following account details so we can quickly find you:"),
   }
 
