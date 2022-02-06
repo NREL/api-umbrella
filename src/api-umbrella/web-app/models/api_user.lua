@@ -86,10 +86,16 @@ ApiUser = model_ext.new_class("api_users", {
     return self._api_key_hides_at
   end,
 
-  admin_can_view_api_key = function()
+  admin_can_view_api_key = function(self)
     local allowed = false
-    if ngx.ctx.current_admin and ngx.ctx.current_admin.superuser then
-      allowed = true
+
+    local current_admin = ngx.ctx.current_admin
+    if current_admin then
+      if current_admin.superuser then
+        allowed = true
+      elseif self.created_by_id and self.created_by_id == current_admin.id then
+        allowed = true
+      end
     end
 
     return allowed
