@@ -1,10 +1,14 @@
 import Component from '@ember/component';
 // eslint-disable-next-line ember/no-mixins
 import Save from 'api-umbrella-admin-ui/mixins/save';
+import { computed } from '@ember/object';
 import escape from 'lodash-es/escape';
+import { inject } from '@ember/service';
 import { t } from 'api-umbrella-admin-ui/utils/i18n';
 
 export default Component.extend(Save, {
+  session: inject('session'),
+
   init() {
     this._super(...arguments);
 
@@ -18,6 +22,11 @@ export default Component.extend(Save, {
       { id: false, name: 'Disabled' },
     ];
   },
+
+  isDisabled: computed('session.data.authenticated.admin', function() {
+    const currentAdmin = this.session.data.authenticated.admin;
+    return !currentAdmin.permissions.user_manage;
+  }),
 
   actions: {
     apiKeyRevealToggle() {
@@ -36,6 +45,12 @@ export default Component.extend(Save, {
     },
 
     submit() {
+      const currentAdmin = this.session.data.authenticated.admin;
+      if(!currentAdmin.permissions.user_manage) {
+        console.info('No permissions to manage users');
+        return;
+      }
+
       const isNew = this.model.get('isNew');
       this.saveRecord({
         transitionToRoute: 'api_users',

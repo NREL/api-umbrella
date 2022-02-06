@@ -12,6 +12,8 @@ chef/tmp
 Dockerfile*
 Makefile
 docker-compose.yml
+docker-compose.override.yml
+config/local.yml
 install_manifest.txt
 install_manifest_core.txt
 deploy/.env
@@ -25,6 +27,7 @@ vendor
 website/build
 website/.sass-cache
 docs/_build
+tmp
 
 src/api-umbrella/admin-ui/dist
 src/api-umbrella/admin-ui/tmp
