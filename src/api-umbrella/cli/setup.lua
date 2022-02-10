@@ -201,9 +201,12 @@ local function write_templates()
           -- processes never read a half-written file.
           local install_dir = path.dirname(install_path)
           local temp_path = path.tmpname()
-          file.write(temp_path, "")
+          local _, write_err = file.write(temp_path, content)
+          if write_err then
+            print("write failed: ", write_err)
+            os.exit(1)
+          end
           set_template_permissions(temp_path, install_filename, install_path)
-          file.write(temp_path, content)
 
           dir.makepath(install_dir)
           file.move(temp_path, install_path)
@@ -229,7 +232,11 @@ local function write_static_site_key()
     local content = file.read(file_path)
     local new_content, replacements = string.gsub(content, "apiKey: '.-'", "apiKey: '" .. config["static_site"]["api_key"] .. "'")
     if replacements > 0 then
-      file.write(file_path, new_content)
+      local _, write_err = file.write(file_path, new_content)
+      if write_err then
+        print("write failed: ", write_err)
+        os.exit(1)
+      end
     end
   end
 end
