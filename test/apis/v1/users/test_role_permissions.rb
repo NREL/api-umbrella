@@ -167,6 +167,55 @@ class Test::Apis::V1::Users::TestRolePermissions < Minitest::Test
     assert_equal(["yahoo-write"], record.roles)
   end
 
+  def test_allows_api_umbrella_key_creator_role_allowed_by_itself
+    admin = FactoryBot.create(:admin)
+    attr_overrides = {
+      "roles" => ["api-umbrella-key-creator"],
+    }
+    assert_admin_permitted_create(:api_user, admin, attr_overrides)
+    assert_admin_permitted_update(:api_user, admin, attr_overrides)
+  end
+
+  def test_rejects_api_umbrella_key_creator_role_with_other_roles
+    admin = FactoryBot.create(:admin)
+    attr_overrides = {
+      "roles" => ["api-umbrella-key-creator", "foo"],
+    }
+
+    attributes = FactoryBot.attributes_for(:api_user).deep_stringify_keys.deep_merge(attr_overrides)
+    response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(admin_token(admin)).deep_merge({
+      :headers => { "Content-Type" => "application/json" },
+      :body => MultiJson.dump(:user => attributes),
+    }))
+    assert_response_code(422, response)
+    data = MultiJson.load(response.body)
+    assert_equal({
+      "errors" => [{
+        "code" => "INVALID_INPUT",
+        "field" => "role_ids",
+        "full_message" => "Roles: no other roles can be assigned when the \"api-umbrella-key-creator\" role is present",
+        "message" => "no other roles can be assigned when the \"api-umbrella-key-creator\" role is present",
+      }],
+    }, data)
+
+    user = FactoryBot.create(:api_user)
+    attributes = user.serializable_hash.deep_merge(attr_overrides)
+    response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/users/#{user.id}.json", http_options.deep_merge(admin_token(admin)).deep_merge({
+      :headers => { "Content-Type" => "application/json" },
+      :body => MultiJson.dump(:user => attributes),
+    }))
+    assert_response_code(422, response)
+    data = MultiJson.load(response.body)
+    assert_equal({
+      "errors" => [{
+        "code" => "INVALID_INPUT",
+        "field" => "role_ids",
+        "full_message" => "Roles: no other roles can be assigned when the \"api-umbrella-key-creator\" role is present",
+        "message" => "no other roles can be assigned when the \"api-umbrella-key-creator\" role is present",
+      }],
+    }, data)
+  end
+
   private
 
   def assert_admin_permitted_create(factory, admin, attr_overrides = {})

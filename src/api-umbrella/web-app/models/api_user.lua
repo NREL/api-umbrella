@@ -1,11 +1,13 @@
 local ApiRole = require "api-umbrella.web-app.models.api_role"
 local ApiUserSettings = require "api-umbrella.web-app.models.api_user_settings"
 local api_user_policy = require "api-umbrella.web-app.policies.api_user_policy"
+local array_includes = require "api-umbrella.utils.array_includes"
 local cjson = require "cjson"
 local config = require "api-umbrella.proxy.models.file_config"
 local db = require "lapis.db"
 local encryptor = require "api-umbrella.utils.encryptor"
 local hmac = require "api-umbrella.utils.hmac"
+local is_array = require "api-umbrella.utils.is_array"
 local is_hash = require "api-umbrella.utils.is_hash"
 local json_array_fields = require "api-umbrella.web-app.utils.json_array_fields"
 local json_null_default = require "api-umbrella.web-app.utils.json_null_default"
@@ -335,6 +337,10 @@ ApiUser = model_ext.new_class("api_users", {
       validate_field(errors, data, "terms_and_conditions", t("Terms and conditions"), {
         { validation_ext.boolean:equals(true), t("Check the box to agree to the terms and conditions.") },
       })
+    end
+
+    if data["role_ids"] ~= db_null and is_array(data["role_ids"]) and array_includes(data["role_ids"], "api-umbrella-key-creator") and #data["role_ids"] > 1 then
+      model_ext.add_error(errors, "role_ids", t("Roles"), t("no other roles can be assigned when the \"api-umbrella-key-creator\" role is present"))
     end
 
     if data["metadata"] and not is_hash(data["metadata"]) and data["metadata"] ~= db_null then

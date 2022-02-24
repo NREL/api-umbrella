@@ -1,6 +1,7 @@
 -- Pre-load modules.
 require "api-umbrella.proxy.jobs.load_db_config"
 require "api-umbrella.proxy.models.file_config"
+require "api-umbrella.utils.array_includes"
 require "api-umbrella.utils.array_last"
 require "api-umbrella.utils.build_url"
 require "api-umbrella.utils.deep_merge_overwrite_arrays"
