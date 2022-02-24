@@ -1101,4 +1101,12 @@ return {
 
     db.query("COMMIT")
   end,
+
+  [1645733075] = function()
+    db.query("BEGIN")
+
+    db.query("CREATE INDEX ON api_users(created_at DESC)")
+
+    db.query("COMMIT")
+  end,
 }
