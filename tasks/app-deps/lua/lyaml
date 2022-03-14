@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-lua_lyaml_version="6.2.5-1"
+lua_lyaml_version="6.2.7-1"
 
 set -e -u -x
 source ./tasks/helpers.sh

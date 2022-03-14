@@ -5,13 +5,13 @@ ruby "~> 2.5"
 gem "rake", "~> 13.0.0"
 
 # Tests
-gem "minitest", "~> 5.14.0"
+gem "minitest", "~> 5.15.0"
 
 # CLI helper for running tests
 gem "minitest-sprint", "~> 1.2.0"
 
 # More test outputs
-gem "minitest-reporters", "~> 1.4.0"
+gem "minitest-reporters", "~> 1.5.0"
 
 # For an "after_all" callback.
 gem "minitest-hooks", "~> 1.5.0"
@@ -33,8 +33,8 @@ gem "multi_json", "~> 1.15.0"
 gem "oj", "~> 3.10"
 
 # Database libraries
-gem "activerecord", "~> 6.1.4", :require => "active_record"
-gem "pg", "~> 1.2.2"
+gem "activerecord", "~> 7.0.2", :require => "active_record"
+gem "pg", "~> 1.3.4"
 gem "elasticsearch", "~> 7.13.3"
 gem "active_attr", "~> 0.15.0"
 
@@ -59,7 +59,7 @@ gem "capybara-screenshot", "~> 1.0.22"
 gem "nokogiri", "~> 1.10"
 
 # Useful additions
-gem "activesupport", "~> 6.1.4"
+gem "activesupport", "~> 7.0.2"
 
 # Generating fake strings and data.
 gem "faker", "~> 2.12"
@@ -77,7 +77,7 @@ gem "bcrypt", "~> 3.1.12"
 gem "encryptor", "~> 3.0.0"
 
 # Color output
-gem "rainbow", "~> 3.0.0"
+gem "rainbow", "~> 3.1.1"
 
 # Debug printing
 gem "awesome_print", "~> 1.9.2"

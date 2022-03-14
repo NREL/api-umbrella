@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-trafficserver_version="9.1.1"
-trafficserver_hash="dcff67cfd4b9f2d1f93b14489497852acab4c6ca7150e069d6eecce17f1e7ae7f961c47fde053565009b239507b0be2941cccc0389047494728c848dd308f907"
+trafficserver_version="9.1.2"
+trafficserver_hash="05ec110cd25f93861a1609608dd82030ed9b21cc561fb1a66c76c06317bc16235d79389a7ffc76218527d7b524585473897bee6e01529f1c8f4f1b844cde4359"
 
 set -e -u -x
 source ./tasks/helpers.sh

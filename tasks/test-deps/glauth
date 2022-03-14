@@ -1,14 +1,16 @@
 #!/usr/bin/env bash
 
-glauth_version="2.0.0"
-glauth_hash="dd0c29249f08cef59b025c530cc180a1d919bab771668604bf3d4215aa73c70a"
+glauth_version="2.1.0"
+glauth_hash="4432260e6468644f99bfa61cc8a9586439823aada05a5602e7aacda765fd320d"
 
 set -e -u -x
 source ./tasks/helpers.sh
 
 task_working_dir
-download "https://github.com/glauth/glauth/releases/download/v$glauth_version/glauth64" "sha256" "$glauth_hash"
+download "https://github.com/glauth/glauth/releases/download/v$glauth_version/linuxamd64.zip" "sha256" "$glauth_hash"
+rm -rf _persist/downloads/linuxamd64
+unzip "_persist/downloads/linuxamd64.zip" -d _persist/downloads/linuxamd64
 
-install -D -m 755 _persist/downloads/glauth64 "$TEST_INSTALL_PREFIX/bin/glauth"
+install -D -m 755 _persist/downloads/linuxamd64/glauth "$TEST_INSTALL_PREFIX/bin/glauth"
 
 stamp

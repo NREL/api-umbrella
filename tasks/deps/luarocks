@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-luarocks_version="3.7.0"
-luarocks_hash="d293d8895fad58ce270e3eb6b21df502"
+luarocks_version="3.8.0"
+luarocks_hash="ae1763f678719d5957bd7e2187a3b730"
 
 set -e -u -x
 source ./tasks/helpers.sh

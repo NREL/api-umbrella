@@ -5,6 +5,12 @@ require "uri"
 
 class OutdatedPackages
   REPOS = {
+    "crane" => {
+      :git => "https://github.com/google/go-containerregistry.git",
+    },
+    "envoy" => {
+      :git => "https://github.com/envoyproxy/envoy.git",
+    },
     "glauth" => {
       :git => "https://github.com/glauth/glauth.git",
     },
