@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 crane_version="0.8.0"
-crane_hash="92bd3895324d55d6d6e626009452260c"
+crane_hash="d7b824e4a2559ff37be350b8675a1e7a"
 
 set -e -u -x
 source ./tasks/helpers.sh

@@ -33,6 +33,7 @@ tasks:
     cmds:
       - ./tasks/deps/envoy
     sources:
+      - ./build/work/stamp/build-deps/crane
       - ./tasks/deps/envoy
       - ./tasks/helpers.sh
     generates:

@@ -7,12 +7,12 @@ source ./tasks/helpers.sh
 
 task_working_dir
 
-if [ ! -f _persist/downloads/envoy.tar ]; then
+if [ ! -f "_persist/downloads/envoy-${envoy_version}.tar" ]; then
   mkdir -p _persist/downloads
-  PATH="$DEV_PATH" crane export "envoyproxy/envoy-distroless:v${envoy_version}" _persist/downloads/envoy.tar
+  PATH="$DEV_PATH" crane export "envoyproxy/envoy-distroless:v${envoy_version}" "_persist/downloads/envoy-${envoy_version}.tar"
 fi
 
-tar -xof "_persist/downloads/envoy.tar" usr/local/bin/envoy
+tar -xof "_persist/downloads/envoy-${envoy_version}.tar" usr/local/bin/envoy
 
 install -D -m 755 usr/local/bin/envoy "$STAGE_EMBEDDED_DIR/bin/envoy"
 
