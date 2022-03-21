@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-lua_inspect_version="3.1.2-0"
+lua_inspect_version="3.1.3-0"
 
 set -e -u -x
 source ./tasks/helpers.sh

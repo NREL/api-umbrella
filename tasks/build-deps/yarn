@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-yarn_version="1.22.17"
-yarn_hash="291fea6d3b993c201b946ab566de816c"
+yarn_version="1.22.18"
+yarn_hash="fd220e06ecd3a3cc86a38f9215efdd67"
 
 set -e -u -x
 source ./tasks/helpers.sh

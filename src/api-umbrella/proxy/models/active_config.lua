@@ -331,8 +331,12 @@ local function build_envoy_cluster(cluster_name, options)
     ["@type"] = "type.googleapis.com/envoy.config.cluster.v3.Cluster",
     name = cluster_name,
     type = "STRICT_DNS",
-    dns_resolution_config = {
-      resolvers = config["dns_resolver"]["_nameservers_envoy"],
+    typed_dns_resolver_config = {
+      name = "envoy.network.dns_resolver.cares",
+      typed_config = {
+        ["@type"] = "type.googleapis.com/envoy.extensions.network.dns_resolver.cares.v3.CaresDnsResolverConfig",
+        resolvers = config["dns_resolver"]["_nameservers_envoy"],
+      },
     },
     dns_lookup_family = "V4_PREFERRED",
     respect_dns_ttl = true,
@@ -357,7 +361,7 @@ local function build_envoy_cluster(cluster_name, options)
   --
   -- Envoy also supports the more explicit "dns_failure_refresh_rate" option,
   -- but that includes an exponential backoff algorithm, with random jitter,
-  -- making it harder to test against. To to replicate how our "negative_ttl"
+  -- making it harder to test against. So to replicate how our "negative_ttl"
   -- has worked under other DNS situations, we will use this "dns_refresh_rate"
   -- (which doesn't do backoff or jitter).
   if config["dns_resolver"]["negative_ttl"] then
@@ -547,6 +551,7 @@ local function set_envoy_config(active_config, config_version)
                     max_headers_count = 200,
                   },
                   generate_request_id = false,
+                  server_header_transformation = "PASS_THROUGH",
                   http_filters = {
                     {
                       name = "envoy.filters.http.router",

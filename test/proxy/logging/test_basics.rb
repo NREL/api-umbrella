@@ -90,8 +90,10 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
 
     mapping_options = {
       :index => hit["_index"],
+      :include_type_name => false,
     }
     if $config["elasticsearch"]["api_version"] < 7
+      mapping_options[:include_type_name] = true
       mapping_options[:type] = hit["_type"]
     end
     mapping = LogItem.client.indices.get_mapping(mapping_options)
@@ -288,8 +290,10 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
 
     mapping_options = {
       :index => hit["_index"],
+      :include_type_name => false,
     }
     if $config["elasticsearch"]["api_version"] < 7
+      mapping_options[:include_type_name] = true
       mapping_options[:type] = hit["_type"]
     end
     result = LogItem.client.indices.get_mapping(mapping_options)
@@ -397,10 +401,11 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
       },
     ]) do
       response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/down", log_http_options)
-      assert_response_code(502, response)
+      assert_response_code(503, response)
+      assert_match("upstream connect error or disconnect/reset before headers. reset reason: connection failure", response.body)
 
       record = wait_for_log(response)[:hit_source]
-      assert_equal(502, record["response_status"])
+      assert_equal(503, record["response_status"])
       assert_logs_base_fields(record, api_user)
     end
   end

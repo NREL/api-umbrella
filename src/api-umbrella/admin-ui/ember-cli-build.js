@@ -12,7 +12,6 @@ module.exports = function(defaults) {
         bootbox: 'bootbox/bootbox',
         diff: 'diff/dist/diff',
         inflection: 'inflection/lib/inflection',
-        marked: 'marked/lib/marked',
         numeral: 'numeral/numeral',
         selectize: 'selectize/dist/js/standalone/selectize',
       },

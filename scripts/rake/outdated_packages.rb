@@ -117,7 +117,6 @@ class OutdatedPackages
     },
     "lua_resty_nettle" => {
       :git => "https://github.com/bungle/lua-resty-nettle.git",
-      :constraint => "~> 1.5",
     },
     "lua_resty_openidc" => {
       :git => "https://github.com/zmartzone/lua-resty-openidc.git",
@@ -148,7 +147,7 @@ class OutdatedPackages
     },
     "nodejs" => {
       :git => "https://github.com/nodejs/node.git",
-      :constraint => "~> 14.17",
+      :constraint => "~> 16.14",
     },
     "openresty" => {
       :git => "https://github.com/openresty/openresty.git",

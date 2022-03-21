@@ -3,7 +3,7 @@ import Component from '@ember/component';
 import { computed } from '@ember/object';
 import { tagName } from '@ember-decorators/component';
 import classic from 'ember-classic-decorator';
-import marked from 'marked';
+import { marked } from 'marked';
 
 @classic
 @tagName("")

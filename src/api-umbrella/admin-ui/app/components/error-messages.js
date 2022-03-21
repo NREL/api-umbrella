@@ -7,7 +7,7 @@ import { t } from 'api-umbrella-admin-ui/utils/i18n';
 import classic from 'ember-classic-decorator';
 import each from 'lodash-es/each';
 import isArray from 'lodash-es/isArray';
-import marked from 'marked';
+import { marked } from 'marked';
 
 @classic
 @tagName("")
