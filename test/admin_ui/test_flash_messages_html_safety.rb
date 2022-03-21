@@ -67,7 +67,7 @@ class Test::AdminUi::TestFlashMessagesHtmlSafety < Minitest::Capybara::Test
 
     response = Typhoeus.get(response.headers.fetch("Location"), keyless_http_options.deep_merge({
       :headers => {
-        "Cookie" => response.headers.fetch("Set-Cookie"),
+        "Cookie" => response.headers.fetch("set-cookie"),
       },
     }))
     assert_response_code(200, response)

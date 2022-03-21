@@ -14,8 +14,7 @@ class Test::Proxy::TestChunkedResponses < Minitest::Test
   end
 
   def test_small_non_chunked_response_gzip
-    # haproxy's gzipping chunks all responses even if they weren't before.
-    assert_chunked_response("/api/compressible/10", 10, :accept_encoding => "gzip")
+    assert_non_chunked_response("/api/compressible/10", 10, :accept_encoding => "gzip")
   end
 
   def test_large_non_chunked_response_no_gzip
@@ -23,7 +22,7 @@ class Test::Proxy::TestChunkedResponses < Minitest::Test
   end
 
   def test_large_non_chunked_response_gzip
-    # haproxy's gzipping chunks all responses even if they weren't before.
+    # nginx's gzipping chunks larger responses, even if they weren't before.
     assert_chunked_response("/api/compressible/100000", 100000, :accept_encoding => "gzip")
   end
 
