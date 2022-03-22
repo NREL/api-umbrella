@@ -13,13 +13,13 @@ local api_key_max_length = config["gatekeeper"]["api_key_max_length"]
 local _M = {}
 
 local cache, cache_err = mlcache.new("u", "api_users", {
-    lru_size = 1000,
-    ttl = 60 * 60 * 24,
-    resurrect_ttl = 60 * 60 * 24,
-    neg_ttl = 60 * 60 * 24,
-    shm_miss = "api_users_misses",
-    shm_locks = "api_users_locks",
-    ipc_shm = "api_users_ipc",
+  lru_size = 1000,
+  ttl = 60 * 60 * 24,
+  resurrect_ttl = 60 * 60 * 24,
+  neg_ttl = 60 * 60 * 24,
+  shm_miss = "api_users_misses",
+  shm_locks = "api_users_locks",
+  ipc_shm = "api_users_ipc",
 })
 if not cache then
   ngx.log(ngx.ERR, "failed to create api_users mlcache: ", cache_err)
