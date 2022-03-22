@@ -1113,7 +1113,7 @@ return {
   [1647916501] = function()
     db.query("BEGIN")
 
-    db.query("CREATE INDEX ON distributed_rate_limit_counters (version DESC, expires_at)")
+    db.query("CREATE INDEX ON distributed_rate_limit_counters (version, expires_at)")
 
     db.query("COMMIT")
   end,
