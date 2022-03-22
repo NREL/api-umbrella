@@ -1972,6 +1972,13 @@ CREATE INDEX distributed_rate_limit_counters_expires_at_idx ON api_umbrella.dist
 
 
 --
+-- Name: distributed_rate_limit_counters_version_expires_at_idx; Type: INDEX; Schema: api_umbrella; Owner: -
+--
+
+CREATE INDEX distributed_rate_limit_counters_version_expires_at_idx ON api_umbrella.distributed_rate_limit_counters USING btree (version DESC, expires_at);
+
+
+--
 -- Name: distributed_rate_limit_counters_version_idx; Type: INDEX; Schema: api_umbrella; Owner: -
 --
 
