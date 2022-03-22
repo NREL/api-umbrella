@@ -284,9 +284,6 @@ local function set_permissions()
     chown(path_join(config["etc_dir"], "nginx"), nil, group)
     chown(path_join(config["etc_dir"], "perp"), nil, group)
     chown(path_join(config["etc_dir"], "trafficserver"), nil, group)
-    chown(path_join(config["etc_dir"], "haproxy"), user, group)
-    chown(path_join(config["etc_dir"], "haproxy/haproxy.cfg"), user, group)
-    chown(path_join(config["etc_dir"], "haproxy/dataplaneapi.hcl"), user, group)
 
     if config["app_env"] == "test" then
       chown(path_join(config["etc_dir"], "test-env"), nil, group)

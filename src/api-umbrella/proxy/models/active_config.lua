@@ -355,6 +355,7 @@ local function build_envoy_cluster(cluster_name, options)
         lb_endpoints = {},
       },
     },
+    connect_timeout = file_config["envoy"]["_connect_timeout"]
   }
 
   if not file_config["dns_resolver"]["allow_ipv6"] then
@@ -492,7 +493,14 @@ local function build_envoy_virtual_host(options)
       route = {
         cluster = options["cluster"],
         host_rewrite_header = "x-api-umbrella-backend-host",
+        timeout = file_config["envoy"]["_route_timeout"],
       },
+    },
+    retry_policy = {
+      -- Retry connections if the connection was never established (eg, if the
+      -- API backend was temporarily down or a keepalive connection was
+      -- killed).
+      retry_on = "connect-failure",
     },
   }
 
@@ -571,6 +579,7 @@ local function set_envoy_config(active_config_data, config_version)
                       resource_api_version = "V3",
                     },
                   },
+                  stream_idle_timeout = file_config["envoy"]["_stream_idle_timeout"],
 
                   -- Enable this option, since Envoy is sitting behind other
                   -- proxies.
@@ -600,7 +609,7 @@ local function set_envoy_config(active_config_data, config_version)
 
         -- Note: This backend host header isn't necessary for backends to
         -- receive and ideally we'd strip it. However, removing it breaks our
-        -- ability to use it int he "host_rewrite_header" option. So we will
+        -- ability to use it in the "host_rewrite_header" option. So we will
         -- pass it along to API backends unless Envoy allows for better
         -- ordering of this in the future.
         -- "x-api-umbrella-backend-host",

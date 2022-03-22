@@ -86,6 +86,7 @@ ngx.ctx.uri_path = uri_path
 local function route()
   ngx.var.proxy_host_header = ngx.ctx.proxy_host
   ngx.req.set_header("X-Api-Umbrella-Backend-Host", ngx.ctx.backend_host)
+  ngx.req.set_header("X-Api-Umbrella-Http-Method", ngx.ctx.request_method)
   ngx.req.set_header("X-Forwarded-Proto", ngx.ctx.protocol)
   ngx.req.set_header("X-Forwarded-Port", ngx.ctx.port)
 end

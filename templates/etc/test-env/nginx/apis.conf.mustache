@@ -682,12 +682,13 @@ server {
 
       -- Actually begin the response before the request has been received
       -- entirely. This is to ensure that when testing a longer
-      -- "proxy_send_timeout" we don't end up hitting the "proxy_ready_timeout"
+      -- "proxy_send_timeout" we don't end up hitting the "proxy_read_timeout"
       -- sooner, which is expecting some type of response back.
       local ok, err = sock:send(
         "HTTP/1.1 200 OK\r\n" ..
-        "Connection: close\r\n" ..
-        "Content-Type: application/json\r\n"
+        "Connection: keep-alive\r\n" ..
+        "Content-Type: application/json\r\n" ..
+        "Transfer-Encoding: chunked\r\n\r\n"
       )
       if not ok then
         error_exit("failed to send response: ", err)
@@ -743,9 +744,9 @@ server {
 
         chunks[i] = chunk
 
-        -- Send periodic headers on the response to ensure we don't hit the
-        -- shorter "proxy_read_timeout" in tests.
-        local ok, err = sock:send("X-Foo: test\r\n")
+        -- Send periodic responses of an empty space (" ") on the response to
+        -- ensure we don't hit the shorter "proxy_read_timeout" in tests.
+        local ok, err = sock:send("1\r\n \r\n")
         if not ok then
           error_exit("failed to send response: ", err)
         end
@@ -759,12 +760,14 @@ server {
         chunks = chunks,
         chunk_time_gaps = chunk_time_gaps,
       })
-      local ok, err = sock:send(
-        "Content-Length: " .. #body .. "\r\n\r\n" ..
-        body
-      )
+      local ok, err = sock:send(#body .. "\r\n" .. body .. "\r\n")
       if not ok then
         error_exit("failed to send response: ", err)
+      end
+
+      ok, err = sock:close()
+      if not ok then
+        error_exit("failed to close socket: ", err)
       end
     }
   }

@@ -237,6 +237,7 @@ class Test::Proxy::TestConnectionTimeouts < Minitest::Test
 
     response = Typhoeus.get("http://127.0.0.1:9080/api/delay-sec/20?backend_counter_id=get-timeout", http_options)
     assert_response_code(504, response)
+    assert_match("Inactivity Timeout", response.body)
 
     # Ensure that the backend has only been called once.
     response = Typhoeus.get("http://127.0.0.1:9442/backend_call_count?id=get-timeout")
@@ -262,6 +263,7 @@ class Test::Proxy::TestConnectionTimeouts < Minitest::Test
 
     response = Typhoeus.post("http://127.0.0.1:9080/api/delay-sec/20?backend_counter_id=#{unique_test_id}", http_options)
     assert_response_code(504, response)
+    assert_match("Inactivity Timeout", response.body)
 
     # Ensure that the backend has only been called once.
     response = Typhoeus.get("http://127.0.0.1:9442/backend_call_count?id=#{unique_test_id}")
@@ -308,6 +310,7 @@ class Test::Proxy::TestConnectionTimeouts < Minitest::Test
     requests.each do |req|
       if req.fetch(:delay) >= $config["nginx"]["proxy_read_timeout"] + 1
         assert_response_code(504, req.fetch(:request).response)
+        assert_match("Inactivity Timeout", req.fetch(:request).response.body)
       elsif req.fetch(:delay) < $config["nginx"]["proxy_read_timeout"]
         assert_response_code(200, req.fetch(:request).response)
       end
@@ -350,6 +353,7 @@ class Test::Proxy::TestConnectionTimeouts < Minitest::Test
     assert_equal(50, timeout_requests.length)
     timeout_requests.each do |request|
       assert_response_code(504, request.response)
+      assert_match("Inactivity Timeout", request.response.body)
     end
 
     assert_equal(50, info_requests.length)

@@ -374,30 +374,46 @@ local function set_computed_config()
   -- We will actually stagger the timeouts slightly at each proxy layer to
   -- prevent race conditions. Since the flow of the requests looks like:
   --
-  -- [incoming request] => [nginx proxy] => [trafficserver] => [haproxy] => [api backends]
+  -- [incoming request] => [nginx proxy] => [trafficserver] => [envoy] => [api backends]
   --
   -- Notes:
   --
-  -- * We buffer the nginx timeouts so that HAProxy should handle all of the
-  --   real timeouts.
+  -- * Envoy handles the real connection timeout, since it's what's
+  --   establishing connections to the underlying API backend servers.
+  --
+  --   The other layers should have a short connection timeout, since they are
+  --   only making local connections.
+  -- * We buffer nginx's read/send timeouts so that Traffic Server should
+  --   handle all of the real timeouts.
   --
   --   Note that proxy_send_timeout in nginx doesn't seem to be effective when
   --   "proxy_request_buffering" is also off, but we'll still set it with the
-  --   buffered amount anyway (but again, HAProxy is doing the real timeouts).
-  -- * We similarly buffer Traffic Server timeouts so that HAProxy should
-  --   handle all of the real timeouts.
+  --   buffered amount anyway (but again, Traffic Server is doing the real
+  --   timeouts).
+  -- * We similarly buffer Envoy's idle/streaming timeouts so that Traffic
+  --   Server should handle all of the real activity timeouts.
+  --
+  --   Perhaps ideally Envoy would handle these timeouts (since it's closest to
+  --   the server), but Envoy does not have a separate concept of request and
+  --   response streaming timeouts. Plus, Envoy's response codes on timeouts
+  --   aren't currently correct
+  --   (https://github.com/envoyproxy/envoy/issues/19725). Since Traffic Server
+  --   seems to have better error messages and debugging details, that's why
+  --   we'll use Traffic Server to perform these activity timeouts.
   -- * The read timeout (the timeout between bytes being received from a
   --   backend) is reflected by Traffic Server's "activity_out" timeout.
   -- * The send timeout (the timeout between bytes being received from the
   --   client request), is reflected by Traffic Server's "activity_in" timeout.
-  -- config["haproxy"]["_timeout_connect"] = config["nginx"]["proxy_connect_timeout"]
-  -- config["haproxy"]["_timeout_client"] = config["nginx"]["proxy_send_timeout"]
-  -- config["haproxy"]["_timeout_server"] = config["nginx"]["proxy_read_timeout"]
-  config["trafficserver"]["_connect_attempts_timeout"] = config["nginx"]["proxy_connect_timeout"] + 2
-  config["trafficserver"]["_post_connect_attempts_timeout"] = config["trafficserver"]["_connect_attempts_timeout"] + 2
-  config["trafficserver"]["_transaction_no_activity_timeout_out"] = config["nginx"]["proxy_read_timeout"] + 2
-  config["trafficserver"]["_transaction_no_activity_timeout_in"] = config["nginx"]["proxy_send_timeout"] + 2
-  config["nginx"]["_initial_proxy_connect_timeout"] = config["nginx"]["proxy_connect_timeout"] + 4
+  config["envoy"]["_connect_timeout"] = config["nginx"]["proxy_connect_timeout"] .. "s"
+  config["envoy"]["_stream_idle_timeout"] = math.max(config["nginx"]["proxy_send_timeout"], config["nginx"]["proxy_read_timeout"]) + 2 .. "s"
+  -- Disable default 15 second timeout on the entire response being returned,
+  -- since we will allow long-running streaming responses..
+  config["envoy"]["_route_timeout"] = "0s"
+  config["trafficserver"]["_connect_attempts_timeout"] = math.min(5, config["nginx"]["proxy_connect_timeout"])
+  config["trafficserver"]["_post_connect_attempts_timeout"] = math.min(5, config["trafficserver"]["_connect_attempts_timeout"])
+  config["trafficserver"]["_transaction_no_activity_timeout_out"] = config["nginx"]["proxy_read_timeout"]
+  config["trafficserver"]["_transaction_no_activity_timeout_in"] = config["nginx"]["proxy_send_timeout"]
+  config["nginx"]["_initial_proxy_connect_timeout"] = math.min(5, config["nginx"]["proxy_connect_timeout"])
   config["nginx"]["_initial_proxy_read_timeout"] = config["nginx"]["proxy_read_timeout"] + 4
   config["nginx"]["_initial_proxy_send_timeout"] = config["nginx"]["proxy_send_timeout"] + 4
 

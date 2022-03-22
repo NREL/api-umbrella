@@ -70,11 +70,12 @@ CONFIG proxy.config.http.post_connect_attempts_timeout INT {{trafficserver._post
 CONFIG proxy.config.http.transaction_no_activity_timeout_in INT {{trafficserver._transaction_no_activity_timeout_in}}
 CONFIG proxy.config.http.transaction_no_activity_timeout_out INT {{trafficserver._transaction_no_activity_timeout_out}}
 
-# Retry connections if the connection was never established (eg, if the API
-# backend was temporarily down or a keepalive connection was killed).
-CONFIG proxy.config.http.connect_attempts_rr_retries INT 3
-CONFIG proxy.config.http.connect_attempts_max_retries INT 3
-CONFIG proxy.config.http.connect_attempts_max_retries_dead_server INT 1
+# Disable retries, since we're only connecting to Envoy. Envoy will be
+# responsible for retrying connections if the connection is never established.
+CONFIG proxy.config.http.connect_attempts_rr_retries INT 0
+CONFIG proxy.config.http.connect_attempts_max_retries INT 0
+CONFIG proxy.config.http.connect_attempts_max_retries_dead_server INT 0
+CONFIG proxy.config.http.connect.dead.policy 0
 
 # Don't consider the backend down, even if some requests timeout. We don't want
 # some bad API requests to mark the entire backend as being down.
