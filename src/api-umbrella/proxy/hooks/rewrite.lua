@@ -85,8 +85,18 @@ ngx.ctx.uri_path = uri_path
 
 local function route()
   ngx.var.proxy_host_header = ngx.ctx.proxy_host
+
+  -- For cache key purposes, allow HEAD requests to re-use the cache key for
+  -- GET requests (since HEAD queries can be answered from cached GET data).
+  -- But since HEAD requests by themselves aren't cacheable, we don't have to
+  -- worry about GET requests re-using the HEAD response.
+  local cache_request_method = ngx.ctx.request_method
+  if cache_request_method == "head" then
+    cache_request_method = "get"
+  end
+
   ngx.req.set_header("X-Api-Umbrella-Backend-Host", ngx.ctx.backend_host)
-  ngx.req.set_header("X-Api-Umbrella-Http-Method", ngx.ctx.request_method)
+  ngx.req.set_header("X-Api-Umbrella-Cache-Request-Method", cache_request_method)
   ngx.req.set_header("X-Forwarded-Proto", ngx.ctx.protocol)
   ngx.req.set_header("X-Forwarded-Port", ngx.ctx.port)
 end

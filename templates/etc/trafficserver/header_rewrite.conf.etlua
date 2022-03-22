@@ -1,6 +1,6 @@
 # Strip the header from the request that is only used for cache key generation.
 cond %{SEND_REQUEST_HDR_HOOK}
-rm-header X-Api-Umbrella-Http-Method
+rm-header X-Api-Umbrella-Cache-Request-Method
 
 # If API Umbrella is injecting a static Authorization header into each
 # request (to authenticate against the API backend), then we still want to
