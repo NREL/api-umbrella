@@ -1,9 +1,12 @@
 [ldap]
   enabled = true
-  listen = "127.0.0.1:{{glauth.port}}"
+  listen = "127.0.0.1:<%- config["glauth"]["port"] %>"
 
 [ldaps]
   enabled = false
+
+[behaviors]
+  IgnoreCapabilities = true
 
 [backend]
   datastore = "config"

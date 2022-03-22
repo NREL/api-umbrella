@@ -1,5 +1,5 @@
-local config = require "api-umbrella.proxy.models.file_config"
 local escape_regex = require "api-umbrella.utils.escape_regex"
+local file_config = require "api-umbrella.proxy.models.file_config"
 local file_write = require("pl.file").write
 local host_normalize = require "api-umbrella.utils.host_normalize"
 local http = require "resty.http"
@@ -11,6 +11,7 @@ local packed_shared_dict = require "api-umbrella.utils.packed_shared_dict"
 local path_join = require("pl.path").join
 local plutils = require "pl.utils"
 local psl = require "api-umbrella.utils.psl"
+local stable_object_hash = require "api-umbrella.utils.stable_object_hash"
 local startswith = require("pl.stringx").startswith
 local tablex = require "pl.tablex"
 local utils = require "api-umbrella.proxy.utils"
@@ -177,7 +178,7 @@ end
 
 local function parse_api(api)
   if not api["id"] then
-    api["id"] = ngx.md5(json_encode(api))
+    api["id"] = stable_object_hash(api)
   end
 
   cache_computed_api(api)
@@ -196,7 +197,7 @@ end
 
 local function parse_website_backend(website_backend)
   if not website_backend["id"] then
-    website_backend["id"] = ngx.md5(json_encode(website_backend))
+    website_backend["id"] = stable_object_hash(website_backend)
   end
 
   if website_backend["frontend_host"] then
@@ -223,16 +224,16 @@ end
 local function build_known_api_domains(apis)
   local domains = {}
 
-  if config["web"]["default_host"] then
-    domains[config["web"]["default_host"]] = 1
+  if file_config["web"]["default_host"] then
+    domains[file_config["web"]["default_host"]] = 1
   end
 
-  if config["router"]["web_app_host"] then
-    domains[config["router"]["web_app_host"]] = 1
+  if file_config["router"]["web_app_host"] then
+    domains[file_config["router"]["web_app_host"]] = 1
   end
 
-  if config["hosts"] then
-    for _, host in ipairs(config["hosts"]) do
+  if file_config["hosts"] then
+    for _, host in ipairs(file_config["hosts"]) do
       if host and host["hostname"] then
         domains[host["hostname"]] = 1
       end
@@ -278,10 +279,19 @@ local function build_known_private_suffix_domains(known_api_domains, website_bac
   return domains
 end
 
-local function build_active_config(apis, website_backends)
+local function build_proxy_active_config_data(apis, website_backends)
   parse_apis(apis)
   parse_website_backends(website_backends)
 
+  local active_config_data = {
+    apis = apis,
+    websites = website_backends,
+  }
+
+  return active_config_data
+end
+
+local function build_web_active_config_data(apis, website_backends)
   local api_ok, known_api_domains = xpcall(build_known_api_domains, xpcall_error_handler, apis)
   if not api_ok then
     ngx.log(ngx.ERR, "failed building known API domains: ", known_api_domains)
@@ -294,19 +304,17 @@ local function build_active_config(apis, website_backends)
     known_private_suffix_domains = nil
   end
 
-  local active_config = {
-    apis = apis,
-    websites = website_backends,
+  local active_config_data = {
     known_domains = {
       apis = known_api_domains,
       private_suffixes = known_private_suffix_domains,
     },
   }
 
-  return active_config
+  return active_config_data
 end
 
-local function get_combined_apis(file_config, db_config)
+local function get_combined_apis(db_config)
   local file_config_apis = deepcopy(file_config["_apis"]) or {}
   local db_config_apis = db_config["apis"] or {}
 
@@ -316,7 +324,7 @@ local function get_combined_apis(file_config, db_config)
   return all_apis
 end
 
-local function get_combined_website_backends(file_config, db_config)
+local function get_combined_website_backends(db_config)
   local file_config_website_backends = deepcopy(file_config["_website_backends"]) or {}
   local db_config_website_backends = db_config["website_backends"] or {}
 
@@ -335,7 +343,7 @@ local function build_envoy_cluster(cluster_name, options)
       name = "envoy.network.dns_resolver.cares",
       typed_config = {
         ["@type"] = "type.googleapis.com/envoy.extensions.network.dns_resolver.cares.v3.CaresDnsResolverConfig",
-        resolvers = config["dns_resolver"]["_nameservers_envoy"],
+        resolvers = file_config["dns_resolver"]["_nameservers_envoy"],
       },
     },
     dns_lookup_family = "V4_PREFERRED",
@@ -349,7 +357,7 @@ local function build_envoy_cluster(cluster_name, options)
     },
   }
 
-  if not config["dns_resolver"]["allow_ipv6"] then
+  if not file_config["dns_resolver"]["allow_ipv6"] then
     resource["dns_lookup_family"] = "V4_ONLY"
   end
 
@@ -364,8 +372,8 @@ local function build_envoy_cluster(cluster_name, options)
   -- making it harder to test against. So to replicate how our "negative_ttl"
   -- has worked under other DNS situations, we will use this "dns_refresh_rate"
   -- (which doesn't do backoff or jitter).
-  if config["dns_resolver"]["negative_ttl"] then
-    resource["dns_refresh_rate"] = config["dns_resolver"]["negative_ttl"] .. "s"
+  if file_config["dns_resolver"]["negative_ttl"] then
+    resource["dns_refresh_rate"] = file_config["dns_resolver"]["negative_ttl"] .. "s"
   end
 
   local servers
@@ -491,7 +499,7 @@ local function build_envoy_virtual_host(options)
   return virtual_host
 end
 
-local function set_envoy_config(active_config, config_version)
+local function set_envoy_config(active_config_data, config_version)
   local virtual_hosts = {}
 
   local cds = {
@@ -499,7 +507,7 @@ local function set_envoy_config(active_config, config_version)
     resources = {},
   }
 
-  for _, api_backend in ipairs(active_config["apis"]) do
+  for _, api_backend in ipairs(active_config_data["apis"]) do
     local cluster_resource = build_envoy_cluster("api-backend-cluster-" .. api_backend["id"], {
       api_backend = api_backend,
     })
@@ -512,7 +520,7 @@ local function set_envoy_config(active_config, config_version)
     table.insert(virtual_hosts, virtual_host)
   end
 
-  for _, website_backend in ipairs(active_config["websites"]) do
+  for _, website_backend in ipairs(active_config_data["websites"]) do
     local cluster_resource = build_envoy_cluster("website-backend-cluster-" .. website_backend["id"], {
       website_backend = website_backend,
     })
@@ -525,7 +533,7 @@ local function set_envoy_config(active_config, config_version)
     table.insert(virtual_hosts, virtual_host)
   end
 
-  local rds_path = path_join(config["run_dir"], "envoy/rds.json")
+  local rds_path = path_join(file_config["run_dir"], "envoy/rds.json")
 
   local lds = {
     version_info = config_version,
@@ -535,8 +543,8 @@ local function set_envoy_config(active_config, config_version)
         name = "listener",
         address = {
           socket_address = {
-            address = config["envoy"]["host"],
-            port_value = config["envoy"]["port"],
+            address = file_config["envoy"]["host"],
+            port_value = file_config["envoy"]["port"],
           },
         },
         filter_chains = {
@@ -578,8 +586,8 @@ local function set_envoy_config(active_config, config_version)
     },
   }
 
-  local lds_path = path_join(config["run_dir"], "envoy/lds.json")
-  local cds_path = path_join(config["run_dir"], "envoy/cds.json")
+  local lds_path = path_join(file_config["run_dir"], "envoy/lds.json")
+  local cds_path = path_join(file_config["run_dir"], "envoy/cds.json")
 
   local rds = {
     version_info = config_version,
@@ -614,8 +622,8 @@ local function set_envoy_config(active_config, config_version)
   local httpc = http.new()
   local connect_ok, connect_err = httpc:connect({
     scheme = "http",
-    host = config["envoy"]["admin"]["host"],
-    port = config["envoy"]["admin"]["port"],
+    host = file_config["envoy"]["admin"]["host"],
+    port = file_config["envoy"]["admin"]["port"],
   })
 
   if not connect_ok then
@@ -670,16 +678,7 @@ local function set_envoy_config(active_config, config_version)
   end
 end
 
-function _M.set(db_config)
-  local file_config = config
-  if not db_config then
-    db_config = {}
-  end
-
-  local apis = get_combined_apis(file_config, db_config)
-  local website_backends = get_combined_website_backends(file_config, db_config)
-
-  local active_config = build_active_config(apis, website_backends)
+local function set(db_config, active_config_data, write_envoy_config)
   local previous_packed_config = ngx.shared.active_config:get("packed_data")
 
   local db_version = db_config["version"]
@@ -691,12 +690,14 @@ function _M.set(db_config)
 
   local config_version = (db_version or "") .. ":" .. (file_version or "")
 
-  local _, envoy_err = set_envoy_config(active_config, config_version)
-  if envoy_err then
-    ngx.log(ngx.ERR, "set envoy error: ", envoy_err)
+  if write_envoy_config then
+    local _, envoy_err = set_envoy_config(active_config_data, config_version)
+    if envoy_err then
+      ngx.log(ngx.ERR, "set envoy error: ", envoy_err)
+    end
   end
 
-  local set_ok, set_err = safe_set_packed(ngx.shared.active_config, "packed_data", active_config)
+  local set_ok, set_err = safe_set_packed(ngx.shared.active_config, "packed_data", active_config_data)
   if not set_ok then
     ngx.log(ngx.ERR, "failed to set 'packed_data' in 'active_config' shared dict: ", set_err)
 
@@ -734,11 +735,32 @@ function _M.set(db_config)
   if not set_ok then
     ngx.log(ngx.ERR, "failed to set 'file_version' in 'active_config' shared dict: ", set_err)
   end
+end
 
-  set_ok, set_err = ngx.shared.active_config:safe_set("worker_group_setup_complete:" .. WORKER_GROUP_ID, true)
-  if not set_ok then
-    ngx.log(ngx.ERR, "failed to set 'worker_group_setup_complete' in 'active_config' shared dict: ", set_err)
+function _M.proxy_set(db_config)
+  if not db_config then
+    db_config = {}
   end
+
+  local apis = get_combined_apis(db_config)
+  local website_backends = get_combined_website_backends(db_config)
+
+  local active_config_data = build_proxy_active_config_data(apis, website_backends)
+
+  return set(db_config, active_config_data, true)
+end
+
+function _M.web_set(db_config)
+  if not db_config then
+    db_config = {}
+  end
+
+  local apis = get_combined_apis(db_config)
+  local website_backends = get_combined_website_backends(db_config)
+
+  local active_config_data = build_web_active_config_data(apis, website_backends)
+
+  return set(db_config, active_config_data)
 end
 
 return _M

@@ -28,7 +28,7 @@ class Test::AdminUi::TestCacheControl < Minitest::Test
     # Ensure that all the linked assets use fingerprinted filenames (for cache
     # busting), and return long cache-control headers.
     scripts.each do |script|
-      assert_match(%r{\A/admin/assets/[\w-]+-\w{32}\.js\z}, script[:src])
+      assert_match(%r{\A/admin/assets/([\w-]+-\w{32}|chunk\.\d+\.\w{20})\.js\z}, script[:src])
 
       response = Typhoeus.get("https://127.0.0.1:9081#{script[:src]}", keyless_http_options)
       assert_response_code(200, response)

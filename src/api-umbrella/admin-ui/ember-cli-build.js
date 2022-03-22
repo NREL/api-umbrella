@@ -47,6 +47,7 @@ module.exports = function(defaults) {
             module: autoprefixer,
           },
         ],
+        exclude: ['**/*.css.map'],
       },
     },
 

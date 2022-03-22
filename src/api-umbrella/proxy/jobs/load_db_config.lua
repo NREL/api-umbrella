@@ -1,6 +1,5 @@
 local _M = {}
 
-local active_config = require "api-umbrella.proxy.models.active_config"
 local db_config = require "api-umbrella.proxy.models.db_config"
 local int64 = require "api-umbrella.utils.int64"
 local interval_lock = require "api-umbrella.utils.interval_lock"
@@ -10,6 +9,7 @@ local log = ngx.log
 local new_timer = ngx.timer.at
 
 local delay = 0.3  -- in seconds
+local callback
 
 local function do_check()
   -- If this worker process isn't part of the latest group, then don't perform
@@ -43,17 +43,22 @@ local function do_check()
   elseif db_result and db_result["version"] then
     -- If the database contained a new config version then do the necessary
     -- processing to setup the internal active config.
-    active_config.set(db_result)
+    callback(db_result)
   elseif not ngx.shared.active_config:get("worker_group_setup_complete:" .. WORKER_GROUP_ID) then
     -- If this set of worker processes hasn't been setup yet (initial boot or
     -- after reload), then still perform the active config setup despite no
     -- database config being present (there is still the file-based config to
     -- read in).
-    active_config.set({})
+    callback({})
+  end
+
+  local set_ok, set_err = ngx.shared.active_config:safe_set("worker_group_setup_complete:" .. WORKER_GROUP_ID, true)
+  if not set_ok then
+    ngx.log(ngx.ERR, "failed to set 'worker_group_setup_complete' in 'active_config' shared dict: ", set_err)
   end
 
   if last_fetched_at then
-    local set_ok, set_err = ngx.shared.active_config:safe_set("db_config_last_fetched_at", last_fetched_at)
+    set_ok, set_err = ngx.shared.active_config:safe_set("db_config_last_fetched_at", last_fetched_at)
     if not set_ok then
       ngx.log(ngx.ERR, "failed to set 'db_config_last_fetched_at' in 'active_config' shared dict: ", set_err)
     end
@@ -68,7 +73,8 @@ local function setup(premature)
   interval_lock.repeat_with_mutex('load_db_config_check', delay, do_check)
 end
 
-function _M.spawn()
+function _M.spawn(callback_arg)
+  callback = callback_arg
   local ok, err = new_timer(0, setup)
   if not ok then
     log(ERR, "failed to create timer: ", err)

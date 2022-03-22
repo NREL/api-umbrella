@@ -1,3 +1,4 @@
+local active_config = require "api-umbrella.proxy.models.active_config"
 local api_user_cache_expire = require "api-umbrella.proxy.jobs.api_user_cache_expire"
 local cache_update = require "api-umbrella.proxy.jobs.cache_update"
 local db_expirations = require "api-umbrella.proxy.jobs.db_expirations"
@@ -13,7 +14,7 @@ local seed_database = require "api-umbrella.proxy.startup.seed_database"
 -- is different, so force another call in the init_worker phase.
 random_seed()
 
-load_db_config.spawn()
+load_db_config.spawn(active_config.proxy_set)
 api_user_cache_expire.spawn()
 cache_update.spawn()
 db_expirations.spawn()

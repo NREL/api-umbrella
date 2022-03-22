@@ -34,7 +34,7 @@
   </table>
   <div class="row">
     <div class="col-6">
-      <button type="button" class="btn btn-light btn-sm" {{action "add"}}>{{fa-icon "plus-circle"}} {{t "Add Rewrite"}}</button>
+      <button type="button" class="btn btn-light btn-sm" {{action "add"}}><FaIcon @icon="plus-circle" /> {{t "Add Rewrite"}}</button>
     </div>
     <div class="col-6 text-right">
       {{#if this.isReorderable}}

@@ -643,7 +643,19 @@ server {
 
   location /response-header-value/ {
     content_by_lua_block {
-      ngx.header[ngx.var.arg_header] = ngx.var.arg_header_value
+      -- If setting the "Transfer-Encoding" header, we need to explicitly set a
+      -- "Content-Length" so that the default "Transfer-Encoding: chunked"
+      -- header isn't present (which would lead to duplicate headers). And when
+      -- testing setting it to "chunked" just don't set anything at all so that
+      -- duplicate headers don't get set (which isn't valid).
+      if string.lower(ngx.var.arg_header) == "transfer-encoding" then
+        if ngx.var.arg_header_value ~= "chunked" then
+          ngx.header["Content-Length"] = 2
+          ngx.header[ngx.var.arg_header] = ngx.var.arg_header_value
+        end
+      else
+        ngx.header[ngx.var.arg_header] = ngx.var.arg_header_value
+      end
       ngx.print("OK")
     }
   }
