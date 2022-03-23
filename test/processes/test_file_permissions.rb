@@ -43,8 +43,13 @@ class Test::Processes::TestFilePermissions < Minitest::Test
     assert_group(stat)
   end
 
+  def test_etc_perp_uninstalled_service_dir
+    assert_equal(true, Dir.exist?(File.join(API_UMBRELLA_SRC_ROOT, "templates", "etc", "perp", "dev-env-ember-server")))
+    assert_equal(false, Dir.exist?(File.join($config["etc_dir"], "perp", "dev-env-ember-server")))
+  end
+
   def test_etc_perp_disabled_service_dir
-    stat = File.stat(File.join($config["etc_dir"], "perp", "dev-env-ember-server"))
+    stat = File.stat(File.join($config["etc_dir"], "perp", "elasticsearch-aws-signing-proxy"))
     assert_equal("40750", stat.mode.to_s(8))
     assert_process_owner(stat)
     assert_group(stat)

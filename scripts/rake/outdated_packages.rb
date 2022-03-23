@@ -64,8 +64,8 @@ class OutdatedPackages
     "lua_libcidr_ffi" => {
       :git => "https://github.com/GUI/lua-libcidr-ffi.git",
     },
-    "lua_lrexlib_pcre" => {
-      :luarock => "lrexlib-pcre",
+    "lua_lrexlib_pcre2" => {
+      :luarock => "lrexlib-pcre2",
     },
     "lua_luacheck" => {
       :luarock => "luacheck",
