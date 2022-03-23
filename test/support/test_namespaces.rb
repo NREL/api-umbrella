@@ -12,8 +12,9 @@ module Test
       module Stats; end
     end
 
-    module V0;
+    module V0
       module NginxStatus; end
+
       module SharedMemoryStats; end
     end
 
