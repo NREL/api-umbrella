@@ -467,6 +467,10 @@ internal_apis:
           rate_limit_mode: unlimited
           redirect_https: true
           disable_analytics: true
+      - http_method: OPTIONS
+        regex: "^/api-umbrella/v1/users"
+        settings:
+          disable_api_key: true
 internal_website_backends:
   - id: api-umbrella-website-backend
     frontend_host: "{{router.web_app_host}}"

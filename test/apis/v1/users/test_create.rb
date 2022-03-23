@@ -81,6 +81,15 @@ class Test::Apis::V1::Users::TestCreate < Minitest::Test
     assert_equal("*", response.headers["Access-Control-Allow-Origin"])
   end
 
+  def test_cors_preflight
+    response = Typhoeus.options("https://127.0.0.1:9081/api-umbrella/v1/users.json", keyless_http_options)
+    assert_response_code(204, response)
+    assert_equal("Content-Type, X-Api-Key", response.headers["Access-Control-Allow-Headers"])
+    assert_equal("POST, OPTIONS", response.headers["Access-Control-Allow-Methods"])
+    assert_equal("*", response.headers["Access-Control-Allow-Origin"])
+    assert_equal("600", response.headers["Access-Control-Max-Age"])
+  end
+
   def test_permits_private_roles_field_as_admin
     attributes = FactoryBot.attributes_for(:api_user, :roles => ["admin"])
     response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(admin_token).deep_merge({
