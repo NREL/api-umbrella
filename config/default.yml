@@ -18,6 +18,8 @@ listen:
 nginx:
   workers: auto
   worker_connections: 8192
+  listen_so_keepalive: "on"
+  listen_backlog:
   error_log_level: notice
   access_log_filename: access.log
   access_log_options: buffer=256k flush=10s
@@ -79,6 +81,9 @@ web:
   port: 14012
   request_timeout: 30
   workers: 2
+  worker_connections: 8192
+  listen_so_keepalive: "on"
+  listen_backlog:
   error_log_level: notice
   api_user:
     email_regex: "\\A[^@\\s]+@[^@\\s]+\\.[^@\\s]+\\z"
@@ -181,6 +186,8 @@ router:
 auto_ssl:
   workers: 1
   worker_connections: 8192
+  listen_so_keepalive: "on"
+  listen_backlog:
   http:
     port: 14005
   https:
@@ -266,6 +273,9 @@ elasticsearch:
     host: 127.0.0.1
     port: 14017
     workers: 1
+    worker_connections: 8192
+    listen_so_keepalive: "on"
+    listen_backlog:
     error_log_level: notice
 analytics:
   adapter: elasticsearch
