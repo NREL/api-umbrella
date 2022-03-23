@@ -55,6 +55,8 @@ class Test::Proxy::TestLoadBalancing < Minitest::Test
   end
 
   def test_balances_across_multiple_ipv4_and_ipv6_backend_servers
+    skip_unless_ipv6_support
+
     prepend_api_backends([
       {
         :frontend_host => "127.0.0.1",
