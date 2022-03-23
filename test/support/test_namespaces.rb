@@ -12,7 +12,10 @@ module Test
       module Stats; end
     end
 
-    module V0; end
+    module V0;
+      module NginxStatus; end
+      module SharedMemoryStats; end
+    end
 
     module V1
       module AdminGroups; end
@@ -30,6 +33,10 @@ module Test
       module Config; end
 
       module Contact; end
+
+      module Health; end
+
+      module State; end
 
       module Users; end
 

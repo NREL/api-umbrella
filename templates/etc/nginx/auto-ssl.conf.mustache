@@ -102,6 +102,11 @@ http {
     server_names_hash_bucket_size {{nginx.server_names_hash_bucket_size}};
   {{/nginx.server_names_hash_bucket_size}}
 
+  {{#nginx.vhost_traffic_status.enabled}}
+    vhost_traffic_status_zone;
+    vhost_traffic_status_filter_by_host {{nginx.vhost_traffic_status.filter_by_host}};
+  {{/nginx.vhost_traffic_status.enabled}}
+
   upstream api_umbrella_backend {
     server 127.0.0.1:{{http_port}};
     keepalive 10;
@@ -115,10 +120,6 @@ http {
     include ./auto-ssl-cert.conf;
     include ./auto-ssl-proxy.conf;
     include ./auto-ssl-proxy-https.conf;
-
-    location /api-umbrella/v1/testing-nginx-status {
-      stub_status;
-    }
   }
 
   # HTTP server
@@ -136,10 +137,6 @@ http {
 
     include ./auto-ssl-proxy.conf;
     include ./auto-ssl-proxy-http.conf;
-
-    location /api-umbrella/v1/testing-nginx-status {
-      stub_status;
-    }
   }
 
   # Internal server for handling certificate tasks.
@@ -151,9 +148,11 @@ http {
     client_body_buffer_size 128k;
     client_max_body_size 128k;
 
-    location /api-umbrella/v1/testing-nginx-status {
-      stub_status;
-    }
+    {{#nginx.vhost_traffic_status.enabled}}
+      location /api-umbrella/v0/auto-ssl-nginx-status {
+        vhost_traffic_status_display;
+      }
+    {{/nginx.vhost_traffic_status.enabled}}
 
     location / {
       content_by_lua_block {

@@ -60,6 +60,9 @@ nginx:
       size: 200k
     introspection:
       size: 200k
+  vhost_traffic_status:
+    enabled: false
+    filter_by_host: "on"
 gatekeeper:
   api_key_methods:
     - header
@@ -399,6 +402,10 @@ internal_apis:
         backend_prefix: "/api-umbrella/v1/health"
       - frontend_prefix: "/api-umbrella/v1/state"
         backend_prefix: "/api-umbrella/v1/state"
+      - frontend_prefix: "/api-umbrella/v0/nginx-status"
+        backend_prefix: "/api-umbrella/v0/nginx-status"
+      - frontend_prefix: "/api-umbrella/v0/shared-memory-stats"
+        backend_prefix: "/api-umbrella/v0/shared-memory-stats"
     settings:
       require_https: required_return_error
     sub_settings:

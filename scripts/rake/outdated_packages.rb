@@ -151,6 +151,9 @@ class OutdatedPackages
     "mailhog" => {
       :git => "https://github.com/mailhog/MailHog.git",
     },
+    "nginx_module_vts" => {
+      :git => "https://github.com/vozlt/nginx-module-vts.git",
+    },
     "ngx_http_geoip2_module" => {
       :git => "https://github.com/leev/ngx_http_geoip2_module.git",
     },
@@ -169,7 +172,7 @@ class OutdatedPackages
       :string_version => true,
     },
     "pcre" => {
-      :http => "https://ftp.pcre.org/pub/pcre/",
+      :http => "http://ftp.cs.stanford.edu/pub/exim/pcre/",
     },
     "perp" => {
       :http => "http://b0llix.net/perp/site.cgi?page=download",
