@@ -29,7 +29,7 @@ class Test::AdminUi::TestApiUsersApiKeyVisibility < Minitest::Capybara::Test
 
   def test_api_key_can_be_revealed_when_admin_has_permissions
     admin = FactoryBot.create(:admin)
-    user = FactoryBot.create(:api_user, :created_by_id => admin.id, :created_at => Time.now.utc - 2.weeks + 5.minutes)
+    user = FactoryBot.create(:api_user, :created_by_id => admin.id, :created_at => Time.now.utc - 2.weeks - 5.minutes)
     admin_login(admin)
     visit "/admin/#/api_users/#{user.id}/edit"
 
@@ -49,7 +49,8 @@ class Test::AdminUi::TestApiUsersApiKeyVisibility < Minitest::Capybara::Test
 
   def test_api_key_is_hidden_when_admin_lacks_permissions
     admin = FactoryBot.create(:limited_admin)
-    user = FactoryBot.create(:api_user, :created_by_id => admin.id, :created_at => Time.now.utc - 2.weeks - 5.minutes)
+    other_admin = FactoryBot.create(:limited_admin)
+    user = FactoryBot.create(:api_user, :created_by_id => other_admin.id, :created_at => Time.now.utc - 2.weeks - 5.minutes)
     admin_login(admin)
     visit "/admin/#/api_users/#{user.id}/edit"
 
