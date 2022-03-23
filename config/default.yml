@@ -402,6 +402,8 @@ internal_apis:
         backend_prefix: "/api-umbrella/v1/health"
       - frontend_prefix: "/api-umbrella/v1/state"
         backend_prefix: "/api-umbrella/v1/state"
+      - frontend_prefix: "/api-umbrella/v0/auto-ssl-nginx-status"
+        backend_prefix: "/api-umbrella/v0/auto-ssl-nginx-status"
       - frontend_prefix: "/api-umbrella/v0/nginx-status"
         backend_prefix: "/api-umbrella/v0/nginx-status"
       - frontend_prefix: "/api-umbrella/v0/shared-memory-stats"
