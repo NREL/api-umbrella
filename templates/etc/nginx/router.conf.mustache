@@ -173,7 +173,7 @@ http {
   }
 
   server {
-    listen {{api_server.host}}:{{api_server.port}} so_keepalive={{nginx.listen_so_keepalive}}{{#nginx.listen_backlog}} backlog={{.}}{{/nginx.listen_backlog}};
+    listen {{api_server.host}}:{{api_server.port}} so_keepalive={{nginx.listen_so_keepalive}}{{#nginx.listen_backlog}} backlog={{nginx.listen_backlog}}{{/nginx.listen_backlog}};
 
     set $x_api_umbrella_request_id $http_x_api_umbrella_request_id;
 
@@ -211,8 +211,8 @@ http {
   {{#hosts}}
   server {
     {{#listen.addresses}}
-      listen {{.}}:{{http_port}}{{#default}} default_server so_keepalive={{nginx.listen_so_keepalive}}{{#nginx.listen_backlog}} backlog={{.}}{{/nginx.listen_backlog}}{{/default}};
-      listen {{.}}:{{https_port}} ssl{{#default}} default_server so_keepalive={{nginx.listen_so_keepalive}}{{#nginx.listen_backlog}} backlog={{.}}{{/nginx.listen_backlog}}{{/default}};
+      listen {{.}}:{{http_port}}{{#default}} default_server so_keepalive={{nginx.listen_so_keepalive}}{{#nginx.listen_backlog}} backlog={{nginx.listen_backlog}}{{/nginx.listen_backlog}}{{/default}};
+      listen {{.}}:{{https_port}} ssl{{#default}} default_server so_keepalive={{nginx.listen_so_keepalive}}{{#nginx.listen_backlog}} backlog={{nginx.listen_backlog}}{{/nginx.listen_backlog}}{{/default}};
     {{/listen.addresses}}
     server_name {{_nginx_server_name}};
 
@@ -255,7 +255,7 @@ http {
   {{/hosts}}
 
   server {
-    listen {{static_site.host}}:{{static_site.port}} so_keepalive={{nginx.listen_so_keepalive}}{{#nginx.listen_backlog}} backlog={{.}}{{/nginx.listen_backlog}};
+    listen {{static_site.host}}:{{static_site.port}} so_keepalive={{nginx.listen_so_keepalive}}{{#nginx.listen_backlog}} backlog={{nginx.listen_backlog}}{{/nginx.listen_backlog}};
 
     set $x_api_umbrella_request_id $http_x_api_umbrella_request_id;
     root {{static_site.build_dir}};
