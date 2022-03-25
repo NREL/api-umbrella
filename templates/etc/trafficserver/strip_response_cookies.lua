@@ -7,9 +7,10 @@
 -- therefore the response can be cached. If only some of the cookies can be
 -- stripped, we will leave all the cookies as-is.
 --
--- Once Traffic Server 9.1 is released, it should have a better way to fetch
+-- Once Traffic Server 9.2 is released, it should have a better way to fetch
 -- these multiple headers (via ts.server_response.header_table), so we can
--- improve this once that is released.
+-- improve this once that is released:
+-- https://github.com/apache/trafficserver/pull/8261
 
 local rex = require "rex_pcre2"
 
