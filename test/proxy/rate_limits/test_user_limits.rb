@@ -99,7 +99,7 @@ class Test::Proxy::RateLimits::TestUserLimits < Minitest::Test
     user.settings.rate_limits[0].save!
 
     # Wait for any local caches to expire (2 seconds).
-    sleep 2.1
+    sleep 2.6
 
     # Make sure any local worker cache is cleared across all possible worker
     # processes.

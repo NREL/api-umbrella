@@ -41,7 +41,7 @@ class Test::Apis::V1::Users::TestLiveChanges < Minitest::Test
 
       # Wait 2 seconds so we know the initial key created for this test has
       # already been seen by the background task that clears the cache.
-      sleep 2.1
+      sleep 2.6
 
       # Ensure that the key works as expected for an initial request.
       response = Typhoeus.get("https://127.0.0.1:9081/api/info/", http_options.deep_merge({
@@ -66,7 +66,7 @@ class Test::Apis::V1::Users::TestLiveChanges < Minitest::Test
       assert_response_code(200, response)
 
       # Wait 2 seconds to ensure the existing cache for this key get purged.
-      sleep 2.1
+      sleep 2.6
 
       # The request to the restricted endpoint should now succeed. If it
       # doesn't, the cache purging may not be working as expected.
@@ -87,7 +87,7 @@ class Test::Apis::V1::Users::TestLiveChanges < Minitest::Test
       assert_response_code(200, response)
 
       # Wait 2 seconds to ensure the existing cache for this key get purged.
-      sleep 2.1
+      sleep 2.6
 
       # Ensure that the key is rejected from a restricted endpoint.
       response = Typhoeus.get("https://127.0.0.1:9081/#{unique_test_id}/restricted-info/", http_options.deep_merge({
@@ -102,7 +102,7 @@ class Test::Apis::V1::Users::TestLiveChanges < Minitest::Test
 
     # Wait 2 seconds so we know the initial key created for this test has
     # already been seen by the background task that clears the cache.
-    sleep 2.1
+    sleep 2.6
 
     # Ensure that the key works as expected for an initial request.
     response = Typhoeus.get("https://127.0.0.1:9081/api/info/", http_options.deep_merge({
@@ -128,7 +128,7 @@ class Test::Apis::V1::Users::TestLiveChanges < Minitest::Test
     assert_response_code(200, response)
 
     # Wait 2 seconds to ensure the existing cache for this key get purged.
-    sleep 2.1
+    sleep 2.6
 
     # The request to the restricted endpoint should now succeed. If it
     # doesn't, the cache purging may not be working as expected.
