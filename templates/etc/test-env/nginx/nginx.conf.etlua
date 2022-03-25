@@ -1,0 +1,50 @@
+daemon off;
+
+<% if config["user"] then %>
+  user <%- config["user"] %> <%- config["group"] %>;
+<% elseif config["_effective_user_name"] then %>
+  # Even if user switching isn't enabled, make sure nginx uses the current
+  # effective user and group for launching the child workers (so nginx's default
+  # usage of the "nobody" user isn't used).
+  user <%- config["_effective_user_name"] %> <%- config["_effective_group_name"] %>;
+<% end %>
+
+pid <%- config["run_dir"] %>/test-env-nginx.pid;
+
+events {
+  worker_connections 1024;
+}
+
+error_log stderr;
+
+pcre_jit on;
+
+http {
+  access_log <%- config["log_dir"] %>/test-env-nginx/access.log combined;
+
+  client_body_temp_path <%- config["tmp_dir"] %>/nginx-client_body_temp;
+  proxy_temp_path <%- config["tmp_dir"] %>/nginx-proxy_temp;
+  fastcgi_temp_path <%- config["tmp_dir"] %>/nginx-fastcgi_temp;
+  uwsgi_temp_path <%- config["tmp_dir"] %>/nginx-uwsgi_temp;
+  scgi_temp_path <%- config["tmp_dir"] %>/nginx-scgi_temp;
+  server_tokens off;
+
+  lua_package_path '<%- config["_package_path"] %>';
+  lua_package_cpath '<%- config["_package_cpath"] %>';
+
+  gzip on;
+  gzip_comp_level 2;
+  gzip_disable msie6;
+  gzip_min_length 1000;
+  gzip_proxied any;
+  gzip_types application/atom+xml application/javascript application/json application/rss+xml application/x-javascript application/xml text/css text/csv text/javascript text/plain text/xml;
+  gzip_vary on;
+
+  # Don't restrict file upload size.
+  client_max_body_size 0;
+
+  # Read larger JSON bodies.
+  client_body_buffer_size 1m;
+
+  include ./apis.conf;
+}

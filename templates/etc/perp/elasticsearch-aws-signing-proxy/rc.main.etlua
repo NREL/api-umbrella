@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+# Redirect stderr to stdout
+exec 2>&1
+
+if [ "${1}" = "start" ]; then
+  echo "starting ${2}..."
+
+  run_args=("-e" "rc.env" "-c" "<%- config['_src_root_dir'] %>")
+  exec runtool "${run_args[@]}" nginx -p "<%- config['_src_root_dir'] %>/" -c "<%- config['etc_dir'] %>/nginx/elasticsearch-aws-signing-proxy.conf"
+fi
+
+exit 0

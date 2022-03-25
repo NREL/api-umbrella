@@ -1,0 +1,69 @@
+<% if config["router"]["global_rate_limits"]["ip_connections"] then %>
+  # Limit the number of simultaneous connections per IP address to <%- config["router"]["global_rate_limits"]["ip_connections"] %>.
+  limit_conn api_umbrella_conn_addr_zone <%- config["router"]["global_rate_limits"]["ip_connections"] %>;
+<% end %>
+
+<% if config["router"]["global_rate_limits"]["ip_rate"] then %>
+  # After the <%- config["router"]["global_rate_limits"]["ip_rate"] %> rate is reached, allow a sizable burst before
+  # completely terminating requests at this router level. This is so we can
+  # generally rely on API Umbrella Gatekeeper for rate limiting, but still
+  # throttle traffic to the Gatekeeper.
+  limit_req zone=api_umbrella_req_addr_zone<% if config["router"]["global_rate_limits"]["ip_burst"] then %> burst=<%- config["router"]["global_rate_limits"]["ip_burst"] %><% end %> nodelay;
+<% end %>
+
+# Only retry backends in the event of connection errors (and not also
+# connection timeouts as is the default). This prevents slow backend timeouts
+# triggering multiple requests (since there are usually multiple gatekeeper
+# processes setup).
+proxy_next_upstream error;
+
+# Don't buffer proxied requests to allow for streaming APIs.
+proxy_buffering off;
+proxy_request_buffering off;
+
+location @banned_pit {
+  echo_sleep <%- config["ban"]["response"]["delay"] %>;
+  echo "<%- config["ban"]["response"]["message"] %>";
+  echo_flush;
+}
+
+location = /api-umbrella-banned {
+  internal;
+  error_page 403 =<%- config["ban"]["response"]["status_code"] %> @banned_pit;
+  return 403;
+}
+
+<% if config["ban"]["ips"] and #config["ban"]["ips"] > 0 then %>
+  if ($banned_ip) {
+    rewrite .* /api-umbrella-banned last;
+  }
+<% end %>
+
+<% if config["ban"]["user_agents"] and #config["ban"]["user_agents"] > 0 then %>
+  if ($banned_user_agent) {
+    rewrite .* /api-umbrella-banned last;
+  }
+<% end %>
+
+# Clear any headers used inside API Umbrella that should not be possible to set
+# by an external client.
+more_clear_input_headers X-Api-Umbrella-Backend-Authorization;
+
+<% if config["_development_env?"] then %>
+  location /livereload.js {
+    proxy_pass http://127.0.0.1:<%- config["ember_server"]["live_reload_port"] %>;
+  }
+
+  location /livereload {
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection "upgrade";
+    proxy_pass http://127.0.0.1:<%- config["ember_server"]["live_reload_port"] %>;
+  }
+
+  location /ember-cli-live-reload.js {
+    proxy_pass http://127.0.0.1:<%- config["ember_server"]["port"] %>;
+  }
+<% end %>
+
+merge_slashes off;

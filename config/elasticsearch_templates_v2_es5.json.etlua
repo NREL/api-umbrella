@@ -1,0 +1,215 @@
+[
+  {
+    "id": "<%- config["elasticsearch"]["index_name_prefix"] %>-log-v2-template",
+    "template": {
+      "template": "<%- config["elasticsearch"]["index_name_prefix"] %>-logs-v2-*",
+      "settings": {
+        "index": {
+          "number_of_shards": 1,
+          "codec": "best_compression"
+        },
+        "analysis": {
+          "normalizer": {
+            "lowercase_normalizer": {
+              "type": "custom",
+              "filter": ["lowercase"]
+            },
+            "uppercase_normalizer": {
+              "type": "custom",
+              "filter": ["uppercase"]
+            }
+          }
+        },
+        "translog": {
+          "durability": "async",
+          "sync_interval": "10s"
+        }
+      },
+      "mappings": {
+        "log": {
+          "_all": {
+            "enabled": false
+          },
+          "dynamic": "strict",
+          "properties": {
+            "api_backend_id": {
+              "type": "keyword",
+              "normalizer": "lowercase_normalizer"
+            },
+            "api_backend_url_match_id": {
+              "type": "keyword",
+              "normalizer": "lowercase_normalizer"
+            },
+            "api_key": {
+              "type": "keyword",
+              "normalizer": "lowercase_normalizer"
+            },
+            "gatekeeper_denied_code": {
+              "type": "keyword",
+              "normalizer": "lowercase_normalizer"
+            },
+            "imported": {
+              "type": "boolean"
+            },
+            "request_accept": {
+              "type": "keyword",
+              "normalizer": "lowercase_normalizer"
+            },
+            "request_accept_encoding": {
+              "type": "keyword",
+              "normalizer": "lowercase_normalizer"
+            },
+            "request_at": {
+              "type": "date"
+            },
+            "request_basic_auth_username": {
+              "type": "keyword",
+              "normalizer": "lowercase_normalizer"
+            },
+            "request_connection": {
+              "type": "keyword",
+              "normalizer": "lowercase_normalizer"
+            },
+            "request_content_type": {
+              "type": "keyword",
+              "normalizer": "lowercase_normalizer"
+            },
+            "request_host": {
+              "type": "keyword",
+              "normalizer": "lowercase_normalizer"
+            },
+            "request_ip": {
+              "type": "keyword",
+              "normalizer": "lowercase_normalizer"
+            },
+            "request_ip_city": {
+              "type": "keyword"
+            },
+            "request_ip_country": {
+              "type": "keyword",
+              "normalizer": "uppercase_normalizer"
+            },
+            "request_ip_region": {
+              "type": "keyword",
+              "normalizer": "uppercase_normalizer"
+            },
+            "request_method": {
+              "type": "keyword",
+              "normalizer": "uppercase_normalizer"
+            },
+            "request_origin": {
+              "type": "keyword",
+              "normalizer": "lowercase_normalizer"
+            },
+            "request_path": {
+              "type": "keyword",
+              "normalizer": "lowercase_normalizer"
+            },
+            "request_referer": {
+              "type": "keyword",
+              "normalizer": "lowercase_normalizer"
+            },
+            "request_scheme": {
+              "type": "keyword",
+              "normalizer": "lowercase_normalizer"
+            },
+            "request_size": {
+              "type": "integer"
+            },
+            "request_url_hierarchy_level0": {
+              "type": "keyword",
+              "normalizer": "lowercase_normalizer"
+            },
+            "request_url_hierarchy_level1": {
+              "type": "keyword",
+              "normalizer": "lowercase_normalizer"
+            },
+            "request_url_hierarchy_level2": {
+              "type": "keyword",
+              "normalizer": "lowercase_normalizer"
+            },
+            "request_url_hierarchy_level3": {
+              "type": "keyword",
+              "normalizer": "lowercase_normalizer"
+            },
+            "request_url_hierarchy_level4": {
+              "type": "keyword",
+              "normalizer": "lowercase_normalizer"
+            },
+            "request_url_hierarchy_level5": {
+              "type": "keyword",
+              "normalizer": "lowercase_normalizer"
+            },
+            "request_url_hierarchy_level6": {
+              "type": "keyword",
+              "normalizer": "lowercase_normalizer"
+            },
+            "request_url_query": {
+              "type": "keyword",
+              "normalizer": "lowercase_normalizer"
+            },
+            "request_user_agent": {
+              "type": "keyword",
+              "normalizer": "lowercase_normalizer"
+            },
+            "request_user_agent_family": {
+              "type": "keyword",
+              "normalizer": "lowercase_normalizer"
+            },
+            "request_user_agent_type": {
+              "type": "keyword",
+              "normalizer": "lowercase_normalizer"
+            },
+            "response_age": {
+              "type": "integer"
+            },
+            "response_cache": {
+              "type": "keyword",
+              "normalizer": "lowercase_normalizer"
+            },
+            "response_content_encoding": {
+              "type": "keyword",
+              "normalizer": "lowercase_normalizer"
+            },
+            "response_content_length": {
+              "type": "integer"
+            },
+            "response_content_type": {
+              "type": "keyword",
+              "normalizer": "lowercase_normalizer"
+            },
+            "response_server": {
+              "type": "keyword",
+              "normalizer": "lowercase_normalizer"
+            },
+            "response_size": {
+              "type": "integer"
+            },
+            "response_status": {
+              "type": "short"
+            },
+            "response_time": {
+              "type": "integer"
+            },
+            "response_transfer_encoding": {
+              "type": "keyword",
+              "normalizer": "lowercase_normalizer"
+            },
+            "user_id": {
+              "type": "keyword",
+              "normalizer": "lowercase_normalizer"
+            },
+            "user_email": {
+              "type": "keyword",
+              "normalizer": "lowercase_normalizer"
+            },
+            "user_registration_source": {
+              "type": "keyword",
+              "normalizer": "lowercase_normalizer"
+            }
+          }
+        }
+      }
+    }
+  }
+]

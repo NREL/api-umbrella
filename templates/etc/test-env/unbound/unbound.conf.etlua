@@ -1,0 +1,24 @@
+server:
+  port: <%- config["unbound"]["port"] %>
+  interface: 127.0.0.1
+  do-not-query-localhost: no
+  do-daemonize: no
+  chroot: ""
+  username: ""
+  logfile: ""
+  log-queries: yes
+  local-zone: "test." static
+  domain-insecure: "test."
+  private-domain: "test."
+  directory: <%- config["etc_dir"] %>/test-env/unbound
+  include: <%- config["etc_dir"] %>/test-env/unbound/active_test.conf
+  pidfile: <%- config["run_dir"] %>/test-env-unbound.pid
+
+forward-zone:
+  name: "."
+  <% for _, nameserver in ipairs(config["dns_resolver"]["_nameservers_unbound"]) do %>
+    forward-addr: <%- nameserver %>
+  <% end %>
+
+remote-control:
+  control-enable: no

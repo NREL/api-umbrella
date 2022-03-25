@@ -1,11 +1,9 @@
 local dir = require "pl.dir"
 local escape_regex = require "api-umbrella.utils.escape_regex"
-local etlua = require "etlua"
+local etlua_render = require("etlua").render
 local file = require "pl.file"
 local geoip_download_if_missing_or_old = require("api-umbrella.utils.geoip").download_if_missing_or_old
 local invert_table = require "api-umbrella.utils.invert_table"
-local lustache = require "lustache"
-local mustache_unescape = require "api-umbrella.utils.mustache_unescape"
 local path = require "pl.path"
 local read_config = require "api-umbrella.cli.read_config"
 local shell_blocking_capture_combined = require("shell-games").capture_combined
@@ -189,7 +187,7 @@ local function write_templates()
       end
 
       if process then
-        local path_parts, path_match_err = ngx.re.match(template_path, [[^]] .. escape_regex(template_root .. "/") .. [[((.+?)([^/]+?))(?:\.(mustache|etlua))?$]], "jo")
+        local path_parts, path_match_err = ngx.re.match(template_path, [[^]] .. escape_regex(template_root .. "/") .. [[((.+?)([^/]+?))(?:\.(etlua))?$]], "jo")
         if not path_parts then
           print("path not matched: " .. template_path)
           os.exit(1)
@@ -204,13 +202,11 @@ local function write_templates()
 
           local content = file.read(template_path, true)
 
-          if template_ext == "mustache" then
-            content = lustache:render(mustache_unescape(content), config)
-          elseif template_ext == "etlua" then
-            local render_err
-            content, render_err = etlua.render(content, { config = config })
-            if render_err then
-              print("template compile error in " .. template_path ..": " .. render_err)
+          if template_ext == "etlua" then
+            local render_ok, render_err
+            render_ok, content, render_err = xpcall(etlua_render, xpcall_error_handler, content, { config = config })
+            if not render_ok or render_err then
+              print("template compile error in " .. template_path ..": " .. (render_err or content))
               os.exit(1)
             end
           end

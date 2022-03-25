@@ -1,0 +1,160 @@
+worker_processes <%- config["auto_ssl"]["workers"] %>;
+
+daemon off;
+
+<% if config["auto_ssl"]["user"] then %>
+  user <%- config["auto_ssl"]["user"] %> <%- config["auto_ssl"]["group"] %>;
+<% elseif config["_effective_user_name"] then %>
+  # Even if user switching isn't enabled, make sure nginx uses the current
+  # effective user and group for launching the child workers (so nginx's default
+  # usage of the "nobody" user isn't used).
+  user <%- config["_effective_user_name"] %> <%- config["_effective_group_name"] %>;
+<% end %>
+
+pid <%- config["run_dir"] %>/nginx-auto-ssl.pid;
+
+events {
+  worker_connections <%- config["auto_ssl"]["worker_connections"] %>;
+}
+
+env API_UMBRELLA_SRC_ROOT;
+env API_UMBRELLA_RUNTIME_CONFIG;
+
+error_log stderr <%- config["nginx"]["error_log_level"] %>;
+
+pcre_jit on;
+
+http {
+  access_log <%- config["log_dir"] %>/nginx-auto-ssl/<%- config["nginx"]["access_log_filename"] %> combined <%- config["nginx"]["access_log_options"] %>;
+
+  client_body_temp_path <%- config["tmp_dir"] %>/nginx-auto-ssl-client_body_temp;
+  proxy_temp_path <%- config["tmp_dir"] %>/nginx-auto-ssl-proxy_temp;
+  fastcgi_temp_path <%- config["tmp_dir"] %>/nginx-auto-ssl-fastcgi_temp;
+  uwsgi_temp_path <%- config["tmp_dir"] %>/nginx-auto-ssl-uwsgi_temp;
+  scgi_temp_path <%- config["tmp_dir"] %>/nginx-auto-ssl-scgi_temp;
+  server_tokens off;
+  <% if config["strip_server_header"] then %>
+    more_clear_headers Server;
+  <% end %>
+
+  <% if config["_development_env?"] then %>
+    lua_code_cache off;
+  <% end %>
+
+  lua_package_path '<%- config["_package_path"] %>';
+  lua_package_cpath '<%- config["_package_cpath"] %>';
+
+  # Quiet the raw socket errors from the logs, since we should be handling any
+  # connection errors as appropriate in the Lua code.
+  lua_socket_log_errors off;
+
+  # The "auto_ssl" shared dict must be defined with enough storage space to
+  # hold your certificate data.
+  lua_shared_dict auto_ssl 5m;
+
+  # The "auto_ssl" shared dict is used to temporarily store various settings
+  # like the secret used by the hook server. Do not change or omit it.
+  lua_shared_dict auto_ssl_settings 64k;
+
+  # Shared dicts for running background expiration job.
+  lua_shared_dict interval_locks <%- config["nginx"]["shared_dicts"]["interval_locks"]["size"] %>;
+  lua_shared_dict locks <%- config["nginx"]["shared_dicts"]["locks"]["size"] %>;
+
+  <% if config["dns_resolver"]["_nameservers_nginx"] then %>
+    resolver <%- config["dns_resolver"]["_nameservers_nginx"] %>;
+    resolver_timeout 12s;
+  <% end %>
+
+  init_by_lua_file "<%- config["_src_root_dir"] %>/src/api-umbrella/auto-ssl/hooks/init.lua";
+  init_worker_by_lua_file "<%- config["_src_root_dir"] %>/src/api-umbrella/auto-ssl/hooks/init_worker.lua";
+
+  lua_check_client_abort on;
+  if_modified_since off;
+
+  include ./mime.conf;
+  include ./realip.conf;
+
+  # Allow any sized uploads to backends.
+  client_max_body_size 0;
+
+  keepalive_timeout <%- config["nginx"]["keepalive_timeout"] %>s;
+
+  ssl_protocols <%- config["nginx"]["ssl_protocols"] %>;
+  ssl_ciphers <%- config["nginx"]["ssl_ciphers"] %>;
+  ssl_session_cache <%- config["nginx"]["ssl_session_cache"] %>;
+  ssl_session_timeout <%- config["nginx"]["ssl_session_timeout"] %>;
+  ssl_session_tickets <%- config["nginx"]["ssl_session_tickets"] %>;
+  ssl_buffer_size <%- config["nginx"]["ssl_buffer_size"] %>;
+  ssl_prefer_server_ciphers <%- config["nginx"]["ssl_prefer_server_ciphers"] %>;
+  ssl_ecdh_curve <%- config["nginx"]["ssl_ecdh_curve"] %>;
+  <% if config["nginx"]["dhparam"] then %>
+    # Diffie-Hellman parameter for DHE ciphersuites, recommended 2048 bits
+    ssl_dhparam <%- config["nginx"]["dhparam"] %>;
+  <% end %>
+
+  proxy_buffer_size <%- config["nginx"]["proxy_buffer_size"] %>;
+  proxy_buffers <%- config["nginx"]["proxy_buffers"] %>;
+
+  <% if config["nginx"]["server_names_hash_bucket_size"] then %>
+    server_names_hash_bucket_size <%- config["nginx"]["server_names_hash_bucket_size"] %>;
+  <% end %>
+
+  <% if config["nginx"]["vhost_traffic_status"]["enabled"] then %>
+    vhost_traffic_status_zone;
+    vhost_traffic_status_filter_by_host <%- config["nginx"]["vhost_traffic_status"]["filter_by_host"] %>;
+  <% end %>
+
+  upstream api_umbrella_backend {
+    server 127.0.0.1:<%- config["http_port"] %>;
+    keepalive 10;
+  }
+
+  server {
+    <% for _, address in ipairs(config["listen"]["addresses"]) do %>
+      listen <%- address %>:<%- config["auto_ssl"]["https"]["port"] %> ssl default_server so_keepalive=<%- config["auto_ssl"]["listen_so_keepalive"] %><% if config["auto_ssl"]["listen_backlog"] then %> backlog=<%- config["auto_ssl"]["listen_backlog"] %><% end %>;
+    <% end %>
+
+    include ./auto-ssl-cert.conf;
+    include ./auto-ssl-proxy.conf;
+    include ./auto-ssl-proxy-https.conf;
+  }
+
+  # HTTP server
+  server {
+    <% for _, address in ipairs(config["listen"]["addresses"]) do %>
+      listen <%- address %>:<%- config["auto_ssl"]["http"]["port"] %> default_server so_keepalive=<%- config["auto_ssl"]["listen_so_keepalive"] %><% if config["auto_ssl"]["listen_backlog"] then %> backlog=<%- config["auto_ssl"]["listen_backlog"] %><% end %>;
+    <% end %>
+
+    # Endpoint used for performing domain verification with Let's Encrypt.
+    location /.well-known/acme-challenge/ {
+      content_by_lua_block {
+        auto_ssl:challenge_server()
+      }
+    }
+
+    include ./auto-ssl-proxy.conf;
+    include ./auto-ssl-proxy-http.conf;
+  }
+
+  # Internal server for handling certificate tasks.
+  server {
+    listen 127.0.0.1:<%- config["auto_ssl"]["hook_server"]["port"] %> so_keepalive=<%- config["auto_ssl"]["listen_so_keepalive"] %><% if config["auto_ssl"]["listen_backlog"] then %> backlog=<%- config["auto_ssl"]["listen_backlog"] %><% end %>;
+
+    # Increase the body buffer size, to ensure the internal POSTs can always
+    # parse the full POST contents into memory.
+    client_body_buffer_size 128k;
+    client_max_body_size 128k;
+
+    <% if config["nginx"]["vhost_traffic_status"]["enabled"] then %>
+      location /api-umbrella/v0/auto-ssl-nginx-status {
+        vhost_traffic_status_display;
+      }
+    <% end %>
+
+    location / {
+      content_by_lua_block {
+        auto_ssl:hook_server()
+      }
+    }
+  }
+}

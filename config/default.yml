@@ -457,8 +457,8 @@ internal_website_backends:
     server_host: "{{static_site.host}}"
     server_port: "{{static_site.port}}"
 ban:
-  user_agents:
-  ips:
+  user_agents: []
+  ips: []
   response:
     status_code: 403
     delay: 0

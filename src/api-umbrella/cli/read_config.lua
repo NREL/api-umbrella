@@ -305,7 +305,11 @@ local function set_computed_config()
 
     table.insert(config["dns_resolver"]["_nameservers"], nameserver)
   end
-  config["dns_resolver"]["_nameservers_nginx"] = table.concat(config["dns_resolver"]["_nameservers_nginx"], " ")
+  if #config["dns_resolver"]["_nameservers_nginx"] > 0 then
+    config["dns_resolver"]["_nameservers_nginx"] = table.concat(config["dns_resolver"]["_nameservers_nginx"], " ")
+  else
+    config["dns_resolver"]["_nameservers_nginx"] = nil
+  end
   config["dns_resolver"]["nameservers"] = nil
 
   if config["app_env"] == "test" then

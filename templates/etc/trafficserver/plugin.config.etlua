@@ -12,5 +12,5 @@ header_rewrite.so "<%- config["etc_dir"] %>/trafficserver/header_rewrite.conf"
 cachekey.so --include-headers=Host,X-Api-Umbrella-Backend-Host,X-Api-Umbrella-Cache-Request-Method
 
 <% if config["_strip_response_cookies_regex"] then %>
-tslua.so "<%- config["etc_dir"] %>/trafficserver/strip_response_cookies.lua" "<%- config["etc_dir"] %>/trafficserver/strip_response_cookies_regex.txt"
+  tslua.so "<%- config["etc_dir"] %>/trafficserver/strip_response_cookies.lua" "<%- config["etc_dir"] %>/trafficserver/strip_response_cookies_regex.txt"
 <% end %>

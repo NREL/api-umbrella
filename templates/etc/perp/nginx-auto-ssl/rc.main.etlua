@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+set -e -u
+
+# Redirect stderr to stdout
+exec 2>&1
+
+umask "<%- config['umask'] %>"
+
+if [ "${1}" = "start" ]; then
+  echo "starting ${2}..."
+  api_umbrella_auto_ssl_user="<%- config['auto_ssl']['user'] %>"
+  api_umbrella_auto_ssl_group="<%- config['auto_ssl']['group'] %>"
+
+  dirs=("<%- config['etc_dir'] %>/auto-ssl")
+  mkdir -p "${dirs[@]}"
+  chmod 750 "${dirs[@]}"
+  if [ -n "$api_umbrella_auto_ssl_user" ]; then
+    chown "$api_umbrella_auto_ssl_user":"$api_umbrella_auto_ssl_group" "${dirs[@]}"
+  fi
+
+  run_args=("-e" "rc.env" "-c" "<%- config['_src_root_dir'] %>")
+  exec runtool ${run_args[@]+"${run_args[@]}"} nginx -p "<%- config['_src_root_dir'] %>/" -c "<%- config['etc_dir'] %>/nginx/auto-ssl.conf"
+fi
+
+exit 0
