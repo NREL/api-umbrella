@@ -289,6 +289,16 @@ function _M.api_user_params(self)
   return params
 end
 
+function _M.cors_preflight(self)
+  -- Wildcard CORS header to allow the signup form to be embedded anywhere.
+  self.res.headers["Access-Control-Allow-Headers"] = "Content-Type, X-Api-Key"
+  self.res.headers["Access-Control-Allow-Methods"] = "POST, OPTIONS"
+  self.res.headers["Access-Control-Allow-Origin"] = "*"
+  self.res.headers["Access-Control-Max-Age"] = "600"
+
+  return { status = 204, layout = false }
+end
+
 return function(app)
   app:match("/api-umbrella/v1/users/:id(.:format)", respond_to({
     before = require_admin(function(self)
@@ -308,5 +318,6 @@ return function(app)
   app:match("/api-umbrella/v1/users(.:format)", respond_to({
     GET = require_admin(capture_errors_json_full(_M.index)),
     POST = capture_errors_json_full(parse_post_for_pseudo_ie_cors(wrapped_json_params(_M.create, "user"))),
+    OPTIONS = capture_errors_json_full(_M.cors_preflight),
   }))
 end

@@ -1905,6 +1905,13 @@ CREATE UNIQUE INDEX api_users_api_key_prefix_idx ON api_umbrella.api_users USING
 
 
 --
+-- Name: api_users_created_at_idx; Type: INDEX; Schema: api_umbrella; Owner: -
+--
+
+CREATE INDEX api_users_created_at_idx ON api_umbrella.api_users USING btree (created_at DESC);
+
+
+--
 -- Name: api_users_roles_api_user_id_api_role_id_idx; Type: INDEX; Schema: api_umbrella; Owner: -
 --
 
@@ -1937,6 +1944,13 @@ CREATE INDEX cache_expires_at_idx ON api_umbrella.cache USING btree (expires_at)
 --
 
 CREATE INDEX distributed_rate_limit_counters_expires_at_idx ON api_umbrella.distributed_rate_limit_counters USING btree (expires_at);
+
+
+--
+-- Name: distributed_rate_limit_counters_version_expires_at_idx; Type: INDEX; Schema: api_umbrella; Owner: -
+--
+
+CREATE INDEX distributed_rate_limit_counters_version_expires_at_idx ON api_umbrella.distributed_rate_limit_counters USING btree (version, expires_at);
 
 
 --

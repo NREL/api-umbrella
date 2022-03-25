@@ -189,7 +189,7 @@ class Test::Apis::V1::Users::TestCreateWelcomeEmailSanitizedLinks < Minitest::Te
     })
 
     assert_equal(["test@#{host}"], message.fetch("Content").fetch("Headers").fetch("From"))
-    assert_match("https://#{host}/api.json?test=1", message.fetch("_mime_parts").fetch("text/plain").fetch("_body"))
+    refute_match("https://#{host}/api.json?test=1", message.fetch("_mime_parts").fetch("text/plain").fetch("_body"))
     assert_match("https://#{host}/contact-us", message.fetch("_mime_parts").fetch("text/plain").fetch("_body"))
 
     message = create_user({

@@ -3,7 +3,7 @@
 
   <form {{on "submit" this.submitForm}}>
     <FieldsFor @model={{this.model}} @style="horizontal" as |f|>
-      <fieldset class="form-horizontal condensed">
+      <fieldset class="form-horizontal condensed" disabled={{this.isDisabled}}>
         <legend>User Info</legend>
 
         {{f.text-field "email" label="E-mail"}}
@@ -30,13 +30,13 @@
         {{/if}}
       </fieldset>
 
-      <fieldset class="form-horizontal">
+      <fieldset class="form-horizontal" disabled={{this.isDisabled}}>
         <legend>Rate Limiting</legend>
         <Apis::Settings::RateLimitFields @model={{this.model.settings}} />
         {{f.select-field "throttleByIp" label="Limit By" options=this.throttleByIpOptions}}
       </fieldset>
 
-      <fieldset class="form-horizontal">
+      <fieldset class="form-horizontal" disabled={{this.isDisabled}}>
         <legend>Permissions</legend>
 
         {{f.selectize-field "rolesString" label="Roles" options=this.roleOptions}}
@@ -45,7 +45,7 @@
         {{f.select-field "enabled" label="Account Enabled" options=this.enabledOptions}}
       </fieldset>
 
-      <fieldset class="form-horizontal">
+      <fieldset class="form-horizontal" disabled={{this.isDisabled}}>
         <legend>Advanced</legend>
 
         {{f.codemirror-field "metadataYamlString" label=(t "Custom Metadata") tooltip=(marked (t "<a href=\"http://en.wikipedia.org/wiki/YAML\" target=\"_blank\">YAML</a> definition of custom metadata to assign to this user account.\n\nExample:\n\n```yaml\nmarketing_opt_out: true\ngithub_profile: https://github.com/username\n```")) mode="text/x-yaml"}}
@@ -53,7 +53,9 @@
 
       <div class="row">
         <div class="col-sm-6">
-          <button type="submit" class="btn btn-lg btn-primary save-button"><span class="btn-label">Save</span><span class="btn-loading-label"><FaIcon @icon="sync-alt" @spin={{true}} />Saving...</span></button>
+          {{#unless this.isDisabled}}
+            <button type="submit" class="btn btn-lg btn-primary save-button"><span class="btn-label">Save</span><span class="btn-loading-label">{{fa-icon "sync-alt" spin=true}}Saving...</span></button>
+          {{/unless}}
         </div>
         <div class="col-sm-6 record-details">
           Created: {{format-date this.model.createdAt}}{{#if this.model.creator}} by {{this.model.creator.username}}{{/if}}<br>

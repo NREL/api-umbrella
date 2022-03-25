@@ -102,6 +102,11 @@ http {
     server_names_hash_bucket_size {{nginx.server_names_hash_bucket_size}};
   {{/nginx.server_names_hash_bucket_size}}
 
+  {{#nginx.vhost_traffic_status.enabled}}
+    vhost_traffic_status_zone;
+    vhost_traffic_status_filter_by_host {{nginx.vhost_traffic_status.filter_by_host}};
+  {{/nginx.vhost_traffic_status.enabled}}
+
   upstream api_umbrella_backend {
     server 127.0.0.1:{{http_port}};
     keepalive 10;
@@ -109,7 +114,7 @@ http {
 
   server {
     {{#listen.addresses}}
-      listen {{.}}:{{auto_ssl.https.port}} ssl default_server so_keepalive=on;
+      listen {{.}}:{{auto_ssl.https.port}} ssl default_server so_keepalive={{auto_ssl.listen_so_keepalive}}{{#auto_ssl.listen_backlog}} backlog={{.}}{{/auto_ssl.listen_backlog}};
     {{/listen.addresses}}
 
     include ./auto-ssl-cert.conf;
@@ -120,7 +125,7 @@ http {
   # HTTP server
   server {
     {{#listen.addresses}}
-      listen {{.}}:{{auto_ssl.http.port}} default_server so_keepalive=on;
+      listen {{.}}:{{auto_ssl.http.port}} default_server so_keepalive={{auto_ssl.listen_so_keepalive}}{{#auto_ssl.listen_backlog}} backlog={{.}}{{/auto_ssl.listen_backlog}};
     {{/listen.addresses}}
 
     # Endpoint used for performing domain verification with Let's Encrypt.
@@ -136,12 +141,18 @@ http {
 
   # Internal server for handling certificate tasks.
   server {
-    listen 127.0.0.1:{{auto_ssl.hook_server.port}} so_keepalive=on;
+    listen 127.0.0.1:{{auto_ssl.hook_server.port}} so_keepalive={{auto_ssl.listen_so_keepalive}}{{#auto_ssl.listen_backlog}} backlog={{.}}{{/auto_ssl.listen_backlog}};
 
     # Increase the body buffer size, to ensure the internal POSTs can always
     # parse the full POST contents into memory.
     client_body_buffer_size 128k;
     client_max_body_size 128k;
+
+    {{#nginx.vhost_traffic_status.enabled}}
+      location /api-umbrella/v0/auto-ssl-nginx-status {
+        vhost_traffic_status_display;
+      }
+    {{/nginx.vhost_traffic_status.enabled}}
 
     location / {
       content_by_lua_block {

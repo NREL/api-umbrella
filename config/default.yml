@@ -16,6 +16,8 @@ listen:
 nginx:
   workers: auto
   worker_connections: 8192
+  listen_so_keepalive: "on"
+  listen_backlog:
   error_log_level: notice
   access_log_filename: access.log
   access_log_options: buffer=256k flush=10s
@@ -64,6 +66,9 @@ nginx:
       size: 200k
     introspection:
       size: 200k
+  vhost_traffic_status:
+    enabled: false
+    filter_by_host: "on"
 gatekeeper:
   api_key_methods:
     - header
@@ -93,6 +98,9 @@ web:
   port: 14012
   request_timeout: 30
   workers: 2
+  worker_connections: 8192
+  listen_so_keepalive: "on"
+  listen_backlog:
   error_log_level: notice
   api_user:
     email_regex: "\\A[^@\\s]+@[^@\\s]+\\.[^@\\s]+\\z"
@@ -195,6 +203,8 @@ router:
 auto_ssl:
   workers: 1
   worker_connections: 8192
+  listen_so_keepalive: "on"
+  listen_backlog:
   http:
     port: 14005
   https:
@@ -242,6 +252,9 @@ elasticsearch:
     host: 127.0.0.1
     port: 14017
     workers: 1
+    worker_connections: 8192
+    listen_so_keepalive: "on"
+    listen_backlog:
     error_log_level: notice
 analytics:
   adapter: elasticsearch
@@ -365,6 +378,10 @@ internal_apis:
         backend_prefix: "/api-umbrella/v1/health"
       - frontend_prefix: "/api-umbrella/v1/state"
         backend_prefix: "/api-umbrella/v1/state"
+      - frontend_prefix: "/api-umbrella/v0/nginx-status"
+        backend_prefix: "/api-umbrella/v0/nginx-status"
+      - frontend_prefix: "/api-umbrella/v0/shared-memory-stats"
+        backend_prefix: "/api-umbrella/v0/shared-memory-stats"
     settings:
       require_https: required_return_error
     sub_settings:
@@ -426,6 +443,10 @@ internal_apis:
           rate_limit_mode: unlimited
           redirect_https: true
           disable_analytics: true
+      - http_method: OPTIONS
+        regex: "^/api-umbrella/v1/users"
+        settings:
+          disable_api_key: true
 internal_website_backends:
   - id: api-umbrella-website-backend
     frontend_host: "{{router.web_app_host}}"

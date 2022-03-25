@@ -17,9 +17,11 @@ class Test::Apis::V1::Users::TestShowApiKeyVisibility < Minitest::Test
 
     user.update(:created_by_id => superuser.id)
     assert_api_key_visible(user, superuser)
+    refute_api_key_visible(user, limited_admin)
 
     user.update(:created_by_id => limited_admin.id)
-    refute_api_key_visible(user, limited_admin)
+    assert_api_key_visible(user, superuser)
+    assert_api_key_visible(user, limited_admin)
   end
 
   def test_new_accounts_they_created_with_roles
@@ -29,9 +31,11 @@ class Test::Apis::V1::Users::TestShowApiKeyVisibility < Minitest::Test
 
     user.update(:created_by_id => superuser.id)
     assert_api_key_visible(user, superuser)
+    refute_api_key_visible(user, limited_admin)
 
     user.update(:created_by_id => limited_admin.id)
-    refute_api_key_visible(user, limited_admin)
+    assert_api_key_visible(user, superuser)
+    assert_api_key_visible(user, limited_admin)
   end
 
   def test_old_accounts_they_created_without_roles
@@ -41,9 +45,11 @@ class Test::Apis::V1::Users::TestShowApiKeyVisibility < Minitest::Test
 
     user.update(:created_by_id => superuser.id)
     assert_api_key_visible(user, superuser)
+    refute_api_key_visible(user, limited_admin)
 
     user.update(:created_by_id => limited_admin.id)
-    refute_api_key_visible(user, limited_admin)
+    assert_api_key_visible(user, superuser)
+    assert_api_key_visible(user, limited_admin)
   end
 
   def test_old_accounts_they_created_with_roles
@@ -53,9 +59,11 @@ class Test::Apis::V1::Users::TestShowApiKeyVisibility < Minitest::Test
 
     user.update(:created_by_id => superuser.id)
     assert_api_key_visible(user, superuser)
+    refute_api_key_visible(user, limited_admin)
 
     user.update(:created_by_id => limited_admin.id)
-    refute_api_key_visible(user, limited_admin)
+    assert_api_key_visible(user, superuser)
+    assert_api_key_visible(user, limited_admin)
   end
 
   def test_new_accounts_other_admins_created_without_roles

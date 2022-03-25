@@ -8,6 +8,7 @@ local is_empty = require "api-umbrella.utils.is_empty"
 local json_response = require "api-umbrella.web-app.utils.json_response"
 local model_ext = require "api-umbrella.web-app.utils.model_ext"
 local preload = require("lapis.db.model").preload
+local random_token = require "api-umbrella.utils.random_token"
 local split = require("ngx.re").split
 local t = require("api-umbrella.web-app.utils.gettext").gettext
 local table_keys = require("pl.tablex").keys
@@ -242,6 +243,7 @@ function _M.index(self, model, options)
 
   local table_name = model:table_name()
   local escaped_table_name = db.escape_identifier(table_name)
+  local joins_present = false
 
   -- Static query filters
   if options["where"] then
@@ -253,7 +255,10 @@ function _M.index(self, model, options)
   -- Search filters
   if self.params["search"] and not is_empty(self.params["search"]["value"]) then
     table.insert(query["where"], build_search_where(escaped_table_name, options["search_fields"], self.params["search"]["value"]))
-    sql = sql .. build_sql_joins(options["search_joins"])
+    if not is_empty(options["search_joins"]) then
+      joins_present = true
+      sql = sql .. build_sql_joins(options["search_joins"])
+    end
   end
 
   -- Order
@@ -264,12 +269,18 @@ function _M.index(self, model, options)
   end
 
   if not is_empty(order_joins) then
+    joins_present = true
     sql = sql .. build_sql_joins(order_joins)
+  end
+
+  local distinct_sql = ""
+  if joins_present then
+    distinct_sql = "DISTINCT "
   end
 
   -- Total count before applying limits.
   sql = sql .. build_sql_where(query["where"])
-  local total_count = model:select(sql, { fields = "COUNT(DISTINCT " .. escaped_table_name .. ".id) AS c", load = false })[1]["c"]
+  local total_count = model:select(sql, { fields = "COUNT(" .. distinct_sql .. escaped_table_name .. ".id) AS c", load = false })[1]["c"]
 
   -- Limit
   if not is_empty(self.params["length"]) then
@@ -292,52 +303,56 @@ function _M.index(self, model, options)
     data = {},
   }
 
-  local fields = "DISTINCT " .. escaped_table_name .. ".*"
+  local fields = distinct_sql .. escaped_table_name .. ".*"
   if not is_empty(order_selects) then
     fields = fields .. ", " .. table.concat(order_selects, ", ")
   end
 
-  local paginated_records = model:paginated(sql, {
-    fields = fields,
-    per_page = 1000,
-    prepare_results = function(records)
-      if options and options["preload"] then
-        preload(records, options["preload"])
-      end
-      return records
-    end,
-  })
+  local select_sql = "SELECT " .. fields .. " FROM " .. escaped_table_name .. " " .. sql
 
-  paginated_records.get_page = function(self_page, page)
-    page = (math.max(1, tonumber(page) or 0)) - 1
-    local limit = self_page.db.interpolate_query(" LIMIT ? OFFSET ?", self_page.per_page, self_page.per_page * page, self_page.opts)
-    local res = self_page.db.select("_all_records.* FROM (SELECT " .. fields .. " FROM " .. escaped_table_name .. " " .. sql .. ") AS _all_records" .. limit)
-    if res then
-      return self_page:prepare_results(model:load_all(res))
-    end
-  end
+  local cursor_name = "cursor_" .. (ngx.now() * 1000) .. "_" .. random_token(16)
+  local declare_sql = "DECLARE " .. cursor_name .. " NO SCROLL CURSOR WITHOUT HOLD FOR " .. select_sql
+  local fetch_sql = "FETCH 1000 FROM " .. cursor_name
+
+  model.db.query("BEGIN")
+  model.db.query(declare_sql)
 
   if self.params["format"] == "csv" then
     csv.set_response_headers(self, options["csv_filename"] .. "_" .. os.date("!%Y-%m-%d", ngx.now()) .. ".csv")
     ngx.say(csv.row_to_csv(model:csv_headers()))
     ngx.flush(true)
+  end
 
-    for page_records, _ in paginated_records:each_page() do
-      for _, record in ipairs(page_records) do
-        ngx.say(csv.row_to_csv(record:as_csv()))
+  local result
+  repeat
+    result = model.db.query(fetch_sql)
+    if result and #result > 0 then
+      local records = model:load_all(result)
+
+      if options and options["preload"] then
+        preload(records, options["preload"])
       end
+
+      for _, record in ipairs(records) do
+        if self.params["format"] == "csv" then
+          ngx.say(csv.row_to_csv(record:as_csv()))
+        else
+          table.insert(response["data"], record:as_json())
+        end
+      end
+    end
+
+    if self.params["format"] == "csv" then
       ngx.flush(true)
     end
+  until not result or #result == 0
 
+  model.db.query("COMMIT")
+
+  if self.params["format"] == "csv" then
     return { layout = false }
   else
-    for page_records, _ in paginated_records:each_page() do
-      for _, record in ipairs(page_records) do
-        table.insert(response["data"], record:as_json())
-      end
-    end
     setmetatable(response["data"], cjson.empty_array_mt)
-
     return json_response(self, response)
   end
 end

@@ -8,7 +8,7 @@ user {{user}} {{group}};
 {{/user}}
 
 events {
-  worker_connections {{nginx.worker_connections}};
+  worker_connections {{elasticsearch.aws_signing_proxy.worker_connections}};
 }
 
 env API_UMBRELLA_SRC_ROOT;
@@ -51,7 +51,7 @@ http {
   init_by_lua_file '{{_src_root_dir}}/src/api-umbrella/elasticsearch-aws-signing-proxy/init.lua';
 
   server {
-    listen {{elasticsearch.aws_signing_proxy.host}}:{{elasticsearch.aws_signing_proxy.port}} so_keepalive=on;
+    listen {{elasticsearch.aws_signing_proxy.host}}:{{elasticsearch.aws_signing_proxy.port}} so_keepalive={{elasticsearch.aws_signing_proxy.listen_so_keepalive}}{{#elasticsearch.aws_signing_proxy.listen_backlog}} backlog={{.}}{{/elasticsearch.aws_signing_proxy.listen_backlog}};
 
     {{#_development_env?}}
       lua_code_cache off;

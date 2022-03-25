@@ -2,6 +2,8 @@
 
 ngx_http_geoip2_module_version="3.3"
 ngx_http_geoip2_module_hash="9f2c77f4d897e87992c2f7ec7516949c"
+nginx_module_vts_version="3c6cf41315bfcb48c35a3a0be81ddba6d0d01dac"
+nginx_module_vts_hash="6d4528b18094037ca170fed1ee259591"
 openresty_version="1.19.9.1"
 openresty_hash="ca013bd756f4e2a723c84cbf05dd0bdd"
 openssl_version="1.1.0l"
@@ -20,6 +22,9 @@ extract_download "openresty-$openresty_version.tar.gz"
 
 download "https://github.com/leev/ngx_http_geoip2_module/archive/$ngx_http_geoip2_module_version.tar.gz" "md5" "$ngx_http_geoip2_module_hash"
 extract_download "$ngx_http_geoip2_module_version.tar.gz"
+
+download "https://github.com/vozlt/nginx-module-vts/archive/$nginx_module_vts_version.tar.gz" "md5" "$nginx_module_vts_hash"
+extract_download "$nginx_module_vts_version.tar.gz"
 
 (
   cd "openssl-$openssl_version"
@@ -64,6 +69,7 @@ patch -p1 < "$SOURCE_DIR/build/patches/openresty-cli.patch"
   --with-threads \
   --with-luajit-xcflags="-DLUAJIT_NUMMODE=2 -DLUAJIT_ENABLE_LUA52COMPAT" \
   --add-module="../ngx_http_geoip2_module-$ngx_http_geoip2_module_version" \
+  --add-module="../nginx-module-vts-$nginx_module_vts_version" \
   -j"$NPROC"
 make -j"$NPROC"
 make install DESTDIR="$STAGE_DIR"

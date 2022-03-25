@@ -231,7 +231,11 @@ local function write_templates()
 
             local temp_filename = "." .. filename .. ".tmp"
             local temp_path = path_join(install_dir, temp_filename)
-            file.write(temp_path, content)
+            local _, write_err = file.write(temp_path, content)
+            if write_err then
+              print("write failed: ", write_err)
+              os.exit(1)
+            end
             set_template_permissions(temp_path, filename)
 
             local rename_ok, rename_err = os.rename(temp_path, install_path)
@@ -262,7 +266,11 @@ local function write_static_site_key()
     local content = file.read(file_path)
     local new_content, replacements = string.gsub(content, "apiKey: '.-'", "apiKey: '" .. config["static_site"]["api_key"] .. "'")
     if replacements > 0 then
-      file.write(file_path, new_content)
+      local _, write_err = file.write(file_path, new_content)
+      if write_err then
+        print("write failed: ", write_err)
+        os.exit(1)
+      end
     end
   end
 end

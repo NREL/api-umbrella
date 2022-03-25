@@ -60,10 +60,7 @@ local template_html, template_html_err = etlua.compile([[
     <p><%- greeting %></p>
     <code class="signup-key"><%- api_key %></code>
 
-    <% if example_api_url and example_api_url_formatted_html then %>
-      <p><%- example_instruction %></p>
-      <pre><a href="<%= example_api_url %>"><%- example_api_url_formatted_html %></a></pre>
-    <% end %>
+    <p><%- example_instruction %></p>
 
     <div class="signup-footer">
       <p><%- support %></p>
@@ -84,11 +81,7 @@ local template_text, template_text_err = etlua.compile([[
 
 <%- api_key %>
 
-<% if example_api_url then %>
 <%- example_instruction %>
-
-<%- example_api_url %>
-<% end %>
 
 <%- support %>
 
@@ -110,31 +103,28 @@ return function(api_user, options)
   if is_empty(from) then
     from = "noreply@" .. config["web"]["default_host"]
   end
-  if not is_empty(options["email_from_name"]) then
-    from = options["email_from_name"] .. " <" .. from .. ">"
-  end
 
   local data = {
-    hi = t("Hi %s,"),
-    greeting = t("Your API key for %s is:"),
+    hi = t("Hi,"),
+    greeting = t("You are receiving this email to confirm the creation of an API key. If you did not request this, please disregard this email. Your API key for %s is:"),
     api_key = api_key,
     account_email = t("Account Email: %s"),
     account_id = t("Account ID: %s"),
     example_api_url = options["example_api_url"],
     example_api_url_formatted_html = options["example_api_url_formatted_html"],
-    example_instruction = t("You can start using this key to make web service requests. Simply pass your key in the URL when making a web request. Here's an example:"),
+    example_instruction = t("You can start using this key to make web service requests by referring to the relevant agency's API documentation. This API key is for your use and should not be shared."),
     support = t("For additional support, please %s. When contacting us, please tell us what API you're accessing and provide the following account details so we can quickly find you:"),
   }
 
   local data_text = table_copy(data)
-  data_text["hi"] = string.format(data["hi"], api_user.first_name)
+  data_text["hi"] = data["hi"]
   data_text["greeting"] = string.format(data["greeting"], api_user.email)
   data_text["account_email"] = string.format(data["account_email"], api_user.email)
   data_text["account_id"] = string.format(data["account_id"], api_user.id)
   data_text["support"] = string.format(data["support"], t("contact us") .. " ( " .. options["contact_url"] .. " )")
 
   local data_html = table_copy(data)
-  data_html["hi"] = string.format(data["hi"], escape_html(api_user.first_name))
+  data_html["hi"] = data["hi"]
   data_html["greeting"] = string.format(data["greeting"], "<strong>" .. escape_html(api_user.email) .."</strong>")
   data_html["account_email"] = string.format(data["account_email"], escape_html(api_user.email))
   data_html["account_id"] = string.format(data["account_id"], escape_html(api_user.id))
@@ -149,7 +139,7 @@ return function(api_user, options)
     headers = config["web"]["mailer"]["headers"],
     from = from,
     to = { api_user.email },
-    subject = string.format(t("Your %s API key"), options["site_name"]),
+    subject = t("Your API key"),
     text = template_text(data_text),
     html = template_html(data_html),
   })

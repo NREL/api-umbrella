@@ -1143,4 +1143,20 @@ return {
           LEFT JOIN api_user_settings AS s ON u.id = s.api_user_id
     ]])
   end,
+
+  [1645733075] = function()
+    db.query("BEGIN")
+
+    db.query("CREATE INDEX ON api_users(created_at DESC)")
+
+    db.query("COMMIT")
+  end,
+
+  [1647916501] = function()
+    db.query("BEGIN")
+
+    db.query("CREATE INDEX ON distributed_rate_limit_counters (version, expires_at)")
+
+    db.query("COMMIT")
+  end,
 }

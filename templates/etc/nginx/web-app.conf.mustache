@@ -8,7 +8,7 @@ user {{user}} {{group}};
 {{/user}}
 
 events {
-  worker_connections {{nginx.worker_connections}};
+  worker_connections {{web.worker_connections}};
 }
 
 env API_UMBRELLA_SRC_ROOT;
@@ -67,7 +67,7 @@ http {
   init_worker_by_lua_file '{{_src_root_dir}}/src/api-umbrella/web-app/hooks/init_worker.lua';
 
   server {
-    listen {{web.host}}:{{web.port}} so_keepalive=on;
+    listen {{web.host}}:{{web.port}} so_keepalive={{web.listen_so_keepalive}}{{#web.listen_backlog}} backlog={{.}}{{/web.listen_backlog}};
 
     set $x_api_umbrella_request_id $http_x_api_umbrella_request_id;
 

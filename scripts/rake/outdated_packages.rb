@@ -142,6 +142,9 @@ class OutdatedPackages
     "mailhog" => {
       :git => "https://github.com/mailhog/MailHog.git",
     },
+    "nginx_module_vts" => {
+      :git => "https://github.com/vozlt/nginx-module-vts.git",
+    },
     "ngx_http_geoip2_module" => {
       :git => "https://github.com/leev/ngx_http_geoip2_module.git",
     },
