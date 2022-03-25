@@ -114,7 +114,7 @@ http {
 
   server {
     {{#listen.addresses}}
-      listen {{.}}:{{auto_ssl.https.port}} ssl default_server so_keepalive={{auto_ssl.listen_so_keepalive}}{{#auto_ssl.listen_backlog}} backlog={{.}}{{/auto_ssl.listen_backlog}};
+      listen {{.}}:{{auto_ssl.https.port}} ssl default_server so_keepalive={{auto_ssl.listen_so_keepalive}}{{#auto_ssl.listen_backlog}} backlog={{auto_ssl.listen_backlog}}{{/auto_ssl.listen_backlog}};
     {{/listen.addresses}}
 
     include ./auto-ssl-cert.conf;
@@ -125,7 +125,7 @@ http {
   # HTTP server
   server {
     {{#listen.addresses}}
-      listen {{.}}:{{auto_ssl.http.port}} default_server so_keepalive={{auto_ssl.listen_so_keepalive}}{{#auto_ssl.listen_backlog}} backlog={{.}}{{/auto_ssl.listen_backlog}};
+      listen {{.}}:{{auto_ssl.http.port}} default_server so_keepalive={{auto_ssl.listen_so_keepalive}}{{#auto_ssl.listen_backlog}} backlog={{auto_ssl.listen_backlog}}{{/auto_ssl.listen_backlog}};
     {{/listen.addresses}}
 
     # Endpoint used for performing domain verification with Let's Encrypt.
@@ -141,7 +141,7 @@ http {
 
   # Internal server for handling certificate tasks.
   server {
-    listen 127.0.0.1:{{auto_ssl.hook_server.port}} so_keepalive={{auto_ssl.listen_so_keepalive}}{{#auto_ssl.listen_backlog}} backlog={{.}}{{/auto_ssl.listen_backlog}};
+    listen 127.0.0.1:{{auto_ssl.hook_server.port}} so_keepalive={{auto_ssl.listen_so_keepalive}}{{#auto_ssl.listen_backlog}} backlog={{auto_ssl.listen_backlog}}{{/auto_ssl.listen_backlog}};
 
     # Increase the body buffer size, to ensure the internal POSTs can always
     # parse the full POST contents into memory.

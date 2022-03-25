@@ -162,6 +162,10 @@ http {
   proxy_buffer_size {{nginx.proxy_buffer_size}};
   proxy_buffers {{nginx.proxy_buffers}};
 
+  {{#nginx.variables_hash_max_size}}
+    variables_hash_max_size {{nginx.variables_hash_max_size}};
+  {{/nginx.variables_hash_max_size}}
+
   {{#nginx.server_names_hash_bucket_size}}
     server_names_hash_bucket_size {{nginx.server_names_hash_bucket_size}};
   {{/nginx.server_names_hash_bucket_size}}
@@ -177,7 +181,7 @@ http {
   }
 
   server {
-    listen {{api_server.host}}:{{api_server.port}} so_keepalive={{nginx.listen_so_keepalive}}{{#nginx.listen_backlog}} backlog={{.}}{{/nginx.listen_backlog}};
+    listen {{api_server.host}}:{{api_server.port}} so_keepalive={{nginx.listen_so_keepalive}}{{#nginx.listen_backlog}} backlog={{nginx.listen_backlog}}{{/nginx.listen_backlog}};
 
     set $x_api_umbrella_request_id $http_x_api_umbrella_request_id;
 
@@ -215,8 +219,8 @@ http {
   {{#hosts}}
   server {
     {{#listen.addresses}}
-      listen {{.}}:{{http_port}}{{#default}} default_server so_keepalive={{nginx.listen_so_keepalive}}{{#nginx.listen_backlog}} backlog={{.}}{{/nginx.listen_backlog}}{{/default}};
-      listen {{.}}:{{https_port}} ssl{{#default}} default_server so_keepalive={{nginx.listen_so_keepalive}}{{#nginx.listen_backlog}} backlog={{.}}{{/nginx.listen_backlog}}{{/default}};
+      listen {{.}}:{{http_port}}{{#default}} default_server so_keepalive={{nginx.listen_so_keepalive}}{{#nginx.listen_backlog}} backlog={{nginx.listen_backlog}}{{/nginx.listen_backlog}}{{/default}};
+      listen {{.}}:{{https_port}} ssl{{#default}} default_server so_keepalive={{nginx.listen_so_keepalive}}{{#nginx.listen_backlog}} backlog={{nginx.listen_backlog}}{{/nginx.listen_backlog}}{{/default}};
     {{/listen.addresses}}
     server_name {{_nginx_server_name}};
 
@@ -260,7 +264,7 @@ http {
 
   {{^_development_env?}}
     server {
-      listen {{static_site.host}}:{{static_site.port}} so_keepalive={{nginx.listen_so_keepalive}}{{#nginx.listen_backlog}} backlog={{.}}{{/nginx.listen_backlog}};
+      listen {{static_site.host}}:{{static_site.port}} so_keepalive={{nginx.listen_so_keepalive}}{{#nginx.listen_backlog}} backlog={{nginx.listen_backlog}}{{/nginx.listen_backlog}};
 
       set $x_api_umbrella_request_id $http_x_api_umbrella_request_id;
       root {{static_site.build_dir}};
