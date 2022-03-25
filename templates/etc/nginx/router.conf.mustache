@@ -158,6 +158,10 @@ http {
   proxy_buffer_size {{nginx.proxy_buffer_size}};
   proxy_buffers {{nginx.proxy_buffers}};
 
+  {{#nginx.variables_hash_max_size}}
+    variables_hash_max_size {{nginx.variables_hash_max_size}};
+  {{/nginx.variables_hash_max_size}}
+
   {{#nginx.server_names_hash_bucket_size}}
     server_names_hash_bucket_size {{nginx.server_names_hash_bucket_size}};
   {{/nginx.server_names_hash_bucket_size}}

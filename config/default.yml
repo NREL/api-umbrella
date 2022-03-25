@@ -37,6 +37,7 @@ nginx:
   ssl_buffer_size: 1400
   ssl_prefer_server_ciphers: "on"
   ssl_ecdh_curve: secp384r1
+  variables_hash_max_size: 2048
   lua_ssl_trusted_certificate:
   lua_ssl_verify_depth: 1
   shared_dicts:
