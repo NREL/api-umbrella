@@ -1,9 +1,13 @@
 import Controller from '@ember/controller';
-import { computed } from '@ember/object';
+import { reads } from '@ember/object/computed';
 import { inject } from '@ember/service';
+import classic from 'ember-classic-decorator';
 
-export default Controller.extend({
-  session: inject('session'),
+@classic
+export default class IndexController extends Controller {
+  @inject('session')
+  session;
 
-  currentAdmin: computed.reads('session.data.authenticated.admin'),
-});
+  @reads('session.data.authenticated.admin')
+  currentAdmin;
+}

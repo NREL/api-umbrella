@@ -1,10 +1,9 @@
 // eslint-disable-next-line ember/no-classic-components
 import Component from '@ember/component';
-import { action } from '@ember/object';
+import { action, computed } from '@ember/object';
+import { inject } from '@ember/service';
 // eslint-disable-next-line ember/no-mixins
 import Save from 'api-umbrella-admin-ui/mixins/save';
-import { inject } from '@ember/service';
-import { computed } from '@ember/object';
 import { t } from 'api-umbrella-admin-ui/utils/i18n';
 import classic from 'ember-classic-decorator';
 import $ from 'jquery';
