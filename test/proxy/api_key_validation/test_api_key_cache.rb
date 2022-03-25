@@ -9,7 +9,7 @@ class Test::Proxy::ApiKeyValidation::TestApiKeyCache < Minitest::Test
     setup_server
   end
 
-  def test_caches_keys_inside_workers_for_couple_seconds
+  def test_caches_keys_inside_workers_for_up_to_a_couple_seconds
     user = FactoryBot.create(:api_user, {
       :settings => FactoryBot.build(:api_user_settings, {
         :rate_limit_mode => "unlimited",
@@ -30,18 +30,27 @@ class Test::Proxy::ApiKeyValidation::TestApiKeyCache < Minitest::Test
     user.disabled_at = Time.now.utc
     user.save!
 
-    # Immediately make more requests. These should still succeed due to the
-    # local cache.
+    # Immediately make more requests. These may or may not hit cached results,
+    # depending on the exact timing of when the `api_user_cache_expire` job
+    # expires the shared dict cache, and then when the `cache_update` job
+    # updates the local worker caches. But since those jobs execute every 1
+    # second, even if the two jobs are staggered and execute a second apart,
+    # the cache shouldn't exceed 2 seconds.
     responses = exercise_all_workers("/api/info/", {
       :headers => { "X-Api-Key" => user.api_key },
       :params => { :step => "post-save" },
     })
     responses.each do |response|
-      assert_response_code(200, response)
+      if response.code == 200
+        assert_response_code(200, response)
+      else
+        assert_response_code(403, response)
+        assert_match("API_KEY_DISABLED", response.body)
+      end
     end
 
     # Wait for the cache to expire
-    sleep 2.1
+    sleep 2.6
 
     # With the cache expired, now all requests should be rejected due to the
     # disabled key.
