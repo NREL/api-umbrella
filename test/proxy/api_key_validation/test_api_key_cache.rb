@@ -31,11 +31,12 @@ class Test::Proxy::ApiKeyValidation::TestApiKeyCache < Minitest::Test
     user.save!
 
     # Immediately make more requests. These may or may not hit cached results,
-    # depending on the exact timing of when the `api_user_cache_expire` job
-    # expires the shared dict cache, and then when the `cache_update` job
-    # updates the local worker caches. But since those jobs execute every 1
-    # second, even if the two jobs are staggered and execute a second apart,
-    # the cache shouldn't exceed 2 seconds.
+    # depending on the exact timing of when the
+    # `api_users_store_delete_stale_cache` job expires the shared dict cache,
+    # and then when the `api_users_store_refresh_local_cache` job updates the
+    # local worker caches. But since those jobs execute every 1 second, even if
+    # the two jobs are staggered and execute a second apart, the cache
+    # shouldn't exceed 2 seconds.
     responses = exercise_all_workers("/api/info/", {
       :headers => { "X-Api-Key" => user.api_key },
       :params => { :step => "post-save" },

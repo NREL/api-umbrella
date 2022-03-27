@@ -7,8 +7,8 @@ local int64_to_json_number = require("api-umbrella.utils.int64").to_json_number
 local is_empty = require "api-umbrella.utils.is_empty"
 local json_response = require "api-umbrella.web-app.utils.json_response"
 local model_ext = require "api-umbrella.web-app.utils.model_ext"
+local pg_utils = require "api-umbrella.utils.pg_utils"
 local preload = require("lapis.db.model").preload
-local random_token = require "api-umbrella.utils.random_token"
 local split = require("ngx.re").split
 local t = require("api-umbrella.web-app.utils.gettext").gettext
 local table_keys = require("pl.tablex").keys
@@ -310,12 +310,7 @@ function _M.index(self, model, options)
 
   local select_sql = "SELECT " .. fields .. " FROM " .. escaped_table_name .. " " .. sql
 
-  local cursor_name = "cursor_" .. (ngx.now() * 1000) .. "_" .. random_token(16)
-  local declare_sql = "DECLARE " .. cursor_name .. " NO SCROLL CURSOR WITHOUT HOLD FOR " .. select_sql
-  local fetch_sql = "FETCH 1000 FROM " .. cursor_name
-
-  model.db.query("BEGIN")
-  model.db.query(declare_sql)
+  local cursor_fetch_sql = pg_utils.cursor_begin(select_sql, nil, 1000, { fatal = true })
 
   if self.params["format"] == "csv" then
     csv.set_response_headers(self, options["csv_filename"] .. "_" .. os.date("!%Y-%m-%d", ngx.now()) .. ".csv")
@@ -323,11 +318,11 @@ function _M.index(self, model, options)
     ngx.flush(true)
   end
 
-  local result
+  local results
   repeat
-    result = model.db.query(fetch_sql)
-    if result and #result > 0 then
-      local records = model:load_all(result)
+    results = pg_utils.query(cursor_fetch_sql, nil, { fatal = true })
+    if results and #results > 0 then
+      local records = model:load_all(results)
 
       if options and options["preload"] then
         preload(records, options["preload"])
@@ -345,9 +340,9 @@ function _M.index(self, model, options)
     if self.params["format"] == "csv" then
       ngx.flush(true)
     end
-  until not result or #result == 0
+  until not results or #results == 0
 
-  model.db.query("COMMIT")
+  pg_utils.cursor_close({ fatal = true })
 
   if self.params["format"] == "csv" then
     return { layout = false }

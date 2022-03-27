@@ -1,6 +1,7 @@
 local config = require "api-umbrella.proxy.models.file_config"
 local int64 = require "api-umbrella.utils.int64"
 local pgmoon = require "pgmoon"
+local random_token = require "api-umbrella.utils.random_token"
 
 -- Preload modules that pgmoon may require at query() time.
 require "pgmoon.arrays"
@@ -255,6 +256,36 @@ end
 function _M.delete(table_name, where, options)
   local query = "DELETE FROM " .. _M.escape_identifier(table_name) .. " WHERE " .. encode_where(where)
   return _M.query(query, nil, options)
+end
+
+function _M.cursor_begin(query, values, cursor_size, options)
+  local cursor_name = "cursor_" .. (ngx.now() * 1000) .. "_" .. random_token(16)
+  local declare_sql = "DECLARE " .. cursor_name .. " NO SCROLL CURSOR WITHOUT HOLD FOR " .. query
+  local fetch_sql = "FETCH " .. tonumber(cursor_size) .. " FROM " .. cursor_name
+
+  local _, query_err = _M.query("BEGIN", nil, options)
+  if query_err then
+    return nil, query_err
+  end
+
+  _, query_err = _M.query(declare_sql, values, options)
+  if query_err then
+    _, query_err = _M.query("COMMIT", nil, options)
+    if query_err then
+      query_err = query_err .. " " .. query_err
+    end
+
+    return nil, query_err
+  end
+
+  return fetch_sql
+end
+
+function _M.cursor_close(options)
+  local _, query_err = _M.query("COMMIT", nil, options)
+  if query_err then
+    return nil, query_err
+  end
 end
 
 return _M

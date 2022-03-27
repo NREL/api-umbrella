@@ -4,13 +4,17 @@ local json_decode = require("cjson").decode
 local json_encode = require "api-umbrella.utils.json_encode"
 local xpcall_error_handler = require "api-umbrella.utils.xpcall_error_handler"
 
+local active_config = ngx.shared.active_config
+local jobs = ngx.shared.jobs
+local stats = ngx.shared.stats
+
 local response = {
-  file_config_version = ngx.shared.active_config:get("file_version"),
-  db_config_version = ngx.shared.active_config:get("db_version"),
-  db_config_last_fetched_at = ngx.shared.active_config:get("db_config_last_fetched_at"),
-  api_users_last_fetched_version = ngx.shared.api_users:get("last_fetched_version"),
-  distributed_rate_limits_last_pulled_at = ngx.shared.stats:get("distributed_last_pulled_at"),
-  distributed_rate_limits_last_pushed_at = ngx.shared.stats:get("distributed_last_pushed_at"),
+  file_config_version = active_config:get("file_version"),
+  db_config_version = active_config:get("db_version"),
+  db_config_last_fetched_at = active_config:get("db_config_last_fetched_at"),
+  api_users_last_fetched_version = jobs:get("api_users_store_last_fetched_version"),
+  distributed_rate_limits_last_pulled_at = stats:get("distributed_last_pulled_at"),
+  distributed_rate_limits_last_pushed_at = stats:get("distributed_last_pushed_at"),
 }
 
 local httpc = http.new()

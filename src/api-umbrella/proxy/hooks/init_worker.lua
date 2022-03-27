@@ -1,6 +1,6 @@
 local active_config = require "api-umbrella.proxy.models.active_config"
-local api_user_cache_expire = require "api-umbrella.proxy.jobs.api_user_cache_expire"
-local cache_update = require "api-umbrella.proxy.jobs.cache_update"
+local api_users_store_delete_stale_cache = require "api-umbrella.proxy.jobs.api_users_store_delete_stale_cache"
+local api_users_store_refresh_local_cache = require "api-umbrella.proxy.jobs.api_users_store_refresh_local_cache"
 local db_expirations = require "api-umbrella.proxy.jobs.db_expirations"
 local distributed_rate_limit_puller = require "api-umbrella.proxy.jobs.distributed_rate_limit_puller"
 local distributed_rate_limit_pusher = require "api-umbrella.proxy.jobs.distributed_rate_limit_pusher"
@@ -15,8 +15,8 @@ local seed_database = require "api-umbrella.proxy.startup.seed_database"
 random_seed()
 
 load_db_config.spawn(active_config.proxy_set)
-api_user_cache_expire.spawn()
-cache_update.spawn()
+api_users_store_delete_stale_cache.spawn()
+api_users_store_refresh_local_cache.spawn()
 db_expirations.spawn()
 distributed_rate_limit_puller.spawn()
 distributed_rate_limit_pusher.spawn()

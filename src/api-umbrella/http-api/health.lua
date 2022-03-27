@@ -4,6 +4,7 @@ local http = require "resty.http"
 local icu_date = require "icu-date-ffi"
 local json_encode = require "api-umbrella.utils.json_encode"
 
+local active_config = ngx.shared.active_config
 local elasticsearch_query = elasticsearch.query
 
 local function status_response(quick)
@@ -11,22 +12,16 @@ local function status_response(quick)
     status = "red",
     details = {
       apis_config = "red",
-      api_users = "red",
     },
   }
 
   -- Check to see if the APIs have been loaded.
-  if ngx.shared.active_config:get("db_config_last_fetched_at") then
+  if active_config:get("db_config_last_fetched_at") then
     response["details"]["apis_config"] = "green"
   end
 
-  -- Check to see if the users have been loaded.
-  if ngx.shared.jobs:get("api_users_last_fetched_version") then
-    response["details"]["api_users"] = "green"
-  end
-
   if quick then
-    if response["details"]["apis_config"] == "green" and response["details"]["api_users"] == "green" then
+    if response["details"]["apis_config"] == "green" then
       response["status"] = "green"
     end
 
@@ -78,9 +73,9 @@ local function status_response(quick)
   -- content), ElasticSearch seems to get stuck in the yellow status, even though
   -- everything appears operational (but then it becomes green once content
   -- starts indexing).
-  if response["details"]["apis_config"] == "green" and response["details"]["api_users"] == "green" and (response["details"]["analytics_db"] == "yellow" or response["details"]["analytics_db"] == "green") and response["details"]["analytics_db_setup"] == "green" and response["details"]["web_app"] == "green" then
+  if response["details"]["apis_config"] == "green" and (response["details"]["analytics_db"] == "yellow" or response["details"]["analytics_db"] == "green") and response["details"]["analytics_db_setup"] == "green" and response["details"]["web_app"] == "green" then
     response["status"] = "green"
-  elseif response["details"]["apis_config"] == "green" and response["details"]["api_users"] == "green" then
+  elseif response["details"]["apis_config"] == "green" then
     response["status"] = "yellow"
   end
 

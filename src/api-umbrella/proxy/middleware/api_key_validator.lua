@@ -1,4 +1,4 @@
-local get_user = require("api-umbrella.proxy.user_store").get
+local get_user = require("api-umbrella.proxy.api_users_store").get
 
 return function(settings)
   -- Retrieve the API key found in the resolve_api_key middleware.

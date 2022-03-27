@@ -1,16 +1,15 @@
 local config = require "api-umbrella.proxy.models.file_config"
 
 local elasticsearch_encode_json = require "api-umbrella.utils.elasticsearch_encode_json"
+local get_user = require("api-umbrella.proxy.api_users_store").get
 local http = require "resty.http"
 local json_decode = require("cjson").decode
 local json_encode = require "api-umbrella.utils.json_encode"
 local log_utils = require "api-umbrella.proxy.log_utils"
 local luatz = require "luatz"
 local user_agent_parser = require "api-umbrella.proxy.user_agent_parser"
-local user_store = require "api-umbrella.proxy.user_store"
 local utils = require "api-umbrella.proxy.utils"
 
-local get_user = user_store.get
 local truncate_header = log_utils.truncate_header
 
 local bulk_size = 1000
