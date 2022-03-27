@@ -621,12 +621,14 @@ local function set_envoy_config(active_config_data, config_version)
   }
 
   file_write(cds_path .. ".tmp", json_encode(cds))
-  file_write(rds_path .. ".tmp", json_encode(rds))
   file_write(lds_path .. ".tmp", json_encode(lds))
+  file_write(rds_path .. ".tmp", json_encode(rds))
 
+  -- Push live in order described here:
+  -- https://www.envoyproxy.io/docs/envoy/v1.21.1/api-docs/xds_protocol.html#eventual-consistency-considerations
   os.rename(cds_path .. ".tmp", cds_path)
-  os.rename(rds_path .. ".tmp", rds_path)
   os.rename(lds_path .. ".tmp", lds_path)
+  os.rename(rds_path .. ".tmp", rds_path)
 
   local httpc = http.new()
   local connect_ok, connect_err = httpc:connect({
@@ -640,36 +642,73 @@ local function set_envoy_config(active_config_data, config_version)
     return nil, "envoy admin connect error: " .. (connect_err or "")
   end
 
-  local done = false
-  local stats_body
+  local ready = false
+  local ready_err
+  local versions_ready = false
+  local clusters_ready = false
   for _ = 1, 50 do
-    local res, err = httpc:request({
-      method = "GET",
-      path = "/stats?format=json&filter=\\.version_text$",
-    })
-    if err then
-      httpc:close()
-      return nil, "envoy admin request error: " .. (err or "")
-    end
+    if not versions_ready then
+      local stats_res, stats_err = httpc:request({
+        method = "GET",
+        path = "/stats?format=json&filter=\\.version_text$",
+      })
+      if stats_err then
+        httpc:close()
+        return nil, "envoy admin request error: " .. (stats_err or "")
+      end
 
-    local stats_body_err
-    stats_body, stats_body_err = res:read_body()
-    if stats_body_err then
-      httpc:close()
-      return nil, "envoy admin read body error: " .. (stats_body_err or "")
-    end
+      local stats_body, stats_body_err = stats_res:read_body()
+      if stats_body_err then
+        httpc:close()
+        return nil, "envoy admin read body error: " .. (stats_body_err or "")
+      end
 
-    local stats = json_decode(stats_body)
-    for _, stat in ipairs(stats["stats"]) do
-      if stat["value"] == config_version then
-        done = true
-      else
-        done = false
-        break
+      local stats = json_decode(stats_body)
+      for _, stat in ipairs(stats["stats"]) do
+        if stat["value"] == config_version then
+          versions_ready = true
+        else
+          versions_ready = false
+          ready_err = stat["name"] .. " version: " .. stat["value"]
+          break
+        end
       end
     end
 
-    if done then
+    if not clusters_ready then
+      local clusters_res, clusters_err = httpc:request({
+        method = "GET",
+        path = "/clusters?format=json",
+      })
+      if clusters_err then
+        httpc:close()
+        return nil, "envoy admin request error: " .. (clusters_err or "")
+      end
+
+      local clusters_body, clusters_body_err = clusters_res:read_body()
+      if clusters_body_err then
+        httpc:close()
+        return nil, "envoy admin read body error: " .. (clusters_body_err or "")
+      end
+
+      local clusters = json_decode(clusters_body)
+      local initialized_cluster_names = {}
+      for _, cluster in ipairs(clusters["cluster_statuses"]) do
+        initialized_cluster_names[cluster["name"]] = true
+      end
+      for _, cluster in ipairs(cds["resources"]) do
+        if not initialized_cluster_names[cluster["name"]] then
+          clusters_ready = false
+          ready_err = "cluster not initialized: " .. cluster["name"]
+          break
+        else
+          clusters_ready = true
+        end
+      end
+    end
+
+    if versions_ready and clusters_ready then
+      ready = true
       break
     else
       ngx.sleep(0.1)
@@ -682,8 +721,8 @@ local function set_envoy_config(active_config_data, config_version)
     return nil, "envoy admin keepalive error: " .. (keepalive_err or "")
   end
 
-  if not done then
-    return nil, "envoy admin timed out waiting for configuration to be live. Waiting for: " .. (config_version or "") .. ". Last stats: " .. (stats_body or "")
+  if not ready then
+    return nil, "envoy admin timed out waiting for configuration to be live. Waiting for: " .. (config_version or "") .. ", " .. (ready_err or "")
   end
 end
 
