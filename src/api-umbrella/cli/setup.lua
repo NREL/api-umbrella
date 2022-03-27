@@ -83,13 +83,17 @@ local function prepare()
     dir.makepath(directory)
   end
 
-  local lds_path = path_join(config["run_dir"], "envoy/lds.json")
   local cds_path = path_join(config["run_dir"], "envoy/cds.json")
+  if not path_exists(cds_path) then
+    file_write(cds_path, "{}")
+  end
+  local lds_path = path_join(config["run_dir"], "envoy/lds.json")
   if not path_exists(lds_path) then
     file_write(lds_path, "{}")
   end
-  if not path_exists(cds_path) then
-    file_write(cds_path, "{}")
+  local rds_path = path_join(config["run_dir"], "envoy/rds.json")
+  if not path_exists(rds_path) then
+    file_write(rds_path, "{}")
   end
 end
 
