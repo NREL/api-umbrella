@@ -3,6 +3,16 @@ class ApiUser < ApplicationRecord
   has_and_belongs_to_many :roles, -> { order(:id) }, :class_name => "ApiRole", :join_table => "api_users_roles"
   attr_accessor :terms_and_conditions
 
+  def id=(id)
+    prev_id = self[:id]
+    self[:id] = id
+
+    # Re-encrypt if the ID (used for the auth data) changes.
+    if prev_id && prev_id != id && @unencrypted_api_key
+      self.api_key = @unencrypted_api_key
+    end
+  end
+
   def self.delete_non_seeded
     self.where("registration_source IS NULL OR registration_source != 'seed'").delete_all
   end
@@ -17,6 +27,8 @@ class ApiUser < ApplicationRecord
   end
 
   def api_key=(value)
+    @unencrypted_api_key = value
+
     # Ensure the record ID is set (it may not be on initial create), since we
     # need the ID for the auth data.
     self.id ||= SecureRandom.uuid
