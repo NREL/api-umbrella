@@ -12,8 +12,7 @@ local pg_utils = require "api-umbrella.utils.pg_utils"
 local api_key_cache_enabled = config["gatekeeper"]["api_key_cache"]
 local api_key_max_length = config["gatekeeper"]["api_key_max_length"]
 local api_key_min_length = config["gatekeeper"]["api_key_min_length"]
-local cursor_begin = pg_utils.cursor_begin
-local cursor_close = pg_utils.cursor_close
+local cursor = pg_utils.cursor
 local jobs = ngx.shared.jobs
 local last_fetched_version_set_once = false
 local query = pg_utils.query
@@ -170,45 +169,29 @@ function _M.delete_stale_cache()
 
   -- Loop over results in a cursor to prevent large batches of
   -- changes/insertions from consuming lots of local memory.
-  local cursor_fetch_sql, cursor_err = cursor_begin(select_sql, select_values, 1000, { quiet = true })
-  if cursor_err then
-    ngx.log(ngx.ERR, "cursor error: ", cursor_err)
-    return
-  end
-
-  local results
   local new_last_fetched_version
-  repeat
-    local results_err
-    results, results_err = query(cursor_fetch_sql, nil, { quiet = true })
+  local _, cursor_err = cursor(select_sql, select_values, 1000, { quiet = true }, function(results)
+    for _, row in ipairs(results) do
+      if not new_last_fetched_version then
+        new_last_fetched_version = int64_to_string(row["version"])
+      end
 
-    if results_err then
-      ngx.log(ngx.ERR, "failed to fetch users from database: ", results_err)
-    elseif results and #results > 0 then
-      for _, row in ipairs(results) do
-        if not new_last_fetched_version then
-          new_last_fetched_version = int64_to_string(row["version"])
+      local api_key
+      if row["api_key_encrypted"] and row["api_key_encrypted_iv"] and row["id"] then
+        api_key = encryptor.decrypt(row["api_key_encrypted"], row["api_key_encrypted_iv"], row["id"])
+      end
+      if api_key then
+        local _, delete_err = cache:delete(api_key)
+        if delete_err then
+          ngx.log(ngx.ERR, "api users cache delete failed: ", delete_err)
         end
-
-        local api_key
-        if row["api_key_encrypted"] and row["api_key_encrypted_iv"] and row["id"] then
-          api_key = encryptor.decrypt(row["api_key_encrypted"], row["api_key_encrypted_iv"], row["id"])
-        end
-        if api_key then
-          local _, delete_err = cache:delete(api_key)
-          if delete_err then
-            ngx.log(ngx.ERR, "api users cache delete failed: ", delete_err)
-          end
-        else
-          ngx.log(ngx.ERR, "Could not decrypt api key for cache invalidation: ", row["id"])
-        end
+      else
+        ngx.log(ngx.ERR, "Could not decrypt api key for cache invalidation: ", row["id"])
       end
     end
-  until not results or #results == 0
-
-  local _, cursor_close_err = cursor_close({ quiet = true })
-  if cursor_close_err then
-    ngx.log(ngx.ERR, "cursor close error: ", cursor_close_err)
+  end)
+  if cursor_err then
+    ngx.log(ngx.ERR, "cursor error: ", cursor_err)
     return
   end
 

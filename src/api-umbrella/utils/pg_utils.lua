@@ -2,6 +2,7 @@ local config = require "api-umbrella.proxy.models.file_config"
 local int64 = require "api-umbrella.utils.int64"
 local pgmoon = require "pgmoon"
 local random_token = require "api-umbrella.utils.random_token"
+local xpcall_error_handler = require "api-umbrella.utils.xpcall_error_handler"
 
 -- Preload modules that pgmoon may require at query() time.
 require "pgmoon.arrays"
@@ -188,7 +189,12 @@ function _M.connect()
 end
 
 function _M.query(query, values, options)
-  local pg = _M.connect()
+  local pg
+  if options and options["pg"] then
+    pg = options["pg"]
+  else
+    pg = _M.connect()
+  end
   if not pg then
     return nil, "connection error"
   end
@@ -231,9 +237,11 @@ function _M.query(query, values, options)
     ngx.log(ngx.ERR, "postgresql query error: ", err)
   end
 
-  local keepalive_ok, keepalive_err = pg:keepalive()
-  if not keepalive_ok then
-    ngx.log(ngx.ERR, "postgresql keepalive error: ", keepalive_err)
+  if not options or not options["skip_keepalive"] then
+    local keepalive_ok, keepalive_err = pg:keepalive()
+    if not keepalive_ok then
+      ngx.log(ngx.ERR, "postgresql keepalive error: ", keepalive_err)
+    end
   end
 
   if options and options["fatal"] and err then
@@ -258,34 +266,79 @@ function _M.delete(table_name, where, options)
   return _M.query(query, nil, options)
 end
 
-function _M.cursor_begin(query, values, cursor_size, options)
-  local cursor_name = "cursor_" .. (ngx.now() * 1000) .. "_" .. random_token(16)
-  local declare_sql = "DECLARE " .. cursor_name .. " NO SCROLL CURSOR WITHOUT HOLD FOR " .. query
-  local fetch_sql = "FETCH " .. tonumber(cursor_size) .. " FROM " .. cursor_name
+function _M.transaction(options, callback)
+  if not options then
+    options = {}
+  end
+
+  -- Use the same pg instance for all queries inside of the transaction,
+  -- otherwise the transaction may fail if queries switch between different
+  -- connections in the connection pool.
+  options["pg"] = _M.connect()
+  if not options["pg"] then
+    return nil, "connection error"
+  end
+
+  -- Since we're using the same connection, we want to defer releasing the
+  -- connection for keepalive (back into the pool) until the transaction is
+  -- committed.
+  options["skip_keepalive"] = true
 
   local _, query_err = _M.query("BEGIN", nil, options)
   if query_err then
-    return nil, query_err
+    return false, query_err
   end
 
-  _, query_err = _M.query(declare_sql, values, options)
+  local err
+  local pcall_ok, result = xpcall(callback, xpcall_error_handler)
+  if not pcall_ok then
+    err = result
+  end
+
+  options["skip_keepalive"] = false
+  _, query_err = _M.query("COMMIT", nil, options)
   if query_err then
-    _, query_err = _M.query("COMMIT", nil, options)
-    if query_err then
-      query_err = query_err .. " " .. query_err
+    if err then
+      return false, err .. ", " .. query_err
+    else
+      return false, query_err
     end
-
-    return nil, query_err
   end
 
-  return fetch_sql
+  return pcall_ok, err
 end
 
-function _M.cursor_close(options)
-  local _, query_err = _M.query("COMMIT", nil, options)
-  if query_err then
-    return nil, query_err
+function _M.cursor(query, values, cursor_size, options, callback)
+  if not options then
+    options = {}
   end
+
+  local cursor_name = "cursor_" .. (ngx.now() * 1000) .. "_" .. string.lower(random_token(16))
+  local declare_sql = "DECLARE " .. cursor_name .. " NO SCROLL CURSOR WITHOUT HOLD FOR " .. query
+  local fetch_sql = "FETCH " .. tonumber(cursor_size) .. " FROM " .. cursor_name
+
+  return _M.transaction(options, function()
+    local _, query_err = _M.query(declare_sql, values, options)
+    if query_err then
+      return false, query_err
+    end
+
+    local results
+    repeat
+      local results_err
+      results, results_err = _M.query(fetch_sql, nil, options)
+
+      if results_err then
+        return false, results_err
+      end
+
+      if results and #results > 0 then
+        callback(results)
+      end
+    until not results or #results == 0
+
+    return true
+  end)
 end
 
 return _M

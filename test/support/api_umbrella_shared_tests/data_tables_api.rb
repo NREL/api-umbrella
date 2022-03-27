@@ -62,6 +62,22 @@ module ApiUmbrellaSharedTests
       assert_equal(record_count, data.fetch("data").length)
     end
 
+    def test_multiple_cursor_fetches
+      FactoryBot.create_list(data_tables_factory_name, 1005)
+
+      http_opts = http_options.deep_merge(admin_token)
+
+      record_count = data_tables_record_count
+      assert_operator(record_count, :>=, 1005)
+
+      response = Typhoeus.get(data_tables_api_url, http_opts)
+      assert_response_code(200, response)
+      data = MultiJson.load(response.body)
+      assert_equal(record_count, data.fetch("recordsTotal"))
+      assert_equal(record_count, data.fetch("recordsFiltered"))
+      assert_equal(record_count, data.fetch("data").length)
+    end
+
     def test_empty_result
       response = Typhoeus.get(data_tables_api_url, http_options.deep_merge(admin_token).deep_merge({
         :params => {

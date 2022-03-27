@@ -308,41 +308,35 @@ function _M.index(self, model, options)
     fields = fields .. ", " .. table.concat(order_selects, ", ")
   end
 
-  local select_sql = "SELECT " .. fields .. " FROM " .. escaped_table_name .. " " .. sql
-
-  local cursor_fetch_sql = pg_utils.cursor_begin(select_sql, nil, 1000, { fatal = true })
-
   if self.params["format"] == "csv" then
     csv.set_response_headers(self, options["csv_filename"] .. "_" .. os.date("!%Y-%m-%d", ngx.now()) .. ".csv")
     ngx.say(csv.row_to_csv(model:csv_headers()))
     ngx.flush(true)
   end
 
-  local results
-  repeat
-    results = pg_utils.query(cursor_fetch_sql, nil, { fatal = true })
-    if results and #results > 0 then
-      local records = model:load_all(results)
+  local select_sql = "SELECT " .. fields .. " FROM " .. escaped_table_name .. " " .. sql
+  local _, cursor_err = pg_utils.cursor(select_sql, nil, 1000, { fatal = true }, function(results)
+    local records = model:load_all(results)
 
-      if options and options["preload"] then
-        preload(records, options["preload"])
-      end
+    if options and options["preload"] then
+      preload(records, options["preload"])
+    end
 
-      for _, record in ipairs(records) do
-        if self.params["format"] == "csv" then
-          ngx.say(csv.row_to_csv(record:as_csv()))
-        else
-          table.insert(response["data"], record:as_json())
-        end
+    for _, record in ipairs(records) do
+      if self.params["format"] == "csv" then
+        ngx.say(csv.row_to_csv(record:as_csv()))
+      else
+        table.insert(response["data"], record:as_json())
       end
     end
 
     if self.params["format"] == "csv" then
       ngx.flush(true)
     end
-  until not results or #results == 0
-
-  pg_utils.cursor_close({ fatal = true })
+  end)
+  if cursor_err then
+    error("cursor error: " .. cursor_err)
+  end
 
   if self.params["format"] == "csv" then
     return { layout = false }
