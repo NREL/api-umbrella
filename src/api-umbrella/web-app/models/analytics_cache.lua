@@ -24,10 +24,10 @@ AnalyticsCache.id_datas_exists = function(_, id_datas)
   -- `{"a": 1, "b": 2}` and `{"b":2,"a":1}` both get hashed the same).
   local sql = [[
     WITH cache_ids AS (
-      SELECT encode(digest(id_data::text, 'sha256'), 'hex') AS id, id_data
-      FROM jsonb_array_elements(:id_datas) AS t (id_data)
+      SELECT array_index, encode(digest(id_data::text, 'sha256'), 'hex') AS id
+      FROM jsonb_array_elements(:id_datas) WITH ORDINALITY AS t (id_data, array_index)
     )
-    SELECT cache_ids.id, cache_ids.id_data, (analytics_cache.id IS NOT NULL) AS cache_exists
+    SELECT cache_ids.array_index::integer, cache_ids.id, (analytics_cache.id IS NOT NULL) AS cache_exists
     FROM cache_ids
     LEFT JOIN analytics_cache ON analytics_cache.id = cache_ids.id
   ]]
@@ -42,6 +42,13 @@ AnalyticsCache.upsert = function(_, id_data, data, expires_at)
     data = json_encode(data),
     expires_at = time.timestamp_to_iso8601(expires_at),
   }, { fatal = true })[1]
+end
+
+AnalyticsCache.update_expires_at = function(_, ids, expires_at)
+  return pg_utils.query("UPDATE analytics_cache SET expires_at = :expires_at WHERE id IN :ids", {
+    ids = pg_utils.list(ids),
+    expires_at = time.timestamp_to_iso8601(expires_at),
+  }, { fatal = true })
 end
 
 return AnalyticsCache
