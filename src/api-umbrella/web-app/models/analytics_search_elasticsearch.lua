@@ -677,13 +677,24 @@ function _M:query_body()
   return body
 end
 
-function _M:fetch_results()
+function _M:fetch_results(options)
   if not is_empty(self.errors) then
     return coroutine.yield("error", self.errors)
   end
 
-  local header = self:query_header()
-  local body = self:query_body()
+  local header
+  if options and options["override_header"] then
+    header = options["override_header"]
+  else
+    header = self:query_header()
+  end
+
+  local body
+  if options and options["override_body"] then
+    body = options["override_body"]
+  else
+    body = self:query_body()
+  end
 
   -- When querying many indices (particularly if partitioning by day), we can
   -- run into URL length limits with the default search approach, which
@@ -820,6 +831,23 @@ function _M:fetch_results_bulk(callback)
   end
 end
 
+local function cache_daily_results_process_batch(self, cache_ids, batch)
+  local exists = AnalyticsCache:id_datas_exists(batch)
+  for _, exist in ipairs(exists) do
+    if not exist["cache_exists"] then
+      -- Perform the real Elasticsearch query for uncached queries and cache
+      -- the result.
+      local results = self:fetch_results({
+        override_header = exist["id_data"]["header"],
+        override_body = exist["id_data"]["body"],
+      })
+      AnalyticsCache:upsert(exist["id_data"], results)
+    end
+
+    table.insert(cache_ids, exist["id"])
+  end
+end
+
 function _M:cache_daily_results()
   local day = icu_date.new({
     zone_id = config["analytics"]["timezone"],
@@ -848,6 +876,7 @@ function _M:cache_daily_results()
   -- Loop through every day within the date range and perform daily searches,
   -- instead of searching for everything all at once.
   local cache_ids = {}
+  local batch = {}
   while day:get_millis() <= end_time_millis do
     -- For each day, setup the search instance to just search that day, instead
     -- of the original full date range.
@@ -878,15 +907,15 @@ function _M:cache_daily_results()
       api_version = config["elasticsearch"]["api_version"],
       template_version = config["elasticsearch"]["template_version"],
     }
-    local cache = AnalyticsCache:find_by_id_data(cache_id_data)
-    if not cache then
-      -- Perform the real Elasticsearch query for uncached queries and cache
-      -- the result.
-      local results = self:fetch_results()
-      cache = AnalyticsCache:upsert(cache_id_data, results)
+    table.insert(batch, cache_id_data)
+    if #batch >= 200 then
+      cache_daily_results_process_batch(self, cache_ids, batch)
+      batch = {}
     end
+  end
 
-    table.insert(cache_ids, cache["id"])
+  if #batch >= 0 then
+    cache_daily_results_process_batch(self, cache_ids, batch)
   end
 
   return cache_ids
