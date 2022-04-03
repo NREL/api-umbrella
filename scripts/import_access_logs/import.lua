@@ -1,7 +1,7 @@
 local config = require "api-umbrella.proxy.models.file_config"
 
 local elasticsearch_encode_json = require "api-umbrella.utils.elasticsearch_encode_json"
-local get_user = require("api-umbrella.proxy.api_users_store").get
+local get_user = require("api-umbrella.proxy.stores.api_users_store").get
 local http = require "resty.http"
 local json_decode = require("cjson").decode
 local json_encode = require "api-umbrella.utils.json_encode"

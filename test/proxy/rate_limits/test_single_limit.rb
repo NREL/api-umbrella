@@ -11,7 +11,7 @@ class Test::Proxy::RateLimits::TestSingleLimit < Minitest::Test
     setup_server
     once_per_class_setup do
       override_config_set({
-        :apiSettings => {
+        :default_api_backend_settings => {
           :rate_limits => [
             {
               :duration => 60 * 60 * 1000, # 1 hour
@@ -73,7 +73,7 @@ class Test::Proxy::RateLimits::TestSingleLimit < Minitest::Test
     assert_equal("10", response.headers["x-ratelimit-limit"])
 
     override_config({
-      "apiSettings" => {
+      "default_api_backend_settings" => {
         "rate_limits" => [
           {
             "duration" => 60 * 60 * 1000, # 1 hour

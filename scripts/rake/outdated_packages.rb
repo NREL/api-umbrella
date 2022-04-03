@@ -48,9 +48,6 @@ class OutdatedPackages
       :git => "https://github.com/isage/lua-cbson.git",
       :git_ref => "master",
     },
-    "lua_cmsgpack" => {
-      :luarock => "lua-cmsgpack",
-    },
     "lua_icu_date_ffi" => {
       :git => "https://github.com/GUI/lua-icu-date-ffi.git",
       :git_ref => "master",

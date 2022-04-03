@@ -11,7 +11,7 @@ class Test::Proxy::RateLimits::TestConcurrency < Minitest::Test
     setup_server
     once_per_class_setup do
       override_config_set({
-        :apiSettings => {
+        :default_api_backend_settings => {
           :rate_limits => [
             {
               :duration => 2 * 60 * 60 * 1000, # 2 hours

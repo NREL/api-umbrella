@@ -1,4 +1,4 @@
-local get_packed = require("api-umbrella.utils.packed_shared_dict").get_packed
+local get_active_config = require("api-umbrella.web-app.stores.active_config_store")
 local is_empty = require "api-umbrella.utils.is_empty"
 local psl = require "api-umbrella.utils.psl"
 local url_parse = require("socket.url").parse
@@ -6,12 +6,8 @@ local url_parse = require("socket.url").parse
 local _M = {}
 
 local function get_known_domains()
-  if not ngx.ctx.known_domains then
-    local active_config = get_packed(ngx.shared.active_config, "packed_data") or {}
-    ngx.ctx.known_domains = active_config["known_domains"]
-  end
-
-  return ngx.ctx.known_domains
+  local active_config = get_active_config()
+  return active_config["known_domains"]
 end
 
 local function email_domain(email)

@@ -1,9 +1,8 @@
+local append_array = require "api-umbrella.utils.append_array"
+local cache_computed_api_backend_settings = require("api-umbrella.utils.active_config_store.cache_computed_api_backend_settings")
 local lyaml = require "lyaml"
 local nillify_yaml_nulls = require "api-umbrella.utils.nillify_yaml_nulls"
-local utils = require "api-umbrella.proxy.utils"
 
-local append_array = utils.append_array
-local cache_computed_settings = utils.cache_computed_settings
 local log = ngx.log
 local ERR = ngx.ERR
 
@@ -81,7 +80,7 @@ end
 local function read()
   local data = read_file()
   set_defaults(data)
-  cache_computed_settings(data["apiSettings"])
+  cache_computed_api_backend_settings(data["default_api_backend_settings"])
 
   return data
 end

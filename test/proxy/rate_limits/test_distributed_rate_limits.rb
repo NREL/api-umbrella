@@ -9,7 +9,7 @@ class Test::Proxy::RateLimits::TestDistributedRateLimits < Minitest::Test
     super
     setup_server
     @override_config = {
-      :apiSettings => {
+      :default_api_backend_settings => {
         :rate_limits => [
           {
             :duration => 50 * 60 * 1000, # 50 minutes

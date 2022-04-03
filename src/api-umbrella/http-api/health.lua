@@ -1,10 +1,10 @@
+local active_config_exists = require("api-umbrella.proxy.stores.active_config_store").exists
 local config = require "api-umbrella.proxy.models.file_config"
 local elasticsearch = require "api-umbrella.utils.elasticsearch"
 local http = require "resty.http"
 local icu_date = require "icu-date-ffi"
 local json_encode = require "api-umbrella.utils.json_encode"
 
-local active_config = ngx.shared.active_config
 local elasticsearch_query = elasticsearch.query
 
 local function status_response(quick)
@@ -16,7 +16,7 @@ local function status_response(quick)
   }
 
   -- Check to see if the APIs have been loaded.
-  if active_config:get("db_config_last_fetched_at") then
+  if active_config_exists() then
     response["details"]["apis_config"] = "green"
   end
 

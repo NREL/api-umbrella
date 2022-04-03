@@ -1,5 +1,5 @@
 local repeat_with_mutex = require("api-umbrella.utils.interval_lock").repeat_with_mutex
-local delete_stale_cache = require("api-umbrella.proxy.api_users_store").delete_stale_cache
+local delete_stale_cache = require("api-umbrella.proxy.stores.api_users_store").delete_stale_cache
 
 local delay = 1 -- in seconds
 

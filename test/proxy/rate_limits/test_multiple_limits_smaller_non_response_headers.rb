@@ -10,7 +10,7 @@ class Test::Proxy::RateLimits::TestMultipleLimitsSmallerNonResponseHeaders < Min
     setup_server
     once_per_class_setup do
       override_config_set({
-        :apiSettings => {
+        :default_api_backend_settings => {
           :rate_limits => [
             {
               :duration => 10 * 1000, # 10 second

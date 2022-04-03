@@ -16,6 +16,7 @@ if [[ "$ID_NORMALIZED" == "rhel" ]]; then
     libffi
     libuuid
     libyaml
+    libzstd-devel
     logrotate
     ncurses-libs
     openssl
@@ -172,6 +173,7 @@ elif [[ "$ID_NORMALIZED" == "debian" ]]; then
     libpcre2-8-0
     libuuid1
     libyaml-0-2
+    libzstd-dev
     logrotate
     openssl
     postgresql-client

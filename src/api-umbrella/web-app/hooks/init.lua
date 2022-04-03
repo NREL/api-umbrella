@@ -5,9 +5,6 @@ require "api-umbrella.web-app.utils.db_escape_patches"
 -- Pre-load modules.
 require "api-umbrella.web-app.hooks.init_preload_modules"
 
-local worker_group_id = require "api-umbrella.utils.worker_group_id"
-worker_group_id.init()
-
 local config = require "api-umbrella.proxy.models.file_config"
 local dir_getfiles = require("pl.dir").getfiles
 local file_read = require("pl.file").read

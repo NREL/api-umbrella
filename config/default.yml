@@ -41,6 +41,10 @@ nginx:
   shared_dicts:
     active_config:
       size: 3m
+    active_config_locks:
+      size: 128k
+    active_config_ipc:
+      size: 128k
     api_users:
       size: 3m
     api_users_misses:
@@ -201,6 +205,8 @@ router:
   web_app_host: "*"
   website_backend_required_https_regex_default: "^.*"
   redirect_not_found_to_https: true
+  active_config:
+    refresh_local_cache_interval: 1
 auto_ssl:
   workers: 1
   worker_connections: 8192
@@ -268,7 +274,7 @@ strip_cookies:
 strip_response_cookies: []
 strip_server_header: false
 site_name: API Umbrella
-apiSettings:
+default_api_backend_settings:
   require_https: required_return_error
   rate_limits:
     - duration: 1000

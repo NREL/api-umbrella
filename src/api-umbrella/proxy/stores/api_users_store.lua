@@ -1,5 +1,5 @@
 local api_key_prefixer = require("api-umbrella.utils.api_key_prefixer").prefix
-local cache_computed_settings = require("api-umbrella.proxy.utils").cache_computed_settings
+local cache_computed_api_backend_settings = require("api-umbrella.utils.active_config_store.cache_computed_api_backend_settings")
 local config = require "api-umbrella.proxy.models.file_config"
 local encryptor = require "api-umbrella.utils.encryptor"
 local hmac = require "api-umbrella.utils.hmac"
@@ -13,7 +13,7 @@ local api_key_cache_enabled = config["gatekeeper"]["api_key_cache"]
 local api_key_max_length = config["gatekeeper"]["api_key_max_length"]
 local api_key_min_length = config["gatekeeper"]["api_key_min_length"]
 local cursor = pg_utils.cursor
-local jobs = ngx.shared.jobs
+local jobs_dict = ngx.shared.jobs
 local last_fetched_version_set_once = false
 local query = pg_utils.query
 
@@ -68,7 +68,7 @@ local function fetch_user(api_key_prefix, api_key)
 
   if user["settings"] then
     nillify_json_nulls(user["settings"])
-    cache_computed_settings(user["settings"])
+    cache_computed_api_backend_settings(user["settings"])
   end
 
   -- Remove pieces that don't need to be stored.
@@ -105,7 +105,7 @@ function _M.set_initial_last_fetched_version()
   return mutex_exec("api_users_store_set_initial_last_fetched_version", function()
     -- Check to see if the shared dict value has already been set (possibly by
     -- another process). If it has, no need to proceed.
-    local last_fetched_version, last_fetched_version_err = jobs:get("api_users_store_last_fetched_version")
+    local last_fetched_version, last_fetched_version_err = jobs_dict:get("api_users_store_last_fetched_version")
     if last_fetched_version_err then
       return false, "failed to fetch api_users_store_last_fetched_version: " .. last_fetched_version_err
     end
@@ -131,7 +131,7 @@ function _M.set_initial_last_fetched_version()
       max_version = int64_to_string(result[1]["max_version"])
     end
 
-    local add_ok, add_err, add_forcible = jobs:add("api_users_store_last_fetched_version", max_version)
+    local add_ok, add_err, add_forcible = jobs_dict:add("api_users_store_last_fetched_version", max_version)
     if not add_ok then
       ngx.log(ngx.ERR, "failed to add 'api_users_store_last_fetched_version' in 'jobs' shared dict: ", add_err)
     elseif add_forcible then
@@ -143,7 +143,7 @@ end
 function _M.delete_stale_cache()
   -- Find the last version we've previously checked and performed expirations
   -- on.
-  local last_fetched_version, last_fetched_version_err = jobs:get("api_users_store_last_fetched_version")
+  local last_fetched_version, last_fetched_version_err = jobs_dict:get("api_users_store_last_fetched_version")
   if last_fetched_version_err then
     ngx.log(ngx.ERR, "Error fetching last_fetched_version: ", last_fetched_version_err)
     return
@@ -196,7 +196,7 @@ function _M.delete_stale_cache()
   end
 
   if new_last_fetched_version then
-    local set_ok, set_err, set_forcible = jobs:set("api_users_store_last_fetched_version", new_last_fetched_version)
+    local set_ok, set_err, set_forcible = jobs_dict:set("api_users_store_last_fetched_version", new_last_fetched_version)
     if not set_ok then
       ngx.log(ngx.ERR, "failed to set 'api_users_store_last_fetched_version' in 'jobs' shared dict: ", set_err)
     elseif set_forcible then
@@ -208,7 +208,7 @@ end
 function _M.refresh_local_cache()
   local _, update_err = cache:update()
   if update_err then
-    ngx.log(ngx.ERR, "api users cache update failed: ", update_err)
+    ngx.log(ngx.ERR, "api_users cache update failed: ", update_err)
   end
 end
 

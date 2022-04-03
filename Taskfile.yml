@@ -287,19 +287,6 @@ tasks:
       - ./build/work/stamp/app-deps/lua/bcrypt
     method: checksum
 
-  app-deps:lua:cmsgpack:
-    deps:
-      - deps:luarocks
-    cmds:
-      - ./tasks/app-deps/lua/cmsgpack
-    sources:
-      - ./build/work/stamp/deps/luarocks
-      - ./tasks/app-deps/lua/cmsgpack
-      - ./tasks/helpers.sh
-      - ./tasks/helpers/lua.sh
-    generates:
-      - ./build/work/stamp/app-deps/lua/cmsgpack
-
   app-deps:lua:icu-date-ffi:
     deps:
       - deps:icu4c
@@ -591,6 +578,19 @@ tasks:
       - ./build/work/stamp/app-deps/lua/resty-openidc
     method: checksum
 
+  app-deps:lua:resty-radixtree:
+    deps:
+      - deps:luarocks
+    cmds:
+      - ./tasks/app-deps/lua/resty-radixtree
+    sources:
+      - ./build/work/stamp/deps/luarocks
+      - ./tasks/app-deps/lua/resty-radixtree
+      - ./tasks/helpers.sh
+      - ./tasks/helpers/lua.sh
+    generates:
+      - ./build/work/stamp/app-deps/lua/resty-radixtree
+
   app-deps:lua:resty-session:
     deps:
       - deps:luarocks
@@ -658,11 +658,23 @@ tasks:
     generates:
       - ./build/work/stamp/app-deps/lua/shell-games
 
+  app-deps:lua:zstd:
+    deps:
+      - deps:luarocks
+    cmds:
+      - ./tasks/app-deps/lua/zstd
+    sources:
+      - ./build/work/stamp/deps/luarocks
+      - ./tasks/app-deps/lua/zstd
+      - ./tasks/helpers.sh
+      - ./tasks/helpers/lua.sh
+    generates:
+      - ./build/work/stamp/app-deps/lua/zstd
+
   app-deps:lua:
     cmds:
       - task: app-deps:lua:argparse
       - task: app-deps:lua:bcrypt
-      - task: app-deps:lua:cmsgpack
       - task: app-deps:lua:icu-date-ffi
       - task: app-deps:lua:inspect
       - task: app-deps:lua:lapis
@@ -684,11 +696,13 @@ tasks:
       - task: app-deps:lua:resty-moongoo
       - task: app-deps:lua:resty-nettle
       - task: app-deps:lua:resty-openidc
+      - task: app-deps:lua:resty-radixtree
       - task: app-deps:lua:resty-session
       - task: app-deps:lua:resty-txid
       - task: app-deps:lua:resty-uuid
       - task: app-deps:lua:resty-validation
       - task: app-deps:lua:shell-games
+      - task: app-deps:lua:zstd
 
   app-deps:web-app:yarn:
     deps:

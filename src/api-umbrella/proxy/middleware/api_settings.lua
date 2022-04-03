@@ -1,17 +1,15 @@
+local append_array = require "api-umbrella.utils.append_array"
 local config = require "api-umbrella.proxy.models.file_config"
 local deep_merge_overwrite_arrays = require "api-umbrella.utils.deep_merge_overwrite_arrays"
+local deepcopy = require("pl.tablex").deepcopy
 local seq = require "pl.seq"
-local tablex = require "pl.tablex"
-local utils = require "api-umbrella.proxy.utils"
 
-local append_array = utils.append_array
-local deepcopy = tablex.deepcopy
 local re_find = ngx.re.find
 local unique = seq.unique
 
 return function(api)
   -- Fetch the default settings
-  local settings = deepcopy(config["apiSettings"])
+  local settings = deepcopy(config["default_api_backend_settings"])
 
   -- Merge the base API settings on top.
   if api["settings"] then

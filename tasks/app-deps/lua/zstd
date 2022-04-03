@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 
-lua_cmsgpack_version="0.4.0-0"
+lua_zstd_version="0.2.3-1"
 
 set -e -u -x
 source ./tasks/helpers.sh
 source ./tasks/helpers/lua.sh
 
-luarocks_install "lua-cmsgpack" "$lua_cmsgpack_version"
+luarocks_install "luajit-zstd" "$lua_zstd_version"
 
 stamp

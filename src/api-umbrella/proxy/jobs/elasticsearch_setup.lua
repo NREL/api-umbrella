@@ -5,6 +5,7 @@ local icu_date = require "icu-date-ffi"
 local interval_lock = require "api-umbrella.utils.interval_lock"
 
 local elasticsearch_query = elasticsearch.query
+local jobs_dict = ngx.shared.jobs
 
 local delay = 3600  -- in seconds
 
@@ -38,7 +39,7 @@ end
 
 function _M.create_templates()
   -- Template creation only needs to be run once on startup or reload.
-  local created = ngx.shared.active_config:get("elasticsearch_templates_created")
+  local created = jobs_dict:get("elasticsearch_templates_created")
   if created then return end
 
   if elasticsearch_templates then
@@ -53,7 +54,7 @@ function _M.create_templates()
     end
   end
 
-  local set_ok, set_err = ngx.shared.active_config:safe_set("elasticsearch_templates_created", true)
+  local set_ok, set_err = jobs_dict:safe_set("elasticsearch_templates_created", true)
   if not set_ok then
     ngx.log(ngx.ERR, "failed to set 'elasticsearch_templates_created' in 'active_config' shared dict: ", set_err)
   end

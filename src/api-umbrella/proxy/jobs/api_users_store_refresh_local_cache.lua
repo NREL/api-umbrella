@@ -1,4 +1,4 @@
-local refresh_local_cache = require("api-umbrella.proxy.api_users_store").refresh_local_cache
+local refresh_local_cache = require("api-umbrella.proxy.stores.api_users_store").refresh_local_cache
 
 local delay = 1 -- in seconds
 

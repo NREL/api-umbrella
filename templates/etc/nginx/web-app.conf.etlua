@@ -46,7 +46,10 @@ http {
   if_modified_since off;
 
   lua_shared_dict active_config <%- config["nginx"]["shared_dicts"]["active_config"]["size"] %>;
+  lua_shared_dict active_config_locks <%- config["nginx"]["shared_dicts"]["active_config_locks"]["size"] %>;
+  lua_shared_dict active_config_ipc <%- config["nginx"]["shared_dicts"]["active_config_ipc"]["size"] %>;
   lua_shared_dict interval_locks <%- config["nginx"]["shared_dicts"]["interval_locks"]["size"] %>;
+  lua_shared_dict jobs <%- config["nginx"]["shared_dicts"]["jobs"]["size"] %>;
   lua_shared_dict locks <%- config["nginx"]["shared_dicts"]["locks"]["size"] %>;
 
   # For lua-resty-openidc

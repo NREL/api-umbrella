@@ -1,3 +1,4 @@
+local append_array = require "api-umbrella.utils.append_array"
 local config = require "api-umbrella.proxy.models.file_config"
 local deep_merge_overwrite_arrays = require "api-umbrella.utils.deep_merge_overwrite_arrays"
 local http_headers = require "api-umbrella.utils.http_headers"
@@ -11,7 +12,6 @@ local tablex = require "pl.tablex"
 local utils = require "api-umbrella.proxy.utils"
 local xpcall_error_handler = require "api-umbrella.utils.xpcall_error_handler"
 
-local append_array = utils.append_array
 local deepcopy = tablex.deepcopy
 local extension = path.extension
 local keys = tablex.keys
@@ -148,7 +148,7 @@ return function(denied_code, settings, extra_data)
   end
 
   if not settings then
-    settings = config["apiSettings"]
+    settings = config["default_api_backend_settings"]
   end
 
   -- Try to determine the format of the request (JSON, XML, etc), so we can
@@ -161,7 +161,7 @@ return function(denied_code, settings, extra_data)
   if not is_hash(common_data) then
     -- Fallback to the built-in default data that isn't subject to any
     -- API-specific overrides (so it should always be a valid hash).
-    common_data = deepcopy(config["apiSettings"]["error_data"]["common"])
+    common_data = deepcopy(config["default_api_backend_settings"]["error_data"]["common"])
   end
 
   -- Fetch the error data specific to this error message (over rate limit, key
@@ -172,7 +172,7 @@ return function(denied_code, settings, extra_data)
     if not is_hash(error_data) then
       -- Fallback to the built-in default data that isn't subject to any
       -- API-specific overrides (so it should always be a valid hash).
-      error_data = deepcopy(config["apiSettings"]["error_data"]["internal_server_error"])
+      error_data = deepcopy(config["default_api_backend_settings"]["error_data"]["internal_server_error"])
     end
   end
 
@@ -243,7 +243,7 @@ return function(denied_code, settings, extra_data)
   if not template or type(template) ~= "string" then
     -- Fallback to the built-in default template that isn't subject to any
     -- API-specific overrides (so it should always be a valid template).
-    template = config["apiSettings"]["error_templates"][format]
+    template = config["default_api_backend_settings"]["error_templates"][format]
   end
 
   -- Render the error message, substituting the variables.

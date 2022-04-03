@@ -56,6 +56,8 @@ http {
   lua_socket_log_errors off;
 
   lua_shared_dict active_config <%- config["nginx"]["shared_dicts"]["active_config"]["size"] %>;
+  lua_shared_dict active_config_locks <%- config["nginx"]["shared_dicts"]["active_config_locks"]["size"] %>;
+  lua_shared_dict active_config_ipc <%- config["nginx"]["shared_dicts"]["active_config_ipc"]["size"] %>;
   lua_shared_dict api_users <%- config["nginx"]["shared_dicts"]["api_users"]["size"] %>;
   lua_shared_dict api_users_misses <%- config["nginx"]["shared_dicts"]["api_users_misses"]["size"] %>;
   lua_shared_dict api_users_locks <%- config["nginx"]["shared_dicts"]["api_users_locks"]["size"] %>;
@@ -118,7 +120,7 @@ http {
   <% if config["router"]["global_rate_limits"]["ip_connections"] then %>
     # Limit the number of simultaneous connections per IP address.
     limit_conn_zone $binary_remote_addr zone=api_umbrella_conn_addr_zone:<%- config["router"]["global_rate_limits"]["ip_connections_size"] %>;
-    limit_conn_status <%- config["apiSettings"]["error_data"]["over_rate_limit"]["status_code"] %>;
+    limit_conn_status <%- config["default_api_backend_settings"]["error_data"]["over_rate_limit"]["status_code"] %>;
     limit_conn_log_level <%- config["router"]["global_rate_limits"]["ip_connections_log_level"] %>;
   <% end %>
 
@@ -130,7 +132,7 @@ http {
     # the Gatekeeper's limits. This just provides an extra line of simple defense
     # against misbehaving clients from overloading the Gatekeeper.
     limit_req_zone $binary_remote_addr zone=api_umbrella_req_addr_zone:<%- config["router"]["global_rate_limits"]["ip_rate_size"] %> rate=<%- config["router"]["global_rate_limits"]["ip_rate"] %>;
-    limit_req_status <%- config["apiSettings"]["error_data"]["over_rate_limit"]["status_code"] %>;
+    limit_req_status <%- config["default_api_backend_settings"]["error_data"]["over_rate_limit"]["status_code"] %>;
     limit_req_log_level <%- config["router"]["global_rate_limits"]["ip_rate_log_level"] %>;
   <% end %>
 

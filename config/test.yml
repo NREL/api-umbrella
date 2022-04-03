@@ -62,6 +62,13 @@ router:
   trusted_proxies:
     - 192.168.12.0/23
     - 10.10.10.10
+  active_config:
+    # Force the local cache to be refreshed on every request, instead of in the
+    # background. The background behavior is probably fine in production, where
+    # it's fine if things are eventually consistent across the workers after
+    # 1-2 seconds, but to make testing easier, force immediate refreshes in the
+    # test environment.
+    refresh_local_cache_interval: 0
 rsyslog:
   port: 13014
 postgresql:
@@ -81,7 +88,7 @@ mailhog:
   ui_port: 13103
 glauth:
   port: 13104
-apiSettings:
+default_api_backend_settings:
   require_https: optional
 _test_config:
   default_null_override_hash:

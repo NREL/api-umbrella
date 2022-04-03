@@ -131,6 +131,15 @@ local function read_system_config()
       local content = file.read(config_path, true)
       if content then
         local overrides = lyaml.load(content)
+
+        if overrides["apiSettings"] then
+          ngx.log(ngx.WARN, "Deprecated 'apiSettings' field. Use 'default_api_backend_settings' instead.")
+          if not overrides["default_api_backend_settings"] then
+            overrides["default_api_backend_settings"] = overrides["apiSettings"]
+          end
+          overrides["apiSettings"] = nil
+        end
+
         deep_merge_overwrite_arrays(config, overrides)
         nillify_yaml_nulls(config)
       end

@@ -5,7 +5,6 @@ globals = {
   "LOCALE_DATA",
   "LOGIN_CSS_FILENAME",
   "LOGIN_JS_FILENAME",
-  "WORKER_GROUP_ID",
 }
 
 max_line_length = false

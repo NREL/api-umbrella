@@ -1,14 +1,15 @@
+local active_config_store = require("api-umbrella.proxy.stores.active_config_store")
 local api_matcher = require "api-umbrella.proxy.middleware.api_matcher"
 local config = require "api-umbrella.proxy.models.file_config"
 local error_handler = require "api-umbrella.proxy.error_handler"
 local escape_uri_non_ascii = require "api-umbrella.utils.escape_uri_non_ascii"
 local host_normalize = require "api-umbrella.utils.host_normalize"
-local packed_shared_dict = require "api-umbrella.utils.packed_shared_dict"
 local redirect_matches_to_https = require "api-umbrella.utils.redirect_matches_to_https"
 local website_matcher = require "api-umbrella.proxy.middleware.website_matcher"
 
-local get_packed = packed_shared_dict.get_packed
 local ngx_var = ngx.var
+local get_active_config = active_config_store.get
+local refresh_local_active_config_cache = active_config_store.refresh_local_cache
 
 -- Determine the protocol/scheme and port this connection represents, based on
 -- forwarded info or override config.
@@ -120,7 +121,16 @@ local function route_to_website(website)
   route()
 end
 
-local active_config = get_packed(ngx.shared.active_config, "packed_data") or {}
+-- Normally, the active_config_store_refresh_local_cache job will
+-- asynchronously update local caches so the local caches across workers will
+-- become eventually consistent. But if set to 0 (particularly for the test
+-- environment), then allow for refreshing the cache on every request so that
+-- changes are always live at the same time across workers.
+if config["router"]["active_config"]["refresh_local_cache_interval"] == 0 then
+  refresh_local_active_config_cache()
+end
+
+local active_config = get_active_config()
 
 local api, url_match, api_err = api_matcher(active_config)
 if api and url_match then
