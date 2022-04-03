@@ -1,14 +1,22 @@
+local active_config_store = require("api-umbrella.proxy.stores.active_config_store")
 local config = require "api-umbrella.proxy.models.file_config"
-local get_active_config = require("api-umbrella.proxy.stores.active_config_store").get
 local http = require "resty.http"
 local json_decode = require("cjson").decode
 local json_encode = require "api-umbrella.utils.json_encode"
 local json_null_default = require "api-umbrella.web-app.utils.json_null_default"
 local xpcall_error_handler = require "api-umbrella.utils.xpcall_error_handler"
 
-local active_config = get_active_config()
+local get_active_config = active_config_store.get
 local jobs_dict = ngx.shared.jobs
+local refresh_local_active_config_cache = active_config_store.refresh_local_cache
 local stats_dict = ngx.shared.stats
+
+-- Refresh cache per request if background polling is disabled.
+if config["router"]["active_config"]["refresh_local_cache_interval"] == 0 then
+  refresh_local_active_config_cache()
+end
+
+local active_config = get_active_config()
 
 local response = {
   file_config_version = json_null_default(active_config["file_version"]),

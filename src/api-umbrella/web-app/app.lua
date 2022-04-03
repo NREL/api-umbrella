@@ -11,6 +11,7 @@ local is_empty = require "api-umbrella.utils.is_empty"
 local lapis = require "lapis"
 local lapis_config = require("lapis.config").get()
 local pg_utils = require "api-umbrella.utils.pg_utils"
+local refresh_local_active_config_cache = require("api-umbrella.web-app.stores.active_config_store").refresh_local_cache
 local resty_session = require "resty.session"
 local t = require("api-umbrella.web-app.utils.gettext").gettext
 local table_keys = require("pl.tablex").keys
@@ -151,6 +152,11 @@ local function current_admin_from_session(self)
 end
 
 local function before_filter(self)
+  -- Refresh cache per request if background polling is disabled.
+  if config["router"]["active_config"]["refresh_local_cache_interval"] == 0 then
+    refresh_local_active_config_cache()
+  end
+
   -- For the test environment setup a middleware that looks for the
   -- "test_delay_server_responses" cookie on requests, and if it's set, sleeps
   -- for that amount of time before returning responses.
