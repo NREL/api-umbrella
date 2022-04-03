@@ -16,7 +16,9 @@ class Test::Apis::V1::Config::TestLiveChanges < Minitest::Test
     publish_default_config_version
   end
 
-  def test_detects_published_api_changes_within_1_second
+  def test_detects_published_api_changes_within_a_couple_seconds
+    timeout = 2.1
+
     # Ensure that we hit the default routing.
     response = Typhoeus.get("https://127.0.0.1:9081/#{unique_test_id}/info/", http_options)
     assert_response_code(404, response)
@@ -41,8 +43,8 @@ class Test::Apis::V1::Config::TestLiveChanges < Minitest::Test
     new_api = MultiJson.load(response.body)
     assert(new_api["api"]["id"])
 
-    # Wait 1 second to ensure time for any backend changes to get picked up.
-    sleep 1.1
+    # Wait to ensure time for any backend changes to get picked up.
+    sleep timeout
 
     # Ensure that we still hit the default routing, since we haven't published
     # the new API backend.
@@ -62,11 +64,20 @@ class Test::Apis::V1::Config::TestLiveChanges < Minitest::Test
     }))
     assert_response_code(201, response)
 
-    # Wait 1 second to ensure time for any backend changes to get picked up.
-    sleep 1.1
+    # Wait to ensure time for any backend changes to get picked up.
+    response = nil
+    Timeout.timeout(timeout) do
+      loop do
+        response = Typhoeus.get("https://127.0.0.1:9081/#{unique_test_id}/info/", http_options)
+        if response.code == 200
+          break
+        end
+
+        sleep 0.1
+      end
+    end
 
     # The request to the new endpoint should now succeed.
-    response = Typhoeus.get("https://127.0.0.1:9081/#{unique_test_id}/info/", http_options)
     assert_response_code(200, response)
     data = MultiJson.load(response.body)
     assert_equal("test1", data["headers"]["x-new-api"])
@@ -79,8 +90,8 @@ class Test::Apis::V1::Config::TestLiveChanges < Minitest::Test
     }))
     assert_response_code(204, response)
 
-    # Wait 1 second to ensure time for any backend changes to get picked up.
-    sleep 1.1
+    # Wait to ensure time for any backend changes to get picked up.
+    sleep timeout
 
     # Ensure the updates are not live, since we haven't published them yet.
     response = Typhoeus.get("https://127.0.0.1:9081/#{unique_test_id}/info/", http_options)
@@ -102,8 +113,19 @@ class Test::Apis::V1::Config::TestLiveChanges < Minitest::Test
     }))
     assert_response_code(201, response)
 
-    # Wait 1 second to ensure time for any backend changes to get picked up.
-    sleep 1.1
+    # Wait to ensure time for any backend changes to get picked up.
+    response = nil
+    Timeout.timeout(timeout) do
+      loop do
+        response = Typhoeus.get("https://127.0.0.1:9081/#{unique_test_id}/info/", http_options)
+        data = MultiJson.load(response.body)
+        if response.code == 200 && data["headers"]["x-updated-api"] == "test2"
+          break
+        end
+
+        sleep 0.1
+      end
+    end
 
     # Verify that the updated api backend changes are now live.
     response = Typhoeus.get("https://127.0.0.1:9081/#{unique_test_id}/info/", http_options)
