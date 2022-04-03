@@ -2,6 +2,7 @@ require_relative "../../../test_helper"
 
 class Test::Apis::V1::Config::TestExceedsMemory < Minitest::Test
   include ApiUmbrellaTestHelpers::AdminAuth
+  include ApiUmbrellaTestHelpers::ExerciseAllWorkers
   include ApiUmbrellaTestHelpers::Setup
   include Minitest::Hooks
 
@@ -77,36 +78,49 @@ class Test::Apis::V1::Config::TestExceedsMemory < Minitest::Test
 
     # Create enough new API backends to exceed the available "active_config"
     # shdict size.
-    api_ids = Array.new(10) do |i|
+    api_ids = Array.new(20) do |i|
       create_api("/#{unique_test_id}/too-big/#{i}/")
     end
 
     # Publish the API backend changes (which are too big to fit in memory).
     publish_api_ids(api_ids)
     config_too_big = PublishedConfig.active
-    config_too_big.wait_until_live
+
+    # The config version will never get published, so instead of
+    # `wait_until_live` on the published config, wait until we find an
+    # indicator of the failure in the logs.
+    log_output = log_tail.read_until(/Reverted active_config back to previous version after setting new version failed/)
 
     # Ensure that a new configuration version was at least attempted to be
     # published (even though it was too big to successfully publish).
     refute_equal(config_initial.id, config_too_big.id)
 
     # Verify that an error was printed to the log about being out of memory.
-    log_output = log_tail.read
-    assert_match(/\[error\].*failed to set 'packed_data' in 'active_config' shared dict: no memory/, log_output)
+    assert_match(/\[error\].*Error setting active_config.*no memory/, log_output)
 
     # Verify that the configuration was rolled back and the original APIs are
-    # still accessible.
-    response = Typhoeus.get("https://127.0.0.1:9081/#{unique_test_id}/initial/0/info/", http_options)
-    assert_response_code(200, response)
-    data = MultiJson.load(response.body)
-    10.times do |i|
-      assert_equal(250, data["headers"]["x-new-api#{i}"].bytesize)
+    # still accessible. Check all workers to ensure no local caching is playing
+    # a role.
+    responses = exercise_all_workers("/#{unique_test_id}/initial/0/info/", http_options)
+    responses.each do |resp|
+      assert_response_code(200, resp)
+      data = MultiJson.load(resp.body)
+      10.times do |i|
+        assert_equal(250, data["headers"]["x-new-api#{i}"].bytesize)
+      end
     end
-    response = Typhoeus.get("https://127.0.0.1:9081/#{unique_test_id}/initial/1/info/", http_options)
-    assert_response_code(200, response)
-    data = MultiJson.load(response.body)
-    10.times do |i|
-      assert_equal(250, data["headers"]["x-new-api#{i}"].bytesize)
+
+    # Sleep for a little while to ensure there are no lingering caching or
+    # processing going on, and then check all workers again on the other
+    # original API.
+    sleep 1.6
+    responses = exercise_all_workers("/#{unique_test_id}/initial/1/info/", http_options)
+    responses.each do |resp|
+      assert_response_code(200, resp)
+      data = MultiJson.load(resp.body)
+      10.times do |i|
+        assert_equal(250, data["headers"]["x-new-api#{i}"].bytesize)
+      end
     end
 
     # The new API backends (that were too big to fit into memory) should still

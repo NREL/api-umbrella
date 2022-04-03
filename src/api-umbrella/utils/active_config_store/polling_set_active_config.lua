@@ -1,5 +1,6 @@
 local worker_group = require "api-umbrella.utils.worker_group"
 
+local active_config_dict = ngx.shared.active_config
 local jobs_dict = ngx.shared.jobs
 local worker_group_is_latest = worker_group.is_latest
 local worker_group_needs_config_refresh = worker_group.needs_config_refresh
@@ -39,7 +40,43 @@ return function(cache, callback)
 
   local new_active_config_value = callback(last_fetched_version)
   if new_active_config_value then
-    -- TODO: Check size to fit in memory.
-    cache:set("active_config", nil, new_active_config_value)
+    local key = "active_config"
+    local namespaced_key = cache.name .. key
+
+    local previous_active_config_value, previous_get_err = active_config_dict:get(namespaced_key)
+    if previous_get_err then
+      ngx.log(ngx.ERR, "Error fetching previous active_config: ", previous_get_err)
+    end
+
+    local set_ok, set_err = cache:set(key, nil, new_active_config_value)
+    if not set_ok then
+      ngx.log(ngx.ERR, "Error setting active_config: ", set_err)
+
+      -- If the new config exceeds the amount of available space, or any other
+      -- error occurs, then revert the shared dict config back to the previous
+      -- version.
+      --
+      -- Since this occurs after active_config_store_last_fetched_version is
+      -- updated (which happens as part of the new config being generated in
+      -- fetch_published_config_for_setting_active_config), then polling will
+      -- no longer look for this newer version. This prevents the system from
+      -- looping indefinitely and trying to set the config over and over to a
+      -- version that won't fit in memory. No solution is really great here,
+      -- since the shdict memory needs to be increased.
+      --
+      -- Also note that this can't be solved by safe_set (although mlcache does
+      -- not use that), since that still requires this type of workaround:
+      -- https://github.com/openresty/lua-nginx-module/issues/1365
+      if previous_active_config_value then
+        local previous_set_ok, previous_set_err, previous_set_forcible = active_config_dict:set(namespaced_key, previous_active_config_value)
+        if not previous_set_ok then
+          ngx.log(ngx.ERR, "failed to set 'active_config' in 'active_config' shared dict: ", previous_set_err)
+        elseif previous_set_forcible then
+          ngx.log(ngx.WARN, "forcibly set 'active_config' in 'active_config' shared dict (shared dict may be too small)")
+        end
+
+        ngx.log(ngx.ERR, "Reverted active_config back to previous version after setting new version failed")
+      end
+    end
   end
 end
