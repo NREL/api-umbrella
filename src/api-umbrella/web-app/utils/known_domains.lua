@@ -1,4 +1,4 @@
-local get_active_config = require("api-umbrella.web-app.stores.active_config_store")
+local get_active_config = require("api-umbrella.web-app.stores.active_config_store").get
 local is_empty = require "api-umbrella.utils.is_empty"
 local psl = require "api-umbrella.utils.psl"
 local url_parse = require("socket.url").parse
