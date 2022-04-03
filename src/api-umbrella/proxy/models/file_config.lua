@@ -80,7 +80,7 @@ end
 local function read()
   local data = read_file()
   set_defaults(data)
-  cache_computed_api_backend_settings(data["default_api_backend_settings"])
+  cache_computed_api_backend_settings(data, data["default_api_backend_settings"])
 
   return data
 end

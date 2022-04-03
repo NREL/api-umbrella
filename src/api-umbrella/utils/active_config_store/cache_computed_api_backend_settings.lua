@@ -1,12 +1,100 @@
+local deep_defaults = require "api-umbrella.utils.deep_defaults"
+local deep_merge_overwrite_arrays = require "api-umbrella.utils.deep_merge_overwrite_arrays"
 local escape_regex = require "api-umbrella.utils.escape_regex"
 local is_empty = require "api-umbrella.utils.is_empty"
+local is_hash = require "api-umbrella.utils.is_hash"
 local iso8601_ms_to_timestamp = require("api-umbrella.utils.time").iso8601_ms_to_timestamp
-local table_keys = require("pl.tablex").keys
+local string_template = require "api-umbrella.utils.string_template"
+local tablex = require "pl.tablex"
+local strip = require("pl.stringx").strip
 
+local deepcopy = tablex.deepcopy
 local re_gsub = ngx.re.gsub
 local re_sub = ngx.re.sub
+local table_keys = tablex.keys
 
-return function(settings)
+local function cache_error_data(config, settings)
+  local error_data = deepcopy(config["default_api_backend_settings"]["error_data"])
+  if is_hash(settings["error_data"]) then
+    -- Merge the "common" values first.
+    if is_hash(settings["error_data"]["common"]) then
+      deep_merge_overwrite_arrays(error_data["common"], settings["error_data"]["common"])
+    end
+
+    -- Merge the error-specific data.
+    for error_type, _ in pairs(error_data) do
+      if error_type ~= "common" and is_hash(settings["error_data"][error_type]) then
+        local data = error_data[error_type]
+
+        -- Use the "common" values as defaults.
+        deep_defaults(data, error_data["common"])
+
+        -- Merge the setting-specific overrides on top.
+        deep_merge_overwrite_arrays(data, settings["error_data"][error_type])
+
+        -- Support legacy camel-case capitalization of variables. Moving
+        -- forward, we're trying to clean things up and standardize on
+        -- snake_case.
+        if not data["baseUrl"] and data["base_url"] then
+          data["baseUrl"] = data["base_url"]
+        end
+        if not data["signupUrl"] and data["signup_url"] then
+          data["signupUrl"] = data["signup_url"]
+        end
+        if not data["contactUrl"] and data["contact_url"] then
+          data["contactUrl"] = data["contact_url"]
+        end
+
+        -- Parse the error data for variables. We may not be able to substitute
+        -- all of them, but this at least takes care of nested variables with a
+        -- first pass. Any unknown variables will remain as-is.
+        for key, value in pairs(data) do
+          if type(value) == "string" then
+            data[key] = string_template(value, data)
+          end
+        end
+      end
+    end
+  end
+
+  settings["_error_data"] = error_data
+
+  -- If processing the "default_api_backend_settings", then keep its original
+  -- "error_data" around for processing other API backends (so the common data
+  -- overrides is more logical). Otherwise, if processing API backends, no need
+  -- to keep the original version around.
+  if settings["error_data"] ~= config["default_api_backend_settings"]["error_data"] then
+    settings["error_data"] = nil
+  end
+end
+
+local function cache_error_templates(config, settings)
+  local error_templates = deepcopy(config["default_api_backend_settings"]["error_templates"])
+  if is_hash(settings["error_templates"]) then
+    for format, _ in pairs(error_templates) do
+      local settings_template = settings["error_templates"][format]
+      if type(settings_template) == "string" then
+        error_templates[format] = settings_template
+      end
+
+      -- Strip leading and trailing whitespace from template, since it's easy to
+      -- introduce in multi-line templates and XML doesn't like if there's any
+      -- leading space before the XML declaration.
+      error_templates[format] = strip(error_templates[format])
+    end
+  end
+
+  settings["_error_templates"] = error_templates
+
+  -- If processing the "default_api_backend_settings", then keep its original
+  -- "error_templates" around for processing API backends. Otherwise, remove
+  -- original version.
+  if settings["error_templates"] ~= config["default_api_backend_settings"]["error_templates"] then
+    settings["error_templates"] = nil
+  end
+end
+
+return function(config, settings)
   if not settings then return end
 
   -- Parse and cache the allowed IPs as CIDR ranges.
@@ -116,4 +204,16 @@ return function(settings)
       end
     end
   end
+
+  -- Pre-cache the error data and templates accounting for merging in defaults.
+  --
+  -- Note that this may result in lot of large duplicate error data end error
+  -- template strings even for backends that don't have customizations. But
+  -- this optimizes fetching the data when rendering templates. And since we
+  -- compress the serialized api backend config in the shared dict storage,
+  -- this actually won't balloon memory too much. And since duplicate strings
+  -- are only allocated once in Lua, it also shouldn't increase the runtime
+  -- memory.
+  cache_error_data(config, settings)
+  cache_error_templates(config, settings)
 end

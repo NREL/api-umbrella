@@ -143,9 +143,12 @@ class Test::Proxy::FormattedErrors::TestDataVariables < Minitest::Test
         :url_matches => [{ :frontend_prefix => "/#{unique_test_id}/", :backend_prefix => "/" }],
         :settings => {
           :error_templates => {
-            :json => '{ "code": {{code}}, "message": {{message}}, "custom": "custom hello", "newvar": {{newvar}} }',
+            :json => '{ "code": {{code}}, "message": {{message}}, "custom": "custom hello", "newvar": {{newvar}}, "signup_url": {{signup_url}}, "contact_url": {{contact_url}} }',
           },
           :error_data => {
+            :common => {
+              :contact_url => "https://example.com/common-var-override",
+            },
             :api_key_missing => {
               :newvar => "foo",
               :message => "new message",
@@ -162,6 +165,8 @@ class Test::Proxy::FormattedErrors::TestDataVariables < Minitest::Test
       assert_equal("new message", data["message"])
       assert_equal("foo", data["newvar"])
       assert_equal("custom hello", data["custom"])
+      assert_equal("http://127.0.0.1:9080", data["signup_url"])
+      assert_equal("https://example.com/common-var-override", data["contact_url"])
     end
   end
 end

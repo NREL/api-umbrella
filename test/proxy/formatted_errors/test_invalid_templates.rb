@@ -31,17 +31,17 @@ class Test::Proxy::FormattedErrors::TestInvalidTemplates < Minitest::Test
     end
   end
 
-  def test_undefined_variables_empty_space
+  def test_undefined_variables_remains
     response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/hello.json", keyless_http_options)
     assert_response_code(403, response)
     assert_equal("application/json", response.headers["content-type"])
-    assert_equal('{ "unknown":  }', response.body)
+    assert_equal('{ "unknown": {{bogusvar}} }', response.body)
   end
 
-  def test_internal_server_error_when_parsing_errors
+  def test_template_syntax_error_remains
     response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/hello.xml", keyless_http_options)
-    assert_response_code(500, response)
-    assert_equal("text/plain", response.headers["content-type"])
-    assert_equal("Internal Server Error", response.body)
+    assert_response_code(403, response)
+    assert_equal("application/xml", response.headers["content-type"])
+    assert_equal("<invalid>{{oops}</invalid>", response.body)
   end
 end

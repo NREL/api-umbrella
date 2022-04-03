@@ -18,7 +18,7 @@ class Test::Proxy::FormattedErrors::TestInvalidData < Minitest::Test
     }
   end
 
-  def test_unexpected_string_value_returns_internal_error
+  def test_ignores_unexpected_string_value
     prepend_api_backends([@api]) do
       response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/hello.json", keyless_http_options)
       assert_json_error(response, "API_KEY_MISSING")
@@ -26,11 +26,11 @@ class Test::Proxy::FormattedErrors::TestInvalidData < Minitest::Test
       force_set_error_data("api_key_missing", "Foo")
 
       response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/hello.json", keyless_http_options)
-      assert_json_internal_server_error(response)
+      assert_json_error(response, "API_KEY_MISSING")
     end
   end
 
-  def test_unexpected_number_value_returns_internal_error
+  def test_ignores_unexpected_number_value
     prepend_api_backends([@api]) do
       response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/hello.json", keyless_http_options)
       assert_json_error(response, "API_KEY_MISSING")
@@ -38,11 +38,11 @@ class Test::Proxy::FormattedErrors::TestInvalidData < Minitest::Test
       force_set_error_data("api_key_missing", 9)
 
       response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/hello.json", keyless_http_options)
-      assert_json_internal_server_error(response)
+      assert_json_error(response, "API_KEY_MISSING")
     end
   end
 
-  def test_unexpected_array_value_returns_internal_error
+  def test_ignores_unexpected_array_value
     prepend_api_backends([@api]) do
       response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/hello.json", keyless_http_options)
       assert_json_error(response, "API_KEY_MISSING")
@@ -50,11 +50,11 @@ class Test::Proxy::FormattedErrors::TestInvalidData < Minitest::Test
       force_set_error_data("api_key_missing", ["foo"])
 
       response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/hello.json", keyless_http_options)
-      assert_json_internal_server_error(response)
+      assert_json_error(response, "API_KEY_MISSING")
     end
   end
 
-  def test_unexpected_null_value_returns_default_error
+  def test_ignores_unexpected_null_value
     prepend_api_backends([@api]) do
       response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/hello.json", keyless_http_options)
       assert_json_error(response, "API_KEY_MISSING")
@@ -74,12 +74,5 @@ class Test::Proxy::FormattedErrors::TestInvalidData < Minitest::Test
       api_config.fetch("settings").fetch("error_data")[key] = value
       config
     end
-  end
-
-  def assert_json_internal_server_error(response)
-    assert_response_code(500, response)
-    assert_equal("application/json", response.headers["content-type"])
-    data = MultiJson.load(response.body)
-    assert_equal("INTERNAL_SERVER_ERROR", data["error"]["code"])
   end
 end

@@ -1,7 +1,8 @@
-local stable_object_hash = require "api-umbrella.utils.stable_object_hash"
 local cache_computed_api_backend = require "api-umbrella.utils.active_config_store.cache_computed_api_backend"
 local cache_computed_api_backend_settings = require "api-umbrella.utils.active_config_store.cache_computed_api_backend_settings"
 local cache_computed_api_backend_sub_settings = require "api-umbrella.utils.active_config_store.cache_computed_api_backend_sub_settings"
+local config = require "api-umbrella.proxy.models.file_config"
+local stable_object_hash = require "api-umbrella.utils.stable_object_hash"
 local xpcall_error_handler = require "api-umbrella.utils.xpcall_error_handler"
 
 local function parse_api(api)
@@ -10,8 +11,8 @@ local function parse_api(api)
   end
 
   cache_computed_api_backend(api)
-  cache_computed_api_backend_settings(api["settings"])
-  cache_computed_api_backend_sub_settings(api["sub_settings"])
+  cache_computed_api_backend_settings(config, api["settings"])
+  cache_computed_api_backend_sub_settings(config, api["sub_settings"])
 end
 
 return function(api_backends)

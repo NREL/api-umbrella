@@ -1,6 +1,6 @@
 local json_null = require("cjson").null
+local escape_csv = require "api-umbrella.utils.escape_csv"
 
-local gsub = ngx.re.gsub
 local null = ngx.null
 
 local _M = {}
@@ -16,7 +16,7 @@ function _M.row_to_csv(row)
     if value == nil or value == null or value == json_null or value == "" then
       output[i] = ""
     else
-      output[i] = '"' .. gsub(value, '"', '""', "jo") .. '"'
+      output[i] = escape_csv(value)
     end
   end
 

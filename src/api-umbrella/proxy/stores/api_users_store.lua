@@ -68,7 +68,7 @@ local function fetch_user(api_key_prefix, api_key)
 
   if user["settings"] then
     nillify_json_nulls(user["settings"])
-    cache_computed_api_backend_settings(user["settings"])
+    cache_computed_api_backend_settings(config, user["settings"])
   end
 
   -- Remove pieces that don't need to be stored.

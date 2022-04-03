@@ -30,9 +30,9 @@ if err then
 end
 
 -- Find the API key set on the request.
-err, err_data = resolve_api_key()
+err = resolve_api_key()
 if err then
-  return error_handler(err, settings, err_data)
+  return error_handler(err, settings)
 end
 
 -- If this API requires access over HTTPS, verify that it's happening.
