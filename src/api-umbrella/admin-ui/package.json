@@ -122,8 +122,5 @@
     "paths": [
       "lib/inject-live-reload-config"
     ]
-  },
-  "resolutions": {
-    "babel-plugin-ember-template-compilation": "1.0.1"
   }
 }
