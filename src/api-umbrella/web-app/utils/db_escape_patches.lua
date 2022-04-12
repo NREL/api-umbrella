@@ -11,27 +11,27 @@ local int64 = require "api-umbrella.utils.int64"
 -- argument, so we need to override the version of the method that's passed to
 -- the build_helpers call on startup.
 local db_base = require "lapis.db.base"
-local _build_helpers = db_base.build_helpers
-db_base.build_helpers = function(_escape_literal, escape_identifier)
+local orig_build_helpers = db_base.build_helpers
+db_base.build_helpers = function(orig_escape_literal, escape_identifier)
   local escape_literal = function(val)
     if int64.is_64bit(val) then
-      return _escape_literal(int64.to_string(val))
+      return orig_escape_literal(int64.to_string(val))
     else
-      return _escape_literal(val)
+      return orig_escape_literal(val)
     end
   end
 
-  return _build_helpers(escape_literal, escape_identifier)
+  return orig_build_helpers(escape_literal, escape_identifier)
 end
 
 -- Also override the more direct "escape_literal" definition if this function
 -- is called directly.
 local db = require "lapis.db"
-local _escape_literal = db.escape_literal
+local orig_escape_literal = db.escape_literal
 db.escape_literal = function(val)
   if int64.is_64bit(val) then
-    return _escape_literal(int64.to_string(val))
+    return orig_escape_literal(int64.to_string(val))
   else
-    return _escape_literal(val)
+    return orig_escape_literal(val)
   end
 end

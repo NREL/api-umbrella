@@ -133,6 +133,9 @@ class OutdatedPackages
     "lua_shell_games" => {
       :git => "https://github.com/GUI/lua-shell-games.git",
     },
+    "lua_zstd" => {
+      :luarock => "luajit-zstd",
+    },
     "luarocks" => {
       :git => "https://github.com/keplerproject/luarocks.git",
     },
@@ -141,6 +144,7 @@ class OutdatedPackages
     },
     "nginx_module_vts" => {
       :git => "https://github.com/vozlt/nginx-module-vts.git",
+      :git_ref => "master",
     },
     "ngx_http_geoip2_module" => {
       :git => "https://github.com/leev/ngx_http_geoip2_module.git",

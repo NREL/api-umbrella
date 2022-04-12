@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-hugo_version="0.95.0"
-hugo_hash="243c5cb0453c815b46c1c5cc42eb26891a3f12274961116f70bcdf7bc7c06389"
+hugo_version="0.96.0"
+hugo_hash="bc762d649ed9bb605e90504b3389a4bac240df6c31b52d2fc28bd5ea8589c4ed"
 
 set -e -u -x
 source ./tasks/helpers.sh

@@ -38,17 +38,15 @@ namespace :outdated do
     end
   end
 
-  namespace "website" do
-    desc "List outdated website gem dependencies"
-    task :gems do
+  namespace "example-website" do
+    desc "List outdated example-website NPM dependencies"
+    task :npm do
       require "childprocess"
-      Bundler.with_original_env do
-        process = ChildProcess.build("bundle", "outdated")
-        process.environment["BUNDLE_GEMFILE"] = File.join(API_UMBRELLA_SRC_ROOT, "website/Gemfile")
-        process.io.inherit!
-        process.start
-        process.wait
-      end
+      process = ChildProcess.build("yarn", "outdated")
+      process.cwd = File.join(API_UMBRELLA_SRC_ROOT, "src/api-umbrella/example-website")
+      process.io.inherit!
+      process.start
+      process.wait
     end
   end
 
@@ -69,12 +67,12 @@ task :outdated do
   Rake::Task["outdated:web-app:npm"].invoke
   puts "\n\n"
 
-  puts "==== TEST: GEMS ===="
-  Rake::Task["outdated:test:gems"].invoke
+  puts "==== EXAMPLE-WEBSITE: NPM ===="
+  Rake::Task["outdated:example-website:npm"].invoke
   puts "\n\n"
 
-  puts "==== WEBSITE: GEMS ===="
-  Rake::Task["outdated:website:gems"].invoke
+  puts "==== TEST: GEMS ===="
+  Rake::Task["outdated:test:gems"].invoke
   puts "\n\n"
 
   puts "==== PACKAGES ===="
