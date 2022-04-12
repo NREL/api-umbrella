@@ -121,7 +121,7 @@ local function flush_bulk_commands()
   httpc:set_timeout(120000)
   httpc:connect({
     scheme = "http",
-    host = config["elasticsearch"]["_first_server"]["host"],
+    host = config["elasticsearch"]["_first_server"]["hostname"],
     port = config["elasticsearch"]["_first_server"]["port"],
   })
 

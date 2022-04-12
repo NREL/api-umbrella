@@ -1,12 +1,8 @@
+local append_args = require("api-umbrella.proxy.utils").append_args
 local config = require "api-umbrella.proxy.models.file_config"
-local stringx = require "pl.stringx"
-local url = require "socket.url"
-local utils = require "api-umbrella.proxy.utils"
-
-local append_args = utils.append_args
-local startswith = stringx.startswith
-local url_build = url.build
-local url_parse = url.parse
+local startswith = require("pl.stringx").startswith
+local url_build = require "api-umbrella.utils.url_build"
+local url_parse = require("url").parse
 
 -- Parse the "cache-lookup" status out of the Via header into a simplified
 -- X-Cache HIT/MISS value:
@@ -76,20 +72,21 @@ local function rewrite_redirects()
     return
   end
 
-  local parsed, parse_err = url_parse(location)
+  local parsed, _, parse_err = url_parse(location)
   if not parsed or parse_err then
     ngx.log(ngx.ERR, "error parsing Location header: ", location, " error: ", parse_err)
     return
   end
 
   local matched_api = ngx.ctx.matched_api
-  local relative = (not parsed["host"])
+  local parsed_hostname = parsed["hostname"]
+  local relative = (not parsed_hostname)
   local changed = false
   local host_matches = false
   if not relative then
-    if matched_api and parsed["host"] == matched_api["_backend_host_normalized"] then
+    if matched_api and parsed_hostname == matched_api["_backend_host_normalized"] then
       host_matches = true
-    elseif parsed["host"] == ngx.ctx.proxy_server_host or parsed["host"] == ngx.ctx.host_normalized then
+    elseif parsed_hostname == ngx.ctx.proxy_server_host or parsed_hostname == ngx.ctx.host_normalized then
       host_matches = true
     end
   end
@@ -125,9 +122,9 @@ local function rewrite_redirects()
     end
 
     parsed["scheme"] = scheme
-    parsed["host"] = host
+    parsed["hostname"] = host
     parsed["port"] = port
-    parsed["authority"] = nil
+    parsed["host"] = nil
     changed = true
   end
 
@@ -136,8 +133,9 @@ local function rewrite_redirects()
   if (host_matches or relative) and matched_api then
     -- If the redirect path begins with the backend prefix, then consider it
     -- for rewriting.
+    local parsed_path = parsed["path"]
     local url_match = ngx.ctx.matched_api_url_match
-    if url_match and startswith(parsed["path"], url_match["backend_prefix"]) then
+    if url_match and startswith(parsed_path, url_match["backend_prefix"]) then
       -- As long as the patah matches the backend prefix, mark as changed, so
       -- the api key is appended (regardless of whether we actually replaced
       -- the path).
@@ -149,18 +147,18 @@ local function rewrite_redirects()
       -- This helps ensure that if the API backend is already returning
       -- public/frontend URLs, we don't try to rewrite these again. -
       local rewrite_path = true
-      if url_match["_frontend_prefix_contains_backend_prefix"] and startswith(parsed["path"], url_match["frontend_prefix"]) then
+      if url_match["_frontend_prefix_contains_backend_prefix"] and startswith(parsed_path, url_match["frontend_prefix"]) then
         rewrite_path = false
       end
 
       if rewrite_path then
-        parsed["path"] = ngx.re.sub(parsed["path"], url_match["_backend_prefix_regex"], url_match["frontend_prefix"], "jo")
+        parsed["path"] = ngx.re.sub(parsed_path, url_match["_backend_prefix_regex"], url_match["frontend_prefix"], "jo")
       end
     end
   end
 
   if changed and ngx.ctx.api_key then
-    parsed["query"] = append_args(parsed["query"], "api_key=" .. ngx.ctx.api_key)
+    parsed["query"] = append_args(parsed["query"], "api_key=" .. ngx.ctx.api_key, true)
     changed = true
   end
 

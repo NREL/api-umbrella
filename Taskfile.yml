@@ -386,19 +386,6 @@ tasks:
     generates:
       - ./build/work/stamp/app-deps/lua/luaposix
 
-  app-deps:lua:luasocket:
-    deps:
-      - deps:luarocks
-    cmds:
-      - ./tasks/app-deps/lua/luasocket
-    sources:
-      - ./build/work/stamp/deps/luarocks
-      - ./tasks/app-deps/lua/luasocket
-      - ./tasks/helpers.sh
-      - ./tasks/helpers/lua.sh
-    generates:
-      - ./build/work/stamp/app-deps/lua/luasocket
-
   app-deps:lua:luautf8:
     deps:
       - deps:luarocks
@@ -658,6 +645,19 @@ tasks:
     generates:
       - ./build/work/stamp/app-deps/lua/shell-games
 
+  app-deps:lua:url:
+    deps:
+      - deps:luarocks
+    cmds:
+      - ./tasks/app-deps/lua/url
+    sources:
+      - ./build/work/stamp/deps/luarocks
+      - ./tasks/app-deps/lua/url
+      - ./tasks/helpers.sh
+      - ./tasks/helpers/lua.sh
+    generates:
+      - ./build/work/stamp/app-deps/lua/url
+
   app-deps:lua:zstd:
     deps:
       - deps:luarocks
@@ -682,7 +682,6 @@ tasks:
       - task: app-deps:lua:lrexlib-pcre2
       - task: app-deps:lua:lualdap
       - task: app-deps:lua:luaposix
-      - task: app-deps:lua:luasocket
       - task: app-deps:lua:luautf8
       - task: app-deps:lua:lustache
       - task: app-deps:lua:lyaml
@@ -702,6 +701,7 @@ tasks:
       - task: app-deps:lua:resty-uuid
       - task: app-deps:lua:resty-validation
       - task: app-deps:lua:shell-games
+      - task: app-deps:lua:url
       - task: app-deps:lua:zstd
 
   app-deps:web-app:yarn:

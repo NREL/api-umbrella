@@ -73,10 +73,6 @@ class OutdatedPackages
     "lua_luaposix" => {
       :luarock => "luaposix",
     },
-    "lua_luasocket" => {
-      :git => "https://github.com/diegonehab/luasocket.git",
-      :git_ref => "master",
-    },
     "lua_luautf8" => {
       :luarock => "luautf8",
     },
@@ -132,6 +128,9 @@ class OutdatedPackages
     },
     "lua_shell_games" => {
       :git => "https://github.com/GUI/lua-shell-games.git",
+    },
+    "lua_url" => {
+      :luarock => "url",
     },
     "lua_zstd" => {
       :luarock => "luajit-zstd",

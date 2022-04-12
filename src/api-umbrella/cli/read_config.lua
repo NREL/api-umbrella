@@ -17,13 +17,12 @@ local stat = require "posix.sys.stat"
 local stringx = require "pl.stringx"
 local table_copy = require("pl.tablex").copy
 local unistd = require "posix.unistd"
-local url = require "socket.url"
+local url_parse = require("url").parse
 
 local chmod = stat.chmod
 local chown = unistd.chown
 local split = plutils.split
 local strip = stringx.strip
-local url_parse = url.parse
 
 local config
 
@@ -337,7 +336,7 @@ local function set_computed_config()
   config["elasticsearch"]["_servers"] = {}
   if config["elasticsearch"]["hosts"] then
     for _, elasticsearch_url in ipairs(config["elasticsearch"]["hosts"]) do
-      local parsed, parse_err = url_parse(elasticsearch_url)
+      local parsed, _, parse_err = url_parse(elasticsearch_url)
       if not parsed or parse_err then
         print("failed to parse: ", elasticsearch_url, parse_err)
       else

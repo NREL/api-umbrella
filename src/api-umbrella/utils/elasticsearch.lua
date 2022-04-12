@@ -49,7 +49,7 @@ function _M.query(path, options)
 
   local connect_ok, connect_err = httpc:connect({
     scheme = "http",
-    host = server["host"],
+    host = server["hostname"],
     port = server["port"],
   })
   if not connect_ok then
@@ -58,7 +58,7 @@ function _M.query(path, options)
   end
 
   if server["scheme"] == "https" then
-    local ssl_ok, ssl_err = httpc:ssl_handshake(nil, server["host"], true)
+    local ssl_ok, ssl_err = httpc:ssl_handshake(nil, server["hostname"], true)
     if not ssl_ok then
       httpc:close()
       return nil, "elasticsearch ssl handshake error: " .. (ssl_err or "")
