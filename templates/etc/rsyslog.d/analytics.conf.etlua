@@ -162,7 +162,7 @@ action(name="analytics-jsonparse" type="mmjsonparse")
   action(
     name="analytics-output-elasticsearch"
     type="omelasticsearch"
-    server="<%- config["elasticsearch"]["_first_server"]["hostname"] %>"
+    server="<%- config["elasticsearch"]["_first_server"]["host"] %>"
     serverport="<%- config["elasticsearch"]["_first_server"]["port"] %>"
     <% if config["elasticsearch"]["_first_server"]["_https?"] then %>
       usehttps="on"

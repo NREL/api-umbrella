@@ -129,9 +129,6 @@ class OutdatedPackages
     "lua_shell_games" => {
       :git => "https://github.com/GUI/lua-shell-games.git",
     },
-    "lua_url" => {
-      :luarock => "url",
-    },
     "lua_zstd" => {
       :luarock => "luajit-zstd",
     },

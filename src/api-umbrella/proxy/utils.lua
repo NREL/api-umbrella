@@ -48,18 +48,13 @@ function _M.remove_arg(original_args, remove)
   return args
 end
 
-function _M.append_args(original_args, append, question_prefix)
+function _M.append_args(original_args, append)
   local args = original_args
   if append then
     if args then
       args = args .. "&"
-    elseif question_prefix then
-      args = "?"
-    else
-      args = ""
     end
-
-    args = args .. append
+    args = (args or "") .. append
   end
 
   return args

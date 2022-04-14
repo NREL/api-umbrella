@@ -2,7 +2,7 @@ local append_args = require("api-umbrella.proxy.utils").append_args
 local config = require "api-umbrella.proxy.models.file_config"
 local startswith = require("pl.stringx").startswith
 local url_build = require "api-umbrella.utils.url_build"
-local url_parse = require("url").parse
+local url_parse = require "api-umbrella.utils.url_parse"
 
 -- Parse the "cache-lookup" status out of the Via header into a simplified
 -- X-Cache HIT/MISS value:
@@ -72,21 +72,21 @@ local function rewrite_redirects()
     return
   end
 
-  local parsed, _, parse_err = url_parse(location)
+  local parsed, parse_err = url_parse(location)
   if not parsed or parse_err then
     ngx.log(ngx.ERR, "error parsing Location header: ", location, " error: ", parse_err)
     return
   end
 
   local matched_api = ngx.ctx.matched_api
-  local parsed_hostname = parsed["hostname"]
-  local relative = (not parsed_hostname)
+  local parsed_host = parsed["host"]
+  local relative = (not parsed_host)
   local changed = false
   local host_matches = false
   if not relative then
-    if matched_api and parsed_hostname == matched_api["_backend_host_normalized"] then
+    if matched_api and parsed_host == matched_api["_backend_host_normalized"] then
       host_matches = true
-    elseif parsed_hostname == ngx.ctx.proxy_server_host or parsed_hostname == ngx.ctx.host_normalized then
+    elseif parsed_host == ngx.ctx.proxy_server_host or parsed_host == ngx.ctx.host_normalized then
       host_matches = true
     end
   end
@@ -122,9 +122,8 @@ local function rewrite_redirects()
     end
 
     parsed["scheme"] = scheme
-    parsed["hostname"] = host
+    parsed["host"] = host
     parsed["port"] = port
-    parsed["host"] = nil
     changed = true
   end
 
@@ -158,7 +157,7 @@ local function rewrite_redirects()
   end
 
   if changed and ngx.ctx.api_key then
-    parsed["query"] = append_args(parsed["query"], "api_key=" .. ngx.ctx.api_key, true)
+    parsed["query"] = append_args(parsed["query"], "api_key=" .. ngx.ctx.api_key)
     changed = true
   end
 

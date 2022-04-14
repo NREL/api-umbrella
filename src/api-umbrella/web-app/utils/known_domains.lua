@@ -1,7 +1,7 @@
 local get_active_config = require("api-umbrella.web-app.stores.active_config_store").get
 local is_empty = require "api-umbrella.utils.is_empty"
 local psl = require "api-umbrella.utils.psl"
-local url_parse = require("url").parse
+local url_parse = require "api-umbrella.utils.url_parse"
 
 local _M = {}
 
@@ -27,14 +27,14 @@ end
 local function url_domain(url)
   local domain
   if url then
-    local parsed, _, parse_err = url_parse(url)
+    local parsed, parse_err = url_parse(url)
     if not parsed or parse_err then
       ngx.log(ngx.ERR, "failed to parse: ", url, parse_err)
     else
       if parsed["scheme"] == "mailto" then
-        domain = email_domain(url)
+        domain = email_domain(parsed["path"])
       else
-        domain = parsed["hostname"]
+        domain = parsed["host"]
       end
     end
   end
