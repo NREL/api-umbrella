@@ -59,39 +59,6 @@ local function read_resolv_conf_nameservers()
   return nameservers
 end
 
--- Fetch any local /etc/hosts aliases in place on this server (for use in
--- resolving things like "localhost" and other potential aliases).
-local function read_etc_hosts()
-  local hosts = {}
-
-  local hosts_path = "/etc/hosts"
-  local hosts_file, err = io.open(hosts_path, "r")
-  if err then
-    print("failed to open file: ", err)
-  else
-    for line in hosts_file:lines() do
-      local parts = split(line, "%s+", false, 2)
-      if parts then
-        local ip = parts[1]
-        local ip_hosts = parts[2]
-        if ip and ip_hosts then
-          ip = strip(ip)
-          ip_hosts = split(strip(ip_hosts), "%s+")
-          if not is_empty(ip) and not is_empty(ip_hosts) then
-            for _, host in ipairs(ip_hosts) do
-              hosts[host] = ip
-            end
-          end
-        end
-      end
-    end
-
-    hosts_file:close()
-  end
-
-  return hosts
-end
-
 -- Read the runtime config file. This is a fully combined and merged config
 -- file that reflects the active configuration that is available to a running
 -- API Umbrella process.
@@ -334,8 +301,6 @@ local function set_computed_config()
   if not config["dns_resolver"]["allow_ipv6"] then
     config["dns_resolver"]["_nameservers_nginx"] = config["dns_resolver"]["_nameservers_nginx"] .. " ipv6=off"
   end
-
-  config["dns_resolver"]["_etc_hosts"] = read_etc_hosts()
 
   config["elasticsearch"]["_servers"] = {}
   if config["elasticsearch"]["hosts"] then
