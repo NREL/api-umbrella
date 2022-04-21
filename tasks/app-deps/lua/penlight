@@ -8,4 +8,11 @@ source ./tasks/helpers/lua.sh
 
 luarocks_install "penlight" "$lua_penlight_version"
 
+# Remove patch after upgrading to 1.13+ where this should already be included.
+# https://github.com/lunarmodules/Penlight/pull/414
+(
+  cd "$APP_VENDOR_LUA_SHARE_DIR"
+  patch -p2 < "$SOURCE_DIR/build/patches/penlight-warn.patch"
+)
+
 stamp

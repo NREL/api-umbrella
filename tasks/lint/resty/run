@@ -4,13 +4,16 @@ set -e -u -x
 source ./tasks/helpers.sh
 set +x
 
-export LUA_PATH="$TEST_VENDOR_LUA_SHARE_DIR/?.lua;\
+export LUA_PATH="$SOURCE_DIR/src/?.lua;\
+$TEST_VENDOR_DIR/resty_modules/lualib/?.lua;\
+$TEST_VENDOR_LUA_SHARE_DIR/?.lua;\
 $TEST_VENDOR_LUA_SHARE_DIR/?/init.lua;\
 $STAGE_EMBEDDED_DIR/openresty/lualib/?.lua;\
 $STAGE_EMBEDDED_DIR/openresty/lualib/?/init.lua;;"
-export LUA_CPATH="$TEST_VENDOR_LUA_LIB_DIR/?.so;;"
+export LUA_CPATH="$TEST_VENDOR_DIR/resty_modules/?.so;\
+$TEST_VENDOR_LUA_LIB_DIR/?.so;;"
 export PATH="$STAGE_EMBEDDED_PATH"
 export LD_LIBRARY_PATH="$STAGE_EMBEDDED_DIR/openresty/luajit/lib:$STAGE_EMBEDDED_DIR/lib:${LD_LIBRARY_PATH:-}"
 
 set -x
-resty --errlog-level error "$SOURCE_DIR/tasks/lint/resty/check_preload.lua"
+resty "$SOURCE_DIR/tasks/lint/resty/check_preload.lua"

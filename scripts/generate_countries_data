@@ -2,10 +2,10 @@
 -- vi: ft=lua :
 
 local OrderedMap = require "pl.OrderedMap"
-local file = require "pl.file"
 local json_decode = require("cjson").decode
 local lyaml = require "lyaml"
 local pretty = require "pl.pretty"
+local writefile = require("pl.utils").writefile
 
 local countries_handle = io.popen("curl -fsSL https://raw.githubusercontent.com/hexorx/countries/v2.1.2/lib/countries/cache/countries.json")
 local countries_result = countries_handle:read("*a")
@@ -42,4 +42,4 @@ _M.subdivisions = ]] .. pretty.write(subdivisions) .. [[
 
 return _M]]
 
-file.write("src/api-umbrella/web-app/utils/countries.lua", output)
+writefile("src/api-umbrella/web-app/utils/countries.lua", output)

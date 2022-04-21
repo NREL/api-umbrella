@@ -1,14 +1,11 @@
 local checksum_file_sha256 = require("api-umbrella.utils.checksum_file").sha256
-local file_move = require("pl.file").move
-local makepath = require("pl.dir").makepath
+local dirname = require("posix.libgen").dirname
+local mkdir_p = require "api-umbrella.utils.mkdir_p"
 local mkdtemp = require("posix.stdlib").mkdtemp
-local path = require "pl.path"
+local path_exists = require "api-umbrella.utils.path_exists"
+local path_join = require "api-umbrella.utils.path_join"
 local shell_blocking_capture_combined = require("shell-games").capture_combined
 local stat = require("posix.sys.stat").stat
-
-local dirname = path.dirname
-local path_exists = path.exists
-local path_join = path.join
 
 local _M = {}
 
@@ -49,12 +46,12 @@ local function perform_download(config, unzip_dir, download_path)
   if current_checksum == unzip_checksum then
     ngx.log(ngx.NOTICE, current_path .. " is already up to date (checksum: " .. current_checksum ..")")
   else
-    local _, makepath_err = makepath(dirname(current_path))
-    if makepath_err then
-      return false, makepath_err
+    local _, mkdir_err = mkdir_p(dirname(current_path))
+    if mkdir_err then
+      return false, mkdir_err
     end
 
-    local _, move_err = file_move(unzip_path, current_path)
+    local _, move_err = os.rename(unzip_path, current_path)
     if move_err then
       return false, move_err
     end

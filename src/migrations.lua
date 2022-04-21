@@ -1,15 +1,15 @@
 local db = require("lapis.db")
-local file = require "pl.file"
 local json_encode = require "api-umbrella.utils.json_encode"
-local path = require "pl.path"
+local path_join = require "api-umbrella.utils.path_join"
+local readfile = require("pl.utils").readfile
 
 return {
   [1498350289] = function()
     db.query("START TRANSACTION")
     db.query("CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA public")
 
-    local audit_sql_path = path.join(os.getenv("API_UMBRELLA_SRC_ROOT"), "db/pg-audit-json--1.0.1.sql")
-    local audit_sql = file.read(audit_sql_path, true)
+    local audit_sql_path = path_join(os.getenv("API_UMBRELLA_SRC_ROOT"), "db/pg-audit-json--1.0.1.sql")
+    local audit_sql = readfile(audit_sql_path, true)
     audit_sql = ngx.re.sub(audit_sql, [[^(\\echo Use)]], "-- $1", "m")
     audit_sql = ngx.re.sub(audit_sql, [[^(SELECT pg_catalog.pg_extension_config_dump)]], "-- $1", "m")
     db.query("SET search_path = public")

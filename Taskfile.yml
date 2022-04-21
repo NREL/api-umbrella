@@ -565,19 +565,6 @@ tasks:
       - ./build/work/stamp/app-deps/lua/resty-openidc
     method: checksum
 
-  app-deps:lua:resty-radixtree:
-    deps:
-      - deps:luarocks
-    cmds:
-      - ./tasks/app-deps/lua/resty-radixtree
-    sources:
-      - ./build/work/stamp/deps/luarocks
-      - ./tasks/app-deps/lua/resty-radixtree
-      - ./tasks/helpers.sh
-      - ./tasks/helpers/lua.sh
-    generates:
-      - ./build/work/stamp/app-deps/lua/resty-radixtree
-
   app-deps:lua:resty-session:
     deps:
       - deps:luarocks
@@ -682,7 +669,6 @@ tasks:
       - task: app-deps:lua:resty-moongoo
       - task: app-deps:lua:resty-nettle
       - task: app-deps:lua:resty-openidc
-      - task: app-deps:lua:resty-radixtree
       - task: app-deps:lua:resty-session
       - task: app-deps:lua:resty-txid
       - task: app-deps:lua:resty-uuid
@@ -849,6 +835,19 @@ tasks:
     generates:
       - ./build/work/stamp/test-deps/lua/penlight
 
+  test-deps:lua:shell-games:
+    deps:
+      - deps:luarocks
+    cmds:
+      - ./tasks/test-deps/lua/shell-games
+    sources:
+      - ./build/work/stamp/deps/luarocks
+      - ./tasks/test-deps/lua/shell-games
+      - ./tasks/helpers.sh
+      - ./tasks/helpers/lua.sh
+    generates:
+      - ./build/work/stamp/test-deps/lua/shell-games
+
   test-deps:mailhog:
     cmds:
       - ./tasks/test-deps/mailhog
@@ -873,6 +872,7 @@ tasks:
       - task: test-deps:glauth
       - task: test-deps:lua:luacheck
       - task: test-deps:lua:penlight
+      - task: test-deps:lua:shell-games
       - task: test-deps:mailhog
       - task: test-deps:shellcheck
 

@@ -11,13 +11,16 @@ config["postgresql"]["username"] = config["postgresql"]["migrations"]["username"
 config["postgresql"]["password"] = config["postgresql"]["migrations"]["password"]
 
 local db = require("lapis.db")
-local file = require "pl.file"
 local migrations = require("lapis.db.migrations")
-local path = require "pl.path"
+local path_join = require "api-umbrella.utils.path_join"
 local pg_utils = require "api-umbrella.utils.pg_utils"
+local pl_utils = require "pl.utils"
 local shell_blocking = require("shell-games")
 local split = require("ngx.re").split
 local startswith = require("pl.stringx").startswith
+
+local readfile = pl_utils.readfile
+local writefile = pl_utils.writefile
 
 return function()
   db.query("SET search_path = api_umbrella, public")
@@ -26,8 +29,8 @@ return function()
   pg_utils.db_config["user"] = config["postgresql"]["migrations"]["username"]
   pg_utils.db_config["password"] = config["postgresql"]["migrations"]["password"]
 
-  local grants_sql_path = path.join(os.getenv("API_UMBRELLA_SRC_ROOT"), "db/grants.sql")
-  local grants_sql = file.read(grants_sql_path, true)
+  local grants_sql_path = path_join(os.getenv("API_UMBRELLA_SRC_ROOT"), "db/grants.sql")
+  local grants_sql = readfile(grants_sql_path, true)
   pg_utils.query(grants_sql, nil, { verbose = true, fatal = true })
 
   -- In development, dump the db/schema.sql file after migrations.
@@ -37,7 +40,7 @@ return function()
     setenv("PGDATABASE", config["postgresql"]["database"])
     setenv("PGUSER", config["postgresql"]["migrations"]["username"])
     setenv("PGPASSWORD", config["postgresql"]["migrations"]["password"])
-    local schema_path = path.join(os.getenv("API_UMBRELLA_SRC_ROOT"), "db/schema.sql")
+    local schema_path = path_join(os.getenv("API_UMBRELLA_SRC_ROOT"), "db/schema.sql")
     local _, err = shell_blocking.run({
       "pg_dump",
       "--schema-only",
@@ -50,7 +53,7 @@ return function()
       os.exit(1)
     end
 
-    local schema_sql = file.read(schema_path, true)
+    local schema_sql = readfile(schema_path, true)
     local lines, split_err = split(schema_sql, "\n")
     if split_err then
       print(split_err)
@@ -83,6 +86,6 @@ return function()
     end
 
     schema_sql = table.concat(clean_lines, "\n") .. "\n\n" .. table.concat(migrations_sql, "\n") .. "\n"
-    file.write(schema_path, schema_sql, true)
+    writefile(schema_path, schema_sql, true)
   end
 end

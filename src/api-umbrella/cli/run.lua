@@ -1,4 +1,4 @@
-local path = require "pl.path"
+local path_join = require "api-umbrella.utils.path_join"
 local setup = require "api-umbrella.cli.setup"
 local status = require "api-umbrella.cli.status"
 local unistd = require "posix.unistd"
@@ -14,10 +14,10 @@ local function start_perp(config, options)
     end
   end
 
-  local perp_base = path.join(config["etc_dir"], "perp")
+  local perp_base = path_join(config["etc_dir"], "perp")
   local args = {
     "-0", "api-umbrella",
-    "-P", path.join(config["run_dir"], "perpboot.pid"),
+    "-P", path_join(config["run_dir"], "perpboot.pid"),
   }
 
   -- If we want everything to stdout/stderr, then execute the lower-level perpd

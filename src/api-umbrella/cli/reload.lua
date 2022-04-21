@@ -1,4 +1,4 @@
-local path = require "pl.path"
+local path_join = require "api-umbrella.utils.path_join"
 local setup = require "api-umbrella.cli.setup"
 local shell_blocking_capture_combined = require("shell-games").capture_combined
 local status = require "api-umbrella.cli.status"
@@ -69,7 +69,7 @@ return function(options)
   end
 
   local config = setup()
-  local perp_base = path.join(config["etc_dir"], "perp")
+  local perp_base = path_join(config["etc_dir"], "perp")
 
   reload_perp(perp_base)
 

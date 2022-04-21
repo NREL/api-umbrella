@@ -73,6 +73,9 @@ class OutdatedPackages
     "lua_luaposix" => {
       :luarock => "luaposix",
     },
+    "lua_luaposix_test" => {
+      :luarock => "luaposix",
+    },
     "lua_luautf8" => {
       :luarock => "luautf8",
     },
@@ -83,6 +86,9 @@ class OutdatedPackages
       :luarock => "lyaml",
     },
     "lua_penlight" => {
+      :luarock => "penlight",
+    },
+    "lua_penlight_test" => {
       :luarock => "penlight",
     },
     "lua_psl" => {
@@ -127,6 +133,9 @@ class OutdatedPackages
       :git => "https://github.com/bungle/lua-resty-validation.git",
     },
     "lua_shell_games" => {
+      :git => "https://github.com/GUI/lua-shell-games.git",
+    },
+    "lua_shell_games_test" => {
       :git => "https://github.com/GUI/lua-shell-games.git",
     },
     "lua_zstd" => {

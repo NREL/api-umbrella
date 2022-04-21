@@ -1,16 +1,18 @@
 local array_includes = require "api-umbrella.utils.array_includes"
 local deep_defaults = require "api-umbrella.utils.deep_defaults"
 local deep_merge_overwrite_arrays = require "api-umbrella.utils.deep_merge_overwrite_arrays"
-local dir = require "pl.dir"
-local file = require "pl.file"
+local dirname = require("posix.libgen").dirname
 local getgrgid = require("posix.grp").getgrgid
 local getpwuid = require("posix.pwd").getpwuid
 local host_normalize = require "api-umbrella.utils.host_normalize"
 local invert_table = require "api-umbrella.utils.invert_table"
 local is_empty = require "api-umbrella.utils.is_empty"
 local lyaml = require "lyaml"
+local mkdir_p = require "api-umbrella.utils.mkdir_p"
 local nillify_yaml_nulls = require "api-umbrella.utils.nillify_yaml_nulls"
-local path = require "pl.path"
+local path_exists = require "api-umbrella.utils.path_exists"
+local path_join = require "api-umbrella.utils.path_join"
+local pl_utils = require "pl.utils"
 local plutils = require "pl.utils"
 local random_token = require "api-umbrella.utils.random_token"
 local stat = require "posix.sys.stat"
@@ -21,8 +23,10 @@ local url_parse = require "api-umbrella.utils.url_parse"
 
 local chmod = stat.chmod
 local chown = unistd.chown
+local readfile = pl_utils.readfile
 local split = plutils.split
 local strip = stringx.strip
+local writefile = pl_utils.writefile
 
 local config
 
@@ -115,7 +119,7 @@ end
 -- Read the default, global config for API Umbrella defined in the internal
 -- config/default.yml file.
 local function read_default_config()
-  local content = file.read(path.join(src_root_dir, "config/default.yml"), true)
+  local content = readfile(path_join(src_root_dir, "config/default.yml"), true)
   config = lyaml.load(content)
   nillify_yaml_nulls(config)
 end
@@ -126,8 +130,8 @@ local function read_system_config()
   local config_paths = os.getenv("API_UMBRELLA_CONFIG") or "/etc/api-umbrella/api-umbrella.yml"
   config_paths = split(config_paths, ":", true)
   for _, config_path in ipairs(config_paths) do
-    if path.exists(config_path) then
-      local content = file.read(config_path, true)
+    if path_exists(config_path) then
+      local content = readfile(config_path, true)
       if content then
         local overrides = lyaml.load(content)
 
@@ -164,31 +168,31 @@ local function set_computed_config()
   end
 
   if not config["etc_dir"] then
-    config["etc_dir"] = path.join(config["root_dir"], "etc")
+    config["etc_dir"] = path_join(config["root_dir"], "etc")
   end
 
   if not config["var_dir"] then
-    config["var_dir"] = path.join(config["root_dir"], "var")
+    config["var_dir"] = path_join(config["root_dir"], "var")
   end
 
   if not config["log_dir"] then
     if config["app_env"] == "test" then
-      config["log_dir"] = path.join(src_root_dir, "test/tmp/artifacts/log")
+      config["log_dir"] = path_join(src_root_dir, "test/tmp/artifacts/log")
     else
-      config["log_dir"] = path.join(config["var_dir"], "log")
+      config["log_dir"] = path_join(config["var_dir"], "log")
     end
   end
 
   if not config["run_dir"] then
-    config["run_dir"] = path.join(config["var_dir"], "run")
+    config["run_dir"] = path_join(config["var_dir"], "run")
   end
 
   if not config["tmp_dir"] then
-    config["tmp_dir"] = path.join(config["var_dir"], "tmp")
+    config["tmp_dir"] = path_join(config["var_dir"], "tmp")
   end
 
   if not config["db_dir"] then
-    config["db_dir"] = path.join(config["var_dir"], "db")
+    config["db_dir"] = path_join(config["var_dir"], "db")
   end
 
   local trusted_proxies = config["router"]["trusted_proxies"] or {}
@@ -454,7 +458,7 @@ local function set_computed_config()
   deep_merge_overwrite_arrays(config, {
     _embedded_root_dir = embedded_root_dir,
     _src_root_dir = src_root_dir,
-    _api_umbrella_config_runtime_file = os.getenv("API_UMBRELLA_RUNTIME_CONFIG") or path.join(config["run_dir"], "runtime_config.yml"),
+    _api_umbrella_config_runtime_file = os.getenv("API_UMBRELLA_RUNTIME_CONFIG") or path_join(config["run_dir"], "runtime_config.yml"),
     _package_path = package.path,
     _package_cpath = package.cpath,
     ["_test_env?"] = (config["app_env"] == "test"),
@@ -492,16 +496,16 @@ local function set_computed_config()
       },
     },
     static_site = {
-      build_dir = path.join(embedded_root_dir, "app/build/dist/example-website"),
+      build_dir = path_join(embedded_root_dir, "app/build/dist/example-website"),
     },
   })
 
   if config["app_env"] == "development" then
-    config["_dev_env_install_dir"] = path.join(src_root_dir, "build/work/dev-env")
+    config["_dev_env_install_dir"] = path_join(src_root_dir, "build/work/dev-env")
   end
 
   if config["app_env"] == "test" then
-    config["_test_env_install_dir"] = path.join(src_root_dir, "build/work/test-env")
+    config["_test_env_install_dir"] = path_join(src_root_dir, "build/work/test-env")
   end
 end
 
@@ -525,8 +529,8 @@ local function set_cached_random_tokens()
   if not config["secret_key"] or not config["static_site"]["api_key"] then
     -- See if there were any previous values for these random tokens on this
     -- server. If so, use any of those values that might be present instead.
-    local cached_path = path.join(config["run_dir"], "cached_random_config_values.yml")
-    local content = file.read(cached_path, true)
+    local cached_path = path_join(config["run_dir"], "cached_random_config_values.yml")
+    local content = readfile(cached_path, true)
     local cached = {}
     if content then
       cached = lyaml.load(content) or {}
@@ -550,8 +554,8 @@ local function set_cached_random_tokens()
       end
 
       -- Persist the cached tokens.
-      dir.makepath(config["run_dir"])
-      file.write(cached_path, lyaml.dump({ cached }))
+      mkdir_p(config["run_dir"])
+      writefile(cached_path, lyaml.dump({ cached }))
       chmod(cached_path, tonumber("0640", 8))
       if config["group"] then
         chown(cached_path, nil, config["group"])
@@ -569,8 +573,8 @@ end
 -- having to actually merge and combine again).
 local function write_runtime_config()
   local runtime_config_path = config["_api_umbrella_config_runtime_file"]
-  dir.makepath(path.dirname(runtime_config_path))
-  file.write(runtime_config_path, lyaml.dump({config}))
+  mkdir_p(dirname(runtime_config_path))
+  writefile(runtime_config_path, lyaml.dump({config}))
   chmod(runtime_config_path, tonumber("0640", 8))
   if config["group"] then
     chown(runtime_config_path, nil, config["group"])

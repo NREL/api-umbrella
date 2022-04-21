@@ -1,0 +1,22 @@
+diff --git a/lua/pl/compat.lua b/lua/pl/compat.lua
+index a4c9841..e466494 100644
+--- a/lua/pl/compat.lua
++++ b/lua/pl/compat.lua
+@@ -227,7 +227,7 @@ end
+ -- @param ... any arguments
+ if not warn then  -- luacheck: ignore
+     local enabled = false
+-    function warn(arg1, ...)  -- luacheck: ignore
++    local function warn(arg1, ...)  -- luacheck: ignore
+         if type(arg1) == "string" and arg1:sub(1, 1) == "@" then
+             -- control message
+             if arg1 == "@on" then
+@@ -245,6 +245,8 @@ if not warn then  -- luacheck: ignore
+           io.stderr:write("\n")
+         end
+     end
++    -- use rawset to bypass OpenResty's protection of global scope
++    rawset(_G, "warn", warn)
+ end
+ 
+ return compat

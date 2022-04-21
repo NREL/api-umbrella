@@ -1,9 +1,9 @@
 local file_config = require "api-umbrella.proxy.models.file_config"
-local file_write = require("pl.file").write
 local http = require "resty.http"
 local json_decode = require("cjson").decode
 local json_encode = require "api-umbrella.utils.json_encode"
-local path_join = require("pl.path").join
+local path_join = require "api-umbrella.utils.path_join"
+local writefile = require("pl.utils").writefile
 
 local re_find = ngx.re.find
 
@@ -415,9 +415,9 @@ return function(active_config)
 
   populate_backend_resources(active_config, cds, rds)
 
-  file_write(cds_path .. ".tmp", json_encode(cds))
-  file_write(lds_path .. ".tmp", json_encode(lds))
-  file_write(rds_path .. ".tmp", json_encode(rds))
+  writefile(cds_path .. ".tmp", json_encode(cds))
+  writefile(lds_path .. ".tmp", json_encode(lds))
+  writefile(rds_path .. ".tmp", json_encode(rds))
 
   -- Push live in order described here:
   -- https://www.envoyproxy.io/docs/envoy/v1.21.1/api-docs/xds_protocol.html#eventual-consistency-considerations

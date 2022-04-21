@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 
-lua_url_version="1.3.1-1"
+lua_luaposix_test_version="35.1-1"
 
 set -e -u -x
 source ./tasks/helpers.sh
 source ./tasks/helpers/lua.sh
 
-luarocks_install "url" "$lua_url_version"
+test_luarocks_install "luaposix" "$lua_luaposix_test_version"
 
 stamp
