@@ -31,7 +31,6 @@ COPY build/patches/openresty* /app/build/patches/
 COPY tasks/deps/libmaxminddb tasks/deps/openresty /app/tasks/deps/
 RUN make deps:openresty && make clean:dev
 
-COPY build/patches/trafficserver* /app/build/patches/
 COPY tasks/deps/trafficserver /app/tasks/deps/
 RUN make deps:trafficserver && make clean:dev
 
@@ -66,6 +65,7 @@ COPY src/api-umbrella/web-app/package.json src/api-umbrella/web-app/yarn.lock /a
 COPY tasks/app-deps/web-app/yarn /app/tasks/app-deps/web-app/
 RUN make app-deps:web-app:yarn && make clean:dev
 
+COPY build/patches/penlight-warn.patch /app/build/patches/
 COPY tasks/app-deps/lua /app/tasks/app-deps/lua
 RUN make app-deps:lua && make clean:dev
 
@@ -145,6 +145,7 @@ RUN make test-deps:bundle && make clean:dev
 
 COPY tasks/deps/libmaxminddb tasks/deps/luarocks tasks/deps/openresty /app/tasks/deps/
 COPY tasks/test-deps /app/tasks/test-deps
+COPY build/patches/penlight-warn.patch /app/build/patches/
 RUN make test-deps && make clean:dev
 
 RUN groupadd -r api-umbrella && \
