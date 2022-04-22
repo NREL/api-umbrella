@@ -822,6 +822,19 @@ tasks:
     generates:
       - ./build/work/stamp/test-deps/lua/luacheck
 
+  test-deps:lua:luaposix:
+    deps:
+      - deps:luarocks
+    cmds:
+      - ./tasks/test-deps/lua/luaposix
+    sources:
+      - ./build/work/stamp/deps/luarocks
+      - ./tasks/test-deps/lua/luaposix
+      - ./tasks/helpers.sh
+      - ./tasks/helpers/lua.sh
+    generates:
+      - ./build/work/stamp/test-deps/lua/luaposix
+
   test-deps:lua:penlight:
     deps:
       - deps:luarocks
@@ -871,6 +884,7 @@ tasks:
       - task: test-deps:bundle
       - task: test-deps:glauth
       - task: test-deps:lua:luacheck
+      - task: test-deps:lua:luaposix
       - task: test-deps:lua:penlight
       - task: test-deps:lua:shell-games
       - task: test-deps:mailhog
