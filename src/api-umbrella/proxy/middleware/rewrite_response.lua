@@ -1,5 +1,5 @@
 local append_args = require("api-umbrella.proxy.utils").append_args
-local config = require "api-umbrella.proxy.models.file_config"
+local config = require("api-umbrella.utils.load_config")()
 local startswith = require("pl.stringx").startswith
 local url_build = require "api-umbrella.utils.url_build"
 local url_parse = require "api-umbrella.utils.url_parse"

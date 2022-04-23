@@ -22,8 +22,8 @@ class Test::Apis::V1::Users::TestUpdateEmbeddedArrayFields < Minitest::Test
     attributes["settings"]["allowed_referers"] = ["http://google.com/", "http://yahoo.com/"]
     attributes["settings"]["rate_limit_mode"] = "custom"
     attributes["settings"]["rate_limits"] = [
-      FactoryBot.attributes_for(:rate_limit, :duration => 5000, :limit => 10),
-      FactoryBot.attributes_for(:rate_limit, :duration => 10000, :limit => 20),
+      FactoryBot.attributes_for(:rate_limit, :duration => 5000, :limit_to => 10),
+      FactoryBot.attributes_for(:rate_limit, :duration => 10000, :limit_to => 20),
     ]
     response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/users/#{user.id}.json", http_options.deep_merge(admin_token).deep_merge({
       :headers => { "Content-Type" => "application/json" },
@@ -36,8 +36,8 @@ class Test::Apis::V1::Users::TestUpdateEmbeddedArrayFields < Minitest::Test
     assert_equal([IPAddr.new("127.0.0.1"), IPAddr.new("127.0.0.2")].sort, user.settings.allowed_ips.sort)
     assert_equal(["http://google.com/", "http://yahoo.com/"].sort, user.settings.allowed_referers.sort)
     assert_equal(2, user.settings.rate_limits.length)
-    assert_equal(10, user.settings.rate_limits[0].limit)
-    assert_equal(20, user.settings.rate_limits[1].limit)
+    assert_equal(10, user.settings.rate_limits[0].limit_to)
+    assert_equal(20, user.settings.rate_limits[1].limit_to)
   end
 
   def test_updates
@@ -48,8 +48,8 @@ class Test::Apis::V1::Users::TestUpdateEmbeddedArrayFields < Minitest::Test
         :allowed_referers => ["http://google.com/"],
         :rate_limit_mode => "custom",
         :rate_limits => [
-          FactoryBot.build(:rate_limit, :duration => 5000, :limit => 10),
-          FactoryBot.build(:rate_limit, :duration => 10000, :limit => 20),
+          FactoryBot.build(:rate_limit, :duration => 5000, :limit_to => 10),
+          FactoryBot.build(:rate_limit, :duration => 10000, :limit_to => 20),
         ],
       }),
     })
@@ -57,8 +57,8 @@ class Test::Apis::V1::Users::TestUpdateEmbeddedArrayFields < Minitest::Test
     assert_equal([IPAddr.new("127.0.0.1")], user.settings.allowed_ips)
     assert_equal(["http://google.com/"], user.settings.allowed_referers)
     assert_equal(2, user.settings.rate_limits.length)
-    assert_equal(10, user.settings.rate_limits[0].limit)
-    assert_equal(20, user.settings.rate_limits[1].limit)
+    assert_equal(10, user.settings.rate_limits[0].limit_to)
+    assert_equal(20, user.settings.rate_limits[1].limit_to)
 
     attributes = user.serializable_hash
     attributes["roles"] = ["test-role5", "test-role4"]
@@ -79,10 +79,10 @@ class Test::Apis::V1::Users::TestUpdateEmbeddedArrayFields < Minitest::Test
     assert_equal(2, user.settings.rate_limits.length)
     assert_equal(attributes["settings"]["rate_limits"][0]["id"], user.settings.rate_limits[0].id)
     assert_equal(5000, user.settings.rate_limits[0].duration)
-    assert_equal(50, user.settings.rate_limits[0].limit)
+    assert_equal(50, user.settings.rate_limits[0].limit_to)
     assert_equal(attributes["settings"]["rate_limits"][1]["id"], user.settings.rate_limits[1].id)
     assert_equal(10000, user.settings.rate_limits[1].duration)
-    assert_equal(75, user.settings.rate_limits[1].limit)
+    assert_equal(75, user.settings.rate_limits[1].limit_to)
   end
 
   def test_removes_single_value
@@ -93,8 +93,8 @@ class Test::Apis::V1::Users::TestUpdateEmbeddedArrayFields < Minitest::Test
         :allowed_referers => ["http://google.com/", "http://yahoo.com/"],
         :rate_limit_mode => "custom",
         :rate_limits => [
-          FactoryBot.build(:rate_limit, :duration => 5000, :limit => 10),
-          FactoryBot.build(:rate_limit, :duration => 10000, :limit => 20),
+          FactoryBot.build(:rate_limit, :duration => 5000, :limit_to => 10),
+          FactoryBot.build(:rate_limit, :duration => 10000, :limit_to => 20),
         ],
       }),
     })
@@ -102,8 +102,8 @@ class Test::Apis::V1::Users::TestUpdateEmbeddedArrayFields < Minitest::Test
     assert_equal([IPAddr.new("127.0.0.1"), IPAddr.new("127.0.0.2")].sort, user.settings.allowed_ips.sort)
     assert_equal(["http://google.com/", "http://yahoo.com/"].sort, user.settings.allowed_referers.sort)
     assert_equal(2, user.settings.rate_limits.length)
-    assert_equal(10, user.settings.rate_limits[0].limit)
-    assert_equal(20, user.settings.rate_limits[1].limit)
+    assert_equal(10, user.settings.rate_limits[0].limit_to)
+    assert_equal(20, user.settings.rate_limits[1].limit_to)
 
     attributes = user.serializable_hash
     attributes["roles"] -= ["test-role1"]
@@ -122,7 +122,7 @@ class Test::Apis::V1::Users::TestUpdateEmbeddedArrayFields < Minitest::Test
     assert_equal(["http://yahoo.com/"], user.settings.allowed_referers)
     assert_equal(1, user.settings.rate_limits.length)
     assert_equal(attributes["settings"]["rate_limits"][0]["id"], user.settings.rate_limits[0].id)
-    assert_equal(20, user.settings.rate_limits[0].limit)
+    assert_equal(20, user.settings.rate_limits[0].limit_to)
   end
 
   [nil, []].each do |empty_value|
@@ -142,16 +142,16 @@ class Test::Apis::V1::Users::TestUpdateEmbeddedArrayFields < Minitest::Test
           :allowed_referers => ["http://google.com/"],
           :rate_limit_mode => "custom",
           :rate_limits => [
-            FactoryBot.build(:rate_limit, :duration => 5000, :limit => 10),
-            FactoryBot.build(:rate_limit, :duration => 10000, :limit => 20),
+            FactoryBot.build(:rate_limit, :duration => 5000, :limit_to => 10),
+            FactoryBot.build(:rate_limit, :duration => 10000, :limit_to => 20),
           ],
         }),
       })
       assert_equal(["test-role1"], user.roles)
       assert_equal([IPAddr.new("127.0.0.1")], user.settings.allowed_ips)
       assert_equal(["http://google.com/"], user.settings.allowed_referers)
-      assert_equal(10, user.settings.rate_limits[0].limit)
-      assert_equal(20, user.settings.rate_limits[1].limit)
+      assert_equal(10, user.settings.rate_limits[0].limit_to)
+      assert_equal(20, user.settings.rate_limits[1].limit_to)
 
       attributes = user.serializable_hash
       attributes["roles"] = empty_value
@@ -186,8 +186,8 @@ class Test::Apis::V1::Users::TestUpdateEmbeddedArrayFields < Minitest::Test
         :allowed_referers => ["http://google.com/"],
         :rate_limit_mode => "custom",
         :rate_limits => [
-          FactoryBot.build(:rate_limit, :duration => 5000, :limit => 10),
-          FactoryBot.build(:rate_limit, :duration => 10000, :limit => 20),
+          FactoryBot.build(:rate_limit, :duration => 5000, :limit_to => 10),
+          FactoryBot.build(:rate_limit, :duration => 10000, :limit_to => 20),
         ],
       }),
     })
@@ -195,8 +195,8 @@ class Test::Apis::V1::Users::TestUpdateEmbeddedArrayFields < Minitest::Test
     assert_equal(["test-role1"], user.roles)
     assert_equal([IPAddr.new("127.0.0.1")], user.settings.allowed_ips)
     assert_equal(["http://google.com/"], user.settings.allowed_referers)
-    assert_equal(10, user.settings.rate_limits[0].limit)
-    assert_equal(20, user.settings.rate_limits[1].limit)
+    assert_equal(10, user.settings.rate_limits[0].limit_to)
+    assert_equal(20, user.settings.rate_limits[1].limit_to)
 
     attributes = user.serializable_hash
     attributes["use_description"] = "Updated"
@@ -215,7 +215,7 @@ class Test::Apis::V1::Users::TestUpdateEmbeddedArrayFields < Minitest::Test
     assert_equal(["test-role1"], user.roles)
     assert_equal([IPAddr.new("127.0.0.1")], user.settings.allowed_ips)
     assert_equal(["http://google.com/"], user.settings.allowed_referers)
-    assert_equal(10, user.settings.rate_limits[0].limit)
-    assert_equal(20, user.settings.rate_limits[1].limit)
+    assert_equal(10, user.settings.rate_limits[0].limit_to)
+    assert_equal(20, user.settings.rate_limits[1].limit_to)
   end
 end

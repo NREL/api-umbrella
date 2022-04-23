@@ -27,6 +27,15 @@ output: interleaved
 run: when_changed
 
 tasks:
+  deps:cue:
+    cmds:
+      - ./tasks/deps/cue
+    sources:
+      - ./tasks/deps/cue
+      - ./tasks/helpers.sh
+    generates:
+      - ./build/work/stamp/deps/cue
+
   deps:envoy:
     deps:
       - build-deps:crane
@@ -174,6 +183,7 @@ tasks:
 
   deps:
     cmds:
+      - task: deps:cue
       - task: deps:envoy
       - task: deps:icu4c
       - task: deps:libbson

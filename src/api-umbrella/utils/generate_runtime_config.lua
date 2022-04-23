@@ -1,4 +1,6 @@
+local append_array = require "api-umbrella.utils.append_array"
 local array_includes = require "api-umbrella.utils.array_includes"
+local cache_computed_api_backend_settings = require("api-umbrella.utils.active_config_store.cache_computed_api_backend_settings")
 local deep_defaults = require "api-umbrella.utils.deep_defaults"
 local deep_merge_overwrite_arrays = require "api-umbrella.utils.deep_merge_overwrite_arrays"
 local dirname = require("posix.libgen").dirname
@@ -7,31 +9,29 @@ local getpwuid = require("posix.pwd").getpwuid
 local host_normalize = require "api-umbrella.utils.host_normalize"
 local invert_table = require "api-umbrella.utils.invert_table"
 local is_empty = require "api-umbrella.utils.is_empty"
-local lyaml = require "lyaml"
+local json_decode = require("cjson").decode
+local json_encode = require "api-umbrella.utils.json_encode"
 local mkdir_p = require "api-umbrella.utils.mkdir_p"
-local nillify_yaml_nulls = require "api-umbrella.utils.nillify_yaml_nulls"
+local nillify_json_nulls = require "api-umbrella.utils.nillify_json_nulls"
 local path_exists = require "api-umbrella.utils.path_exists"
 local path_join = require "api-umbrella.utils.path_join"
 local pl_utils = require "pl.utils"
-local plutils = require "pl.utils"
 local random_token = require "api-umbrella.utils.random_token"
+local shell_blocking_capture = require("shell-games").capture
 local stat = require "posix.sys.stat"
-local stringx = require "pl.stringx"
+local strip = require("pl.stringx").strip
 local table_copy = require("pl.tablex").copy
 local unistd = require "posix.unistd"
 local url_parse = require "api-umbrella.utils.url_parse"
 
 local chmod = stat.chmod
 local chown = unistd.chown
+local getegid = unistd.getegid
+local geteuid = unistd.geteuid
 local readfile = pl_utils.readfile
-local split = plutils.split
-local strip = stringx.strip
+local setpid = unistd.setpid
+local umask = stat.umask
 local writefile = pl_utils.writefile
-
-local config
-
-local src_root_dir = os.getenv("API_UMBRELLA_SRC_ROOT")
-local embedded_root_dir = os.getenv("API_UMBRELLA_EMBEDDED_ROOT")
 
 -- Fetch the DNS nameservers in use on this server out of the /etc/resolv.conf
 -- file.
@@ -41,7 +41,7 @@ local function read_resolv_conf_nameservers()
   local resolv_path = "/etc/resolv.conf"
   local resolv_file, err = io.open(resolv_path, "r")
   if err then
-    print("failed to open file: ", err)
+    ngx.log(ngx.WARN, "WARNING: Failed to open file: ", err)
   else
     for line in resolv_file:lines() do
       local nameserver = string.match(line, "^%s*nameserver%s+(.+)$")
@@ -59,66 +59,62 @@ local function read_resolv_conf_nameservers()
   return nameservers
 end
 
--- Read the runtime config file. This is a fully combined and merged config
--- file that reflects the active configuration that is available to a running
--- API Umbrella process.
---
--- This combines the default config with server-specific overrides
--- (/etc/api-umbrella/api-umbrella.yml), along with internally computed config
--- variables.
-local function read_runtime_config()
-  local runtime_config_path = os.getenv("API_UMBRELLA_RUNTIME_CONFIG")
-  if runtime_config_path then
-    local f, err = io.open(runtime_config_path, "rb")
-    if err then
-      print("Could not open config file '" .. runtime_config_path .. "'")
-      os.exit(1)
-    end
-
-    local content = f:read("*all")
-    f:close()
-
-    config = lyaml.load(content)
-    nillify_yaml_nulls(config)
-  end
-end
-
--- Read the default, global config for API Umbrella defined in the internal
--- config/default.yml file.
-local function read_default_config()
-  local content = readfile(path_join(src_root_dir, "config/default.yml"), true)
-  config = lyaml.load(content)
-  nillify_yaml_nulls(config)
-end
-
--- Read the /etc/api-umbrella/api-umbrella.yml config file that provides
--- server-specific overrides for API Umbrella configuration.
-local function read_system_config()
-  local config_paths = os.getenv("API_UMBRELLA_CONFIG") or "/etc/api-umbrella/api-umbrella.yml"
-  config_paths = split(config_paths, ":", true)
-  for _, config_path in ipairs(config_paths) do
-    if path_exists(config_path) then
-      local content = readfile(config_path, true)
-      if content then
-        local overrides = lyaml.load(content)
-
-        if overrides["apiSettings"] then
-          ngx.log(ngx.WARN, "Deprecated 'apiSettings' field. Use 'default_api_backend_settings' instead.")
-          if not overrides["default_api_backend_settings"] then
-            overrides["default_api_backend_settings"] = overrides["apiSettings"]
-          end
-          overrides["apiSettings"] = nil
-        end
-
-        deep_merge_overwrite_arrays(config, overrides)
-        nillify_yaml_nulls(config)
+local function process_api_backends(config)
+  if config["internal_apis"] then
+    for _, api in ipairs(config["internal_apis"]) do
+      if api["frontend_host"] == "{{router.web_app_host}}" then
+        api["frontend_host"] = config["router"]["web_app_host"]
       end
-    else
-      print("WARNING: Config file does not exist: ", config_path)
+
+      if api["servers"] then
+        for _, server in ipairs(api["servers"]) do
+          if server["host"] == "{{web.host}}" then
+            server["host"] = config["web"]["host"]
+          elseif server["host"] == "{{api_server.host}}" then
+            server["host"] = config["api_server"]["host"]
+          end
+
+          if server["port"] == "{{web.port}}" then
+            server["port"] = config["web"]["port"]
+          elseif server["port"] == "{{api_server.port}}" then
+            server["port"] = config["api_server"]["port"]
+          end
+        end
+      end
     end
   end
 
-  nillify_yaml_nulls(config)
+  local combined_apis = {}
+  append_array(combined_apis, config["internal_apis"] or {})
+  append_array(combined_apis, config["apis"] or {})
+  config["_apis"] = combined_apis
+  config["apis"] = nil
+  config["internal_apis"] = nil
+end
+
+local function process_website_backends(config)
+  if config["internal_website_backends"] then
+    for _, website in ipairs(config["internal_website_backends"]) do
+      if website["frontend_host"] == "{{router.web_app_host}}" then
+        website["frontend_host"] = config["router"]["web_app_host"]
+      end
+
+      if website["server_host"] == "{{static_site.host}}" then
+        website["server_host"] = config["static_site"]["host"]
+      end
+
+      if website["server_port"] == "{{static_site.port}}" then
+        website["server_port"] = config["static_site"]["port"]
+      end
+    end
+  end
+
+  local combined_website_backends = {}
+  append_array(combined_website_backends, config["internal_website_backends"] or {})
+  append_array(combined_website_backends, config["website_backends"] or {})
+  config["_website_backends"] = combined_website_backends
+  config["website_backends"] = nil
+  config["internal_website_backends"] = nil
 end
 
 -- After all the primary config is read from files and combined, perform
@@ -129,46 +125,18 @@ end
 --
 -- For configuration variables that are computed and the user cannot override
 -- in the config files, we denote those with an underscore prefix in the name.
-local function set_computed_config()
-  if not config["root_dir"] then
-    config["root_dir"] = os.getenv("API_UMBRELLA_ROOT") or "/opt/api-umbrella"
+local function set_computed_config(config)
+  if config["app_env"] == "test" then
+    config["log_dir"] = path_join(config["_src_root_dir"], "test/tmp/artifacts/log")
   end
 
-  if not config["etc_dir"] then
-    config["etc_dir"] = path_join(config["root_dir"], "etc")
-  end
-
-  if not config["var_dir"] then
-    config["var_dir"] = path_join(config["root_dir"], "var")
-  end
-
-  if not config["log_dir"] then
-    if config["app_env"] == "test" then
-      config["log_dir"] = path_join(src_root_dir, "test/tmp/artifacts/log")
-    else
-      config["log_dir"] = path_join(config["var_dir"], "log")
-    end
-  end
-
-  if not config["run_dir"] then
-    config["run_dir"] = path_join(config["var_dir"], "run")
-  end
-
-  if not config["tmp_dir"] then
-    config["tmp_dir"] = path_join(config["var_dir"], "tmp")
-  end
-
-  if not config["db_dir"] then
-    config["db_dir"] = path_join(config["var_dir"], "db")
-  end
+  process_api_backends(config)
+  process_website_backends(config)
+  cache_computed_api_backend_settings(config, config["default_api_backend_settings"])
 
   local trusted_proxies = config["router"]["trusted_proxies"] or {}
   if not array_includes(trusted_proxies, "127.0.0.1") then
     table.insert(trusted_proxies, "127.0.0.1")
-  end
-
-  if not config["hosts"] then
-    config["hosts"] = {}
   end
 
   local default_host_exists = false
@@ -215,10 +183,6 @@ local function set_computed_config()
   if default_hostname then
     config["_default_hostname"] = default_hostname
     config["_default_hostname_normalized"] = host_normalize(default_hostname)
-  end
-
-  if not config["web"] then
-    config["web"] = {}
   end
 
   -- Set the default host used for web application links (for mailers, contact
@@ -307,7 +271,7 @@ local function set_computed_config()
     for _, elasticsearch_url in ipairs(config["elasticsearch"]["hosts"]) do
       local parsed, parse_err = url_parse(elasticsearch_url)
       if not parsed or parse_err then
-        print("failed to parse: ", elasticsearch_url, parse_err)
+        ngx.log(ngx.WARN, "WARNING: Failed to parse: " .. (elasticsearch_url or "") .. " " .. (parse_err or ""))
       else
         parsed["port"] = tonumber(parsed["port"])
         if not parsed["port"] then
@@ -399,7 +363,7 @@ local function set_computed_config()
   config["nginx"]["_initial_proxy_send_timeout"] = config["nginx"]["proxy_send_timeout"] + 4
 
   if not config["user"] then
-    local euid = unistd.geteuid()
+    local euid = geteuid()
     if euid then
       local user = getpwuid(euid)
       if user then
@@ -410,7 +374,7 @@ local function set_computed_config()
   end
 
   if not config["group"] then
-    local egid = unistd.getegid()
+    local egid = getegid()
     if egid then
       local group = getgrgid(egid)
       if group then
@@ -421,9 +385,6 @@ local function set_computed_config()
   end
 
   deep_merge_overwrite_arrays(config, {
-    _embedded_root_dir = embedded_root_dir,
-    _src_root_dir = src_root_dir,
-    _api_umbrella_config_runtime_file = os.getenv("API_UMBRELLA_RUNTIME_CONFIG") or path_join(config["run_dir"], "runtime_config.yml"),
     _package_path = package.path,
     _package_cpath = package.cpath,
     ["_test_env?"] = (config["app_env"] == "test"),
@@ -449,9 +410,6 @@ local function set_computed_config()
     router = {
       trusted_proxies = trusted_proxies,
     },
-    gatekeeper = {
-      dir = src_root_dir,
-    },
     web = {
       admin = {
         auth_strategies = {
@@ -460,25 +418,36 @@ local function set_computed_config()
         },
       },
     },
-    static_site = {
-      build_dir = path_join(embedded_root_dir, "app/build/dist/example-website"),
-    },
   })
 
   if config["app_env"] == "development" then
-    config["_dev_env_install_dir"] = path_join(src_root_dir, "build/work/dev-env")
+    config["_dev_env_install_dir"] = path_join(config["_src_root_dir"], "build/work/dev-env")
   end
 
   if config["app_env"] == "test" then
-    config["_test_env_install_dir"] = path_join(src_root_dir, "build/work/test-env")
+    config["_test_env_install_dir"] = path_join(config["_src_root_dir"], "build/work/test-env")
   end
 end
 
-local function set_process_permissions()
+local function set_process_permissions(config)
   if config["group"] then
-    unistd.setpid("g", config["group"])
+    setpid("g", config["group"])
   end
-  stat.umask(tonumber(config["umask"], 8))
+  umask(tonumber(config["umask"], 8))
+end
+
+local function write_permissioned_file(path, content, config)
+  if not path_exists(path) then
+    mkdir_p(dirname(path))
+    writefile(path, "")
+  end
+
+  chmod(path, tonumber("0640", 8))
+  if config["group"] then
+    chown(path, nil, config["group"])
+  end
+
+  writefile(path, content)
 end
 
 -- Handle setup of random secret tokens that should be be unique for API
@@ -488,19 +457,41 @@ end
 -- explicitly given in the server's /etc/api-umbrella/api-umbrella.yml file so
 -- the secrets match across servers, but this provides defaults for a
 -- single-server installation.
-local function set_cached_random_tokens()
+local function set_cached_random_tokens(config)
   -- Only generate new new tokens if they haven't been explicitly set in the
   -- config files.
   if not config["secret_key"] or not config["static_site"]["api_key"] then
     -- See if there were any previous values for these random tokens on this
     -- server. If so, use any of those values that might be present instead.
-    local cached_path = path_join(config["run_dir"], "cached_random_config_values.yml")
-    local content = readfile(cached_path, true)
-    local cached = {}
-    if content then
-      cached = lyaml.load(content) or {}
-      deep_defaults(config, cached)
+    local cached_path = path_join(config["run_dir"], "cached_random_config_values.json")
+    local cached
+
+    -- Migrate/convert legacy yaml file to JSON file.
+    local legacy_yaml_cached_path = path_join(config["run_dir"], "cached_random_config_values.yml")
+    if path_exists(legacy_yaml_cached_path) and not path_exists(cached_path) then
+      local cue_result, cue_err = shell_blocking_capture({
+        "cue",
+        "export",
+        "--out", "json",
+        legacy_yaml_cached_path,
+      })
+      if cue_err then
+        ngx.log(ngx.WARN, "Failed to convert legacy cached random config data to new format: ", cue_err)
+      else
+        cached = json_decode(cue_result["output"])
+        write_permissioned_file(cached_path, json_encode(cached), config)
+        os.remove(legacy_yaml_cached_path)
+      end
+    else
+      local content = readfile(cached_path, true)
+      cached = {}
+      if content then
+        cached = json_decode(content) or {}
+        nillify_json_nulls(cached)
+      end
     end
+
+    deep_defaults(config, cached)
 
     -- If the tokens haven't already been written to the cache, generate them.
     if not config["secret_key"] or not config["static_site"]["api_key"] then
@@ -519,12 +510,7 @@ local function set_cached_random_tokens()
       end
 
       -- Persist the cached tokens.
-      mkdir_p(config["run_dir"])
-      writefile(cached_path, lyaml.dump({ cached }))
-      chmod(cached_path, tonumber("0640", 8))
-      if config["group"] then
-        chown(cached_path, nil, config["group"])
-      end
+      write_permissioned_file(cached_path, json_encode(cached), config)
 
       deep_defaults(config, cached)
     end
@@ -536,39 +522,64 @@ end
 -- This runtime config reflects the full state of the available config and can
 -- be used by other API Umbrella processes for reading the config (without
 -- having to actually merge and combine again).
-local function write_runtime_config()
-  local runtime_config_path = config["_api_umbrella_config_runtime_file"]
-  mkdir_p(dirname(runtime_config_path))
-  writefile(runtime_config_path, lyaml.dump({config}))
-  chmod(runtime_config_path, tonumber("0640", 8))
-  if config["group"] then
-    chown(runtime_config_path, nil, config["group"])
+local function write_runtime_config(config)
+  write_permissioned_file(config["_runtime_config_path"], json_encode(config), config)
+end
+
+local function parse_config()
+  local src_root_dir = os.getenv("API_UMBRELLA_SRC_ROOT")
+  local cue_args = {
+    "cue",
+    "export",
+    "--out", "json",
+    "--all-errors",
+    "--strict",
+    "--inject", "src_root_dir=" .. src_root_dir,
+    "--inject", "embedded_root_dir=" .. os.getenv("API_UMBRELLA_EMBEDDED_ROOT"),
+  }
+
+  local root_dir = os.getenv("API_UMBRELLA_ROOT")
+  if root_dir then
+    table.insert(cue_args, "--inject")
+    table.insert(cue_args, "root_dir=" .. root_dir)
   end
+
+  local runtime_config_path = os.getenv("API_UMBRELLA_RUNTIME_CONFIG")
+  if runtime_config_path then
+    table.insert(cue_args, "--inject")
+    table.insert(cue_args, "runtime_config_path=" .. runtime_config_path)
+  end
+
+  table.insert(cue_args, path_join(src_root_dir, "config/schema.cue"))
+
+  local config_path = os.getenv("API_UMBRELLA_CONFIG") or "/etc/api-umbrella/api-umbrella.yml"
+  if path_exists(config_path) then
+    table.insert(cue_args, config_path)
+  else
+    ngx.log(ngx.WARN, "WARNING: Config file does not exist: ", config_path)
+  end
+
+  local result, cue_err = shell_blocking_capture(cue_args)
+  if cue_err then
+    ngx.log(ngx.ERR, "Failed to parse configuration: ", cue_err)
+    os.exit(1)
+  end
+
+  local config = json_decode(result["output"])
+  nillify_json_nulls(config)
+
+  return config
 end
 
 return function(options)
-  -- If fetching config for the first time in this process, try to load the
-  -- runtime file for the existing combined/merged config.
-  if not config and (not options or not options["write"]) then
-    read_runtime_config()
+  local config = parse_config()
+  set_computed_config(config)
+  set_process_permissions(config)
+  set_cached_random_tokens(config)
+
+  if options and options["persist_runtime_config"] then
+    write_runtime_config(config)
   end
-
-  -- If no runtime config is present, or if we're forcing a runtime config
-  -- write (such as during a reload), then do all parsing & merging before
-  -- writing the runtime config.
-  if not config or (options and options["write"]) then
-    read_default_config()
-    read_system_config()
-    set_computed_config()
-    set_process_permissions()
-
-    if options and options["write"] then
-      set_cached_random_tokens()
-      write_runtime_config()
-    end
-  end
-
-  set_process_permissions()
 
   return config
 end

@@ -1,4 +1,4 @@
-local config = require "api-umbrella.proxy.models.file_config"
+local config = require("api-umbrella.utils.load_config")()
 local distributed_rate_limit_queue = require "api-umbrella.proxy.distributed_rate_limit_queue"
 
 local function bucket_keys(settings, user, limit, current_time)

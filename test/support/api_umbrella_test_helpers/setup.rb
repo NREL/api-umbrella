@@ -307,7 +307,8 @@ module ApiUmbrellaTestHelpers
 
         config = config.deep_stringify_keys
         config["version"] = SecureRandom.uuid
-        File.write(ApiUmbrellaTestHelpers::Process::CONFIG_OVERRIDES_PATH, YAML.dump(config))
+        ApiUmbrellaTestHelpers::Process.instance.write_test_config(config)
+
         self.api_umbrella_process.reload
         @@current_override_config = config.deep_dup
         Timeout.timeout(50) do

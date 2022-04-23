@@ -48,7 +48,7 @@ class Test::Processes::TestRpaths < Minitest::Test
     # Ensure each binary file has no rpath or runpath setting.
     bins.each do |path|
       output, _status = run_shell("chrpath", "-l", path)
-      assert_match("no rpath or runpath tag found", output)
+      assert_match(/(no rpath or runpath tag found|No dynamic section found)/, output)
     end
   end
 end

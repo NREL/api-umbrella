@@ -275,8 +275,8 @@ class Test::Apis::V1::Users::TestCreate < Minitest::Test
     attributes = FactoryBot.attributes_for(:api_user, {
       :settings => FactoryBot.attributes_for(:custom_rate_limit_api_user_settings, {
         :rate_limits => [
-          FactoryBot.attributes_for(:rate_limit, :duration => 5000, :limit_by => "ip", :limit => 10),
-          FactoryBot.attributes_for(:rate_limit, :duration => 5000, :limit_by => "ip", :limit => 20),
+          FactoryBot.attributes_for(:rate_limit, :duration => 5000, :limit_by => "ip", :limit_to => 10),
+          FactoryBot.attributes_for(:rate_limit, :duration => 5000, :limit_by => "ip", :limit_to => 20),
         ],
       }),
     })
@@ -298,8 +298,8 @@ class Test::Apis::V1::Users::TestCreate < Minitest::Test
     attributes = FactoryBot.attributes_for(:api_user, {
       :settings => FactoryBot.attributes_for(:custom_rate_limit_api_user_settings, {
         :rate_limits => [
-          FactoryBot.attributes_for(:rate_limit, :duration => 5000, :limit_by => "ip", :limit => 10),
-          FactoryBot.attributes_for(:rate_limit, :duration => 5000, :limit_by => "api_key", :limit => 20),
+          FactoryBot.attributes_for(:rate_limit, :duration => 5000, :limit_by => "ip", :limit_to => 10),
+          FactoryBot.attributes_for(:rate_limit, :duration => 5000, :limit_by => "api_key", :limit_to => 20),
         ],
       }),
     })

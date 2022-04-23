@@ -1,4 +1,4 @@
-local config = require "api-umbrella.proxy.models.file_config"
+local config = require("api-umbrella.utils.load_config")()
 
 local elasticsearch_encode_json = require "api-umbrella.utils.elasticsearch_encode_json"
 local get_user = require("api-umbrella.proxy.stores.api_users_store").get

@@ -1,4 +1,4 @@
-local config = require "api-umbrella.proxy.models.file_config"
+local config = require("api-umbrella.utils.load_config")()
 local lustache = require "lustache"
 local plutils = require "pl.utils"
 local re_split = require("ngx.re").split

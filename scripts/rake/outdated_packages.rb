@@ -8,6 +8,9 @@ class OutdatedPackages
     "crane" => {
       :git => "https://github.com/google/go-containerregistry.git",
     },
+    "cue" => {
+      :git => "https://github.com/cue-lang/cue.git",
+    },
     "envoy" => {
       :git => "https://github.com/envoyproxy/envoy.git",
     },

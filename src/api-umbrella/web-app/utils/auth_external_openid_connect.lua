@@ -1,6 +1,6 @@
 local auth_external_path = require "api-umbrella.web-app.utils.auth_external_path"
 local build_url = require "api-umbrella.utils.build_url"
-local config = require "api-umbrella.proxy.models.file_config"
+local config = require("api-umbrella.utils.load_config")()
 local deep_merge_overwrite_arrays = require "api-umbrella.utils.deep_merge_overwrite_arrays"
 local deepcopy = require("pl.tablex").deepcopy
 local json_decode = require("cjson").decode

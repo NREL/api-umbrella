@@ -9,7 +9,7 @@ local worker_group_init = require("api-umbrella.utils.worker_group").init
 worker_group_init()
 
 local basename = require("posix.libgen").basename
-local config = require "api-umbrella.proxy.models.file_config"
+local config = require("api-umbrella.utils.load_config")()
 local find_cmd = require "api-umbrella.utils.find_cmd"
 local json_decode = require("cjson").decode
 local path_join = require "api-umbrella.utils.path_join"

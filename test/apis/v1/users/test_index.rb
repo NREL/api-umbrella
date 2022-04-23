@@ -32,7 +32,7 @@ class Test::Apis::V1::Users::TestIndex < Minitest::Test
       :roles => ["role1", "role2"],
       :settings => FactoryBot.build(:custom_rate_limit_api_user_settings, {
         :rate_limits => [
-          FactoryBot.build(:rate_limit, :duration => 5000, :limit_by => "ip", :limit => 10),
+          FactoryBot.build(:rate_limit, :duration => 5000, :limit_by => "ip", :limit_to => 10),
         ],
       }),
       :throttle_by_ip => true,

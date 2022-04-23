@@ -81,3 +81,6 @@ gem "rainbow", "~> 3.1.1"
 
 # Debug printing
 gem "awesome_print", "~> 1.9.2"
+
+# Deep freezing of objects.
+gem "ice_nine", "~> 0.11.2"

@@ -349,7 +349,7 @@ class Test::AdminUi::TestApis < Minitest::Capybara::Test
 
     assert_equal(1, api.settings.rate_limits.length)
     rate_limit = api.settings.rate_limits.first
-    assert_equal(200, rate_limit.limit)
+    assert_equal(200, rate_limit.limit_to)
   end
 
   def test_nested_select_menu_behavior_inside_modals

@@ -176,21 +176,24 @@ return function(config, settings)
 
   if settings["rate_limits"] then
     for _, limit in ipairs(settings["rate_limits"]) do
-      -- Backwards compatibility for YAML configs with the old "limit" field
+      local num_buckets = math.ceil(limit["duration"] / limit["accuracy"])
+
+      -- Backwards compatibility for with the old "limit" field
       -- (instead of the renamed "limit_to" we now use for easier SQL
-      -- compatibility).
+      -- compatibility). The published config contains "limit" for API
+      -- compatibility purposes, but the API users data use "limit_to" since we
+      -- pull that directly from the database.
       if not limit["limit_to"] and limit["limit"] then
         limit["limit_to"] = limit["limit"]
         limit["limit"] = nil
       end
 
-      -- Backwards compatibility for YAML configs with the old camel-case
-      -- capitalization for "limit_by".
+      -- Backwards compatibility camel-case capitalization for "limit_by". The
+      -- published config uses "apiKey" while users from the database use the
+      -- raw "api_key" value
       if limit["limit_by"] == "apiKey" then
         limit["limit_by"] = "api_key"
       end
-
-      local num_buckets = math.ceil(limit["duration"] / limit["accuracy"])
 
       -- For each bucket in this limit, store the time difference we'll
       -- subtract from the current time when determining each bucket's time.

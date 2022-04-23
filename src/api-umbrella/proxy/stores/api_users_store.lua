@@ -1,6 +1,6 @@
 local api_key_prefixer = require("api-umbrella.utils.api_key_prefixer").prefix
 local cache_computed_api_backend_settings = require("api-umbrella.utils.active_config_store.cache_computed_api_backend_settings")
-local config = require "api-umbrella.proxy.models.file_config"
+local config = require("api-umbrella.utils.load_config")()
 local encryptor = require "api-umbrella.utils.encryptor"
 local hmac = require "api-umbrella.utils.hmac"
 local int64_to_string = require("api-umbrella.utils.int64").to_string

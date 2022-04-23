@@ -1,7 +1,7 @@
 local Admin = require "api-umbrella.web-app.models.admin"
 local build_url = require "api-umbrella.utils.build_url"
 local capture_errors = require("lapis.application").capture_errors
-local config = require "api-umbrella.proxy.models.file_config"
+local config = require("api-umbrella.utils.load_config")()
 local csrf = require "api-umbrella.web-app.utils.csrf"
 local flash = require "api-umbrella.web-app.utils.flash"
 local login_admin = require "api-umbrella.web-app.utils.login_admin"

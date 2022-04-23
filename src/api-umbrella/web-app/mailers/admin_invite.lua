@@ -1,5 +1,5 @@
 local build_url = require "api-umbrella.utils.build_url"
-local config = require "api-umbrella.proxy.models.file_config"
+local config = require("api-umbrella.utils.load_config")()
 local etlua = require "etlua"
 local mail = require "api-umbrella.utils.mail"
 local t = require("api-umbrella.web-app.utils.gettext").gettext

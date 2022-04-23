@@ -12,11 +12,8 @@ module ApiUmbrellaTestHelpers
     TEST_RUN_ROOT = File.join(API_UMBRELLA_SRC_ROOT, "test/tmp/run")
     TEST_RUN_API_UMBRELLA_ROOT = File.join(TEST_RUN_ROOT, "api-umbrella-root")
     TEST_ARTIFACTS_ROOT = File.join(API_UMBRELLA_SRC_ROOT, "test/tmp/artifacts")
-    DEFAULT_CONFIG_PATH = File.join(API_UMBRELLA_SRC_ROOT, "config/default.yml").freeze
-    CONFIG_PATH = File.join(API_UMBRELLA_SRC_ROOT, "config/test.yml").freeze
-    CONFIG_COMPUTED_PATH = File.join(TEST_RUN_ROOT, "test_computed.yml").freeze
-    CONFIG_OVERRIDES_PATH = File.join(TEST_RUN_ROOT, "test_overrides.yml").freeze
-    CONFIG = "#{CONFIG_PATH}:#{CONFIG_COMPUTED_PATH}:#{CONFIG_OVERRIDES_PATH}".freeze
+    TEST_CONFIG_PATH = File.join(API_UMBRELLA_SRC_ROOT, "config/test.yml").freeze
+    TEST_ACTIVE_CONFIG_PATH = File.join(TEST_RUN_ROOT, "test_active.yml").freeze
     @@incrementing_unique_ip_addr = IPAddr.new("200.0.0.1")
 
     def start
@@ -32,81 +29,19 @@ module ApiUmbrellaTestHelpers
 
       original_env = ENV.to_hash
       begin
-        elasticsearch_test_api_version = nil
-        if ENV["ELASTICSEARCH_TEST_API_VERSION"]
-          elasticsearch_test_api_version = ENV["ELASTICSEARCH_TEST_API_VERSION"].to_i
-        end
+        write_test_config({
+          "version" => "0",
+        })
 
-        elasticsearch_test_template_version = nil
-        if ENV["ELASTICSEARCH_TEST_TEMPLATE_VERSION"]
-          elasticsearch_test_template_version = ENV["ELASTICSEARCH_TEST_TEMPLATE_VERSION"].to_i
+        # Read the config from the runtime dump. This allows the tests to
+        # access the full config (accounting for merging config from multiple
+        # sources and any computed config settings).
+        config_dump_output, config_dump_status = Open3.capture2(test_environment_variables, File.join(API_UMBRELLA_SRC_ROOT, "bin/api-umbrella"), "dump-config")
+        unless config_dump_status.success?
+          warn "Error: Dump config failed:\n\n#{config_dump_output}"
+          exit config_dump_status.exitstatus
         end
-
-        elasticsearch_test_index_partition = nil
-        if ENV["ELASTICSEARCH_TEST_INDEX_PARTITION"]
-          elasticsearch_test_index_partition = ENV["ELASTICSEARCH_TEST_INDEX_PARTITION"]
-        end
-
-        # Read the initial test config file.
-        $config = YAML.load_file(DEFAULT_CONFIG_PATH)
-        $config.deep_merge!(YAML.load_file(CONFIG_PATH))
-
-        # Create an config file for computed overrides.
-        computed = {
-          "root_dir" => TEST_RUN_API_UMBRELLA_ROOT,
-          "geoip" => {
-            "maxmind_license_key" => ENV["MAXMIND_LICENSE_KEY"],
-          },
-        }
-        if(::Process.euid == 0)
-          # If tests are running as root (Docker environment), then add the
-          # user to run things as.
-          computed["user"] = "api-umbrella"
-          computed["group"] = "api-umbrella"
-        end
-        if elasticsearch_test_api_version
-          computed.deep_merge!({
-            "elasticsearch" => {
-              "api_version" => elasticsearch_test_api_version,
-            },
-          })
-        end
-        if elasticsearch_test_template_version
-          computed.deep_merge!({
-            "elasticsearch" => {
-              "template_version" => elasticsearch_test_template_version,
-            },
-          })
-        end
-        if elasticsearch_test_index_partition
-          computed.deep_merge!({
-            "elasticsearch" => {
-              "index_partition" => elasticsearch_test_index_partition,
-            },
-          })
-        end
-        if elasticsearch_test_api_version || elasticsearch_test_template_version || elasticsearch_test_index_partition
-          dir_suffix = [
-            elasticsearch_test_api_version,
-            elasticsearch_test_template_version,
-            elasticsearch_test_index_partition,
-          ].join("-")
-          computed.deep_merge!({
-            "elasticsearch" => {
-              "embedded_server_config" => {
-                "path" => {
-                  "data" => File.join(TEST_RUN_API_UMBRELLA_ROOT, "var/db/elasticsearch-#{dir_suffix}"),
-                  "logs" => File.join(TEST_ARTIFACTS_ROOT, "log/elasticsearch-#{dir_suffix}"),
-                },
-              },
-            },
-          })
-        end
-        File.write(CONFIG_COMPUTED_PATH, YAML.dump(computed))
-        $config.deep_merge!(YAML.load_file(CONFIG_COMPUTED_PATH))
-
-        # Create an empty config file for test-specific overrides.
-        File.write(CONFIG_OVERRIDES_PATH, YAML.dump({ "version" => 0 }))
+        $config = MultiJson.load(config_dump_output)
 
         # Trigger a build to ensure the tests get run with the latest
         # environment. This takes care of tasks in the sub-components, like
@@ -130,12 +65,10 @@ module ApiUmbrellaTestHelpers
         })
         ActiveRecord::Base.connection.execute("DROP DATABASE IF EXISTS #{ActiveRecord::Base.connection.quote_column_name($config["postgresql"]["database"])}")
 
-        db_setup_output, db_setup_status = Open3.capture2e({
-          "API_UMBRELLA_EMBEDDED_ROOT" => EMBEDDED_ROOT,
-          "API_UMBRELLA_CONFIG" => CONFIG,
+        db_setup_output, db_setup_status = Open3.capture2e(test_environment_variables.merge({
           "DB_USERNAME" => "postgres",
           "DB_PASSWORD" => "dev_password",
-        }, File.join(API_UMBRELLA_SRC_ROOT, "bin/api-umbrella"), "db-setup")
+        }), File.join(API_UMBRELLA_SRC_ROOT, "bin/api-umbrella"), "db-setup")
         unless db_setup_status.success?
           warn "Error: Database setup failed:\n\n#{db_setup_output}"
           exit db_setup_status.exitstatus
@@ -145,16 +78,14 @@ module ApiUmbrellaTestHelpers
         # process.
         $api_umbrella_process = ChildProcess.build(File.join(API_UMBRELLA_SRC_ROOT, "bin/api-umbrella"), "run")
         $api_umbrella_process.io.inherit!
-        $api_umbrella_process.environment["API_UMBRELLA_EMBEDDED_ROOT"] = EMBEDDED_ROOT
-        $api_umbrella_process.environment["API_UMBRELLA_CONFIG"] = CONFIG
+        $api_umbrella_process.environment.merge!(test_environment_variables)
         $api_umbrella_process.leader = true
         $api_umbrella_process.start
 
         # Run the health command to wait for API Umbrella to fully startup.
         health = ChildProcess.build(File.join(API_UMBRELLA_SRC_ROOT, "bin/api-umbrella"), "health", "--wait-for-status", "green", "--wait-timeout", "50")
         health.io.inherit!
-        health.environment["API_UMBRELLA_EMBEDDED_ROOT"] = EMBEDDED_ROOT
-        health.environment["API_UMBRELLA_CONFIG"] = CONFIG
+        health.environment.merge!(test_environment_variables)
         health.start
 
         progress = Thread.new do
@@ -180,17 +111,6 @@ module ApiUmbrellaTestHelpers
         if(health.crashed? || $api_umbrella_process.crashed?)
           raise "Did not start api-umbrella process for integration tests"
         end
-
-        # Once API Umbrella is started, read the config from the runtime file.
-        # This allows the tests to access the full config (accounting for
-        # merging config from multiple sources and any computed config
-        # settings).
-        runtime_config_path = File.join($config["root_dir"], "var/run/runtime_config.yml")
-        unless(File.exist?(runtime_config_path))
-          raise "runtime_config.yml file not found after starting: #{runtime_config_path.inspect}"
-        end
-
-        $config = YAML.load_file(runtime_config_path)
       ensure
         # Restore the original environment before we wiped the bundler
         # variables.
@@ -220,8 +140,7 @@ module ApiUmbrellaTestHelpers
         begin
           stop = ChildProcess.build(File.join(API_UMBRELLA_SRC_ROOT, "bin/api-umbrella"), "stop")
           stop.io.inherit!
-          stop.environment["API_UMBRELLA_EMBEDDED_ROOT"] = EMBEDDED_ROOT
-          stop.environment["API_UMBRELLA_CONFIG"] = CONFIG
+          stop.environment.merge!(test_environment_variables)
           stop.start
           stop.wait
 
@@ -237,8 +156,8 @@ module ApiUmbrellaTestHelpers
     def reload
       # Read the currently active config (to detect any changes in
       # $config["nginx"]["workers"]).
-      runtime_config_path = File.join($config["root_dir"], "var/run/runtime_config.yml")
-      $config = YAML.load_file(runtime_config_path)
+      runtime_config_path = File.join($config["root_dir"], "var/run/runtime_config.json")
+      $config = MultiJson.load(File.read(runtime_config_path))
 
       # Get the list of original nginx worker process PIDs on startup.
       nginx_parent_pid = perp_pid("nginx")
@@ -249,14 +168,16 @@ module ApiUmbrellaTestHelpers
       # Send the reload command.
       reload = ChildProcess.build(*[File.join(API_UMBRELLA_SRC_ROOT, "bin/api-umbrella"), "reload"].flatten.compact)
       reload.io.inherit!
-      reload.environment["API_UMBRELLA_EMBEDDED_ROOT"] = EMBEDDED_ROOT
-      reload.environment["API_UMBRELLA_CONFIG"] = CONFIG
+      reload.environment.merge!(test_environment_variables)
       reload.start
       reload.wait
+      if reload.crashed?
+        raise "Failed to reload api-umbrella"
+      end
 
       # Re-read the currently active config after reloading (to detect any
       # changes in $config["nginx"]["workers"]).
-      $config = YAML.load_file(runtime_config_path)
+      $config = MultiJson.load(File.read(runtime_config_path))
 
       # After sending the reload signal, wait until only the new set of worker
       # processes is running. This prevents race conditions from occurring
@@ -269,11 +190,7 @@ module ApiUmbrellaTestHelpers
     end
 
     def processes
-      env = {
-        "API_UMBRELLA_EMBEDDED_ROOT" => EMBEDDED_ROOT,
-        "API_UMBRELLA_CONFIG" => CONFIG,
-      }
-      output, status = Open3.capture2e(env, File.join(API_UMBRELLA_SRC_ROOT, "bin/api-umbrella"), "processes")
+      output, status = Open3.capture2e(test_environment_variables, File.join(API_UMBRELLA_SRC_ROOT, "bin/api-umbrella"), "processes")
 
       if status.exitstatus != 0
         raise "api-umbrella processes failed: #{output}"
@@ -502,6 +419,78 @@ module ApiUmbrellaTestHelpers
       rescue Timeout::Error
         raise "nginx child processes did not change during reload. original_child_pids: #{original_child_pids.inspect} new_child_pids: #{new_child_pids.inspect}"
       end
+    end
+
+    def static_test_config
+      unless @static_test_config
+        elasticsearch_test_api_version = nil
+        if ENV["ELASTICSEARCH_TEST_API_VERSION"]
+          elasticsearch_test_api_version = ENV.fetch("ELASTICSEARCH_TEST_API_VERSION").to_i
+        end
+
+        elasticsearch_test_template_version = nil
+        if ENV["ELASTICSEARCH_TEST_TEMPLATE_VERSION"]
+          elasticsearch_test_template_version = ENV.fetch("ELASTICSEARCH_TEST_TEMPLATE_VERSION").to_i
+        end
+
+        elasticsearch_test_index_partition = nil
+        if ENV["ELASTICSEARCH_TEST_INDEX_PARTITION"]
+          elasticsearch_test_index_partition = ENV.fetch("ELASTICSEARCH_TEST_INDEX_PARTITION")
+        end
+
+        static = YAML.load_file(TEST_CONFIG_PATH)
+
+        # Create an config file for computed overrides.
+        static.deep_merge!({
+          "root_dir" => TEST_RUN_API_UMBRELLA_ROOT,
+          "geoip" => {
+            "maxmind_license_key" => ENV.fetch("MAXMIND_LICENSE_KEY", nil),
+          },
+        })
+        if(::Process.euid == 0)
+          # If tests are running as root (Docker environment), then add the
+          # user to run things as.
+          static["user"] = "api-umbrella"
+          static["group"] = "api-umbrella"
+        end
+        if elasticsearch_test_api_version
+          static.deep_merge!({
+            "elasticsearch" => {
+              "api_version" => elasticsearch_test_api_version,
+            },
+          })
+        end
+        if elasticsearch_test_template_version
+          static.deep_merge!({
+            "elasticsearch" => {
+              "template_version" => elasticsearch_test_template_version,
+            },
+          })
+        end
+        if elasticsearch_test_index_partition
+          static.deep_merge!({
+            "elasticsearch" => {
+              "index_partition" => elasticsearch_test_index_partition,
+            },
+          })
+        end
+
+        @static_test_config = IceNine.deep_freeze(static)
+      end
+
+      @static_test_config
+    end
+
+    def write_test_config(test_config)
+      File.write(TEST_ACTIVE_CONFIG_PATH, YAML.dump(static_test_config.deep_merge(test_config)))
+    end
+
+    def test_environment_variables
+      {
+        "API_UMBRELLA_ROOT" => TEST_RUN_API_UMBRELLA_ROOT,
+        "API_UMBRELLA_EMBEDDED_ROOT" => EMBEDDED_ROOT,
+        "API_UMBRELLA_CONFIG" => TEST_ACTIVE_CONFIG_PATH,
+      }
     end
   end
 end

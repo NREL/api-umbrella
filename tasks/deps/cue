@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+cue_version="0.4.3"
+cue_hash="5e7ecb614b5926acfc36eb1258800391ab7c6e6e026fa7cacbfe92006bac895c"
+
+set -e -u -x
+source ./tasks/helpers.sh
+
+task_working_dir
+download "https://github.com/cue-lang/cue/releases/download/v${cue_version}/cue_v${cue_version}_linux_amd64.tar.gz" "sha256" "$cue_hash"
+extract_download "cue_v${cue_version}_linux_amd64.tar.gz"
+
+install -D -m 755 "cue" "$STAGE_EMBEDDED_DIR/bin/cue"
+
+stamp

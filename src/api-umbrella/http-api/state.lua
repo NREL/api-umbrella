@@ -1,5 +1,5 @@
 local active_config_store = require("api-umbrella.proxy.stores.active_config_store")
-local config = require "api-umbrella.proxy.models.file_config"
+local config = require("api-umbrella.utils.load_config")()
 local http = require "resty.http"
 local json_decode = require("cjson").decode
 local json_encode = require "api-umbrella.utils.json_encode"

@@ -1,5 +1,5 @@
 local active_config_exists = require("api-umbrella.proxy.stores.active_config_store").exists
-local config = require "api-umbrella.proxy.models.file_config"
+local config = require("api-umbrella.utils.load_config")()
 local elasticsearch = require "api-umbrella.utils.elasticsearch"
 local http = require "resty.http"
 local icu_date = require "icu-date-ffi"

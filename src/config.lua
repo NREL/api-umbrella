@@ -1,4 +1,4 @@
-local config = require "api-umbrella.proxy.models.file_config"
+local config = require("api-umbrella.utils.load_config")()
 local environment = require("lapis.environment")
 
 local app_env = config["app_env"]

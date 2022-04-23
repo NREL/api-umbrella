@@ -246,7 +246,7 @@ local function api_backend_settings_params(input_settings)
           id = input_rate_limit["id"],
           duration = input_rate_limit["duration"],
           limit_by = input_rate_limit["limit_by"],
-          limit_to = input_rate_limit["limit"],
+          limit_to = input_rate_limit["limit_to"] or input_rate_limit["limit"],
           distributed = input_rate_limit["distributed"],
           response_headers = input_rate_limit["response_headers"],
         }))

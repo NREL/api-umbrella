@@ -1,4 +1,4 @@
-local config = require "api-umbrella.proxy.models.file_config"
+local config = require("api-umbrella.utils.load_config")()
 local etlua_render = require("etlua").render
 local json_decode = require("cjson").decode
 local xpcall_error_handler = require "api-umbrella.utils.xpcall_error_handler"

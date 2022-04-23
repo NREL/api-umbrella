@@ -1,4 +1,4 @@
-local config = require "api-umbrella.proxy.models.file_config"
+local config = require("api-umbrella.utils.load_config")()
 local geoip_download_if_missing_or_old = require("api-umbrella.utils.geoip").download_if_missing_or_old
 local shell_blocking_capture_combined = require("shell-games").capture_combined
 

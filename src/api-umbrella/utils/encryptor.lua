@@ -8,7 +8,7 @@
 -- to be re-encrypted.
 
 local aes = require "resty.nettle.aes"
-local config = require "api-umbrella.proxy.models.file_config"
+local config = require("api-umbrella.utils.load_config")()
 local random_token = require "api-umbrella.utils.random_token"
 local resty_sha256 = require "resty.sha256"
 

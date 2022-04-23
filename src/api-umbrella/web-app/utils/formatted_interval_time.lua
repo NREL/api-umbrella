@@ -1,4 +1,4 @@
-local config = require "api-umbrella.proxy.models.file_config"
+local config = require("api-umbrella.utils.load_config")()
 local icu_date = require "icu-date-ffi"
 
 local date = icu_date.new({

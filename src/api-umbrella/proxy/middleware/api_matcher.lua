@@ -1,5 +1,5 @@
 local append_array = require "api-umbrella.utils.append_array"
-local config = require "api-umbrella.proxy.models.file_config"
+local config = require("api-umbrella.utils.load_config")()
 local matches_hostname = require "api-umbrella.utils.matches_hostname"
 local stringx = require "pl.stringx"
 local utils = require "api-umbrella.proxy.utils"

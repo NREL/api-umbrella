@@ -120,7 +120,7 @@ class Test::Apis::V1::Users::TestLiveChanges < Minitest::Test
         :settings => {
           :rate_limit_mode => "custom",
           :rate_limits => [
-            FactoryBot.attributes_for(:rate_limit, :limit => 10, :response_headers => true),
+            FactoryBot.attributes_for(:rate_limit, :limit_to => 10, :response_headers => true),
           ],
         },
       }),

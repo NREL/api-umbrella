@@ -4,7 +4,7 @@ FactoryBot.define do
     accuracy { 5000 }
     distributed { true }
     limit_by { "ip" }
-    limit { 500 }
+    limit_to { 500 }
     response_headers { false }
   end
 end

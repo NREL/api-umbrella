@@ -17,7 +17,7 @@ class Test::Proxy::RateLimits::TestSingleLimit < Minitest::Test
               :duration => 60 * 60 * 1000, # 1 hour
               :accuracy => 1 * 60 * 1000, # 1 minute
               :limit_by => "api_key",
-              :limit => 10,
+              :limit_to => 10,
               :distributed => true,
               :response_headers => true,
             },
@@ -79,7 +79,7 @@ class Test::Proxy::RateLimits::TestSingleLimit < Minitest::Test
             "duration" => 60 * 60 * 1000, # 1 hour
             "accuracy" => 1 * 60 * 1000, # 1 minute
             "limit_by" => "api_key",
-            "limit" => 70,
+            "limit_to" => 70,
             "distributed" => true,
             "response_headers" => true,
           },

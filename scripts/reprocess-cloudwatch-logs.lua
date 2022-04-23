@@ -1,10 +1,5 @@
-if not os.getenv("API_UMBRELLA_RUNTIME_CONFIG") then
-  local setenv = require("posix.stdlib").setenv
-  setenv("API_UMBRELLA_RUNTIME_CONFIG", os.getenv("API_UMBRELLA_ROOT") .. "/var/run/runtime_config.yml")
-end
-
 local argparse = require "argparse"
-local config = require "api-umbrella.proxy.models.file_config"
+local config = require("api-umbrella.utils.load_config")()
 local icu_date = require "icu-date-ffi"
 local json_decode = require("cjson").decode
 local log_utils = require "api-umbrella.proxy.log_utils"

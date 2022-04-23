@@ -4,7 +4,7 @@
 -- hash key. When this key changes, previously hashed data will need to be
 -- re-hashed.
 
-local config = require "api-umbrella.proxy.models.file_config"
+local config = require("api-umbrella.utils.load_config")()
 local hmac = require "resty.nettle.hmac"
 local to_hex = require("resty.string").to_hex
 

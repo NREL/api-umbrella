@@ -1,4 +1,4 @@
-local config = require "api-umbrella.proxy.models.file_config"
+local config = require("api-umbrella.utils.load_config")()
 local elasticsearch = require "api-umbrella.utils.elasticsearch"
 local elasticsearch_templates = require "api-umbrella.proxy.elasticsearch_templates_data"
 local icu_date = require "icu-date-ffi"

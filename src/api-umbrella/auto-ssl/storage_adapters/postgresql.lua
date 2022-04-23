@@ -1,4 +1,4 @@
-local config = require "api-umbrella.proxy.models.file_config"
+local config = require("api-umbrella.utils.load_config")()
 local encryptor = require "api-umbrella.utils.encryptor"
 local pg_encode_bytea = require("pgmoon").Postgres.encode_bytea
 local pg_utils = require "api-umbrella.utils.pg_utils"

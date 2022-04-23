@@ -1,4 +1,4 @@
-local file_config = require "api-umbrella.proxy.models.file_config"
+local file_config = require("api-umbrella.utils.load_config")()
 local http = require "resty.http"
 local json_decode = require("cjson").decode
 local json_encode = require "api-umbrella.utils.json_encode"

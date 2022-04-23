@@ -1,4 +1,4 @@
-local config = require "api-umbrella.proxy.models.file_config"
+local config = require("api-umbrella.utils.load_config")()
 local contact_mailer = require "api-umbrella.web-app.mailers.contact"
 local contact_policy = require "api-umbrella.web-app.policies.contact_policy"
 local is_empty = require "api-umbrella.utils.is_empty"

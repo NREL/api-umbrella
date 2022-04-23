@@ -1,6 +1,6 @@
 local active_config_store = require("api-umbrella.proxy.stores.active_config_store")
 local api_matcher = require "api-umbrella.proxy.middleware.api_matcher"
-local config = require "api-umbrella.proxy.models.file_config"
+local config = require("api-umbrella.utils.load_config")()
 local error_handler = require "api-umbrella.proxy.error_handler"
 local escape_uri_non_ascii = require "api-umbrella.utils.escape_uri_non_ascii"
 local host_normalize = require "api-umbrella.utils.host_normalize"

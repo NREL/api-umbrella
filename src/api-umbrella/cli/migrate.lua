@@ -1,12 +1,8 @@
-local read_config = require "api-umbrella.cli.read_config"
-local config = read_config({ write = true })
-
+local config = require("api-umbrella.utils.load_config")()
 local setenv = require("posix.stdlib").setenv
-setenv("API_UMBRELLA_RUNTIME_CONFIG", config["_api_umbrella_config_runtime_file"])
 
 -- Override the default config details that Lapis will use in src/config.lua
 -- and src/migrations.lua to connect to the database.
-config = require "api-umbrella.proxy.models.file_config"
 config["postgresql"]["username"] = config["postgresql"]["migrations"]["username"]
 config["postgresql"]["password"] = config["postgresql"]["migrations"]["password"]
 

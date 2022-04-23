@@ -1,1 +1,1 @@
-require "api-umbrella.proxy.models.file_config"
+require "api-umbrella.utils.load_config"

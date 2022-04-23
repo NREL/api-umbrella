@@ -76,6 +76,11 @@ function _M.version()
   os.exit(0)
 end
 
+function _M.dump_config(args)
+  local dump_config = require "api-umbrella.cli.dump_config"
+  dump_config(args)
+end
+
 function _M.help()
   print(parser:get_help())
 end
@@ -134,6 +139,10 @@ health_command:option("--wait-timeout")
   :default("50")
   :convert(tonumber)
   :show_default(true)
+
+parser:command("dump-config")
+  :description("Dump the full runtime configuration after parsing and loading files.")
+  :action(_M.dump_config)
 
 parser:command("version")
   :description("Print the API Umbrella version number.")

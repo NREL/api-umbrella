@@ -53,8 +53,8 @@ class Test::Apis::V0::TestAnalytics < Minitest::Test
     start_time = nil
     end_time = nil
     Time.use_zone($config["analytics"]["timezone"]) do
-      start_time = Time.zone.parse($config["web"]["analytics_v0_summary_start_time"].iso8601(3))
-      end_time = Time.zone.parse($config["web"]["analytics_v0_summary_end_time"].iso8601(3))
+      start_time = Time.zone.parse($config["web"]["analytics_v0_summary_start_time"])
+      end_time = Time.zone.parse($config["web"]["analytics_v0_summary_end_time"])
     end
     FactoryBot.create_list(:api_user, 3, :created_at => start_time)
     FactoryBot.create_list(:log_item, 1, :request_at => start_time, :response_time => 100, :request_host => backend1.frontend_host, :request_path => backend1.url_matches[0].frontend_prefix)

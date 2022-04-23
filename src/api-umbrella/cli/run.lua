@@ -1,9 +1,10 @@
+local config = require("api-umbrella.utils.load_config")({ persist_runtime_config = true })
 local path_join = require "api-umbrella.utils.path_join"
 local setup = require "api-umbrella.cli.setup"
 local status = require "api-umbrella.cli.status"
 local unistd = require "posix.unistd"
 
-local function start_perp(config, options)
+local function start_perp(options)
   local running, _ = status()
   if running then
     print "api-umbrella is already running"
@@ -45,6 +46,6 @@ local function start_perp(config, options)
 end
 
 return function(options)
-  local config = setup()
-  start_perp(config, options)
+  setup()
+  start_perp(options)
 end

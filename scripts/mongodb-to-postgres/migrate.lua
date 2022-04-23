@@ -1,6 +1,3 @@
-local read_config = require "api-umbrella.cli.read_config"
-read_config({ write = true })
-
 local aes = require "resty.aes"
 local api_key_prefixer = require("api-umbrella.utils.api_key_prefixer").prefix
 local argparse = require "argparse"

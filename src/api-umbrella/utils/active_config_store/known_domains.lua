@@ -1,4 +1,4 @@
-local file_config = require "api-umbrella.proxy.models.file_config"
+local file_config = require("api-umbrella.utils.load_config")()
 local psl = require "api-umbrella.utils.psl"
 
 local _M = {}

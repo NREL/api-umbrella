@@ -1,9 +1,9 @@
+local config = require("api-umbrella.utils.load_config")()
 local http = require "resty.http"
 local json_decode = require("cjson").decode
-local read_config = require "api-umbrella.cli.read_config"
 local unistd = require "posix.unistd"
 
-local function health(options, config)
+local function health(options)
   local status = "red"
   local exit_code = 1
   local err
@@ -38,8 +38,6 @@ local function health(options, config)
 end
 
 return function(options)
-  local config = read_config()
-
   -- Perform a health check using the API health endpoint.
   --
   -- By default, perform the health check and return the status immediately.
@@ -48,7 +46,7 @@ return function(options)
   -- that status (or better) is met (or until timeout).
   local status, exit_code, health_err, _
   if not options["wait_for_status"] then
-    status, exit_code, _ = health(options, config)
+    status, exit_code, _ = health(options)
   else
     -- Validate the wait_for_status param.
     local wait_for_status = options["wait_for_status"]
@@ -83,7 +81,7 @@ return function(options)
     -- connection errors if nginx hasn't yet bound to the expected port, or if
     -- the desired timeout is longer than the proxy read timeout.
     while true do
-      status, exit_code, health_err = health(options, config)
+      status, exit_code, health_err = health(options)
 
       -- If a low-level connection error wasn't returned, then we assume the
       -- API endpoint was hit and it already waited the proper amount of time,

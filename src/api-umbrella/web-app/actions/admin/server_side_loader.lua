@@ -1,5 +1,5 @@
 local common_validations = require "api-umbrella.web-app.utils.common_validations"
-local config = require "api-umbrella.proxy.models.file_config"
+local config = require("api-umbrella.utils.load_config")()
 local json_encode = require "api-umbrella.utils.json_encode"
 local respond_to = require "api-umbrella.web-app.utils.respond_to"
 

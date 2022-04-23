@@ -17,14 +17,14 @@ class Test::Proxy::RateLimits::TestUnlimited < Minitest::Test
               :duration => 60 * 60 * 1000, # 1 hour
               :accuracy => 1 * 60 * 1000, # 1 minute
               :limit_by => "api_key",
-              :limit => 5,
+              :limit_to => 5,
               :response_headers => true,
             },
             {
               :duration => 60 * 60 * 1000, # 1 hour
               :accuracy => 1 * 60 * 1000, # 1 minute
               :limit_by => "ip",
-              :limit => 5,
+              :limit_to => 5,
             },
           ],
         },

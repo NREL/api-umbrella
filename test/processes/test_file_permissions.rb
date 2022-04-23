@@ -112,14 +112,14 @@ class Test::Processes::TestFilePermissions < Minitest::Test
   end
 
   def test_run_runtime_config_file
-    stat = File.stat(File.join($config["run_dir"], "runtime_config.yml"))
+    stat = File.stat(File.join($config["run_dir"], "runtime_config.json"))
     assert_equal("100640", stat.mode.to_s(8))
     assert_process_owner(stat)
     assert_group(stat)
   end
 
   def test_run_cached_random_config_file
-    stat = File.stat(File.join($config["run_dir"], "cached_random_config_values.yml"))
+    stat = File.stat(File.join($config["run_dir"], "cached_random_config_values.json"))
     assert_equal("100640", stat.mode.to_s(8))
     assert_process_owner(stat)
     assert_group(stat)

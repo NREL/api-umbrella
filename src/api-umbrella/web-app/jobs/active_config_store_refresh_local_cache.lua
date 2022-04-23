@@ -1,4 +1,4 @@
-local config = require "api-umbrella.proxy.models.file_config"
+local config = require("api-umbrella.utils.load_config")()
 local refresh_local_cache = require("api-umbrella.web-app.stores.active_config_store").refresh_local_cache
 
 local delay = config["router"]["active_config"]["refresh_local_cache_interval"] -- in seconds

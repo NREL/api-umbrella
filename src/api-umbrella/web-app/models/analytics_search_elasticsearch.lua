@@ -1,7 +1,7 @@
 local AnalyticsCache = require "api-umbrella.web-app.models.analytics_cache"
 local add_error = require("api-umbrella.web-app.utils.model_ext").add_error
 local cjson = require "cjson.safe"
-local config = require "api-umbrella.proxy.models.file_config"
+local config = require("api-umbrella.utils.load_config")()
 local deepcopy = require("pl.tablex").deepcopy
 local elasticsearch = require "api-umbrella.utils.elasticsearch"
 local escape_regex = require "api-umbrella.utils.escape_regex"

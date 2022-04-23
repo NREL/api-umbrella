@@ -1,8 +1,4 @@
-local read_config = require "api-umbrella.cli.read_config"
-local config = read_config({ write = true })
-
-local setenv = require("posix.stdlib").setenv
-setenv("API_UMBRELLA_RUNTIME_CONFIG", config["_api_umbrella_config_runtime_file"])
+local config = require("api-umbrella.utils.load_config")()
 
 local etlua_render = require("etlua").render
 local path_join = require "api-umbrella.utils.path_join"

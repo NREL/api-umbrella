@@ -60,7 +60,7 @@ class Test::AdminUi::TestApiUsersRateLimits < Minitest::Capybara::Test
     assert_equal(60000, rate_limit.duration)
     assert_equal(5000, rate_limit.accuracy)
     assert_equal("ip", rate_limit.limit_by)
-    assert_equal(10, rate_limit.limit)
+    assert_equal(10, rate_limit.limit_to)
     assert_equal(true, rate_limit.distributed)
     assert_equal(false, rate_limit.response_headers)
 
@@ -68,7 +68,7 @@ class Test::AdminUi::TestApiUsersRateLimits < Minitest::Capybara::Test
     assert_equal(7200000, rate_limit.duration)
     assert_equal(600000, rate_limit.accuracy)
     assert_equal("ip", rate_limit.limit_by)
-    assert_equal(20, rate_limit.limit)
+    assert_equal(20, rate_limit.limit_to)
     assert_equal(true, rate_limit.distributed)
     assert_equal(true, rate_limit.response_headers)
 
@@ -76,7 +76,7 @@ class Test::AdminUi::TestApiUsersRateLimits < Minitest::Capybara::Test
     assert_equal(259200000, rate_limit.duration)
     assert_equal(21600000, rate_limit.accuracy)
     assert_equal("ip", rate_limit.limit_by)
-    assert_equal(30, rate_limit.limit)
+    assert_equal(30, rate_limit.limit_to)
     assert_equal(true, rate_limit.distributed)
     assert_equal(false, rate_limit.response_headers)
   end
@@ -103,15 +103,15 @@ class Test::AdminUi::TestApiUsersRateLimits < Minitest::Capybara::Test
 
     assert_equal(1, user.settings.rate_limits.length)
     rate_limit = user.settings.rate_limits.first
-    assert_equal(200, rate_limit.limit)
+    assert_equal(200, rate_limit.limit_to)
   end
 
   def test_remove_custom_rate_limits
     user = FactoryBot.create(:api_user, {
       :settings => FactoryBot.build(:custom_rate_limit_api_user_settings, {
         :rate_limits => [
-          FactoryBot.build(:rate_limit, :duration => 5000, :limit => 10),
-          FactoryBot.build(:rate_limit, :duration => 10000, :limit => 20),
+          FactoryBot.build(:rate_limit, :duration => 5000, :limit_to => 10),
+          FactoryBot.build(:rate_limit, :duration => 10000, :limit_to => 20),
         ],
       }),
     })
@@ -133,6 +133,6 @@ class Test::AdminUi::TestApiUsersRateLimits < Minitest::Capybara::Test
 
     assert_equal(1, user.settings.rate_limits.length)
     rate_limit = user.settings.rate_limits.first
-    assert_equal(20, rate_limit.limit)
+    assert_equal(20, rate_limit.limit_to)
   end
 end

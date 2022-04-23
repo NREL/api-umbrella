@@ -17,7 +17,7 @@ class Test::Proxy::RateLimits::TestUserLimits < Minitest::Test
               :duration => 60 * 60 * 1000, # 1 hour
               :accuracy => 1 * 60 * 1000, # 1 minute
               :limit_by => "api_key",
-              :limit => 5,
+              :limit_to => 5,
               :distributed => true,
               :response_headers => true,
             },
@@ -63,7 +63,7 @@ class Test::Proxy::RateLimits::TestUserLimits < Minitest::Test
               :duration => 60 * 60 * 1000, # 1 hour
               :accuracy => 1 * 60 * 1000, # 1 minute
               :limit_by => "api_key",
-              :limit => 10,
+              :limit_to => 10,
               :distributed => true,
               :response_headers => true,
             }),
@@ -80,7 +80,7 @@ class Test::Proxy::RateLimits::TestUserLimits < Minitest::Test
           :duration => 60 * 60 * 1000, # 1 hour
           :accuracy => 1 * 60 * 1000, # 1 minute
           :limit_by => "api_key",
-          :limit => 10,
+          :limit_to => 10,
           :distributed => true,
           :response_headers => true,
         }),
@@ -95,7 +95,7 @@ class Test::Proxy::RateLimits::TestUserLimits < Minitest::Test
     response = Typhoeus.get("http://127.0.0.1:9080/api/hello", http_opts)
     assert_equal("10", response.headers["x-ratelimit-limit"])
 
-    user.settings.rate_limits[0].limit = 90
+    user.settings.rate_limits[0].limit_to = 90
     user.settings.rate_limits[0].save!
 
     # Wait for any local caches to expire (2 seconds).

@@ -1,4 +1,4 @@
-local config = require "api-umbrella.proxy.models.file_config"
+local config = require("api-umbrella.utils.load_config")()
 local is_empty = require "api-umbrella.utils.is_empty"
 local request_api_umbrella_roles = require "api-umbrella.utils.request_api_umbrella_roles"
 local throw_authorization_error = require "api-umbrella.web-app.policies.throw_authorization_error"

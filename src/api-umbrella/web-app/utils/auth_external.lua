@@ -1,7 +1,7 @@
 local Admin = require "api-umbrella.web-app.models.admin"
 local build_url = require "api-umbrella.utils.build_url"
 local cas = require "api-umbrella.web-app.utils.auth_external_cas"
-local config = require "api-umbrella.proxy.models.file_config"
+local config = require("api-umbrella.utils.load_config")()
 local escape_html = require("lapis.html").escape
 local flash = require "api-umbrella.web-app.utils.flash"
 local is_empty = require "api-umbrella.utils.is_empty"

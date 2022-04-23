@@ -1,5 +1,5 @@
 local Admin = require "api-umbrella.web-app.models.admin"
-local config = require "api-umbrella.proxy.models.file_config"
+local config = require("api-umbrella.utils.load_config")()
 local csrf = require "api-umbrella.web-app.utils.csrf"
 local db = require "lapis.db"
 local error_messages_by_field = require "api-umbrella.web-app.utils.error_messages_by_field"

@@ -1,7 +1,5 @@
-local read_config = require "api-umbrella.cli.read_config"
-read_config({ write = true })
+local config = require("api-umbrella.utils.load_config")()
 
-local config = require "api-umbrella.proxy.models.file_config"
 config["elasticsearch"]["template_version"] = 2
 if config["elasticsearch"]["api_version"] < 5 then
   config["elasticsearch"]["api_version"] = 5

@@ -1,4 +1,4 @@
-local config = require "api-umbrella.proxy.models.file_config"
+local config = require("api-umbrella.utils.load_config")()
 local escape_html = require("lapis.html").escape
 local etlua = require "etlua"
 local is_empty = require "api-umbrella.utils.is_empty"

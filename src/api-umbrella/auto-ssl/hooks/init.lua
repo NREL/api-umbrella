@@ -1,4 +1,4 @@
-local config = require "api-umbrella.proxy.models.file_config"
+local config = require("api-umbrella.utils.load_config")()
 local path_join = require "api-umbrella.utils.path_join"
 
 auto_ssl = (require "resty.auto-ssl").new({

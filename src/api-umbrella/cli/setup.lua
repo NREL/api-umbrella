@@ -1,4 +1,5 @@
 local basename = require("posix.libgen").basename
+local config = require("api-umbrella.utils.load_config")()
 local escape_regex = require "api-umbrella.utils.escape_regex"
 local etlua_render = require("etlua").render
 local find_cmd = require "api-umbrella.utils.find_cmd"
@@ -8,7 +9,6 @@ local mkdir_p = require "api-umbrella.utils.mkdir_p"
 local path_exists = require "api-umbrella.utils.path_exists"
 local path_join = require "api-umbrella.utils.path_join"
 local pl_utils = require "pl.utils"
-local read_config = require "api-umbrella.cli.read_config"
 local shell_blocking_capture_combined = require("shell-games").capture_combined
 local stat = require "posix.sys.stat"
 local tablex = require "pl.tablex"
@@ -19,8 +19,6 @@ local chmod = stat.chmod
 local chown = unistd.chown
 local readfile = pl_utils.readfile
 local writefile = pl_utils.writefile
-
-local config
 
 local function permission_check()
   local effective_uid = unistd.geteuid()
@@ -423,7 +421,6 @@ local function activate_services()
 end
 
 return function()
-  config = read_config({ write = true })
   permission_check()
   prepare()
   generate_self_signed_cert()
@@ -433,6 +430,4 @@ return function()
   write_static_site_key()
   set_permissions()
   activate_services()
-
-  return config
 end

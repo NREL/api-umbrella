@@ -1,6 +1,6 @@
 local append_array = require "api-umbrella.utils.append_array"
 local deepcopy = require("pl.tablex").deepcopy
-local file_config = require "api-umbrella.proxy.models.file_config"
+local file_config = require("api-umbrella.utils.load_config")()
 local int64_to_string = require("api-umbrella.utils.int64").to_string
 
 local function build_combined_api_backends(published_config)

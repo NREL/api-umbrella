@@ -1,3 +1,4 @@
+local config = require("api-umbrella.utils.load_config")({ persist_runtime_config = true })
 local path_join = require "api-umbrella.utils.path_join"
 local setup = require "api-umbrella.cli.setup"
 local shell_blocking_capture_combined = require("shell-games").capture_combined
@@ -11,7 +12,7 @@ local function reload_perp(perp_base)
   end
 end
 
-local function reload_trafficserver(config)
+local function reload_trafficserver()
   local _, err = shell_blocking_capture_combined({ "env", "TS_ROOT=" .. config["root_dir"], "traffic_ctl", "config", "reload" })
   if err then
     print("Failed to reload trafficserver\n" .. err)
@@ -68,9 +69,9 @@ return function(options)
     os.exit(7)
   end
 
-  local config = setup()
   local perp_base = path_join(config["etc_dir"], "perp")
 
+  setup()
   reload_perp(perp_base)
 
   if config["_service_web_enabled?"] then

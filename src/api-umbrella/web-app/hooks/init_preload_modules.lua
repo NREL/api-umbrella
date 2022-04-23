@@ -1,5 +1,4 @@
 -- Pre-load modules.
-require "api-umbrella.proxy.models.file_config"
 require "api-umbrella.utils.active_config_store.build_web_app_active_config"
 require "api-umbrella.utils.active_config_store.fetch_published_config_for_setting_active_config"
 require "api-umbrella.utils.active_config_store.polling_set_active_config"
@@ -25,6 +24,7 @@ require "api-umbrella.utils.is_array"
 require "api-umbrella.utils.is_empty"
 require "api-umbrella.utils.is_hash"
 require "api-umbrella.utils.json_encode"
+require "api-umbrella.utils.load_config"
 require "api-umbrella.utils.mail"
 require "api-umbrella.utils.nillify_json_nulls"
 require "api-umbrella.utils.nillify_yaml_nulls"

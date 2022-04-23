@@ -1,5 +1,5 @@
+local config = require("api-umbrella.utils.load_config")()
 local path_join = require "api-umbrella.utils.path_join"
-local read_config = require "api-umbrella.cli.read_config"
 local status = require "api-umbrella.cli.status"
 local unistd = require "posix.unistd"
 
@@ -23,7 +23,6 @@ return function()
     os.exit(1)
   end
 
-  local config = read_config()
   local perp_base = path_join(config["etc_dir"], "perp")
   list_processes(perp_base)
 end
