@@ -24,7 +24,7 @@ ENV["PATH"] = [
   "#{API_UMBRELLA_SRC_ROOT}/build/work/test-env/sbin",
   "#{API_UMBRELLA_SRC_ROOT}/build/work/dev-env/bin",
   "#{API_UMBRELLA_SRC_ROOT}/build/work/dev-env/sbin",
-  ENV["PATH"],
+  ENV.fetch("PATH"),
 ].join(":")
 
 # Set a random time zone to ensure tests aren't time zone specific.

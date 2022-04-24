@@ -225,7 +225,7 @@ class Test::Proxy::Dns::TestCustomServer < Minitest::Test
       #
       # We default to 20 seconds, but allow an environment variable override
       # for much longer tests for debugging.
-      test_duration = (ENV["CONNECTION_DROPS_DURATION"] || 20).to_i
+      test_duration = ENV.fetch("CONNECTION_DROPS_DURATION", 20).to_i
       start_time = Time.now.utc
       hydra = Typhoeus::Hydra.new(:max_concurrency => 25)
       requests = []

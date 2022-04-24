@@ -169,7 +169,7 @@ namespace :maps do
   task :generate do
     require "fileutils"
 
-    $input_dir = ENV["INPUT_DIR"] || File.join(API_UMBRELLA_SRC_ROOT, "build/work/maps")
+    $input_dir = ENV.fetch("INPUT_DIR", File.join(API_UMBRELLA_SRC_ROOT, "build/work/maps"))
     FileUtils.rm_rf(File.join($input_dir, "tmp"))
     FileUtils.mkdir_p(File.join($input_dir, "tmp"))
 

@@ -4,10 +4,12 @@ node:
 
 dynamic_resources:
   cds_config:
-    path: <%- config["run_dir"] %>/envoy/cds.json
+    path_config_source:
+      path: <%- config["run_dir"] %>/envoy/cds.json
     resource_api_version: V3
   lds_config:
-    path: <%- config["run_dir"] %>/envoy/lds.json
+    path_config_source:
+      path: <%- config["run_dir"] %>/envoy/lds.json
     resource_api_version: V3
 
 admin:

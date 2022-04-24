@@ -219,11 +219,16 @@ local function build_lds(config_version, rds_path)
                   http_filters = {
                     {
                       name = "envoy.filters.http.router",
+                      typed_config = {
+                        ["@type"] = "type.googleapis.com/envoy.extensions.filters.http.router.v3.Router",
+                      },
                     },
                   },
                   rds = {
                     config_source = {
-                      path = rds_path,
+                      path_config_source = {
+                        path = rds_path,
+                      },
                       resource_api_version = "V3",
                     },
                   },

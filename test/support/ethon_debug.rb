@@ -13,7 +13,7 @@ module Ethon
         @debug_callback ||= proc do |handle, type, data, size, udata|
           message = data.read_string(size)
           @debug_info.add type, message
-          if(ENV["DEBUG_HTTP"] == "true")
+          if(ENV.fetch("DEBUG_HTTP", nil) == "true")
             print message unless [:data_in, :data_out].include?(type)
           end
           0
