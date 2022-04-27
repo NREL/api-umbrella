@@ -199,17 +199,6 @@ module ApiUmbrellaTestHelpers
 
     private
 
-    @@test_rails_secret_token = nil
-    def test_rails_secret_token
-      unless @@test_rails_secret_token
-        test_config = YAML.load_file(File.join(API_UMBRELLA_SRC_ROOT, "config/test.yml"))
-        @@test_rails_secret_token = test_config["web"]["rails_secret_token"]
-        assert(@@test_rails_secret_token)
-      end
-
-      @@test_rails_secret_token
-    end
-
     def csrf_session_data(csrf_token_key)
       { "csrf_token_key" => csrf_token_key }
     end
