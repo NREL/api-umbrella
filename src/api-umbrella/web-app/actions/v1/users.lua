@@ -12,6 +12,7 @@ local deepcopy = require("pl.tablex").deepcopy
 local escape_html = require("lapis.html").escape
 local flatten_headers = require "api-umbrella.utils.flatten_headers"
 local is_array = require "api-umbrella.utils.is_array"
+local is_email = require "api-umbrella.utils.is_email"
 local is_empty = require "api-umbrella.utils.is_empty"
 local is_hash = require "api-umbrella.utils.is_hash"
 local json_response = require "api-umbrella.web-app.utils.json_response"
@@ -19,6 +20,7 @@ local known_domains = require "api-umbrella.utils.known_domains"
 local parse_post_for_pseudo_ie_cors = require "api-umbrella.web-app.utils.parse_post_for_pseudo_ie_cors"
 local require_admin = require "api-umbrella.web-app.utils.require_admin"
 local respond_to = require "api-umbrella.web-app.utils.respond_to"
+local startswith = require("pl.stringx").startswith
 local validation_ext = require "api-umbrella.web-app.utils.validation_ext"
 local wrapped_json_params = require "api-umbrella.web-app.utils.wrapped_json_params"
 
@@ -29,6 +31,11 @@ local _M = {}
 
 local function get_options(self)
   local options = deepcopy(self.params["options"]) or {}
+
+  if options["contact_url"] and not startswith(options["contact_url"], "mailto:") and is_email(options["contact_url"]) then
+    options["contact_url"] = "mailto:" .. options["contact_url"]
+  end
+
   options["example_api_url"] = known_domains.sanitized_api_url(options["example_api_url"])
   options["contact_url"] = known_domains.sanitized_url(options["contact_url"])
   options["email_from_address"] = known_domains.sanitized_email(options["email_from_address"])

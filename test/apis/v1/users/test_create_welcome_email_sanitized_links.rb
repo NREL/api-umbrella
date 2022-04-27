@@ -159,6 +159,74 @@ class Test::Apis::V1::Users::TestCreateWelcomeEmailSanitizedLinks < Minitest::Te
     end
   end
 
+  def test_explicit_allowed_url_config
+    refute_host_links("github.com")
+    refute_host_links("test.example.com")
+
+    override_config({
+      "web" => {
+        "allowed_signup_embed_urls_regex" => "^(https://github\\.com/nrel/|https://test.example\\.com/foo/|mailto:foo@test.example\\.com|bar@test.example\\.com)",
+      },
+    }) do
+      refute_host_links("github.com")
+      refute_host_links("test.example.com")
+
+      message = create_user({
+        :contact_url => "https://github.com/github/example/issues",
+      })
+      refute_match("github.com", message.fetch("_mime_parts").fetch("text/plain").fetch("_body"))
+
+      message = create_user({
+        :contact_url => "https://foo.example.com/foo/bar/",
+      })
+      refute_match("foo.example.com", message.fetch("_mime_parts").fetch("text/plain").fetch("_body"))
+
+      message = create_user({
+        :email_from_address => "bar@test.example.com",
+        :contact_url => "https://github.com/NREL/api-umbrella/issues",
+      })
+      assert_equal(["bar@test.example.com"], message.fetch("Content").fetch("Headers").fetch("From"))
+      assert_match("https://github.com/NREL/api-umbrella/issues", message.fetch("_mime_parts").fetch("text/plain").fetch("_body"))
+
+      message = create_user({
+        :contact_url => "https://test.example.com/foo/bar/",
+      })
+      assert_match("https://test.example.com/foo/bar/", message.fetch("_mime_parts").fetch("text/plain").fetch("_body"))
+
+      message = create_user({
+        :contact_url => "mailto:foo@test.example.com",
+      })
+      assert_match(/(?!mailto:)foo@test\.example\.com/, message.fetch("_mime_parts").fetch("text/plain").fetch("_body"))
+      assert_match("mailto:foo@test.example.com", message.fetch("_mime_parts").fetch("text/html").fetch("_body"))
+    end
+  end
+
+  def test_prepends_missing_mailto_on_contact_url_response
+    prepend_api_backends([
+      {
+        :frontend_host => unique_test_hostname,
+        :backend_host => "127.0.0.1",
+        :servers => [{ :host => "127.0.0.1", :port => 9444 }],
+        :url_matches => [{ :frontend_prefix => "/#{unique_test_id}/", :backend_prefix => "/" }],
+      },
+    ]) do
+      response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(admin_token).deep_merge({
+        :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
+        :body => {
+          :user => FactoryBot.attributes_for(:api_user),
+          :options => {
+            :send_welcome_email => true,
+            :contact_url => "example@#{unique_test_hostname}",
+          },
+        },
+      }))
+      assert_response_code(201, response)
+
+      data = MultiJson.load(response.body)
+      assert_equal("mailto:example@#{unique_test_hostname}", data.fetch("options").fetch("contact_url"))
+    end
+  end
+
   private
 
   def create_user(options = {})
@@ -197,6 +265,12 @@ class Test::Apis::V1::Users::TestCreateWelcomeEmailSanitizedLinks < Minitest::Te
     })
     assert_match(/(?!mailto:)#{Regexp.escape("example@#{host}")}/, message.fetch("_mime_parts").fetch("text/plain").fetch("_body"))
     assert_match("mailto:example@#{host}", message.fetch("_mime_parts").fetch("text/html").fetch("_body"))
+
+    message = create_user({
+      :contact_url => "example@#{host}",
+    })
+    assert_match(/(?!mailto:)#{Regexp.escape("example@#{host}")}/, message.fetch("_mime_parts").fetch("text/plain").fetch("_body"))
+    assert_match("mailto:example@#{host}", message.fetch("_mime_parts").fetch("text/html").fetch("_body"))
   end
 
   def refute_host_links(host)
@@ -215,6 +289,12 @@ class Test::Apis::V1::Users::TestCreateWelcomeEmailSanitizedLinks < Minitest::Te
     })
     assert_match("https://localhost/contact", message.fetch("_mime_parts").fetch("text/plain").fetch("_body"))
     assert_match("https://localhost/contact", message.fetch("_mime_parts").fetch("text/html").fetch("_body"))
+
+    message = create_user({
+      :contact_url => "example@#{host}",
+    })
+    assert_match("https://localhost/contact", message.fetch("_mime_parts").fetch("text/plain").fetch("_body"))
+    assert_match("https://localhost/contact", message.fetch("_mime_parts").fetch("text/html").fetch("_body"))
   end
 
   def assert_contact_only_host_links(host)
@@ -230,6 +310,12 @@ class Test::Apis::V1::Users::TestCreateWelcomeEmailSanitizedLinks < Minitest::Te
 
     message = create_user({
       :contact_url => "mailto:example@#{host}",
+    })
+    assert_match(/(?!mailto:)#{Regexp.escape("example@#{host}")}/, message.fetch("_mime_parts").fetch("text/plain").fetch("_body"))
+    assert_match("mailto:example@#{host}", message.fetch("_mime_parts").fetch("text/html").fetch("_body"))
+
+    message = create_user({
+      :contact_url => "example@#{host}",
     })
     assert_match(/(?!mailto:)#{Regexp.escape("example@#{host}")}/, message.fetch("_mime_parts").fetch("text/plain").fetch("_body"))
     assert_match("mailto:example@#{host}", message.fetch("_mime_parts").fetch("text/html").fetch("_body"))

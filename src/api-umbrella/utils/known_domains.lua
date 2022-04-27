@@ -1,7 +1,11 @@
+local config = require "api-umbrella.proxy.models.file_config"
 local get_packed = require("api-umbrella.utils.packed_shared_dict").get_packed
 local is_empty = require "api-umbrella.utils.is_empty"
 local psl = require "api-umbrella.utils.psl"
 local url_parse = require("socket.url").parse
+
+local re_find = ngx.re.find
+local re_match = ngx.re.match
 
 local _M = {}
 
@@ -17,7 +21,7 @@ end
 local function email_domain(email)
   local domain
   if email then
-    local matches, match_err = ngx.re.match(email, [[@([^\s>]+)]], "jo")
+    local matches, match_err = re_match(email, [[@([^\s>]+)]], "jo")
     if matches and matches[1] then
       domain = matches[1]
     elseif match_err then
@@ -44,6 +48,25 @@ local function url_domain(url)
   end
 
   return domain
+end
+
+local function is_explicitly_allowed_url(url)
+  local regex = config["web"]["allowed_signup_embed_urls_regex"]
+  if not regex then
+    return false
+  end
+
+  local find_from, _, find_err = re_find(url, regex, "ijo")
+  if find_err then
+    ngx.log(ngx.ERR, "regex error: ", find_err)
+    return false
+  end
+
+  if find_from then
+    return true
+  else
+    return false
+  end
 end
 
 function _M.is_allowed_domain(domain)
@@ -74,6 +97,10 @@ function _M.sanitized_url(url)
     return nil
   end
 
+  if is_explicitly_allowed_url(url) then
+    return url
+  end
+
   local domain = url_domain(url)
   if _M.is_allowed_domain(domain) then
     return url
@@ -88,6 +115,10 @@ function _M.sanitized_api_url(url)
     return nil
   end
 
+  if is_explicitly_allowed_url(url) then
+    return url
+  end
+
   local domain = url_domain(url)
   if _M.is_allowed_api_domain(domain) then
     return url
@@ -100,6 +131,10 @@ end
 function _M.sanitized_email(email)
   if is_empty(email) then
     return nil
+  end
+
+  if is_explicitly_allowed_url(email) then
+    return email
   end
 
   local domain = email_domain(email)
