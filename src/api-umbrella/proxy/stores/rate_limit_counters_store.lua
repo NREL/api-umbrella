@@ -199,17 +199,29 @@ local function increment_all_limits(self)
   local header_remaining
   local header_reset
 
+  local user = self.user
+  local settings = self.settings
+  local anonymous_rate_limit_behavior = settings["anonymous_rate_limit_behavior"]
+  local authenticated_rate_limit_behavior = settings["authenticated_rate_limit_behavior"]
+
   for rate_limit_index, rate_limit in ipairs(self.rate_limits) do
-    local limit_exceeded, limit_remaining, limit_reset = increment_limit(self, rate_limit_index, rate_limit)
+    -- These two settings act to disable IP vs API key limits depending on
+    -- whether or not anonymous users are allowed. So skip processing if either
+    -- setting is forcing this limit to be disabled in the current request's
+    -- context.
+    local limit_by = rate_limit["limit_by"]
+    if not ((limit_by == "api_key" and not user and anonymous_rate_limit_behavior == "ip_only") or (limit_by == "ip" and user and authenticated_rate_limit_behavior == "api_key_only")) then
+      local limit_exceeded, limit_remaining, limit_reset = increment_limit(self, rate_limit_index, rate_limit)
 
-    if rate_limit["response_headers"] or limit_exceeded then
-      header_remaining = limit_remaining
-      header_reset = limit_reset
-    end
+      if rate_limit["response_headers"] or limit_exceeded then
+        header_remaining = limit_remaining
+        header_reset = limit_reset
+      end
 
-    if limit_exceeded then
-      exceeded = true
-      break
+      if limit_exceeded then
+        exceeded = true
+        break
+      end
     end
   end
 
@@ -237,7 +249,10 @@ function _M.check(api, settings, user, remote_addr)
     exceeded, header_remaining, header_reset = increment_all_limits(self)
   end
 
-  local header_limit = settings["_rate_limits_response_header_limit"]
+  local header_limit
+  if header_remaining then
+    header_limit = settings["_rate_limits_response_header_limit"]
+  end
 
   return exceeded, header_limit, header_remaining, header_reset
 end
