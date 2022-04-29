@@ -7,6 +7,7 @@ local table_clear = require "table.clear"
 local table_copy = require("pl.tablex").copy
 local table_new = require "table.new"
 
+local ceil = math.ceil
 local counters_dict = ngx.shared.rate_limit_counters
 local exceeded_dict = ngx.shared.rate_limit_exceeded
 local floor = math.floor
@@ -77,7 +78,7 @@ local function get_rate_limit_key(self, rate_limit_index, rate_limit)
     ngx.log(ngx.ERR, "rate limit unknown limit by")
   end
 
-  local key = key_limit_by .. ":" .. rate_limit["duration"] .. ":" .. self.bucket_name .. ":" .. key_value
+  local key = key_limit_by .. "|" .. rate_limit["duration"] .. "|" .. self.bucket_name .. "|" .. key_value
   self.rate_limit_keys[rate_limit_index] = key
   return key
 end
@@ -110,9 +111,8 @@ local function has_already_exceeded_any_limits(self)
       exceed_expires_at, exceed_expires_at_err = exceeded_dict:get(rate_limit_key)
       if not exceed_expires_at and exceed_expires_at_err then
         ngx.log(ngx.ERR, "Error fetching rate limit exceeded: ", exceed_expires_at_err)
-      end
-      if exceed_expires_at then
-        exceeded_local_cache:set(rate_limit_key, exceed_expires_at - current_time)
+      elseif exceed_expires_at then
+        exceeded_local_cache:set(rate_limit_key, exceed_expires_at, exceed_expires_at - current_time)
         break
       end
     end
@@ -121,7 +121,7 @@ local function has_already_exceeded_any_limits(self)
   if exceed_expires_at and exceed_expires_at >= current_time then
     exceeded = true
     header_remaining = 0
-    header_reset = exceed_expires_at - current_time
+    header_reset = ceil(exceed_expires_at - current_time)
   end
 
   return exceeded, header_remaining, header_reset
@@ -139,12 +139,13 @@ local function check_limit(rate_limit_key, limit_to, duration, current_time, cur
     estimated_count = current_window_count
   else
     local previous_window_time = current_window_time - duration
-    local previous_window_key = rate_limit_key .. ":" .. previous_window_time
+    local previous_window_key = rate_limit_key .. "|" .. previous_window_time
     local previous_window_count, previous_window_count_err = counters_dict:get(previous_window_key)
-    if not previous_window_count and previous_window_count_err then
-      ngx.log(ngx.ERR, "Error fetching rate limit counter: ", previous_window_count_err)
-    end
     if not previous_window_count then
+      if previous_window_count_err then
+        ngx.log(ngx.ERR, "Error fetching rate limit counter: ", previous_window_count_err)
+      end
+
       previous_window_count = 0
     end
 
@@ -156,8 +157,9 @@ local function check_limit(rate_limit_key, limit_to, duration, current_time, cur
   if estimated_count > limit_to then
     exceeded = true
     remaining = 0
-    reset = current_time + time_in_previous_window
-    local set_ok, set_err, set_forcible = exceeded_dict:set(rate_limit_key, reset, time_in_previous_window)
+    reset = ceil(time_in_previous_window)
+    local exceed_expires_at = current_time + time_in_previous_window
+    local set_ok, set_err, set_forcible = exceeded_dict:set(rate_limit_key, exceed_expires_at, reset)
     if not set_ok then
       ngx.log(ngx.ERR, "failed to set exceeded key in 'rate_limit_exceeded' shared dict: ", set_err)
     elseif set_forcible then
@@ -176,7 +178,7 @@ local function increment_limit(self, rate_limit_index, rate_limit)
   local current_time = self.current_time
   local duration = rate_limit["_duration_sec"]
   local current_window_time = floor(current_time / duration) * duration
-  local current_window_key = rate_limit_key .. ":" .. current_window_time
+  local current_window_key = rate_limit_key .. "|" .. current_window_time
   local current_window_ttl = duration * 2 + 1
   local current_window_count, incr_err, incr_forcible = counters_dict:incr(current_window_key, 1, 0, current_window_ttl)
   if incr_err then
@@ -251,7 +253,7 @@ function _M.distributed_push()
 
   local success = true
   for key, count in pairs(data) do
-    local key_parts = split(key, ":", true)
+    local key_parts = split(key, "|", true)
     local duration = tonumber(key_parts[2])
     local window_start_time = tonumber(key_parts[5])
     local expires_at = (window_start_time + duration + 1)
@@ -280,10 +282,11 @@ end
 function _M.distributed_pull()
   local current_fetch_time = now()
   local last_fetched_version, last_fetched_version_err = jobs_dict:get("rate_limit_counters_store_distributed_last_fetched_version")
-  if not last_fetched_version and last_fetched_version_err then
-    ngx.log(ngx.ERR, "Error fetching rate limit counter: ", last_fetched_version_err)
-  end
   if not last_fetched_version then
+    if last_fetched_version_err then
+      ngx.log(ngx.ERR, "Error fetching rate limit counter: ", last_fetched_version_err)
+    end
+
     last_fetched_version = int64_min_value_string
   end
 
@@ -309,18 +312,19 @@ function _M.distributed_pull()
     local key = row["id"]
     local distributed_count = row["value"]
     local local_count, local_count_err = counters_dict:get(key)
-    if not local_count and local_count_err then
-      ngx.log(ngx.ERR, "Error fetching rate limit counter: ", local_count_err)
-    end
     if not local_count then
+      if local_count_err then
+        ngx.log(ngx.ERR, "Error fetching rate limit counter: ", local_count_err)
+      end
+
       local_count = 0
     end
 
     if distributed_count > local_count then
-      local ttl = row["expires_at"] - current_fetch_time
+      local ttl = ceil(row["expires_at"] - current_fetch_time)
       if ttl < 0 then
         ngx.log(ngx.ERR, "distributed_rate_limit_puller ttl unexpectedly less than 0 (key: " .. key .. " ttl: " .. ttl .. ")")
-        ttl = 3600
+        ttl = 60
       end
 
       local incr = distributed_count - local_count
