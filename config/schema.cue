@@ -101,8 +101,11 @@ import "path"
       locks: {
         size: string | *"20k"
       }
-      stats: {
+      rate_limit_counters: {
         size: string | *"20m"
+      }
+      rate_limit_exceeded: {
+        size: string | *"2m"
       }
       upstream_checksums: {
         size: string | *"200k"

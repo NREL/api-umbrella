@@ -8,6 +8,7 @@ local redirect_matches_to_https = require "api-umbrella.utils.redirect_matches_t
 local website_matcher = require "api-umbrella.proxy.middleware.website_matcher"
 
 local ngx_var = ngx.var
+local ngx_ctx = ngx.ctx
 local get_active_config = active_config_store.get
 local refresh_local_active_config_cache = active_config_store.refresh_local_cache
 
@@ -60,54 +61,54 @@ end
 -- Cache various "ngx.var" lookups that are repeated throughout the stack,
 -- so they don't allocate duplicate memory during the request, and since
 -- ngx.var lookups are apparently somewhat expensive.
-ngx.ctx.arg_api_key = ngx_var.arg_api_key
-ngx.ctx.host = real_host
-ngx.ctx.host_normalized = host_normalize(real_host)
-ngx.ctx.http_x_api_key = ngx_var.http_x_api_key
-ngx.ctx.port = real_port
-ngx.ctx.protocol = real_proto
-ngx.ctx.remote_addr = ngx_var.remote_addr
-ngx.ctx.remote_user = ngx_var.remote_user
-ngx.ctx.request_method = string.lower(ngx.var.request_method)
+ngx_ctx.arg_api_key = ngx_var.arg_api_key
+ngx_ctx.host = real_host
+ngx_ctx.host_normalized = host_normalize(real_host)
+ngx_ctx.http_x_api_key = ngx_var.http_x_api_key
+ngx_ctx.port = real_port
+ngx_ctx.protocol = real_proto
+ngx_ctx.remote_addr = ngx_var.remote_addr
+ngx_ctx.remote_user = ngx_var.remote_user
+ngx_ctx.request_method = string.lower(ngx.var.request_method)
 
 local args = ngx_var.args
 if args then
   args = escape_uri_non_ascii(args)
 end
-ngx.ctx.args = args
+ngx_ctx.args = args
 
 local request_uri = ngx_var.request_uri
-ngx.ctx.original_request_uri = request_uri
-ngx.ctx.request_uri = request_uri
+ngx_ctx.original_request_uri = request_uri
+ngx_ctx.request_uri = request_uri
 
 local uri_path = ngx_var.uri
-ngx.ctx.original_uri_path = uri_path
-ngx.ctx.uri_path = uri_path
+ngx_ctx.original_uri_path = uri_path
+ngx_ctx.uri_path = uri_path
 
 local function route()
-  ngx.var.proxy_host_header = ngx.ctx.proxy_host
+  ngx.var.proxy_host_header = ngx_ctx.proxy_host
 
   -- For cache key purposes, allow HEAD requests to re-use the cache key for
   -- GET requests (since HEAD queries can be answered from cached GET data).
   -- But since HEAD requests by themselves aren't cacheable, we don't have to
   -- worry about GET requests re-using the HEAD response.
-  local cache_request_method = ngx.ctx.request_method
+  local cache_request_method = ngx_ctx.request_method
   if cache_request_method == "head" then
     cache_request_method = "get"
   end
 
-  ngx.req.set_header("X-Api-Umbrella-Backend-Host", ngx.ctx.backend_host)
+  ngx.req.set_header("X-Api-Umbrella-Backend-Host", ngx_ctx.backend_host)
   ngx.req.set_header("X-Api-Umbrella-Cache-Request-Method", cache_request_method)
-  ngx.req.set_header("X-Forwarded-Proto", ngx.ctx.protocol)
-  ngx.req.set_header("X-Forwarded-Port", ngx.ctx.port)
+  ngx.req.set_header("X-Forwarded-Proto", ngx_ctx.protocol)
+  ngx.req.set_header("X-Forwarded-Port", ngx_ctx.port)
 end
 
 local function route_to_api(api, url_match)
   redirect_matches_to_https(config["router"]["api_backend_required_https_regex_default"])
 
-  ngx.ctx.matched_api = api
-  ngx.ctx.matched_api_url_match = url_match
-  ngx.ctx.proxy_host = "api-backend-" .. api["id"]
+  ngx_ctx.matched_api = api
+  ngx_ctx.matched_api_url_match = url_match
+  ngx_ctx.proxy_host = "api-backend-" .. api["id"]
 
   route()
 end
@@ -115,8 +116,8 @@ end
 local function route_to_website(website)
   redirect_matches_to_https(website["website_backend_required_https_regex"] or config["router"]["website_backend_required_https_regex_default"])
 
-  ngx.ctx.proxy_host = "website-backend-" .. website["id"]
-  ngx.ctx.backend_host = website["backend_host"] or ngx.ctx.host
+  ngx_ctx.proxy_host = "website-backend-" .. website["id"]
+  ngx_ctx.backend_host = website["backend_host"] or ngx_ctx.host
 
   route()
 end

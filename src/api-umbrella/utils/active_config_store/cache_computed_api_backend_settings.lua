@@ -176,8 +176,6 @@ return function(config, settings)
 
   if settings["rate_limits"] then
     for _, limit in ipairs(settings["rate_limits"]) do
-      local num_buckets = math.ceil(limit["duration"] / limit["accuracy"])
-
       -- Backwards compatibility for with the old "limit" field
       -- (instead of the renamed "limit_to" we now use for easier SQL
       -- compatibility). The published config contains "limit" for API
@@ -195,15 +193,10 @@ return function(config, settings)
         limit["limit_by"] = "api_key"
       end
 
-      -- For each bucket in this limit, store the time difference we'll
-      -- subtract from the current time when determining each bucket's time.
-      -- Sort the items so that the most recent bucket (0 time difference)
-      -- comes last. This is to help minimize the amount of time between the
-      -- metrics fetch for the current time bucket and the incrementing of that
-      -- same bucket (see rate_limit.lua).
-      limit["_bucket_time_diffs"] = {}
-      for i = num_buckets - 1, 0, -1 do
-        table.insert(limit["_bucket_time_diffs"], i * limit["accuracy"])
+      limit["_duration_sec"] = limit["duration"] / 1000
+
+      if limit["response_headers"] then
+        settings["_rate_limits_response_header_limit"] = limit["limit_to"]
       end
     end
   end

@@ -72,7 +72,6 @@ local function fetch_user(api_key_prefix, api_key)
   end
 
   -- Remove pieces that don't need to be stored.
-  user["api_key_prefix"] = nil
   user["api_key_hash"] = nil
 
   return user

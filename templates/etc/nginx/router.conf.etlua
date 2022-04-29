@@ -66,7 +66,8 @@ http {
   lua_shared_dict interval_locks <%- config["nginx"]["shared_dicts"]["interval_locks"]["size"] %>;
   lua_shared_dict jobs <%- config["nginx"]["shared_dicts"]["jobs"]["size"] %>;
   lua_shared_dict locks <%- config["nginx"]["shared_dicts"]["locks"]["size"] %>;
-  lua_shared_dict stats <%- config["nginx"]["shared_dicts"]["stats"]["size"] %>;
+  lua_shared_dict rate_limit_counters <%- config["nginx"]["shared_dicts"]["rate_limit_counters"]["size"] %>;
+  lua_shared_dict rate_limit_exceeded <%- config["nginx"]["shared_dicts"]["rate_limit_exceeded"]["size"] %>;
   <% if config["nginx"]["lua_ssl_trusted_certificate"] then %>
     lua_ssl_trusted_certificate <%- config["nginx"]["lua_ssl_trusted_certificate"] %>;
     lua_ssl_verify_depth <%- config["nginx"]["lua_ssl_verify_depth"] %>;
