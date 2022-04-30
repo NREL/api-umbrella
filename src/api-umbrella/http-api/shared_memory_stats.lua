@@ -19,6 +19,8 @@ end
 
 local dicts = {
   "active_config",
+  "active_config_ipc",
+  "active_config_locks",
   "api_users",
   "api_users_ipc",
   "api_users_locks",
@@ -27,7 +29,8 @@ local dicts = {
   "interval_locks",
   "jobs",
   "locks",
-  "stats",
+  "rate_limit_counters",
+  "rate_limit_exceeded",
 }
 
 local function format_bytes(bytes)
