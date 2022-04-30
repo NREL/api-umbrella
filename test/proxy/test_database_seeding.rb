@@ -17,13 +17,6 @@ class Test::Proxy::TestDatabaseSeeding < Minitest::Test
     assert_response_code(200, response)
     user = MultiJson.load(response.body).fetch("user")
 
-    puts "-DEBUG- DB user: #{users[0].ai}"
-    puts "-DEBUG- DB user settings: #{users[0].settings.ai}"
-    puts "-DEBUG- DB user rate_limits: #{users[0].settings.rate_limits.ai}"
-    puts "-DEBUG- DB rate limits: #{RateLimit.where("api_user_settings_id IS NOT NULL").all.to_a.ai}"
-    puts "-DEBUG- Audit rate limits: #{ApplicationRecord.connection.select_rows("SELECT * FROM audit.log WHERE table_name = 'rate_limits' ORDER BY id").ai}"
-    puts "-DEBUG- API user: #{user.ai}"
-
     assert_equal("static.site.ajax@internal.apiumbrella", user.fetch("email"))
     assert_equal("API Umbrella Static Site", user.fetch("first_name"))
     assert_equal("Key", user.fetch("last_name"))

@@ -74,10 +74,6 @@ class DatabaseDeleter
         # unexpected results (since data will then be missing from the table that
         # the in-memory cache thinks should be there).
         "api_umbrella.analytics_cities",
-
-        # TODO: Remove this once we're done debugging
-        # test_api_key_for_static_site test failures in CI.
-        "audit.log",
       ]
 
       tables
