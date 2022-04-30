@@ -198,4 +198,6 @@ RUN set -x && \
   /tmp/install/build/package/scripts/after-install 1 && \
   rm -rf /tmp/install /var/lib/apt/lists/*
 
+EXPOSE 80 443
+
 CMD ["api-umbrella", "run"]

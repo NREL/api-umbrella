@@ -15,4 +15,15 @@ dir="$(cd -P "$(dirname "$source")" && pwd)"
 source "$dir/api-umbrella-env"
 
 # Run the Lua CLI app.
-exec resty "$API_UMBRELLA_SRC_ROOT/src/api-umbrella/cli/runner.lua" "$@"
+#
+# TODO: Ideally we would leave errlog-level at the default "warn" level.
+# However, as of OpenResty 1.15.8.1, this triggers a lot of the new "_G write
+# guard" warnings due to globals from "yaml" (via "lyaml" module) and "lfs"
+# (via "pl.path" module). If we could force these modules to preload in the
+# init or init_worker phases, then that would eliminate these warnings
+# (https://github.com/openresty/lua-nginx-module/issues/1521), but that doesn't
+# seem doable in the current "resty" CLI tool. But since these globals
+# shouldn't have a huge impact for these one-off CLI tasks, we'll silence these
+# warnings for now. At some point, maybe the lyaml or lfs modules will improve
+# to eliminate globals.
+exec resty --errlog-level error "$API_UMBRELLA_SRC_ROOT/src/api-umbrella/cli/runner.lua" "$@"

@@ -64,6 +64,11 @@ function _M.migrate()
   migrate()
 end
 
+function _M.wait_for_migrations()
+  local wait_for_migrations = require "api-umbrella.cli.wait_for_migrations"
+  wait_for_migrations()
+end
+
 function _M.health(args)
   local health = require "api-umbrella.cli.health"
   health(args)
@@ -79,6 +84,11 @@ end
 function _M.dump_config(args)
   local dump_config = require "api-umbrella.cli.dump_config"
   dump_config(args)
+end
+
+function _M.cloud_foundry_generate_config()
+  local cloud_foundry_generate_config = require "api-umbrella.cli.cloud_foundry_generate_config"
+  cloud_foundry_generate_config()
 end
 
 function _M.help()
@@ -129,6 +139,10 @@ parser:command("migrate")
   :description("Run the database migrations task.")
   :action(_M.migrate)
 
+parser:command("wait-for-migrations")
+  :description("Wait for the database to be available and fully migrated.")
+  :action(_M.wait_for_migrations)
+
 local health_command = parser:command("health")
   :description("Print the health of the API Umbrella services.")
   :action(_M.health)
@@ -143,6 +157,10 @@ health_command:option("--wait-timeout")
 parser:command("dump-config")
   :description("Dump the full runtime configuration after parsing and loading files.")
   :action(_M.dump_config)
+
+parser:command("cloud-foundry-generate-config")
+  :description("For cloud foundry environments: Generate the api-umbrella.yml file from VCAP_SERVICES")
+  :action(_M.cloud_foundry_generate_config)
 
 parser:command("version")
   :description("Print the API Umbrella version number.")
