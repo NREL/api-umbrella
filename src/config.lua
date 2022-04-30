@@ -1,10 +1,6 @@
 local config = require("api-umbrella.utils.load_config")()
-local environment = require("lapis.environment")
 
 local app_env = config["app_env"]
-
--- Override Lapis' default environment to match API Umbrella's environment.
-environment.set_default_environment(app_env)
 
 local lapis_config = require("lapis.config")
 
