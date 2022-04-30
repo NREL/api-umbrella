@@ -10,7 +10,7 @@ local AnalyticsCache = model_ext.new_class("analytics_cache", {
 }, {
 })
 
-AnalyticsCache.find_by_id_data = function(_, id_data)
+AnalyticsCache.id_datas_exists = function(_, id_datas)
   -- Hash the unique JSON data that makes up this row's identifier into a
   -- sha256 fingerprint for the actual primary key.
   --
@@ -22,9 +22,18 @@ AnalyticsCache.find_by_id_data = function(_, id_data)
   -- We rely on PostgreSQL's hashing with JSONB, which ensures consistent
   -- hashing of JSON, regardless of key ordering or spacing (eg
   -- `{"a": 1, "b": 2}` and `{"b":2,"a":1}` both get hashed the same).
-  return pg_utils.query("SELECT id FROM analytics_cache WHERE id = encode(digest(:id_data::jsonb::text, 'sha256'), 'hex')", {
-    id_data = json_encode(id_data),
-  }, { fatal = true })[1]
+  local sql = [[
+    WITH cache_ids AS (
+      SELECT array_index, encode(digest(id_data::text, 'sha256'), 'hex') AS id
+      FROM jsonb_array_elements(:id_datas) WITH ORDINALITY AS t (id_data, array_index)
+    )
+    SELECT cache_ids.array_index::integer, cache_ids.id, (analytics_cache.id IS NOT NULL) AS cache_exists
+    FROM cache_ids
+    LEFT JOIN analytics_cache ON analytics_cache.id = cache_ids.id
+  ]]
+  return pg_utils.query(sql, {
+    id_datas = json_encode(id_datas),
+  }, { fatal = true })
 end
 
 AnalyticsCache.upsert = function(_, id_data, data, expires_at)
@@ -33,6 +42,13 @@ AnalyticsCache.upsert = function(_, id_data, data, expires_at)
     data = json_encode(data),
     expires_at = time.timestamp_to_iso8601(expires_at),
   }, { fatal = true })[1]
+end
+
+AnalyticsCache.update_expires_at = function(_, ids, expires_at)
+  return pg_utils.query("UPDATE analytics_cache SET expires_at = :expires_at WHERE id IN :ids", {
+    ids = pg_utils.list(ids),
+    expires_at = time.timestamp_to_iso8601(expires_at),
+  }, { fatal = true })
 end
 
 return AnalyticsCache

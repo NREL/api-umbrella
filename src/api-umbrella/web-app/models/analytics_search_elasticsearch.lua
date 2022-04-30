@@ -677,13 +677,24 @@ function _M:query_body()
   return body
 end
 
-function _M:fetch_results()
+function _M:fetch_results(options)
   if not is_empty(self.errors) then
     return coroutine.yield("error", self.errors)
   end
 
-  local header = self:query_header()
-  local body = self:query_body()
+  local header
+  if options and options["override_header"] then
+    header = options["override_header"]
+  else
+    header = self:query_header()
+  end
+
+  local body
+  if options and options["override_body"] then
+    body = options["override_body"]
+  else
+    body = self:query_body()
+  end
 
   -- When querying many indices (particularly if partitioning by day), we can
   -- run into URL length limits with the default search approach, which
@@ -820,7 +831,45 @@ function _M:fetch_results_bulk(callback)
   end
 end
 
-function _M:cache_daily_results()
+local function cache_interval_results_process_batch(self, cache_ids, batch)
+  local id_datas = {}
+  for _, elem in ipairs(batch) do
+    table.insert(id_datas, elem["cache_id_data"])
+  end
+
+  local update_expires_at_ids = {}
+
+  local exists = AnalyticsCache:id_datas_exists(id_datas)
+  for _, exist in ipairs(exists) do
+    local batch_elem = batch[exist["array_index"]]
+    local id_data = batch_elem["cache_id_data"]
+    local expires_at = batch_elem["expires_at"]
+
+    if not exist["cache_exists"] then
+      -- Perform the real Elasticsearch query for uncached queries and cache
+      -- the result.
+      local results = self:fetch_results({
+        override_header = id_data["header"],
+        override_body = id_data["body"],
+      })
+      AnalyticsCache:upsert(id_data, results, expires_at)
+    else
+      if not update_expires_at_ids[expires_at] then
+        update_expires_at_ids[expires_at] = {}
+      end
+
+      table.insert(update_expires_at_ids[expires_at], exist["id"])
+    end
+
+    table.insert(cache_ids, exist["id"])
+  end
+
+  for expires_at, ids in pairs(update_expires_at_ids) do
+    AnalyticsCache:update_expires_at(ids, expires_at)
+  end
+end
+
+function _M:cache_interval_results(expires_at)
   local day = icu_date.new({
     zone_id = config["analytics"]["timezone"],
   })
@@ -848,23 +897,38 @@ function _M:cache_daily_results()
   -- Loop through every day within the date range and perform daily searches,
   -- instead of searching for everything all at once.
   local cache_ids = {}
+  local batch = {}
   while day:get_millis() <= end_time_millis do
     -- For each day, setup the search instance to just search that day, instead
     -- of the original full date range.
     self:set_start_time(day:format(format_iso8601))
 
-    day:set(icu_date.fields.HOUR_OF_DAY, 23)
-    day:set(icu_date.fields.MINUTE, 59)
-    day:set(icu_date.fields.SECOND, 59)
-    day:set(icu_date.fields.MILLISECOND, 999)
-    self:set_end_time(day:format(format_iso8601))
-
-    -- Advance the date counter to the next day.
-    day:add(icu_date.fields.DATE, 1)
+    -- Find the end of the day or month. Set the end time to this next value
+    -- minus 1 millisecond (so it's an inclusive end date).
+    if self.interval == "month" then
+      day:add(icu_date.fields.MONTH, 1)
+      day:set(icu_date.fields.DAY_OF_MONTH, 1)
+    elseif self.interval == "day" then
+      day:add(icu_date.fields.DATE, 1)
+    else
+      error("Unknown interval")
+    end
     day:set(icu_date.fields.HOUR_OF_DAY, 0)
     day:set(icu_date.fields.MINUTE, 0)
     day:set(icu_date.fields.SECOND, 0)
     day:set(icu_date.fields.MILLISECOND, 0)
+    day:add(icu_date.fields.MILLISECOND, -1)
+    self:set_end_time(day:format(format_iso8601))
+
+    -- If the end date range (eg, end of month) hasn't actually been
+    -- encountered yet, then don't cache the results for long, so that it will
+    -- be updated as new data comes in.
+    if day:get_millis() / 1000 >= ngx.now() then
+      local max_expires_at = ngx.now() + 60 * 60 * 6 -- 6 hours
+      if expires_at > max_expires_at then
+        expires_at = max_expires_at
+      end
+    end
 
     -- Check to see if we already have cached data for this exact search query
     -- and date range.
@@ -878,15 +942,21 @@ function _M:cache_daily_results()
       api_version = config["elasticsearch"]["api_version"],
       template_version = config["elasticsearch"]["template_version"],
     }
-    local cache = AnalyticsCache:find_by_id_data(cache_id_data)
-    if not cache then
-      -- Perform the real Elasticsearch query for uncached queries and cache
-      -- the result.
-      local results = self:fetch_results()
-      cache = AnalyticsCache:upsert(cache_id_data, results)
+    table.insert(batch, {
+      cache_id_data = cache_id_data,
+      expires_at = expires_at,
+    })
+    if #batch >= 200 then
+      cache_interval_results_process_batch(self, cache_ids, batch, expires_at)
+      batch = {}
     end
 
-    table.insert(cache_ids, cache["id"])
+    -- Advance the date counter to the next interval.
+    day:add(icu_date.fields.MILLISECOND, 1)
+  end
+
+  if #batch > 0 then
+    cache_interval_results_process_batch(self, cache_ids, batch, expires_at)
   end
 
   return cache_ids

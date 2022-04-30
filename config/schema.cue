@@ -287,6 +287,7 @@ import "path"
     analytics_v0_summary_end_time?: string
     analytics_v0_summary_filter?: string
     max_body_size: string | *"1m"
+    allowed_signup_embed_urls_regex?: string
     default_host?: string
     send_notify_email?: bool
     admin_notify_email?: string

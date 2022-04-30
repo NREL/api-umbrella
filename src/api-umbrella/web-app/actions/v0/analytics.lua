@@ -82,7 +82,13 @@ local function generate_organization_summary(start_time, end_time, recent_start_
     ) AS interval_totals
   ]]
 
-  local analytics_cache_ids = search:cache_daily_results()
+  -- Expire the monthly data in 3 months. While the historical data shouldn't
+  -- really change, the API scopes may change (which are part of
+  -- the cache key), so for that reason, don't keep old data around
+  -- indefinitely. But since we update the expires_at timestamp on rows that
+  -- are still being accessed, this should ensure we only expire unused data.
+  local expires_at = ngx.now() + 60 * 60 * 24 * 30 * 3
+  local analytics_cache_ids = search:cache_interval_results(expires_at)
   local response = pg_utils.query(aggregate_sql, {
     ids = pg_utils.list(analytics_cache_ids),
     interval_name = "monthly",
@@ -92,7 +98,8 @@ local function generate_organization_summary(start_time, end_time, recent_start_
   search:set_start_time(recent_start_time)
   search:set_interval("day")
   search:aggregate_by_interval_for_summary()
-  local recent_analytics_cache_ids = search:cache_daily_results()
+  expires_at = ngx.now() + 60 * 60 * 24 * 30 -- 30 days
+  local recent_analytics_cache_ids = search:cache_interval_results(expires_at)
   local recent_response = pg_utils.query(aggregate_sql, {
     ids = pg_utils.list(recent_analytics_cache_ids),
     interval_name = "daily",
@@ -104,7 +111,7 @@ local function generate_organization_summary(start_time, end_time, recent_start_
   response["average_response_times"]["recent"] = recent_response["average_response_times"]
 
   local response_json = json_encode(response)
-  local expires_at = ngx.now() + 60 * 60 * 24 * 2 -- 2 days
+  expires_at = ngx.now() + 60 * 60 * 24 * 2 -- 2 days
   Cache:upsert(cache_id, response_json, expires_at)
 
   return response
