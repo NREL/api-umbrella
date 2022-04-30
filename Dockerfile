@@ -185,7 +185,7 @@ RUN DESTDIR="/build/install-destdir" ./tasks/install
 ###
 FROM debian:bullseye AS runtime
 
-COPY --from=build /build/install-destdir /
+COPY --from=install /build/install-destdir /
 COPY --from=build /app/build/package/scripts/after-install /tmp/install/build/package/scripts/after-install
 COPY --from=build /app/build/package_dependencies.sh /tmp/install/build/package_dependencies.sh
 COPY --from=build /app/tasks/helpers/detect_os_release.sh /tmp/install/tasks/helpers/detect_os_release.sh
@@ -195,5 +195,4 @@ RUN set -x && \
   /tmp/install/build/package/scripts/after-install 1 && \
   rm -rf /tmp/install /var/lib/apt/lists/*
 
-ENTRYPOINT ["/app/docker/dev/docker-entrypoint"]
-CMD ["/app/docker/dev/docker-start"]
+CMD ["api-umbrella", "run"]

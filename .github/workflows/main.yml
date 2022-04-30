@@ -41,7 +41,7 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           flavor: |
-            suffix=-build-cache
+            suffix=-build-cache-test
 
       - name: Build and push
         id: docker_build
@@ -57,10 +57,10 @@ jobs:
             type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:build-cache-recent
           cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.build_cache_meta.outputs.version }},mode=max
 
-      # Push the build cache also to a `build-cache-recent` tag (in addition to
-      # the branch name tag cached above). This is so that other branches or
-      # tags can still leverage some recent cache, even if there isn't a cache
-      # for that tag/branch yet.
+      # Push the build cache also to a `build-cache-test-recent` tag (in
+      # addition to the branch name tag cached above). This is so that other
+      # branches or tags can still leverage some recent cache, even if there
+      # isn't a cache for that tag/branch yet.
       #
       # Ideally this could be accomplished above via multiple cache-to
       # arguments, but that isn't currently supported:
@@ -72,7 +72,16 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.build_cache_meta.outputs.version }}
-          cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:build-cache-recent,mode=max
+          cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:build-cache-test-recent,mode=max
+
+      - name: Push recent cache
+        uses: docker/build-push-action@v2.10.0
+        with:
+          target: runtime
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.build_cache_meta.outputs.version }}
+          cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:build-cache-runtime-recent,mode=max
 
   lint:
     needs: [build]
