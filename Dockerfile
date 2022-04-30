@@ -175,10 +175,13 @@ RUN apt-get update && \
   apt-get -y install git rsync && \
   rm -rf /var/lib/apt/lists/*
 
+COPY build/package/files /tmp/install/build/package/files
+COPY build/package/scripts/after-install /tmp/install/build/package/scripts/after-install
 COPY --from=build /app/tasks/helpers.sh /tmp/install/tasks/helpers.sh
 COPY --from=build /app/tasks/install /tmp/install/tasks/install
+COPY --from=build /app/build/work /tmp/install/build/work
 WORKDIR /tmp/install
-RUN DESTDIR="/build/install-destdir" ./tasks/install
+RUN DESTDIR="/build/install-destdir" PREFIX=/opt/api-umbrella ./tasks/install
 
 ###
 # Runtime
@@ -186,7 +189,7 @@ RUN DESTDIR="/build/install-destdir" ./tasks/install
 FROM debian:bullseye AS runtime
 
 COPY --from=install /build/install-destdir /
-COPY --from=build /app/build/package/scripts/after-install /tmp/install/build/package/scripts/after-install
+COPY build/package/scripts/after-install /tmp/install/build/package/scripts/after-install
 COPY --from=build /app/build/package_dependencies.sh /tmp/install/build/package_dependencies.sh
 COPY --from=build /app/tasks/helpers/detect_os_release.sh /tmp/install/tasks/helpers/detect_os_release.sh
 RUN set -x && \

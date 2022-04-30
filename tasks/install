@@ -7,7 +7,7 @@ destdir="${DESTDIR:-}"
 install_prefix="$PREFIX"
 
 mkdir -p "$destdir$install_prefix"
-rsync -a --itemize-changes "$STAGE_PREFIX_DIR/" "$destdir$install_prefix/"
+rsync -a --stats "$STAGE_PREFIX_DIR/" "$destdir$install_prefix/"
 install -D -m 755 "$SOURCE_DIR/build/package/files/etc/init.d/api-umbrella" "$destdir/etc/init.d/api-umbrella"
 install -D -m 644 "$SOURCE_DIR/build/package/files/etc/logrotate.d/api-umbrella" "$destdir/etc/logrotate.d/api-umbrella"
 

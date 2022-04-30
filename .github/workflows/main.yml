@@ -54,7 +54,7 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: |
             type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.build_cache_meta.outputs.version }}
-            type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:build-cache-recent
+            type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:build-cache-test-recent
           cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.build_cache_meta.outputs.version }},mode=max
 
       # Push the build cache also to a `build-cache-test-recent` tag (in
@@ -65,7 +65,7 @@ jobs:
       # Ideally this could be accomplished above via multiple cache-to
       # arguments, but that isn't currently supported:
       # https://github.com/moby/buildkit/issues/2818
-      - name: Push recent cache
+      - name: Push recent test cache
         uses: docker/build-push-action@v2.10.0
         with:
           target: test
@@ -74,7 +74,7 @@ jobs:
           cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.build_cache_meta.outputs.version }}
           cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:build-cache-test-recent,mode=max
 
-      - name: Push recent cache
+      - name: Push recent runtime cache
         uses: docker/build-push-action@v2.10.0
         with:
           target: runtime
