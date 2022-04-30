@@ -13,15 +13,15 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1.6.0
+        uses: docker/setup-buildx-action@v1.7.0
         with:
           driver-opts: network=host
 
       - name: Log in to the Container registry
-        uses: docker/login-action@v1.10.0
+        uses: docker/login-action@v1.14.1
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
@@ -29,7 +29,7 @@ jobs:
 
       - name: Extract metadata (tags, labels) for Docker
         id: meta
-        uses: docker/metadata-action@v3.6.0
+        uses: docker/metadata-action@v3.8.0
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           flavor: |
@@ -37,7 +37,7 @@ jobs:
 
       - name: Extract metadata (tags, labels) for Docker
         id: build_cache_meta
-        uses: docker/metadata-action@v3.6.0
+        uses: docker/metadata-action@v3.8.0
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           flavor: |
@@ -45,7 +45,7 @@ jobs:
 
       - name: Build and push
         id: docker_build
-        uses: docker/build-push-action@v2.7.0
+        uses: docker/build-push-action@v2.10.0
         with:
           target: test
           pull: true
@@ -59,11 +59,11 @@ jobs:
     needs: [build]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Extract metadata (tags, labels) for Docker
         id: meta
-        uses: docker/metadata-action@v3.6.0
+        uses: docker/metadata-action@v3.8.0
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           flavor: |
@@ -109,11 +109,11 @@ jobs:
         ci_node_total: [6]
         ci_node_index: [0, 1, 2, 3, 4, 5]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Extract metadata (tags, labels) for Docker
         id: meta
-        uses: docker/metadata-action@v3.6.0
+        uses: docker/metadata-action@v3.8.0
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           flavor: |
@@ -151,7 +151,7 @@ jobs:
 
       - name: Dump docker logs on failure
         if: ${{ failure() }}
-        uses: jwalton/gh-docker-logs@v2.0.2
+        uses: jwalton/gh-docker-logs@v2.2.0
         with:
           dest: test/tmp/artifacts/docker-logs
 
@@ -161,7 +161,7 @@ jobs:
 
       - name: Archive artifacts
         if: ${{ failure() }}
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: test-artifacts-matrix-${{ matrix.ci_node_index }}
           path: test/tmp/artifacts.tar.gz
@@ -191,11 +191,11 @@ jobs:
           --health-timeout 5s
           --health-retries 5
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Extract metadata (tags, labels) for Docker
         id: meta
-        uses: docker/metadata-action@v3.6.0
+        uses: docker/metadata-action@v3.8.0
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           flavor: |
@@ -230,7 +230,7 @@ jobs:
 
       - name: Dump docker logs on failure
         if: ${{ failure() }}
-        uses: jwalton/gh-docker-logs@v2.0.2
+        uses: jwalton/gh-docker-logs@v2.2.0
         with:
           dest: test/tmp/artifacts/docker-logs
 
@@ -240,7 +240,7 @@ jobs:
 
       - name: Archive artifacts
         if: ${{ failure() }}
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: test-artifacts-elasticsearch-v7
           path: test/tmp/artifacts.tar.gz
@@ -270,11 +270,11 @@ jobs:
           --health-timeout 5s
           --health-retries 5
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Extract metadata (tags, labels) for Docker
         id: meta
-        uses: docker/metadata-action@v3.6.0
+        uses: docker/metadata-action@v3.8.0
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           flavor: |
@@ -310,7 +310,7 @@ jobs:
 
       - name: Dump docker logs on failure
         if: ${{ failure() }}
-        uses: jwalton/gh-docker-logs@v2.0.2
+        uses: jwalton/gh-docker-logs@v2.2.0
         with:
           dest: test/tmp/artifacts/docker-logs
 
@@ -320,7 +320,7 @@ jobs:
 
       - name: Archive artifacts
         if: ${{ failure() }}
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: test-artifacts-elasticsearch-v7-daily
           path: test/tmp/artifacts.tar.gz
