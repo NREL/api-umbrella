@@ -27,21 +27,21 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract metadata (tags, labels) for Docker
+      - name: dev-env container metadata
         id: meta
         uses: docker/metadata-action@v3.8.0
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           flavor: |
-            prefix=dev-env-
+            suffix=-dev-env
 
-      - name: Extract metadata (tags, labels) for Docker
+      - name: build-cache container metadata
         id: build_cache_meta
         uses: docker/metadata-action@v3.8.0
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           flavor: |
-            prefix=build-cache-
+            suffix=-build-cache
 
       - name: Build and push
         id: docker_build
@@ -53,7 +53,9 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.build_cache_meta.outputs.version }}
-          cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.build_cache_meta.outputs.version }},mode=max
+          cache-to: |
+            type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:build-cache-recent,mode=max
+            type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.build_cache_meta.outputs.version }},mode=max
 
   lint:
     needs: [build]
@@ -61,13 +63,13 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Extract metadata (tags, labels) for Docker
+      - name: dev-env container metadata
         id: meta
         uses: docker/metadata-action@v3.8.0
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           flavor: |
-            prefix=dev-env-
+            suffix=-dev-env
 
       - name: Pull
         run: docker pull "$DOCKER_IMAGE_CACHE_FROM"
@@ -111,13 +113,13 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Extract metadata (tags, labels) for Docker
+      - name: dev-env container metadata
         id: meta
         uses: docker/metadata-action@v3.8.0
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           flavor: |
-            prefix=dev-env-
+            suffix=-dev-env
 
       - name: Pull
         run: docker pull "$DOCKER_IMAGE_CACHE_FROM"
@@ -193,13 +195,13 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Extract metadata (tags, labels) for Docker
+      - name: dev-env container metadata
         id: meta
         uses: docker/metadata-action@v3.8.0
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           flavor: |
-            prefix=dev-env-
+            suffix=-dev-env
 
       - name: Pull
         run: docker pull "$DOCKER_IMAGE_CACHE_FROM"
@@ -272,13 +274,13 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Extract metadata (tags, labels) for Docker
+      - name: dev-env container metadata
         id: meta
         uses: docker/metadata-action@v3.8.0
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           flavor: |
-            prefix=dev-env-
+            suffix=-dev-env
 
       - name: Pull
         run: docker pull "$DOCKER_IMAGE_CACHE_FROM"
@@ -324,54 +326,3 @@ jobs:
         with:
           name: test-artifacts-elasticsearch-v7-daily
           path: test/tmp/artifacts.tar.gz
-
-  publish:
-    if: startsWith(github.ref, 'refs/tags/v')
-    needs: [lint, test, test_elasticsearch_v7, test_elasticsearch_v7_daily]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Check version matches tag
-        run: |
-          tag_version="$GITHUB_REF_NAME"
-          file_version="v$(cat src/api-umbrella/version.txt)"
-          if [ "$tag_version" != "$file_version" ]; then
-            echo "Tag version ($tag_version) does not match file version ($file_version)" 1>&2
-            exit 1
-          fi
-
-      - name: Log in to the Container registry
-        uses: docker/login-action@v1.14.1
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Extract metadata (tags, labels) for Docker
-        id: meta
-        uses: docker/metadata-action@v3.8.0
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          tags: |
-            type=semver,pattern={{version}}
-
-      - name: Extract metadata (tags, labels) for Docker
-        id: build_cache_meta
-        uses: docker/metadata-action@v3.8.0
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          flavor: |
-            prefix=build-cache-
-
-      - name: Build and push
-        id: docker_build
-        uses: docker/build-push-action@v2.10.0
-        with:
-          target: runtime
-          pull: true
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.build_cache_meta.outputs.version }}
-          cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.build_cache_meta.outputs.version }},mode=max
