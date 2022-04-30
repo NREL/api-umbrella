@@ -74,6 +74,32 @@ jobs:
           cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.build_cache_meta.outputs.version }}
           cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:build-cache-test-recent,mode=max
 
+  build_runtime:
+    needs: [build]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1.7.0
+        with:
+          driver-opts: network=host
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@v1.14.1
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: build-cache container metadata
+        id: build_cache_meta
+        uses: docker/metadata-action@v3.8.0
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          flavor: |
+            suffix=-build-cache-test
+
       - name: Push recent runtime cache
         uses: docker/build-push-action@v2.10.0
         with:
