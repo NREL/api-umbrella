@@ -126,6 +126,20 @@ CREATE FUNCTION api_umbrella.distributed_rate_limit_counters_increment_version()
 
 
 --
+-- Name: distributed_rate_limit_counters_temp_increment_version(); Type: FUNCTION; Schema: api_umbrella; Owner: -
+--
+
+CREATE FUNCTION api_umbrella.distributed_rate_limit_counters_temp_increment_version() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+      BEGIN
+        NEW.version := nextval('distributed_rate_limit_counters_temp_version_seq');
+        return NEW;
+      END;
+      $$;
+
+
+--
 -- Name: path_sort_order(text); Type: FUNCTION; Schema: api_umbrella; Owner: -
 --
 
@@ -1041,7 +1055,7 @@ CREATE TABLE api_umbrella.rate_limits (
     api_backend_settings_id uuid,
     api_user_settings_id uuid,
     duration bigint NOT NULL,
-    accuracy bigint NOT NULL,
+    accuracy bigint,
     limit_by character varying(7) NOT NULL,
     limit_to bigint NOT NULL,
     distributed boolean DEFAULT false NOT NULL,
@@ -1130,12 +1144,37 @@ CREATE TABLE api_umbrella.cache (
 -- Name: distributed_rate_limit_counters; Type: TABLE; Schema: api_umbrella; Owner: -
 --
 
-CREATE TABLE api_umbrella.distributed_rate_limit_counters (
+CREATE UNLOGGED TABLE api_umbrella.distributed_rate_limit_counters (
     id character varying(500) NOT NULL,
     version bigint NOT NULL,
     value bigint NOT NULL,
     expires_at timestamp with time zone NOT NULL
 );
+
+
+--
+-- Name: distributed_rate_limit_counters_temp; Type: TABLE; Schema: api_umbrella; Owner: -
+--
+
+CREATE UNLOGGED TABLE api_umbrella.distributed_rate_limit_counters_temp (
+    id character varying(500) NOT NULL,
+    version bigint NOT NULL,
+    value bigint NOT NULL,
+    expires_at timestamp with time zone NOT NULL
+);
+
+
+--
+-- Name: distributed_rate_limit_counters_temp_version_seq; Type: SEQUENCE; Schema: api_umbrella; Owner: -
+--
+
+CREATE SEQUENCE api_umbrella.distributed_rate_limit_counters_temp_version_seq
+    START WITH -9223372036854775807
+    INCREMENT BY 1
+    MINVALUE -9223372036854775807
+    NO MAXVALUE
+    CACHE 1
+    CYCLE;
 
 
 --
@@ -1743,6 +1782,14 @@ ALTER TABLE ONLY api_umbrella.distributed_rate_limit_counters
 
 
 --
+-- Name: distributed_rate_limit_counters_temp distributed_rate_limit_counters_temp_pkey; Type: CONSTRAINT; Schema: api_umbrella; Owner: -
+--
+
+ALTER TABLE ONLY api_umbrella.distributed_rate_limit_counters_temp
+    ADD CONSTRAINT distributed_rate_limit_counters_temp_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: lapis_migrations lapis_migrations_pkey; Type: CONSTRAINT; Schema: api_umbrella; Owner: -
 --
 
@@ -1944,6 +1991,27 @@ CREATE INDEX cache_expires_at_idx ON api_umbrella.cache USING btree (expires_at)
 --
 
 CREATE INDEX distributed_rate_limit_counters_expires_at_idx ON api_umbrella.distributed_rate_limit_counters USING btree (expires_at);
+
+
+--
+-- Name: distributed_rate_limit_counters_temp_expires_at_idx; Type: INDEX; Schema: api_umbrella; Owner: -
+--
+
+CREATE INDEX distributed_rate_limit_counters_temp_expires_at_idx ON api_umbrella.distributed_rate_limit_counters_temp USING btree (expires_at);
+
+
+--
+-- Name: distributed_rate_limit_counters_temp_version_expires_at_idx; Type: INDEX; Schema: api_umbrella; Owner: -
+--
+
+CREATE INDEX distributed_rate_limit_counters_temp_version_expires_at_idx ON api_umbrella.distributed_rate_limit_counters_temp USING btree (version, expires_at);
+
+
+--
+-- Name: distributed_rate_limit_counters_temp_version_idx; Type: INDEX; Schema: api_umbrella; Owner: -
+--
+
+CREATE UNIQUE INDEX distributed_rate_limit_counters_temp_version_idx ON api_umbrella.distributed_rate_limit_counters_temp USING btree (version);
 
 
 --
@@ -2507,6 +2575,13 @@ CREATE TRIGGER distributed_rate_limit_counters_increment_version_trigger BEFORE 
 
 
 --
+-- Name: distributed_rate_limit_counters_temp distributed_rate_limit_counters_temp_increment_version_trigger; Type: TRIGGER; Schema: api_umbrella; Owner: -
+--
+
+CREATE TRIGGER distributed_rate_limit_counters_temp_increment_version_trigger BEFORE INSERT OR UPDATE ON api_umbrella.distributed_rate_limit_counters_temp FOR EACH ROW EXECUTE PROCEDURE api_umbrella.distributed_rate_limit_counters_temp_increment_version();
+
+
+--
 -- Name: published_config published_config_stamp_record; Type: TRIGGER; Schema: api_umbrella; Owner: -
 --
 
@@ -2705,3 +2780,6 @@ INSERT INTO api_umbrella.lapis_migrations (name) VALUES ('1560888068');
 INSERT INTO api_umbrella.lapis_migrations (name) VALUES ('1595106665');
 INSERT INTO api_umbrella.lapis_migrations (name) VALUES ('1596759299');
 INSERT INTO api_umbrella.lapis_migrations (name) VALUES ('1635022846');
+INSERT INTO api_umbrella.lapis_migrations (name) VALUES ('1645733075');
+INSERT INTO api_umbrella.lapis_migrations (name) VALUES ('1647916501');
+INSERT INTO api_umbrella.lapis_migrations (name) VALUES ('1651280172');

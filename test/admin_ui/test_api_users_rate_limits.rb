@@ -58,7 +58,6 @@ class Test::AdminUi::TestApiUsersRateLimits < Minitest::Capybara::Test
 
     rate_limit = user.settings.rate_limits[0]
     assert_equal(60000, rate_limit.duration)
-    assert_equal(5000, rate_limit.accuracy)
     assert_equal("ip", rate_limit.limit_by)
     assert_equal(10, rate_limit.limit_to)
     assert_equal(true, rate_limit.distributed)
@@ -66,7 +65,6 @@ class Test::AdminUi::TestApiUsersRateLimits < Minitest::Capybara::Test
 
     rate_limit = user.settings.rate_limits[1]
     assert_equal(7200000, rate_limit.duration)
-    assert_equal(600000, rate_limit.accuracy)
     assert_equal("ip", rate_limit.limit_by)
     assert_equal(20, rate_limit.limit_to)
     assert_equal(true, rate_limit.distributed)
@@ -74,7 +72,6 @@ class Test::AdminUi::TestApiUsersRateLimits < Minitest::Capybara::Test
 
     rate_limit = user.settings.rate_limits[2]
     assert_equal(259200000, rate_limit.duration)
-    assert_equal(21600000, rate_limit.accuracy)
     assert_equal("ip", rate_limit.limit_by)
     assert_equal(30, rate_limit.limit_to)
     assert_equal(true, rate_limit.distributed)

@@ -15,7 +15,6 @@ class Test::Proxy::RateLimits::TestApiLimits < Minitest::Test
           :rate_limits => [
             {
               :duration => 60 * 60 * 1000, # 1 hour
-              :accuracy => 1 * 60 * 1000, # 1 minute
               :limit_by => "api_key",
               :limit_to => 5,
               :distributed => true,
@@ -36,7 +35,6 @@ class Test::Proxy::RateLimits::TestApiLimits < Minitest::Test
             :rate_limits => [
               {
                 :duration => 60 * 60 * 1000, # 1 hour
-                :accuracy => 1 * 60 * 1000, # 1 minute
                 :limit_by => "api_key",
                 :limit_to => 3,
                 :distributed => true,
@@ -52,7 +50,6 @@ class Test::Proxy::RateLimits::TestApiLimits < Minitest::Test
                 :rate_limits => [
                   {
                     :duration => 60 * 60 * 1000, # 1 hour
-                    :accuracy => 1 * 60 * 1000, # 1 minute
                     :limit_by => "api_key",
                     :limit_to => 7,
                     :distributed => true,

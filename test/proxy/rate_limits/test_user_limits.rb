@@ -15,7 +15,6 @@ class Test::Proxy::RateLimits::TestUserLimits < Minitest::Test
           :rate_limits => [
             {
               :duration => 60 * 60 * 1000, # 1 hour
-              :accuracy => 1 * 60 * 1000, # 1 minute
               :limit_by => "api_key",
               :limit_to => 5,
               :distributed => true,
@@ -61,7 +60,6 @@ class Test::Proxy::RateLimits::TestUserLimits < Minitest::Test
           :rate_limits => [
             FactoryBot.build(:rate_limit, {
               :duration => 60 * 60 * 1000, # 1 hour
-              :accuracy => 1 * 60 * 1000, # 1 minute
               :limit_by => "api_key",
               :limit_to => 10,
               :distributed => true,
@@ -78,7 +76,6 @@ class Test::Proxy::RateLimits::TestUserLimits < Minitest::Test
       :rate_limits => [
         FactoryBot.build(:rate_limit, {
           :duration => 60 * 60 * 1000, # 1 hour
-          :accuracy => 1 * 60 * 1000, # 1 minute
           :limit_by => "api_key",
           :limit_to => 10,
           :distributed => true,

@@ -56,14 +56,12 @@ local function seed_api_keys()
         rate_limits = {
           {
             duration = 1 * 60 * 1000, -- 1 minute
-            accuracy = 5 * 1000, -- 5 seconds
             limit_by = "ip",
             limit_to = 5,
             response_headers = false,
           },
           {
             duration = 60 * 60 * 1000, -- 1 hour
-            accuracy = 1 * 60 * 1000, -- 1 minute
             limit_by = "ip",
             limit_to = 20,
             response_headers = true,

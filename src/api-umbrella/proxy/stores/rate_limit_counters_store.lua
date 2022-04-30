@@ -1,3 +1,4 @@
+local config = require("api-umbrella.utils.load_config")()
 local int64 = require "api-umbrella.utils.int64"
 local is_empty = require "api-umbrella.utils.is_empty"
 local lrucache = require "resty.lrucache.pureffi"
@@ -78,17 +79,17 @@ local function get_rate_limit_key(self, rate_limit_index, rate_limit)
     ngx.log(ngx.ERR, "rate limit unknown limit by")
   end
 
-  local key = key_limit_by .. "|" .. rate_limit["duration"] .. "|" .. self.bucket_name .. "|" .. key_value
+  local key = key_limit_by .. "|" .. rate_limit["_duration_sec"] .. "|" .. self.bucket_name .. "|" .. key_value
   self.rate_limit_keys[rate_limit_index] = key
   return key
 end
 
-local function increment_distributed_counter(key)
+local function increment_distributed_counter(key, increment_by)
   local value = distributed_counters_local_queue[key]
   if not value then
-    distributed_counters_local_queue[key] = 1
+    distributed_counters_local_queue[key] = increment_by
   else
-    distributed_counters_local_queue[key] = value + 1
+    distributed_counters_local_queue[key] = value + increment_by
   end
 end
 
@@ -97,7 +98,7 @@ local function has_already_exceeded_any_limits(self)
   local exceed_expires_at
   local exceeded = false
   local header_remaining
-  local header_reset
+  local header_retry_after
 
   -- Loop over each limit present and see if any one of them has been exceeded.
   for rate_limit_index, rate_limit in ipairs(self.rate_limits) do
@@ -121,83 +122,122 @@ local function has_already_exceeded_any_limits(self)
   if exceed_expires_at and exceed_expires_at >= current_time then
     exceeded = true
     header_remaining = 0
-    header_reset = ceil(exceed_expires_at - current_time)
+    header_retry_after = ceil(exceed_expires_at - current_time)
   end
 
-  return exceeded, header_remaining, header_reset
+  return exceeded, header_remaining, header_retry_after
 end
 
-local function check_limit(rate_limit_key, limit_to, duration, current_time, current_window_time, current_window_count)
+local function check_limit(rate_limit_key, rate_limit, limit_to, duration, increment_by, current_time, current_period_key, current_period_start_time, current_period_count)
   local exceeded = false
   local remaining
-  local reset
+  local retry_after
 
   local estimated_count
-  local time_in_previous_window
-  if current_window_count > limit_to then
-    time_in_previous_window = duration
-    estimated_count = current_window_count
+  local time_in_current_period = current_time - current_period_start_time
+  local time_portion_from_previous_period = duration - time_in_current_period
+
+  -- If the number of requests in the current time period have exceeded the
+  -- limit, then there's no need to fetch the previous time period's counts.
+  if current_period_count > limit_to then
+    exceeded = true
+    retry_after = floor(time_portion_from_previous_period) + 1
+    estimated_count = current_period_count
   else
-    local previous_window_time = current_window_time - duration
-    local previous_window_key = rate_limit_key .. "|" .. previous_window_time
-    local previous_window_count, previous_window_count_err = counters_dict:get(previous_window_key)
-    if not previous_window_count then
-      if previous_window_count_err then
-        ngx.log(ngx.ERR, "Error fetching rate limit counter: ", previous_window_count_err)
+    -- Fetch the requests made in the previous time period (eg, if this is an
+    -- rate limit with a 1 hour duration, the requests in the previous hour).
+    local previous_period_start_time = current_period_start_time - duration
+    local previous_period_key = rate_limit_key .. "|" .. previous_period_start_time
+    local previous_period_count, previous_period_count_err = counters_dict:get(previous_period_key)
+    if not previous_period_count then
+      if previous_period_count_err then
+        ngx.log(ngx.ERR, "Error fetching rate limit counter: ", previous_period_count_err)
       end
 
-      previous_window_count = 0
+      previous_period_count = 0
     end
 
-    local time_in_current_window = current_time - current_window_time
-    time_in_previous_window = (duration - time_in_current_window)
-    estimated_count = floor(previous_window_count * (time_in_previous_window / duration) + current_window_count)
+    -- Calculate the estimated number of requests made during the duration by
+    -- using the count from the current period plus a weighted average of the
+    -- requests from the previous period.
+    --
+    -- This assumes a constant rate of requests, which may not be entirely
+    -- accurate, but as explained here, this is usually pretty accurate while
+    -- being easy to compute:
+    -- https://blog.cloudflare.com/counting-things-a-lot-of-different-things/#slidingwindowstotherescue
+    local time_weighted_previous_period_count = floor(previous_period_count * (time_portion_from_previous_period / duration))
+    estimated_count = current_period_count + time_weighted_previous_period_count
+
+    if estimated_count > limit_to then
+      exceeded = true
+
+      local target_previous_period_count_for_retry_after = limit_to - current_period_count
+      retry_after = floor(duration - ((target_previous_period_count_for_retry_after / previous_period_count) * duration)) + 1
+    end
   end
 
-  if estimated_count > limit_to then
-    exceeded = true
+  if exceeded then
     remaining = 0
-    reset = ceil(time_in_previous_window)
-    local exceed_expires_at = current_time + time_in_previous_window
-    local set_ok, set_err, set_forcible = exceeded_dict:set(rate_limit_key, exceed_expires_at, reset)
+
+    -- In the event the rate limit has been exceeded, cache this for as long as
+    -- we know the rate limit will still be considered exceeded (based on the
+    -- estimated rate) so we can bypass any calculations on further over rate
+    -- limit requests.
+    local exceed_expires_at = current_time + retry_after
+    local set_ok, set_err, set_forcible = exceeded_dict:set(rate_limit_key, exceed_expires_at, retry_after)
     if not set_ok then
       ngx.log(ngx.ERR, "failed to set exceeded key in 'rate_limit_exceeded' shared dict: ", set_err)
     elseif set_forcible then
       ngx.log(ngx.WARN, "forcibly set exceeded key in 'rate_limit_exceeded' shared dict (shared dict may be too small)")
     end
+
+    -- If the rate limit has been exceeded, then decrement the counters for the
+    -- current time period since this request will actually be rejected.
+    --
+    -- We perform an increment earlier to fetch the current period's count.
+    -- This increment and then decrement approach is preferable to a separate
+    -- get and then a conditional increment, since it keeps the increment
+    -- operation atomic, so there's fewer race conditions. And since we cache
+    -- rate limit exceeded situations to prevent further counts for the
+    -- duration of being over rate limit (see above), that should mean there's
+    -- not a ton of these increment then decrement operations performed.
+    local _, decr_err = counters_dict:incr(current_period_key, -1)
+    if decr_err then
+      ngx.log(ngx.ERR, "failed to decrement counters shared dict: ", decr_err)
+    end
   else
     remaining = limit_to - estimated_count
+
+    if rate_limit["distributed"] and increment_by > 0 then
+      increment_distributed_counter(current_period_key, increment_by)
+    end
   end
 
-  return exceeded, remaining, reset
+  return exceeded, remaining, retry_after
 end
 
-local function increment_limit(self, rate_limit_index, rate_limit)
+local function increment_limit(self, increment_by, rate_limit_index, rate_limit)
   local rate_limit_key = get_rate_limit_key(self, rate_limit_index, rate_limit)
 
   local current_time = self.current_time
   local duration = rate_limit["_duration_sec"]
-  local current_window_time = floor(current_time / duration) * duration
-  local current_window_key = rate_limit_key .. "|" .. current_window_time
-  local current_window_ttl = duration * 2 + 1
-  local current_window_count, incr_err, incr_forcible = counters_dict:incr(current_window_key, 1, 0, current_window_ttl)
+  local current_period_start_time = floor(floor(current_time / duration) * duration)
+  local current_period_key = rate_limit_key .. "|" .. current_period_start_time
+  local current_period_ttl = ceil(duration * 2 + 1)
+  local current_period_count, incr_err, incr_forcible = counters_dict:incr(current_period_key, increment_by, 0, current_period_ttl)
   if incr_err then
     ngx.log(ngx.ERR, "failed to increment counters shared dict: ", incr_err)
   elseif incr_forcible then
     ngx.log(ngx.WARN, "forcibly set counter in 'rate_limit_counters' shared dict (shared dict may be too small)")
   end
 
-  if rate_limit["distributed"] then
-    increment_distributed_counter(current_window_key)
-  end
-
-  return check_limit(rate_limit_key, rate_limit["limit_to"], duration, current_time, current_window_time, current_window_count)
+  return check_limit(rate_limit_key, rate_limit, rate_limit["limit_to"], duration, increment_by, current_time, current_period_key, current_period_start_time, current_period_count)
 end
 
-local function increment_all_limits(self)
+local function increment_all_limits(self, increment_by)
   local exceeded = false
   local header_remaining
-  local header_reset
+  local header_retry_after
 
   local user = self.user
   local settings = self.settings
@@ -211,11 +251,11 @@ local function increment_all_limits(self)
     -- context.
     local limit_by = rate_limit["limit_by"]
     if not ((limit_by == "api_key" and not user and anonymous_rate_limit_behavior == "ip_only") or (limit_by == "ip" and user and authenticated_rate_limit_behavior == "api_key_only")) then
-      local limit_exceeded, limit_remaining, limit_reset = increment_limit(self, rate_limit_index, rate_limit)
+      local limit_exceeded, limit_remaining, limit_retry_after = increment_limit(self, increment_by, rate_limit_index, rate_limit)
 
       if rate_limit["response_headers"] or limit_exceeded then
         header_remaining = limit_remaining
-        header_reset = limit_reset
+        header_retry_after = limit_retry_after
       end
 
       if limit_exceeded then
@@ -225,7 +265,7 @@ local function increment_all_limits(self)
     end
   end
 
-  return exceeded, header_remaining, header_reset
+  return exceeded, header_remaining, header_retry_after
 end
 
 function _M.check(api, settings, user, remote_addr)
@@ -244,9 +284,23 @@ function _M.check(api, settings, user, remote_addr)
     remote_addr = remote_addr,
   }
 
-  local exceeded, header_remaining, header_reset = has_already_exceeded_any_limits(self)
+  local increment_by = 1
+  if config["app_env"] == "test" then
+    local fake_time = ngx.var.http_x_fake_time
+    if fake_time then
+      self.current_time = tonumber(fake_time)
+      exceeded_dict:flush_all()
+      exceeded_local_cache:flush_all()
+    end
+
+    if ngx.var.http_x_api_umbrella_test_skip_increment_limits == "true" then
+      increment_by = 0
+    end
+  end
+
+  local exceeded, header_remaining, header_retry_after = has_already_exceeded_any_limits(self)
   if not exceeded then
-    exceeded, header_remaining, header_reset = increment_all_limits(self)
+    exceeded, header_remaining, header_retry_after = increment_all_limits(self, increment_by)
   end
 
   local header_limit
@@ -254,7 +308,7 @@ function _M.check(api, settings, user, remote_addr)
     header_limit = settings["_rate_limits_response_header_limit"]
   end
 
-  return exceeded, header_limit, header_remaining, header_reset
+  return exceeded, header_limit, header_remaining, header_retry_after
 end
 
 function _M.distributed_push()
@@ -270,10 +324,11 @@ function _M.distributed_push()
   for key, count in pairs(data) do
     local key_parts = split(key, "|", true)
     local duration = tonumber(key_parts[2])
-    local window_start_time = tonumber(key_parts[5])
-    local expires_at = (window_start_time + duration + 1)
+    local period_start_time = tonumber(key_parts[5])
+    local expires_at = ceil(period_start_time + duration * 2 + 1)
 
-    local result, err = pg_utils_query("INSERT INTO distributed_rate_limit_counters(id, value, expires_at) VALUES(:id, :value, to_timestamp(:expires_at)) ON CONFLICT (id) DO UPDATE SET value = distributed_rate_limit_counters.value + EXCLUDED.value", {
+    -- TODO: Remove "_temp" once done testing new rate limiting strategy in parallel.
+    local result, err = pg_utils_query("INSERT INTO distributed_rate_limit_counters_temp(id, value, expires_at) VALUES(:id, :value, to_timestamp(:expires_at)) ON CONFLICT (id) DO UPDATE SET value = distributed_rate_limit_counters_temp.value + EXCLUDED.value", {
       id = key,
       value = count,
       expires_at = expires_at,
@@ -313,7 +368,8 @@ function _M.distributed_pull()
   -- cycle and start over with negative values. Since the data in this table
   -- expires, there shouldn't be any duplicate version numbers by the time the
   -- sequence cycles.
-  local results, err = pg_utils_query("SELECT id, version, value, extract(epoch FROM expires_at) AS expires_at FROM distributed_rate_limit_counters WHERE version > LEAST(:version, (SELECT last_value - 1 FROM distributed_rate_limit_counters_version_seq)) AND expires_at >= now() ORDER BY version DESC", { version = last_fetched_version }, { quiet = true })
+  -- TODO: Remove "_temp" once done testing new rate limiting strategy in parallel.
+  local results, err = pg_utils_query("SELECT id, version, value, extract(epoch FROM expires_at) AS expires_at FROM distributed_rate_limit_counters_temp WHERE version > LEAST(:version, (SELECT last_value - 1 FROM distributed_rate_limit_counters_temp_version_seq)) AND expires_at >= now() ORDER BY version DESC", { version = last_fetched_version }, { quiet = true })
   if not results then
     ngx.log(ngx.ERR, "failed to fetch rate limits from database: ", err)
     return nil

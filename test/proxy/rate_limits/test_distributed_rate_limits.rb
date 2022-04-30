@@ -13,7 +13,6 @@ class Test::Proxy::RateLimits::TestDistributedRateLimits < Minitest::Test
         :rate_limits => [
           {
             :duration => 50 * 60 * 1000, # 50 minutes
-            :accuracy => 1 * 60 * 1000, # 1 minute
             :limit_by => "api_key",
             :limit_to => 1001,
             :distributed => true,
@@ -35,7 +34,6 @@ class Test::Proxy::RateLimits::TestDistributedRateLimits < Minitest::Test
             :rate_limits => [
               {
                 :duration => 45 * 60 * 1000, # 45 minutes
-                :accuracy => 1 * 60 * 1000, # 1 minute
                 :limit_by => "api_key",
                 :limit_to => 1002,
                 :distributed => true,
@@ -51,7 +49,6 @@ class Test::Proxy::RateLimits::TestDistributedRateLimits < Minitest::Test
                 :rate_limits => [
                   {
                     :duration => 48 * 60 * 1000, # 48 minutes
-                    :accuracy => 1 * 60 * 1000, # 1 minute
                     :limit_by => "api_key",
                     :limit_to => 1003,
                     :distributed => true,
@@ -67,7 +64,6 @@ class Test::Proxy::RateLimits::TestDistributedRateLimits < Minitest::Test
                 :rate_limits => [
                   {
                     :duration => 12 * 60 * 1000, # 12 minutes
-                    :accuracy => 1 * 60 * 1000, # 1 minute
                     :limit_by => "api_key",
                     :limit_to => 1004,
                     :distributed => false,
@@ -83,7 +79,6 @@ class Test::Proxy::RateLimits::TestDistributedRateLimits < Minitest::Test
                 :rate_limits => [
                   {
                     :duration => 24 * 60 * 60 * 1000, # 1 day
-                    :accuracy => 60 * 60 * 1000, # 1 hour
                     :limit_by => "api_key",
                     :limit_to => 1005,
                     :distributed => true,
@@ -99,7 +94,6 @@ class Test::Proxy::RateLimits::TestDistributedRateLimits < Minitest::Test
                 :rate_limits => [
                   {
                     :duration => 1 * 60 * 1000, # 1 minute
-                    :accuracy => 5 * 1000, # 5 seconds
                     :limit_by => "api_key",
                     :limit_to => 1006,
                     :distributed => true,
@@ -123,7 +117,6 @@ class Test::Proxy::RateLimits::TestDistributedRateLimits < Minitest::Test
     options = {
       :api_user => FactoryBot.create(:api_user),
       :duration => 50 * 60 * 1000, # 50 minutes
-      :accuracy => 1 * 60 * 1000, # 1 minute
       :limit_to => 1001,
     }
 
@@ -135,7 +128,6 @@ class Test::Proxy::RateLimits::TestDistributedRateLimits < Minitest::Test
     options = {
       :api_user => FactoryBot.create(:api_user),
       :duration => 50 * 60 * 1000, # 50 minutes
-      :accuracy => 1 * 60 * 1000, # 1 minute
       :limit_to => 1001,
     }.merge(frozen_time)
 
@@ -150,7 +142,6 @@ class Test::Proxy::RateLimits::TestDistributedRateLimits < Minitest::Test
     options = {
       :api_user => FactoryBot.create(:api_user),
       :duration => 50 * 60 * 1000, # 50 minutes
-      :accuracy => 1 * 60 * 1000, # 1 minute
       :limit_to => 1001,
     }.merge(frozen_time)
 
@@ -164,7 +155,6 @@ class Test::Proxy::RateLimits::TestDistributedRateLimits < Minitest::Test
     options = {
       :api_user => FactoryBot.create(:api_user),
       :duration => 50 * 60 * 1000, # 50 minutes
-      :accuracy => 1 * 60 * 1000, # 1 minute
       :limit_to => 1001,
     }
 
@@ -177,7 +167,6 @@ class Test::Proxy::RateLimits::TestDistributedRateLimits < Minitest::Test
     options = {
       :api_user => FactoryBot.create(:api_user),
       :duration => 50 * 60 * 1000, # 50 minutes
-      :accuracy => 1 * 60 * 1000, # 1 minute
       :limit_to => 1001,
     }
 
@@ -191,7 +180,6 @@ class Test::Proxy::RateLimits::TestDistributedRateLimits < Minitest::Test
     options = {
       :api_user => FactoryBot.create(:api_user),
       :duration => 50 * 60 * 1000, # 50 minutes
-      :accuracy => 1 * 60 * 1000, # 1 minute
       :limit_to => 1001,
     }
 
@@ -203,7 +191,6 @@ class Test::Proxy::RateLimits::TestDistributedRateLimits < Minitest::Test
     options = {
       :api_user => FactoryBot.create(:api_user),
       :duration => 50 * 60 * 1000, # 50 minutes
-      :accuracy => 1 * 60 * 1000, # 1 minute
       :limit_to => 1004,
     }
 
@@ -216,7 +203,6 @@ class Test::Proxy::RateLimits::TestDistributedRateLimits < Minitest::Test
     options = {
       :api_user => FactoryBot.create(:api_user),
       :duration => 50 * 60 * 1000, # 50 minutes
-      :accuracy => 1 * 60 * 1000, # 1 minute
       :limit_to => 1002,
     }
 
@@ -233,7 +219,6 @@ class Test::Proxy::RateLimits::TestDistributedRateLimits < Minitest::Test
     options = {
       :api_user => FactoryBot.create(:api_user),
       :duration => 1 * 60 * 1000, # 1 minute
-      :accuracy => 5 * 1000, # 5 seconds
       :limit_to => 1006,
     }
 
@@ -246,7 +231,6 @@ class Test::Proxy::RateLimits::TestDistributedRateLimits < Minitest::Test
     options = {
       :api_user => FactoryBot.create(:api_user),
       :duration => 50 * 60 * 1000, # 50 minutes
-      :accuracy => 1 * 60 * 1000, # 1 minute
       :limit_to => 1003,
     }
 
@@ -259,7 +243,6 @@ class Test::Proxy::RateLimits::TestDistributedRateLimits < Minitest::Test
     options = {
       :api_user => FactoryBot.create(:api_user),
       :duration => 50 * 60 * 1000, # 50 minutes
-      :accuracy => 1 * 60 * 1000, # 1 minute
       :limit_to => 1005,
       :time => Time.now.utc - (8 * 60 * 60), # 8 hours ago
     }
@@ -273,7 +256,6 @@ class Test::Proxy::RateLimits::TestDistributedRateLimits < Minitest::Test
     options = {
       :api_user => FactoryBot.create(:api_user),
       :duration => 50 * 60 * 1000, # 50 minutes
-      :accuracy => 1 * 60 * 1000, # 1 minute
       :limit_to => 1005,
       :time => Time.now.utc - (48 * 60 * 60), # 48 hours ago
     }
@@ -288,7 +270,6 @@ class Test::Proxy::RateLimits::TestDistributedRateLimits < Minitest::Test
     options = {
       :api_user => FactoryBot.create(:api_user),
       :duration => 50 * 60 * 1000, # 50 minutes
-      :accuracy => 1 * 60 * 1000, # 1 minute
       :limit_to => 1001,
     }
 
@@ -315,7 +296,6 @@ class Test::Proxy::RateLimits::TestDistributedRateLimits < Minitest::Test
     options = {
       :api_user => FactoryBot.create(:api_user),
       :duration => 50 * 60 * 1000, # 50 minutes
-      :accuracy => 1 * 60 * 1000, # 1 minute
       :limit_to => 1001,
     }.merge(frozen_time)
 
@@ -351,14 +331,14 @@ class Test::Proxy::RateLimits::TestDistributedRateLimits < Minitest::Test
       options = {
         :api_user => FactoryBot.create(:api_user),
         :duration => 50 * 60 * 1000, # 50 minutes
-        :accuracy => 1 * 60 * 1000, # 1 minute
         :limit_to => 1001,
       }.merge(frozen_time)
 
       begin
         # Alter the sequence so that the next value is near the boundary for
         # bigints.
-        DistributedRateLimitCounter.connection.execute("ALTER SEQUENCE distributed_rate_limit_counters_version_seq RESTART WITH #{sequence_start_val}")
+        # TODO: Remove "_temp" once done testing new rate limiting strategy in parallel.
+        DistributedRateLimitCounter.connection.execute("ALTER SEQUENCE distributed_rate_limit_counters_temp_version_seq RESTART WITH #{sequence_start_val}")
 
         # Manually set the distributed count to insert a single record.
         set_distributed_count(20, options)
@@ -413,7 +393,8 @@ class Test::Proxy::RateLimits::TestDistributedRateLimits < Minitest::Test
         assert_equal(99, counter.value)
       ensure
         # Restore default sequence settings.
-        DistributedRateLimitCounter.connection.execute("ALTER SEQUENCE distributed_rate_limit_counters_version_seq RESTART WITH -9223372036854775807")
+        # TODO: Remove "_temp" once done testing new rate limiting strategy in parallel.
+        DistributedRateLimitCounter.connection.execute("ALTER SEQUENCE distributed_rate_limit_counters_temp_version_seq RESTART WITH -9223372036854775807")
       end
     end
   end
@@ -444,26 +425,18 @@ class Test::Proxy::RateLimits::TestDistributedRateLimits < Minitest::Test
 
     assert_operator(reported_requests_made, :>=, count - 1)
     assert_operator(reported_requests_made, :<=, count)
-
-    # In some rare situations our internal rate limit counters might be off
-    # since we fetch all of our rate limits and then increment them separately.
-    # The majority of race conditions should be solved, but one known issue
-    # remains that may very rarely lead to this warning (but we don't want to
-    # fail the whole test as long as it remains rare). See comments in
-    # rate_limit.lua's increment_all_limits().
-    if(reported_requests_made != count)
-      puts "WARNING: X-RateLimit-Remaining header was off by 1. This should be very rare. Investigate if you see this with any regularity."
-    end
   end
 
   def set_distributed_count(count, options = {})
     time = options[:time] || Time.now.utc
-    bucket_start_time = (time.strftime("%s%L").to_i / options.fetch(:accuracy)).floor * options.fetch(:accuracy)
+    duration_sec = options.fetch(:duration) / 1000.0
+    period_start_time = ((time.to_f / duration_sec).floor * duration_sec).floor
     host = options[:host] || "127.0.0.1"
-    key = "api_key:#{options.fetch(:duration)}:#{options.fetch(:api_user).id}:#{host}:#{bucket_start_time}"
-    expires_at = Time.at((bucket_start_time + options.fetch(:duration) + 60000) / 1000.0).utc
+    key = "k|#{format("%g", duration_sec)}|#{host}|#{options.fetch(:api_user).api_key_prefix}|#{period_start_time}"
+    expires_at = Time.at((period_start_time + (duration_sec * 2) + 60).ceil).utc
 
-    DistributedRateLimitCounter.connection.execute("INSERT INTO distributed_rate_limit_counters(id, value, expires_at) VALUES(#{DistributedRateLimitCounter.connection.quote(key)}, #{DistributedRateLimitCounter.connection.quote(count)}, #{DistributedRateLimitCounter.connection.quote(expires_at)}) ON CONFLICT (id) DO UPDATE SET value = EXCLUDED.value")
+    # TODO: Remove "_temp" once done testing new rate limiting strategy in parallel.
+    DistributedRateLimitCounter.connection.execute("INSERT INTO distributed_rate_limit_counters_temp(id, value, expires_at) VALUES(#{DistributedRateLimitCounter.connection.quote(key)}, #{DistributedRateLimitCounter.connection.quote(count)}, #{DistributedRateLimitCounter.connection.quote(expires_at)}) ON CONFLICT (id) DO UPDATE SET value = EXCLUDED.value")
   end
 
   def assert_distributed_count(expected_count, options = {})
@@ -474,7 +447,7 @@ class Test::Proxy::RateLimits::TestDistributedRateLimits < Minitest::Test
     count = nil
     Timeout.timeout(5) do
       loop do
-        result = DistributedRateLimitCounter.where("id LIKE '%:' || ? || ':%' AND expires_at >= now()", options.fetch(:api_user).id).select("SUM(value) AS total_value").take
+        result = DistributedRateLimitCounter.where("id LIKE '%|' || ? || '|%' AND expires_at >= now()", options.fetch(:api_user).api_key_prefix).select("SUM(value) AS total_value").take
 
         count = 0
         if(result && result["total_value"])
@@ -494,7 +467,7 @@ class Test::Proxy::RateLimits::TestDistributedRateLimits < Minitest::Test
   end
 
   def assert_distributed_count_record(options)
-    record = DistributedRateLimitCounter.where("id LIKE '%:' || ? || ':%' AND expires_at >= now()", options.fetch(:api_user).id).order("version DESC").first
+    record = DistributedRateLimitCounter.where("id LIKE '%|' || ? || '|%' AND expires_at >= now()", options.fetch(:api_user).api_key_prefix).order("version DESC").first
     assert_equal([
       "id",
       "version",
@@ -539,6 +512,6 @@ class Test::Proxy::RateLimits::TestDistributedRateLimits < Minitest::Test
       end
     end
   rescue Timeout::Error
-    flunk("Local count does not match expected value after timeout. Expected: #{expected_count.inspect} Last count: #{count.inspect} Last response: #{response}")
+    flunk("Local count does not match expected value after timeout. Expected: #{expected_count.inspect} Last count: #{count.inspect} Last response: #{response.headers}")
   end
 end

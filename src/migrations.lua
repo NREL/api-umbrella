@@ -1159,4 +1159,45 @@ return {
 
     db.query("COMMIT")
   end,
+
+  [1651280172] = function()
+    db.query("BEGIN")
+
+    -- TODO: Drop column altogether and remove from api_users_flattened view
+    -- once we're not testing the two different rate limiting approaches in
+    -- parallel. But keep for now while some systems still use the accuracy
+    -- approach.
+    db.query("ALTER TABLE rate_limits ALTER COLUMN accuracy DROP NOT NULL")
+
+    db.query("ALTER TABLE distributed_rate_limit_counters SET UNLOGGED")
+
+    -- TODO: Drop this "temp" version of the table once we're done testing two
+    -- different rate limit approaches in parallel. But we're keeping a
+    -- separate table for testing the new rate limit implementation so there's
+    -- not mixup between the different key types.
+    db.query([[
+      CREATE UNLOGGED TABLE distributed_rate_limit_counters_temp(
+        id varchar(500) PRIMARY KEY,
+        version bigint NOT NULL,
+        value bigint NOT NULL,
+        expires_at timestamp with time zone NOT NULL
+      )
+    ]])
+    db.query("CREATE UNIQUE INDEX ON distributed_rate_limit_counters_temp(version)")
+    db.query("CREATE INDEX ON distributed_rate_limit_counters_temp(expires_at)")
+    db.query("CREATE INDEX ON distributed_rate_limit_counters_temp (version, expires_at)")
+    db.query("CREATE SEQUENCE distributed_rate_limit_counters_temp_version_seq MINVALUE -9223372036854775807 MAXVALUE 9223372036854775807 CYCLE")
+    db.query([[
+      CREATE OR REPLACE FUNCTION distributed_rate_limit_counters_temp_increment_version()
+      RETURNS TRIGGER AS $$
+      BEGIN
+        NEW.version := nextval('distributed_rate_limit_counters_temp_version_seq');
+        return NEW;
+      END;
+      $$ LANGUAGE plpgsql;
+    ]])
+    db.query("CREATE TRIGGER distributed_rate_limit_counters_temp_increment_version_trigger BEFORE INSERT OR UPDATE ON distributed_rate_limit_counters_temp FOR EACH ROW EXECUTE PROCEDURE distributed_rate_limit_counters_temp_increment_version()")
+
+    db.query("COMMIT")
+  end,
 }

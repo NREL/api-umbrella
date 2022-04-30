@@ -1,7 +1,6 @@
 FactoryBot.define do
   factory :rate_limit do
     duration { 60000 }
-    accuracy { 5000 }
     distributed { true }
     limit_by { "ip" }
     limit_to { 500 }

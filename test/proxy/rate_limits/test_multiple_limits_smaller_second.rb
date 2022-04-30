@@ -14,14 +14,12 @@ class Test::Proxy::RateLimits::TestMultipleLimitsSmallerSecond < Minitest::Test
           :rate_limits => [
             {
               :duration => 10 * 1000, # 10 second
-              :accuracy => 1000, # 1 second
               :limit_by => "api_key",
               :limit_to => 10,
               :response_headers => false,
             },
             {
               :duration => 60 * 60 * 1000, # 1 hour
-              :accuracy => 1 * 60 * 1000, # 1 minute
               :limit_by => "api_key",
               :limit_to => 3,
               :response_headers => true,

@@ -440,35 +440,30 @@ import "path"
     rate_limits: [...#api_backend_rate_limit] | *[
       #api_backend_rate_limit & {
         duration: 1000
-        accuracy: 500
         limit_by: "ip"
         limit_to: 50
         distributed: false
       },
       #api_backend_rate_limit & {
         duration: 1000
-        accuracy: 500
         limit_by: "api_key"
         limit_to: 20
         distributed: false
       },
       #api_backend_rate_limit & {
         duration: 15000
-        accuracy: 1000
         limit_by: "ip"
         limit_to: 250
         distributed: true
       },
       #api_backend_rate_limit & {
         duration: 15000
-        accuracy: 1000
         limit_by: "api_key"
         limit_to: 150
         distributed: true
       },
       #api_backend_rate_limit & {
         duration: 3600000
-        accuracy: 60000
         limit_by: "api_key"
         limit_to: 1000
         distributed: true
@@ -577,7 +572,6 @@ import "path"
   }
   #api_backend_rate_limit: {
     duration: uint
-    accuracy: uint
     limit_by: "ip" | "api_key"
     limit_to: uint
     distributed?: bool
@@ -723,7 +717,6 @@ import "path"
         rate_limit_mode: "custom"
         rate_limits: [{
           duration: 15000
-          accuracy: 1000
           limit_by: "ip"
           limit_to: 100
           distributed: true

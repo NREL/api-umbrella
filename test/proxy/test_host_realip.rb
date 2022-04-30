@@ -27,7 +27,6 @@ class Test::Proxy::Logging::TestHostRealip < Minitest::Test
             :rate_limits => [
               {
                 :duration => 60 * 60 * 1000, # 1 hour
-                :accuracy => 1 * 60 * 1000, # 1 minute
                 :limit_by => "ip",
                 :limit_to => 5,
                 :distributed => true,
