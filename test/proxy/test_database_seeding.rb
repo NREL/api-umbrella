@@ -21,7 +21,7 @@ class Test::Proxy::TestDatabaseSeeding < Minitest::Test
     puts "-DEBUG- DB user settings: #{users[0].settings.ai}"
     puts "-DEBUG- DB user rate_limits: #{users[0].settings.rate_limits.ai}"
     puts "-DEBUG- DB rate limits: #{RateLimit.where("api_user_settings_id IS NOT NULL").all.to_a.ai}"
-    puts "-DEBUG- Audit rate limits: #{ApplicationRecord.connection.select_rows("SELECT * FROM audit.log WHERE table_name = 'rate_limits'").ai}"
+    puts "-DEBUG- Audit rate limits: #{ApplicationRecord.connection.select_rows("SELECT * FROM audit.log WHERE table_name = 'rate_limits' ORDER BY id").ai}"
     puts "-DEBUG- API user: #{user.ai}"
 
     assert_equal("static.site.ajax@internal.apiumbrella", user.fetch("email"))
