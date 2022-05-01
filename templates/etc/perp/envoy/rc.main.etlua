@@ -23,7 +23,10 @@ if [ "${1}" = "start" ]; then
     chown "$api_umbrella_user":"$api_umbrella_group" "${dirs[@]}"
   fi
 
-  exec runtool "${run_args[@]}" envoy -c "<%- config['etc_dir'] %>/envoy/envoy.yaml"
+  exec runtool "${run_args[@]}" envoy \
+    --config-path "<%- config['etc_dir'] %>/envoy/envoy.yaml" \
+    --use-dynamic-base-id \
+    --base-id-path "<%- config['run_dir'] %>/envoy/base-id"
 fi
 
 exit 0
