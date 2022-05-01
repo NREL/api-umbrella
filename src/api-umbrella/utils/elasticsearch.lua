@@ -35,8 +35,8 @@ function _M.query(path, options)
     options["headers"] = {}
   end
 
-  if server["userinfo"] and not options["headers"]["Authorization"] then
-     options["headers"]["Authorization"] = "Basic " .. ngx.encode_base64(server["userinfo"])
+  if (server["user"] or server["password"]) and not options["headers"]["Authorization"] then
+     options["headers"]["Authorization"] = "Basic " .. ngx.encode_base64((server["user"] or "") .. ":" .. (server["password"] or ""))
   end
 
   if options["body"] and type(options["body"]) == "table" then
