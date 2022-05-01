@@ -35,7 +35,6 @@ end
 
 return function(data)
   local dump = json_encode({ ordered_data(data) })
-  ngx.log(ngx.ERR, "DUMP: ", dump)
 
   return ngx.md5(dump)
 end
