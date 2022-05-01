@@ -1,7 +1,26 @@
+local cjson = require "cjson"
 local deep_merge_overwrite_arrays = require "api-umbrella.utils.deep_merge_overwrite_arrays"
-local json_decode = require("cjson").decode
+local lyaml = require "lyaml"
 local writefile = require("pl.utils").writefile
-local yaml_dump = require("lyaml").dump
+
+local json_decode = cjson.decode
+local json_null = cjson.null
+local yaml_dump = lyaml.dump
+local yaml_null = lyaml.null
+
+local function json_nulls_to_yaml_nulls(table)
+  if not table then return end
+
+  for key, value in pairs(table) do
+    if value == json_null then
+      table[key] = yaml_null
+    elseif type(value) == "table" then
+      table[key] = json_nulls_to_yaml_nulls(value)
+    end
+  end
+
+  return table
+end
 
 return function()
   local vcap_services = os.getenv("VCAP_SERVICES")
@@ -28,7 +47,7 @@ return function()
   for _, service in ipairs(vcap_services_data["user-provided"]) do
     if service["name"] == config_service_name then
       found_config_service = true
-      deep_merge_overwrite_arrays(config, service["credentials"])
+      deep_merge_overwrite_arrays(config, json_nulls_to_yaml_nulls(service["credentials"]))
     end
   end
 
