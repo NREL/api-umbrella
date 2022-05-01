@@ -1103,9 +1103,39 @@ return {
   end,
 
   [1635022846] = function()
+    -- TODO: Drop and replace `api_users_flattened` view once we're done
+    -- testing two different stacks in parallel. But for now, keep the old view
+    -- as-is so we can test this new one separately.
     db.query([[
       DROP VIEW api_users_flattened;
       CREATE VIEW api_users_flattened AS
+       SELECT u.id,
+          u.version,
+          u.api_key_hash,
+          u.api_key_encrypted,
+          u.api_key_encrypted_iv,
+          u.email,
+          u.email_verified,
+          u.registration_source,
+          u.throttle_by_ip,
+          date_part('epoch'::text, u.disabled_at) AS disabled_at,
+          date_part('epoch'::text, u.created_at) AS created_at,
+          json_build_object('allowed_ips', s.allowed_ips, 'allowed_referers', s.allowed_referers, 'rate_limit_mode', s.rate_limit_mode, 'rate_limits', ( SELECT json_agg(r2.*) AS json_agg
+                 FROM ( SELECT r.duration,
+                          r.accuracy,
+                          r.limit_by,
+                          r.limit_to,
+                          r.distributed,
+                          r.response_headers
+                         FROM api_umbrella.rate_limits r
+                        WHERE (r.api_user_settings_id = s.id)) r2)) AS settings,
+          ARRAY( SELECT ar.api_role_id
+                 FROM api_umbrella.api_users_roles ar
+                WHERE (ar.api_user_id = u.id)) AS roles
+         FROM (api_umbrella.api_users u
+           LEFT JOIN api_umbrella.api_user_settings s ON ((u.id = s.api_user_id)));
+
+      CREATE VIEW api_users_flattened_temp AS
         SELECT
           u.id,
           u.api_key_prefix,

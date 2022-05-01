@@ -48,7 +48,10 @@ local function fetch_user(api_key_prefix, api_key)
   -- do the initial lookup based on this. We'll still need to validate the full
   -- key afterwards, but this makes lookups for non-existent keys cheaper,
   -- since we don't have to perform the hash if the prefix doesn't exist.
-  local result, err = query("SELECT * FROM api_users_flattened WHERE api_key_prefix = :api_key_prefix", { api_key_prefix = api_key_prefix })
+  --
+  -- TODO: Replace with `api_users_flattened` once we're done testing different
+  -- approaches in parallel.
+  local result, err = query("SELECT * FROM api_users_flattened_temp WHERE api_key_prefix = :api_key_prefix", { api_key_prefix = api_key_prefix })
   if not result then
     ngx.log(ngx.ERR, "failed to fetch user from database: ", err)
     return nil
