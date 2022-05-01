@@ -60,24 +60,30 @@ local function read_resolv_conf_nameservers()
 end
 
 local function process_api_backends(config)
-  if config["internal_apis"] then
-    for _, api in ipairs(config["internal_apis"]) do
-      if api["frontend_host"] == "{{router.web_app_host}}" then
-        api["frontend_host"] = config["router"]["web_app_host"]
-      end
+  local keys = {
+    "internal_apis",
+    "apis",
+  }
+  for _, key in ipairs(keys) do
+    if config[key] then
+      for _, api in ipairs(config[key]) do
+        if api["frontend_host"] == "{{router.web_app_host}}" then
+          api["frontend_host"] = config["router"]["web_app_host"]
+        end
 
-      if api["servers"] then
-        for _, server in ipairs(api["servers"]) do
-          if server["host"] == "{{web.host}}" then
-            server["host"] = config["web"]["host"]
-          elseif server["host"] == "{{api_server.host}}" then
-            server["host"] = config["api_server"]["host"]
-          end
+        if api["servers"] then
+          for _, server in ipairs(api["servers"]) do
+            if server["host"] == "{{web.host}}" then
+              server["host"] = config["web"]["host"]
+            elseif server["host"] == "{{api_server.host}}" then
+              server["host"] = config["api_server"]["host"]
+            end
 
-          if server["port"] == "{{web.port}}" then
-            server["port"] = config["web"]["port"]
-          elseif server["port"] == "{{api_server.port}}" then
-            server["port"] = config["api_server"]["port"]
+            if server["port"] == "{{web.port}}" then
+              server["port"] = config["web"]["port"]
+            elseif server["port"] == "{{api_server.port}}" then
+              server["port"] = config["api_server"]["port"]
+            end
           end
         end
       end
@@ -93,18 +99,24 @@ local function process_api_backends(config)
 end
 
 local function process_website_backends(config)
-  if config["internal_website_backends"] then
-    for _, website in ipairs(config["internal_website_backends"]) do
-      if website["frontend_host"] == "{{router.web_app_host}}" then
-        website["frontend_host"] = config["router"]["web_app_host"]
-      end
+  local keys = {
+    "internal_website_backends",
+    "website_backends",
+  }
+  for _, key in ipairs(keys) do
+    if config[key] then
+      for _, website in ipairs(config[key]) do
+        if website["frontend_host"] == "{{router.web_app_host}}" then
+          website["frontend_host"] = config["router"]["web_app_host"]
+        end
 
-      if website["server_host"] == "{{static_site.host}}" then
-        website["server_host"] = config["static_site"]["host"]
-      end
+        if website["server_host"] == "{{static_site.host}}" then
+          website["server_host"] = config["static_site"]["host"]
+        end
 
-      if website["server_port"] == "{{static_site.port}}" then
-        website["server_port"] = config["static_site"]["port"]
+        if website["server_port"] == "{{static_site.port}}" then
+          website["server_port"] = config["static_site"]["port"]
+        end
       end
     end
   end
