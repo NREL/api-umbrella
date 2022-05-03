@@ -1,4 +1,3 @@
-set_by_lua_file $x_api_umbrella_request_id "<%- config["_src_root_dir"] %>/src/api-umbrella/proxy/hooks/set_x_api_umbrella_request_id.lua";
 proxy_set_header X-Api-Umbrella-Request-ID $x_api_umbrella_request_id;
 
 # Don't buffer proxied requests to allow for streaming APIs.

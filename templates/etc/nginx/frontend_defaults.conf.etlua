@@ -1,3 +1,5 @@
+set_by_lua_file $x_api_umbrella_request_id "<%- config["_src_root_dir"] %>/src/api-umbrella/proxy/hooks/set_x_api_umbrella_request_id.lua";
+
 <% if config["router"]["global_rate_limits"]["ip_connections"] then %>
   # Limit the number of simultaneous connections per IP address to <%- config["router"]["global_rate_limits"]["ip_connections"] %>.
   limit_conn api_umbrella_conn_addr_zone <%- config["router"]["global_rate_limits"]["ip_connections"] %>;
