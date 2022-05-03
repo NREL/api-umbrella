@@ -174,7 +174,7 @@ local function build_virtual_host_resource(options)
       -- Retry connections if the connection was never established (eg, if the
       -- API backend was temporarily down or a keepalive connection was
       -- killed).
-      retry_on = "connect-failure",
+      retry_on = "connect-failure,reset,http3-post-connect-failure",
     },
   }
 
@@ -251,6 +251,7 @@ local function build_lds(config_version, rds_path)
                   stat_prefix = "router",
                   common_http_protocol_options = {
                     max_headers_count = 200,
+                    idle_timeout = "120s",
                   },
                   generate_request_id = false,
                   server_header_transformation = "PASS_THROUGH",
