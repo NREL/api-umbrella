@@ -160,7 +160,6 @@ class Test::Proxy::Dns::TestCustomServer < Minitest::Test
       },
     ]) do
       records = @local_interface_ips.map { |ip| "#{unique_test_hostname} 60 A #{ip}" }
-      puts records.inspect
       set_dns_records(records)
       wait_for_response("/#{unique_test_id}/", {
         :code => 200,

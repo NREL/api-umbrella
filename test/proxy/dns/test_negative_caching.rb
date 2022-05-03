@@ -89,7 +89,6 @@ class Test::Proxy::Dns::TestNegativeCaching < Minitest::Test
       # Sanity check the results to ensure the results fit within the expected
       # negative TTL values.
       duration = Time.now.utc - start_time
-      puts duration.inspect
       min_duration = negative_ttl - TTL_BUFFER_NEG
       max_duration = negative_ttl + TTL_BUFFER_POS
       assert_operator(min_duration, :>, 0)
