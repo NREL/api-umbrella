@@ -18,6 +18,15 @@ if [ "${1}" = "start" ]; then
     chown "$api_umbrella_auto_ssl_user":"$api_umbrella_auto_ssl_group" "${dirs[@]}"
   fi
 
+  destination="<%- config['log']['destination'] %>"
+  if [ "$destination" = "console" ]; then
+    if [ -n "$api_umbrella_auto_ssl_user" ]; then
+      chown "$api_umbrella_auto_ssl_user":"$api_umbrella_auto_ssl_group" /dev/stdout
+    fi
+
+    ln -sf /dev/stdout "<%- config['log_dir'] %>/nginx-auto-ssl/access.log"
+  fi
+
   run_args=("-e" "rc.env" "-c" "<%- config['_src_root_dir'] %>")
   exec runtool ${run_args[@]+"${run_args[@]}"} nginx -p "<%- config['_src_root_dir'] %>/" -c "<%- config['etc_dir'] %>/nginx/auto-ssl.conf"
 fi

@@ -191,6 +191,44 @@ local function build_cds(config_version)
 end
 
 local function build_lds(config_version, rds_path)
+  local access_log = {
+    name = "envoy.access_loggers.file",
+    typed_config = {
+      log_format = {
+        json_format = {
+          time = "%START_TIME%",
+          ip = "%REQ(X-FORWARDED-FOR)%",
+          method = "%REQ(:METHOD)%",
+          uri = "%REQ(X-ENVOY-ORIGINAL-PATH?:PATH)%",
+          proto = "%PROTOCOL%",
+          status = "%RESPONSE_CODE%",
+          user_agent = "%REQ(USER-AGENT)%",
+          id = "%REQ(X-API-UMBRELLA-REQUEST-ID)%",
+          cache = "%REQ(X-CACHE)%",
+          host = "%REQ(:AUTHORITY)%",
+          resp_size = "%BYTES_SENT%",
+          req_size = "%BYTES_RECEIVED%",
+          duration = "%DURATION%",
+          req_duration = "%REQUEST_DURATION%",
+          resp_duration = "%RESPONSE_DURATION%",
+          resp_flags = "%RESPONSE_FLAGS%",
+          resp_detail = "%RESPONSE_CODE_DETAILS%",
+          con_details = "%CONNECTION_TERMINATION_DETAILS%",
+          up_host = "%UPSTREAM_HOST%",
+          up_fail = "%UPSTREAM_TRANSPORT_FAILURE_REASON%",
+        },
+        omit_empty_values = true,
+      },
+    },
+  }
+
+  if file_config["log"]["destination"] == "console" then
+    access_log["typed_config"]["@type"] = "type.googleapis.com/envoy.extensions.access_loggers.stream.v3.StdoutAccessLog"
+  else
+    access_log["typed_config"]["@type"] = "type.googleapis.com/envoy.extensions.access_loggers.file.v3.FileAccessLog"
+    access_log["typed_config"]["path"] = path_join(file_config["log_dir"], "envoy/access.log")
+  end
+
   local lds = {
     version_info = config_version,
     resources = {
@@ -233,13 +271,7 @@ local function build_lds(config_version, rds_path)
                     },
                   },
                   stream_idle_timeout = file_config["envoy"]["_stream_idle_timeout"],
-                  access_log = {
-                    name = "envoy.access_loggers.file",
-                    typed_config = {
-                      ["@type"] = "type.googleapis.com/envoy.extensions.access_loggers.file.v3.FileAccessLog",
-                      path = "/tmp/envoy.log",
-                    },
-                  },
+                  access_log = access_log,
 
                   -- Enable this option, since Envoy is sitting behind other
                   -- proxies.

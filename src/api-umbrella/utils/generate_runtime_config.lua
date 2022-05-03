@@ -404,9 +404,6 @@ local function set_computed_config(config)
     analytics = {
       ["_output_elasticsearch?"] = array_includes(config["analytics"]["outputs"], "elasticsearch"),
     },
-    log = {
-      ["_destination_console?"] = (config["log"]["destination"] == "console"),
-    },
     elasticsearch = {
       _first_server = config["elasticsearch"]["_servers"][1],
       ["_index_partition_monthly?"] = (config["elasticsearch"]["index_partition"] == "monthly"),

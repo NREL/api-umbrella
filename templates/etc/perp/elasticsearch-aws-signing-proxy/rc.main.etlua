@@ -5,6 +5,17 @@ exec 2>&1
 
 if [ "${1}" = "start" ]; then
   echo "starting ${2}..."
+  api_umbrella_user="<%- config['user'] %>"
+  api_umbrella_group="<%- config['group'] %>"
+
+  destination="<%- config['log']['destination'] %>"
+  if [ "$destination" = "console" ]; then
+    if [ -n "$api_umbrella_user" ]; then
+      chown "$api_umbrella_user":"$api_umbrella_group" /dev/stdout
+    fi
+
+    ln -sf /dev/stdout "<%- config['log_dir'] %>/elasticsearch-aws-signing-proxy/access.log"
+  fi
 
   run_args=("-e" "rc.env" "-c" "<%- config['_src_root_dir'] %>")
   exec runtool "${run_args[@]}" nginx -p "<%- config['_src_root_dir'] %>/" -c "<%- config['etc_dir'] %>/nginx/elasticsearch-aws-signing-proxy.conf"

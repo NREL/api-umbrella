@@ -40,27 +40,30 @@ CONFIG proxy.config.log.max_line_size INT 24576;
 CONFIG proxy.config.log.ascii_buffer_size INT 24576;
 CONFIG proxy.config.log.log_buffer_size INT 24576;
 
-<% if not config["log"]["_destination_console?"] then %>
-  # Rotate log files with logrotate to be consistent with all the other API
-  # Umbrella components.
+# Disable Trafficserver's own log file rotation for these files. We'll either
+# output to stdout or rotate log files with logrotate (to be consistent with
+# all the other API Umbrella components).
+CONFIG proxy.config.diags.logfile.rolling_enabled INT 0
+CONFIG proxy.config.output.logfile.rolling_enabled INT 0
+
+<% if config["log"]["destination"] ~= "console" then %>
+  # If outputting to file, then logrotate will also be used for this file.
   CONFIG proxy.config.log.rolling_enabled INT 0
-  CONFIG proxy.config.diags.logfile.rolling_enabled INT 0
-  CONFIG proxy.config.output.logfile.rolling_enabled INT 0
 <% else %>
-  # If outputting to stdout, Trafficserver logs are some we can't easily output
-  # to stdout. So in this case, still output to log files, but enable
+  # If outputting to stdout, the error.log file can't be symlinked to
+  # stdout/stderr, so we still need to output to a log file, but enable
   # Trafficserver's log rotation so these don't grow very big. We'll then use
   # rsyslog to tail these files and output to stdout for us.
+  #
+  # This workaround should no longer be needed once Trafficserver 10 is
+  # released and things can be configured to output to stdout/stderr directly:
+  # https://github.com/apache/trafficserver/pull/7937
   CONFIG proxy.config.log.auto_delete_rolled_files INT 1
   CONFIG proxy.config.log.max_space_mb_for_logs INT 200
   CONFIG proxy.config.log.max_space_mb_headroom INT 20
 
   CONFIG proxy.config.log.rolling_enabled INT 2
   CONFIG proxy.config.log.rolling_size_mb INT 10
-  CONFIG proxy.config.diags.logfile.rolling_enabled INT 2
-  CONFIG proxy.config.diags.logfile.rolling_size_mb INT 10
-  CONFIG proxy.config.output.logfile.rolling_enabled INT 2
-  CONFIG proxy.config.output.logfile.rolling_size_mb INT 10
 <% end %>
 
 # Increase timeouts to match the timeouts in other pieces of the stack.

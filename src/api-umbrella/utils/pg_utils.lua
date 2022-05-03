@@ -178,7 +178,7 @@ function _M.connect()
     }
     for _, query in ipairs(queries) do
       ngx.log(ngx.NOTICE, query)
-      local query_result, query_err = pg:query(query)
+      local query_result, query_err = pg:query(query, nil, { quiet = true })
       if not query_result then
         ngx.log(ngx.ERR, "postgresql query error: ", query_err)
       end

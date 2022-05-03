@@ -224,30 +224,3 @@ action(name="analytics-jsonparse" type="mmjsonparse")
     action.resumeRetryCount="-1"
   )
 <% end %>
-
-<% if config["log"]["_destination_console?"] then %>
-  action(
-    name="analytics-output-stdout"
-    type="omstdout"
-    template="all-json-record"
-  )
-<% else %>
-  # Output to local file for redundancy until we prove the new system out.
-  action(
-    name="analytics-output-file"
-    type="omfile"
-    file="<%- config["log_dir"] %>/rsyslog/requests.log"
-    template="all-json-record"
-    queue.type="LinkedList"
-    queue.filename="queue-file"
-    queue.checkpointinterval="10"
-    queue.saveonshutdown="on"
-    queue.size="15000"
-    queue.highwatermark="10000"
-    queue.lowwatermark="2000"
-    asyncWriting="on"
-    flushInterval="10"
-    ioBufferSize="256k"
-    action.resumeRetryCount="-1"
-  )
-<% end %>

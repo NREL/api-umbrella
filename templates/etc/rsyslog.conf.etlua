@@ -9,7 +9,7 @@ module(load="imfile")
 module(load="imtcp" MaxSessions="500")
 module(load="mmjsonparse")
 module(load="mmutf8fix")
-<% if config["log"]["_destination_console?"] then %>
+<% if config["log"]["destination"] == "console" then %>
   module(load="omstdout")
 <% end %>
 <% if config["analytics"]["_output_elasticsearch?"] then %>
@@ -42,7 +42,7 @@ ruleset(name="analytics-ruleset" queue.type="FixedArray" queue.size="5000") {
   include(file="<%- config["etc_dir"] %>/rsyslog.d/analytics.conf")
 }
 
-<% if config["log"]["_destination_console?"] then %>
+<% if config["log"]["destination"] == "console" then %>
   ruleset(name="logs-ruleset" queue.type="FixedArray" queue.size="5000") {
     action(
       name="output-logs-stdout"
@@ -51,18 +51,21 @@ ruleset(name="analytics-ruleset" queue.type="FixedArray" queue.size="5000") {
     )
   }
 
-  input(type="imfile" file="<%- config["log_dir"] %>/trafficserver/access.log" tag="trafficserver-access" ruleset="logs-ruleset")
-  input(type="imfile" file="<%- config["log_dir"] %>/trafficserver/diags.log" tag="trafficserver-diags" ruleset="logs-ruleset")
+  # Workaround for error.log currently being hard-coded to output to a file
+  # that won't work if symlinked to /dev/stdout (it insists on rolling the file
+  # since it doesn't think it can write to it).
+  #
+  # This workaround should no longer be needed once Trafficserver 10 is
+  # released and things can be configured to output to stdout/stderr directly:
+  # https://github.com/apache/trafficserver/pull/7937
   input(type="imfile" file="<%- config["log_dir"] %>/trafficserver/error.log" tag="trafficserver-error" ruleset="logs-ruleset")
-  input(type="imfile" file="<%- config["log_dir"] %>/trafficserver/manager.log" tag="trafficserver-manager" ruleset="logs-ruleset")
-  input(type="imfile" file="<%- config["log_dir"] %>/trafficserver/traffic.out" tag="trafficserver-out" ruleset="logs-ruleset")
 <% end %>
 
 # TCP Input
 input(type="imtcp" address="<%- config["rsyslog"]["host"] %>" port="<%- config["rsyslog"]["port"] %>" ruleset="analytics-ruleset")
 
 ruleset(name="stats-ruleset" queue.type="FixedArray" queue.size="5000") {
-  <% if config["log"]["_destination_console?"] then %>
+  <% if config["log"]["destination"] == "console" then %>
     action(
       name="output-stats-stdout"
       type="omstdout"
