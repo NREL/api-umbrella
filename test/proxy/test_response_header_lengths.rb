@@ -89,6 +89,6 @@ class Test::Proxy::TestResponseHeaderLengths < Minitest::Test
     }))
 
     assert_response_code(502, response)
-    assert_match("upstream connect error or disconnect/reset before headers. reset reason: protocol error", response.body)
+    assert_match("upstream connect error or disconnect/reset before headers. retried and the latest reset reason: protocol error", response.body)
   end
 end
