@@ -51,7 +51,10 @@ local function perform_download(config, unzip_dir, download_path)
       return false, mkdir_err
     end
 
-    local _, move_err = os.rename(unzip_path, current_path)
+    -- Use `mv` instead of `os.rename`, since `os.rename` does not support
+    -- moving files if the tempdir is on a different partition than the install
+    -- path.
+    local _, move_err = shell_blocking_capture_combined({ "mv", unzip_path, current_path })
     if move_err then
       return false, move_err
     end
