@@ -16,10 +16,11 @@ import "path"
   "_runtime_config_path": string | *path.Join([run_dir, "runtime_config.json"]) @tag(runtime_config_path)
 
   #service_name: "router" | "web" | "auto_ssl"
-  services: [...#service_name] | *[
-    #service_name & "router",
-    #service_name & "web",
+  _default_services: [...#service_name] & [
+    "router",
+    "web",
   ]
+  services: [...#service_name] | *_default_services
 
   user: string | null | *"api-umbrella"
   group: string | null | *"api-umbrella"
@@ -128,11 +129,12 @@ import "path"
 
   gatekeeper: {
     #api_key_method_name: "header" | "get_param" | "basic_auth_username"
-    api_key_methods: [...#api_key_method_name] | *[
+    _default_api_key_methods: [...#api_key_method_name] & [
       "header",
       "get_param",
       "basic_auth_username",
     ]
+    api_key_methods: [...#api_key_method_name] | *_default_api_key_methods
     api_key_cache: bool | *true
     api_key_min_length: uint | *4
     api_key_max_length: uint | *60
@@ -188,9 +190,10 @@ import "path"
       login_footer?: string
       auth_strategies: {
         #auth_strategy_name: "cas" | "facebook" | "github" | "gitlab" | "google" | "ldap" | "local" | "login.gov" | "max.gov"
-        enabled: [...#auth_strategy_name] | *[
-          #auth_strategy_name & "local",
+        _default_enabled: [...#auth_strategy_name] & [
+          "local",
         ]
+        enabled: [...#auth_strategy_name] | *_default_enabled
         cas: {
           options: {
             service_validate_url: string | *"/serviceValidate"
@@ -406,9 +409,10 @@ import "path"
     timezone: string | *"UTC"
     log_request_url_query_params_separately: bool | *false
 
-    outputs: [...#analytics_output_name] | *[
-      #analytics_output_name & "elasticsearch",
+    _default_outputs:  [...#analytics_output_name] & [
+      "elasticsearch"
     ]
+    outputs: [...#analytics_output_name] | *_default_outputs
   }
 
   strip_cookies: [...string] | *[
@@ -435,35 +439,36 @@ import "path"
   }
   hosts: [...#host] | *[]
 
-  let default_api_backend_settings_value = #api_backend_settings & {
+  _default_api_backend_settings_value: #api_backend_settings & {
     #require_https_value: "required_return_error" | "transition_return_error" | "optional"
     require_https: #require_https_value | *"required_return_error"
-    rate_limits: [...#api_backend_rate_limit] | *[
-      #api_backend_rate_limit & {
+    _default_rate_limits: [...#api_backend_rate_limit]
+    _default_rate_limits: [
+      {
         duration: 1000
         limit_by: "ip"
         limit_to: 50
         distributed: false
       },
-      #api_backend_rate_limit & {
+      {
         duration: 1000
         limit_by: "api_key"
         limit_to: 20
         distributed: false
       },
-      #api_backend_rate_limit & {
+      {
         duration: 15000
         limit_by: "ip"
         limit_to: 250
         distributed: true
       },
-      #api_backend_rate_limit & {
+      {
         duration: 15000
         limit_by: "api_key"
         limit_to: 150
         distributed: true
       },
-      #api_backend_rate_limit & {
+      {
         duration: 3600000
         limit_by: "api_key"
         limit_to: 1000
@@ -471,6 +476,7 @@ import "path"
         response_headers: true
       },
     ]
+    rate_limits: [...#api_backend_rate_limit] | *_default_rate_limits
     error_templates: {
       json: """
         {
@@ -558,7 +564,7 @@ import "path"
       }
     }
   }
-  default_api_backend_settings: #api_backend_settings | *default_api_backend_settings_value
+  default_api_backend_settings: #api_backend_settings | *_default_api_backend_settings_value
 
   #api_backend_server: {
     id?: string
@@ -628,123 +634,122 @@ import "path"
     settings: #api_backend_settings
     sub_settings: [...#api_backend_sub_settings]
   }
-  let internal_api_gatekeeper_backend = #api_backend & {
-    id: "api-umbrella-gatekeeper-backend"
-    name: "API Umbrella - Gatekeeper APIs"
-    frontend_host: "{{router.web_app_host}}"
-    backend_protocol: "http"
-    balance_algorithm: "least_conn"
-    sort_order: 1
-    servers: [{
-      host: "{{api_server.host}}"
-      port: "{{api_server.port}}"
-    }]
-    url_matches: [{
-      frontend_prefix: "/api-umbrella/v1/health"
-      backend_prefix: "/api-umbrella/v1/health"
-    }, {
-      frontend_prefix: "/api-umbrella/v1/state"
-      backend_prefix: "/api-umbrella/v1/state"
-    }, {
-      frontend_prefix: "/api-umbrella/v0/auto-ssl-nginx-status"
-      backend_prefix: "/api-umbrella/v0/auto-ssl-nginx-status"
-    }, {
-      frontend_prefix: "/api-umbrella/v0/nginx-status"
-      backend_prefix: "/api-umbrella/v0/nginx-status"
-    }, {
-      frontend_prefix: "/api-umbrella/v0/shared-memory-stats"
-      backend_prefix: "/api-umbrella/v0/shared-memory-stats"
-    }]
-    settings: {
-      require_https: "required_return_error"
-    }
-    sub_settings: [{
-      http_method: "get"
-      regex: "^/api-umbrella/v1/(health|state)"
+  _default_internal_apis: [...#api_backend] & [
+    {
+      id: "api-umbrella-gatekeeper-backend"
+      name: "API Umbrella - Gatekeeper APIs"
+      frontend_host: "{{router.web_app_host}}"
+      backend_protocol: "http"
+      balance_algorithm: "least_conn"
+      sort_order: 1
+      servers: [{
+        host: "{{api_server.host}}"
+        port: "{{api_server.port}}"
+      }]
+      url_matches: [{
+        frontend_prefix: "/api-umbrella/v1/health"
+        backend_prefix: "/api-umbrella/v1/health"
+      }, {
+        frontend_prefix: "/api-umbrella/v1/state"
+        backend_prefix: "/api-umbrella/v1/state"
+      }, {
+        frontend_prefix: "/api-umbrella/v0/auto-ssl-nginx-status"
+        backend_prefix: "/api-umbrella/v0/auto-ssl-nginx-status"
+      }, {
+        frontend_prefix: "/api-umbrella/v0/nginx-status"
+        backend_prefix: "/api-umbrella/v0/nginx-status"
+      }, {
+        frontend_prefix: "/api-umbrella/v0/shared-memory-stats"
+        backend_prefix: "/api-umbrella/v0/shared-memory-stats"
+      }]
       settings: {
-        disable_api_key: true
-        rate_limit_mode: "unlimited"
-        require_https: "optional"
-        disable_analytics: true
+        require_https: "required_return_error"
       }
-    }]
-  }
-  let internal_api_web_app_backend = #api_backend & {
-    id: "api-umbrella-web-app-backend"
-    name: "API Umbrella - HTTP APIs"
-    frontend_host: "{{router.web_app_host}}"
-    backend_protocol: "http"
-    balance_algorithm: "least_conn"
-    sort_order: 2
-    servers: [{
-      host: "{{web.host}}"
-      port: "{{web.port}}"
-    }]
-    url_matches: [{
-      frontend_prefix: "/api-umbrella/"
-      backend_prefix: "/api-umbrella/"
-    }, {
-      frontend_prefix: "/admins/"
-      backend_prefix: "/admins/"
-    }, {
-      frontend_prefix: "/admins"
-      backend_prefix: "/admins"
-      exact_match: true
-    }, {
-      frontend_prefix: "/admin/"
-      backend_prefix: "/admin/"
-    }, {
-      frontend_prefix: "/admin"
-      backend_prefix: "/admin"
-      exact_match: true
-    }, {
-      frontend_prefix: "/web-assets/"
-      backend_prefix: "/web-assets/"
-    }]
-    settings: {
-      require_https: "required_return_error"
-    }
-    sub_settings: [{
-      http_method: "any"
-      regex: "^/admin/stats"
+      sub_settings: [{
+        http_method: "get"
+        regex: "^/api-umbrella/v1/(health|state)"
+        settings: {
+          disable_api_key: true
+          rate_limit_mode: "unlimited"
+          require_https: "optional"
+          disable_analytics: true
+        }
+      }]
+    },
+    {
+      id: "api-umbrella-web-app-backend"
+      name: "API Umbrella - HTTP APIs"
+      frontend_host: "{{router.web_app_host}}"
+      backend_protocol: "http"
+      balance_algorithm: "least_conn"
+      sort_order: 2
+      servers: [{
+        host: "{{web.host}}"
+        port: "{{web.port}}"
+      }]
+      url_matches: [{
+        frontend_prefix: "/api-umbrella/"
+        backend_prefix: "/api-umbrella/"
+      }, {
+        frontend_prefix: "/admins/"
+        backend_prefix: "/admins/"
+      }, {
+        frontend_prefix: "/admins"
+        backend_prefix: "/admins"
+        exact_match: true
+      }, {
+        frontend_prefix: "/admin/"
+        backend_prefix: "/admin/"
+      }, {
+        frontend_prefix: "/admin"
+        backend_prefix: "/admin"
+        exact_match: true
+      }, {
+        frontend_prefix: "/web-assets/"
+        backend_prefix: "/web-assets/"
+      }]
       settings: {
-        disable_api_key: true
+        require_https: "required_return_error"
       }
-    }, {
-      http_method: "POST"
-      regex: "^/admin/login"
-      settings: {
-        disable_api_key: true
-        rate_limit_mode: "custom"
-        rate_limits: [{
-          duration: 15000
-          limit_by: "ip"
-          limit_to: 100
-          distributed: true
-          response_headers: true
-        }]
-      }
-    }, {
-      http_method: "any"
-      regex: "^/(admin|web-assets)"
-      settings: {
-        disable_api_key: true
-        rate_limit_mode: "unlimited"
-        redirect_https: true
-        disable_analytics: true
-      }
-    }, {
-      http_method: "OPTIONS"
-      regex: "^/api-umbrella/v1/users"
-      settings: {
-        disable_api_key: true
-      }
-    }]
-  }
-  internal_apis: [...#api_backend] | *[
-    internal_api_gatekeeper_backend,
-    internal_api_web_app_backend,
+      sub_settings: [{
+        http_method: "any"
+        regex: "^/admin/stats"
+        settings: {
+          disable_api_key: true
+        }
+      }, {
+        http_method: "POST"
+        regex: "^/admin/login"
+        settings: {
+          disable_api_key: true
+          rate_limit_mode: "custom"
+          rate_limits: [{
+            duration: 15000
+            limit_by: "ip"
+            limit_to: 100
+            distributed: true
+            response_headers: true
+          }]
+        }
+      }, {
+        http_method: "any"
+        regex: "^/(admin|web-assets)"
+        settings: {
+          disable_api_key: true
+          rate_limit_mode: "unlimited"
+          redirect_https: true
+          disable_analytics: true
+        }
+      }, {
+        http_method: "OPTIONS"
+        regex: "^/api-umbrella/v1/users"
+        settings: {
+          disable_api_key: true
+        }
+      }]
+    },
   ]
+  internal_apis: [...#api_backend] | *_default_internal_apis
 
   apis: [...#api_backend] | *[]
 
@@ -756,8 +761,8 @@ import "path"
     server_host: string
     server_port: uint16 | "{{static_site.port}}"
   }
-  internal_website_backends: [...#website_backend] | *[
-    #website_backend & {
+  _default_internal_website_backends: [...#website_backend] & [
+    {
       id: "api-umbrella-website-backend"
       frontend_host: "{{router.web_app_host}}"
       backend_protocol: "http"
@@ -765,6 +770,7 @@ import "path"
       server_port: "{{static_site.port}}"
     }
   ]
+  internal_website_backends: [...#website_backend] | *_default_internal_website_backends
 
   website_backends: [...#website_backend] | *[]
 
