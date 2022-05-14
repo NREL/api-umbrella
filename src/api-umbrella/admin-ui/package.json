@@ -53,7 +53,7 @@
     "ember-ajax": "^5.0.0",
     "ember-auto-import": "^2.4.0",
     "ember-bootstrap": "^5.0.0",
-    "ember-buffered-proxy": "~2.0.0",
+    "ember-buffered-proxy": "~2.1.1",
     "ember-classic-decorator": "^3.0.0",
     "ember-cli": "~3.28.5",
     "ember-cli-app-version": "^5.0.0",
