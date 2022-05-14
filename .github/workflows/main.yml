@@ -205,21 +205,21 @@ jobs:
           MAXMIND_LICENSE_KEY: ${{ secrets.MAXMIND_LICENSE_KEY }}
 
       - name: Artifact permissions
-        if: ${{ failure() }}
+        if: ${{ always() }}
         run: sudo chmod -R a+rwX test/tmp/artifacts
 
-      - name: Dump docker logs on failure
-        if: ${{ failure() }}
+      - name: Dump docker logs
+        if: ${{ always() }}
         uses: jwalton/gh-docker-logs@v2.2.0
         with:
           dest: test/tmp/artifacts/docker-logs
 
       - name: Compress artifacts
-        if: ${{ failure() }}
+        if: ${{ always() }}
         run: gzip -r ./test/tmp/artifacts/log ./test/tmp/artifacts/docker-logs
 
       - name: Archive artifacts
-        if: ${{ failure() }}
+        if: ${{ always() }}
         uses: actions/upload-artifact@v3
         with:
           name: test-artifacts-matrix-${{ matrix.ci_node_index }}
@@ -284,21 +284,21 @@ jobs:
           MAXMIND_LICENSE_KEY: ${{ secrets.MAXMIND_LICENSE_KEY }}
 
       - name: Artifact permissions
-        if: ${{ failure() }}
+        if: ${{ always() }}
         run: sudo chmod -R a+rwX test test/tmp/artifacts
 
-      - name: Dump docker logs on failure
-        if: ${{ failure() }}
+      - name: Dump docker logs
+        if: ${{ always() }}
         uses: jwalton/gh-docker-logs@v2.2.0
         with:
           dest: test/tmp/artifacts/docker-logs
 
       - name: Compress artifacts
-        if: ${{ failure() }}
+        if: ${{ always() }}
         run: gzip -r ./test/tmp/artifacts/log ./test/tmp/artifacts/docker-logs
 
       - name: Archive artifacts
-        if: ${{ failure() }}
+        if: ${{ always() }}
         uses: actions/upload-artifact@v3
         with:
           name: test-artifacts-elasticsearch-v6
@@ -364,21 +364,21 @@ jobs:
           MAXMIND_LICENSE_KEY: ${{ secrets.MAXMIND_LICENSE_KEY }}
 
       - name: Artifact permissions
-        if: ${{ failure() }}
+        if: ${{ always() }}
         run: sudo chmod -R a+rwX test/tmp/artifacts
 
-      - name: Dump docker logs on failure
-        if: ${{ failure() }}
+      - name: Dump docker logs
+        if: ${{ always() }}
         uses: jwalton/gh-docker-logs@v2.2.0
         with:
           dest: test/tmp/artifacts/docker-logs
 
       - name: Compress artifacts
-        if: ${{ failure() }}
+        if: ${{ always() }}
         run: gzip -r ./test/tmp/artifacts/log ./test/tmp/artifacts/docker-logs
 
       - name: Archive artifacts
-        if: ${{ failure() }}
+        if: ${{ always() }}
         uses: actions/upload-artifact@v3
         with:
           name: test-artifacts-elasticsearch-v7-daily
@@ -398,10 +398,6 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           path: ./artifacts
-
-      - name: Display structure of downloaded files
-        run: ls -R
-        working-directory: ./artifacts
 
       - name: Publish Unit Test Results
         uses: EnricoMi/publish-unit-test-result-action@v1
