@@ -1,16 +1,24 @@
 #!/usr/bin/env bash
 
-nodejs_version="16.15.0"
-nodejs_hash="ebdf4dc9d992d19631f0931cca2fc33c6d0d382543639bc6560d31d5060a8372"
 
 set -e -u -x
 source ./tasks/helpers.sh
 
+nodejs_version="16.15.0"
+nodejs_hash="ebdf4dc9d992d19631f0931cca2fc33c6d0d382543639bc6560d31d5060a8372"
+
+download_arch="$TARGETARCH"
+if [ "$TARGETARCH" == "amd64" ]; then
+  download_arch="x64"
+elif [ "$TARGETARCH" == "arm64" ]; then
+  nodejs_hash="b4080b86562c5397f32da7a0723b95b1df523cab4c757688a184e3f733a7df56"
+fi
+
 task_working_dir
-download "https://nodejs.org/dist/v$nodejs_version/node-v$nodejs_version-linux-x64.tar.xz" "sha256" "$nodejs_hash"
-extract_download "node-v$nodejs_version-linux-x64.tar.xz"
+download "https://nodejs.org/dist/v$nodejs_version/node-v$nodejs_version-linux-${download_arch}.tar.xz" "sha256" "$nodejs_hash"
+extract_download "node-v$nodejs_version-linux-${download_arch}.tar.xz"
 
 mkdir -p "$DEV_INSTALL_PREFIX"
-rsync -a --itemize-changes "node-v$nodejs_version-linux-x64/" "$DEV_INSTALL_PREFIX/"
+rsync -a --itemize-changes "node-v$nodejs_version-linux-${download_arch}/" "$DEV_INSTALL_PREFIX/"
 
 stamp

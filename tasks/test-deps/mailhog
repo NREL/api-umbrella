@@ -1,14 +1,18 @@
 #!/usr/bin/env bash
 
-mailhog_version="1.0.1"
-mailhog_hash="b5628956d35c9d2df3df30f980365df4"
-
 set -e -u -x
 source ./tasks/helpers.sh
 
-task_working_dir
-download "https://github.com/mailhog/MailHog/releases/download/v$mailhog_version/MailHog_linux_amd64" "md5" "$mailhog_hash"
+mailhog_version="1.0.2-pre1"
+mailhog_hash="07e4c558c9d0be9e242c6cedaf025b72119564776fe66fdccef00a9f4abc632a"
+if [ "$TARGETARCH" == "arm64" ]; then
+  mailhog_hash="f938324a0a0225f627710b176f5f60acb5d5c8d8e23f0e5bbbb46c0e81fcda8b"
+fi
 
-install -D -m 755 _persist/downloads/MailHog_linux_amd64 "$TEST_INSTALL_PREFIX/bin/mailhog"
+task_working_dir
+download "https://github.com/GUI/MailHog/releases/download/v$mailhog_version/MailHog-v${mailhog_version}-linux-${TARGETARCH}.tar.gz" "sha256" "$mailhog_hash"
+extract_download "MailHog-v${mailhog_version}-linux-${TARGETARCH}.tar.gz"
+
+install -D -m 755 "MailHog" "$TEST_INSTALL_PREFIX/bin/mailhog"
 
 stamp

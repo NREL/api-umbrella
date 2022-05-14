@@ -56,6 +56,18 @@ if [[ "$NPROC" -gt 4 ]]; then
   NPROC=4
 fi
 
+if [ -z "${TARGETARCH:-}" ]; then
+  TARGETARCH=$(uname -m)
+
+  # Normalize architectures based on how Docker and Go represents these:
+  # https://stackoverflow.com/a/70889505
+  if [ "$TARGETARCH" == "aarch64" ]; then
+    TARGETARCH="arm64"
+  elif [ "$TARGETARCH" == "x86_64" ]; then
+    TARGETARCH="amd64"
+  fi
+fi
+
 # Cleanup any files not in the special "_persist" directory before and after
 # running tasks. This ensures clean builds if a task is being executed (since
 # we assume the task script is only being executed if the checksum has

@@ -1,14 +1,21 @@
 #!/usr/bin/env bash
 
-crane_version="0.8.0"
-crane_hash="d7b824e4a2559ff37be350b8675a1e7a"
-
 set -e -u -x
 source ./tasks/helpers.sh
 
+crane_version="0.8.0"
+crane_hash="e3f2116d2bdda1c2f2247ee2f13259d41986560d0a06a16831e37096d8ecec0e"
+
+download_arch="$TARGETARCH"
+if [ "$TARGETARCH" == "amd64" ]; then
+  download_arch="x86_64"
+elif [ "$TARGETARCH" == "arm64" ]; then
+  crane_hash="7fe926ab7029a4545210e996e6c6b4855d6fe4302d2ac34262d740d1b3f51bab"
+fi
+
 task_working_dir
-download "https://github.com/google/go-containerregistry/releases/download/v${crane_version}/go-containerregistry_Linux_x86_64.tar.gz" "md5" "$crane_hash"
-extract_download "go-containerregistry_Linux_x86_64.tar.gz"
+download "https://github.com/google/go-containerregistry/releases/download/v${crane_version}/go-containerregistry_Linux_${download_arch}.tar.gz" "sha256" "$crane_hash"
+extract_download "go-containerregistry_Linux_${download_arch}.tar.gz"
 
 install -D -m 755 "crane" "$DEV_INSTALL_PREFIX/bin/crane"
 

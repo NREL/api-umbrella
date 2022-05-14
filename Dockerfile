@@ -3,6 +3,8 @@
 ###
 FROM debian:bullseye AS build
 
+ARG TARGETARCH
+
 RUN mkdir -p /app/build /build/.task /build/build/work
 RUN ln -snf /build/.task /app/.task
 RUN ln -snf /build/build/work /app/build/work
@@ -100,31 +102,12 @@ RUN make && make clean:dev
 ###
 FROM debian:bullseye AS test
 
+ARG TARGETARCH
+
 RUN mkdir -p /app/build /build/.task /build/build/work
 RUN ln -snf /build/.task /app/.task
 RUN ln -snf /build/build/work /app/build/work
 WORKDIR /app
-
-# Add Chrome for integration tests, similar to how the CircleCI images add it:
-# https://github.com/CircleCI-Public/circleci-dockerfiles/blob/c24e69355b400aaba34a1ddfc55cdb1fef9dedff/buildpack-deps/images/xenial/browsers/Dockerfile#L47
-RUN set -x && \
-  apt-get update && \
-  apt-get -y install curl gnupg2 unzip && \
-  curl --silent --show-error --location --fail --retry 3 --output /tmp/google-chrome-stable_current_amd64.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb && \
-  (dpkg -i /tmp/google-chrome-stable_current_amd64.deb || apt-get -fy install) && \
-  rm -f /tmp/google-chrome-stable_current_amd64.deb && \
-  sed -i 's|HERE/chrome"|HERE/chrome" --disable-setuid-sandbox --no-sandbox|g' /opt/google/chrome/google-chrome && \
-  google-chrome --version && \
-  CHROME_VERSION="$(google-chrome --version)" && \
-  export CHROMEDRIVER_RELEASE="$(echo $CHROME_VERSION | sed 's/^Google Chrome //')" && export CHROMEDRIVER_RELEASE=${CHROMEDRIVER_RELEASE%%.*} && \
-  CHROMEDRIVER_VERSION=$(curl --silent --show-error --location --fail --retry 4 --retry-delay 5 http://chromedriver.storage.googleapis.com/LATEST_RELEASE_${CHROMEDRIVER_RELEASE}) && \
-  curl --silent --show-error --location --fail --retry 4 --retry-delay 5 --output /tmp/chromedriver_linux64.zip "http://chromedriver.storage.googleapis.com/$CHROMEDRIVER_VERSION/chromedriver_linux64.zip" && \
-  cd /tmp && \
-  unzip chromedriver_linux64.zip && \
-  rm -rf chromedriver_linux64.zip && \
-  mv chromedriver /usr/local/bin/chromedriver && \
-  chmod +x /usr/local/bin/chromedriver && \
-  chromedriver --version
 
 COPY build/package_dependencies.sh /app/build/package_dependencies.sh
 COPY tasks/helpers.sh tasks/install-system-build-dependencies /app/tasks/

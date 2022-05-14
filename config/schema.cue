@@ -390,7 +390,7 @@ import "path"
     index_name_prefix: string | *"api-umbrella"
     index_partition: string | *"daily"
     index_mapping_type: string | *"log"
-    api_version: uint | *6
+    api_version: uint | *7
     template_version: uint | *2
     aws_signing_proxy: {
       host: string | *"127.0.0.1"

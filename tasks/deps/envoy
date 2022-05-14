@@ -5,14 +5,21 @@ envoy_version="1.22.0"
 set -e -u -x
 source ./tasks/helpers.sh
 
-task_working_dir
-
-if [ ! -f "_persist/downloads/envoy-${envoy_version}.tar" ]; then
-  mkdir -p _persist/downloads
-  PATH="$DEV_PATH" crane export "envoyproxy/envoy-distroless:v${envoy_version}" "_persist/downloads/envoy-${envoy_version}.tar"
+# Next release of envoy (1.23+) should support distroless for ARM64 too:
+# https://github.com/envoyproxy/envoy/pull/21134
+image="envoyproxy/envoy-distroless"
+if [ "$TARGETARCH" == "arm64" ]; then
+  image="envoyproxy/envoy"
 fi
 
-tar -xof "_persist/downloads/envoy-${envoy_version}.tar" usr/local/bin/envoy
+task_working_dir
+
+if [ ! -f "_persist/downloads/envoy-${envoy_version}-${TARGETARCH}.tar" ]; then
+  mkdir -p _persist/downloads
+  PATH="$DEV_PATH" crane export --platform "linux/${TARGETARCH}" "envoyproxy/envoy:v${envoy_version}" "_persist/downloads/envoy-${envoy_version}-${TARGETARCH}.tar"
+fi
+
+tar -xof "_persist/downloads/envoy-${envoy_version}-${TARGETARCH}.tar" usr/local/bin/envoy
 
 install -D -m 755 usr/local/bin/envoy "$STAGE_EMBEDDED_DIR/bin/envoy"
 

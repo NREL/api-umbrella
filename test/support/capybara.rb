@@ -57,6 +57,10 @@ def capybara_register_driver(driver_name, options = {})
     # Use a static user agent for some session tests.
     driver_options.args << "--user-agent=#{ApiUmbrellaTestHelpers::AdminAuth::STATIC_USER_AGENT}"
 
+    # Allow for usage in Docker.
+    driver_options.args << "--disable-setuid-sandbox"
+    driver_options.args << "--no-sandbox"
+
     # Set download path for Chrome >= 77
     driver_options.add_preference(:download, :default_directory => ApiUmbrellaTestHelpers::Downloads::DOWNLOADS_ROOT)
 

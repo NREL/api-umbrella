@@ -1,16 +1,19 @@
 #!/usr/bin/env bash
 
-task_version="3.12.0"
-task_hash="803d3c1752da31486cbfb4ddf7d8ba5e0fa8c8ebba8acf227a9cd76ff9901343"
-
 set -e -u -x
 root_dir="$(cd "$(dirname "$(dirname "${BASH_SOURCE[0]}")")" && pwd)"
 # shellcheck source=tasks/helpers.sh
 source "$root_dir/tasks/helpers.sh"
 
+task_version="3.12.0"
+task_hash="803d3c1752da31486cbfb4ddf7d8ba5e0fa8c8ebba8acf227a9cd76ff9901343"
+if [ "$TARGETARCH" == "arm64" ]; then
+  task_hash="9577e5140cfbed7f0c7de741e3d7708aa53ec9f7fa0a58c2b00a494920ba88ee"
+fi
+
 task_working_dir
-download "https://github.com/go-task/task/releases/download/v$task_version/task_linux_amd64.tar.gz" "sha256" "$task_hash"
-extract_download "task_linux_amd64.tar.gz"
+download "https://github.com/go-task/task/releases/download/v$task_version/task_linux_${TARGETARCH}.tar.gz" "sha256" "$task_hash"
+extract_download "task_linux_${TARGETARCH}.tar.gz"
 cp ./task "$WORK_DIR/task"
 
 stamp
