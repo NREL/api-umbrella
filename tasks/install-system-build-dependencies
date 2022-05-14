@@ -54,9 +54,9 @@ if [ "${INSTALL_TEST_DEPENDENCIES:-}" == "true" ]; then
       sed -i 's|HERE/chrome"|HERE/chrome" --disable-setuid-sandbox --no-sandbox|g' /opt/google/chrome/google-chrome
       google-chrome --version
       CHROME_VERSION="$(google-chrome --version)"
-      CHROMEDRIVER_RELEASE="$(echo $CHROME_VERSION | sed 's/^Google Chrome //')"
+      CHROMEDRIVER_RELEASE=${CHROME_VERSION/Google Chrome /}
       CHROMEDRIVER_RELEASE=${CHROMEDRIVER_RELEASE%%.*}
-      CHROMEDRIVER_VERSION=$(curl --silent --show-error --location --fail --retry 4 --retry-delay 5 http://chromedriver.storage.googleapis.com/LATEST_RELEASE_${CHROMEDRIVER_RELEASE})
+      CHROMEDRIVER_VERSION=$(curl --silent --show-error --location --fail --retry 4 --retry-delay 5 "http://chromedriver.storage.googleapis.com/LATEST_RELEASE_${CHROMEDRIVER_RELEASE}")
       curl --silent --show-error --location --fail --retry 4 --retry-delay 5 --output /tmp/chromedriver_linux64.zip "http://chromedriver.storage.googleapis.com/$CHROMEDRIVER_VERSION/chromedriver_linux64.zip"
       cd /tmp
       unzip chromedriver_linux64.zip

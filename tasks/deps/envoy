@@ -16,7 +16,7 @@ task_working_dir
 
 if [ ! -f "_persist/downloads/envoy-${envoy_version}-${TARGETARCH}.tar" ]; then
   mkdir -p _persist/downloads
-  PATH="$DEV_PATH" crane export --platform "linux/${TARGETARCH}" "envoyproxy/envoy:v${envoy_version}" "_persist/downloads/envoy-${envoy_version}-${TARGETARCH}.tar"
+  PATH="$DEV_PATH" crane export --platform "linux/${TARGETARCH}" "${image}:v${envoy_version}" "_persist/downloads/envoy-${envoy_version}-${TARGETARCH}.tar"
 fi
 
 tar -xof "_persist/downloads/envoy-${envoy_version}-${TARGETARCH}.tar" usr/local/bin/envoy
