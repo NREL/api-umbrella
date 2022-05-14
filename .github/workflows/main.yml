@@ -204,7 +204,7 @@ jobs:
 
       - name: Artifact permissions
         if: ${{ failure() }}
-        run: sudo chmod -R 777 test/tmp/artifacts
+        run: sudo chmod -R a+rwX test/tmp/artifacts
 
       - name: Dump docker logs on failure
         if: ${{ failure() }}
@@ -214,14 +214,14 @@ jobs:
 
       - name: Compress artifacts
         if: ${{ failure() }}
-        run: tar -cvzf ./test/tmp/artifacts.tar.gz ./test/tmp/artifacts
+        run: gzip -r ./test/tmp/artifacts/log ./test/tmp/artifacts/docker-logs
 
       - name: Archive artifacts
         if: ${{ failure() }}
         uses: actions/upload-artifact@v3
         with:
           name: test-artifacts-matrix-${{ matrix.ci_node_index }}
-          path: test/tmp/artifacts.tar.gz
+          path: test/tmp/artifacts/
 
   test_elasticsearch_v7:
     needs: [build]
@@ -283,7 +283,7 @@ jobs:
 
       - name: Artifact permissions
         if: ${{ failure() }}
-        run: sudo chmod -R 777 test/tmp/artifacts
+        run: sudo chmod -R a+rwX test test/tmp/artifacts
 
       - name: Dump docker logs on failure
         if: ${{ failure() }}
@@ -293,14 +293,14 @@ jobs:
 
       - name: Compress artifacts
         if: ${{ failure() }}
-        run: tar -cvzf ./test/tmp/artifacts.tar.gz ./test/tmp/artifacts
+        run: gzip -r ./test/tmp/artifacts/log ./test/tmp/artifacts/docker-logs
 
       - name: Archive artifacts
         if: ${{ failure() }}
         uses: actions/upload-artifact@v3
         with:
           name: test-artifacts-elasticsearch-v7
-          path: test/tmp/artifacts.tar.gz
+          path: test/tmp/artifacts/
 
   test_elasticsearch_v7_daily:
     needs: [build]
@@ -363,7 +363,7 @@ jobs:
 
       - name: Artifact permissions
         if: ${{ failure() }}
-        run: sudo chmod -R 777 test/tmp/artifacts
+        run: sudo chmod -R a+rwX test/tmp/artifacts
 
       - name: Dump docker logs on failure
         if: ${{ failure() }}
@@ -373,11 +373,36 @@ jobs:
 
       - name: Compress artifacts
         if: ${{ failure() }}
-        run: tar -cvzf ./test/tmp/artifacts.tar.gz ./test/tmp/artifacts
+        run: gzip -r ./test/tmp/artifacts/log ./test/tmp/artifacts/docker-logs
 
       - name: Archive artifacts
         if: ${{ failure() }}
         uses: actions/upload-artifact@v3
         with:
           name: test-artifacts-elasticsearch-v7-daily
-          path: test/tmp/artifacts.tar.gz
+          path: test/tmp/artifacts/
+
+  publish-test-results:
+    runs-on: ubuntu-latest
+    needs:
+      - test
+      - test_elasticsearch_v7
+      - test_elasticsearch_v7_daily
+    permissions:
+      checks: write
+    if: always()
+    steps:
+      - name: Download Artifacts
+        uses: actions/download-artifact@v3
+        with:
+          path: ./artifacts
+
+      - name: Display structure of downloaded files
+        run: ls -R
+        working-directory: ./artifacts
+
+      - name: Publish Unit Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v1
+        with:
+          files: "artifacts/*/reports/**/*.xml"
+          comment_mode: off
