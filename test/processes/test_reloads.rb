@@ -10,14 +10,15 @@ class Test::Processes::TestReloads < Minitest::Test
   end
 
   def test_no_file_descriptor_leaks_across_nginx_reloads
-    descriptor_counts = []
-    urandom_descriptor_counts = []
+    all_reload_descriptors = []
+    all_reload_urandom_descriptors = []
 
     parent_pid = nginx_parent_pid
 
     # Now perform a number of reloads and gather file descriptor information
     # after each one.
-    15.times do
+    num_reloads = 15
+    num_reloads.times do
       # Get the list of original nginx worker process PIDs on startup.
       original_child_pids = api_umbrella_process.nginx_child_pids(parent_pid, $config["nginx"]["workers"])
 
@@ -49,28 +50,31 @@ class Test::Processes::TestReloads < Minitest::Test
       # Now check for open file descriptors.
       files = lsof("-c", "nginx")
 
-      descriptor_count = 0
-      urandom_descriptor_count = 0
+      reload_descriptors = []
+      reload_urandom_descriptors = []
       files.each do |file|
         # Only count lines from the lsof output that belong to this nginx's PID
         # and aren't network sockets (we exclude those when checking for leaks,
         # since it's expected that there's much more variation in those
         # depending on the requests made by tests, keepalive connections, etc).
         if([file.fetch(:pid), file.fetch(:ppid)].include?(parent_pid) && !["IPv4", "IPv6", "unix", "sock"].include?(file[:type]))
-          descriptor_count += 1
+          reload_descriptors << file
 
           if(file.fetch(:file).include?("urandom"))
-            urandom_descriptor_count += 1
+            reload_urandom_descriptors << file
           end
         end
       end
 
-      descriptor_counts << descriptor_count
-      urandom_descriptor_counts << urandom_descriptor_count
+      all_reload_descriptors << reload_descriptors
+      all_reload_urandom_descriptors << reload_urandom_descriptors
     end
 
-    assert_equal(15, descriptor_counts.length)
-    assert_equal(15, urandom_descriptor_counts.length)
+    assert_equal(num_reloads, all_reload_descriptors.length)
+    assert_equal(num_reloads, all_reload_urandom_descriptors.length)
+
+    all_reload_descriptors.sort_by! { |d| d.length }
+    all_reload_urandom_descriptors.sort_by! { |d| d.length }
 
     # Test to ensure nginx modules aren't leaking urandom descriptors. Allow
     # for some small fluctuations in the /dev/urandom sockets, since nginx
@@ -81,16 +85,20 @@ class Test::Processes::TestReloads < Minitest::Test
     # ngx_txid (using lua-resty-txid instead), so urandom descriptors shouldn't
     # actually be present, but we'll keep this test in place to ensure similar
     # leaks don't crop up again.
-    range = urandom_descriptor_counts.max - urandom_descriptor_counts.min
-    assert_operator(range, :<=, $config["nginx"]["workers"] * 4)
+    min_reload_urandom_descriptors = all_reload_urandom_descriptors.first
+    max_reload_urandom_descriptors = all_reload_urandom_descriptors.last
+    range = max_reload_urandom_descriptors.length - min_reload_urandom_descriptors.length
+    assert_operator(range, :<=, $config["nginx"]["workers"] * 4, "Minimum reload urandom descriptors: #{min_reload_urandom_descriptors.length}\n#{MultiJson.dump(min_reload_urandom_descriptors)}\n\nMaximum reload urandom descriptors: #{max_reload_urandom_descriptors.length}\n#{MultiJson.dump(max_reload_urandom_descriptors)}")
 
     # A more general test to ensure that we don't see other unexpected file
     # descriptor growth. We'll allow some growth for this test, though, just to
     # account for small fluctuations in sockets due to other things nginx may
     # be doing.
-    assert_operator(descriptor_counts.min, :>, 0)
-    range = descriptor_counts.max - descriptor_counts.min
-    assert_operator(range, :<=, $config["nginx"]["workers"] * 4)
+    min_reload_descriptors = all_reload_descriptors.first
+    max_reload_descriptors = all_reload_descriptors.last
+    assert_operator(min_reload_descriptors.length, :>, 0)
+    range = max_reload_descriptors.length - min_reload_descriptors.length
+    assert_operator(range, :<=, $config["nginx"]["workers"] * 4, "Minimum reload descriptors: #{min_reload_descriptors.length}\n#{MultiJson.dump(min_reload_descriptors)}\n\nMaximum reload descriptors: #{max_reload_descriptors.length}\n#{MultiJson.dump(max_reload_descriptors)}")
   end
 
   def test_no_dropped_connections_during_reloads
