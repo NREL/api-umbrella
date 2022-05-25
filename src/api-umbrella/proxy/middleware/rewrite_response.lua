@@ -172,6 +172,13 @@ return function(settings)
   if settings then
     set_default_headers(settings)
     set_override_headers(settings)
+  else
+    -- Default security headers for website backends.
+    ngx.header["X-XSS-Protection"] = "1; mode=block"
+    ngx.header["X-Content-Type-Options"] = "nosniff"
+    if not ngx.header["X-Frame-Options"] then
+      ngx.header["X-Frame-Options"] = "DENY"
+    end
   end
 
   if config["app_env"] == "test" then

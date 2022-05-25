@@ -790,6 +790,11 @@ server {
     echo -n "Test Website Home Page";
   }
 
+  location = /allow-frame/ {
+    more_set_headers "X-Frame-Options: ALLOWALL";
+    echo -n "frame";
+  }
+
   location / {
     echo_status 404;
     more_set_headers "Content-Type: text/plain";
