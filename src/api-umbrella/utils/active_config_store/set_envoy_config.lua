@@ -29,7 +29,14 @@ local function build_cluster_resource(cluster_name, options)
         lb_endpoints = {},
       },
     },
-    connect_timeout = file_config["envoy"]["_connect_timeout"]
+    connect_timeout = file_config["envoy"]["_connect_timeout"],
+    upstream_connection_options = {
+      tcp_keepalive = {
+        keepalive_probes = 2,
+        keepalive_time = 15,
+        keepalive_interval = 5,
+      },
+    },
   }
 
   if not file_config["dns_resolver"]["allow_ipv6"] then
@@ -175,6 +182,7 @@ local function build_virtual_host_resource(options)
       -- API backend was temporarily down or a keepalive connection was
       -- killed).
       retry_on = "connect-failure,reset,http3-post-connect-failure",
+      num_retries = 2,
     },
   }
 
