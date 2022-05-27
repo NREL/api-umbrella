@@ -161,9 +161,6 @@ CONFIG proxy.config.http.response_server_enabled INT 0
 # that each host gets cached separately.
 CONFIG proxy.config.url_remap.pristine_host_hdr INT 1
 
-# Set the DNS nameservers.
-CONFIG proxy.config.dns.resolv_conf STRING NULL
-
 # Use more standard round-robin for DNS results (rather than sticky).
 CONFIG proxy.config.hostdb.strict_round_robin INT 1
 
