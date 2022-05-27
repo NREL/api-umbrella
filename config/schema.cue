@@ -158,6 +158,19 @@ import "path"
       host: string | *"127.0.0.1"
       port: uint16 | *14001
     }
+    // Allow additional/all ciphers for API backends that may not support the
+    // default set.
+    tls_cipher_suites: [...string] | *[
+      "ALL",
+    ]
+    // Allow additional cipher curves for some API backends that may not
+    // support the defaults. https://github.com/envoyproxy/envoy/issues/21053
+    tls_ecdh_curves: [...string] | *[
+      "X25519",
+      "P-256",
+      "P-384",
+      "P-521",
+    ]
   }
 
   api_server: {
