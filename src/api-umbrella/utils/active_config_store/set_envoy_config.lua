@@ -156,6 +156,19 @@ local function build_cluster_resource(cluster_name, options)
       typed_config = {
         ["@type"] = "type.googleapis.com/envoy.extensions.transport_sockets.tls.v3.UpstreamTlsContext",
         sni = tls_sni,
+        common_tls_context = {
+          tls_params = {
+            -- All for additional curves for some API backends that may only
+            -- support one of these.
+            -- https://github.com/envoyproxy/envoy/issues/21053
+            ecdh_curves = {
+              "X25519",
+              "P-256",
+              "P-384",
+              "P-521",
+            },
+          },
+        },
       },
     }
   end
