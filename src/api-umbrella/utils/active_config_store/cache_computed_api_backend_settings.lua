@@ -15,44 +15,43 @@ local table_keys = tablex.keys
 
 local function cache_error_data(config, settings)
   local error_data = deepcopy(config["default_api_backend_settings"]["error_data"])
-  if is_hash(settings["error_data"]) then
-    -- Merge the "common" values first.
-    if is_hash(settings["error_data"]["common"]) then
-      deep_merge_overwrite_arrays(error_data["common"], settings["error_data"]["common"])
+
+  -- Merge the "common" values first.
+  if settings["error_data"] and is_hash(settings["error_data"]["common"]) then
+    deep_merge_overwrite_arrays(error_data["common"], settings["error_data"]["common"])
+  end
+
+  -- Merge the error-specific data.
+  for error_type, data in pairs(error_data) do
+    if error_type ~= "common" then
+      -- Use the "common" values as defaults.
+      deep_defaults(data, error_data["common"])
+
+      -- Merge the setting-specific overrides on top.
+      if settings["error_data"] and is_hash(settings["error_data"][error_type]) then
+        deep_merge_overwrite_arrays(data, settings["error_data"][error_type])
+      end
+
+      -- Support legacy camel-case capitalization of variables. Moving
+      -- forward, we're trying to clean things up and standardize on
+      -- snake_case.
+      if not data["baseUrl"] and data["base_url"] then
+        data["baseUrl"] = data["base_url"]
+      end
+      if not data["signupUrl"] and data["signup_url"] then
+        data["signupUrl"] = data["signup_url"]
+      end
+      if not data["contactUrl"] and data["contact_url"] then
+        data["contactUrl"] = data["contact_url"]
+      end
     end
 
-    -- Merge the error-specific data.
-    for error_type, _ in pairs(error_data) do
-      if error_type ~= "common" and is_hash(settings["error_data"][error_type]) then
-        local data = error_data[error_type]
-
-        -- Use the "common" values as defaults.
-        deep_defaults(data, error_data["common"])
-
-        -- Merge the setting-specific overrides on top.
-        deep_merge_overwrite_arrays(data, settings["error_data"][error_type])
-
-        -- Support legacy camel-case capitalization of variables. Moving
-        -- forward, we're trying to clean things up and standardize on
-        -- snake_case.
-        if not data["baseUrl"] and data["base_url"] then
-          data["baseUrl"] = data["base_url"]
-        end
-        if not data["signupUrl"] and data["signup_url"] then
-          data["signupUrl"] = data["signup_url"]
-        end
-        if not data["contactUrl"] and data["contact_url"] then
-          data["contactUrl"] = data["contact_url"]
-        end
-
-        -- Parse the error data for variables. We may not be able to substitute
-        -- all of them, but this at least takes care of nested variables with a
-        -- first pass. Any unknown variables will remain as-is.
-        for key, value in pairs(data) do
-          if type(value) == "string" then
-            data[key] = string_template(value, data)
-          end
-        end
+    -- Parse the error data for variables. We may not be able to substitute
+    -- all of them, but this at least takes care of nested variables with a
+    -- first pass. Any unknown variables will remain as-is.
+    for key, value in pairs(data) do
+      if type(value) == "string" then
+        data[key] = string_template(value, data)
       end
     end
   end
