@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 
-ngx_http_geoip2_module_version="3.3"
-ngx_http_geoip2_module_hash="9f2c77f4d897e87992c2f7ec7516949c"
+ngx_http_geoip2_module_version="3.4"
+ngx_http_geoip2_module_hash="82d4beef48c260c3568eb0ae56451c95"
 nginx_module_vts_version="3c6cf41315bfcb48c35a3a0be81ddba6d0d01dac"
 nginx_module_vts_hash="6d4528b18094037ca170fed1ee259591"
-openresty_version="1.19.9.1"
-openresty_hash="ca013bd756f4e2a723c84cbf05dd0bdd"
+openresty_version="1.21.4.1"
+openresty_hash="3e8650584d2d92ad82ff34568a3d3008"
 openssl_version="1.1.0l"
 openssl_hash="74a2f756c64fd7386a29184dc0344f4831192d61dc2481a93a4c5dd727f41148"
 

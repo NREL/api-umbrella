@@ -1,7 +1,7 @@
 'use strict';
 
 const EmberApp = require('ember-cli/lib/broccoli/ember-app');
-const nodeSass = require('node-sass');
+const sass = require('sass');
 const autoprefixer = require('autoprefixer');
 
 module.exports = function(defaults) {
@@ -27,7 +27,7 @@ module.exports = function(defaults) {
     },
 
     sassOptions: {
-      implementation: nodeSass,
+      implementation: sass,
 
       // The Sass number precision must be increased to 8 for Bootstrap, or
       // else certain things don't line up:

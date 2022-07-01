@@ -17,7 +17,9 @@ mkdir -p json
 for locale_path in "$SOURCE_DIR"/locale/*.po; do
   locale="${locale_path##*/}"
   locale="${locale%%.*}"
-  PATH="$DEV_INSTALL_PREFIX/bin:$DEFAULT_PATH" "$node_modules_dir/.bin/po2json" \
+  # Use `--no-deprecation` to fix issues in NodeJS 16 until new version of
+  # po2json is released: https://github.com/mikeedwards/po2json/issues/103
+  PATH="$DEV_INSTALL_PREFIX/bin:$DEFAULT_PATH" node --no-deprecation "$node_modules_dir/.bin/po2json" \
     --format=jed1.x \
     --domain=api-umbrella \
     "$locale_path" \

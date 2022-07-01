@@ -5,7 +5,7 @@ ruby "~> 2.5"
 gem "rake", "~> 13.0.0"
 
 # Tests
-gem "minitest", "~> 5.15.0"
+gem "minitest", "~> 5.16.1"
 
 # CLI helper for running tests
 gem "minitest-sprint", "~> 1.2.0"
@@ -34,7 +34,7 @@ gem "oj", "~> 3.10"
 
 # Database libraries
 gem "activerecord", "~> 7.0.2", :require => "active_record"
-gem "pg", "~> 1.3.4"
+gem "pg", "~> 1.4.1"
 gem "elasticsearch", "~> 7.13.3"
 gem "active_attr", "~> 0.15.0"
 

@@ -39,7 +39,7 @@ def capybara_register_driver(driver_name, options = {})
       service_args << "--lang=#{options[:lang]}"
     end
 
-    service = ::Selenium::WebDriver::Service.chrome(service_options.merge({
+    service = ::Selenium::WebDriver::Service.chrome(**service_options.merge({
       :args => service_args,
     }))
 
@@ -64,18 +64,17 @@ def capybara_register_driver(driver_name, options = {})
     # Set download path for Chrome >= 77
     driver_options.add_preference(:download, :default_directory => ApiUmbrellaTestHelpers::Downloads::DOWNLOADS_ROOT)
 
-    capabilities = ::Capybara::Chromedriver::Logger.build_capabilities({
+    capabilities = ::Capybara::Chromedriver::Logger.build_capabilities(
       :chromeOptions => {
         :args => ["headless"],
       },
-    })
+    )
 
-    driver = ::Capybara::Selenium::Driver.new(app, {
+    driver = ::Capybara::Selenium::Driver.new(app,
       :browser => :chrome,
       :service => service,
       :options => driver_options,
-      :desired_capabilities => capabilities,
-    })
+      :desired_capabilities => capabilities)
     driver.resize_window_to(driver.current_window_handle, 1200, 4000)
 
     # Set download path for Chrome < 77
