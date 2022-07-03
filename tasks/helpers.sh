@@ -152,10 +152,14 @@ download() {
   hash_algorithm=$2
   expected_hash=$3
 
-  # Download the file.
+  # Download the file. Include the hash of the full URL in the filename so that
+  # if the version isn't in the file path (but somewhere else in the URL), we
+  # still download a new file).
   filename=$(basename "$url")
+  url_hash=$(echo -n "$url" | openssl dgst -sha256 | awk '{print $NF}')
+  download_filename="${url_hash:0:10}-$filename"
   downloads_dir="$(pwd)/_persist/downloads"
-  download_path="$downloads_dir/$filename"
+  download_path="$downloads_dir/$download_filename"
   mkdir -p "$downloads_dir"
   if [ ! -f "$download_path" ]; then
     set -x
@@ -164,13 +168,18 @@ download() {
   fi
 
   # Verify the checksum of the downloaded file.
-  actual_hash=$(openssl dgst -"$hash_algorithm" "$download_path" | awk '{print $2}')
+  actual_hash=$(openssl dgst -"$hash_algorithm" "$download_path" | awk '{print $NF}')
   if [ "$expected_hash" != "$actual_hash" ]; then
     echo "Checksum for $download_path did not match"
     echo "  Expected hash: $expected_hash"
     echo "    Actual hash: $actual_hash"
     exit 1
   fi
+
+  # Symlink the file path to the actual download file (which includes the URL
+  # hash so that if the URL changes but the filename does not, we still ensure
+  # we get the newer version).
+  ln -snf "$download_path" "$downloads_dir/$filename"
 
   set -x
 }
