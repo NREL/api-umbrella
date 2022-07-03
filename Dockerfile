@@ -136,7 +136,9 @@ RUN groupadd -r api-umbrella && \
 COPY --from=build /app /app
 COPY .luacheckrc .rubocop.yml Thorfile /app/
 COPY build/package /app/build/package
+COPY scripts /app/scripts
 COPY test /app/test
+COPY website/Gemfile website/Rakefile website/config.rb /app/website/
 
 RUN ln -snf "/app/build/work/tasks/app-deps/admin-ui/yarn/_persist/node_modules" "/app/src/api-umbrella/admin-ui/node_modules"
 RUN ln -snf "/app/build/work/tasks/app-deps/example-website/yarn/_persist/node_modules" "/app/src/api-umbrella/example-website/node_modules"
