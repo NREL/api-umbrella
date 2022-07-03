@@ -33,7 +33,6 @@ extract_download "$nginx_module_vts_version.tar.gz"
 )
 
 cd "openresty-$openresty_version"
-patch -p1 < "$SOURCE_DIR/build/patches/openresty-opm.patch"
 patch -p1 < "$SOURCE_DIR/build/patches/openresty-cli.patch"
 
 ./configure \
@@ -81,7 +80,6 @@ chrpath -d "$STAGE_EMBEDDED_DIR/openresty/nginx/sbin/nginx"
 mkdir -p "$STAGE_EMBEDDED_DIR/bin"
 (
   cd "$STAGE_EMBEDDED_DIR/bin"
-  ln -snf ../openresty/bin/opm ./opm
   ln -snf ../openresty/bin/resty ./resty
   ln -snf ../openresty/luajit/bin/luajit ./luajit
 )

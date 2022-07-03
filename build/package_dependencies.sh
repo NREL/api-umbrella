@@ -92,14 +92,8 @@ if [[ "$ID_NORMALIZED" == "rhel" ]]; then
     unzip
     xz
 
-    # For OpenResty's "opm" CLI.
-    perl-Digest-MD5
-
     # lualdap
     openldap-devel
-
-    # libbson
-    cmake
 
     # For tests and building static site.
     ruby-devel
@@ -253,9 +247,6 @@ elif [[ "$ID_NORMALIZED" == "debian" ]]; then
 
     # lualdap
     libldap-dev
-
-    # libbson
-    cmake
 
     # For tests and building static site.
     ruby-dev

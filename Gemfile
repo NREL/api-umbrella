@@ -2,7 +2,8 @@ source "https://rubygems.org"
 
 ruby "~> 2.5"
 
-gem "rake", "~> 13.0.0"
+# Task runner
+gem "thor", "~> 1.2.1"
 
 # Tests
 gem "minitest", "~> 5.16.1"

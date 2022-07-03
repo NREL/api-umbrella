@@ -130,7 +130,7 @@ Style/GuardClause:
   Enabled: false
 
 Style/HashSyntax:
-  EnforcedStyle: hash_rockets
+  EnforcedStyle: no_mixed_keys
 
 Style/IfInsideElse:
   Enabled: false

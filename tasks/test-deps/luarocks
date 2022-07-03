@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+
+set -e -u -x
+source ./tasks/helpers.sh
+source ./tasks/helpers/lua.sh
+
+task_working_dir
+
+cp "$SOURCE_DIR/test/api-umbrella-test-git-1.rockspec" ./
+cp "$SOURCE_DIR/test/luarocks.lock" ./
+
+rm -rf "$TEST_VENDOR_LUA_DIR"
+
+extra_args=("--only-deps")
+
+test_luarocks_install "./api-umbrella-test-git-1.rockspec" "git-1" "${extra_args[@]}"
+
+# Remove patch after upgrading to Penlight 1.13+ where this should already be
+# included. https://github.com/lunarmodules/Penlight/pull/414
+(
+  cd "$TEST_VENDOR_LUA_SHARE_DIR"
+  patch -p2 < "$SOURCE_DIR/build/patches/penlight-warn.patch"
+)
+
+stamp

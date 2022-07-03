@@ -48,25 +48,6 @@ tasks:
     generates:
       - ./build/work/stamp/deps/envoy
 
-  deps:icu4c:
-    cmds:
-      - ./tasks/deps/icu4c
-    sources:
-      - ./tasks/deps/icu4c
-      - ./tasks/helpers.sh
-    generates:
-      - ./build/work/stamp/deps/icu4c
-
-  deps:libbson:
-    cmds:
-      - ./tasks/deps/libbson
-    sources:
-      - ./tasks/deps/libbson
-      - ./tasks/helpers.sh
-    generates:
-      - ./build/work/stamp/deps/libbson
-    method: checksum
-
   deps:libcidr:
     cmds:
       - ./tasks/deps/libcidr
@@ -185,8 +166,6 @@ tasks:
     cmds:
       - task: deps:cue
       - task: deps:envoy
-      - task: deps:icu4c
-      - task: deps:libbson
       - task: deps:libcidr
       - task: deps:libpsl
       - task: deps:luarocks
@@ -270,421 +249,22 @@ tasks:
     generates:
       - ./build/work/stamp/app-deps/example-website/yarn
 
-  app-deps:lua:argparse:
-    deps:
-      - deps:luarocks
-    cmds:
-      - ./tasks/app-deps/lua/argparse
-    sources:
-      - ./build/work/stamp/deps/luarocks
-      - ./tasks/app-deps/lua/argparse
-      - ./tasks/helpers.sh
-      - ./tasks/helpers/lua.sh
-    generates:
-      - ./build/work/stamp/app-deps/lua/argparse
-
-  app-deps:lua:bcrypt:
-    deps:
-      - deps:luarocks
-    cmds:
-      - ./tasks/app-deps/lua/bcrypt
-    sources:
-      - ./build/work/stamp/deps/luarocks
-      - ./tasks/app-deps/lua/bcrypt
-      - ./tasks/helpers.sh
-      - ./tasks/helpers/lua.sh
-    generates:
-      - ./build/work/stamp/app-deps/lua/bcrypt
-    method: checksum
-
-  app-deps:lua:icu-date-ffi:
-    deps:
-      - deps:icu4c
-      - deps:luarocks
-    cmds:
-      - ./tasks/app-deps/lua/icu-date-ffi
-    sources:
-      - ./build/work/stamp/deps/icu4c
-      - ./build/work/stamp/deps/luarocks
-      - ./tasks/app-deps/lua/icu-date-ffi
-      - ./tasks/helpers.sh
-      - ./tasks/helpers/lua.sh
-    generates:
-      - ./build/work/stamp/app-deps/lua/icu-date-ffi
-
-  app-deps:lua:inspect:
-    deps:
-      - deps:luarocks
-    cmds:
-      - ./tasks/app-deps/lua/inspect
-    sources:
-      - ./build/work/stamp/deps/luarocks
-      - ./tasks/app-deps/lua/inspect
-      - ./tasks/helpers.sh
-      - ./tasks/helpers/lua.sh
-    generates:
-      - ./build/work/stamp/app-deps/lua/inspect
-
-  app-deps:lua:lapis:
-    deps:
-      - deps:luarocks
-    cmds:
-      - ./tasks/app-deps/lua/lapis
-    sources:
-      - ./build/work/stamp/deps/luarocks
-      - ./tasks/app-deps/lua/lapis
-      - ./tasks/helpers.sh
-      - ./tasks/helpers/lua.sh
-    generates:
-      - ./build/work/stamp/app-deps/lua/lapis
-    method: checksum
-
-  app-deps:lua:libcidr-ffi:
+  app-deps:luarocks:
     deps:
       - deps:libcidr
       - deps:luarocks
     cmds:
-      - ./tasks/app-deps/lua/libcidr-ffi
+      - ./tasks/app-deps/luarocks
     sources:
       - ./build/work/stamp/deps/libcidr
       - ./build/work/stamp/deps/luarocks
-      - ./tasks/app-deps/lua/libcidr-ffi
+      - ./src/api-umbrella-git-1.rockspec
+      - ./src/luarocks.lock
+      - ./tasks/app-deps/luarocks
       - ./tasks/helpers.sh
       - ./tasks/helpers/lua.sh
     generates:
-      - ./build/work/stamp/app-deps/lua/libcidr-ffi
-
-  app-deps:lua:lrexlib-pcre2:
-    deps:
-      - deps:luarocks
-    cmds:
-      - ./tasks/app-deps/lua/lrexlib-pcre2
-    sources:
-      - ./build/work/stamp/deps/luarocks
-      - ./tasks/app-deps/lua/lrexlib-pcre2
-      - ./tasks/app-deps/lua/lrexlib-pcre2-2.9.1-1.rockspec
-      - ./tasks/helpers.sh
-      - ./tasks/helpers/lua.sh
-    generates:
-      - ./build/work/stamp/app-deps/lua/lrexlib-pcre2
-    method: checksum
-
-  app-deps:lua:lualdap:
-    deps:
-      - deps:luarocks
-    cmds:
-      - ./tasks/app-deps/lua/lualdap
-    sources:
-      - ./build/work/stamp/deps/luarocks
-      - ./tasks/app-deps/lua/lualdap
-      - ./tasks/helpers.sh
-      - ./tasks/helpers/lua.sh
-    generates:
-      - ./build/work/stamp/app-deps/lua/lualdap
-    method: checksum
-
-  app-deps:lua:luaposix:
-    deps:
-      - deps:luarocks
-    cmds:
-      - ./tasks/app-deps/lua/luaposix
-    sources:
-      - ./build/work/stamp/deps/luarocks
-      - ./tasks/app-deps/lua/luaposix
-      - ./tasks/helpers.sh
-      - ./tasks/helpers/lua.sh
-    generates:
-      - ./build/work/stamp/app-deps/lua/luaposix
-
-  app-deps:lua:luautf8:
-    deps:
-      - deps:luarocks
-    cmds:
-      - ./tasks/app-deps/lua/luautf8
-    sources:
-      - ./build/work/stamp/deps/luarocks
-      - ./tasks/app-deps/lua/luautf8
-      - ./tasks/helpers.sh
-      - ./tasks/helpers/lua.sh
-    generates:
-      - ./build/work/stamp/app-deps/lua/luautf8
-    method: checksum
-
-  app-deps:lua:lustache:
-    deps:
-      - deps:luarocks
-    cmds:
-      - ./tasks/app-deps/lua/lustache
-    sources:
-      - ./build/work/stamp/deps/luarocks
-      - ./tasks/app-deps/lua/lustache
-      - ./tasks/helpers.sh
-      - ./tasks/helpers/lua.sh
-    generates:
-      - ./build/work/stamp/app-deps/lua/lustache
-
-  app-deps:lua:lyaml:
-    deps:
-      - deps:luarocks
-    cmds:
-      - ./tasks/app-deps/lua/lyaml
-    sources:
-      - ./build/work/stamp/deps/luarocks
-      - ./tasks/app-deps/lua/lyaml
-      - ./tasks/helpers.sh
-      - ./tasks/helpers/lua.sh
-    generates:
-      - ./build/work/stamp/app-deps/lua/lyaml
-
-  app-deps:lua:penlight:
-    deps:
-      - deps:luarocks
-    cmds:
-      - ./tasks/app-deps/lua/penlight
-    sources:
-      - ./build/work/stamp/deps/luarocks
-      - ./tasks/app-deps/lua/penlight
-      - ./tasks/helpers.sh
-      - ./tasks/helpers/lua.sh
-    generates:
-      - ./build/work/stamp/app-deps/lua/penlight
-
-  app-deps:lua:psl:
-    deps:
-      - deps:libpsl
-      - deps:luarocks
-    cmds:
-      - ./tasks/app-deps/lua/psl
-    sources:
-      - ./build/work/stamp/deps/libpsl
-      - ./build/work/stamp/deps/luarocks
-      - ./tasks/app-deps/lua/psl
-      - ./tasks/helpers.sh
-      - ./tasks/helpers/lua.sh
-    generates:
-      - ./build/work/stamp/app-deps/lua/psl
-    method: checksum
-
-  app-deps:lua:resty-auto-ssl:
-    deps:
-      - deps:luarocks
-    cmds:
-      - ./tasks/app-deps/lua/resty-auto-ssl
-    sources:
-      - ./build/work/stamp/deps/luarocks
-      - ./tasks/app-deps/lua/resty-auto-ssl
-      - ./tasks/helpers.sh
-      - ./tasks/helpers/lua.sh
-    generates:
-      - ./build/work/stamp/app-deps/lua/resty-auto-ssl
-
-  app-deps:lua:resty-http:
-    deps:
-      - deps:luarocks
-    cmds:
-      - ./tasks/app-deps/lua/resty-http
-    sources:
-      - ./build/work/stamp/deps/luarocks
-      - ./tasks/app-deps/lua/resty-http
-      - ./tasks/helpers.sh
-      - ./tasks/helpers/lua.sh
-    generates:
-      - ./build/work/stamp/app-deps/lua/resty-http
-
-  app-deps:lua:resty-logger-socket:
-    deps:
-      - deps:luarocks
-    cmds:
-      - ./tasks/app-deps/lua/resty-logger-socket
-    sources:
-      - ./build/work/stamp/deps/luarocks
-      - ./tasks/app-deps/lua/resty-logger-socket
-      - ./tasks/helpers.sh
-      - ./tasks/helpers/lua.sh
-    generates:
-      - ./build/work/stamp/app-deps/lua/resty-logger-socket
-
-  app-deps:lua:resty-mail:
-    deps:
-      - deps:luarocks
-    cmds:
-      - ./tasks/app-deps/lua/resty-mail
-    sources:
-      - ./build/work/stamp/deps/luarocks
-      - ./tasks/app-deps/lua/resty-mail
-      - ./tasks/helpers.sh
-      - ./tasks/helpers/lua.sh
-    generates:
-      - ./build/work/stamp/app-deps/lua/resty-mail
-    method: checksum
-
-  app-deps:lua:resty-mlcache:
-    deps:
-      - deps:luarocks
-    cmds:
-      - ./tasks/app-deps/lua/resty-mlcache
-    sources:
-      - ./build/work/stamp/deps/luarocks
-      - ./tasks/app-deps/lua/resty-mlcache
-      - ./tasks/helpers.sh
-      - ./tasks/helpers/lua.sh
-    generates:
-      - ./build/work/stamp/app-deps/lua/resty-mlcache
-
-  app-deps:lua:resty-moongoo:
-    deps:
-      - deps:libbson
-      - deps:luarocks
-    cmds:
-      - ./tasks/app-deps/lua/resty-moongoo
-    sources:
-      - ./build/work/stamp/deps/libbson
-      - ./build/work/stamp/deps/luarocks
-      - ./tasks/app-deps/lua/resty-moongoo
-      - ./tasks/helpers.sh
-      - ./tasks/helpers/lua.sh
-    generates:
-      - ./build/work/stamp/app-deps/lua/resty-moongoo
-    method: checksum
-
-  app-deps:lua:resty-nettle:
-    deps:
-      - deps:luarocks
-    cmds:
-      - ./tasks/app-deps/lua/resty-nettle
-    sources:
-      - ./build/work/stamp/deps/luarocks
-      - ./tasks/app-deps/lua/resty-nettle
-      - ./tasks/helpers.sh
-      - ./tasks/helpers/lua.sh
-    generates:
-      - ./build/work/stamp/app-deps/lua/resty-nettle
-    method: checksum
-
-  app-deps:lua:resty-openidc:
-    deps:
-      - deps:luarocks
-    cmds:
-      - ./tasks/app-deps/lua/resty-openidc
-    sources:
-      - ./build/work/stamp/deps/luarocks
-      - ./tasks/app-deps/lua/resty-openidc
-      - ./tasks/helpers.sh
-      - ./tasks/helpers/lua.sh
-    generates:
-      - ./build/work/stamp/app-deps/lua/resty-openidc
-    method: checksum
-
-  app-deps:lua:resty-session:
-    deps:
-      - deps:luarocks
-    cmds:
-      - ./tasks/app-deps/lua/resty-session
-    sources:
-      - ./build/work/stamp/deps/luarocks
-      - ./tasks/app-deps/lua/resty-session
-      - ./tasks/helpers.sh
-      - ./tasks/helpers/lua.sh
-    generates:
-      - ./build/work/stamp/app-deps/lua/resty-session
-    method: checksum
-
-  app-deps:lua:resty-txid:
-    deps:
-      - deps:luarocks
-    cmds:
-      - ./tasks/app-deps/lua/resty-txid
-    sources:
-      - ./build/work/stamp/deps/luarocks
-      - ./tasks/app-deps/lua/resty-txid
-      - ./tasks/helpers.sh
-      - ./tasks/helpers/lua.sh
-    generates:
-      - ./build/work/stamp/app-deps/lua/resty-txid
-
-  app-deps:lua:resty-uuid:
-    deps:
-      - deps:luarocks
-    cmds:
-      - ./tasks/app-deps/lua/resty-uuid
-    sources:
-      - ./build/work/stamp/deps/luarocks
-      - ./tasks/app-deps/lua/resty-uuid
-      - ./tasks/helpers.sh
-      - ./tasks/helpers/lua.sh
-    generates:
-      - ./build/work/stamp/app-deps/lua/resty-uuid
-
-  app-deps:lua:resty-validation:
-    deps:
-      - deps:luarocks
-    cmds:
-      - ./tasks/app-deps/lua/resty-validation
-    sources:
-      - ./build/work/stamp/deps/luarocks
-      - ./tasks/app-deps/lua/resty-validation
-      - ./tasks/helpers.sh
-      - ./tasks/helpers/lua.sh
-    generates:
-      - ./build/work/stamp/app-deps/lua/resty-validation
-    method: checksum
-
-  app-deps:lua:shell-games:
-    deps:
-      - deps:luarocks
-    cmds:
-      - ./tasks/app-deps/lua/shell-games
-    sources:
-      - ./build/work/stamp/deps/luarocks
-      - ./tasks/app-deps/lua/shell-games
-      - ./tasks/helpers.sh
-      - ./tasks/helpers/lua.sh
-    generates:
-      - ./build/work/stamp/app-deps/lua/shell-games
-
-  app-deps:lua:zstd:
-    deps:
-      - deps:luarocks
-    cmds:
-      - ./tasks/app-deps/lua/zstd
-    sources:
-      - ./build/work/stamp/deps/luarocks
-      - ./tasks/app-deps/lua/zstd
-      - ./tasks/helpers.sh
-      - ./tasks/helpers/lua.sh
-    generates:
-      - ./build/work/stamp/app-deps/lua/zstd
-
-  app-deps:lua:
-    cmds:
-      - task: app-deps:lua:argparse
-      - task: app-deps:lua:bcrypt
-      - task: app-deps:lua:icu-date-ffi
-      - task: app-deps:lua:inspect
-      - task: app-deps:lua:lapis
-      - task: app-deps:lua:libcidr-ffi
-      - task: app-deps:lua:lrexlib-pcre2
-      - task: app-deps:lua:lualdap
-      - task: app-deps:lua:luaposix
-      - task: app-deps:lua:luautf8
-      - task: app-deps:lua:lustache
-      - task: app-deps:lua:lyaml
-      - task: app-deps:lua:penlight
-      - task: app-deps:lua:psl
-      - task: app-deps:lua:resty-auto-ssl
-      - task: app-deps:lua:resty-http
-      - task: app-deps:lua:resty-logger-socket
-      - task: app-deps:lua:resty-mail
-      - task: app-deps:lua:resty-mlcache
-      - task: app-deps:lua:resty-moongoo
-      - task: app-deps:lua:resty-nettle
-      - task: app-deps:lua:resty-openidc
-      - task: app-deps:lua:resty-session
-      - task: app-deps:lua:resty-txid
-      - task: app-deps:lua:resty-uuid
-      - task: app-deps:lua:resty-validation
-      - task: app-deps:lua:shell-games
-      - task: app-deps:lua:zstd
+      - ./build/work/stamp/app-deps/luarocks
 
   app-deps:web-app:yarn:
     deps:
@@ -704,7 +284,7 @@ tasks:
     cmds:
       - task: app-deps:admin-ui:yarn
       - task: app-deps:example-website:yarn
-      - task: app-deps:lua
+      - task: app-deps:luarocks
       - task: app-deps:web-app:yarn
 
   app:admin-ui:build:
@@ -819,57 +399,20 @@ tasks:
     generates:
       - ./build/work/stamp/test-deps/glauth
 
-  test-deps:lua:luacheck:
+  test-deps:luarocks:
     deps:
       - deps:luarocks
     cmds:
-      - ./tasks/test-deps/lua/luacheck
+      - ./tasks/test-deps/luarocks
     sources:
       - ./build/work/stamp/deps/luarocks
-      - ./tasks/test-deps/lua/luacheck
+      - ./test/api-umbrella-git-1.rockspec
+      - ./test/luarocks.lock
+      - ./tasks/test-deps/luarocks
       - ./tasks/helpers.sh
       - ./tasks/helpers/lua.sh
     generates:
-      - ./build/work/stamp/test-deps/lua/luacheck
-
-  test-deps:lua:luaposix:
-    deps:
-      - deps:luarocks
-    cmds:
-      - ./tasks/test-deps/lua/luaposix
-    sources:
-      - ./build/work/stamp/deps/luarocks
-      - ./tasks/test-deps/lua/luaposix
-      - ./tasks/helpers.sh
-      - ./tasks/helpers/lua.sh
-    generates:
-      - ./build/work/stamp/test-deps/lua/luaposix
-
-  test-deps:lua:penlight:
-    deps:
-      - deps:luarocks
-    cmds:
-      - ./tasks/test-deps/lua/penlight
-    sources:
-      - ./build/work/stamp/deps/luarocks
-      - ./tasks/test-deps/lua/penlight
-      - ./tasks/helpers.sh
-      - ./tasks/helpers/lua.sh
-    generates:
-      - ./build/work/stamp/test-deps/lua/penlight
-
-  test-deps:lua:shell-games:
-    deps:
-      - deps:luarocks
-    cmds:
-      - ./tasks/test-deps/lua/shell-games
-    sources:
-      - ./build/work/stamp/deps/luarocks
-      - ./tasks/test-deps/lua/shell-games
-      - ./tasks/helpers.sh
-      - ./tasks/helpers/lua.sh
-    generates:
-      - ./build/work/stamp/test-deps/lua/shell-games
+      - ./build/work/stamp/test-deps/luarocks
 
   test-deps:mailhog:
     cmds:
@@ -893,10 +436,7 @@ tasks:
     cmds:
       - task: test-deps:bundle
       - task: test-deps:glauth
-      - task: test-deps:lua:luacheck
-      - task: test-deps:lua:luaposix
-      - task: test-deps:lua:penlight
-      - task: test-deps:lua:shell-games
+      - task: test-deps:luarocks
       - task: test-deps:mailhog
       - task: test-deps:shellcheck
 
@@ -910,13 +450,13 @@ tasks:
 
   lint:lua:
     deps:
-      - test-deps:lua:luacheck
+      - test-deps:luarocks
     cmds:
       - ./tasks/lint/lua
 
   lint:resty:
     deps:
-      - test-deps:lua:penlight
+      - test-deps:luarocks
     cmds:
       - ./tasks/lint/resty/run
 
@@ -940,15 +480,23 @@ tasks:
       - task: lint:ruby
       - task: lint:shell
 
+  update:luarocks:
+    cmds:
+      - ./tasks/update/luarocks
+
+  update:test-deps:luarocks:
+    cmds:
+      - ./tasks/update/test-deps/luarocks
+
   outdated:
     cmds:
-      - ./tasks/outdated
+      - ./tasks/helpers/test-bundle-exec thor outdated:all
 
   test:
     cmds:
       - task: all
       - task: test-deps
-      - ./tasks/test/default
+      - ./tasks/helpers/test-bundle-exec thor test:test
 
   clean:dev:
     cmds:

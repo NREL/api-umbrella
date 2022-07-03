@@ -39,9 +39,7 @@ RUN make deps:trafficserver && make clean:dev
 COPY tasks/deps/libestr tasks/deps/libfastjson tasks/deps/rsyslog /app/tasks/deps/
 RUN make deps:rsyslog && make clean:dev
 
-COPY tasks/deps/icu4c /app/tasks/deps/
-RUN make deps:icu4c && make clean:dev
-
+COPY src/api-umbrella-git-1.rockspec src/luarocks.lock /app/src/
 COPY tasks/deps/luarocks /app/tasks/deps/
 RUN make deps:luarocks && make clean:dev
 
@@ -67,9 +65,9 @@ COPY src/api-umbrella/web-app/package.json src/api-umbrella/web-app/yarn.lock /a
 COPY tasks/app-deps/web-app/yarn /app/tasks/app-deps/web-app/
 RUN make app-deps:web-app:yarn && make clean:dev
 
-COPY build/patches/penlight-warn.patch /app/build/patches/
-COPY tasks/app-deps/lua /app/tasks/app-deps/lua
-RUN make app-deps:lua && make clean:dev
+COPY build/patches/lrexlib-pcre2.patch build/patches/penlight-warn.patch /app/build/patches/
+COPY tasks/app-deps/luarocks /app/tasks/app-deps/
+RUN make app-deps:luarocks && make clean:dev
 
 COPY tasks/app-deps /app/tasks/app-deps
 RUN make app-deps && make clean:dev
@@ -126,6 +124,7 @@ COPY Gemfile Gemfile.lock /app/
 COPY tasks/test-deps/bundle /app/tasks/test-deps/
 RUN make test-deps:bundle && make clean:dev
 
+COPY test/api-umbrella-test-git-1.rockspec test/luarocks.lock /app/test/
 COPY tasks/deps/libmaxminddb tasks/deps/luarocks tasks/deps/openresty /app/tasks/deps/
 COPY tasks/test-deps /app/tasks/test-deps
 COPY build/patches/penlight-warn.patch /app/build/patches/
@@ -135,11 +134,9 @@ RUN groupadd -r api-umbrella && \
   useradd -r -g api-umbrella -s /sbin/nologin -d /opt/api-umbrella -c "API Umbrella user" api-umbrella
 
 COPY --from=build /app /app
-COPY .luacheckrc .rubocop.yml Rakefile /app/
+COPY .luacheckrc .rubocop.yml Thorfile /app/
 COPY build/package /app/build/package
-COPY scripts /app/scripts
 COPY test /app/test
-COPY website/Gemfile website/Rakefile website/config.rb /app/website/
 
 RUN ln -snf "/app/build/work/tasks/app-deps/admin-ui/yarn/_persist/node_modules" "/app/src/api-umbrella/admin-ui/node_modules"
 RUN ln -snf "/app/build/work/tasks/app-deps/example-website/yarn/_persist/node_modules" "/app/src/api-umbrella/example-website/node_modules"

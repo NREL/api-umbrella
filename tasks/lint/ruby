@@ -7,6 +7,6 @@ set +x
 export PATH="$DEV_PATH"
 export BUNDLE_APP_CONFIG="$WORK_DIR/tasks/test-deps/bundle/_persist/.bundle"
 
-mapfile -t files < <(git ls-files | grep -E '(Rakefile|Gemfile|\.(rb|rake|rabl|ru))$')
+mapfile -t files < <(git ls-files | grep -E '(Rakefile|Gemfile|Thorfile|\.(rb|rake|rabl|ru|thor))$')
 set -x
 bundle exec rubocop --display-cop-names --extra-details "${files[@]}"
