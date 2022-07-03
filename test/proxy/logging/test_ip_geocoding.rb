@@ -151,8 +151,8 @@ class Test::Proxy::Logging::TestIpGeocoding < Minitest::Test
       :country => "CA",
       :region => "QC",
       :city => "Trois-Rivières",
-      :lat => 46.3877,
-      :lon => -72.5357,
+      :lat => 46.3633,
+      :lon => -72.6143,
     })
   end
 
