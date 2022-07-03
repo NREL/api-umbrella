@@ -8,6 +8,11 @@ class Test < Thor
       tests = ENV.fetch("TESTS").split(" ")
     end
 
-    exec "bundle", "exec", "minitest", *tests
+    args = []
+    if ENV["CI"] == "true"
+      args += ["--ci-dir", "./test/tmp/artifacts/reports"]
+    end
+
+    exec "bundle", "exec", "minitest", *args, *tests
   end
 end

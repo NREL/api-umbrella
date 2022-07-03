@@ -192,7 +192,7 @@ jobs:
           docker run --rm \
             --network "${{ job.services.postgres.network }}" \
             -v "$(pwd)/test/tmp/artifacts:/app/test/tmp/artifacts" \
-            -e TESTOPTS="--ci-dir=./test/tmp/artifacts/reports" \
+            -e CI=true \
             -e TESTS="${tests}" \
             -e MAXMIND_LICENSE_KEY="${MAXMIND_LICENSE_KEY}" \
             "$DOCKER_IMAGE_CACHE_FROM" \
@@ -274,7 +274,7 @@ jobs:
             -v "$(pwd)/test/tmp/artifacts:/app/test/tmp/artifacts" \
             -e ELASTICSEARCH_TEST_API_VERSION=6 \
             -e ELASTICSEARCH_TEST_TEMPLATE_VERSION=2 \
-            -e TESTOPTS="--ci-dir=./test/tmp/artifacts/reports" \
+            -e CI=true \
             -e TESTS="${tests[*]}" \
             -e MAXMIND_LICENSE_KEY="${MAXMIND_LICENSE_KEY}" \
             "$DOCKER_IMAGE_CACHE_FROM" \
@@ -354,7 +354,7 @@ jobs:
             -e ELASTICSEARCH_TEST_API_VERSION=7 \
             -e ELASTICSEARCH_TEST_TEMPLATE_VERSION=2 \
             -e ELASTICSEARCH_TEST_INDEX_PARTITION=daily \
-            -e TESTOPTS="--ci-dir=./test/tmp/artifacts/reports" \
+            -e CI=true \
             -e TESTS="${tests[*]}" \
             -e MAXMIND_LICENSE_KEY="${MAXMIND_LICENSE_KEY}" \
             "$DOCKER_IMAGE_CACHE_FROM" \
