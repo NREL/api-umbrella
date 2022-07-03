@@ -32,19 +32,28 @@ class Test::Proxy::TestUrlSpecialCharacters < Minitest::Test
     assert_equal("/slash", data["url"]["query"]["forward_slash"])
     assert_equal("/", data["url"]["query"]["encoded_forward_slash"])
     assert_equal("\\", data["url"]["query"]["encoded_back_slash"])
-    assert_equal("http://127.0.0.1/info/extra//slash/some\\backslash/encoded\\backslash/encoded/slash/?forward_slash=/slash&encoded_forward_slash=%2F&back_slash=\\&encoded_back_slash=%5C", data["raw_url"])
+    assert_equal("http://127.0.0.1/info/extra//slash/some%5Cbackslash/encoded%5Cbackslash/encoded/slash/?forward_slash=/slash&encoded_forward_slash=%2F&back_slash=\\&encoded_back_slash=%5C", data["raw_url"])
   end
 
-  def test_spaces_urls
-    response = Typhoeus.get("http://127.0.0.1:9080/api/info/space/ /encoded_space/%20/plus_space/+/?space= &encoded_space=%20&plus_space=+", http_options)
+  def test_unescaped_spaces_path_url
+    response = Typhoeus.get("http://127.0.0.1:9080/api/info/space/ /", http_options)
+    assert_response_code(400, response)
+  end
+
+  def test_unescaped_spaces_query_url
+    response = Typhoeus.get("http://127.0.0.1:9080/api/info/space/?space= &foo", http_options)
+    assert_response_code(400, response)
+  end
+
+  def test_escaped_spaces_urls
+    response = Typhoeus.get("http://127.0.0.1:9080/api/info/encoded_space/%20/plus_space/+/?encoded_space=%20&plus_space=+", http_options)
 
     assert_response_code(200, response)
     data = MultiJson.load(response.body)
-    assert_equal("/info/space/ /encoded_space/ /plus_space/+/", data["url"]["pathname"])
-    assert_equal(" ", data["url"]["query"]["space"])
+    assert_equal("/info/encoded_space/ /plus_space/+/", data["url"]["pathname"])
     assert_equal(" ", data["url"]["query"]["encoded_space"])
     assert_equal(" ", data["url"]["query"]["plus_space"])
-    assert_equal("http://127.0.0.1/info/space/%20/encoded_space/%20/plus_space/+/?space=%20&encoded_space=%20&plus_space=+", data["raw_url"])
+    assert_equal("http://127.0.0.1/info/encoded_space/%20/plus_space/+/?encoded_space=%20&plus_space=+", data["raw_url"])
   end
 
   def test_ampersand_urls
