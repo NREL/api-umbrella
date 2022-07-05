@@ -139,7 +139,7 @@ end
 
 function _M.destroy(self)
   self:init_session_db()
-  local _, _, open_err = self.session_db:open()
+  local _, _, open_err = self.session_db:start()
   if open_err then
     ngx.log(ngx.ERR, "session open error: ", open_err)
   end

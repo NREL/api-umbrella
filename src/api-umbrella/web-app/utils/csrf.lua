@@ -41,7 +41,7 @@ end
 
 local function validate_token(self)
   self:init_session_cookie()
-  local _, _, open_err = self.session_cookie:open()
+  local _, _, open_err = self.session_cookie:start()
   if open_err then
     ngx.log(ngx.ERR, "session open error: ", open_err)
   end

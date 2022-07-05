@@ -29,6 +29,7 @@ dependencies = {
   "lyaml ~> 6.2.7",
   "penlight ~> 1.12.0",
   "psl ~> 0.3",
+  "rapidjson ~> 0.7.1",
   "shell-games ~> 1.1.0",
 }
 

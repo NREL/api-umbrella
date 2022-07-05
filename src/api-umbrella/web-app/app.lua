@@ -80,6 +80,7 @@ local session_db_options = {
   storage = "api_umbrella_db",
   cipher = "api_umbrella",
   hmac = "api_umbrella",
+  serializer = "api_umbrella",
   identifier = "api_umbrella",
   name = "_api_umbrella_session",
   secret = assert(config["secret_key"]),
@@ -90,8 +91,9 @@ local session_db_options = {
     samesite = "Lax",
     secure = true,
     httponly = true,
-    renew = 60 * 60, -- 1 hour
+    idletime = 30 * 60, -- 30 minutes
     lifetime = 12 * 60 * 60, -- 12 hours
+    renew = -1, -- Disable renew
   },
 }
 local function init_session_db(self)
@@ -112,6 +114,7 @@ local session_cookie_options = {
   storage = "cookie",
   cipher = "api_umbrella",
   hmac = "api_umbrella",
+  serializer = "api_umbrella",
   identifier = "api_umbrella",
   name = "_api_umbrella_session_client",
   secret = assert(config["secret_key"]),
@@ -122,8 +125,8 @@ local session_cookie_options = {
     samesite = "Lax",
     secure = true,
     httponly = true,
-    renew = 60 * 60, -- 1 hour
     lifetime = 12 * 60 * 60, -- 12 hours
+    renew = -1, -- Disable renew
   },
 }
 local function init_session_cookie(self)
@@ -135,7 +138,7 @@ end
 local function current_admin_from_session(self)
   local current_admin
   self:init_session_db()
-  local _, _, open_err = self.session_db:open()
+  local _, _, open_err = self.session_db:start()
   if open_err then
     ngx.log(ngx.ERR, "session open error: ", open_err)
   end

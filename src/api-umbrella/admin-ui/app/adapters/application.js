@@ -18,10 +18,6 @@ export default class Application extends RESTAdapter {
       if(data.api_key) {
         headers['X-Api-Key'] = data.api_key;
       }
-
-      if(data.admin_auth_token) {
-        headers['X-Admin-Auth-Token'] = data.admin_auth_token;
-      }
     }
 
     return headers;
@@ -46,6 +42,10 @@ export default class Application extends RESTAdapter {
   // normalizes some of our different error responses, so they're always an
   // array.
   handleResponse(status, headers, payload) {
+    if(status === 401 && this.session) {
+      this.session.invalidate();
+    }
+
     if(!this.isSuccess(status, headers, payload)) {
       this.normalizePayloadErrors(payload, 'errors');
       this.normalizePayloadErrors(payload, 'error');
