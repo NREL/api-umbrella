@@ -102,14 +102,14 @@ class Test::Proxy::Logging::TestIpGeocoding < Minitest::Test
   def test_country_no_region_city
     response = Typhoeus.get("http://127.0.0.1:9080/api/hello", log_http_options.deep_merge({
       :headers => {
-        "X-Forwarded-For" => "1.1.1.1",
+        "X-Forwarded-For" => "1.1.1.0",
       },
     }))
     assert_response_code(200, response)
 
     record = wait_for_log(response)[:hit_source]
     assert_geocode(record, {
-      :ip => "1.1.1.1",
+      :ip => "1.1.1.0",
       :country => "AU",
       :region => nil,
       :city => nil,
