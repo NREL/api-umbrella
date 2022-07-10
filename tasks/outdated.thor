@@ -7,6 +7,92 @@ require "rainbow"
 require "uri"
 
 class Outdated < Thor
+  REPOS = {
+    "crane" => {
+      :git => "https://github.com/google/go-containerregistry.git",
+    },
+    "cue" => {
+      :git => "https://github.com/cue-lang/cue.git",
+    },
+    "envoy" => {
+      :git => "https://github.com/envoyproxy/envoy.git",
+    },
+    "glauth" => {
+      :git => "https://github.com/glauth/glauth.git",
+    },
+    "hugo" => {
+      :git => "https://github.com/gohugoio/hugo.git",
+    },
+    "libcidr" => {
+      :http => "https://www.over-yonder.net/~fullermd/projects/libcidr",
+    },
+    "libestr" => {
+      :git => "https://github.com/rsyslog/libestr.git",
+    },
+    "libfastjson" => {
+      :git => "https://github.com/rsyslog/libfastjson.git",
+    },
+    "libmaxminddb" => {
+      :git => "https://github.com/maxmind/libmaxminddb.git",
+    },
+    "libpsl" => {
+      :git => "https://github.com/rockdaboot/libpsl.git",
+    },
+    "lua_icu_date_ffi" => {
+      :git => "https://github.com/GUI/lua-icu-date-ffi.git",
+      :git_ref => "master",
+    },
+    "lua_resty_logger_socket" => {
+      :git => "https://github.com/cloudflare/lua-resty-logger-socket.git",
+      :git_ref => "master",
+    },
+    "luarocks" => {
+      :git => "https://github.com/keplerproject/luarocks.git",
+    },
+    "mailhog" => {
+      :git => "https://github.com/mailhog/MailHog.git",
+    },
+    "nginx_module_vts" => {
+      :git => "https://github.com/vozlt/nginx-module-vts.git",
+      :git_ref => "master",
+    },
+    "ngx_http_geoip2_module" => {
+      :git => "https://github.com/leev/ngx_http_geoip2_module.git",
+    },
+    "nodejs" => {
+      :git => "https://github.com/nodejs/node.git",
+      :constraint => "~> 16.14",
+    },
+    "openresty" => {
+      :git => "https://github.com/openresty/openresty.git",
+    },
+    "openssl" => {
+      :git => "https://github.com/openssl/openssl.git",
+      :string_version => true,
+    },
+    "perp" => {
+      :http => "http://b0llix.net/perp/site.cgi?page=download",
+    },
+    "rsyslog" => {
+      :git => "https://github.com/rsyslog/rsyslog.git",
+    },
+    "runit" => {
+      :http => "http://smarden.org/runit/install.html",
+    },
+    "shellcheck" => {
+      :git => "https://github.com/koalaman/shellcheck.git",
+    },
+    "task" => {
+      :git => "https://github.com/go-task/task.git",
+    },
+    "trafficserver" => {
+      :git => "https://github.com/apache/trafficserver.git",
+    },
+    "yarn" => {
+      :git => "https://github.com/yarnpkg/yarn.git",
+    },
+  }.freeze
+
   class AdminUi < Thor
     namespace "outdated:admin-ui"
 
@@ -127,92 +213,6 @@ class Outdated < Thor
   end
 
   class << self
-    REPOS = {
-      "crane" => {
-        :git => "https://github.com/google/go-containerregistry.git",
-      },
-      "cue" => {
-        :git => "https://github.com/cue-lang/cue.git",
-      },
-      "envoy" => {
-        :git => "https://github.com/envoyproxy/envoy.git",
-      },
-      "glauth" => {
-        :git => "https://github.com/glauth/glauth.git",
-      },
-      "hugo" => {
-        :git => "https://github.com/gohugoio/hugo.git",
-      },
-      "libcidr" => {
-        :http => "https://www.over-yonder.net/~fullermd/projects/libcidr",
-      },
-      "libestr" => {
-        :git => "https://github.com/rsyslog/libestr.git",
-      },
-      "libfastjson" => {
-        :git => "https://github.com/rsyslog/libfastjson.git",
-      },
-      "libmaxminddb" => {
-        :git => "https://github.com/maxmind/libmaxminddb.git",
-      },
-      "libpsl" => {
-        :git => "https://github.com/rockdaboot/libpsl.git",
-      },
-      "lua_icu_date_ffi" => {
-        :git => "https://github.com/GUI/lua-icu-date-ffi.git",
-        :git_ref => "master",
-      },
-      "lua_resty_logger_socket" => {
-        :git => "https://github.com/cloudflare/lua-resty-logger-socket.git",
-        :git_ref => "master",
-      },
-      "luarocks" => {
-        :git => "https://github.com/keplerproject/luarocks.git",
-      },
-      "mailhog" => {
-        :git => "https://github.com/mailhog/MailHog.git",
-      },
-      "nginx_module_vts" => {
-        :git => "https://github.com/vozlt/nginx-module-vts.git",
-        :git_ref => "master",
-      },
-      "ngx_http_geoip2_module" => {
-        :git => "https://github.com/leev/ngx_http_geoip2_module.git",
-      },
-      "nodejs" => {
-        :git => "https://github.com/nodejs/node.git",
-        :constraint => "~> 16.14",
-      },
-      "openresty" => {
-        :git => "https://github.com/openresty/openresty.git",
-      },
-      "openssl" => {
-        :git => "https://github.com/openssl/openssl.git",
-        :string_version => true,
-      },
-      "perp" => {
-        :http => "http://b0llix.net/perp/site.cgi?page=download",
-      },
-      "rsyslog" => {
-        :git => "https://github.com/rsyslog/rsyslog.git",
-      },
-      "runit" => {
-        :http => "http://smarden.org/runit/install.html",
-      },
-      "shellcheck" => {
-        :git => "https://github.com/koalaman/shellcheck.git",
-      },
-      "task" => {
-        :git => "https://github.com/go-task/task.git",
-      },
-      "trafficserver" => {
-        :git => "https://github.com/apache/trafficserver.git",
-      },
-      "yarn" => {
-        :git => "https://github.com/yarnpkg/yarn.git",
-      },
-    }.freeze
-
     def luarocks_manifest
       @luarocks_manifest ||= JSON.parse(Net::HTTP.get_response(URI.parse("https://luarocks.org/manifest.json")).body)
     end
@@ -389,6 +389,8 @@ class Outdated < Thor
 
       versions = {}
       lock.fetch("dependencies").each do |name, version|
+        next if name == "lua"
+
         options = {
           :luarock => true,
         }
