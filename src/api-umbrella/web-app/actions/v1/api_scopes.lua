@@ -1,6 +1,7 @@
 local ApiScope = require "api-umbrella.web-app.models.api_scope"
 local api_scope_policy = require "api-umbrella.web-app.policies.api_scope_policy"
 local capture_errors_json = require("api-umbrella.web-app.utils.capture_errors").json
+local csrf_validate_token_or_admin_token_filter = require("api-umbrella.web-app.utils.csrf").validate_token_or_admin_token_filter
 local datatables = require "api-umbrella.web-app.utils.datatables"
 local dbify_json_nulls = require "api-umbrella.web-app.utils.dbify_json_nulls"
 local json_response = require "api-umbrella.web-app.utils.json_response"
@@ -108,14 +109,14 @@ return function(app)
       end
     end),
     GET = capture_errors_json(_M.show),
-    POST = capture_errors_json(wrapped_json_params(_M.update, "api_scope")),
-    PUT = capture_errors_json(wrapped_json_params(_M.update, "api_scope")),
-    DELETE = capture_errors_json(_M.destroy),
+    POST = csrf_validate_token_or_admin_token_filter(capture_errors_json(wrapped_json_params(_M.update, "api_scope"))),
+    PUT = csrf_validate_token_or_admin_token_filter(capture_errors_json(wrapped_json_params(_M.update, "api_scope"))),
+    DELETE = csrf_validate_token_or_admin_token_filter(capture_errors_json(_M.destroy)),
   }))
 
   app:match("/api-umbrella/v1/api_scopes(.:format)", respond_to({
     before = require_admin(),
     GET = capture_errors_json(_M.index),
-    POST = capture_errors_json(wrapped_json_params(_M.create, "api_scope")),
+    POST = csrf_validate_token_or_admin_token_filter(capture_errors_json(wrapped_json_params(_M.create, "api_scope"))),
   }))
 end

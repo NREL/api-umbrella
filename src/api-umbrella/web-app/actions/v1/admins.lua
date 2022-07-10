@@ -3,6 +3,7 @@ local admin_invite_mailer = require "api-umbrella.web-app.mailers.admin_invite"
 local admin_policy = require "api-umbrella.web-app.policies.admin_policy"
 local capture_errors_json_full = require("api-umbrella.web-app.utils.capture_errors").json_full
 local config = require("api-umbrella.utils.load_config")()
+local csrf_validate_token_or_admin_token_filter = require("api-umbrella.web-app.utils.csrf").validate_token_or_admin_token_filter
 local datatables = require "api-umbrella.web-app.utils.datatables"
 local dbify_json_nulls = require "api-umbrella.web-app.utils.dbify_json_nulls"
 local json_response = require "api-umbrella.web-app.utils.json_response"
@@ -146,14 +147,14 @@ return function(app)
       end
     end),
     GET = capture_errors_json_full(_M.show),
-    POST = capture_errors_json_full(wrapped_json_params(_M.update, "admin")),
-    PUT = capture_errors_json_full(wrapped_json_params(_M.update, "admin")),
-    DELETE = capture_errors_json_full(_M.destroy),
+    POST = csrf_validate_token_or_admin_token_filter(capture_errors_json_full(wrapped_json_params(_M.update, "admin"))),
+    PUT = csrf_validate_token_or_admin_token_filter(capture_errors_json_full(wrapped_json_params(_M.update, "admin"))),
+    DELETE = csrf_validate_token_or_admin_token_filter(capture_errors_json_full(_M.destroy)),
   }))
 
   app:match("/api-umbrella/v1/admins(.:format)", respond_to({
     before = require_admin(),
     GET = capture_errors_json_full(_M.index),
-    POST = capture_errors_json_full(wrapped_json_params(_M.create, "admin")),
+    POST = csrf_validate_token_or_admin_token_filter(capture_errors_json_full(wrapped_json_params(_M.create, "admin"))),
   }))
 end

@@ -5,6 +5,7 @@ local api_user_policy = require "api-umbrella.web-app.policies.api_user_policy"
 local api_user_welcome_mailer = require "api-umbrella.web-app.mailers.api_user_welcome"
 local capture_errors_json_full = require("api-umbrella.web-app.utils.capture_errors").json_full
 local config = require("api-umbrella.utils.load_config")()
+local csrf_validate_token_or_admin_token_filter = require("api-umbrella.web-app.utils.csrf").validate_token_or_admin_token_filter
 local datatables = require "api-umbrella.web-app.utils.datatables"
 local db = require "lapis.db"
 local dbify_json_nulls = require "api-umbrella.web-app.utils.dbify_json_nulls"
@@ -318,8 +319,8 @@ return function(app)
       end
     end),
     GET = capture_errors_json_full(_M.show),
-    POST = capture_errors_json_full(wrapped_json_params(_M.update, "user")),
-    PUT = capture_errors_json_full(wrapped_json_params(_M.update, "user")),
+    POST = csrf_validate_token_or_admin_token_filter(capture_errors_json_full(wrapped_json_params(_M.update, "user"))),
+    PUT = csrf_validate_token_or_admin_token_filter(capture_errors_json_full(wrapped_json_params(_M.update, "user"))),
   }))
 
   app:match("/api-umbrella/v1/users(.:format)", respond_to({

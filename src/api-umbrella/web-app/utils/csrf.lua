@@ -96,16 +96,11 @@ function _M.validate_token_filter(fn)
 end
 
 -- This can be used to replace the default "validate_token_filter" CSRF
--- protection in cases where the endpoint may be hit via ajax by an admin (with
--- the X-Admin-Auth-Token header provided), or via a server-side submit (in
--- which case the default CSRF token will be present).
---
--- If the "X-Admin-Auth-Token" header is being passed in, then we can consider
--- that an effective replacement of the CSRF token value (since only a local
--- application should have knowledge of this token). But if this auth token
--- isn't passed in, then we fallback to the default CSRF logic in
--- "validate_token_filter".
-function _M.validate_token_or_admin_filter(fn)
+-- protection in cases where the endpoint may be hit directly with the
+-- "X-Admin-Auth-Token" header instead of a session cookie to authenticate the
+-- admin. This is for server-side applications, where session cookies won't be
+-- present, so cross-site scripting isn't an issue.
+function _M.validate_token_or_admin_token_filter(fn)
   return function(self, ...)
     local skip_csrf = false
     local auth_token = ngx.var.http_x_admin_auth_token

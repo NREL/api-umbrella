@@ -224,7 +224,6 @@ function _M.auth(self)
     response["admin"]["permissions"]["backend_manage"] = json_null_default(current_admin:allows_permission("backend_manage"))
     response["admin"]["permissions"]["backend_publish"] = json_null_default(current_admin:allows_permission("backend_publish"))
     response["api_key"] = json_null_default(api_user:api_key_decrypted())
-    response["admin_auth_token"] = json_null_default(current_admin:authentication_token_decrypted())
     response["csrf_token"] = json_null_default(csrf.generate_token(self))
   end
 
@@ -267,8 +266,8 @@ return function(app)
     POST = create,
   }))
   app:match("/admin/logout(.:format)", respond_to({
-    DELETE = csrf.validate_token_or_admin_filter(require_admin(_M.destroy)),
-    POST = csrf.validate_token_or_admin_filter(require_admin(_M.destroy)),
+    DELETE = csrf.validate_token_filter(require_admin(_M.destroy)),
+    POST = csrf.validate_token_filter(require_admin(_M.destroy)),
   }))
   app:match("/admin/logout/callback(.:format)", respond_to({ GET = _M.logout_callback }))
   app:match("/admin/auth(.:format)", respond_to({ GET = _M.auth }))

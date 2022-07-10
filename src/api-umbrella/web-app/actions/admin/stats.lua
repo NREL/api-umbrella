@@ -8,6 +8,7 @@ local capture_errors_json = require("api-umbrella.web-app.utils.capture_errors")
 local cjson = require("cjson")
 local config = require("api-umbrella.utils.load_config")()
 local countries = require "api-umbrella.web-app.utils.countries"
+local csrf_validate_token_or_admin_token_filter = require("api-umbrella.web-app.utils.csrf").validate_token_or_admin_token_filter
 local csv = require "api-umbrella.web-app.utils.csv"
 local datatables = require "api-umbrella.web-app.utils.datatables"
 local db = require "lapis.db"
@@ -674,7 +675,7 @@ return function(app)
   app:match("/admin/stats/search(.:format)", respond_to({ GET = require_admin(capture_errors_json(_M.search)) }))
   app:match("/admin/stats/logs(.:format)", respond_to({
     GET = require_admin(capture_errors_json(_M.logs)),
-    POST = require_admin(capture_errors_json(_M.logs)),
+    POST = csrf_validate_token_or_admin_token_filter(require_admin(capture_errors_json(_M.logs))),
   }))
   app:match("/admin/stats/users(.:format)", respond_to({ GET = require_admin(capture_errors_json(_M.users)) }))
   app:match("/admin/stats/map(.:format)", respond_to({ GET = require_admin(capture_errors_json(_M.map)) }))

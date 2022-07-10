@@ -20,6 +20,7 @@ require "resty.session.ciphers.api_umbrella"
 require "resty.session.hmac.api_umbrella"
 require "resty.session.identifiers.api_umbrella"
 require "resty.session.storage.api_umbrella_db"
+require "resty.session.serializers.api_umbrella"
 
 local supported_languages = table_keys(LOCALE_DATA)
 
@@ -125,8 +126,8 @@ local session_cookie_options = {
     samesite = "Lax",
     secure = true,
     httponly = true,
-    lifetime = 12 * 60 * 60, -- 12 hours
-    renew = -1, -- Disable renew
+    lifetime = 48 * 60 * 60, -- 48 hours
+    renew = 1 * 60 * 60, -- 1 hour
   },
 }
 local function init_session_cookie(self)
@@ -140,7 +141,11 @@ local function current_admin_from_session(self)
   self:init_session_db()
   local _, _, open_err = self.session_db:start()
   if open_err then
-    ngx.log(ngx.ERR, "session open error: ", open_err)
+    if open_err == "session cookie idle time has passed" or open_err == "session cookie has expired" then
+      flash.session(self, "info", t("Your session expired. Please sign in again to continue."))
+    else
+      ngx.log(ngx.ERR, "session open error: ", open_err)
+    end
   end
 
   if self.session_db and self.session_db.data and self.session_db.data["admin_id"] then
@@ -231,14 +236,13 @@ local function before_filter(self)
   self.init_session_db = init_session_db
   self.session_cookie_options = session_cookie_options
   self.init_session_cookie = init_session_cookie
+  flash.setup(self)
   local current_admin = current_admin_from_token()
   if not current_admin then
     current_admin = current_admin_from_session(self)
   end
   self.current_admin = current_admin
   ngx.ctx.current_admin = current_admin
-
-  flash.setup(self)
 end
 
 local app = lapis.Application()

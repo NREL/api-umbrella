@@ -1,6 +1,7 @@
 local ApiBackend = require "api-umbrella.web-app.models.api_backend"
 local api_backend_policy = require "api-umbrella.web-app.policies.api_backend_policy"
 local capture_errors_json = require("api-umbrella.web-app.utils.capture_errors").json
+local csrf_validate_token_or_admin_token_filter = require("api-umbrella.web-app.utils.csrf").validate_token_or_admin_token_filter
 local datatables = require "api-umbrella.web-app.utils.datatables"
 local db = require "lapis.db"
 local dbify_json_nulls = require "api-umbrella.web-app.utils.dbify_json_nulls"
@@ -356,19 +357,19 @@ return function(app)
   app:match("/api-umbrella/v1/apis/:id(.:format)", respond_to({
     before = require_admin(find_api_backend),
     GET = capture_errors_json(_M.show),
-    POST = capture_errors_json(wrapped_json_params(_M.update, "api")),
-    PUT = capture_errors_json(wrapped_json_params(_M.update, "api")),
-    DELETE = capture_errors_json(_M.destroy),
+    POST = csrf_validate_token_or_admin_token_filter(capture_errors_json(wrapped_json_params(_M.update, "api"))),
+    PUT = csrf_validate_token_or_admin_token_filter(capture_errors_json(wrapped_json_params(_M.update, "api"))),
+    DELETE = csrf_validate_token_or_admin_token_filter(capture_errors_json(_M.destroy)),
   }))
 
   app:match("/api-umbrella/v1/apis/:id/move_after(.:format)", respond_to({
     before = require_admin(find_api_backend),
-    PUT = capture_errors_json(wrapped_json_params(_M.move_after, "api")),
+    PUT = csrf_validate_token_or_admin_token_filter(capture_errors_json(wrapped_json_params(_M.move_after, "api"))),
   }))
 
   app:match("/api-umbrella/v1/apis(.:format)", respond_to({
     before = require_admin(),
     GET = capture_errors_json(_M.index),
-    POST = capture_errors_json(wrapped_json_params(_M.create, "api")),
+    POST = csrf_validate_token_or_admin_token_filter(capture_errors_json(wrapped_json_params(_M.create, "api"))),
   }))
 end

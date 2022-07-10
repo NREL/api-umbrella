@@ -18,6 +18,10 @@ export default class Application extends RESTAdapter {
       if(data.api_key) {
         headers['X-Api-Key'] = data.api_key;
       }
+
+      if(data.csrf_token) {
+        headers['X-CSRF-Token'] = data.csrf_token;
+      }
     }
 
     return headers;

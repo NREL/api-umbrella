@@ -10,6 +10,10 @@ export function initialize(appInstance) {
       if(data.api_key) {
         options.headers['X-Api-Key'] = data.api_key;
       }
+
+      if(data.csrf_token) {
+        options.headers['X-CSRF-Token'] = data.csrf_token;
+      }
     }
 
     const originalError = options.error;
