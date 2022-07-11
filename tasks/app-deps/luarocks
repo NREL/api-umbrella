@@ -87,4 +87,7 @@ rm -rf "$APP_VENDOR_LUA_DIR"
   install -D -m 644 "lua-resty-logger-socket-$lua_resty_logger_socket_version/lib/resty/logger/socket.lua" "$APP_VENDOR_LUA_SHARE_DIR/resty/logger/socket.lua"
 )
 
+# Always used cjson bundled with OpenResty, since Luarocks version is older.
+"${LUAROCKS_CMD[@]}" --tree="$APP_VENDOR_LUA_DIR" remove --force "lua-cjson"
+
 stamp
