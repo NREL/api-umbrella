@@ -8,6 +8,7 @@ source = {
 dependencies = {
   "argparse ~> 0.7.1",
   "bcrypt ~> 2.3",
+  "dkjson ~> 2.6",
   "inspect ~> 3.1.3",
   "lapis ~> 1.9.0",
   "libcidr-ffi ~> 1.0.0",
@@ -29,7 +30,6 @@ dependencies = {
   "lyaml ~> 6.2.7",
   "penlight ~> 1.12.0",
   "psl ~> 0.3",
-  "rapidjson ~> 0.7.1",
   "shell-games ~> 1.1.0",
 }
 

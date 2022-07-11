@@ -95,10 +95,6 @@ if [[ "$ID_NORMALIZED" == "rhel" ]]; then
     # lualdap
     openldap-devel
 
-    # lua-rapidjson
-    cmake
-    rapidjson-devel
-
     # For tests and building static site.
     ruby-devel
     rubygem-bundler
@@ -251,10 +247,6 @@ elif [[ "$ID_NORMALIZED" == "debian" ]]; then
 
     # lualdap
     libldap-dev
-
-    # lua-rapidjson
-    cmake
-    rapidjson-dev
 
     # For tests and building static site.
     ruby-dev
