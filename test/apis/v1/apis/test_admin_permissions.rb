@@ -124,28 +124,31 @@ class Test::Apis::V1::Apis::TestAdminPermissions < Minitest::Test
     assert_equal("/yahoo", record.url_matches[0].frontend_prefix)
   end
 
-  def test_returns_list_of_permitted_scopes_in_forbidden_error
-    admin = FactoryBot.create(:limited_admin, :groups => [
-      FactoryBot.create(:admin_group, :api_scopes => [
-        ApiScope.find_or_create_by_instance!(FactoryBot.build(:api_scope, :path_prefix => "/a")),
-        ApiScope.find_or_create_by_instance!(FactoryBot.build(:api_scope, :path_prefix => "/c")),
-        ApiScope.find_or_create_by_instance!(FactoryBot.build(:api_scope, :path_prefix => "/b")),
-      ]),
-    ])
+  1000.times do |i|
+    # def test_returns_list_of_permitted_scopes_in_forbidden_error
+    define_method("test_returns_list_of_permitted_scopes_in_forbidden_error#{i}") do
+      admin = FactoryBot.create(:limited_admin, :groups => [
+        FactoryBot.create(:admin_group, :api_scopes => [
+          ApiScope.find_or_create_by_instance!(FactoryBot.build(:api_scope, :path_prefix => "/a")),
+          ApiScope.find_or_create_by_instance!(FactoryBot.build(:api_scope, :path_prefix => "/c")),
+          ApiScope.find_or_create_by_instance!(FactoryBot.build(:api_scope, :path_prefix => "/b")),
+        ]),
+      ])
 
-    attributes = FactoryBot.attributes_for(:google_api_backend)
-    response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/apis.json", http_options.deep_merge(admin_token(admin)).deep_merge({
-      :headers => { "Content-Type" => "application/json" },
-      :body => MultiJson.dump(:api => attributes),
-    }))
-    assert_response_code(403, response)
-    data = MultiJson.load(response.body)
-    assert_equal([
-      {
-        "code" => "FORBIDDEN",
-        "message" => "You are not authorized to perform this action. You are only authorized to perform actions for APIs in the following areas:\n\n- localhost/a\n- localhost/b\n- localhost/c\n\nContact your API Umbrella administrator if you need access to new APIs.",
-      },
-    ], data["errors"])
+      attributes = FactoryBot.attributes_for(:google_api_backend)
+      response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/apis.json", http_options.deep_merge(admin_token(admin)).deep_merge({
+        :headers => { "Content-Type" => "application/json" },
+        :body => MultiJson.dump(:api => attributes),
+      }))
+      assert_response_code(403, response)
+      data = MultiJson.load(response.body)
+      assert_equal([
+        {
+          "code" => "FORBIDDEN",
+          "message" => "You are not authorized to perform this action. You are only authorized to perform actions for APIs in the following areas:\n\n- localhost/a\n- localhost/b\n- localhost/c\n\nContact your API Umbrella administrator if you need access to new APIs.",
+        },
+      ], data["errors"])
+    end
   end
 
   private
