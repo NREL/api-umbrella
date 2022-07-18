@@ -93,7 +93,7 @@
     "i18n-js": "https://github.com/fnando/i18n-js/archive/v3.0.0.rc15.tar.gz",
     "inflection": "~1.13.1",
     "jQuery-QueryBuilder": "~2.6.0",
-    "jquery-ui": "~1.13.0",
+    "jquery-ui": "~1.13.2",
     "jquery.scrollto": "~2.1.2",
     "loader.js": "^4.7.0",
     "lodash-es": "~4.17.5",
