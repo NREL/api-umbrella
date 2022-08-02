@@ -53,7 +53,7 @@ import "path"
     proxy_connect_timeout: uint | *30
     proxy_read_timeout: uint | *60
     proxy_send_timeout: uint | *60
-    proxy_buffer_size: uint | *"8k"
+    proxy_buffer_size: string | *"8k"
     proxy_buffers: string | *"8 8k"
     keepalive_timeout: uint | *75
     ssl_protocols: string | *"TLSv1 TLSv1.1 TLSv1.2"

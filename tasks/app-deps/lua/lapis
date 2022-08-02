@@ -6,6 +6,7 @@ set -e -u -x
 source ./tasks/helpers.sh
 source ./tasks/helpers/lua.sh
 
+luarocks_install "pgmoon" "1.14.0-1"
 luarocks_install "lapis" "$lua_lapis_version"
 
 stamp
