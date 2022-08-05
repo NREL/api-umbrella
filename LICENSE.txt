@@ -1,4 +1,4 @@
-Copyright (c) 2012 National Renewable Energy Laboratory
+Copyright (c) 2012 Alliance for Sustainable Energy, LLC
 
 MIT License
 
