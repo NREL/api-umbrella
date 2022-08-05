@@ -5,8 +5,6 @@ envoy_version="1.22.2"
 set -e -u -x
 source ./tasks/helpers.sh
 
-# Next release of envoy (1.23+) should support distroless for ARM64 too:
-# https://github.com/envoyproxy/envoy/pull/21134
 image="envoyproxy/envoy-distroless"
 if [ "$TARGETARCH" == "arm64" ]; then
   image="envoyproxy/envoy"

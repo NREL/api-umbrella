@@ -37,8 +37,8 @@ class Test::Proxy::Logging::TestIpGeocoding < Minitest::Test
       :country => "US",
       :region => "CA",
       :city => "San Jose",
-      :lat => 37.3388,
-      :lon => -121.8914,
+      :lat => 37.1835,
+      :lon => -121.7714,
     })
   end
 
@@ -75,8 +75,8 @@ class Test::Proxy::Logging::TestIpGeocoding < Minitest::Test
       :country => "US",
       :region => "CA",
       :city => "San Jose",
-      :lat => 37.3388,
-      :lon => -121.8914,
+      :lat => 37.1835,
+      :lon => -121.7714,
     })
   end
 

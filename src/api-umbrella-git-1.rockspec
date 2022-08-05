@@ -28,7 +28,7 @@ dependencies = {
   "luautf8 ~> 0.1.3",
   "lustache ~> 1.3.1",
   "lyaml ~> 6.2.7",
-  "penlight ~> 1.12.0",
+  "penlight ~> 1.13.1",
   "psl ~> 0.3",
   "shell-games ~> 1.1.0",
 }

@@ -6,6 +6,8 @@ source ./tasks/helpers/lua.sh
 
 cd "$SOURCE_DIR/src"
 
+rm -rf "$APP_VENDOR_LUA_DIR"
+
 extra_args=(
   "--only-deps"
   "--pin"
