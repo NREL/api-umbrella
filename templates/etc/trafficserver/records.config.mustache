@@ -195,6 +195,9 @@ CONFIG proxy.config.hostdb.fail.timeout INT {{dns_resolver.negative_ttl}}
 # Use more standard round-robin for DNS results (rather than sticky).
 CONFIG proxy.config.hostdb.strict_round_robin INT 1
 
+# Resolve hosts from /etc/hosts file
+CONFIG proxy.config.hostdb.host_file.path STRING /etc/hosts
+
 # Enable so_keepalive on the incoming and outgoing sockets to better detect
 # keepalive hangups.
 CONFIG proxy.config.net.sock_option_flag_in INT 7
