@@ -46,7 +46,7 @@ gem "elasticsearch", "~> 7.13.3"
 # OmniAuth-based authentication
 gem "devise", "~> 4.8.0"
 gem "devise-i18n", "~> 1.10.0"
-gem "omniauth", "~> 1.9.0"
+gem "omniauth", "~> 1.9.2"
 gem "omniauth-rails_csrf_protection", "~> 0.1.1"
 gem "omniauth-cas", "~> 1.1.0", :git => "https://github.com/GUI/omniauth-cas.git", :branch => "rexml", :require => false
 gem "omniauth-facebook", "~> 8.0.0", :require => false
