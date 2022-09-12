@@ -3,7 +3,7 @@ return {
       argparse = "0.7.1-1",
       bit32 = "5.3.5.1-1",
       lua = "5.1-1",
-      luacheck = "0.26.1-1",
+      luacheck = "1.0.0-1",
       luafilesystem = "1.8.0-1",
       luaposix = "35.1-1",
       penlight = "1.13.1-1",

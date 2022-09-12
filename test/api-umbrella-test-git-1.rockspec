@@ -6,7 +6,7 @@ source = {
 }
 
 dependencies = {
-  "luacheck ~> 0.26.1",
+  "luacheck ~> 1.0.0",
   "luaposix ~> 35.1",
   "penlight ~> 1.13.1",
   "shell-games ~> 1.1.0",

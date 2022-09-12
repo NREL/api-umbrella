@@ -8,10 +8,16 @@ cd "$SOURCE_DIR/src"
 
 rm -rf "$APP_VENDOR_LUA_DIR"
 
-extra_args=(
-  "--only-deps"
-  "--pin"
-  "CIDR_DIR=$STAGE_EMBEDDED_DIR"
-)
+(
+  # lua-resty-auto-ssl's Makefile also uses the BUILD_DIR environment variable,
+  # so unset our own to avoid potential conflicts.
+  unset BUILD_DIR
 
-luarocks_install "./api-umbrella-git-1.rockspec" "git-1" "${extra_args[@]}"
+  extra_args=(
+    "--only-deps"
+    "--pin"
+    "CIDR_DIR=$STAGE_EMBEDDED_DIR"
+  )
+
+  luarocks_install "./api-umbrella-git-1.rockspec" "git-1" "${extra_args[@]}"
+)

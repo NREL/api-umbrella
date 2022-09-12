@@ -127,7 +127,6 @@ RUN make test-deps:bundle && make clean:dev
 COPY test/api-umbrella-test-git-1.rockspec test/luarocks.lock /app/test/
 COPY tasks/deps/libmaxminddb tasks/deps/luarocks tasks/deps/openresty /app/tasks/deps/
 COPY tasks/test-deps /app/tasks/test-deps
-COPY build/patches/penlight-warn.patch /app/build/patches/
 RUN make test-deps && make clean:dev
 
 RUN groupadd -r api-umbrella && \

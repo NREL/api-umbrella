@@ -2,8 +2,8 @@
 
 ngx_http_geoip2_module_version="3.4"
 ngx_http_geoip2_module_hash="82d4beef48c260c3568eb0ae56451c95"
-nginx_module_vts_version="3c6cf41315bfcb48c35a3a0be81ddba6d0d01dac"
-nginx_module_vts_hash="6d4528b18094037ca170fed1ee259591"
+nginx_module_vts_version="0.2.0"
+nginx_module_vts_hash="e4cfa363c2747cf635536ab7379db7e6"
 openresty_version="1.21.4.1"
 openresty_hash="3e8650584d2d92ad82ff34568a3d3008"
 openssl_version="1.1.0l"
@@ -23,8 +23,8 @@ extract_download "openresty-$openresty_version.tar.gz"
 download "https://github.com/leev/ngx_http_geoip2_module/archive/$ngx_http_geoip2_module_version.tar.gz" "md5" "$ngx_http_geoip2_module_hash"
 extract_download "$ngx_http_geoip2_module_version.tar.gz"
 
-download "https://github.com/vozlt/nginx-module-vts/archive/$nginx_module_vts_version.tar.gz" "md5" "$nginx_module_vts_hash"
-extract_download "$nginx_module_vts_version.tar.gz"
+download "https://github.com/vozlt/nginx-module-vts/archive/v$nginx_module_vts_version.tar.gz" "md5" "$nginx_module_vts_hash"
+extract_download "v$nginx_module_vts_version.tar.gz"
 
 (
   cd "openssl-$openssl_version"

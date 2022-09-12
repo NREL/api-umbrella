@@ -15,7 +15,7 @@ dependencies = {
   "lua-resty-auto-ssl ~> 0.13.1",
   "lua-resty-http ~> 0.16.1",
   "lua-resty-mail ~> 1.0.2",
-  "lua-resty-mlcache ~> 2.5.0",
+  "lua-resty-mlcache ~> 2.6.0",
   "lua-resty-nettle ~> 2.1",
   "lua-resty-openidc ~> 1.7.5",
   "lua-resty-session ~> 3.10",
@@ -29,6 +29,10 @@ dependencies = {
   "lustache ~> 1.3.1",
   "lyaml ~> 6.2.7",
   "penlight ~> 1.13.1",
+  -- Some of our custom postgres encoding logic isn't compatible with >=1.15
+  -- yet. 1.15 I think should actually make it easier in some ways, but we'll
+  -- need to revisit.
+  "pgmoon ~> 1.14.0",
   "psl ~> 0.3",
   "shell-games ~> 1.1.0",
 }

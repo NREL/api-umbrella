@@ -54,7 +54,6 @@ class Outdated < Thor
     },
     "nginx_module_vts" => {
       :git => "https://github.com/vozlt/nginx-module-vts.git",
-      :git_ref => "master",
     },
     "ngx_http_geoip2_module" => {
       :git => "https://github.com/leev/ngx_http_geoip2_module.git",
