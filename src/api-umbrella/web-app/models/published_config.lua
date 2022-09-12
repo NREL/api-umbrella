@@ -9,6 +9,7 @@ local is_hash = require "api-umbrella.utils.is_hash"
 local json_null_default = require "api-umbrella.web-app.utils.json_null_default"
 local model_ext = require "api-umbrella.web-app.utils.model_ext"
 local pg_encode_json = require("pgmoon.json").encode_json
+local preload = require("lapis.db.model").preload
 local pretty_yaml_dump = require "api-umbrella.web-app.utils.pretty_yaml_dump"
 local tablex = require "pl.tablex"
 local website_backend_policy = require "api-umbrella.web-app.policies.website_backend_policy"
@@ -133,6 +134,11 @@ local function model_pending_changes_json(active_records_config, model, policy, 
   local pending_records_config_by_id = {}
   local pending_records_compare_config_by_id = {}
   local pending_records = model.all_sorted(where)
+
+  if model == ApiBackend then
+    preload(pending_records, ApiBackend.preload_for_as_json(current_admin))
+  end
+
   for _, record in ipairs(pending_records) do
     local config = record:as_json(as_json_options)
     table.insert(pending_records_config, config)

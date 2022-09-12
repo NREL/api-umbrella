@@ -52,23 +52,7 @@ function _M.index(self)
       "created_at",
       "updated_at",
     },
-    preload = {
-      "rewrites",
-      "servers",
-      "url_matches",
-      settings = {
-        "http_headers",
-        "rate_limits",
-        "required_roles",
-      },
-      sub_settings = {
-        settings = {
-          "http_headers",
-          "rate_limits",
-          "required_roles",
-        },
-      },
-    },
+    preload = ApiBackend.preload_for_as_json(self.current_admin),
     csv_filename = "apis",
   }
 
@@ -85,10 +69,6 @@ function _M.index(self)
     table.insert(options["order_fields"], "organization_name")
     table.insert(options["order_fields"], "status_description")
     table.insert(options["order_fields"], "root_api_scope.name")
-
-    table.insert(options["preload"], "api_scopes")
-    table.insert(options["preload"], "root_api_scope")
-    table.insert(options["preload"], "admin_groups")
   end
 
   return datatables.index(self, ApiBackend, options)

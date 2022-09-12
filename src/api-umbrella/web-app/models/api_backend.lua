@@ -562,4 +562,32 @@ ApiBackend.all_sorted = function(where)
   return ApiBackend:select(sql)
 end
 
+ApiBackend.preload_for_as_json = function(current_admin)
+  local preload = {
+    "rewrites",
+    "servers",
+    "url_matches",
+    settings = {
+      "http_headers",
+      "rate_limits",
+      "required_roles",
+    },
+    sub_settings = {
+      settings = {
+        "http_headers",
+        "rate_limits",
+        "required_roles",
+      },
+    },
+  }
+
+  if current_admin.superuser then
+    table.insert(preload, "api_scopes")
+    table.insert(preload, "root_api_scope")
+    table.insert(preload, "admin_groups")
+  end
+
+  return preload
+end
+
 return ApiBackend
