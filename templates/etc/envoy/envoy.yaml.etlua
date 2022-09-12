@@ -24,3 +24,8 @@ layered_runtime:
       static_layer:
         envoy.reloadable_features.max_response_headers_count: 200
         envoy.reloadable_features.sanitize_http_header_referer: false
+        # Prevent empty DNS responses from being used, so that previously
+        # cached responses can be used instead. LOGICAL_DNS could also be used
+        # instead of STRICT_DNS, but that has other changes in behavior we'd
+        # need to account for.
+        envoy.reloadable_features.cares_accept_nodata: false
