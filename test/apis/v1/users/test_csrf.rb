@@ -18,7 +18,7 @@ class Test::Apis::V1::Users::TestCsrf < Minitest::Test
     assert_csrf_token_optional(url: show_url)
   end
 
-  def test_create_csrf_token_required
+  def test_create_csrf_token_optional
     # Since the API create endpoint is open to external signup forms, do not
     # require CSRF like our normal create actions.
     assert_csrf_token_optional(url: index_url, method: :post)
