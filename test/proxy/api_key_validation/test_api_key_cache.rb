@@ -9,7 +9,7 @@ class Test::Proxy::ApiKeyValidation::TestApiKeyCache < Minitest::Test
     setup_server
   end
 
-  def test_caches_keys_inside_workers_for_up_to_a_couple_seconds
+  def test_caches_keys_inside_workers_for_up_to_a_few_seconds
     user = FactoryBot.create(:api_user, {
       :settings => FactoryBot.build(:api_user_settings, {
         :rate_limit_mode => "unlimited",
@@ -34,9 +34,9 @@ class Test::Proxy::ApiKeyValidation::TestApiKeyCache < Minitest::Test
     # depending on the exact timing of when the
     # `api_users_store_delete_stale_cache` job expires the shared dict cache,
     # and then when the `api_users_store_refresh_local_cache` job updates the
-    # local worker caches. But since those jobs execute every 1 second, even if
-    # the two jobs are staggered and execute a second apart, the cache
-    # shouldn't exceed 2 seconds.
+    # local worker caches. But since those jobs execute every 1 second, if the
+    # jobs are staggered in certain cases, it may take 2-3 seconds for the
+    # cache to be purged.
     responses = exercise_all_workers("/api/info/", {
       :headers => { "X-Api-Key" => user.api_key },
       :params => { :step => "post-save" },
@@ -51,7 +51,7 @@ class Test::Proxy::ApiKeyValidation::TestApiKeyCache < Minitest::Test
     end
 
     # Wait for the cache to expire
-    sleep 2.6
+    sleep 3.1
 
     # With the cache expired, now all requests should be rejected due to the
     # disabled key.

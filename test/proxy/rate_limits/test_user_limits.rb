@@ -71,7 +71,7 @@ class Test::Proxy::RateLimits::TestUserLimits < Minitest::Test
     })
   end
 
-  def test_live_changes_within_2_seconds
+  def test_live_changes_within_3_seconds
     user = FactoryBot.create(:api_user, :settings => FactoryBot.build(:api_user_settings, {
       :rate_limits => [
         FactoryBot.build(:rate_limit, {
@@ -96,7 +96,7 @@ class Test::Proxy::RateLimits::TestUserLimits < Minitest::Test
     user.settings.rate_limits[0].save!
 
     # Wait for any local caches to expire (2 seconds).
-    sleep 2.6
+    sleep 3.1
 
     # Make sure any local worker cache is cleared across all possible worker
     # processes.
