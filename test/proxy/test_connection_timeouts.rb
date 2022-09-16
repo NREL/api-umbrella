@@ -307,14 +307,28 @@ class Test::Proxy::TestConnectionTimeouts < Minitest::Test
     end
     hydra.run
 
+    timeout_count = 0
+    ok_count = 0
+    either_count = 0
     requests.each do |req|
-      if req.fetch(:delay) >= $config["nginx"]["proxy_read_timeout"] + 1
+      if req.fetch(:delay) > $config["nginx"]["proxy_read_timeout"] + 1
+        timeout_count += 1
         assert_response_code(504, req.fetch(:request).response)
         assert_match("Inactivity Timeout", req.fetch(:request).response.body)
       elsif req.fetch(:delay) < $config["nginx"]["proxy_read_timeout"]
+        ok_count += 1
         assert_response_code(200, req.fetch(:request).response)
+      else
+        # For requests in the vicinity of the timeout, either a timeout or an
+        # ok response may happen due to various timing edge cases.
+        either_count += 1
       end
     end
+
+    assert_operator(timeout_count, :>=, 6)
+    assert_operator(ok_count, :>=, 6)
+    assert_operator(either_count, :>=, 3)
+    assert_operator(either_count, :<=, 6)
 
     # Ensure that the backend has only been called once for each test.
     response = Typhoeus.get("http://127.0.0.1:9442/backend_call_count?id=#{unique_test_id}")
