@@ -150,7 +150,7 @@ jobs:
           --health-timeout 5s
           --health-retries 5
       elasticsearch:
-        image: opensearchproject/opensearch:1.3.2
+        image: opensearchproject/opensearch:1.3.5
         env:
           OPENSEARCH_JAVA_OPTS: "-Xms32m -Xmx256m"
           DISABLE_INSTALL_DEMO_CONFIG: "true"
@@ -160,8 +160,8 @@ jobs:
         options: >-
           --health-cmd "curl -fsS http://localhost:9200/_cluster/health"
           --health-interval 10s
-          --health-timeout 5s
-          --health-retries 10
+          --health-timeout 90s
+          --health-retries 5
     strategy:
       fail-fast: false
       matrix:
@@ -247,8 +247,8 @@ jobs:
         options: >-
           --health-cmd "curl -fsS http://localhost:9200/_cluster/health"
           --health-interval 10s
-          --health-timeout 5s
-          --health-retries 10
+          --health-timeout 90s
+          --health-retries 5
     steps:
       - uses: actions/checkout@v3
 
@@ -326,8 +326,8 @@ jobs:
         options: >-
           --health-cmd "curl -fsS http://localhost:9200/_cluster/health"
           --health-interval 10s
-          --health-timeout 5s
-          --health-retries 10
+          --health-timeout 90s
+          --health-retries 5
     steps:
       - uses: actions/checkout@v3
 
