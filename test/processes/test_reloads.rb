@@ -88,7 +88,9 @@ class Test::Processes::TestReloads < Minitest::Test
     min_reload_urandom_descriptors = all_reload_urandom_descriptors.first
     max_reload_urandom_descriptors = all_reload_urandom_descriptors.last
     range = max_reload_urandom_descriptors.length - min_reload_urandom_descriptors.length
-    assert_operator(range, :<=, $config["nginx"]["workers"] * 4, "Minimum reload urandom descriptors: #{min_reload_urandom_descriptors.length}\n#{MultiJson.dump(min_reload_urandom_descriptors)}\n\nMaximum reload urandom descriptors: #{max_reload_urandom_descriptors.length}\n#{MultiJson.dump(max_reload_urandom_descriptors)}")
+    max_urandom_descriptor_change = $config["nginx"]["workers"] * 4
+    assert_operator(max_urandom_descriptor_change, :<, ($config["nginx"]["workers"] * num_reloads) / 2.0)
+    assert_operator(range, :<=, max_urandom_descriptor_change, "Minimum reload urandom descriptors: #{min_reload_urandom_descriptors.length}\n#{MultiJson.dump(min_reload_urandom_descriptors)}\n\nMaximum reload urandom descriptors: #{max_reload_urandom_descriptors.length}\n#{MultiJson.dump(max_reload_urandom_descriptors)}")
 
     # A more general test to ensure that we don't see other unexpected file
     # descriptor growth. We'll allow some growth for this test, though, just to
@@ -98,7 +100,9 @@ class Test::Processes::TestReloads < Minitest::Test
     max_reload_descriptors = all_reload_descriptors.last
     assert_operator(min_reload_descriptors.length, :>, 0)
     range = max_reload_descriptors.length - min_reload_descriptors.length
-    assert_operator(range, :<=, $config["nginx"]["workers"] * 4, "Minimum reload descriptors: #{min_reload_descriptors.length}\n#{MultiJson.dump(min_reload_descriptors)}\n\nMaximum reload descriptors: #{max_reload_descriptors.length}\n#{MultiJson.dump(max_reload_descriptors)}")
+    max_reload_descriptor_change = $config["nginx"]["workers"] * 6
+    assert_operator(max_reload_descriptor_change, :<, ($config["nginx"]["workers"] * num_reloads) / 2.0)
+    assert_operator(range, :<=, max_reload_descriptor_change, "Minimum reload descriptors: #{min_reload_descriptors.length}\n#{MultiJson.dump(min_reload_descriptors)}\n\nMaximum reload descriptors: #{max_reload_descriptors.length}\n#{MultiJson.dump(max_reload_descriptors)}")
   end
 
   def test_no_dropped_connections_during_reloads
