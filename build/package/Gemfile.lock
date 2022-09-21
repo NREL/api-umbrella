@@ -1,8 +1,7 @@
 GEM
   remote: https://rubygems.org/
   specs:
-    arr-pm (0.0.10)
-      cabin (> 0)
+    arr-pm (0.0.12)
     backports (3.16.1)
     cabin (0.9.0)
     childprocess (3.0.0)
