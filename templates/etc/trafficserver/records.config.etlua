@@ -72,6 +72,11 @@ CONFIG proxy.config.http.post_connect_attempts_timeout INT <%- config["trafficse
 CONFIG proxy.config.http.transaction_no_activity_timeout_in INT <%- config["trafficserver"]["_transaction_no_activity_timeout_in"] %>
 CONFIG proxy.config.http.transaction_no_activity_timeout_out INT <%- config["trafficserver"]["_transaction_no_activity_timeout_out"] %>
 
+# Disable other timeouts so that as long as the request is streaming back we
+# don't close the connection and we defer to our other layers for timeouts.
+CONFIG proxy.config.http.transaction_active_timeout_in INT 0
+CONFIG proxy.config.http.transaction_active_timeout_out INT 0
+
 # Disable retries, since we're only connecting to Envoy. Envoy will be
 # responsible for retrying connections if the connection is never established.
 CONFIG proxy.config.http.connect_attempts_rr_retries INT 0
