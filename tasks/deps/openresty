@@ -2,8 +2,8 @@
 
 ngx_http_geoip2_module_version="3.4"
 ngx_http_geoip2_module_hash="82d4beef48c260c3568eb0ae56451c95"
-nginx_module_vts_version="0.2.0"
-nginx_module_vts_hash="e4cfa363c2747cf635536ab7379db7e6"
+nginx_module_vts_version="0.2.1"
+nginx_module_vts_hash="730163ed1eeecf39179f95fd973ac64b"
 openresty_version="1.19.9.1"
 openresty_hash="ca013bd756f4e2a723c84cbf05dd0bdd"
 openssl_version="1.1.0l"

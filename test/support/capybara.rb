@@ -9,7 +9,7 @@ require "support/api_umbrella_test_helpers/downloads"
 require "support/api_umbrella_test_helpers/process"
 
 def capybara_register_driver(driver_name, options = {})
-  ::Capybara.register_driver(driver_name) do |app|
+  Capybara.register_driver(driver_name) do |app|
     root_dir = File.join(ApiUmbrellaTestHelpers::Process::TEST_RUN_ROOT, "capybara")
     FileUtils.mkdir_p(root_dir)
 
@@ -39,11 +39,11 @@ def capybara_register_driver(driver_name, options = {})
       service_args << "--lang=#{options[:lang]}"
     end
 
-    service = ::Selenium::WebDriver::Service.chrome(**service_options.merge({
+    service = Selenium::WebDriver::Service.chrome(**service_options.merge({
       :args => service_args,
     }))
 
-    driver_options = ::Selenium::WebDriver::Chrome::Options.new
+    driver_options = Selenium::WebDriver::Chrome::Options.new
     driver_options.args << "--headless"
 
     # Allow connections to our self-signed SSL localhost test server.
@@ -64,13 +64,13 @@ def capybara_register_driver(driver_name, options = {})
     # Set download path for Chrome >= 77
     driver_options.add_preference(:download, :default_directory => ApiUmbrellaTestHelpers::Downloads::DOWNLOADS_ROOT)
 
-    capabilities = ::Capybara::Chromedriver::Logger.build_capabilities(
+    capabilities = Capybara::Chromedriver::Logger.build_capabilities(
       :chromeOptions => {
         :args => ["headless"],
       },
     )
 
-    driver = ::Capybara::Selenium::Driver.new(app,
+    driver = Capybara::Selenium::Driver.new(app,
       :browser => :chrome,
       :service => service,
       :options => driver_options,

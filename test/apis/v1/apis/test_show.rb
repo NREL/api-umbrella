@@ -41,7 +41,7 @@ class Test::Apis::V1::Apis::TestShow < Minitest::Test
       "limit_by",
       "response_headers",
     ].sort, rate_limit.keys.sort)
-    assert_match(/\A[0-9a-f\-]{36}\z/, rate_limit["id"])
+    assert_match(/\A[0-9a-f-]{36}\z/, rate_limit["id"])
     assert_nil(rate_limit.fetch("accuracy"))
     assert_equal(true, rate_limit["distributed"])
     assert_equal(60000, rate_limit["duration"])
@@ -120,8 +120,7 @@ class Test::Apis::V1::Apis::TestShow < Minitest::Test
 
   def assert_headers_field_no_headers(field)
     api = FactoryBot.create(:api_backend, {
-      :settings => FactoryBot.build(:api_backend_settings, {
-      }),
+      :settings => FactoryBot.build(:api_backend_settings, {}),
     })
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/apis/#{api.id}.json", http_options.deep_merge(admin_token))
     assert_response_code(200, response)

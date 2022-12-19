@@ -63,7 +63,7 @@ gem "nokogiri", "~> 1.10"
 gem "activesupport", "~> 7.0.2"
 
 # Generating fake strings and data.
-gem "faker", "~> 2.12"
+gem "faker", "~> 3.0"
 
 # Concurrency helpers.
 gem "concurrent-ruby", "~> 1.1.1"

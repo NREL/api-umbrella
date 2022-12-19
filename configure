@@ -31,7 +31,6 @@ while [ $# -gt 0 ]; do
       ;;
     --help|-h)
       usage
-      shift
       ;;
     *)
       echo "configure: error: unrecognized option: '$key'"

@@ -252,10 +252,10 @@ class Test::Apis::V1::Users::TestPermissions < Minitest::Test
       data = MultiJson.load(response.body)
       assert_equal([], data["data"])
     else
-      if(!api_key)
-        assert_response_code(403, response)
-      else
+      if(api_key)
         assert_response_code(401, response)
+      else
+        assert_response_code(403, response)
       end
       data = MultiJson.load(response.body)
       assert_equal(["error"], data.keys)
@@ -280,10 +280,10 @@ class Test::Apis::V1::Users::TestPermissions < Minitest::Test
       data = MultiJson.load(response.body)
       assert_equal(["errors"], data.keys)
     else
-      if(!api_key)
-        assert_response_code(403, response)
-      else
+      if(api_key)
         assert_response_code(401, response)
+      else
+        assert_response_code(403, response)
       end
       data = MultiJson.load(response.body)
       assert_equal(["error"], data.keys)
@@ -318,10 +318,10 @@ class Test::Apis::V1::Users::TestPermissions < Minitest::Test
       data = MultiJson.load(response.body)
       assert_equal(["errors"], data.keys)
     else
-      if(!api_key)
-        assert_response_code(403, response)
-      else
+      if(api_key)
         assert_response_code(401, response)
+      else
+        assert_response_code(403, response)
       end
       data = MultiJson.load(response.body)
       assert_equal(["error"], data.keys)
@@ -360,10 +360,10 @@ class Test::Apis::V1::Users::TestPermissions < Minitest::Test
       data = MultiJson.load(response.body)
       assert_equal(["errors"], data.keys)
     else
-      if(!api_key)
-        assert_response_code(403, response)
-      else
+      if(api_key)
         assert_response_code(401, response)
+      else
+        assert_response_code(403, response)
       end
       data = MultiJson.load(response.body)
       assert_equal(["error"], data.keys)
@@ -387,10 +387,10 @@ class Test::Apis::V1::Users::TestPermissions < Minitest::Test
     initial_count = active_count
     response = Typhoeus.delete("https://127.0.0.1:9081/api-umbrella/v1/users/#{record.id}.json", http_options(api_key, admin))
 
-    if(!api_key)
-      assert_response_code(403, response)
-    else
+    if(api_key)
       assert_response_code(404, response)
+    else
+      assert_response_code(403, response)
     end
     assert_equal(0, active_count - initial_count)
   end

@@ -79,7 +79,7 @@ class Test::Apis::V1::Users::TestShow < Minitest::Test
       "limit_by",
       "response_headers",
     ].sort, rate_limit.keys.sort)
-    assert_match(/\A[0-9a-f\-]{36}\z/, rate_limit["id"])
+    assert_match(/\A[0-9a-f-]{36}\z/, rate_limit["id"])
     assert_equal(rate_limit["id"], rate_limit["_id"])
     assert_nil(rate_limit.fetch("accuracy"))
     assert_equal(true, rate_limit["distributed"])

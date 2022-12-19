@@ -38,6 +38,9 @@ class Outdated < Thor
     "libpsl" => {
       :git => "https://github.com/rockdaboot/libpsl.git",
     },
+    "lrexlib_pcre2" => {
+      :luarock => "lrexlib-pcre2",
+    },
     "lua_icu_date_ffi" => {
       :git => "https://github.com/GUI/lua-icu-date-ffi.git",
       :git_ref => "master",
@@ -60,10 +63,13 @@ class Outdated < Thor
     },
     "nodejs" => {
       :git => "https://github.com/nodejs/node.git",
-      :constraint => "~> 16.14",
+      :constraint => "~> 18.12",
     },
     "openresty" => {
       :git => "https://github.com/openresty/openresty.git",
+      # Pin until newer version beyond 1.21.4 is released with this issue
+      # fixed: https://github.com/openresty/luajit2/issues/188
+      :constraint => "~> 1.19.9",
     },
     "openssl" => {
       :git => "https://github.com/openssl/openssl.git",
@@ -228,8 +234,8 @@ class Outdated < Thor
       tag.downcase!
 
       # Remove prefixes containing the project name.
-      tag.gsub!(/^#{name}[\-_]/i, "")
-      tag.gsub!(/^#{name.tr("_", "-")}[\-_]/i, "")
+      tag.gsub!(/^#{name}[-_]/i, "")
+      tag.gsub!(/^#{name.tr("_", "-")}[-_]/i, "")
 
       # Remove trailing "^{}" at end of git tags.
       tag.chomp!("^{}")
@@ -290,7 +296,7 @@ class Outdated < Thor
         tags = `git ls-remote --tags #{options[:git]}`.lines
         tags.map! { |tag| tag_to_semver(name, tag.match(%r{refs/tags/(.+)$})[1]) }
       elsif(options[:luarock])
-        tags = luarocks_manifest.fetch("repository").fetch(name).keys
+        tags = luarocks_manifest.fetch("repository").fetch(options[:luarock]).keys
         tags.map! { |tag| luarock_version_to_semver(tag) }
       elsif(options[:http])
         content = Net::HTTP.get_response(URI.parse(options[:http])).body
@@ -391,7 +397,7 @@ class Outdated < Thor
         next if name == "lua"
 
         options = {
-          :luarock => true,
+          :luarock => name,
         }
 
         if rockspec_constraints[name]

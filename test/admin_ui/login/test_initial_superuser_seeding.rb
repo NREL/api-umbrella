@@ -33,7 +33,7 @@ class Test::AdminUi::Login::TestInitialSuperuserSeeding < Minitest::Test
 
     admin = admins.first
     assert(admin.superuser)
-    assert_match(/\A[0-9a-f\-]{36}\z/, admin.id)
+    assert_match(/\A[0-9a-f-]{36}\z/, admin.id)
     assert_match(/\A[a-zA-Z0-9]{40}\z/, admin.authentication_token)
     assert_nil(admin.password_hash)
   end

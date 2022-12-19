@@ -25,9 +25,9 @@ dependencies = {
   "luajit-zstd ~> 0.2.3",
   "lualdap ~> 1.3.0",
   "luaposix ~> 35.1",
-  "luautf8 ~> 0.1.3",
+  "luautf8 ~> 0.1.5",
   "lustache ~> 1.3.1",
-  "lyaml ~> 6.2.7",
+  "lyaml ~> 6.2.8",
   "penlight ~> 1.13.1",
   -- Some of our custom postgres encoding logic isn't compatible with >=1.15
   -- yet. 1.15 I think should actually make it easier in some ways, but we'll

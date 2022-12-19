@@ -1,14 +1,11 @@
 #!/usr/bin/env bash
 
-envoy_version="1.23.1"
+envoy_version="1.24.1"
 
 set -e -u -x
 source ./tasks/helpers.sh
 
 image="envoyproxy/envoy-distroless"
-if [ "$TARGETARCH" == "arm64" ]; then
-  image="envoyproxy/envoy"
-fi
 
 task_working_dir
 

@@ -32,7 +32,7 @@ Zonebie.set_random_timezone
 
 # Set the TZ environment variable to ensure other processes (like the Capybara
 # browser tests) are run in the same random time zone.
-ENV["TZ"] = ::Time.zone.tzinfo.identifier
+ENV["TZ"] = Time.zone.tzinfo.identifier
 
 # Load all the support files. Load models first, so they're defined for other
 # helpers.
