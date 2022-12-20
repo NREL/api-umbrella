@@ -21,8 +21,12 @@ class Test::Proxy::TestMultipleRequestHeaders < Minitest::Test
     assert_receives_single_comma_delimited_header("Origin")
   end
 
-  def test_receives_single_header_for_referer
-    assert_receives_single_comma_delimited_header("Referer")
+  def test_receives_no_headers_for_invalid_referer
+    assert_receives_no_headers("Referer")
+  end
+
+  def test_receives_single_header_for_valid_referer
+    assert_receives_single_comma_delimited_header("Referer", first_value: "https://example.com/11", second_value: "https://example.com/22")
   end
 
   def test_receives_single_header_for_user_agent
@@ -47,15 +51,15 @@ class Test::Proxy::TestMultipleRequestHeaders < Minitest::Test
 
   private
 
-  def request_with_duplicate_headers(header)
+  def request_with_duplicate_headers(header, first_value: "11", second_value: "22")
     # Drop-down to a lower-level mechanism for setting the headers, so we can
     # set duplicate headers for the same header name (the default `:headers`
     # hash approach can't set multiple headers).
     header_list = nil
     header_list = Ethon::Curl.slist_append(header_list, "X-Api-Key: #{api_key}")
     header_list = Ethon::Curl.slist_append(header_list, "X-Api-Umbrella-Test-Return-Request-Id: true")
-    header_list = Ethon::Curl.slist_append(header_list, "#{header}: 11")
-    header_list = Ethon::Curl.slist_append(header_list, "#{header}: 22")
+    header_list = Ethon::Curl.slist_append(header_list, "#{header}: #{first_value}")
+    header_list = Ethon::Curl.slist_append(header_list, "#{header}: #{second_value}")
     response = Typhoeus.get("http://127.0.0.1:9080/api/logging-multiple-request-headers/", keyless_http_options.deep_merge({
       :params => {
         :header => header,
@@ -72,27 +76,35 @@ class Test::Proxy::TestMultipleRequestHeaders < Minitest::Test
     response
   end
 
-  def assert_receives_single_comma_delimited_header(header)
-    response = request_with_duplicate_headers(header)
+  def assert_receives_single_comma_delimited_header(header, first_value: "11", second_value: "22")
+    response = request_with_duplicate_headers(header, first_value: first_value, second_value: second_value)
 
     data = MultiJson.load(response.body)
-    assert_equal("11,22", data["header_value"])
+    assert_equal("#{first_value},#{second_value}", data["header_value"])
     assert_equal(1, data["header_occurrences_received"])
   end
 
-  def assert_receives_single_semicolon_delimited_header(header)
-    response = request_with_duplicate_headers(header)
+  def assert_receives_single_semicolon_delimited_header(header, first_value: "11", second_value: "22")
+    response = request_with_duplicate_headers(header, first_value: first_value, second_value: second_value)
 
     data = MultiJson.load(response.body)
-    assert_equal("11; 22", data["header_value"])
+    assert_equal("#{first_value}; #{second_value}", data["header_value"])
     assert_equal(1, data["header_occurrences_received"])
   end
 
-  def assert_receives_multiple_headers(header)
-    response = request_with_duplicate_headers(header)
+  def assert_receives_multiple_headers(header, first_value: "11", second_value: "22")
+    response = request_with_duplicate_headers(header, first_value: first_value, second_value: second_value)
 
     data = MultiJson.load(response.body)
-    assert_equal(["11", "22"], data["header_value"])
+    assert_equal([first_value, second_value], data["header_value"])
     assert_equal(2, data["header_occurrences_received"])
+  end
+
+  def assert_receives_no_headers(header, first_value: "11", second_value: "22")
+    response = request_with_duplicate_headers(header, first_value: first_value, second_value: second_value)
+
+    data = MultiJson.load(response.body)
+    assert_nil(data["header_value"])
+    assert_equal(0, data["header_occurrences_received"])
   end
 end

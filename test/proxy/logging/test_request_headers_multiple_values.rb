@@ -14,8 +14,12 @@ class Test::Proxy::Logging::TestRequestHeadersMultipleValues < Minitest::Test
     assert_logs_first_value("Content-Type", "request_content_type", :inline_header => true)
   end
 
-  def test_logs_first_value_for_referer
-    assert_logs_first_value("Referer", "request_referer", :inline_header => true)
+  def test_logs_first_value_for_invalid_referer
+    assert_logs_first_value("Referer", "request_referer", :cleared_by_proxy => true)
+  end
+
+  def test_logs_first_value_for_valid_referer
+    assert_logs_first_value("Referer", "request_referer", :inline_header => true, :first_value => "https://example.com/11", :second_value => "https://example.com/22")
   end
 
   def test_logs_first_value_for_user_agent
@@ -54,15 +58,15 @@ class Test::Proxy::Logging::TestRequestHeadersMultipleValues < Minitest::Test
 
   private
 
-  def request_with_duplicate_headers(header, inline_header: false, cleared_by_proxy: false)
+  def request_with_duplicate_headers(header, inline_header: false, cleared_by_proxy: false, first_value: "11", second_value: "22")
     # Drop-down to a lower-level mechanism for setting the headers, so we can
     # set duplicate headers for the same header name (the default `:headers`
     # hash approach can't set multiple headers).
     header_list = nil
     header_list = Ethon::Curl.slist_append(header_list, "X-Api-Key: #{api_key}")
     header_list = Ethon::Curl.slist_append(header_list, "X-Api-Umbrella-Test-Return-Request-Id: true")
-    header_list = Ethon::Curl.slist_append(header_list, "#{header}: 11")
-    header_list = Ethon::Curl.slist_append(header_list, "#{header}: 22")
+    header_list = Ethon::Curl.slist_append(header_list, "#{header}: #{first_value}")
+    header_list = Ethon::Curl.slist_append(header_list, "#{header}: #{second_value}")
     response = Typhoeus.get("http://127.0.0.1:9080/api/logging-multiple-request-headers/", keyless_http_options.deep_merge({
       :params => {
         :header => header,
@@ -82,10 +86,10 @@ class Test::Proxy::Logging::TestRequestHeadersMultipleValues < Minitest::Test
       assert_nil(data["header_value"])
       assert_equal(0, data["header_occurrences_received"])
     elsif inline_header
-      assert_equal("11,22", data["header_value"])
+      assert_equal("#{first_value},#{second_value}", data["header_value"])
       assert_equal(1, data["header_occurrences_received"])
     else
-      assert_equal(["11", "22"], data["header_value"])
+      assert_equal([first_value, second_value], data["header_value"])
       assert_equal(2, data["header_occurrences_received"])
     end
 
@@ -95,15 +99,15 @@ class Test::Proxy::Logging::TestRequestHeadersMultipleValues < Minitest::Test
     response
   end
 
-  def assert_logs_first_value(header, log_field, inline_header: false)
-    response = request_with_duplicate_headers(header, :inline_header => inline_header)
+  def assert_logs_first_value(header, log_field, inline_header: false, cleared_by_proxy: false, first_value: "11", second_value: "22")
+    response = request_with_duplicate_headers(header, inline_header: inline_header, cleared_by_proxy: cleared_by_proxy, first_value: first_value, second_value: second_value)
     record = wait_for_log(response)[:hit_source]
-    assert_equal("11", record[log_field])
+    assert_equal(first_value, record[log_field])
   end
 
-  def assert_logs_all_values(header, log_field, inline_header: false, cleared_by_proxy: false)
-    response = request_with_duplicate_headers(header, :inline_header => inline_header, :cleared_by_proxy => cleared_by_proxy)
+  def assert_logs_all_values(header, log_field, inline_header: false, cleared_by_proxy: false, first_value: "11", second_value: "22")
+    response = request_with_duplicate_headers(header, inline_header: inline_header, cleared_by_proxy: cleared_by_proxy, first_value: first_value, second_value: second_value)
     record = wait_for_log(response)[:hit_source]
-    assert_equal("11, 22", record[log_field])
+    assert_equal("#{first_value}, #{second_value}", record[log_field])
   end
 end
