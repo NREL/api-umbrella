@@ -54,7 +54,7 @@
       <div class="row">
         <div class="col-sm-6">
           {{#unless this.isDisabled}}
-            <button type="submit" class="btn btn-lg btn-primary save-button"><span class="btn-label">Save</span><span class="btn-loading-label">{{fa-icon "sync-alt" spin=true}}Saving...</span></button>
+            <button type="submit" class="btn btn-lg btn-primary save-button"><span class="btn-label">Save</span><span class="btn-loading-label"><FaIcon @icon="sync-alt" @spin={{true}}/>Saving...</span></button>
           {{/unless}}
         </div>
         <div class="col-sm-6 record-details">
