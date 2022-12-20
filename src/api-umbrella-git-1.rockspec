@@ -10,7 +10,7 @@ dependencies = {
   "bcrypt ~> 2.3",
   "dkjson ~> 2.6",
   "inspect ~> 3.1.3",
-  "lapis ~> 1.9.0",
+  "lapis ~> 1.11.0",
   "libcidr-ffi ~> 1.0.0",
   "lua-resty-auto-ssl ~> 0.13.1",
   "lua-resty-http ~> 0.16.1",
@@ -29,10 +29,6 @@ dependencies = {
   "lustache ~> 1.3.1",
   "lyaml ~> 6.2.8",
   "penlight ~> 1.13.1",
-  -- Some of our custom postgres encoding logic isn't compatible with >=1.15
-  -- yet. 1.15 I think should actually make it easier in some ways, but we'll
-  -- need to revisit.
-  "pgmoon ~> 1.14.0",
   "psl ~> 0.3",
   "shell-games ~> 1.1.0",
 }

@@ -128,15 +128,14 @@ function _M.setup_type_casting(pg)
   --
   -- To solve this, we'll cast PostgreSQL bigint values into a LuaJIT's FFI 64
   -- bit integers (int64_t), since we're only targeting LuaJIT.
-  pg:set_type_oid(20, "bigint_int64")
-  pg.type_deserializers.bigint_int64 = function(_, value)
+  pg:set_type_deserializer(20, "bigint_int64", function(_, value)
     return int64.from_string(value)
-  end
+  end)
 
   -- pgmoon is currently missing support for handling PostgreSQL inet array
   -- types, so it doesn't know how to decode/encode these. So manually add
   -- inet[]'s oid (1041) so that they're handled as an array of strings.
-  pg:set_type_oid(1041, "array_string")
+  pg:set_type_deserializer(1041, "array_string")
 end
 
 function _M.connect()
@@ -178,7 +177,7 @@ function _M.connect()
     }
     for _, query in ipairs(queries) do
       ngx.log(ngx.NOTICE, query)
-      local query_result, query_err = pg:query(query, nil, { quiet = true })
+      local query_result, query_err = pg:query(query)
       if not query_result then
         ngx.log(ngx.ERR, "postgresql query error: ", query_err)
       end
