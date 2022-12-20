@@ -17,24 +17,22 @@ module ApiUmbrellaTestHelpers
     # accepts the click options, and we don't bother trying to click on the
     # checkbox/radio first:
     # https://github.com/teamcapybara/capybara/blob/3.10.1/lib/capybara/node/actions.rb#L323
-    def label_choose(locator = nil, **options)
-      _custom_check_with_label(:radio_button, true, locator, **options)
-    end
-
     def label_check(locator = nil, **options)
       _custom_check_with_label(:checkbox, true, locator, **options)
     end
 
-    def label_uncheck(locator = nil, **options)
-      _custom_check_with_label(:checkbox, false, locator, **options)
-    end
-
     def _custom_check_with_label(selector, checked, locator, **options)
+      # Change so the click is from the top-left coordinates instead of center.
+      original_w3c_click_offset = Capybara.w3c_click_offset
+      Capybara.w3c_click_offset = false
+
       options[:allow_self] = true if locator.nil?
       click_options = options.delete(:click) || { :x => 1, :y => 1 }
 
       el = find(selector, locator, options.merge(:visible => :all))
       el.session.find(:label, :for => el, :visible => true).click(**click_options) unless el.checked? == checked
+    ensure
+      Capybara.w3c_click_offset = original_w3c_click_offset
     end
 
     def custom_input_trigger_click(input)

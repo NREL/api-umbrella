@@ -82,7 +82,7 @@ class Test::AdminUi::Login::TestInvite < Minitest::Capybara::Test
     visit "/admin/#/admins/new"
     assert_text("Add Admin")
     fill_in "Email", :with => "#{unique_test_id}@example.com"
-    label_uncheck "Send invite email"
+    uncheck "Send invite email"
     check "Superuser"
     click_button "Save"
     assert_text("Successfully saved the admin")
