@@ -414,14 +414,14 @@ tasks:
     generates:
       - ./build/work/stamp/test-deps/luarocks
 
-  test-deps:mailhog:
+  test-deps:mailpit:
     cmds:
-      - ./tasks/test-deps/mailhog
+      - ./tasks/test-deps/mailpit
     sources:
-      - ./tasks/test-deps/mailhog
+      - ./tasks/test-deps/mailpit
       - ./tasks/helpers.sh
     generates:
-      - ./build/work/stamp/test-deps/mailhog
+      - ./build/work/stamp/test-deps/mailpit
 
   test-deps:shellcheck:
     cmds:
@@ -437,7 +437,7 @@ tasks:
       - task: test-deps:bundle
       - task: test-deps:glauth
       - task: test-deps:luarocks
-      - task: test-deps:mailhog
+      - task: test-deps:mailpit
       - task: test-deps:shellcheck
 
   lint:js:

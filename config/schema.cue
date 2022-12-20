@@ -807,11 +807,10 @@ import "path"
     control_port: uint16 | *13101
   }
 
-  mailhog: {
+  mailpit: {
     bind_addr: string | *"127.0.0.1"
     smtp_port: uint16 | *13102
-    api_port: uint16 | *13103
-    ui_port: uint16 | *13103
+    http_port: uint16 | *13103
   }
 
   glauth: {

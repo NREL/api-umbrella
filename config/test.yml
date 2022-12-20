@@ -80,11 +80,6 @@ postgresql:
 unbound:
   port: 13100
   control_port: 13101
-mailhog:
-  bind_addr: "127.0.0.1"
-  smtp_port: 13102
-  api_port: 13103
-  ui_port: 13103
 glauth:
   port: 13104
 default_api_backend_settings:

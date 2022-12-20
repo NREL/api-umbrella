@@ -10,8 +10,7 @@ class Test::AdminUi::TestApiUsersWelcomeEmail < Minitest::Capybara::Test
     super
     setup_server
 
-    response = Typhoeus.delete("http://127.0.0.1:#{$config["mailhog"]["api_port"]}/api/v1/messages")
-    assert_response_code(200, response)
+    clear_all_test_emails
   end
 
   def test_no_email_by_default
@@ -25,7 +24,7 @@ class Test::AdminUi::TestApiUsersWelcomeEmail < Minitest::Capybara::Test
     click_button("Save")
     assert_text("Successfully saved the user")
 
-    assert_equal(0, sent_emails.length)
+    assert_equal(0, sent_emails.fetch("total"))
   end
 
   def test_email_when_explicitly_requested
@@ -40,6 +39,6 @@ class Test::AdminUi::TestApiUsersWelcomeEmail < Minitest::Capybara::Test
     click_button("Save")
     assert_text("Successfully saved the user")
 
-    assert_equal(1, sent_emails.length)
+    assert_equal(1, sent_emails.fetch("total"))
   end
 end

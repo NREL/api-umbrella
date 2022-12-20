@@ -9,8 +9,7 @@ class Test::StaticSite::TestContact < Minitest::Capybara::Test
     super
     setup_server
 
-    response = Typhoeus.delete("http://127.0.0.1:#{$config["mailhog"]["api_port"]}/api/v1/messages")
-    assert_response_code(200, response)
+    clear_all_test_emails
   end
 
   def test_submission
@@ -27,6 +26,6 @@ class Test::StaticSite::TestContact < Minitest::Capybara::Test
     assert_text("Thanks for sending your message. We'll be in touch.")
 
     messages = sent_emails
-    assert_equal(1, messages.length)
+    assert_equal(1, messages.fetch("total"))
   end
 end

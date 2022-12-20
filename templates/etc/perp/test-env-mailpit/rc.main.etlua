@@ -16,10 +16,9 @@ if [ "${1}" = "start" ]; then
     run_args+=("-u" "$api_umbrella_user")
   fi
 
-  exec runtool ${run_args[@]+"${run_args[@]}"} mailhog \
-    -smtp-bind-addr "<%- config['mailhog']['bind_addr'] %>:<%- config['mailhog']['smtp_port'] %>" \
-    -api-bind-addr "<%- config['mailhog']['bind_addr'] %>:<%- config['mailhog']['api_port'] %>" \
-    -ui-bind-addr "<%- config['mailhog']['bind_addr'] %>:<%- config['mailhog']['ui_port'] %>"
+  exec runtool ${run_args[@]+"${run_args[@]}"} mailpit \
+    --smtp "<%- config['mailpit']['bind_addr'] %>:<%- config['mailpit']['smtp_port'] %>" \
+    --listen "<%- config['mailpit']['bind_addr'] %>:<%- config['mailpit']['http_port'] %>"
 fi
 
 exit 0

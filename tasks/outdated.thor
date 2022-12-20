@@ -52,8 +52,8 @@ class Outdated < Thor
     "luarocks" => {
       :git => "https://github.com/keplerproject/luarocks.git",
     },
-    "mailhog" => {
-      :git => "https://github.com/mailhog/MailHog.git",
+    "mailpit" => {
+      :git => "https://github.com/axllent/mailpit.git",
     },
     "nginx_module_vts" => {
       :git => "https://github.com/vozlt/nginx-module-vts.git",
@@ -307,8 +307,6 @@ class Outdated < Thor
       case(name)
       when "openssl"
         tags.select! { |tag| tag =~ /^1\.1\.0[a-z]?$/ }
-      when "mailhog"
-        tags.reject! { |tag| tag =~ /^0\.0\d$/ }
       end
 
       tags.compact!

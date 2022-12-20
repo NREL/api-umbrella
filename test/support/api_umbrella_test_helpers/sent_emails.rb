@@ -2,6 +2,11 @@ module ApiUmbrellaTestHelpers
   module SentEmails
     private
 
+    def clear_all_test_emails
+      response = Typhoeus.delete("http://127.0.0.1:#{$config["mailpit"]["http_port"]}/api/v1/messages")
+      assert_response_code(200, response)
+    end
+
     # Recursively extract the MIME parts from Mailhog's response into an easier
     # to access structure (this assumes there's only one part of each content
     # type).
@@ -41,15 +46,26 @@ module ApiUmbrellaTestHelpers
     end
 
     def sent_emails
-      response = Typhoeus.get("http://127.0.0.1:#{$config["mailhog"]["api_port"]}/api/v1/messages")
+      response = Typhoeus.get("http://127.0.0.1:#{$config["mailpit"]["http_port"]}/api/v1/messages")
       assert_response_code(200, response)
-      messages = MultiJson.load(response.body)
+      MultiJson.load(response.body)
+    end
 
-      messages.each do |message|
-        extract_mime(message, message["MIME"])
+    def sent_email_contents
+      with_content = sent_emails
+      with_content["messages"] = with_content.fetch("messages").map do |message|
+        response = Typhoeus.get("http://127.0.0.1:#{$config["mailpit"]["http_port"]}/api/v1/message/#{message.fetch("ID")}")
+        assert_response_code(200, response)
+        data = MultiJson.load(response.body)
+
+        response = Typhoeus.get("http://127.0.0.1:#{$config["mailpit"]["http_port"]}/api/v1/message/#{message.fetch("ID")}/headers")
+        assert_response_code(200, response)
+        headers = MultiJson.load(response.body)
+
+        data.merge("headers" => headers)
       end
 
-      messages
+      with_content
     end
   end
 end

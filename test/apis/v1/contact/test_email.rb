@@ -8,8 +8,7 @@ class Test::Apis::V1::Contact::TestEmail < Minitest::Test
     super
     setup_server
 
-    response = Typhoeus.delete("http://127.0.0.1:#{$config["mailhog"]["api_port"]}/api/v1/messages")
-    assert_response_code(200, response)
+    clear_all_test_emails
   end
 
   def test_sends_email
@@ -37,15 +36,15 @@ class Test::Apis::V1::Contact::TestEmail < Minitest::Test
     assert_equal(["submitted"], data.keys)
     assert_match_iso8601(data.fetch("submitted"))
 
-    messages = sent_emails
-    assert_equal(1, messages.length)
-    message = messages.first
+    messages = sent_email_contents
+    assert_equal(1, messages.fetch("total"))
+    message = messages.fetch("messages").first
 
-    assert_equal(["default-test-contact-email@example.com"], message["Content"]["Headers"]["To"])
-    assert_equal(["API Umbrella Contact Message from foo@example.com"], message["Content"]["Headers"]["Subject"])
-    assert_equal(["noreply@localhost"], message["Content"]["Headers"]["From"])
-    assert_equal(["foo@example.com"], message["Content"]["Headers"]["Reply-To"])
-    assert_match("Name: Foo\nEmail: foo@example.com\nAPI: Example API\nSubject: Support\n\n-------------------------------------\n\nMessage body\n\n-------------------------------------", message["_mime_parts"]["text/plain"]["_body"])
-    assert_nil(message["_mime_parts"]["text/html"])
+    assert_equal(["default-test-contact-email@example.com"], message.fetch("headers").fetch("To"))
+    assert_equal("API Umbrella Contact Message from foo@example.com", message.fetch("Subject"))
+    assert_equal(["noreply@localhost"], message.fetch("headers").fetch("From"))
+    assert_equal(["foo@example.com"], message.fetch("headers").fetch("Reply-To"))
+    assert_match("Name: Foo\nEmail: foo@example.com\nAPI: Example API\nSubject: Support\n\n-------------------------------------\n\nMessage body\n\n-------------------------------------", message.fetch("Text"))
+    assert_equal("", message.fetch("HTML"))
   end
 end

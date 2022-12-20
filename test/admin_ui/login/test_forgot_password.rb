@@ -10,8 +10,7 @@ class Test::AdminUi::Login::TestForgotPassword < Minitest::Capybara::Test
     super
     setup_server
 
-    response = Typhoeus.delete("http://127.0.0.1:#{$config["mailhog"]["api_port"]}/api/v1/messages")
-    assert_response_code(200, response)
+    clear_all_test_emails
   end
 
   def test_non_existent_email
@@ -21,7 +20,7 @@ class Test::AdminUi::Login::TestForgotPassword < Minitest::Capybara::Test
     click_button "Send me reset password instructions"
     assert_text("If your email address exists in our database, you will receive a password recovery link at your email address in a few minutes.")
 
-    assert_equal(0, sent_emails.length)
+    assert_equal(0, sent_emails.fetch("total"))
   end
 
   def test_reset_process
@@ -45,22 +44,22 @@ class Test::AdminUi::Login::TestForgotPassword < Minitest::Capybara::Test
     assert_equal(original_password_hash, admin.password_hash)
 
     # Find sent email
-    messages = sent_emails
-    assert_equal(1, messages.length)
-    message = messages.first
+    messages = sent_email_contents
+    assert_equal(1, messages.fetch("total"))
+    message = messages.fetch("messages").first
 
     # To
-    assert_equal(["admin@example.com"], message["Content"]["Headers"]["To"])
+    assert_equal(["admin@example.com"], message.fetch("headers").fetch("To"))
 
     # Subject
-    assert_equal(["Reset password instructions"], message["Content"]["Headers"]["Subject"])
+    assert_equal("Reset password instructions", message.fetch("Subject"))
 
     # Password reset URL in body
-    assert_match(%r{https://127.0.0.1:9081/admins/password/edit\?reset_password_token=[^"]+}, message["_mime_parts"]["text/html"]["_body"])
-    assert_match(%r{https://127.0.0.1:9081/admins/password/edit\?reset_password_token=[^"]+}, message["_mime_parts"]["text/plain"]["_body"])
+    assert_match(%r{https://127.0.0.1:9081/admins/password/edit\?reset_password_token=[^"]+}, message.fetch("HTML"))
+    assert_match(%r{https://127.0.0.1:9081/admins/password/edit\?reset_password_token=[^"]+}, message.fetch("Text"))
 
     # Follow link to reset URL
-    reset_url = message["_mime_parts"]["text/html"]["_body"].match(%r{/admins/password/edit\?reset_password_token=[^"]+})[0]
+    reset_url = message.fetch("HTML").match(%r{/admins/password/edit\?reset_password_token=[^"]+})[0]
     visit reset_url
 
     assert_text("Change Your Password")

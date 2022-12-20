@@ -49,6 +49,29 @@ if template_html_err then
   ngx.log(ngx.ERR, "template compile error: ", template_html_err)
 end
 
+local template_text, template_text_err = etlua.compile([[
+# <%- subject %>
+
+## <%- t("Description") %>
+<%- use_description %>
+
+## <%- t("Extra Information") %>
+
+- <%- t("Email") %>: <%- email %>
+<% if registration_source then -%>
+- <%- t("Source") %>: <%- registration_source %>
+<% end -%>
+<% if website then -%>
+- <%- t("Website") %>: <%- website %>
+<% end -%>
+- <%- t("IP Address") %>: <%- registration_ip %>
+- <%- t("Referer") %>: <%- registration_referer %>
+- <%- t("Origin") %>: <%- registration_origin %>
+]])
+if template_text_err then
+  ngx.log(ngx.ERR, "template compile error: ", template_text_err)
+end
+
 return function(api_user)
   local mailer, mailer_err = mail()
   if not mailer then
@@ -81,6 +104,7 @@ return function(api_user)
     from = from,
     to = { to },
     subject = subject,
+    text = template_text(data),
     html = template_html(data),
   })
   if not ok then

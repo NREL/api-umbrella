@@ -10,8 +10,7 @@ class Test::AdminUi::Login::TestInvite < Minitest::Capybara::Test
     super
     setup_server
 
-    response = Typhoeus.delete("http://127.0.0.1:#{$config["mailhog"]["api_port"]}/api/v1/messages")
-    assert_response_code(200, response)
+    clear_all_test_emails
   end
 
   def test_defaults_to_sending_invite_for_new_accounts
@@ -34,21 +33,21 @@ class Test::AdminUi::Login::TestInvite < Minitest::Capybara::Test
     assert(admin)
 
     # Find sent email
-    messages = sent_emails
-    assert_equal(1, messages.length)
-    message = messages.first
+    messages = sent_email_contents
+    assert_equal(1, messages.fetch("total"))
+    message = messages.fetch("messages").first
 
     # To
-    assert_equal(["#{unique_test_id.downcase}@example.com"], message["Content"]["Headers"]["To"])
+    assert_equal(["#{unique_test_id.downcase}@example.com"], message.fetch("headers").fetch("To"))
 
     # Subject
-    assert_equal(["API Umbrella Admin Access"], message["Content"]["Headers"]["Subject"])
+    assert_equal("API Umbrella Admin Access", message.fetch("Subject"))
 
     # Password reset URL in body
-    assert_match(%r{https://127.0.0.1:9081/admins/password/edit\?[^" ]+&amp;[^" ]+}, message["_mime_parts"]["text/html"]["_body"])
-    assert_match(%r{https://127.0.0.1:9081/admins/password/edit\?[^" ;]+&[^" ;]+}, message["_mime_parts"]["text/plain"]["_body"])
+    assert_match(%r{https://127.0.0.1:9081/admins/password/edit\?[^" ]+&amp;[^" ]+}, message.fetch("HTML"))
+    assert_match(%r{https://127.0.0.1:9081/admins/password/edit\?[^" ;]+&[^" ;]+}, message.fetch("Text"))
 
-    html_reset_url = Addressable::URI.parse(CGI.unescapeHTML(message["_mime_parts"]["text/html"]["_body"].match(%r{https://127.0.0.1:9081/admins/password/edit[^" ]+})[0]))
+    html_reset_url = Addressable::URI.parse(CGI.unescapeHTML(message.fetch("HTML").match(%r{https://127.0.0.1:9081/admins/password/edit[^" ]+})[0]))
     assert_equal([
       "invite",
       "reset_password_token",
@@ -56,7 +55,7 @@ class Test::AdminUi::Login::TestInvite < Minitest::Capybara::Test
     assert_equal("true", html_reset_url.query_values.fetch("invite"))
     assert_match(/^\w{24}$/, html_reset_url.query_values.fetch("reset_password_token"))
 
-    plain_reset_url = Addressable::URI.parse(message["_mime_parts"]["text/plain"]["_body"].match(%r{https://127.0.0.1:9081/admins/password/edit[^" ;]+})[0])
+    plain_reset_url = Addressable::URI.parse(message.fetch("Text").match(%r{https://127.0.0.1:9081/admins/password/edit[^" ;]+})[0])
     assert_equal([
       "invite",
       "reset_password_token",
@@ -65,7 +64,7 @@ class Test::AdminUi::Login::TestInvite < Minitest::Capybara::Test
     assert_match(/^\w{24}$/, plain_reset_url.query_values.fetch("reset_password_token"))
 
     # Follow link to reset URL
-    reset_url = message["_mime_parts"]["text/plain"]["_body"].match(%r{/admins/password/edit\?[^" ;]+})[0]
+    reset_url = message.fetch("Text").match(%r{/admins/password/edit\?[^" ;]+})[0]
     visit reset_url
     fill_in "New Password", :with => "password123456"
     fill_in "Confirm New Password", :with => "password123456"
@@ -92,7 +91,7 @@ class Test::AdminUi::Login::TestInvite < Minitest::Capybara::Test
     assert(admin)
 
     # No email
-    assert_equal(0, sent_emails.length)
+    assert_equal(0, sent_emails.fetch("total"))
   end
 
   def test_invites_can_be_resent
@@ -113,7 +112,7 @@ class Test::AdminUi::Login::TestInvite < Minitest::Capybara::Test
 
     admin.reload
     assert_equal("Foo", admin.notes)
-    assert_equal(0, sent_emails.length)
+    assert_equal(0, sent_emails.fetch("total"))
 
     # Force the invite to be resent.
     visit "/admin/#/admins/#{admin.id}/edit"
@@ -129,9 +128,9 @@ class Test::AdminUi::Login::TestInvite < Minitest::Capybara::Test
     admin.reload
     assert_equal("Bar", admin.notes)
     messages = sent_emails
-    assert_equal(1, messages.length)
-    message = messages.first
-    assert_equal(["API Umbrella Admin Access"], message["Content"]["Headers"]["Subject"])
+    assert_equal(1, messages.fetch("total"))
+    message = messages.fetch("messages").first
+    assert_equal("API Umbrella Admin Access", message.fetch("Subject"))
 
     admin.update(:current_sign_in_at => Time.now.utc)
     visit "/admin/#/admins/#{admin.id}/edit"
