@@ -161,7 +161,7 @@ jobs:
           --health-cmd "curl -fsS http://localhost:9200/_cluster/health"
           --health-interval 10s
           --health-timeout 90s
-          --health-retries 5
+          --health-retries 10
     strategy:
       fail-fast: false
       matrix:
