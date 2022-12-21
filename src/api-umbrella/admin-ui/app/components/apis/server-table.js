@@ -1,16 +1,16 @@
 // eslint-disable-next-line ember/no-classic-components
 import Component from '@ember/component';
 import { action } from '@ember/object';
-import { inject } from '@ember/service';
+import { inject as service } from '@ember/service';
 import { tagName } from "@ember-decorators/component";
+import { tracked } from '@glimmer/tracking';
 import bootbox from 'bootbox';
 import classic from 'ember-classic-decorator';
 
 @tagName("")
 @classic
 export default class ServerTable extends Component {
-  @inject()
-  store;
+  @service store;
 
   openModal = false;
 

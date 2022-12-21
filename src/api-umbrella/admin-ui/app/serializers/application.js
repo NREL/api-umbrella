@@ -1,8 +1,6 @@
 import { underscore } from '@ember/string';
 import JSONSerializer from '@ember-data/serializer/json';
-import classic from 'ember-classic-decorator';
 
-@classic
 export default class Application extends JSONSerializer {
   // Use camel-cased attribute names in the JS models, but underscore the
   // attribute names for any server-side communication.

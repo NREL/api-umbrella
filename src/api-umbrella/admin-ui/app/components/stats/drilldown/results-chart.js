@@ -53,10 +53,8 @@ export default class ResultsChart extends Component {
       }
     }
 
-    this.setProperties({
-      chartData: data,
-      chartLabels: labels,
-    });
+    this.chartData = data;
+    this.chartLabels = labels;
 
     this.draw();
   }

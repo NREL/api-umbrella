@@ -1,6 +1,5 @@
 import Model, { attr } from '@ember-data/model';
 import usernameLabel from 'api-umbrella-admin-ui/utils/username-label'
-import classic from 'ember-classic-decorator';
 import { buildValidations, validator } from 'ember-cp-validations';
 
 const Validations = buildValidations({
@@ -10,8 +9,11 @@ const Validations = buildValidations({
   }),
 });
 
-@classic
 class Admin extends Model.extend(Validations) {
+  static urlRoot = '/api-umbrella/v1/admins';
+  static singlePayloadKey = 'admin';
+  static arrayPayloadKey = 'data';
+
   @attr()
   username;
 
@@ -78,11 +80,5 @@ class Admin extends Model.extend(Validations) {
   @attr()
   updater;
 }
-
-Admin.reopenClass({
-  urlRoot: '/api-umbrella/v1/admins',
-  singlePayloadKey: 'admin',
-  arrayPayloadKey: 'data',
-});
 
 export default Admin;

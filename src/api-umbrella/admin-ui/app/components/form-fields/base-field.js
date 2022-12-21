@@ -6,6 +6,8 @@ import classic from 'ember-classic-decorator';
 
 @classic
 class BaseField extends Component {
+  static positionalParams = ['fieldName'];
+
   tagName = '';
 
   @tracked fieldName;
@@ -18,9 +20,5 @@ class BaseField extends Component {
     return guidFor(this) + '-' + this.fieldName;
   }
 }
-
-BaseField.reopenClass({
-  positionalParams: ['fieldName'],
-});
 
 export default BaseField;

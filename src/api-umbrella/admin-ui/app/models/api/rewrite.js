@@ -1,6 +1,5 @@
 import Model, { attr } from '@ember-data/model';
 import { t } from 'api-umbrella-admin-ui/utils/i18n';
-import classic from 'ember-classic-decorator';
 import { buildValidations, validator } from 'ember-cp-validations';
 
 const Validations = buildValidations({
@@ -30,8 +29,9 @@ const Validations = buildValidations({
   ],
 });
 
-@classic
 class Rewrite extends Model.extend(Validations) {
+  static validationClass = Validations;
+
   @attr('number')
   sortOrder;
 
@@ -47,9 +47,5 @@ class Rewrite extends Model.extend(Validations) {
   @attr()
   backendReplacement;
 }
-
-Rewrite.reopenClass({
-  validationClass: Validations,
-});
 
 export default Rewrite;

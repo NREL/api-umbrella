@@ -1,7 +1,6 @@
-import { computed } from '@ember/object';
 import Model, { attr, belongsTo, hasMany } from '@ember-data/model';
 import { t } from 'api-umbrella-admin-ui/utils/i18n';
-import classic from 'ember-classic-decorator';
+import { init } from 'echarts';
 import { buildValidations, validator } from 'ember-cp-validations';
 
 const Validations = buildValidations({
@@ -24,21 +23,26 @@ const Validations = buildValidations({
     validator('presence', {
       presence: true,
       description: t('Frontend Host'),
-      disabled: computed('model.frontendHost', function() {
+      disabled: () => {
         return (this.model.frontendHost && this.model.frontendHost[0] === '*');
-      }),
+      },
     }),
     validator('format', {
       regex: CommonValidations.host_format_with_wildcard,
       description: t('Backend Host'),
       message: t('must be in the format of "example.com"'),
-      disabled: computed.not('model.backendHost'),
+      disabled: () => {
+        return !this.model.backendHost;
+      },
     }),
   ],
 });
 
-@classic
 class Api extends Model.extend(Validations) {
+  static urlRoot = '/api-umbrella/v1/apis';
+  static singlePayloadKey = 'api';
+  static arrayPayloadKey = 'data';
+
   @attr()
   name;
 
@@ -96,7 +100,9 @@ class Api extends Model.extend(Validations) {
   @hasMany('api/rewrites', { async: false })
   rewrites;
 
-  ready() {
+  init() {
+    super.init(...arguments);
+
     this.setDefaults();
   }
 
@@ -106,21 +112,13 @@ class Api extends Model.extend(Validations) {
     }
   }
 
-  @computed('frontendHost')
   get exampleIncomingUrlRoot() {
     return 'https://' + (this.frontendHost || '');
   }
 
-  @computed('backendHost', 'backendProtocol', 'fontendHost', 'frontendHost')
   get exampleOutgoingUrlRoot() {
     return this.backendProtocol + '://' + (this.backendHost || this.frontendHost || '');
   }
 }
-
-Api.reopenClass({
-  urlRoot: '/api-umbrella/v1/apis',
-  singlePayloadKey: 'api',
-  arrayPayloadKey: 'data',
-});
 
 export default Api;

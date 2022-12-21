@@ -1,7 +1,5 @@
-import { or } from '@ember/object/computed';
 import Model, { attr } from '@ember-data/model';
 import { t } from 'api-umbrella-admin-ui/utils/i18n';
-import classic from 'ember-classic-decorator';
 import { buildValidations, validator } from 'ember-cp-validations';
 
 const Validations = buildValidations({
@@ -29,20 +27,18 @@ const Validations = buildValidations({
   ],
 });
 
-@classic
 class UrlMatch extends Model.extend(Validations) {
+  static validationClass = Validations;
+
   @attr()
   frontendPrefix;
 
   @attr()
   backendPrefix;
 
-  @or('backendPrefix', 'frontendPrefix')
-  backendPrefixWithDefault;
+  get backendPrefixWithDefault() {
+    return this.backendPrefix || this.frontendPrefix;
+  }
 }
-
-UrlMatch.reopenClass({
-  validationClass: Validations,
-});
 
 export default UrlMatch;

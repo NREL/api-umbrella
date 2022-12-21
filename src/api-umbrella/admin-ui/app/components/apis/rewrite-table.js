@@ -2,8 +2,9 @@
 import Component from '@ember/component';
 import { action } from '@ember/object';
 import { reads } from '@ember/object/computed';
-import { inject } from '@ember/service';
+import { inject as service } from '@ember/service';
 import { tagName } from '@ember-decorators/component';
+import { tracked } from '@glimmer/tracking';
 // eslint-disable-next-line ember/no-mixins
 import Sortable from 'api-umbrella-admin-ui/mixins/sortable';
 import bootbox from 'bootbox';
@@ -12,8 +13,7 @@ import classic from 'ember-classic-decorator';
 @classic
 @tagName("")
 export default class RewriteTable extends Component.extend(Sortable) {
-  @inject()
-  store;
+  @service store;
 
   openModal = false;
 

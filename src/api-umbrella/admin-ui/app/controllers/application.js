@@ -1,18 +1,15 @@
 import Controller from '@ember/controller';
 import { action } from '@ember/object';
-import { reads } from '@ember/object/computed';
-import { inject } from '@ember/service';
-import classic from 'ember-classic-decorator';
+import { inject as service } from '@ember/service';
 
-@classic
 export default class ApplicationController extends Controller {
-  @inject('session')
-  session;
+  @service session;
 
   isLoading = null;
 
-  @reads('session.data.authenticated.admin')
-  currentAdmin;
+  get currentAdmin() {
+    return this.session.data.authenticated.admin;
+  }
 
   @action
   logout() {

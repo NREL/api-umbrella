@@ -1,8 +1,5 @@
-import classic from 'ember-classic-decorator';
-
 import Base from './base';
 
-@classic
 export default class UsersRoute extends Base {
   queryParams = {
     date_range: {

@@ -60,6 +60,10 @@ module.exports = function(defaults) {
       'importBootstrapFont': false,
       'importBootstrapCSS': false,
     },
+
+    'ember-simple-auth': {
+      useSessionSetupMethod: true,
+    },
   });
 
   // Use `app.import` to add additional libraries to the generated

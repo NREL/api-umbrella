@@ -6,16 +6,9 @@ import { Promise } from 'rsvp';
 
 @classic
 class Map extends EmberObject.extend(Evented) {
-  hits_over_time = null;
-  stats = null;
-  facets = null;
-  logs = null;
-}
+  static urlRoot = '/admin/stats/map.json';
 
-Map.reopenClass({
-  urlRoot: '/admin/stats/map.json',
-
-  find(params) {
+  static find(params) {
     return new Promise(function(resolve, reject) {
       return $.ajax({
         url: this.urlRoot,
@@ -26,7 +19,12 @@ Map.reopenClass({
         reject(data.responseText);
       });
     }.bind(this));
-  },
-});
+  }
+
+  hits_over_time = null;
+  stats = null;
+  facets = null;
+  logs = null;
+}
 
 export default Map;

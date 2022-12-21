@@ -56,13 +56,11 @@ export default class RecordForm extends Component.extend(Save) {
   @action
   addUrlMatch() {
     this.controllers.apis_url_match_form.add(this.model, 'urlMatches');
-    this.send('openModal', 'apis/url_match_form');
   }
 
   @action
   editUrlMatch(urlMatch) {
     this.controllers.apis_url_match_form.edit(this.model, 'urlMatches', urlMatch);
-    this.send('openModal', 'apis/url_match_form');
   }
 
   @action
@@ -73,13 +71,11 @@ export default class RecordForm extends Component.extend(Save) {
   @action
   addSubSettings() {
     this.controllers.apis_sub_settings_form.add(this.model, 'subSettings');
-    this.send('openModal', 'apis/sub_settings_form');
   }
 
   @action
   editSubSettings(subSettings) {
     this.controllers.apis_sub_settings_form.edit(this.model, 'subSettings', subSettings);
-    this.send('openModal', 'apis/sub_settings_form');
   }
 
   @action
@@ -90,13 +86,11 @@ export default class RecordForm extends Component.extend(Save) {
   @action
   addRewrite() {
     this.controllers.apis_rewrite_form.add(this.model, 'rewrites');
-    this.send('openModal', 'apis/rewrite_form');
   }
 
   @action
   editRewrite(rewrite) {
     this.controllers.apis_rewrite_form.edit(this.model, 'rewrites', rewrite);
-    this.send('openModal', 'apis/rewrite_form');
   }
 
   @action

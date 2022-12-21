@@ -1,9 +1,7 @@
 import StatsLogs from 'api-umbrella-admin-ui/models/stats/logs';
-import classic from 'ember-classic-decorator';
 
 import Base from './base';
 
-@classic
 export default class LogsRoute extends Base {
   queryParams = {
     date_range: {

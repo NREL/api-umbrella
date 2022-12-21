@@ -364,21 +364,17 @@ export default class QueryForm extends Component {
     let rangeOptions = this.rangeOptions;
     if(rangeOptions[picker.chosenLabel] && !this.calendarShown) {
       let rangeKeys = this.rangeKeys;
-      this.setProperties({
-        start_at: '',
-        end_at: '',
-        date_range: rangeKeys[picker.chosenLabel],
-      });
+      this.start_at = '';
+      this.end_at = '';
+      this.date_range = rangeKeys[picker.chosenLabel];
     } else {
-      this.setProperties({
-        start_at: picker.startDate.format('YYYY-MM-DD'),
-        end_at: picker.endDate.format('YYYY-MM-DD'),
-        // In this case the "date_range" param isn't being used ("start_at" and
-        // "end_at" take precedence), so reset it back to the default value
-        // (defined in app/controllers/stats/base.js), so it's hidden from the
-        // URL.
-        date_range: '30d',
-      });
+      this.start_at = picker.startDate.format('YYYY-MM-DD');
+      this.end_at = picker.endDate.format('YYYY-MM-DD');
+      // In this case the "date_range" param isn't being used ("start_at" and
+      // "end_at" take precedence), so reset it back to the default value
+      // (defined in app/controllers/stats/base.js), so it's hidden from the
+      // URL.
+      this.date_range = '30d';
     }
   }
 

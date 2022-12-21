@@ -1,7 +1,7 @@
 import Model, { attr, belongsTo } from '@ember-data/model';
 import { t } from 'api-umbrella-admin-ui/utils/i18n';
-import classic from 'ember-classic-decorator';
 import { buildValidations, validator } from 'ember-cp-validations';
+import classic from 'ember-classic-decorator';
 
 const Validations = buildValidations({
   httpMethod: [
@@ -20,6 +20,8 @@ const Validations = buildValidations({
 
 @classic
 class SubSettings extends Model.extend(Validations) {
+  static validationClass = Validations;
+
   @attr('number')
   sortOrder;
 
@@ -32,7 +34,9 @@ class SubSettings extends Model.extend(Validations) {
   @belongsTo('api/settings', { async: false })
   settings;
 
-  ready() {
+  init() {
+    super.init(...arguments);
+
     this.setDefaults();
   }
 
@@ -42,9 +46,5 @@ class SubSettings extends Model.extend(Validations) {
     }
   }
 }
-
-SubSettings.reopenClass({
-  validationClass: Validations,
-});
 
 export default SubSettings;

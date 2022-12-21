@@ -6,13 +6,9 @@ import { Promise } from 'rsvp';
 
 @classic
 class ConfigPendingChanges extends EmberObject.extend(Evented) {
-  config = null;
-}
+  static urlRoot = '/api-umbrella/v1/config/pending_changes.json';
 
-ConfigPendingChanges.reopenClass({
-  urlRoot: '/api-umbrella/v1/config/pending_changes.json',
-
-  fetch(params) {
+  static fetch(params) {
     return new Promise(function(resolve, reject) {
       return $.ajax({
         url: this.urlRoot,
@@ -23,7 +19,9 @@ ConfigPendingChanges.reopenClass({
         reject(data.responseText);
       });
     }.bind(this));
-  },
-});
+  }
+
+  config = null;
+}
 
 export default ConfigPendingChanges;

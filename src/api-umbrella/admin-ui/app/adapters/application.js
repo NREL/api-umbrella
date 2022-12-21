@@ -1,12 +1,10 @@
 import { inject } from '@ember/service';
 import RESTAdapter from '@ember-data/adapter/rest';
-import classic from 'ember-classic-decorator';
 import flatten from 'lodash-es/flatten';
 import isArray from 'lodash-es/isArray';
 import isPlainObject from 'lodash-es/isPlainObject';
 import isString from 'lodash-es/isString';
 
-@classic
 export default class Application extends RESTAdapter {
   @inject session;
 

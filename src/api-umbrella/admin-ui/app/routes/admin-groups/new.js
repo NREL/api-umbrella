@@ -1,11 +1,13 @@
-import classic from 'ember-classic-decorator';
+import { inject as service } from '@ember/service';
+import { clearStoreCache } from 'api-umbrella-admin-ui/utils/uncached-model';
 
 import Form from './form';
 
-@classic
 export default class NewRoute extends Form {
+  @service store;
+
   model() {
-    this.clearStoreCache();
+    clearStoreCache(this.store);
     return this.fetchModels(this.store.createRecord('admin-group'));
   }
 }

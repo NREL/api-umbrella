@@ -43,6 +43,9 @@ export default Mixin.create({
         this.scrollToErrors(button);
       } else {
         this.model.save().then(function() {
+          // For use with the Confirmation mixin.
+          this.model._confirmationRecordIsSaved = true;
+
           if(options.afterSave) {
             options.afterSave(this.afterSaveComplete.bind(this, options, button));
           } else {

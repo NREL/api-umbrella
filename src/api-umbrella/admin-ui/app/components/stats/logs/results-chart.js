@@ -32,10 +32,8 @@ export default class ResultsChart extends Component {
       labels.push(hits[i].c[0].f);
     }
 
-    this.setProperties({
-      chartData: data,
-      chartLabels: labels,
-    });
+    this.chartData = data;
+    this.chartLabels = labels;
 
     this.draw();
   }

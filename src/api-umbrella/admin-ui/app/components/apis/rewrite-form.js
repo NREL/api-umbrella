@@ -3,6 +3,7 @@ import { getOwner } from '@ember/application';
 import Component from '@ember/component';
 import { action, computed } from '@ember/object';
 import { tagName } from '@ember-decorators/component';
+import { tracked } from '@glimmer/tracking';
 import Rewrite from 'api-umbrella-admin-ui/models/api/rewrite';
 import BufferedProxy from 'ember-buffered-proxy/proxy';
 import classic from 'ember-classic-decorator';

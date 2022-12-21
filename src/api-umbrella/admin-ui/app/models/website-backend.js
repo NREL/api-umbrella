@@ -1,6 +1,5 @@
 import Model, { attr } from '@ember-data/model';
 import { t } from 'api-umbrella-admin-ui/utils/i18n';
-import classic from 'ember-classic-decorator';
 import { buildValidations, validator } from 'ember-cp-validations';
 
 const Validations = buildValidations({
@@ -42,8 +41,11 @@ const Validations = buildValidations({
   ],
 });
 
-@classic
 class WebsiteBackend extends Model.extend(Validations) {
+  static urlRoot = '/api-umbrella/v1/website_backends';
+  static singlePayloadKey = 'website_backend';
+  static arrayPayloadKey = 'data';
+
   @attr()
   frontendHost;
 
@@ -68,11 +70,5 @@ class WebsiteBackend extends Model.extend(Validations) {
   @attr()
   updater;
 }
-
-WebsiteBackend.reopenClass({
-  urlRoot: '/api-umbrella/v1/website_backends',
-  singlePayloadKey: 'website_backend',
-  arrayPayloadKey: 'data',
-});
 
 export default WebsiteBackend;

@@ -1,6 +1,5 @@
 import { A } from '@ember/array';
 import EmberObject, { computed } from '@ember/object';
-import { equal } from '@ember/object/computed';
 import Model, { attr, hasMany } from '@ember-data/model';
 import { observes } from '@ember-decorators/object';
 import classic from 'ember-classic-decorator';
@@ -68,7 +67,9 @@ export default class Settings extends Model {
   @hasMany('api/rate-limit', { async: false })
   rateLimits;
 
-  ready() {
+  init() {
+    super.init(...arguments);
+
     this.setDefaults();
   }
 

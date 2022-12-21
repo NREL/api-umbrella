@@ -22,6 +22,10 @@ const Validations = buildValidations({
 
 @classic
 class ApiUser extends Model.extend(Validations) {
+  static urlRoot = '/api-umbrella/v1/users';
+  static singlePayloadKey = 'user';
+  static arrayPayloadKey = 'data';
+
   @attr()
   apiKey;
 
@@ -97,7 +101,9 @@ class ApiUser extends Model.extend(Validations) {
   @belongsTo('api/settings', { async: false })
   settings;
 
-  ready() {
+  init() {
+    super.init(...arguments);
+
     this.setDefaults();
   }
 
@@ -134,11 +140,5 @@ class ApiUser extends Model.extend(Validations) {
     this.set('roles', roles);
   }
 }
-
-ApiUser.reopenClass({
-  urlRoot: '/api-umbrella/v1/users',
-  singlePayloadKey: 'user',
-  arrayPayloadKey: 'data',
-});
 
 export default ApiUser;

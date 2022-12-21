@@ -1,7 +1,5 @@
-import { computed } from '@ember/object';
 import Model, { attr } from '@ember-data/model';
 import { t } from 'api-umbrella-admin-ui/utils/i18n';
-import classic from 'ember-classic-decorator';
 import { buildValidations, validator } from 'ember-cp-validations';
 
 const Validations = buildValidations({
@@ -33,8 +31,11 @@ const Validations = buildValidations({
   ],
 });
 
-@classic
 class ApiScope extends Model.extend(Validations) {
+  static urlRoot = '/api-umbrella/v1/api_scopes';
+  static singlePayloadKey = 'api_scope';
+  static arrayPayloadKey = 'data';
+
   @attr()
   name;
 
@@ -59,16 +60,9 @@ class ApiScope extends Model.extend(Validations) {
   @attr()
   updater;
 
-  @computed('name', 'host', 'pathPrefix')
   get displayName() {
     return this.name + ' - ' + this.host + this.pathPrefix;
   }
 }
-
-ApiScope.reopenClass({
-  urlRoot: '/api-umbrella/v1/api_scopes',
-  singlePayloadKey: 'api_scope',
-  arrayPayloadKey: 'data',
-});
 
 export default ApiScope;

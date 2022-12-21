@@ -6,13 +6,9 @@ import { Promise } from 'rsvp';
 
 @classic
 class Drilldown extends EmberObject.extend(Evented) {
-  results = null;
-}
+  static urlRoot = '/api-umbrella/v1/analytics/drilldown.json';
 
-Drilldown.reopenClass({
-  urlRoot: '/api-umbrella/v1/analytics/drilldown.json',
-
-  find(params) {
+  static find(params) {
     return new Promise(function(resolve, reject) {
       return $.ajax({
         url: this.urlRoot,
@@ -23,7 +19,9 @@ Drilldown.reopenClass({
         reject(data.responseText);
       });
     }.bind(this));
-  },
-});
+  }
+
+  results = null;
+}
 
 export default Drilldown;
