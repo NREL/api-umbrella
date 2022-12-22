@@ -1,11 +1,11 @@
 import { action } from '@ember/object';
 import AuthenticatedRoute from 'api-umbrella-admin-ui/routes/authenticated-route';
 import bootbox from 'bootbox';
+import classic from 'ember-classic-decorator';
 import $ from 'jquery';
 import cloneDeep from 'lodash-es/cloneDeep';
 import omit from 'lodash-es/omit';
 import moment from 'moment-timezone';
-import classic from 'ember-classic-decorator';
 
 @classic
 export default class BaseRoute extends AuthenticatedRoute {

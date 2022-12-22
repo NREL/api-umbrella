@@ -35,12 +35,9 @@ export default class RateLimitFields extends Component {
     ];
   }
 
+  @computed
   get uniqueSettingsId() {
-    if(!this.uniqueSettingsIdValue) {
-      this.uniqueSettingsIdValue = uniqueId('api_settings_');
-    }
-
-    return this.uniqueSettingsIdValue;
+    return uniqueId('api_settings_');
   }
 
   @action

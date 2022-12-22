@@ -1,8 +1,9 @@
+import { computed } from '@ember/object';
 import Model, { attr } from '@ember-data/model';
 import { observes } from '@ember-decorators/object';
+import classic from 'ember-classic-decorator';
 import uniqueId from 'lodash-es/uniqueId';
 import moment from 'moment-timezone';
-import classic from 'ember-classic-decorator';
 
 @classic
 export default class RateLimit extends Model {
@@ -33,17 +34,25 @@ export default class RateLimit extends Model {
       let seconds = duration / 1000;
 
       if(days % 1 === 0) {
-        this.durationInUnits = days;
-        this.durationUnits = 'days';
+        this.setProperties({
+          durationInUnits: days,
+          durationUnits: 'days',
+        });
       } else if(hours % 1 === 0) {
-        this.durationInUnits = hours;
-        this.durationUnits = 'hours';
+        this.setProperties({
+          durationInUnits: hours,
+          durationUnits: 'hours',
+        });
       } else if(minutes % 1 === 0) {
-        this.durationInUnits = minutes;
-        this.durationUnits = 'minutes';
+        this.setProperties({
+          durationInUnits: minutes,
+          durationUnits: 'minutes',
+        });
       } else {
-        this.durationInUnits = seconds;
-        this.durationUnits = 'seconds';
+        this.setProperties({
+          durationInUnits: seconds,
+          durationUnits: 'seconds',
+        });
       }
     }
   }
@@ -58,11 +67,8 @@ export default class RateLimit extends Model {
     }
   }
 
+  @computed
   get uniqueId() {
-    if(!this.uniqueIdValue) {
-      this.uniqueIdValue = uniqueId('rate_limit_');
-    }
-
-    return this.uniqueIdValue;
+    return uniqueId('rate_limit_');
   }
 }

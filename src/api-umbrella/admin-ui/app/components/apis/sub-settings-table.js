@@ -4,7 +4,6 @@ import { action } from '@ember/object';
 import { reads } from '@ember/object/computed';
 import { inject as service } from '@ember/service';
 import { tagName } from '@ember-decorators/component';
-import { tracked } from '@glimmer/tracking';
 // eslint-disable-next-line ember/no-mixins
 import Sortable from 'api-umbrella-admin-ui/mixins/sortable';
 import bootbox from 'bootbox';

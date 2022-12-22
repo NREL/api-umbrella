@@ -3,7 +3,6 @@ import Component from '@ember/component';
 import { action } from '@ember/object';
 import { inject as service } from '@ember/service';
 import { tagName } from "@ember-decorators/component";
-import { tracked } from '@glimmer/tracking';
 import bootbox from 'bootbox';
 import classic from 'ember-classic-decorator';
 

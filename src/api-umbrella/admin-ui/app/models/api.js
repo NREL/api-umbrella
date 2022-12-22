@@ -1,6 +1,6 @@
 import Model, { attr, belongsTo, hasMany } from '@ember-data/model';
 import { t } from 'api-umbrella-admin-ui/utils/i18n';
-import { init } from 'echarts';
+import classic from 'ember-classic-decorator';
 import { buildValidations, validator } from 'ember-cp-validations';
 
 const Validations = buildValidations({
@@ -38,6 +38,7 @@ const Validations = buildValidations({
   ],
 });
 
+@classic
 class Api extends Model.extend(Validations) {
   static urlRoot = '/api-umbrella/v1/apis';
   static singlePayloadKey = 'api';

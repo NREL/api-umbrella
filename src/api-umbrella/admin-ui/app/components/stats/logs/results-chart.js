@@ -74,12 +74,9 @@ export default class ResultsChart extends Component {
           showAllSymbol: showAllSymbol,
           symbolSize: lineWidth + 4,
           areaStyle: {
-            normal: {},
           },
           lineStyle: {
-            normal: {
-              width: lineWidth,
-            },
+            width: lineWidth,
           },
           data: this.chartData,
         },

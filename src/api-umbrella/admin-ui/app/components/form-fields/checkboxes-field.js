@@ -8,8 +8,6 @@ import BaseField from './base-field';
 export default class CheckboxesField extends BaseField {
   get checkboxes() {
     const selectedValues = this.model[this.fieldName];
-    console.info('selectedValues: ', selectedValues);
-    console.info('options: ', this.options);
 
     return this.options.map((option) => {
       return {

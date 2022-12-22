@@ -1,7 +1,7 @@
 import Model, { attr, belongsTo } from '@ember-data/model';
 import { t } from 'api-umbrella-admin-ui/utils/i18n';
-import { buildValidations, validator } from 'ember-cp-validations';
 import classic from 'ember-classic-decorator';
+import { buildValidations, validator } from 'ember-cp-validations';
 
 const Validations = buildValidations({
   httpMethod: [
