@@ -19,13 +19,14 @@
       <p>This application requires JavaScript.</p>
       <p>Here are <a href="http://www.enable-javascript.com/">instructions how to enable JavaScript in your web browser</a>.</p>
     </noscript>
-    <div id="ember_load_indicator" class="ember-load-indicator" style="display: block;">
+    <div id="ember_load_indicator" class="ember-load-indicator" style="display: none;">
       <div class="busy-blocker__bg"></div>
       <div class="busy-blocker__content">
         <div class="busy-blocker__animation"></div>
         <p>Loading...</p>
       </div>
     </div>
+    <script>document.getElementById('ember_load_indicator').style.display = 'block';</script>
 
     {{content-for "body"}}
 

@@ -1,19 +1,30 @@
+import { action } from '@ember/object';
 import { classNames } from '@ember-decorators/component';
-import classic from 'ember-classic-decorator';
 
 import BaseField from './base-field';
 
 @classNames('form-fields-checkboxes-field')
-@classic
 export default class CheckboxesField extends BaseField {
   get checkboxes() {
-    const selectedValues = this.model[this.fieldName];
+    const checkedValues = this.model[this.fieldName];
 
     return this.options.map((option) => {
       return {
         option: option,
-        isSelected: selectedValues.includes(option.id),
+        isChecked: checkedValues.includes(option.id),
+        inputId: `${this.inputId}-${option.id}`,
       }
     });
+  }
+
+  @action
+  toggleCheckbox(value, checked) {
+    const checkedValues = this.model.get(this.fieldName);
+
+    if(checked === true && !checkedValues.includes(value)) {
+      checkedValues.addObject(value);
+    } else if(checked === false && checkedValues.includes(value)) {
+      checkedValues.removeObject(value);
+    }
   }
 }
