@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-libpsl_version="0.21.1"
+libpsl_version="0.21.2"
 libpsl_hash="ad40b970dcb5117d559b62a1e0d8d827"
 
 set -e -u -x

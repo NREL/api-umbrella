@@ -31,7 +31,7 @@ export default class Application extends RESTAdapter {
     let url;
     if(snapshot && snapshot.modelName) {
       const modelClass = this.store.modelFor(snapshot.modelName);
-      if (modelClass.urlRoot) {
+      if(modelClass.urlRoot) {
         url = modelClass.urlRoot;
         if(id) {
           url += '/' + encodeURIComponent(id);
@@ -39,7 +39,7 @@ export default class Application extends RESTAdapter {
       }
     }
 
-    if (!url) {
+    if(!url) {
       url = super.buildURL(...arguments);
     }
 
