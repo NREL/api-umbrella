@@ -120,7 +120,7 @@ export default class PublishForm extends Component {
       url: '/api-umbrella/v1/config/publish',
       type: 'POST',
       data: form.serialize(),
-    }).then(run.bind(this, function() {
+    }).then(run(() => {
       LoadingButton.reset(this.publishButton);
       success({
         title: 'Published',
