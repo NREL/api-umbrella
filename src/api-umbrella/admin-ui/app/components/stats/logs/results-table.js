@@ -25,9 +25,9 @@ export default class ResultsTable extends Component {
         // Use POST for this endpoint, since the URLs can be very long and
         // exceed URL length limits in IE (and apparently Capybara too).
         type: 'POST',
-        data: function(data) {
+        data: (data) => {
           return extend({}, data, this.backendQueryParamValues);
-        }.bind(this),
+        },
       },
       drawCallback: () => {
         $(element).find('td').each(function() {
@@ -75,7 +75,7 @@ export default class ResultsTable extends Component {
           data: 'user_email',
           title: 'User',
           defaultContent: '-',
-          render: function(email, type, data) {
+          render: (email, type, data) => {
             if(type === 'display' && email && email !== '-') {
               let params = clone(this.presentQueryParamValues);
               params.search = compact([params.search, 'user_id:"' + data.user_id + '"']).join(' AND ');
@@ -85,7 +85,7 @@ export default class ResultsTable extends Component {
             }
 
             return email;
-          }.bind(this),
+          },
         },
         {
           data: 'request_ip',

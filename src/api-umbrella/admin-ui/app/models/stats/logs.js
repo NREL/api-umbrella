@@ -9,7 +9,7 @@ class Logs extends EmberObject.extend(Evented) {
   static urlRoot = '/admin/stats/search.json';
 
   static find(params) {
-    return new Promise(function(resolve, reject) {
+    return new Promise((resolve, reject) => {
       return $.ajax({
         url: this.urlRoot,
         data: params,
@@ -18,7 +18,7 @@ class Logs extends EmberObject.extend(Evented) {
       }, function(data) {
         reject(data.responseText);
       });
-    }.bind(this));
+    });
   }
 
   hits_over_time = null;

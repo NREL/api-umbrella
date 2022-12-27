@@ -9,7 +9,7 @@ class ConfigPendingChanges extends EmberObject.extend(Evented) {
   static urlRoot = '/api-umbrella/v1/config/pending_changes.json';
 
   static fetch(params) {
-    return new Promise(function(resolve, reject) {
+    return new Promise((resolve, reject) => {
       return $.ajax({
         url: this.urlRoot,
         data: params,
@@ -18,7 +18,7 @@ class ConfigPendingChanges extends EmberObject.extend(Evented) {
       }, function(data) {
         reject(data.responseText);
       });
-    }.bind(this));
+    });
   }
 
   config = null;

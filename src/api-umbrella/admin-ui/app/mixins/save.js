@@ -37,12 +37,12 @@ export default Mixin.create({
       'model.serverErrors': [],
     });
 
-    this.model.validate().then(function() {
+    this.model.validate().then(() => {
       if(this.model.validations.isValid === false) {
         this.set('model.clientErrors', this.model.validations.errors);
         this.scrollToErrors(button);
       } else {
-        this.model.save().then(function() {
+        this.model.save().then(() => {
           // For use with the Confirmation mixin.
           this.model._confirmationRecordIsSaved = true;
 
@@ -51,7 +51,7 @@ export default Mixin.create({
           } else {
             this.afterSaveComplete(options, button);
           }
-        }.bind(this), function(error) {
+        }, (error) => {
           // Set the errors from the server response on a "serverErrors" property
           // for the error-messages component display.
           if(error && error.errors) {
@@ -63,15 +63,15 @@ export default Mixin.create({
           }
 
           this.scrollToErrors(button);
-        }.bind(this));
+        });
       }
-    }.bind(this));
+    });
   },
 
   destroyRecord(options) {
-    bootbox.confirm(options.prompt, function(result) {
+    bootbox.confirm(options.prompt, (result) => {
       if(result) {
-        this.model.destroyRecord().then(function() {
+        this.model.destroyRecord().then(() => {
           success({
             title: 'Deleted',
             text: (isFunction(options.message)) ? options.message(this.model) : options.message,
@@ -79,10 +79,10 @@ export default Mixin.create({
           });
 
           this.router.transitionTo(options.transitionToRoute);
-        }.bind(this), function(response) {
+        }, function(response) {
           bootbox.alert('Unexpected error deleting record: ' + response.responseText);
         });
       }
-    }.bind(this));
+    });
   },
 });
