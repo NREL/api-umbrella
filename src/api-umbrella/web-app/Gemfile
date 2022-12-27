@@ -111,7 +111,7 @@ gem "bootstrap", "~> 4.5.0", :require => false
 gem "font-awesome-rails", "~> 4.7", :require => false
 
 # Table-less models
-gem "active_attr", "~> 0.15.0"
+gem "active_attr", "~> 0.15.4"
 
 # URI parsing
 gem "addressable", "~> 2.8.0"
