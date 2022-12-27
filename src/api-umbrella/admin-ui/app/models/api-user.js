@@ -98,7 +98,7 @@ class ApiUser extends Model.extend(Validations) {
   @attr()
   metadataYamlString;
 
-  @belongsTo('api/settings', { async: false })
+  @belongsTo('api/settings', { async: false, inverse: null })
   settings;
 
   init() {

@@ -1,8 +1,6 @@
-import { A } from '@ember/array';
 import EmberObject, { computed } from '@ember/object';
 import { equal } from '@ember/object/computed';
 import Model, { attr, hasMany } from '@ember-data/model';
-import { observes } from '@ember-decorators/object';
 import classic from 'ember-classic-decorator';
 import compact from 'lodash-es/compact';
 
@@ -65,7 +63,7 @@ export default class Settings extends Model {
   @attr()
   errorDataYamlStrings;
 
-  @hasMany('api/rate-limit', { async: false })
+  @hasMany('api/rate-limit', { async: false, inverse: null })
   rateLimits;
 
   init() {
@@ -147,24 +145,20 @@ export default class Settings extends Model {
     this.set('allowedReferers', referers);
   }
 
-  @computed('passApiKeyHeader', 'passApiKeyQueryParam')
   get passApiKey() {
-    let options = A([]);
+    const options = [];
     if(this.passApiKeyHeader) {
-      options.pushObject('header');
+      options.push('header');
     }
     if(this.passApiKeyQueryParam) {
-      options.pushObject('param');
+      options.push('param');
     }
     return options;
   }
 
-  // eslint-disable-next-line ember/no-observers
-  @observes('passApiKey.@each')
-  passApiKeyDidChange() {
-    let options = this.passApiKey;
-    this.set('passApiKeyHeader', options.includes('header'));
-    this.set('passApiKeyQueryParam', options.includes('param'));
+  set passApiKey(values) {
+    this.set('passApiKeyHeader', values.includes('header'));
+    this.set('passApiKeyQueryParam', values.includes('param'));
   }
 
   @equal('rateLimitMode', 'custom')

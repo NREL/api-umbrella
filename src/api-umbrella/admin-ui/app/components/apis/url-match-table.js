@@ -5,6 +5,7 @@ import { inject as service } from '@ember/service';
 import { tagName } from '@ember-decorators/component';
 import bootbox from 'bootbox';
 import classic from 'ember-classic-decorator';
+import without from 'lodash-es/without';
 
 @classic
 @tagName("")
@@ -27,10 +28,11 @@ export default class UrlMatchTable extends Component {
 
   @action
   remove(urlMatch) {
-    bootbox.confirm('Are you sure you want to remove this URL prefix?', function(response) {
+    bootbox.confirm('Are you sure you want to remove this URL prefix?', (response) => {
       if(response) {
-        this.model.urlMatches.removeObject(urlMatch);
+        let collection = without(this.model.urlMatches, urlMatch);
+        this.model.set('urlMatches', collection);
       }
-    }.bind(this));
+    });
   }
 }

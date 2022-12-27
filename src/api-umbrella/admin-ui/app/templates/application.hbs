@@ -51,7 +51,7 @@
       </ul>
       <ul class="navbar-nav">
         <li class="nav-item dropdown">
-          <a href="#" id="nav_gear_menu" class="nav-link dropdown-toggle" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><FaIcon @icon="cog" @fixedWidth={{true}} /></a>
+          <a href="#" id="nav_gear_menu" class="nav-link dropdown-toggle" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><FaIcon @icon="cog" @fixedWidth={{true}} role="presentation" /></a>
           <div class="dropdown-menu dropdown-menu-right">
             <LinkTo @route="admins.edit" @model={{this.session.data.authenticated.admin.id}} class="dropdown-item" id="my_account_nav_link">{{t "My Account"}}</LinkTo>
             <a href="#" class="dropdown-item" {{action "logout"}}>{{t "Sign out"}}</a>

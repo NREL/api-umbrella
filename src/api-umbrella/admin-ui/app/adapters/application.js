@@ -28,16 +28,22 @@ export default class Application extends RESTAdapter {
   // Build the URL using the customizable "urlRoot" attribute that can be set
   // on the model class.
   buildURL(modelName, id, snapshot) {
-    if(snapshot && snapshot.type && snapshot.type.urlRoot) {
-      let url = snapshot.type.urlRoot;
-      if(id) {
-        url += '/' + encodeURIComponent(id);
+    let url;
+    if(snapshot && snapshot.modelName) {
+      const modelClass = this.store.modelFor(snapshot.modelName);
+      if (modelClass.urlRoot) {
+        url = modelClass.urlRoot;
+        if(id) {
+          url += '/' + encodeURIComponent(id);
+        }
       }
-
-      return url;
-    } else {
-      return super.buildURL(...arguments);
     }
+
+    if (!url) {
+      url = super.buildURL(...arguments);
+    }
+
+    return url;
   }
 
   // Ember data requires that errors from the API be returned as an array. This

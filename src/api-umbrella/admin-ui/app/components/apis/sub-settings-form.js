@@ -49,7 +49,7 @@ export default class SubSettingsForm extends Component {
     event.preventDefault();
     this.bufferedModel.applyChanges();
     if(this.model.isNew) {
-      this.collection.pushObject(this.model);
+      this.collection.push(this.model);
     }
 
     this.set('openModal', false);

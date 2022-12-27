@@ -5,7 +5,7 @@ const sass = require('sass');
 const autoprefixer = require('autoprefixer');
 
 module.exports = function(defaults) {
-  let app = new EmberApp(defaults, {
+  const app = new EmberApp(defaults, {
     autoImport: {
       alias: {
         'jQuery-QueryBuilder': 'jQuery-QueryBuilder/dist/js/query-builder.standalone',

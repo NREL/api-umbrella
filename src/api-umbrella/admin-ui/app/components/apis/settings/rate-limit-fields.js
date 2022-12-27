@@ -6,6 +6,7 @@ import { tagName } from "@ember-decorators/component";
 import bootbox from 'bootbox';
 import classic from 'ember-classic-decorator';
 import uniqueId from 'lodash-es/uniqueId';
+import without from 'lodash-es/without';
 
 @tagName("")
 @classic
@@ -55,15 +56,15 @@ export default class RateLimitFields extends Component {
   @action
   addRateLimit() {
     let collection = this.model.rateLimits;
-    collection.pushObject(this.store.createRecord('api/rate-limit'));
+    collection.push(this.store.createRecord('api/rate-limit'));
   }
 
   @action
   deleteRateLimit(rateLimit) {
-    let collection = this.model.rateLimits;
-    bootbox.confirm('Are you sure you want to remove this rate limit?', function(result) {
+    bootbox.confirm('Are you sure you want to remove this rate limit?', (result) => {
       if(result) {
-        collection.removeObject(rateLimit);
+        let collection = without(this.model.rateLimits, rateLimit);
+        this.model.set('rateLimits', collection);
       }
     });
   }

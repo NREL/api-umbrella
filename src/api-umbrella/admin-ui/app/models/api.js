@@ -86,19 +86,19 @@ class Api extends Model.extend(Validations) {
   @attr()
   adminGroups;
 
-  @hasMany('api/server', { async: false })
+  @hasMany('api/server', { async: false, inverse: null })
   servers;
 
-  @hasMany('api/url-match', { async: false })
+  @hasMany('api/url-match', { async: false, inverse: null })
   urlMatches;
 
-  @belongsTo('api/settings', { async: false })
+  @belongsTo('api/settings', { async: false, inverse: null })
   settings;
 
-  @hasMany('api/sub-settings', { async: false })
+  @hasMany('api/sub-settings', { async: false, inverse: null })
   subSettings;
 
-  @hasMany('api/rewrites', { async: false })
+  @hasMany('api/rewrites', { async: false, inverse: null })
   rewrites;
 
   init() {

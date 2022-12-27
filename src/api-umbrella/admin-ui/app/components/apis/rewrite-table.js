@@ -8,6 +8,7 @@ import { tagName } from '@ember-decorators/component';
 import Sortable from 'api-umbrella-admin-ui/mixins/sortable';
 import bootbox from 'bootbox';
 import classic from 'ember-classic-decorator';
+import without from 'lodash-es/without';
 
 @classic
 @tagName("")
@@ -33,10 +34,11 @@ export default class RewriteTable extends Component.extend(Sortable) {
 
   @action
   remove(rewrite) {
-    bootbox.confirm('Are you sure you want to remove this rewrite?', function(response) {
+    bootbox.confirm('Are you sure you want to remove this rewrite?', (response) => {
       if(response) {
-        this.model.rewrites.removeObject(rewrite);
+        let collection = without(this.model.rewrites, rewrite);
+        this.model.set('rewrites', collection);
       }
-    }.bind(this));
+    });
   }
 }

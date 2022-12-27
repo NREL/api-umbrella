@@ -1,5 +1,6 @@
 import { action } from '@ember/object';
 import { classNames } from '@ember-decorators/component';
+import without from 'lodash-es/without';
 
 import BaseField from './base-field';
 
@@ -19,12 +20,14 @@ export default class CheckboxesField extends BaseField {
 
   @action
   toggleCheckbox(value, checked) {
-    const checkedValues = this.model.get(this.fieldName);
+    let checkedValues = this.model.get(this.fieldName);
 
     if(checked === true && !checkedValues.includes(value)) {
-      checkedValues.addObject(value);
+      checkedValues = [...checkedValues, value];
     } else if(checked === false && checkedValues.includes(value)) {
-      checkedValues.removeObject(value);
+      checkedValues = without(checkedValues, value);
     }
+
+    this.model.set(this.fieldName, checkedValues)
   }
 }

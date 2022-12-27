@@ -40,4 +40,8 @@ export default class Application extends JSONSerializer {
       super.serializeIntoHash(...arguments);
     }
   }
+
+  // Disable `extractErrors` so that our errors data on JSON responses get
+  // passed through as-is.
+  extractErrors = false
 }

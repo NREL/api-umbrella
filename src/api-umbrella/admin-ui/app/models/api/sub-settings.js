@@ -31,7 +31,7 @@ class SubSettings extends Model.extend(Validations) {
   @attr()
   regex;
 
-  @belongsTo('api/settings', { async: false })
+  @belongsTo('api/settings', { async: false, inverse: null })
   settings;
 
   init() {

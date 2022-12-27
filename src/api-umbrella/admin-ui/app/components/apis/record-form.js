@@ -9,6 +9,7 @@ import Save from 'api-umbrella-admin-ui/mixins/save';
 import bootbox from 'bootbox';
 import classic from 'ember-classic-decorator';
 import escape from 'lodash-es/escape';
+import without from 'lodash-es/without';
 
 @classic
 @tagName("")
@@ -99,10 +100,10 @@ export default class RecordForm extends Component.extend(Save) {
   }
 
   deleteChildRecord(collectionName, record, message) {
-    let collection = this.model.get(collectionName);
-    bootbox.confirm(message, function(result) {
+    bootbox.confirm(message, (result) => {
       if(result) {
-        collection.removeObject(record);
+        let collection = without(this.model.get(collectionName), record);
+        this.model.set(collectionName, collection)
       }
     });
   }
