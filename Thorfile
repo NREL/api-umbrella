@@ -15,5 +15,3 @@ ENV["PATH"] = [
   "#{ENV.fetch("API_UMBRELLA_SRC_ROOT")}/build/work/dev-env/sbin",
   ENV.fetch("PATH"),
 ].join(":")
-
-# Thor::Util.load_thorfile File.join(ENV.fetch("API_UMBRELLA_SRC_ROOT"), "tasks/outdated")

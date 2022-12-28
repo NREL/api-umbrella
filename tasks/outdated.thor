@@ -91,7 +91,7 @@ class Outdated < Thor
       :git => "https://github.com/go-task/task.git",
     },
     "trafficserver" => {
-      :git => "https://github.com/apache/trafficserver.git",
+      :http => "https://archive.apache.org/dist/trafficserver/",
     },
     "yarn" => {
       :git => "https://github.com/yarnpkg/yarn.git",
