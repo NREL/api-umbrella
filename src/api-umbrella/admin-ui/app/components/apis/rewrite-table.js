@@ -1,24 +1,25 @@
 // eslint-disable-next-line ember/no-classic-components
 import Component from '@ember/component';
 import { action } from '@ember/object';
-import { reads } from '@ember/object/computed';
 import { inject as service } from '@ember/service';
 import { tagName } from '@ember-decorators/component';
-// eslint-disable-next-line ember/no-mixins
-import Sortable from 'api-umbrella-admin-ui/mixins/sortable';
+import Sortable from 'api-umbrella-admin-ui/utils/sortable';
 import bootbox from 'bootbox';
 import classic from 'ember-classic-decorator';
 import without from 'lodash-es/without';
 
 @classic
 @tagName("")
-export default class RewriteTable extends Component.extend(Sortable) {
+export default class RewriteTable extends Component {
   @service store;
 
   openModal = false;
 
-  @reads('model.rewrites')
-  sortableCollection;
+  init() {
+    super.init(...arguments);
+
+    this.sortable = new Sortable(this.model.rewrites);
+  }
 
   @action
   add() {

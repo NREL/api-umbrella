@@ -14,19 +14,15 @@ export default class RecordForm extends Component.extend(Save) {
   @inject('session')
   session;
 
-  init() {
-    super.init(...arguments);
+  throttleByIpOptions = [
+    { id: false, name: 'Rate limit by API key' },
+    { id: true, name: 'Rate limit by IP address' },
+  ];
 
-    this.throttleByIpOptions = [
-      { id: false, name: 'Rate limit by API key' },
-      { id: true, name: 'Rate limit by IP address' },
-    ];
-
-    this.enabledOptions = [
-      { id: true, name: 'Enabled' },
-      { id: false, name: 'Disabled' },
-    ];
-  }
+  enabledOptions = [
+    { id: true, name: 'Enabled' },
+    { id: false, name: 'Disabled' },
+  ];
 
   @computed('session.data.authenticated.admin')
   get isDisabled() {

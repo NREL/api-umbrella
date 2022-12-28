@@ -20,20 +20,16 @@ export default class RecordForm extends Component.extend(Save) {
   @reads('session.data.authenticated.admin')
   currentAdmin;
 
-  init() {
-    super.init(...arguments);
+  backendProtocolOptions = [
+    { id: 'http', name: 'http' },
+    { id: 'https', name: 'https' },
+  ];
 
-    this.backendProtocolOptions = [
-      { id: 'http', name: 'http' },
-      { id: 'https', name: 'https' },
-    ];
-
-    this.balanceAlgorithmOptions = [
-      { id: 'least_conn', name: 'Least Connections' },
-      { id: 'round_robin', name: 'Round Robin' },
-      { id: 'ip_hash', name: 'Source IP Hash' },
-    ];
-  }
+  balanceAlgorithmOptions = [
+    { id: 'least_conn', name: 'Least Connections' },
+    { id: 'round_robin', name: 'Round Robin' },
+    { id: 'ip_hash', name: 'Source IP Hash' },
+  ];
 
   @action
   submitForm(event) {

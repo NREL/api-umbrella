@@ -1,7 +1,6 @@
 // eslint-disable-next-line ember/no-classic-components
 import Component from '@ember/component';
 import { action, computed } from '@ember/object';
-import { run } from '@ember/runloop';
 import { success } from '@pnotify/core';
 import LoadingButton from 'api-umbrella-admin-ui/utils/loading-button';
 import bootbox from 'bootbox';
@@ -120,7 +119,7 @@ export default class PublishForm extends Component {
       url: '/api-umbrella/v1/config/publish',
       type: 'POST',
       data: form.serialize(),
-    }).then(run(() => {
+    }).then(() => {
       LoadingButton.reset(this.publishButton);
       success({
         title: 'Published',
@@ -129,7 +128,7 @@ export default class PublishForm extends Component {
       });
 
       this.refreshCurrentRouteController();
-    }), function(response) {
+    }, (response) => {
       let message = '<h3>Error</h3>';
       try {
         let errors = response.responseJSON.errors;

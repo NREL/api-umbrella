@@ -14,27 +14,23 @@ export default class RateLimitFields extends Component {
   @inject()
   store;
 
-  init() {
-    super.init(...arguments);
+  rateLimitModeOptions = [
+    { id: null, name: 'Default rate limits' },
+    { id: 'custom', name: 'Custom rate limits' },
+    { id: 'unlimited', name: 'Unlimited requests' },
+  ];
 
-    this.rateLimitModeOptions = [
-      { id: null, name: 'Default rate limits' },
-      { id: 'custom', name: 'Custom rate limits' },
-      { id: 'unlimited', name: 'Unlimited requests' },
-    ];
+  rateLimitDurationUnitOptions = [
+    { id: 'seconds', name: 'seconds' },
+    { id: 'minutes', name: 'minutes' },
+    { id: 'hours', name: 'hours' },
+    { id: 'days', name: 'days' },
+  ];
 
-    this.rateLimitDurationUnitOptions = [
-      { id: 'seconds', name: 'seconds' },
-      { id: 'minutes', name: 'minutes' },
-      { id: 'hours', name: 'hours' },
-      { id: 'days', name: 'days' },
-    ];
-
-    this.rateLimitLimitByOptions = [
-      { id: 'apiKey', name: 'API Key' },
-      { id: 'ip', name: 'IP Address' },
-    ];
-  }
+  rateLimitLimitByOptions = [
+    { id: 'apiKey', name: 'API Key' },
+    { id: 'ip', name: 'IP Address' },
+  ];
 
   @computed
   get uniqueSettingsId() {
