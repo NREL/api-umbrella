@@ -17,7 +17,7 @@ class Test::Proxy::ApiMatching::TestHostWildcard < Minitest::Test
           :url_matches => [{ :frontend_prefix => "/#{unique_test_class_id}/path/", :backend_prefix => "/" }],
           :settings => {
             :headers => [
-              { :key => "X-Backend", :value => "specific-host-path" },
+              { :key => "X-Test-Backend", :value => "specific-host-path" },
             ],
           },
         },
@@ -28,7 +28,7 @@ class Test::Proxy::ApiMatching::TestHostWildcard < Minitest::Test
           :url_matches => [{ :frontend_prefix => "/#{unique_test_class_id}/", :backend_prefix => "/" }],
           :settings => {
             :headers => [
-              { :key => "X-Backend", :value => "specific-host-before" },
+              { :key => "X-Test-Backend", :value => "specific-host-before" },
             ],
           },
         },
@@ -39,7 +39,7 @@ class Test::Proxy::ApiMatching::TestHostWildcard < Minitest::Test
           :url_matches => [{ :frontend_prefix => "/#{unique_test_class_id}/", :backend_prefix => "/" }],
           :settings => {
             :headers => [
-              { :key => "X-Backend", :value => "wildcard" },
+              { :key => "X-Test-Backend", :value => "wildcard" },
             ],
           },
         },
@@ -50,7 +50,7 @@ class Test::Proxy::ApiMatching::TestHostWildcard < Minitest::Test
           :url_matches => [{ :frontend_prefix => "/#{unique_test_class_id}/", :backend_prefix => "/" }],
           :settings => {
             :headers => [
-              { :key => "X-Backend", :value => "specific-host-after" },
+              { :key => "X-Test-Backend", :value => "specific-host-after" },
             ],
           },
         },

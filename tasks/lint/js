@@ -9,3 +9,15 @@ set -x
   PATH="$DEV_PATH" yarn run lint:js
   PATH="$DEV_PATH" yarn run lint:hbs
 )
+
+set -x
+(
+  cd "$SOURCE_DIR/src/api-umbrella/example-website"
+  PATH="$DEV_PATH" yarn run lint
+  PATH="$DEV_PATH" yarn run prettier:check
+)
+
+(
+  cd "$SOURCE_DIR/src/api-umbrella/web-app"
+  PATH="$DEV_PATH" ./node_modules/.bin/eslint .
+)

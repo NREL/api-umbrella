@@ -3,19 +3,19 @@
 
   <form {{on "submit" this.submitForm}}>
     <FieldsFor @model={{this.model}} @style="vertical" as |f|>
-      {{f.text-field "name" label=(t "mongoid.attributes.api.name")}}
+      {{f.text-field "name" label=(t "Name")}}
 
       <fieldset>
-        <legend>{{t "admin.api.servers.legend"}}</legend>
-        <p class="fieldset-note">{{t "admin.api.servers.note"}}</p>
-        {{f.select-field "backendProtocol" label=(t "mongoid.attributes.api.backend_protocol") options=this.backendProtocolOptions}}
+        <legend>{{t "Backend"}}</legend>
+        <p class="fieldset-note">{{t "Define the server where the API is hosted. Multiple servers can be defined to perform load balancing."}}</p>
+        {{f.select-field "backendProtocol" label=(t "Backend Protocol") options=this.backendProtocolOptions}}
 
         <Apis::ServerTable @model={{this.model}} />
       </fieldset>
 
       <fieldset>
-        <legend>{{t "admin.api.host.legend"}}</legend>
-        <p class="fieldset-note">{{t "admin.api.host.note"}}</p>
+        <legend>{{t "Host"}}</legend>
+        <p class="fieldset-note">{{t "Define the host that we will listen for, and then the host the API backend is listening for."}}</p>
         <div class="row">
           <div class="col-sm-5">
             {{f.text-field "frontendHost" label="Frontend Host"}}
@@ -32,13 +32,13 @@
     </FieldsFor>
 
     <fieldset>
-      <legend>{{t "admin.api.url_matches.legend"}}</legend>
-      <p class="fieldset-note">{{t "admin.api.url_matches.note"}}</p>
+      <legend>{{t "Matching URL Prefixes"}}</legend>
+      <p class="fieldset-note">{{t "What URL prefixes should be routed to this backend?"}}</p>
       <Apis::UrlMatchTable @model={{this.model}} />
     </fieldset>
 
     <fieldset class="collapsible">
-      <legend><button type="button" class="btn btn-link collapsed" data-toggle="collapse" data-target="#global_settings" aria-controls="global_settings" aria-expanded="false"><FaIcon @icon="caret-down" @fixedWidth={{true}} />Global Request Settings</button></legend>
+      <legend><button type="button" class="btn btn-link collapsed" data-toggle="collapse" data-target="#global_settings" aria-controls="global_settings" aria-expanded="false"><FaIcon @icon="caret-down" @fixedWidth={{true}} />{{t "Global Request Settings"}}</button></legend>
       <div id="global_settings" class="collapse form-horizontal">
         <FieldsFor @model={{this.model.settings}} @style="horizontal-wide-labels" as |f|>
           {{f.text-field "appendQueryString" label="Append Query String Parameters" placeholder="param1=value&param2=value"}}
@@ -51,47 +51,92 @@
     </fieldset>
 
     <fieldset class="collapsible">
-      <legend><button type="button" class="btn btn-link collapsed" data-toggle="collapse" data-target="#sub_settings" aria-controls="sub_settings" aria-expanded="false"><FaIcon @icon="caret-down" @fixedWidth={{true}} />{{t "admin.api.sub_settings.legend"}}</button></legend>
+      <legend><button type="button" class="btn btn-link collapsed" data-toggle="collapse" data-target="#sub_settings" aria-controls="sub_settings" aria-expanded="false"><FaIcon @icon="caret-down" @fixedWidth={{true}} />{{t "Sub-URL Request Settings"}}</button></legend>
       <div id="sub_settings" class="collapse">
-        <p class="fieldset-note">{{t "admin.api.sub_settings.note"}}</p>
+        <p class="fieldset-note">{{t "Change settings for specific sub-URLs within this API."}}</p>
         <Apis::SubSettingsTable @model={{this.model}} @roleOptions={{this.roleOptions}} />
       </div>
     </fieldset>
 
     <fieldset class="collapsible">
-      <legend><button type="button" class="btn btn-link collapsed" data-toggle="collapse" data-target="#rewrites" aria-controls="rewrites" aria-expanded="false"><FaIcon @icon="caret-down" @fixedWidth={{true}} />{{t "admin.api.rewrites.legend"}}</button></legend>
+      <legend><button type="button" class="btn btn-link collapsed" data-toggle="collapse" data-target="#rewrites" aria-controls="rewrites" aria-expanded="false"><FaIcon @icon="caret-down" @fixedWidth={{true}} />{{t "Advanced Requests Rewriting"}}</button></legend>
       <div id="rewrites" class="collapse">
-        <p class="fieldset-note">{{t "admin.api.rewrites.note"}}</p>
+        <p class="fieldset-note">{{t "Modify the incoming request's URL or headers before passing it to the backend."}}</p>
         <Apis::RewriteTable @model={{this.model}} />
       </div>
     </fieldset>
 
     <fieldset class="collapsible">
-      <legend><button type="button" class="btn btn-link collapsed" data-toggle="collapse" data-target="#advanced_settings" aria-controls="advanced_settings" aria-expanded="false"><FaIcon @icon="caret-down" @fixedWidth={{true}} />Advanced Settings</button></legend>
+      <legend><button type="button" class="btn btn-link collapsed" data-toggle="collapse" data-target="#advanced_settings" aria-controls="advanced_settings" aria-expanded="false"><FaIcon @icon="caret-down" @fixedWidth={{true}} />{{t "Advanced Settings"}}</button></legend>
       <div id="advanced_settings" class="collapse form-horizontal">
         <FieldsFor @model={{this.model}} @style="horizontal-wide-labels" as |f|>
           {{f.select-field "balanceAlgorithm" label="Balance Algorithm" options=this.balanceAlgorithmOptions}}
         </FieldsFor>
 
         <FieldsFor @model={{this.model.settings.errorTemplates}} @style="horizontal-wide-labels" as |f|>
-          <h4>{{t "mongoid.attributes.api/settings.error_templates"}}</h4>
-          {{f.codemirror-field "json" label=(t "admin.api.settings.error_templates_json") tooltip=(t "admin.api.settings.error_templates_json_tooltip_markdown") mode="application/json"}}
-          {{f.codemirror-field "xml" label=(t "admin.api.settings.error_templates_xml") tooltip=(t "admin.api.settings.error_templates_xml_tooltip_markdown") mode="application/xml"}}
-          {{f.codemirror-field "csv" label=(t "admin.api.settings.error_templates_csv") tooltip=(t "admin.api.settings.error_templates_csv_tooltip_markdown") mode="text/plain"}}
+          <h4>{{t "Error Templates"}}</h4>
+          {{f.codemirror-field "json" label=(t "JSON Template") tooltip=(marked (t "A <a href=\"http://handlebarsjs.com\" target=\"_blank\">Handlebars</a> template of the JSON error response. Available Handlebars variables are defined below in the Error Data section.\n\nDefault template:\n\n```\n{\n  \"error\": {\n    \"code\": {{code}},\n    \"message\": {{message}}\n  }\n}\n```")) mode="application/json"}}
+          {{f.codemirror-field "xml" label=(t "XML Template") tooltip=(marked (t "A <a href=\"http://handlebarsjs.com\" target=\"_blank\">Handlebars</a> template of the XML error response. Available Handlebars variables are defined below in the Error Data section.\n\nDefault template:\n\n```\n<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<response>\n  <error>\n    <code>{{code}}</code>\n    <message>{{message}}</message>\n  </error>\n</response>\n```")) mode="application/xml"}}
+          {{f.codemirror-field "csv" label=(t "CSV Template") tooltip=(marked (t "A <a href=\"http://handlebarsjs.com\" target=\"_blank\">Handlebars</a> template of the CSV error response. Available Handlebars variables are defined below in the Error Data section.\n\nDefault template:\n\n```\nError Code,Error Message\n{{code}},{{message}}\n```")) mode="text/plain"}}
         </FieldsFor>
 
         <FieldsFor @model={{this.model.settings.errorDataYamlStrings}} @style="horizontal-wide-labels" as |f|>
-          <h4>{{t "mongoid.attributes.api/settings.error_data"}}</h4>
-          {{f.codemirror-field "common" label=(t "admin.api.settings.error_data_common") tooltip=(t "admin.api.settings.error_data_common_tooltip_markdown") mode="text/x-yaml"}}
-          {{f.codemirror-field "api_key_missing" label=(t "admin.api.settings.error_data_api_key_missing") tooltip=(t "admin.api.settings.error_data_api_key_missing_tooltip_markdown") mode="text/x-yaml"}}
-          {{f.codemirror-field "api_key_invalid" label=(t "admin.api.settings.error_data_api_key_invalid") tooltip=(t "admin.api.settings.error_data_api_key_invalid_tooltip_markdown") mode="text/x-yaml"}}
-          {{f.codemirror-field "api_key_disabled" label=(t "admin.api.settings.error_data_api_key_disabled") tooltip=(t "admin.api.settings.error_data_api_key_disabled_tooltip_markdown") mode="text/x-yaml"}}
-          {{f.codemirror-field "api_key_unauthorized" label=(t "admin.api.settings.error_data_api_key_unauthorized") tooltip=(t "admin.api.settings.error_data_api_key_unauthorized_tooltip_markdown") mode="text/x-yaml"}}
-          {{f.codemirror-field "over_rate_limit" label=(t "admin.api.settings.error_data_over_rate_limit") tooltip=(t "admin.api.settings.error_data_over_rate_limit_tooltip_markdown") mode="text/x-yaml"}}
-          {{f.codemirror-field "https_required" label=(t "admin.api.settings.error_data_https_required") tooltip=(t "admin.api.settings.error_data_https_required_tooltip_markdown") mode="text/x-yaml"}}
+          <h4>{{t "Error Data"}}</h4>
+          {{f.codemirror-field "common" label=(t "Common (All Errors)") tooltip=(marked (t "<a href=\"http://en.wikipedia.org/wiki/YAML\" target=\"_blank\">YAML</a> definition of the Handlebars variables available to all error templates.\n\nDefault data:\n\n```\nsignup_url: {{base_url}}\ncontact_url: \"{{base_url}}/contact/\"\n```\n\n`{{base_url}}` is a special variable that contains a reference to the current root URL of the domain being accessed (with no trailing slash). For example, if the API URL being accessed is `https://www.example.com/foo/bar.json` then `{{base_url}}` would be `https://www.example.com`.")) mode="text/x-yaml"}}
+          {{f.codemirror-field "api_key_missing" label=(t "API Key Missing") tooltip=(marked (t "<a href=\"http://en.wikipedia.org/wiki/YAML\" target=\"_blank\">YAML</a> definition of the Handlebars variables available to the error templates.\n\nDefault data:\n\n```\nstatus_code: 403\ncode: API_KEY_MISSING\nmessage: No api_key was supplied. Get one at {{signup_url}}\n```")) mode="text/x-yaml"}}
+          {{f.codemirror-field "api_key_invalid" label=(t "API Key Invalid") tooltip=(marked (t "<a href=\"http://en.wikipedia.org/wiki/YAML\" target=\"_blank\">YAML</a> definition of the Handlebars variables available to the error templates.\n\nDefault data:\n\n```\nstatus_code: 403\ncode: API_KEY_INVALID\nmessage: An invalid api_key was supplied. Get one at {{signup_url}}\n```")) mode="text/x-yaml"}}
+          {{f.codemirror-field "api_key_disabled" label=(t "API Key Disabled") tooltip=(marked (t "<a href=\"http://en.wikipedia.org/wiki/YAML\" target=\"_blank\">YAML</a> definition of the Handlebars variables available to the error templates.\n\nDefault data:\n\n```\nstatus_code: 403\ncode: API_KEY_DISABLED\nmessage: The api_key supplied has been disabled. Contact us at {{contact_url}} for assistance\n```")) mode="text/x-yaml"}}
+          {{f.codemirror-field "api_key_unauthorized" label=(t "API Key Unauthorized") tooltip=(marked (t "<a href=\"http://en.wikipedia.org/wiki/YAML\" target=\"_blank\">YAML</a> definition of the Handlebars variables available to the error templates.\n\nDefault data:\n\n```\nstatus_code: 403\ncode: API_KEY_UNAUTHORIZED\nmessage: The api_key supplied is not authorized to access the given service. Contact us at {{contact_url}} for assistance\n```")) mode="text/x-yaml"}}
+          {{f.codemirror-field "over_rate_limit" label=(t "Over Rate Limit") tooltip=(marked (t "<a href=\"http://en.wikipedia.org/wiki/YAML\" target=\"_blank\">YAML</a> definition of the Handlebars variables available to the error templates.\n\nDefault data:\n\n```\nstatus_code: 429\ncode: OVER_RATE_LIMIT\nmessage: You have exceeded your rate limit. Try again later or contact us at {{contact_url}} for assistance\n```")) mode="text/x-yaml"}}
+          {{f.codemirror-field "https_required" label=(t "HTTPS Required") tooltip=(marked (t "<a href=\"http://en.wikipedia.org/wiki/YAML\" target=\"_blank\">YAML</a> definition of the Handlebars variables available to the error templates.\n\nDefault data:\n\n```\nstatus_code: 400\ncode: HTTPS_REQUIRED\nmessage: \"Requests must be made over HTTPS. Try accessing the API at: {{https_url}}\"\n```\n\n`{{https_url}}` is a special variable that is available within the context of the HTTPS requirement error that contains a copy of the current URL with the URL schemed switched to HTTPS.")) mode="text/x-yaml"}}
         </FieldsFor>
       </div>
     </fieldset>
+
+    {{#if this.currentAdmin.superuser}}
+      {{#if this.model.id}}
+        <FieldsFor @model={{this.model}} @style="horizontal" as |f|>
+          <fieldset class="form-horizontal condensed">
+            <legend>{{t "Details"}}</legend>
+
+            {{f.text-field "organizationName" label=(t "Organization Name")}}
+            {{f.text-field "statusDescription" label=(t "Status")}}
+
+            {{#f.static-field "rootApiScope" label="Root API Scope"}}
+              {{#if this.model.rootApiScope}}
+                <LinkTo @route="api_scopes.edit" @model={{this.model.rootApiScope.id}}>{{this.model.rootApiScope.name}} - {{this.model.rootApiScope.host}}{{this.model.rootApiScope.path_prefix}}</LinkTo>
+              {{else}}
+                None
+              {{/if}}
+            {{/f.static-field}}
+
+            {{#f.static-field "apiScopes" label="API Scopes"}}
+              {{#if this.model.apiScopes}}
+                <ul>
+                  {{#each this.model.apiScopes as |apiScope|}}
+                    <li><LinkTo @route="api_scopes.edit" @model={{apiScope.id}}>{{apiScope.name}} - {{apiScope.host}}{{apiScope.path_prefix}}</LinkTo></li>
+                  {{/each}}
+                </ul>
+              {{else}}
+                None
+              {{/if}}
+            {{/f.static-field}}
+
+            {{#f.static-field "adminGroups" label="Admin Groups"}}
+              {{#if this.model.adminGroups}}
+                <ul>
+                  {{#each this.model.adminGroups as |admin_group|}}
+                    <li><LinkTo @route="admin_groups.edit" @model={{admin_group.id}}>{{admin_group.name}}</LinkTo></li>
+                  {{/each}}
+                </ul>
+              {{else}}
+                None
+              {{/if}}
+            {{/f.static-field}}
+          </fieldset>
+        </FieldsFor>
+      {{/if}}
+    {{/if}}
 
     <div class="row">
       <div class="col-sm-6">

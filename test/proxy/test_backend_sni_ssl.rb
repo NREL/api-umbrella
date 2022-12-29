@@ -12,37 +12,36 @@ class Test::Proxy::TestBackendSniSsl < Minitest::Test
       override_config_set({
         "dns_resolver" => {
           "nameservers" => ["[127.0.0.1]:#{$config["unbound"]["port"]}"],
-          "max_stale" => 0,
           "negative_ttl" => false,
         },
-      }, "--router")
+      })
     end
   end
 
   def after_all
     super
-    override_config_reset("--router")
+    override_config_reset
   end
 
   def test_backends_requiring_sni_support
     set_dns_records([
-      "sni1.foo.ooga 60 A 127.0.0.1",
-      "sni2.foo.ooga 60 A 127.0.0.1",
+      "sni1.sni-tests.test 60 A 127.0.0.1",
+      "sni2.sni-tests.test 60 A 127.0.0.1",
     ])
 
     prepend_api_backends([
       {
         :frontend_host => "127.0.0.1",
-        :backend_host => "sni1.foo.ooga",
+        :backend_host => "sni1.sni-tests.test",
         :backend_protocol => "https",
-        :servers => [{ :host => "sni1.foo.ooga", :port => 9448 }],
+        :servers => [{ :host => "sni1.sni-tests.test", :port => 9448 }],
         :url_matches => [{ :frontend_prefix => "/#{unique_test_id}/sni1/", :backend_prefix => "/" }],
       },
       {
         :frontend_host => "127.0.0.1",
-        :backend_host => "sni2.foo.ooga",
+        :backend_host => "sni2.sni-tests.test",
         :backend_protocol => "https",
-        :servers => [{ :host => "sni2.foo.ooga", :port => 9448 }],
+        :servers => [{ :host => "sni2.sni-tests.test", :port => 9448 }],
         :url_matches => [{ :frontend_prefix => "/#{unique_test_id}/sni2/", :backend_prefix => "/" }],
       },
     ]) do
@@ -56,11 +55,11 @@ class Test::Proxy::TestBackendSniSsl < Minitest::Test
       # Verify that SNI connections directly to the backend return a
       # certificate.
       ssl_client = OpenSSL::SSL::SSLSocket.new(TCPSocket.new("127.0.0.1", 9448), OpenSSL::SSL::SSLContext.new)
-      ssl_client.hostname = "sni1.foo.ooga"
+      ssl_client.hostname = "sni1.sni-tests.test"
       ssl_client.connect
       assert_equal("/O=API Umbrella/CN=ssltest.example.com", ssl_client.peer_cert.subject.to_s)
       ssl_client = OpenSSL::SSL::SSLSocket.new(TCPSocket.new("127.0.0.1", 9448), OpenSSL::SSL::SSLContext.new)
-      ssl_client.hostname = "sni2.foo.ooga"
+      ssl_client.hostname = "sni2.sni-tests.test"
       ssl_client.connect
       assert_equal("/O=API Umbrella/CN=ssltest.example.com", ssl_client.peer_cert.subject.to_s)
 

@@ -8,14 +8,13 @@ class Test::Apis::V1::Config::TestPublishTransitionaryHttps < Minitest::Test
   def setup
     super
     setup_server
-    Api.delete_all
-    WebsiteBackend.delete_all
-    ConfigVersion.delete_all
+
+    publish_default_config_version
   end
 
   def after_all
     super
-    default_config_version_needed
+    publish_default_config_version
   end
 
   def test_transition_return_error_set_timestamp
@@ -24,10 +23,10 @@ class Test::Apis::V1::Config::TestPublishTransitionaryHttps < Minitest::Test
 
   ["transition_return_error"].each do |mode|
     define_method("test_#{mode}_set_timestamp") do
-      api = FactoryBot.create(:api, {
-        :settings => {
+      api = FactoryBot.create(:api_backend, {
+        :settings => FactoryBot.build(:api_backend_settings, {
           :require_https => mode,
-        },
+        }),
       })
       config = {
         :apis => {
@@ -43,19 +42,20 @@ class Test::Apis::V1::Config::TestPublishTransitionaryHttps < Minitest::Test
       }))
 
       assert_response_code(201, response)
-      assert_equal(1, ConfigVersion.count)
-      active_config = ConfigVersion.active_config
+      assert_equal(2, PublishedConfig.count)
+      active_config = PublishedConfig.active_config
 
       api.reload
-      assert_kind_of(Time, api.settings.require_https_transition_start_at)
-      assert_kind_of(Time, active_config["apis"][0]["settings"]["require_https_transition_start_at"])
+      time = api.settings.require_https_transition_start_at
+      assert_kind_of(Time, time)
+      assert_equal(time.utc.iso8601(3), active_config["apis"][0]["settings"]["require_https_transition_start_at"])
     end
 
     define_method("test_#{mode}_sub_settings_set_timestamp") do
-      api = FactoryBot.create(:api, {
+      api = FactoryBot.create(:api_backend, {
         :sub_settings => [
-          FactoryBot.attributes_for(:api_sub_setting, {
-            :settings_attributes => FactoryBot.attributes_for(:api_setting, {
+          FactoryBot.build(:api_backend_sub_url_settings, {
+            :settings => FactoryBot.build(:api_backend_settings, {
               :require_https => mode,
             }),
           }),
@@ -75,18 +75,19 @@ class Test::Apis::V1::Config::TestPublishTransitionaryHttps < Minitest::Test
       }))
 
       assert_response_code(201, response)
-      assert_equal(1, ConfigVersion.count)
-      active_config = ConfigVersion.active_config
+      assert_equal(2, PublishedConfig.count)
+      active_config = PublishedConfig.active_config
 
       api.reload
-      assert_kind_of(Time, api.sub_settings[0].settings.require_https_transition_start_at)
-      assert_kind_of(Time, active_config["apis"][0]["sub_settings"][0]["settings"]["require_https_transition_start_at"])
+      time = api.sub_settings[0].settings.require_https_transition_start_at
+      assert_kind_of(Time, time)
+      assert_equal(time.utc.iso8601(3), active_config["apis"][0]["sub_settings"][0]["settings"]["require_https_transition_start_at"])
     end
 
     define_method("test_#{mode}_does_not_touch_existing_timestamp") do
       timestamp = Time.parse("2015-01-16T06:06:28.816Z").utc
-      api = FactoryBot.create(:api, {
-        :settings => FactoryBot.attributes_for(:api_setting, {
+      api = FactoryBot.create(:api_backend, {
+        :settings => FactoryBot.build(:api_backend_settings, {
           :require_https => mode,
           :require_https_transition_start_at => timestamp,
         }),
@@ -105,34 +106,42 @@ class Test::Apis::V1::Config::TestPublishTransitionaryHttps < Minitest::Test
       }))
 
       assert_response_code(201, response)
-      assert_equal(1, ConfigVersion.count)
-      active_config = ConfigVersion.active_config
+      assert_equal(2, PublishedConfig.count)
+      active_config = PublishedConfig.active_config
 
       api.reload
       assert_equal(timestamp, api.settings.require_https_transition_start_at)
-      assert_equal(timestamp, active_config["apis"][0]["settings"]["require_https_transition_start_at"])
+      assert_equal(timestamp.utc.iso8601(3), active_config["apis"][0]["settings"]["require_https_transition_start_at"])
     end
 
     define_method("test_#{mode}_mode_changes_without_publishing_does_not_touch_existing_timestamp") do
       timestamp = Time.parse("2015-01-16T06:06:28.816Z").utc
-      api = FactoryBot.create(:api, {
-        :settings => FactoryBot.attributes_for(:api_setting, {
+      api = FactoryBot.create(:api_backend, {
+        :settings => FactoryBot.build(:api_backend_settings, {
           :require_https => mode,
           :require_https_transition_start_at => timestamp,
         }),
       })
+      original_updated_at = api.updated_at
 
       api.settings.require_https = "required_return_error"
-      api.save!
+      api.settings.save!
+      refute_equal(mode, api.settings.require_https)
 
       api.settings.require_https = "optional"
-      api.save!
+      api.settings.save!
+      refute_equal(mode, api.settings.require_https)
 
       api.settings.require_https = nil
-      api.save!
+      api.settings.save!
+      refute_equal(mode, api.settings.require_https)
 
       api.settings.require_https = mode
-      api.save!
+      api.settings.save!
+      assert_equal(mode, api.settings.require_https)
+
+      api.reload
+      refute_equal(original_updated_at.to_f, api.updated_at.to_f)
 
       config = {
         :apis => {
@@ -148,12 +157,12 @@ class Test::Apis::V1::Config::TestPublishTransitionaryHttps < Minitest::Test
       }))
 
       assert_response_code(201, response)
-      assert_equal(1, ConfigVersion.count)
-      active_config = ConfigVersion.active_config
+      assert_equal(2, PublishedConfig.count)
+      active_config = PublishedConfig.active_config
 
       api.reload
       assert_equal(timestamp, api.settings.require_https_transition_start_at)
-      assert_equal(timestamp, active_config["apis"][0]["settings"]["require_https_transition_start_at"])
+      assert_equal(timestamp.utc.iso8601(3), active_config["apis"][0]["settings"]["require_https_transition_start_at"])
     end
   end
 
@@ -161,8 +170,8 @@ class Test::Apis::V1::Config::TestPublishTransitionaryHttps < Minitest::Test
     mode_method_name = mode || mode.inspect
 
     define_method("test_#{mode_method_name}_unset_timestamp") do
-      api = FactoryBot.create(:api, {
-        :settings => FactoryBot.attributes_for(:api_setting, {
+      api = FactoryBot.create(:api_backend, {
+        :settings => FactoryBot.build(:api_backend_settings, {
           :require_https => mode,
           :require_https_transition_start_at => Time.now.utc,
         }),
@@ -181,8 +190,8 @@ class Test::Apis::V1::Config::TestPublishTransitionaryHttps < Minitest::Test
       }))
 
       assert_response_code(201, response)
-      assert_equal(1, ConfigVersion.count)
-      active_config = ConfigVersion.active_config
+      assert_equal(2, PublishedConfig.count)
+      active_config = PublishedConfig.active_config
 
       api.reload
       assert_nil(api.settings.require_https_transition_start_at)
@@ -190,10 +199,10 @@ class Test::Apis::V1::Config::TestPublishTransitionaryHttps < Minitest::Test
     end
 
     define_method("test_#{mode_method_name}_sub_settings_unset_timestamp") do
-      api = FactoryBot.create(:api, {
+      api = FactoryBot.create(:api_backend, {
         :sub_settings => [
-          FactoryBot.attributes_for(:api_sub_setting, {
-            :settings_attributes => FactoryBot.attributes_for(:api_setting, {
+          FactoryBot.build(:api_backend_sub_url_settings, {
+            :settings => FactoryBot.build(:api_backend_settings, {
               :require_https => mode,
               :require_https_transition_start_at => Time.now.utc,
             }),
@@ -214,8 +223,8 @@ class Test::Apis::V1::Config::TestPublishTransitionaryHttps < Minitest::Test
       }))
 
       assert_response_code(201, response)
-      assert_equal(1, ConfigVersion.count)
-      active_config = ConfigVersion.active_config
+      assert_equal(2, PublishedConfig.count)
+      active_config = PublishedConfig.active_config
 
       api.reload
       assert_nil(api.sub_settings[0].settings.require_https_transition_start_at)

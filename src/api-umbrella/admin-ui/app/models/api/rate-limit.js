@@ -19,7 +19,9 @@ export default class RateLimit extends Model {
   @attr()
   responseHeaders;
 
-  ready() {
+  init() {
+    super.init(...arguments);
+
     this.setDefaults();
   }
 

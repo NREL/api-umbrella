@@ -45,13 +45,13 @@ class Test::Proxy::TestIpValidation < Minitest::Test
       ])
 
       @@user_with_allowed_ips = FactoryBot.create(:api_user, {
-        :settings => {
+        :settings => FactoryBot.build(:api_user_settings, {
           :rate_limit_mode => "unlimited",
           :allowed_ips => [
             "10.0.0.0/24",
             "192.168.0.0/16",
           ],
-        },
+        }),
       })
     end
   end
@@ -155,10 +155,10 @@ class Test::Proxy::TestIpValidation < Minitest::Test
 
   def test_user_authorized_when_empty_array
     user = FactoryBot.create(:api_user, {
-      :settings => {
+      :settings => FactoryBot.build(:api_user_settings, {
         :rate_limit_mode => "unlimited",
         :allowed_ips => [],
-      },
+      }),
     })
 
     assert_authorized_ip("/api/hello", {

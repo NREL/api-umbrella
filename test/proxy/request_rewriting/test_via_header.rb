@@ -12,7 +12,7 @@ class Test::Proxy::RequestRewriting::TestViaHeader < Minitest::Test
   # We don't want to add Via headers by default, since it may mess with
   # backend server gzipping and prevent circular requests.
   #
-  # See templates/etc/trafficserver/records.config.mustache's
+  # See templates/etc/trafficserver/records.config.etlua's
   # proxy.config.http.insert_request_via_str comments.
   def test_does_not_add_via_header
     response = Typhoeus.get("http://127.0.0.1:9080/api/info/", http_options)

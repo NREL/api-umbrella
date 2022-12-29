@@ -9,23 +9,22 @@ class Test::AdminUi::Login::TestUsernameNotEmail < Minitest::Capybara::Test
   def setup
     super
     setup_server
-    once_per_class_setup do
-      Admin.delete_all
-      @admin = FactoryBot.create(:admin)
 
+    FactoryBot.create(:admin)
+    once_per_class_setup do
       override_config_set({
         "web" => {
           "admin" => {
             "username_is_email" => false,
           },
         },
-      }, ["--router", "--web"])
+      })
     end
   end
 
   def after_all
     super
-    override_config_reset(["--router", "--web"])
+    override_config_reset
   end
 
   def test_username_label_on_login

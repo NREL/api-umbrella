@@ -31,6 +31,21 @@ class Test::Proxy::RequestRewriting::TestSetsHttpBasicAuth < Minitest::Test
           :frontend_host => "127.0.0.1",
           :backend_host => "127.0.0.1",
           :servers => [{ :host => "127.0.0.1", :port => 9444 }],
+          :url_matches => [{ :frontend_prefix => "/#{unique_test_class_id}/sub-only/", :backend_prefix => "/" }],
+          :sub_settings => [
+            {
+              :http_method => "any",
+              :regex => "^/auth/sub/",
+              :settings => {
+                :http_basic_auth => "anotheruser:anothersecret",
+              },
+            },
+          ],
+        },
+        {
+          :frontend_host => "127.0.0.1",
+          :backend_host => "127.0.0.1",
+          :servers => [{ :host => "127.0.0.1", :port => 9444 }],
           :url_matches => [{ :frontend_prefix => "/#{unique_test_class_id}/", :backend_prefix => "/" }],
           :settings => {
             :http_basic_auth => "somebody:secret",
@@ -61,6 +76,16 @@ class Test::Proxy::RequestRewriting::TestSetsHttpBasicAuth < Minitest::Test
     }))
     assert_response_code(200, response)
     assert_equal("somebody", response.body)
+  end
+
+  def test_sets_auth_when_only_at_sub_url_level
+    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/sub-only/auth/", http_options)
+    assert_response_code(401, response)
+    assert_equal("Unauthorized", response.body)
+
+    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/sub-only/auth/sub/", http_options)
+    assert_response_code(200, response)
+    assert_equal("anotheruser", response.body)
   end
 
   def test_sub_url_settings_overrides_parent_settings

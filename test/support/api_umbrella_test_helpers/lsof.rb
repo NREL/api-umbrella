@@ -54,7 +54,6 @@ module ApiUmbrellaTestHelpers
       parsed = {}
       parsing = nil
       lines.each do |line|
-        # puts line.inspect
         field_id = line[0..0]
         value = line[1..-1]
         field = nil
@@ -123,6 +122,11 @@ module ApiUmbrellaTestHelpers
         end
 
         parsed[parsing][field] = value
+      end
+
+      # Handle the last process group after looping through the rest.
+      if parsed[:file]
+        files << parsed.fetch(:process).merge(parsed.fetch(:file))
       end
 
       files

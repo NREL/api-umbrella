@@ -24,7 +24,7 @@ ENV["PATH"] = [
   "#{API_UMBRELLA_SRC_ROOT}/build/work/test-env/sbin",
   "#{API_UMBRELLA_SRC_ROOT}/build/work/dev-env/bin",
   "#{API_UMBRELLA_SRC_ROOT}/build/work/dev-env/sbin",
-  ENV["PATH"],
+  ENV.fetch("PATH"),
 ].join(":")
 
 # Set a random time zone to ensure tests aren't time zone specific.
@@ -32,10 +32,11 @@ Zonebie.set_random_timezone
 
 # Set the TZ environment variable to ensure other processes (like the Capybara
 # browser tests) are run in the same random time zone.
-ENV["TZ"] = ::Time.zone.tzinfo.identifier
+ENV["TZ"] = Time.zone.tzinfo.identifier
 
 # Load all the support files. Load models first, so they're defined for other
 # helpers.
+Dir[File.join(API_UMBRELLA_SRC_ROOT, "test/support/models/application_record.rb")].sort.each { |f| require f }
 Dir[File.join(API_UMBRELLA_SRC_ROOT, "test/support/models/*.rb")].sort.each { |f| require f }
 Dir[File.join(API_UMBRELLA_SRC_ROOT, "test/support/models/**/*.rb")].sort.each { |f| require f }
 Dir[File.join(API_UMBRELLA_SRC_ROOT, "test/support/**/*.rb")].sort.each { |f| require f }

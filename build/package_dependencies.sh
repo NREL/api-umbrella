@@ -8,20 +8,21 @@ source_dir="$(dirname "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)")"
 source "$source_dir/tasks/helpers/detect_os_release.sh"
 detect_os_release
 
-core_package_non_build_dependencies=()
-
 if [[ "$ID_NORMALIZED" == "rhel" ]]; then
-  core_package_dependencies=(
+  core_runtime_dependencies=(
     # General
     bash
     glibc
     libffi
     libuuid
     libyaml
+    libzstd-devel
     logrotate
     ncurses-libs
     openssl
     pcre
+    pcre2
+    postgresql
     zlib
 
     # geoip-auto-updater
@@ -52,12 +53,14 @@ if [[ "$ID_NORMALIZED" == "rhel" ]]; then
     perl
     perl-Time-HiRes
 
-    # nokogiri
-    libxml2-devel
-    libxslt-devel
-
     # For prefixed console output (gnu version for strftime support).
     gawk
+
+    # lua-resty-nettle
+    nettle-devel
+
+    # lualdap
+    openldap
   )
   core_build_dependencies=(
     autoconf
@@ -66,6 +69,7 @@ if [[ "$ID_NORMALIZED" == "rhel" ]]; then
     chrpath
     gcc
     gcc-c++
+    gettext
     git
     libcurl-devel
     libffi-devel
@@ -78,27 +82,30 @@ if [[ "$ID_NORMALIZED" == "rhel" ]]; then
     openssl-devel
     patch
     pcre-devel
+    pcre2-devel
     pkgconfig
     python
+    readline-devel
     rpm-build
     rsync
     tar
     unzip
     xz
 
-    # For OpenResty's "opm" CLI.
-    perl-Digest-MD5
+    # lualdap
+    openldap-devel
+
+    # For tests and building static site.
+    ruby-devel
+    rubygem-bundler
   )
-  test_package_dependencies=(
+  test_runtime_dependencies=(
     unbound
   )
   test_build_dependencies=(
     # Binary and readelf tests
     file
     binutils
-
-    # For installing the mongo-orchestration test dependency.
-    python-virtualenv
 
     # For checking for file descriptor leaks during the tests.
     lsof
@@ -111,17 +118,33 @@ if [[ "$ID_NORMALIZED" == "rhel" ]]; then
 
     # For running lsof tests in Docker as root
     sudo
+
+    # Postgres Ruby client for tests
+    libpq-devel
+
+    # For nokogiri dependency
+    libxml2-devel
+    libxslt-devel
   )
 
-  # Install GCC 7+ for compiling TrafficServer (C++17 required).
   if [[ "$VERSION_ID" == "7" ]]; then
+    # Install GCC 7+ for compiling TrafficServer (C++17 required).
     core_build_dependencies+=(
       centos-release-scl
       devtoolset-7
     )
   else
-    core_package_dependencies+=(
+    core_runtime_dependencies+=(
+      # lua-icu-date-ffi
       libicu-devel
+
+      # lua-psl
+      libpsl
+    )
+
+    core_build_dependencies+=(
+      # lua-psl
+      libpsl-devel
     )
   fi
 elif [[ "$ID_NORMALIZED" == "debian" ]]; then
@@ -134,17 +157,20 @@ elif [[ "$ID_NORMALIZED" == "debian" ]]; then
     libffi_version=6
   fi
 
-  core_package_dependencies=(
+  core_runtime_dependencies=(
     # General
     bash
     libc6
     "libffi$libffi_version"
     libncurses5
     libpcre3
+    libpcre2-8-0
     libuuid1
     libyaml-0-2
+    libzstd-dev
     logrotate
     openssl
+    postgresql-client
     zlib1g
 
     # geoip-auto-updater
@@ -171,14 +197,20 @@ elif [[ "$ID_NORMALIZED" == "debian" ]]; then
     # For OpenResty's "resty" CLI.
     perl
 
-    # nokogiri
-    libxml2-dev
-    libxslt-dev
-
     # For prefixed console output (gnu version for strftime support).
     gawk
 
+    # lua-icu-date-ffi
     libicu-dev
+
+    # lua-resty-nettle
+    "nettle-dev"
+
+    # lualdap
+    libldap-2.4-2
+
+    # lua-psl
+    libpsl5
   )
   core_build_dependencies=(
     autoconf
@@ -187,11 +219,15 @@ elif [[ "$ID_NORMALIZED" == "debian" ]]; then
     chrpath
     g++
     gcc
+    gettext
     git
     libcurl4-openssl-dev
     libffi-dev
+    libjansson-dev
     libncurses5-dev
     libpcre3-dev
+    libpcre2-dev
+    libreadline-dev
     libssl-dev
     libtool
     libtool-bin
@@ -208,17 +244,24 @@ elif [[ "$ID_NORMALIZED" == "debian" ]]; then
     uuid-dev
     xz-utils
     zlib1g-dev
+
+    # lualdap
+    libldap-dev
+
+    # For tests and building static site.
+    ruby-dev
+    ruby-bundler
+
+    # lua-psl
+    libpsl-dev
   )
-  test_package_dependencies=(
+  test_runtime_dependencies=(
     unbound
   )
   test_build_dependencies=(
     # Binary and readelf tests
     file
     binutils
-
-    # For installing the mongo-orchestration test dependency.
-    virtualenv
 
     # For checking for file descriptor leaks during the tests.
     lsof
@@ -231,6 +274,13 @@ elif [[ "$ID_NORMALIZED" == "debian" ]]; then
 
     # For running lsof tests in Docker as root
     sudo
+
+    # Postgres Ruby client for tests
+    libpq-dev
+
+    # For nokogiri dependency
+    libxml2-dev
+    libxslt-dev
   )
 
   # Install GCC 7+ for compiling TrafficServer (C++17 required).
@@ -241,9 +291,9 @@ elif [[ "$ID_NORMALIZED" == "debian" ]]; then
       libc++abi-7-dev
     )
 
-    core_package_non_build_dependencies+=(
-      libc++1
-      libc++abi1
+    core_runtime_dependencies+=(
+      libc++1-7
+      libc++abi1-7
     )
   fi
 
@@ -256,12 +306,12 @@ elif [[ "$ID_NORMALIZED" == "debian" ]]; then
     curl -fsSL https://adoptopenjdk.jfrog.io/adoptopenjdk/api/gpg/key/public | apt-key add -
     apt-get update
 
-    core_package_dependencies+=(
+    core_runtime_dependencies+=(
       # ElasticSearch
       "adoptopenjdk-8-hotspot-jre"
     )
   else
-    core_package_dependencies+=(
+    core_runtime_dependencies+=(
       # ElasticSearch
       "openjdk-8-jre-headless"
     )
@@ -272,19 +322,13 @@ else
 fi
 
 all_build_dependencies=(
-  "${core_package_dependencies[@]}"
+  "${core_runtime_dependencies[@]}"
   "${core_build_dependencies[@]}"
 )
 
 # shellcheck disable=SC2034
 all_dependencies=(
   "${all_build_dependencies[@]}"
-  "${test_package_dependencies[@]}"
+  "${test_runtime_dependencies[@]}"
   "${test_build_dependencies[@]}"
 )
-
-if [ "${#core_package_non_build_dependencies[@]}" != 0 ]; then
-  core_package_dependencies+=(
-    "${core_package_non_build_dependencies[@]}"
-  )
-fi

@@ -11,22 +11,22 @@ class Test::Proxy::RateLimits::TestApiLimits < Minitest::Test
     setup_server
     once_per_class_setup do
       override_config_set({
-        :apiSettings => {
+        :default_api_backend_settings => {
           :rate_limits => [
             {
               :duration => 60 * 60 * 1000, # 1 hour
-              :accuracy => 1 * 60 * 1000, # 1 minute
-              :limit_by => "apiKey",
-              :limit => 5,
+              :limit_by => "api_key",
+              :limit_to => 5,
               :distributed => true,
               :response_headers => true,
             },
           ],
         },
-      }, "--router")
+      })
 
       prepend_api_backends([
         {
+          :name => "#{unique_test_class_id} - Lower",
           :frontend_host => "127.0.0.1",
           :backend_host => "127.0.0.1",
           :servers => [{ :host => "127.0.0.1", :port => 9444 }],
@@ -35,9 +35,8 @@ class Test::Proxy::RateLimits::TestApiLimits < Minitest::Test
             :rate_limits => [
               {
                 :duration => 60 * 60 * 1000, # 1 hour
-                :accuracy => 1 * 60 * 1000, # 1 minute
-                :limit_by => "apiKey",
-                :limit => 3,
+                :limit_by => "api_key",
+                :limit_to => 3,
                 :distributed => true,
                 :response_headers => true,
               },
@@ -51,9 +50,8 @@ class Test::Proxy::RateLimits::TestApiLimits < Minitest::Test
                 :rate_limits => [
                   {
                     :duration => 60 * 60 * 1000, # 1 hour
-                    :accuracy => 1 * 60 * 1000, # 1 minute
-                    :limit_by => "apiKey",
-                    :limit => 7,
+                    :limit_by => "api_key",
+                    :limit_to => 7,
                     :distributed => true,
                     :response_headers => true,
                   },
@@ -101,7 +99,7 @@ class Test::Proxy::RateLimits::TestApiLimits < Minitest::Test
 
   def after_all
     super
-    override_config_reset("--router")
+    override_config_reset
   end
 
   def test_non_api_default_limit
@@ -182,10 +180,10 @@ class Test::Proxy::RateLimits::TestApiLimits < Minitest::Test
   def test_user_with_empty_rate_limits_array
     assert_api_key_rate_limit("/#{unique_test_class_id}/lower/hello", 3, {
       :user_factory_overrides => {
-        :settings => {
+        :settings => FactoryBot.build(:api_user_settings, {
           :rate_limit_mode => nil,
           :rate_limits => [],
-        },
+        }),
       },
     })
   end
@@ -201,26 +199,24 @@ class Test::Proxy::RateLimits::TestApiLimits < Minitest::Test
     assert_equal("3", response.headers["x-ratelimit-limit"])
 
     self.config_publish_lock.synchronize do
-      begin
-        original_config = ConfigVersion.active_config
-        config = original_config.deep_dup
+      original_config = PublishedConfig.active_config
+      config = original_config.deep_dup
 
-        # Find the already published "lower" api backend, change its rate
-        # limits, and republish.
-        api = config["apis"].find { |a| a["url_matches"].present? && a["url_matches"][0]["frontend_prefix"] == "/#{unique_test_class_id}/lower/" }
-        assert_equal(3, api["settings"]["rate_limits"][0]["limit"])
-        api["settings"]["rate_limits"][0]["limit"] = 80
-        ConfigVersion.publish!(config).wait_until_live
+      # Find the already published "lower" api backend, change its rate
+      # limits, and republish.
+      api = config["apis"].find { |a| a["name"] == "#{unique_test_class_id} - Lower" }
+      assert_equal(3, api["settings"]["rate_limits"][0]["limit"])
+      api["settings"]["rate_limits"][0]["limit"] = 80
+      PublishedConfig.create!(:config => config).wait_until_live
 
-        # Make sure any local worker cache is cleared across all possible
-        # worker processes.
-        responses = exercise_all_workers("/#{unique_test_class_id}/lower/info/", http_opts)
-        responses.each do |resp|
-          assert_equal("80", resp.headers["x-ratelimit-limit"])
-        end
-      ensure
-        ConfigVersion.publish!(original_config).wait_until_live
+      # Make sure any local worker cache is cleared across all possible
+      # worker processes.
+      responses = exercise_all_workers("/#{unique_test_class_id}/lower/info/", http_opts)
+      responses.each do |resp|
+        assert_equal("80", resp.headers["x-ratelimit-limit"])
       end
+    ensure
+      PublishedConfig.create!(:config => original_config).wait_until_live
     end
 
     response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/lower/info/", http_opts)

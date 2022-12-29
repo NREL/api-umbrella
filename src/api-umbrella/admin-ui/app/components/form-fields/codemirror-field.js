@@ -62,7 +62,10 @@ export default class CodemirrorField extends BaseField {
     // Sync any external model changes back to the code mirror input.
     if(this.codemirror) {
       const currentValue = this.codemirror.getValue()
-      const newValue = this.get('model.' + this.fieldName);
+      let newValue = this.get('model.' + this.fieldName);
+      if(newValue === null || newValue === undefined) {
+        newValue = '';
+      }
       if(currentValue !== newValue) {
         this.codemirror.setValue(newValue);
       }

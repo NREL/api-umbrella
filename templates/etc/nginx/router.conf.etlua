@@ -1,0 +1,301 @@
+worker_processes <%- config["nginx"]["workers"] %>;
+
+daemon off;
+
+<% if config["user"] then %>
+  user <%- config["user"] %> <%- config["group"] %>;
+<% elseif config["_effective_user_name"] then %>
+  # Even if user switching isn't enabled, make sure nginx uses the current
+  # effective user and group for launching the child workers (so nginx's default
+  # usage of the "nobody" user isn't used).
+  user <%- config["_effective_user_name"] %> <%- config["_effective_group_name"] %>;
+<% end %>
+
+pid <%- config["run_dir"] %>/nginx.pid;
+
+events {
+  worker_connections <%- config["nginx"]["worker_connections"] %>;
+}
+
+error_log stderr <%- config["nginx"]["error_log_level"] %>;
+
+env API_UMBRELLA_SRC_ROOT;
+env API_UMBRELLA_RUNTIME_CONFIG;
+
+pcre_jit on;
+
+http {
+  log_format combined_extended escape=json
+    '{'
+      '"time":"$time_iso8601",'
+      '"ip":"$remote_addr",'
+      '"method":"$request_method",'
+      '"uri":"$request_uri",'
+      '"proto":"$server_protocol",'
+      '"status":"$status",'
+      '"referer":"$http_referer",'
+      '"user_agent":"$http_user_agent",'
+      '"id":"$x_api_umbrella_request_id",'
+      '"cache":"$sent_http_x_cache",'
+      '"scheme":"$scheme",'
+      '"host":"$host",'
+      '"port":"$server_port",'
+      '"resp_size":"$bytes_sent",'
+      '"req_size":"$request_length",'
+      '"req_time":"$request_time",'
+      '"up_conn_time":"$upstream_connect_time",'
+      '"up_head_time":"$upstream_header_time",'
+      '"up_resp_time":"$upstream_response_time",'
+      '"up_status":"$upstream_status",'
+      '"con_active":"$connections_active",'
+      '"con_read":"$connections_reading",'
+      '"con_write":"$connections_writing",'
+      '"con_wait":"$connections_waiting",'
+      '"con_reqs":"$connection_requests"'
+    '}';
+  access_log <%- config["log_dir"] %>/nginx/<%- config["nginx"]["access_log_filename"] %> combined_extended <%- config["nginx"]["access_log_options"] or "" %>;
+
+  client_body_temp_path <%- config["tmp_dir"] %>/nginx-client_body_temp;
+  proxy_temp_path <%- config["tmp_dir"] %>/nginx-proxy_temp;
+  fastcgi_temp_path <%- config["tmp_dir"] %>/nginx-fastcgi_temp;
+  uwsgi_temp_path <%- config["tmp_dir"] %>/nginx-uwsgi_temp;
+  scgi_temp_path <%- config["tmp_dir"] %>/nginx-scgi_temp;
+  server_tokens off;
+  <% if config["strip_server_header"] then %>
+    more_clear_headers Server;
+  <% end %>
+
+  lua_package_path '<%- config["_package_path"] %>';
+  lua_package_cpath '<%- config["_package_cpath"] %>';
+
+  # Quiet the raw socket errors from the logs, since we should be handling any
+  # connection errors as appropriate in the Lua code.
+  lua_socket_log_errors off;
+
+  lua_shared_dict active_config <%- config["nginx"]["shared_dicts"]["active_config"]["size"] %>;
+  lua_shared_dict active_config_locks <%- config["nginx"]["shared_dicts"]["active_config_locks"]["size"] %>;
+  lua_shared_dict active_config_ipc <%- config["nginx"]["shared_dicts"]["active_config_ipc"]["size"] %>;
+  lua_shared_dict api_users <%- config["nginx"]["shared_dicts"]["api_users"]["size"] %>;
+  lua_shared_dict api_users_misses <%- config["nginx"]["shared_dicts"]["api_users_misses"]["size"] %>;
+  lua_shared_dict api_users_locks <%- config["nginx"]["shared_dicts"]["api_users_locks"]["size"] %>;
+  lua_shared_dict api_users_ipc <%- config["nginx"]["shared_dicts"]["api_users_ipc"]["size"] %>;
+  lua_shared_dict geocode_city_cache <%- config["nginx"]["shared_dicts"]["geocode_city_cache"]["size"] %>;
+  lua_shared_dict interval_locks <%- config["nginx"]["shared_dicts"]["interval_locks"]["size"] %>;
+  lua_shared_dict jobs <%- config["nginx"]["shared_dicts"]["jobs"]["size"] %>;
+  lua_shared_dict locks <%- config["nginx"]["shared_dicts"]["locks"]["size"] %>;
+  lua_shared_dict rate_limit_counters <%- config["nginx"]["shared_dicts"]["rate_limit_counters"]["size"] %>;
+  lua_shared_dict rate_limit_exceeded <%- config["nginx"]["shared_dicts"]["rate_limit_exceeded"]["size"] %>;
+  <% if config["nginx"]["lua_ssl_trusted_certificate"] then %>
+    lua_ssl_trusted_certificate <%- config["nginx"]["lua_ssl_trusted_certificate"] %>;
+    lua_ssl_verify_depth <%- config["nginx"]["lua_ssl_verify_depth"] %>;
+  <% end %>
+
+  <% if config["dns_resolver"]["_nameservers_nginx"] then %>
+    resolver <%- config["dns_resolver"]["_nameservers_nginx"] %>;
+    resolver_timeout 12s;
+  <% end %>
+
+  <% if config["geoip"]["_enabled"] then %>
+    geoip2 <%- config["db_dir"] %>/geoip/GeoLite2-City.mmdb {
+      $geoip2_data_continent_code continent code;
+      $geoip2_data_country_code country iso_code;
+      $geoip2_data_subdivision_code subdivisions 0 iso_code;
+      $geoip2_data_city_name city names en;
+      $geoip2_data_latitude location latitude;
+      $geoip2_data_longitude location longitude;
+      $geoip2_data_is_anonymous_proxy traits is_anonymous_proxy;
+      $geoip2_data_is_satellite_provider traits is_satellite_provider;
+    }
+  <% end %>
+
+  <% if config["ban"]["ips"] and #config["ban"]["ips"] > 0 then %>
+    geo $banned_ip {
+      default 0;
+      <% for _, ip in ipairs(config["ban"]["ips"]) do %>
+        "<%- ip %>" 1;
+      <% end %>
+    }
+  <% end %>
+
+  <% if config["ban"]["user_agents"] and #config["ban"]["user_agents"] > 0 then %>
+    map $http_user_agent $banned_user_agent {
+      default 0;
+      <% for _, user_agent in ipairs(config["ban"]["user_agents"]) do %>
+        "<%- user_agent %>" 1;
+      <% end %>
+    }
+  <% end %>
+
+  init_by_lua_file '<%- config["_src_root_dir"] %>/src/api-umbrella/proxy/hooks/init.lua';
+  init_worker_by_lua_file '<%- config["_src_root_dir"] %>/src/api-umbrella/proxy/hooks/init_worker.lua';
+
+  lua_check_client_abort on;
+  if_modified_since off;
+
+  include ./mime.conf;
+  include ./realip.conf;
+
+  <% if config["router"]["global_rate_limits"]["ip_connections"] then %>
+    # Limit the number of simultaneous connections per IP address.
+    limit_conn_zone $binary_remote_addr zone=api_umbrella_conn_addr_zone:<%- config["router"]["global_rate_limits"]["ip_connections_size"] %>;
+    limit_conn_status <%- config["default_api_backend_settings"]["error_data"]["over_rate_limit"]["status_code"] %>;
+    limit_conn_log_level <%- config["router"]["global_rate_limits"]["ip_connections_log_level"] %>;
+  <% end %>
+
+  <% if config["router"]["global_rate_limits"]["ip_rate"] then %>
+    # Rate limits per IP address.
+    #
+    # In general, we want to rely on the more granular and configurable rate limits
+    # provided by the API Umbrella Gatekeeper, so this limit should be higher than
+    # the Gatekeeper's limits. This just provides an extra line of simple defense
+    # against misbehaving clients from overloading the Gatekeeper.
+    limit_req_zone $binary_remote_addr zone=api_umbrella_req_addr_zone:<%- config["router"]["global_rate_limits"]["ip_rate_size"] %> rate=<%- config["router"]["global_rate_limits"]["ip_rate"] %>;
+    limit_req_status <%- config["default_api_backend_settings"]["error_data"]["over_rate_limit"]["status_code"] %>;
+    limit_req_log_level <%- config["router"]["global_rate_limits"]["ip_rate_log_level"] %>;
+  <% end %>
+
+  # Allow any sized uploads to backends.
+  client_max_body_size 0;
+
+  keepalive_timeout <%- config["nginx"]["keepalive_timeout"] %>s;
+
+  gzip on;
+  gzip_comp_level 2;
+  gzip_disable msie6;
+  gzip_min_length 1000;
+  gzip_proxied any;
+  gzip_types application/atom+xml application/javascript application/json application/rss+xml application/x-javascript application/xml text/css text/csv text/javascript text/plain text/xml;
+  gzip_vary on;
+
+  ssl_protocols <%- config["nginx"]["ssl_protocols"] %>;
+  ssl_ciphers <%- config["nginx"]["ssl_ciphers"] %>;
+  ssl_session_cache <%- config["nginx"]["ssl_session_cache"] %>;
+  ssl_session_timeout <%- config["nginx"]["ssl_session_timeout"] %>;
+  ssl_session_tickets <%- config["nginx"]["ssl_session_tickets"] %>;
+  ssl_buffer_size <%- config["nginx"]["ssl_buffer_size"] %>;
+  ssl_prefer_server_ciphers <%- config["nginx"]["ssl_prefer_server_ciphers"] %>;
+  ssl_ecdh_curve <%- config["nginx"]["ssl_ecdh_curve"] %>;
+  <% if config["nginx"]["dhparam"] then %>
+    # Diffie-Hellman parameter for DHE ciphersuites, recommended 2048 bits
+    ssl_dhparam <%- config["nginx"]["dhparam"] %>;
+  <% end %>
+
+  proxy_buffer_size <%- config["nginx"]["proxy_buffer_size"] %>;
+  proxy_buffers <%- config["nginx"]["proxy_buffers"] %>;
+
+  <% if config["nginx"]["variables_hash_max_size"] then %>
+    variables_hash_max_size <%- config["nginx"]["variables_hash_max_size"] %>;
+  <% end %>
+
+  <% if config["nginx"]["server_names_hash_bucket_size"] then %>
+    server_names_hash_bucket_size <%- config["nginx"]["server_names_hash_bucket_size"] %>;
+  <% end %>
+
+  <% if config["nginx"]["vhost_traffic_status"]["enabled"] then %>
+    vhost_traffic_status_zone;
+    vhost_traffic_status_filter_by_host <%- config["nginx"]["vhost_traffic_status"]["filter_by_host"] %>;
+  <% end %>
+
+  upstream api_umbrella_trafficserver_backend {
+    server <%- config["trafficserver"]["host"] %>:<%- config["trafficserver"]["port"] %>;
+    keepalive 10;
+  }
+
+  server {
+    listen <%- config["api_server"]["host"] %>:<%- config["api_server"]["port"] %> so_keepalive=<%- config["nginx"]["listen_so_keepalive"] %><% if config["nginx"]["listen_backlog"] then %> backlog=<%- config["nginx"]["listen_backlog"] %><% end %>;
+
+    set $x_api_umbrella_request_id $http_x_api_umbrella_request_id;
+
+    location /api-umbrella/v1/health {
+      content_by_lua_file '<%- config["_src_root_dir"] %>/src/api-umbrella/http-api/health.lua';
+    }
+
+    location /api-umbrella/v1/state {
+      content_by_lua_file '<%- config["_src_root_dir"] %>/src/api-umbrella/http-api/state.lua';
+    }
+
+    location /api-umbrella/v0/shared-memory-stats {
+      content_by_lua_file '<%- config["_src_root_dir"] %>/src/api-umbrella/http-api/shared_memory_stats.lua';
+    }
+
+    <% if config["nginx"]["vhost_traffic_status"]["enabled"] then %>
+      location /api-umbrella/v0/nginx-status {
+        access_by_lua_file '<%- config["_src_root_dir"] %>/src/api-umbrella/http-api/require_system_info_role.lua';
+        sub_filter 'format/json"' 'format/json?api_key=" + new URLSearchParams(window.location.search).get("api_key")';
+        sub_filter 'vtsUpdateInterval=1000' 'vtsUpdateInterval=10000';
+        vhost_traffic_status_display;
+      }
+
+      <% if config["_service_auto_ssl_enabled?"] then %>
+        location /api-umbrella/v0/auto-ssl-nginx-status {
+          access_by_lua_file '<%- config["_src_root_dir"] %>/src/api-umbrella/http-api/require_system_info_role.lua';
+          sub_filter 'format/json"' 'format/json?api_key=" + new URLSearchParams(window.location.search).get("api_key")';
+          sub_filter 'vtsUpdateInterval=1000' 'vtsUpdateInterval=10000';
+          proxy_pass http://127.0.0.1:<%- config["auto_ssl"]["hook_server"]["port"] %>;
+        }
+      <% end %>
+    <% end %>
+  }
+
+  <% for _, host in ipairs(config["hosts"]) do %>
+    server {
+      <% for _, address in ipairs(config["listen"]["addresses"]) do %>
+        listen <%- address %>:<%- config["http_port"] %><% if host["default"] then %> default_server so_keepalive=<%- config["nginx"]["listen_so_keepalive"] %><% if config["nginx"]["listen_backlog"] then %> backlog=<%- config["nginx"]["listen_backlog"] %><% end %><% end %>;
+        listen <%- address %>:<%- config["https_port"] %> ssl<% if host["default"] then %> default_server so_keepalive=<%- config["nginx"]["listen_so_keepalive"] %><% if config["nginx"]["listen_backlog"] then %> backlog=<%- config["nginx"]["listen_backlog"] %><% end %><% end %>;
+      <% end %>
+      server_name <%- host["_nginx_server_name"] %>;
+
+      <% if host["ssl_cert"] then %>
+        ssl_certificate <%- host["ssl_cert"] %>;
+        ssl_certificate_key <%- host["ssl_cert_key"] %>;
+      <% else %>
+        ssl_certificate <%- config["etc_dir"] %>/ssl/self_signed.crt;
+        ssl_certificate_key <%- config["etc_dir"] %>/ssl/self_signed.key;
+      <% end %>
+
+      include ./frontend_defaults.conf;
+
+      <% if host["http_strict_transport_security"] then %>
+        # Enable HSTS(HTTP Strict Transport Security) https://developer.mozilla.org/en-US/docs/Security/HTTP_Strict_Transport_Security
+        # to avoid ssl stripping https://en.wikipedia.org/wiki/SSL_stripping#SSL_stripping
+        add_header Strict-Transport-Security "<%- host["http_strict_transport_security"] %>" always;
+      <% end %>
+
+      <% if host["rewrites"] then %>
+        <% for _, rewrite in ipairs(host["rewrites"]) do %>
+          rewrite <%- rewrite %>;
+        <% end %>
+      <% end %>
+
+      # Optional host-specific realip settings.
+      <% if host["set_real_ip_from"] then %>
+        set_real_ip_from <%- host["set_real_ip_from"] %>;
+      <% end %>
+      <% if host["real_ip_header"] then %>
+        real_ip_header <%- host["real_ip_header"] %>;
+      <% end %>
+      <% if host["real_ip_recursive"] then %>
+        real_ip_recursive <%- host["real_ip_recursive"] %>;
+      <% end %>
+
+      location / {
+        include ./gatekeeper.conf;
+      }
+    }
+  <% end %>
+
+  <% if not config["_development_env?"] then %>
+    server {
+      listen <%- config["static_site"]["host"] %>:<%- config["static_site"]["port"] %> so_keepalive=<%- config["nginx"]["listen_so_keepalive"] %><% if config["nginx"]["listen_backlog"] then %> backlog=<%- config["nginx"]["listen_backlog"] %><% end %>;
+
+      set $x_api_umbrella_request_id $http_x_api_umbrella_request_id;
+      root <%- config["static_site"]["build_dir"] %>;
+
+      # Security headers
+      # https://www.owasp.org/index.php/OWASP_Secure_Headers_Project#tab=Headers
+      more_set_headers "X-XSS-Protection: 1; mode=block";
+      more_set_headers "X-Frame-Options: DENY";
+      more_set_headers "X-Content-Type-Options: nosniff";
+    }
+  <% end %>
+}

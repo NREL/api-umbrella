@@ -1,0 +1,7 @@
+<% if display_login_form then %>
+  <% if display_login_form_local then %>
+    <% render("api-umbrella.web-app.views.admin.sessions._login_form_local") %>
+  <% elseif display_login_form_ldap then %>
+    <% render("api-umbrella.web-app.views.admin.sessions._login_form_ldap") %>
+  <% end %>
+<% end %>

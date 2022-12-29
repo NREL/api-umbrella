@@ -1,8 +1,9 @@
 FactoryBot.define do
   factory :admin do
+    authentication_token { SecureRandom.hex(20) }
     sequence(:username) { |n| "aburnside#{n}@example.com" }
     email { username }
-    encrypted_password { BCrypt::Password.create("password123456") }
+    password_hash { BCrypt::Password.create("password123456") }
     superuser { true }
 
     factory :limited_admin do
@@ -47,7 +48,8 @@ FactoryBot.define do
 
     factory :filled_attributes_admin do
       created_at { Time.utc(2017, 1, 1) }
-      created_by { SecureRandom.uuid }
+      created_by_id { SecureRandom.uuid }
+      created_by_username { "creator@example.com" }
       current_sign_in_at { Time.utc(2017, 1, 5) }
       current_sign_in_ip { "10.11.2.3" }
       current_sign_in_provider { "Provider1" }
@@ -60,11 +62,12 @@ FactoryBot.define do
       notes { "Notes" }
       remember_created_at { Time.utc(2017, 1, 4) }
       reset_password_sent_at { Time.utc(2017, 1, 3) }
-      reset_password_token { SecureRandom.hex(20) }
+      reset_password_token_hash { SecureRandom.hex(20) }
       sign_in_count { 10 }
-      unlock_token { SecureRandom.hex(20) }
+      unlock_token_hash { SecureRandom.hex(20) }
       updated_at { Time.utc(2017, 1, 2) }
-      updated_by { SecureRandom.uuid }
+      updated_by_id { SecureRandom.uuid }
+      updated_by_username { "updater@example.com" }
       groups do
         [FactoryBot.create(:admin_group, :name => "ExampleFilledGroup")]
       end

@@ -94,23 +94,23 @@ class Test::Apis::Admin::Stats::TestUsers < Minitest::Test
       @user1.email,
       @user1.first_name,
       @user1.last_name,
-      @user1.website || "",
-      @user1.registration_source || "",
+      @user1.website,
+      @user1.registration_source,
       @user1.created_at.utc.strftime("%Y-%m-%d %H:%M:%S"),
       "2",
       "2015-01-16 00:00:00",
-      @user1.use_description || "",
+      @user1.use_description,
     ], csv[1])
     assert_equal([
       @user2.email,
       @user2.first_name,
       @user2.last_name,
-      @user2.website || "",
-      @user2.registration_source || "",
+      @user2.website,
+      @user2.registration_source,
       @user2.created_at.utc.strftime("%Y-%m-%d %H:%M:%S"),
       "1",
       "2015-01-17 00:00:00",
-      @user2.use_description || "",
+      @user2.use_description,
     ], csv[2])
   end
 

@@ -59,8 +59,8 @@ class Test::Proxy::TestTransferEncoding < Minitest::Test
         "header_value" => "compress",
       },
     }))
-    assert_response_code(400, response)
-    assert_match("Bad Request", response.body)
+    assert_response_code(502, response)
+    assert_match("reset reason: protocol error", response.body)
   end
 
   def test_response_deflate
@@ -70,8 +70,8 @@ class Test::Proxy::TestTransferEncoding < Minitest::Test
         "header_value" => "deflate",
       },
     }))
-    assert_response_code(400, response)
-    assert_match("Bad Request", response.body)
+    assert_response_code(502, response)
+    assert_match("reset reason: protocol error", response.body)
   end
 
   def test_response_gzip
@@ -81,8 +81,8 @@ class Test::Proxy::TestTransferEncoding < Minitest::Test
         "header_value" => "gzip",
       },
     }))
-    assert_response_code(400, response)
-    assert_match("Bad Request", response.body)
+    assert_response_code(502, response)
+    assert_match("reset reason: protocol error", response.body)
   end
 
   def test_response_multi
@@ -92,8 +92,8 @@ class Test::Proxy::TestTransferEncoding < Minitest::Test
         "header_value" => "gzip, chunked",
       },
     }))
-    assert_response_code(400, response)
-    assert_match("Bad Request", response.body)
+    assert_response_code(502, response)
+    assert_match("reset reason: protocol error", response.body)
   end
 
   def test_response_unknown
@@ -103,8 +103,8 @@ class Test::Proxy::TestTransferEncoding < Minitest::Test
         "header_value" => "test123",
       },
     }))
-    assert_response_code(400, response)
-    assert_match("Bad Request", response.body)
+    assert_response_code(502, response)
+    assert_match("reset reason: protocol error", response.body)
   end
 
   def test_request_compress

@@ -9,7 +9,6 @@ class Test::AdminUi::Login::TestLdapProvider < Minitest::Capybara::Test
   def setup
     super
     setup_server
-    Admin.delete_all
 
     @default_config = {
       "web" => {
@@ -36,18 +35,18 @@ class Test::AdminUi::Login::TestLdapProvider < Minitest::Capybara::Test
       },
     }
     once_per_class_setup do
-      override_config_set(@default_config, ["--router", "--web"])
+      override_config_set(@default_config)
     end
   end
 
   def after_all
     super
-    override_config_reset(["--router", "--web"])
+    override_config_reset
   end
 
   def test_forbids_first_time_admin_creation
     assert_equal(0, Admin.count)
-    assert_first_time_admin_creation_forbidden
+    assert_first_time_admin_creation_not_found
   end
 
   def test_ldap_login_fields_on_login_page_when_exclusive_provider
@@ -57,7 +56,7 @@ class Test::AdminUi::Login::TestLdapProvider < Minitest::Capybara::Test
 
     # No local login fields
     refute_field("Email")
-    refute_field("Remember me")
+    refute_field("Remember me", :visible => :all)
     refute_link("Forgot your password?")
 
     # No external login links
@@ -79,16 +78,16 @@ class Test::AdminUi::Login::TestLdapProvider < Minitest::Capybara::Test
   end
 
   def test_forbids_ldap_user_with_invalid_password
-    FactoryBot.create(:admin, :username => "hermes", :email => nil, :encrypted_password => nil)
+    FactoryBot.create(:admin, :username => "hermes", :email => nil, :password_hash => nil)
     visit "/admin/login"
     fill_in "Planet Express Username", :with => "hermes"
     fill_in "Planet Express Password", :with => "incorrect"
     click_button "Sign in"
-    assert_text('Could not authenticate you from LDAP because "Invalid credentials".')
+    assert_text('Could not authenticate you because "Invalid credentials"')
   end
 
   def test_allows_valid_ldap_user
-    admin = FactoryBot.create(:admin, :username => "hermes", :email => nil, :encrypted_password => nil)
+    admin = FactoryBot.create(:admin, :username => "hermes", :email => nil, :password_hash => nil)
     visit "/admin/login"
     fill_in "Planet Express Username", :with => "hermes"
     fill_in "Planet Express Password", :with => "hermes"
@@ -108,8 +107,8 @@ class Test::AdminUi::Login::TestLdapProvider < Minitest::Capybara::Test
           },
         },
       },
-    }), ["--router", "--web"]) do
-      admin = FactoryBot.create(:admin, :username => "hermes", :email => nil, :encrypted_password => nil)
+    })) do
+      admin = FactoryBot.create(:admin, :username => "hermes", :email => nil, :password_hash => nil)
       visit "/admin/login"
       assert_field "Username"
       assert_field "Password"

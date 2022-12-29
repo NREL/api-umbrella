@@ -1,0 +1,36 @@
+<nav
+  class="navbar navbar-expand-md navbar-light bg-light mb-3 border-bottom"
+  role="navigation"
+>
+  <div class="container">
+    <a class="navbar-brand" href="/">Your API Site Name</a>
+    <button
+      class="navbar-toggler"
+      type="button"
+      data-toggle="collapse"
+      data-target="#navbarNav"
+      aria-controls="navbarNav"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav">
+        {{ $currentPage := . }}
+        {{ range .Site.Menus.main }}
+          <li class="nav-item">
+            <a
+              class="nav-link{{ if or ($currentPage.IsMenuCurrent "main" .) ($currentPage.HasMenuCurrent "main" .) }}
+                active
+              {{ end }}"
+              href="{{ .URL }}"
+              title="{{ .Title }}"
+              >{{ .Name }}</a
+            >
+          </li>
+        {{ end }}
+      </ul>
+    </div>
+  </div>
+</nav>

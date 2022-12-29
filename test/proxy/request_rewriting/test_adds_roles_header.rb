@@ -22,8 +22,12 @@ class Test::Proxy::RequestRewriting::TestAddsRolesHeader < Minitest::Test
   end
 
   def test_omits_roles_header_if_empty
-    refute(self.api_user.roles)
-    response = Typhoeus.get("http://127.0.0.1:9080/api/info/", http_options)
+    user = FactoryBot.create(:api_user, :roles => [])
+    response = Typhoeus.get("http://127.0.0.1:9080/api/info/", http_options.deep_merge({
+      :headers => {
+        "X-Api-Key" => user.api_key,
+      },
+    }))
     assert_response_code(200, response)
     data = MultiJson.load(response.body)
     refute(data["headers"]["x-api-roles"])

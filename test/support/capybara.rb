@@ -1,6 +1,7 @@
 require "capybara/minitest"
 require "capybara-screenshot/minitest"
 require "open3"
+require "support/api_umbrella_test_helpers/admin_auth"
 require "support/api_umbrella_test_helpers/capybara_codemirror"
 require "support/api_umbrella_test_helpers/capybara_custom_bootstrap_inputs"
 require "support/api_umbrella_test_helpers/capybara_selectize"
@@ -8,7 +9,7 @@ require "support/api_umbrella_test_helpers/downloads"
 require "support/api_umbrella_test_helpers/process"
 
 def capybara_register_driver(driver_name, options = {})
-  ::Capybara.register_driver(driver_name) do |app|
+  Capybara.register_driver(driver_name) do |app|
     root_dir = File.join(ApiUmbrellaTestHelpers::Process::TEST_RUN_ROOT, "capybara")
     FileUtils.mkdir_p(root_dir)
 
@@ -38,11 +39,11 @@ def capybara_register_driver(driver_name, options = {})
       service_args << "--lang=#{options[:lang]}"
     end
 
-    service = ::Selenium::WebDriver::Service.chrome(service_options.merge({
+    service = Selenium::WebDriver::Service.chrome(**service_options.merge({
       :args => service_args,
     }))
 
-    driver_options = ::Selenium::WebDriver::Chrome::Options.new
+    driver_options = Selenium::WebDriver::Chrome::Options.new
     driver_options.args << "--headless"
 
     # Allow connections to our self-signed SSL localhost test server.
@@ -53,21 +54,27 @@ def capybara_register_driver(driver_name, options = {})
     # https://github.com/GoogleChrome/puppeteer/blob/v1.10.0/docs/troubleshooting.md#tips
     driver_options.args << "--disable-dev-shm-usage"
 
+    # Use a static user agent for some session tests.
+    driver_options.args << "--user-agent=#{ApiUmbrellaTestHelpers::AdminAuth::STATIC_USER_AGENT}"
+
+    # Allow for usage in Docker.
+    driver_options.args << "--disable-setuid-sandbox"
+    driver_options.args << "--no-sandbox"
+
     # Set download path for Chrome >= 77
     driver_options.add_preference(:download, :default_directory => ApiUmbrellaTestHelpers::Downloads::DOWNLOADS_ROOT)
 
-    capabilities = ::Capybara::Chromedriver::Logger.build_capabilities({
+    capabilities = Capybara::Chromedriver::Logger.build_capabilities(
       :chromeOptions => {
         :args => ["headless"],
       },
-    })
+    )
 
-    driver = ::Capybara::Selenium::Driver.new(app, {
+    driver = Capybara::Selenium::Driver.new(app,
       :browser => :chrome,
       :service => service,
       :options => driver_options,
-      :desired_capabilities => capabilities,
-    })
+      :desired_capabilities => capabilities)
     driver.resize_window_to(driver.current_window_handle, 1200, 4000)
 
     # Set download path for Chrome < 77
@@ -111,6 +118,7 @@ Capybara::Chromedriver::Logger.filters = [
   /127.0.0.1.*This site does not have a valid SSL certificate/,
 
   # Ignore expected ajax request failures.
+  /127.0.0.1.*the server responded with a status of 401/,
   /127.0.0.1.*the server responded with a status of 403/,
   /127.0.0.1.*the server responded with a status of 422/,
 ]

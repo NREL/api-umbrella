@@ -108,7 +108,7 @@ a:hover {
   margin-top: -16px;
 }
 
-#version_footer .row-fluid {
+#version_footer .row .col-12 {
   border-top: 1px solid $gray-200;
   text-align: center;
   margin-top: 3em;
@@ -146,4 +146,8 @@ a:hover {
 // https://github.com/kaliber5/ember-bootstrap/issues/1601
 .modal-backdrop:not(.fade):not(.show) {
   opacity: $modal-backdrop-opacity;
+}
+
+.ui-pnotify-text p:last-of-type {
+  margin-bottom: 0px;
 }

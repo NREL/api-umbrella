@@ -1,4 +1,5 @@
 import { action } from '@ember/object';
+import { next } from '@ember/runloop';
 import Component from '@glimmer/component';
 
 export default class SelectMenu extends Component {
@@ -12,9 +13,11 @@ export default class SelectMenu extends Component {
     if(this.args.value === undefined) {
       const options = this.args.options;
       if(options) {
-        let firstOption = options[0];
+        const firstOption = options[0];
         if(firstOption && firstOption.id !== undefined) {
-          this.args.action(firstOption.id);
+          next(() => {
+            this.args.action(firstOption.id);
+          });
         }
       }
     }

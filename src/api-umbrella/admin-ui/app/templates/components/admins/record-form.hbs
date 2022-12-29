@@ -7,21 +7,21 @@
         <legend>User Info</legend>
 
         {{#if this.currentAdmin.permissions.admin_manage}}
-          {{f.text-field "username" label=(t "mongoid.attributes.admin.username")}}
+          {{f.text-field "username" label=this.usernameLabel}}
           {{#unless this.session.data.authenticated.username_is_email}}
-            {{f.text-field "email" label=(t "mongoid.attributes.admin.email")}}
+            {{f.text-field "email" label=(t "Email")}}
           {{/unless}}
         {{else}}
-          {{f.static-field "username" label=(t "mongoid.attributes.admin.username")}}
+          {{f.static-field "username" label=this.usernameLabel}}
           {{#unless this.session.data.authenticated.username_is_email}}
-            {{f.static-field "email" label=(t "mongoid.attributes.admin.email")}}
+            {{f.static-field "email" label=(t "Email")}}
           {{/unless}}
         {{/if}}
         {{#if this.model.name}}
-          {{f.static-field "name" label=(t "mongoid.attributes.admin.name")}}
+          {{f.static-field "name" label=(t "Name")}}
         {{/if}}
         {{#if this.currentAdmin.permissions.admin_manage}}
-          {{f.textarea-field "notes" label=(t "mongoid.attributes.admin.notes")}}
+          {{f.textarea-field "notes" label=(t "Notes")}}
           {{#if this.model.id}}
             {{#unless this.model.currentSignInAt}}
               {{f.checkbox-field "sendInviteEmail" label="Resend invite email"}}
@@ -30,7 +30,7 @@
             {{f.checkbox-field "sendInviteEmail" label="Send invite email"}}
           {{/if}}
         {{else}}
-          {{f.static-field "notes" label=(t "mongoid.attributes.admin.notes")}}
+          {{f.static-field "notes" label=(t "Notes")}}
         {{/if}}
       </fieldset>
 
@@ -38,11 +38,11 @@
         {{#if this.session.data.authenticated.local_auth_enabled}}
           {{#if this.currentAdmin.permissions.admin_manage}}
             <fieldset class="form-horizontal condensed">
-              <legend>{{t "devise.passwords.edit.change_your_password"}}</legend>
+              <legend>{{t "Change Your Password"}}</legend>
 
-              {{f.password-field "currentPassword" label=(t "mongoid.attributes.admin.current_password")}}
-              {{f.password-field "password" label=(t "devise.passwords.edit.new_password") hint=(t "devise.passwords.password_length_hint" min=this.session.data.authenticated.password_length_min)}}
-              {{f.password-field "passwordConfirmation" label=(t "devise.passwords.edit.confirm_new_password")}}
+              {{f.password-field "currentPassword" label=(t "Current Password")}}
+              {{f.password-field "password" label=(t "New Password") hint=(sprintf (t "%d characters minimum") this.session.data.authenticated.password_length_min)}}
+              {{f.password-field "passwordConfirmation" label=(t "Confirm New Password")}}
             </fieldset>
           {{/if}}
         {{/if}}
@@ -50,7 +50,7 @@
         <fieldset class="form-horizontal condensed">
           <legend>Admin API Access</legend>
 
-          {{#f.static-field "authenticationToken" label=(t "mongoid.attributes.admin.authentication_token")}}
+          {{#f.static-field "authenticationToken" label=(t "Admin API Token")}}
             <span class="api-key">{{this.model.authenticationToken}}</span>
           {{/f.static-field}}
         </fieldset>
@@ -60,9 +60,9 @@
         <fieldset class="form-horizontal condensed">
           <legend>Permissions</legend>
 
-          {{f.checkboxes-field "groupIds" label=(t "mongoid.attributes.admin.groups") options=this.groupOptions}}
+          {{f.checkboxes-field "groupIds" label=(t "Groups") options=this.groupOptions}}
           {{#if this.currentAdmin.superuser}}
-            {{f.checkbox-field "superuser" label=(t "mongoid.attributes.admin.superuser")}}
+            {{f.checkbox-field "superuser" label=(t "Superuser")}}
           {{/if}}
         </fieldset>
       {{/if}}

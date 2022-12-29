@@ -1,9 +1,7 @@
 import StatsMap from 'api-umbrella-admin-ui/models/stats/map';
-import classic from 'ember-classic-decorator';
 
 import Base from './base';
 
-@classic
 export default class MapRoute extends Base {
   queryParams = {
     date_range: {

@@ -22,7 +22,7 @@ class Test::Proxy::ApiMatching::TestHostPort < Minitest::Test
           :url_matches => [{ :frontend_prefix => "/", :backend_prefix => "/" }],
           :settings => {
             :headers => [
-              { :key => "X-Backend", :value => "host-with-non-matching-port" },
+              { :key => "X-Test-Backend", :value => "host-with-non-matching-port" },
             ],
           },
         },
@@ -33,7 +33,7 @@ class Test::Proxy::ApiMatching::TestHostPort < Minitest::Test
           :url_matches => [{ :frontend_prefix => "/", :backend_prefix => "/" }],
           :settings => {
             :headers => [
-              { :key => "X-Backend", :value => "host-with-default-http-port" },
+              { :key => "X-Test-Backend", :value => "host-with-default-http-port" },
             ],
           },
         },
@@ -44,7 +44,7 @@ class Test::Proxy::ApiMatching::TestHostPort < Minitest::Test
           :url_matches => [{ :frontend_prefix => "/", :backend_prefix => "/" }],
           :settings => {
             :headers => [
-              { :key => "X-Backend", :value => "host-with-default-https-port" },
+              { :key => "X-Test-Backend", :value => "host-with-default-https-port" },
             ],
           },
         },
@@ -55,7 +55,7 @@ class Test::Proxy::ApiMatching::TestHostPort < Minitest::Test
           :url_matches => [{ :frontend_prefix => "/", :backend_prefix => "/" }],
           :settings => {
             :headers => [
-              { :key => "X-Backend", :value => "host-with-matching-port" },
+              { :key => "X-Test-Backend", :value => "host-with-matching-port" },
             ],
           },
         },
@@ -66,7 +66,7 @@ class Test::Proxy::ApiMatching::TestHostPort < Minitest::Test
           :url_matches => [{ :frontend_prefix => "/", :backend_prefix => "/" }],
           :settings => {
             :headers => [
-              { :key => "X-Backend", :value => "host-with-matching-port" },
+              { :key => "X-Test-Backend", :value => "host-with-matching-port" },
             ],
           },
         },
@@ -77,7 +77,7 @@ class Test::Proxy::ApiMatching::TestHostPort < Minitest::Test
           :url_matches => [{ :frontend_prefix => "/", :backend_prefix => "/" }],
           :settings => {
             :headers => [
-              { :key => "X-Backend", :value => "other-host-with-no-port" },
+              { :key => "X-Test-Backend", :value => "other-host-with-no-port" },
             ],
           },
         },
@@ -88,7 +88,7 @@ class Test::Proxy::ApiMatching::TestHostPort < Minitest::Test
           :url_matches => [{ :frontend_prefix => "/", :backend_prefix => "/" }],
           :settings => {
             :headers => [
-              { :key => "X-Backend", :value => "other-host-with-port" },
+              { :key => "X-Test-Backend", :value => "other-host-with-port" },
             ],
           },
         },

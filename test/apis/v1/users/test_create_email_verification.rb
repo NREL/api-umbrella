@@ -3,11 +3,11 @@ require_relative "../../../test_helper"
 class Test::Apis::V1::Users::TestCreateEmailVerification < Minitest::Test
   include ApiUmbrellaTestHelpers::AdminAuth
   include ApiUmbrellaTestHelpers::Setup
+  parallelize_me!
 
   def setup
     super
     setup_server
-    ApiUser.where(:registration_source.ne => "seed").delete_all
   end
 
   def test_not_email_verified_by_default
@@ -60,6 +60,6 @@ class Test::Apis::V1::Users::TestCreateEmailVerification < Minitest::Test
       :roles => ["api-umbrella-key-creator"],
     })
 
-    { :headers => { "X-Api-Key" => user["api_key"] } }
+    { :headers => { "X-Api-Key" => user.api_key } }
   end
 end

@@ -3,15 +3,13 @@ require_relative "../../../test_helper"
 class Test::Apis::V1::Users::TestCreateNotifyEmail < Minitest::Test
   include ApiUmbrellaTestHelpers::AdminAuth
   include ApiUmbrellaTestHelpers::Setup
-  include ApiUmbrellaTestHelpers::DelayedJob
+  include ApiUmbrellaTestHelpers::SentEmails
 
   def setup
     super
     setup_server
-    ApiUser.where(:registration_source.ne => "seed").delete_all
 
-    response = Typhoeus.delete("http://127.0.0.1:#{$config["mailhog"]["api_port"]}/api/v1/messages")
-    assert_response_code(200, response)
+    clear_all_test_emails
   end
 
   def test_sends_email_when_enabled
@@ -23,7 +21,7 @@ class Test::Apis::V1::Users::TestCreateNotifyEmail < Minitest::Test
       },
     }))
     assert_response_code(201, response)
-    assert_equal(1, delayed_job_sent_messages.length)
+    assert_equal(1, sent_emails.fetch("total"))
   end
 
   def test_no_email_when_disabled
@@ -35,7 +33,7 @@ class Test::Apis::V1::Users::TestCreateNotifyEmail < Minitest::Test
       },
     }))
     assert_response_code(201, response)
-    assert_equal(0, delayed_job_sent_messages.length)
+    assert_equal(0, sent_emails.fetch("total"))
   end
 
   def test_no_email_when_unknown_value
@@ -47,7 +45,7 @@ class Test::Apis::V1::Users::TestCreateNotifyEmail < Minitest::Test
       },
     }))
     assert_response_code(201, response)
-    assert_equal(0, delayed_job_sent_messages.length)
+    assert_equal(0, sent_emails.fetch("total"))
   end
 
   def test_no_email_by_default
@@ -58,7 +56,7 @@ class Test::Apis::V1::Users::TestCreateNotifyEmail < Minitest::Test
       },
     }))
     assert_response_code(201, response)
-    assert_equal(0, delayed_job_sent_messages.length)
+    assert_equal(0, sent_emails.fetch("total"))
   end
 
   def test_content
@@ -71,22 +69,22 @@ class Test::Apis::V1::Users::TestCreateNotifyEmail < Minitest::Test
     }))
     assert_response_code(201, response)
 
-    messages = delayed_job_sent_messages
-    assert_equal(1, messages.length)
+    messages = sent_email_contents
+    assert_equal(1, messages.fetch("total"))
 
     data = MultiJson.load(response.body)
     user = ApiUser.find(data["user"]["id"])
-    message = messages.first
+    message = messages.fetch("messages").first
 
     # To
-    assert_equal(["default-test-contact-email@example.com"], message["Content"]["Headers"]["To"])
+    assert_equal(["default-test-contact-email@example.com"], message.fetch("headers").fetch("To"))
 
     # Subject
-    assert_equal(["#{user.first_name} #{user.last_name} just subscribed"], message["Content"]["Headers"]["Subject"])
+    assert_equal("#{user.first_name} #{user.last_name} just subscribed", message.fetch("Subject"))
 
     # Use description in body
-    assert_match("I wanna do everything.", message["_mime_parts"]["text/html; charset=UTF-8"]["Body"])
-    assert_match("I wanna do everything.", message["_mime_parts"]["text/plain; charset=UTF-8"]["Body"])
+    assert_match("I wanna do everything.", message.fetch("HTML"))
+    assert_match("I wanna do everything.", message.fetch("Text"))
   end
 
   def test_global_config_enabling_by_default
@@ -96,7 +94,7 @@ class Test::Apis::V1::Users::TestCreateNotifyEmail < Minitest::Test
         "send_notify_email" => true,
       },
     }
-    override_config(config, nil) do
+    override_config(config) do
       response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(admin_token).deep_merge({
         :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
         :body => {
@@ -105,13 +103,13 @@ class Test::Apis::V1::Users::TestCreateNotifyEmail < Minitest::Test
       }))
       assert_response_code(201, response)
 
-      messages = delayed_job_sent_messages
-      assert_equal(1, messages.length)
+      messages = sent_email_contents
+      assert_equal(1, messages.fetch("total"))
 
-      message = messages.first
+      message = messages.fetch("messages").first
 
       # To
-      assert_equal(["notify-only@example.com"], message["Content"]["Headers"]["To"])
+      assert_equal(["notify-only@example.com"], message.fetch("headers").fetch("To"))
     end
   end
 end

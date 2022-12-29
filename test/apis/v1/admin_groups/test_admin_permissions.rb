@@ -8,8 +8,6 @@ class Test::Apis::V1::AdminGroups::TestAdminPermissions < Minitest::Test
   def setup
     super
     setup_server
-    AdminGroup.delete_all
-    ApiScope.delete_all
   end
 
   def test_default_permissions_single_scope
@@ -242,6 +240,6 @@ class Test::Apis::V1::AdminGroups::TestAdminPermissions < Minitest::Test
   end
 
   def active_count
-    AdminGroup.where(:deleted_at => nil).count
+    AdminGroup.count
   end
 end

@@ -1,13 +1,11 @@
-local config = require "api-umbrella.proxy.models.file_config"
+local config = require("api-umbrella.utils.load_config")()
 local escape_uri_non_ascii = require "api-umbrella.utils.escape_uri_non_ascii"
 local icu_date = require "icu-date-ffi"
 local json_encode = require "api-umbrella.utils.json_encode"
 local logger = require "resty.logger.socket"
-local mongo = require "api-umbrella.utils.mongo"
+local pg_utils = require "api-umbrella.utils.pg_utils"
 local plutils = require "pl.utils"
 local round = require "api-umbrella.utils.round"
-local sha256 = require "resty.sha256"
-local str = require "resty.string"
 local user_agent_parser = require "api-umbrella.proxy.user_agent_parser"
 
 local split = plutils.split
@@ -152,7 +150,7 @@ end
 -- The geoip stuff actually returns different geocodes for different parts of
 -- cities. This approach rolls up each city to the last geocoded location
 -- within that city, so it's not perfect, but for now it'll do.
-local function cache_city_geocode(premature, id, data)
+local function cache_city_geocode(premature, data)
   if premature then
     return
   end
@@ -162,26 +160,13 @@ local function cache_city_geocode(premature, id, data)
     return
   end
 
-  local id_hash = sha256:new()
-  id_hash:update(id)
-  id_hash = id_hash:final()
-  id_hash = str.to_hex(id_hash)
-  local record = {
-    _id = id_hash,
+  local _, err = pg_utils.query("INSERT INTO analytics_cities(country, region, city, location) VALUES(:country, :region, :city, point(:lon, :lat)) ON CONFLICT (country, region, city) DO UPDATE SET location = EXCLUDED.location", {
     country = data["request_ip_country"],
     region = data["request_ip_region"],
     city = data["request_ip_city"],
-    location = {
-      type = "Point",
-      coordinates = {
-        data["request_ip_lon"],
-        data["request_ip_lat"],
-      },
-    },
-    updated_at = { ["$date"] = { ["$numberLong"] = tostring(ngx.now() * 1000) } },
-  }
-
-  local _, err = mongo.update("log_city_locations", record["_id"], record)
+    lon = data["request_ip_lon"],
+    lat = data["request_ip_lat"],
+  })
   if err then
     ngx.log(ngx.ERR, "failed to cache city location: ", err)
   end
@@ -231,7 +216,7 @@ function _M.cache_new_city_geocode(data)
 
     -- Perform the actual cache call in a timer because the http library isn't
     -- supported directly in the log_by_lua context.
-    ngx.timer.at(0, cache_city_geocode, id, data)
+    ngx.timer.at(0, cache_city_geocode, data)
   end
 end
 

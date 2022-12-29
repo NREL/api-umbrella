@@ -1,5 +1,5 @@
-local is_empty = require "api-umbrella.utils.is_empty"
-local path = require "pl.path"
+local config = require("api-umbrella.utils.load_config")({ persist_runtime_config = true })
+local path_join = require "api-umbrella.utils.path_join"
 local setup = require "api-umbrella.cli.setup"
 local shell_blocking_capture_combined = require("shell-games").capture_combined
 local status = require "api-umbrella.cli.status"
@@ -12,23 +12,7 @@ local function reload_perp(perp_base)
   end
 end
 
-local function reload_web_delayed_job(perp_base)
-  local _, err = shell_blocking_capture_combined({ "perpctl", "-b", perp_base, "int", "web-delayed-job" })
-  if err then
-    print("Failed to reload web-delayed-job\n" .. err)
-    os.exit(1)
-  end
-end
-
-local function reload_web_puma(perp_base)
-  local _, err = shell_blocking_capture_combined({ "perpctl", "-b", perp_base, "2", "web-puma" })
-  if err then
-    print("Failed to reload web-puma\n" .. err)
-    os.exit(1)
-  end
-end
-
-local function reload_trafficserver(config)
+local function reload_trafficserver()
   local _, err = shell_blocking_capture_combined({ "env", "TS_ROOT=" .. config["root_dir"], "traffic_ctl", "config", "reload" })
   if err then
     print("Failed to reload trafficserver\n" .. err)
@@ -38,6 +22,22 @@ end
 
 local function reload_nginx(perp_base)
   local _, err = shell_blocking_capture_combined({ "perpctl", "-b", perp_base, "hup", "nginx" })
+  if err then
+    print("Failed to reload nginx\n" .. err)
+    os.exit(1)
+  end
+end
+
+local function reload_nginx_web_app(perp_base)
+  local _, err = shell_blocking_capture_combined({ "perpctl", "-b", perp_base, "hup", "nginx-web-app" })
+  if err then
+    print("Failed to reload nginx\n" .. err)
+    os.exit(1)
+  end
+end
+
+local function reload_nginx_auto_ssl(perp_base)
+  local _, err = shell_blocking_capture_combined({ "perpctl", "-b", perp_base, "hup", "nginx-auto-ssl" })
   if err then
     print("Failed to reload nginx\n" .. err)
     os.exit(1)
@@ -69,23 +69,26 @@ return function(options)
     os.exit(7)
   end
 
-  local config = setup()
-  local perp_base = path.join(config["etc_dir"], "perp")
+  local perp_base = path_join(config["etc_dir"], "perp")
 
+  setup()
   reload_perp(perp_base)
 
-  if config["_service_web_enabled?"] and (is_empty(options) or options["web"]) then
-    reload_web_delayed_job(perp_base)
-    reload_web_puma(perp_base)
+  if config["_service_web_enabled?"] then
+    reload_nginx_web_app(perp_base)
   end
 
-  if config["_service_router_enabled?"] and (is_empty(options) or options["router"]) then
+  if config["_service_router_enabled?"] then
     reload_trafficserver(config)
     reload_nginx(perp_base)
 
     if config["geoip"]["_enabled"] then
       reload_geoip_auto_updater(perp_base)
     end
+  end
+
+  if config["_service_auto_ssl_enabled?"] then
+    reload_nginx_auto_ssl(perp_base)
   end
 
   if config["app_env"] == "development" then

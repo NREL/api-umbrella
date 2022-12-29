@@ -1,20 +1,14 @@
-local config = require "api-umbrella.proxy.models.file_config"
+local config = require("api-umbrella.utils.load_config")()
 local deep_merge_overwrite_arrays = require "api-umbrella.utils.deep_merge_overwrite_arrays"
+local escape_csv = require "api-umbrella.utils.escape_csv"
+local escape_html = require "api-umbrella.utils.escape_html"
+local extension = require("pl.path").extension
+local http_headers = require "api-umbrella.utils.http_headers"
 local httpsify_current_url = require "api-umbrella.utils.httpsify_current_url"
-local is_hash = require "api-umbrella.utils.is_hash"
-local lustache = require "lustache"
-local mustache_unescape = require "api-umbrella.utils.mustache_unescape"
-local path = require "pl.path"
-local stringx = require "pl.stringx"
-local tablex = require "pl.tablex"
+local string_template = require "api-umbrella.utils.string_template"
 local utils = require "api-umbrella.proxy.utils"
-local xpcall_error_handler = require "api-umbrella.utils.xpcall_error_handler"
 
-local append_array = utils.append_array
-local deepcopy = tablex.deepcopy
-local extension = path.extension
-local keys = tablex.keys
-local strip = stringx.strip
+local quote_json = ndk.set_var.set_quote_json_str
 
 local supported_media_types = {
   {
@@ -72,56 +66,13 @@ local function request_format()
 
   local accept_header = ngx.var.http_accept
   if accept_header then
-    local media = utils.parse_accept(accept_header, supported_media_types)
+    local media = http_headers.preferred_accept(accept_header, supported_media_types)
     if media then
       return media["format"], media["media_type"] .. "/" .. media["media_subtype"]
     end
   end
 
   return "json", supported_formats["json"]
-end
-
-local function render_template(template, data, format, strip_whitespace)
-  if not template or type(template) ~= "string" then
-    ngx.log(ngx.ERR, "render_template passed invalid template (not a string)")
-    return nil, "template error"
-  end
-
-  if not is_hash(data) then
-    ngx.log(ngx.ERR, "render_template passed invalid data (not a table)")
-    return nil, "template error"
-  end
-
-  -- Disable Mustache HTML escaping by default for non XML or HTML responses.
-  if format ~= "xml" and format ~= "html" then
-    template = mustache_unescape(template)
-  end
-
-  if strip_whitespace then
-    -- Strip leading and trailing whitespace from template, since it's easy to
-    -- introduce in multi-line templates and XML doesn't like if there's any
-    -- leading space before the XML declaration.
-    template = strip(template)
-  end
-
-  if format == "json" then
-    for key, value in pairs(data) do
-      data[key] = ndk.set_var.set_quote_json_str(value)
-    end
-  elseif format == "csv" then
-    for key, value in pairs(data) do
-      -- Quote the values for CSV output
-      data[key] = '"' .. string.gsub(value, '"', '""') .. '"'
-    end
-  end
-
-  local ok, output = xpcall(lustache.render, xpcall_error_handler, lustache, template, data)
-  if ok then
-    return output
-  else
-    ngx.log(ngx.ERR, "Mustache rendering error while rendering error template. Error: ", output, " Template: ", template)
-    return nil, "template error"
-  end
 end
 
 return function(denied_code, settings, extra_data)
@@ -147,121 +98,72 @@ return function(denied_code, settings, extra_data)
   end
 
   if not settings then
-    settings = config["apiSettings"]
+    settings = config["default_api_backend_settings"]
   end
 
   -- Try to determine the format of the request (JSON, XML, etc), so we can
   -- attempt to match our response to the expected format.
   local format, content_type = request_format()
 
-  -- Fetch "common" error data variables, for variables like "contact_url" that
-  -- might be in use across all error messages.
-  local common_data = deepcopy(settings["error_data"]["common"])
-  if not is_hash(common_data) then
-    -- Fallback to the built-in default data that isn't subject to any
-    -- API-specific overrides (so it should always be a valid hash).
-    common_data = deepcopy(config["apiSettings"]["error_data"]["common"])
-  end
+  -- Fetch the error data for use with this error type.
+  local error_data = settings["_error_data"][denied_code]
 
-  -- Fetch the error data specific to this error message (over rate limit, key
-  -- missing, etc).
-  local error_data = deepcopy(settings["error_data"][denied_code])
-  if not is_hash(error_data) then
-    error_data = deepcopy(settings["error_data"]["internal_server_error"])
-    if not is_hash(error_data) then
-      -- Fallback to the built-in default data that isn't subject to any
-      -- API-specific overrides (so it should always be a valid hash).
-      error_data = deepcopy(config["apiSettings"]["error_data"]["internal_server_error"])
+  local new_error_data_vars = false
+
+  if not error_data["base_url"] then
+    error_data["base_url"] = utils.base_url()
+
+    -- Support legacy camel-case capitalization of variables. Moving forward,
+    -- we're trying to clean things up and standardize on snake_case.
+    if not error_data["baseUrl"] then
+      error_data["baseUrl"] = error_data["base_url"]
     end
+
+    new_error_data_vars = true
   end
-
-  -- Begin building the combined data available to the error template, starting
-  -- with the base_url (based on the current URL being hit).
-  local data = { base_url = utils.base_url() }
-
-  -- Support legacy camel-case capitalization of variables. Moving forward,
-  -- we're trying to clean things up and standardize on snake_case.
-  data["baseUrl"] = data["base_url"]
-
-  -- Later we need to loop through the data table roughly in order of
-  -- insertion. Since tables have no order, keep track of things separately so
-  -- we can loop through the logical groups in order.
-  local data_ordered_keys = keys(data)
-
-  -- Add the common data.
-  deep_merge_overwrite_arrays(data, common_data)
-  append_array(data_ordered_keys, keys(common_data))
-
-  -- Support legacy camel-case capitalization of variables. Moving forward,
-  -- we're trying to clean things up and standardize on snake_case.
-  if not data["signupUrl"] then
-    data["signupUrl"] = data["signup_url"]
-    table.insert(data_ordered_keys, "signupUrl")
-  end
-  if not data["contactUrl"] then
-    data["contactUrl"] = data["contact_url"]
-    table.insert(data_ordered_keys, "contactUrl")
-  end
-
-  -- Add the error-specific data.
-  deep_merge_overwrite_arrays(data, error_data)
-  append_array(data_ordered_keys, keys(error_data))
 
   -- Add any extra data we might be passing internally.
   if extra_data then
-    deep_merge_overwrite_arrays(data, extra_data)
-    append_array(data_ordered_keys, keys(extra_data))
+    deep_merge_overwrite_arrays(error_data, extra_data)
+    new_error_data_vars = true
   end
 
-  -- Loop through all the data variables we have, treating each variable as a
-  -- potential template. This allows for variables to contain other variables.
-  -- This allows for variables to contain others (like contact_url defaulting
-  -- to "{{base_url}}/contact/"), as well as the error message variable to
-  -- contain variables like "Contact us at {{contact_url}}".
-  --
-  -- We have to pay attention to the order with which we loop through things,
-  -- because we have a bit of a circular issue with the example above of
-  -- "message" containing "{{contact_url}}" and "contact_url" containing
-  -- "{{base_url}}". We solve this by trying to loop through things in a
-  -- logical order of how our variables typically build on each other (base_url
-  -- first, followed by common_data, followed by the error_data). This isn't
-  -- perfect, but saves us from multiple passes. But perhaps we should rethink
-  -- this and disallow nested variables.
-  for _, key in ipairs(data_ordered_keys) do
-    if data[key] and type(data[key]) == "string" then
-      data[key] = render_template(data[key], data)
+  if new_error_data_vars then
+    for key, value in pairs(error_data) do
+      if type(value) == "string" then
+        error_data[key] = string_template(value, error_data)
+      end
     end
   end
 
   -- Determine the status code for the HTTP response.
-  local status_code = data["status_code"] or 500
+  local status_code = error_data["status_code"] or 500
 
   -- Fetch the template for rendering the different formats of error messages
   -- (JSON, XML, etc).
-  local template = settings["error_templates"][format]
-  if not template or type(template) ~= "string" then
-    -- Fallback to the built-in default template that isn't subject to any
-    -- API-specific overrides (so it should always be a valid template).
-    template = config["apiSettings"]["error_templates"][format]
+  local template = settings["_error_templates"][format]
+
+  local escape_callback
+  if format == "json" then
+    escape_callback = quote_json
+  elseif format == "xml" then
+    escape_callback = escape_html
+  elseif format == "html" then
+    escape_callback = escape_html
+  elseif format == "csv" then
+    escape_callback = escape_csv
   end
 
   -- Render the error message, substituting the variables.
-  local output, template_err = render_template(template, data, format, true)
+  local output = string_template(template, error_data, escape_callback)
 
   -- Allow all errors to be loaded over CORS (in case any underlying APIs are
   -- expected to be accessed over CORS then we want to make sure errors are
   -- also allowed via CORS).
   ngx.header["Access-Control-Allow-Origin"] = "*"
 
-  if not template_err then
-    ngx.status = status_code
-    ngx.header.content_type = content_type
-    ngx.print(output)
-    return ngx.exit(ngx.HTTP_OK)
-  else
-    ngx.status = 500
-    ngx.header.content_type = "text/plain"
-    ngx.print("Internal Server Error")
-    return ngx.exit(ngx.HTTP_OK)
-  end
+  ngx.status = status_code
+  ngx.header.content_type = content_type
+  ngx.print(output)
+  return ngx.exit(ngx.HTTP_OK)
 end

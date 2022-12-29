@@ -1,43 +1,77 @@
-class ApiUser
-  include Mongoid::Document
-  include Mongoid::Timestamps
-  field :_id, :type => String, :overwrite => true, :default => lambda { SecureRandom.uuid }
-  field :api_key, :default => lambda { SecureRandom.hex(20) }
-  field :first_name
-  field :last_name
-  field :email
-  field :email_verified, :type => Boolean
-  field :website
-  field :use_description
-  field :registration_source
-  field :throttle_by_ip, :type => Boolean
-  field :disabled_at, :type => Time
-  field :roles, :type => Array
-  field :registration_ip
-  field :registration_user_agent
-  field :registration_referer
-  field :registration_origin
-  field :created_by, :type => String
-  field :updated_by, :type => String
-  embeds_one :settings, :class_name => "Api::Settings"
-  after_save :touch_server_side_timestamp
-
+class ApiUser < ApplicationRecord
+  has_one :settings, :class_name => "ApiUserSettings"
+  has_and_belongs_to_many :roles, -> { order(:id) }, :class_name => "ApiRole", :join_table => "api_users_roles"
   attr_accessor :terms_and_conditions
 
-  def api_key_preview
-    self.api_key.truncate(9)
+  def id=(id)
+    prev_id = self[:id]
+    self[:id] = id
+
+    # Re-encrypt if the ID (used for the auth data) changes.
+    if prev_id && prev_id != id && @unencrypted_api_key
+      self.api_key = @unencrypted_api_key
+    end
   end
 
-  private
+  def self.delete_non_seeded
+    self.where("registration_source IS NULL OR registration_source != 'seed'").delete_all
+  end
 
-  # Used for polling. See
-  # src/api-umbrella/web-app/app/models/api_user.rb#touch_server_side_timestamp
-  # for more details.
-  def touch_server_side_timestamp
-    collection.update_one({ :_id => self.id }, {
-      "$currentDate" => {
-        "ts" => { "$type" => "timestamp" },
+  def roles
+    self.role_ids
+  end
+
+  def roles=(ids)
+    ApiRole.insert_missing(ids)
+    self.role_ids = ids
+  end
+
+  def api_key=(value)
+    @unencrypted_api_key = value
+
+    # Ensure the record ID is set (it may not be on initial create), since we
+    # need the ID for the auth data.
+    self.id ||= SecureRandom.uuid
+
+    self.api_key_hash = OpenSSL::HMAC.hexdigest("sha256", $config["secret_key"], value)
+    self.api_key_encrypted_iv = SecureRandom.hex(6)
+    self.api_key_encrypted = Base64.strict_encode64(Encryptor.encrypt({
+      :value => value,
+      :iv => self.api_key_encrypted_iv,
+      :key => Digest::SHA256.digest($config.fetch("secret_key")),
+      :auth_data => self.id,
+    }))
+    self.api_key_prefix = value[0, 16]
+  end
+
+  def api_key
+    Encryptor.decrypt({
+      :value => Base64.strict_decode64(self.api_key_encrypted),
+      :iv => self.api_key_encrypted_iv,
+      :key => Digest::SHA256.digest($config.fetch("secret_key")),
+      :auth_data => self.id,
+    })
+  end
+
+  def api_key_preview
+    "#{self.api_key_prefix[0, 6]}..."
+  end
+
+  def serializable_hash(options = nil)
+    options ||= {}
+    options.merge!({
+      :methods => [
+        :api_key,
+        :roles,
+      ],
+      :include => {
+        :settings => {
+          :include => {
+            :rate_limits => {},
+          },
+        },
       },
     })
+    super(options)
   end
 end

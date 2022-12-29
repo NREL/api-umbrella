@@ -8,14 +8,13 @@ class Test::Apis::V1::Config::TestPendingChanges < Minitest::Test
   def setup
     super
     setup_server
-    Api.delete_all
-    WebsiteBackend.delete_all
-    ConfigVersion.delete_all
+
+    publish_default_config_version
   end
 
   def after_all
     super
-    default_config_version_needed
+    publish_default_config_version
   end
 
   def test_grouped_into_categories
@@ -32,30 +31,50 @@ class Test::Apis::V1::Config::TestPendingChanges < Minitest::Test
   end
 
   def test_yaml_output_omits_separator
-    FactoryBot.create(:api)
+    FactoryBot.create(:api_backend)
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/config/pending_changes.json", http_options.deep_merge(admin_token))
 
     assert_response_code(200, response)
     data = MultiJson.load(response.body)
     api_data = data["config"]["apis"]["new"].first
     refute_includes(api_data["pending_yaml"], "---")
+    refute_includes(api_data["pending_yaml"], "...")
   end
 
   def test_yaml_output_omits_unnecessary_fields
-    FactoryBot.create(:api, :created_by => "foo", :updated_by => "foo")
+    FactoryBot.create(:api_backend, :created_by_username => "foo", :updated_by_username => "foo")
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/config/pending_changes.json", http_options.deep_merge(admin_token))
 
     assert_response_code(200, response)
     data = MultiJson.load(response.body)
     api_data = data["config"]["apis"]["new"].first
-    ["_id", "version", "created_by", "created_at", "updated_at", "updated_by"].each do |field|
-      assert_equal(true, api_data["pending"][field].present?)
+    pending_keys = api_data["pending"].keys
+    [
+      "created_at",
+      "created_by",
+      "creator",
+      "id",
+      "updated_at",
+      "updated_by",
+      "updater",
+      "version",
+    ].each do |field|
+      assert_includes(pending_keys, field)
+      refute_includes(api_data["pending_yaml"], field)
+    end
+    [
+      "created_by_id",
+      "created_by_username",
+      "updated_by_id",
+      "updated_by_username",
+    ].each do |field|
+      refute_includes(pending_keys, field)
       refute_includes(api_data["pending_yaml"], field)
     end
   end
 
   def test_yaml_output_sorts_fields_alphabetically
-    FactoryBot.create(:api, :sort_order => 10)
+    FactoryBot.create(:api_backend)
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/config/pending_changes.json", http_options.deep_merge(admin_token))
 
     assert_response_code(200, response)
@@ -69,11 +88,9 @@ class Test::Apis::V1::Config::TestPendingChanges < Minitest::Test
       "backend_protocol",
       "balance_algorithm",
       "frontend_host",
-      "name",
       "servers",
       "- host",
       "  port",
-      "sort_order",
       "url_matches",
       "- backend_prefix",
       "  frontend_prefix",

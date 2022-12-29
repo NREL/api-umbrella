@@ -1,24 +1,37 @@
 import Model, { attr } from '@ember-data/model';
-import classic from 'ember-classic-decorator';
+import { t } from 'api-umbrella-admin-ui/utils/i18n';
 import { buildValidations, validator } from 'ember-cp-validations';
 
 const Validations = buildValidations({
   matcherType: [
-    validator('presence', true),
+    validator('presence', {
+      presence: true,
+      description: t('Matcher Type'),
+    }),
   ],
   httpMethod: [
-    validator('presence', true),
+    validator('presence', {
+      presence: true,
+      description: t('HTTP Method'),
+    }),
   ],
   frontendMatcher: [
-    validator('presence', true),
+    validator('presence', {
+      presence: true,
+      description: t('Frontend Matcher'),
+    }),
   ],
   backendReplacement: [
-    validator('presence', true),
+    validator('presence', {
+      presence: true,
+      description: t('Backend Replacement'),
+    }),
   ],
 });
 
-@classic
 class Rewrite extends Model.extend(Validations) {
+  static validationClass = Validations;
+
   @attr('number')
   sortOrder;
 
@@ -34,9 +47,5 @@ class Rewrite extends Model.extend(Validations) {
   @attr()
   backendReplacement;
 }
-
-Rewrite.reopenClass({
-  validationClass: Validations,
-});
 
 export default Rewrite;

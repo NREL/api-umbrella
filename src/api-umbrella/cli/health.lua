@@ -1,11 +1,12 @@
+local config = require("api-umbrella.utils.load_config")()
 local http = require "resty.http"
 local json_decode = require("cjson").decode
-local read_config = require "api-umbrella.cli.read_config"
 local unistd = require "posix.unistd"
 
-local function health(options, config)
+local function health(options)
   local status = "red"
   local exit_code = 1
+  local err
 
   local url = "http://127.0.0.1:" .. config["http_port"] .. "/api-umbrella/v1/health"
   if options["wait_for_status"] then
@@ -15,10 +16,9 @@ local function health(options, config)
   local httpc = http.new()
   local res, http_err = httpc:request_uri(url)
   if not res then
-    return status, exit_code, http_err
+    err = http_err
   elseif res.headers["Content-Type"] ~= "application/json" then
-    local err = "nginx error"
-    return status, exit_code, err
+    err = "Response was not JSON: " .. (res.body or "")
   else
     local data = json_decode(res.body)
     if data["status"] then
@@ -26,19 +26,18 @@ local function health(options, config)
 
       if res.status == 200 and status ~= "red" then
         exit_code = 0
+      else
+        err = "Invalid status: " .. (res.body or "")
       end
     else
-      local err = "nginx error"
-      return status, exit_code, err
+      err = "Could not find status in response: " .. (res.body or "")
     end
   end
 
-  return status, exit_code
+  return status, exit_code, err
 end
 
 return function(options)
-  local config = read_config()
-
   -- Perform a health check using the API health endpoint.
   --
   -- By default, perform the health check and return the status immediately.
@@ -47,7 +46,7 @@ return function(options)
   -- that status (or better) is met (or until timeout).
   local status, exit_code, health_err, _
   if not options["wait_for_status"] then
-    status, exit_code, _ = health(options, config)
+    status, exit_code, _ = health(options)
   else
     -- Validate the wait_for_status param.
     local wait_for_status = options["wait_for_status"]
@@ -63,19 +62,31 @@ return function(options)
       os.exit(1)
     end
 
-    -- Most of the wait-for-status functionality is implemented within the API
-    -- endpoint (will will wait until the expected status is achieved).
-    -- However, we will also loop in the CLI app until this status is achieved
-    -- to handle connection errors if nginx hasn't yet bound to the expected
-    -- port.
     local timeout_at = os.time() + wait_timeout
+
+    -- If the wait timeout is longer than the proxy read timeout, then we can't
+    -- rely on the HTTP API waiting the full duration for this timeout. So
+    -- instead, lower the timeout sent to the API, and then we will loop over
+    -- multiple requests to wait the full timeout.
+    if wait_timeout > config["nginx"]["proxy_read_timeout"] - 2 then
+      options["wait_timeout"] = config["nginx"]["proxy_read_timeout"] - 2
+      if options["wait_timeout"] <= 0 then
+        options["wait_timeout"] = 1
+      end
+    end
+
+    -- Most of the wait-for-status functionality is implemented within the API
+    -- endpoint (it will wait until the expected status is achieved). However,
+    -- we will also loop in the CLI app until this status is achieved to handle
+    -- connection errors if nginx hasn't yet bound to the expected port, or if
+    -- the desired timeout is longer than the proxy read timeout.
     while true do
-      status, exit_code, health_err = health(options, config)
+      status, exit_code, health_err = health(options)
 
       -- If a low-level connection error wasn't returned, then we assume the
       -- API endpoint was hit and it already waited the proper amount of time,
       -- so we should immediately return whatever status the API returned.
-      if not health_err then
+      if exit_code == 0 then
         break
       end
 
@@ -89,5 +100,8 @@ return function(options)
   end
 
   print(status or "red")
+  if exit_code ~= 0 and health_err then
+    print(health_err)
+  end
   os.exit(exit_code or 1)
 end

@@ -1,14 +1,19 @@
 #!/usr/bin/env bash
 
-glauth_version="2.0.0"
-glauth_hash="dd0c29249f08cef59b025c530cc180a1d919bab771668604bf3d4215aa73c70a"
-
 set -e -u -x
 source ./tasks/helpers.sh
 
-task_working_dir
-download "https://github.com/glauth/glauth/releases/download/v$glauth_version/glauth64" "sha256" "$glauth_hash"
+glauth_version="2.1.0"
+glauth_hash="4432260e6468644f99bfa61cc8a9586439823aada05a5602e7aacda765fd320d"
+if [ "$TARGETARCH" == "arm64" ]; then
+  glauth_hash="e25fccf3fe75f5638ad893ed34bbe0bfd18a3ac9539521110628c32f329dfe5d"
+fi
 
-install -D -m 755 _persist/downloads/glauth64 "$TEST_INSTALL_PREFIX/bin/glauth"
+task_working_dir
+download "https://github.com/glauth/glauth/releases/download/v$glauth_version/linux${TARGETARCH}.zip" "sha256" "$glauth_hash"
+rm -rf "_persist/downloads/linux${TARGETARCH}"
+unzip "_persist/downloads/linux${TARGETARCH}.zip" -d "_persist/downloads/linux${TARGETARCH}"
+
+install -D -m 755 "_persist/downloads/linux${TARGETARCH}/glauth" "$TEST_INSTALL_PREFIX/bin/glauth"
 
 stamp

@@ -40,14 +40,6 @@ RSpec.shared_examples("installed") do
     expect(subject).to be_grouped_into("root")
   end
 
-  it "installs a sudoers.d file" do
-    subject = file("/etc/sudoers.d/api-umbrella")
-    expect(subject).to be_file
-    expect(subject).to be_mode(440)
-    expect(subject).to be_owned_by("root")
-    expect(subject).to be_grouped_into("root")
-  end
-
   it "installs a api-umbrella.yml file" do
     subject = file("/etc/api-umbrella/api-umbrella.yml")
     expect(subject).to be_file
@@ -71,39 +63,12 @@ RSpec.shared_examples("installed") do
     expect(subject).to have_home_directory("/opt/api-umbrella")
     expect(subject).to have_login_shell("/sbin/nologin")
   end
-
-  it "sets up the api-umbrella-deploy user's home directory and empty ssh keys file" do
-    subject = user("api-umbrella-deploy")
-    expect(subject).to exist
-    expect(subject).to belong_to_group("api-umbrella-deploy")
-    expect(subject).to have_home_directory("/home/api-umbrella-deploy")
-    expect(subject).to have_login_shell("/bin/bash")
-
-    subject = file("/home/api-umbrella-deploy")
-    expect(subject).to be_directory
-    expect(subject).to be_mode(700)
-    expect(subject).to be_owned_by("api-umbrella-deploy")
-    expect(subject).to be_grouped_into("api-umbrella-deploy")
-
-    subject = file("/home/api-umbrella-deploy/.ssh")
-    expect(subject).to be_directory
-    expect(subject).to be_mode(700)
-    expect(subject).to be_owned_by("api-umbrella-deploy")
-    expect(subject).to be_grouped_into("api-umbrella-deploy")
-
-    subject = file("/home/api-umbrella-deploy/.ssh/authorized_keys")
-    expect(subject).to be_file
-    expect(subject).to be_mode(600)
-    expect(subject).to be_owned_by("api-umbrella-deploy")
-    expect(subject).to be_grouped_into("api-umbrella-deploy")
-    expect(subject.content).to eql("")
-  end
 end
 
 RSpec.shared_examples("package upgrade") do |package_version|
   # Skip testing upgrades if we don't have binary packages for certain distro
   # and version combinations.
-  case(ENV["DIST"])
+  case(ENV.fetch("DIST"))
   when "debian-9"
     # No Debian 9 packages until v0.15
     if(Gem::Version.new(package_version) < Gem::Version.new("0.15.0-1"))
@@ -140,9 +105,9 @@ RSpec.shared_examples("package upgrade") do |package_version|
 
   def install_package(version)
     if(version == :current)
-      package_path = "#{ENV["SOURCE_DIR"]}/build/package/work/current/#{ENV["DIST"]}/core/*"
+      package_path = "#{ENV.fetch("SOURCE_DIR")}/build/package/work/current/#{ENV.fetch("DIST")}/core/*"
     else
-      package_path = "#{ENV["SOURCE_DIR"]}/build/package/work/archives/#{version}/#{ENV["DIST"]}/core/*"
+      package_path = "#{ENV.fetch("SOURCE_DIR")}/build/package/work/archives/#{version}/#{ENV.fetch("DIST")}/core/*"
     end
 
     case(os[:family])
@@ -324,7 +289,7 @@ describe "api-umbrella" do
     ["/", "/foo", "/root"].each do |home|
       command_result = command("env HOME=#{home} /etc/init.d/api-umbrella status")
       expect(command_result.exit_status).to eql(0)
-      case(ENV["DIST"])
+      case(ENV.fetch("DIST"))
       when "centos-6", "centos-7"
         expect(command_result.stdout).to include("is running")
       else
@@ -388,7 +353,7 @@ describe "api-umbrella" do
   it "fails immediately when startup script is called as an unauthorized user" do
     command_result = command("sudo -u api-umbrella-deploy /etc/init.d/api-umbrella start")
     expect(command_result.exit_status).to_not eql(0)
-    case(ENV["DIST"])
+    case(ENV.fetch("DIST"))
     when "centos-6"
       expect(command_result.stdout).to include("Must be started with super-user privileges")
     when "centos-7"
@@ -403,7 +368,7 @@ describe "api-umbrella" do
   it "allows the deploy user to execute api-umbrella commands as root" do
     expect(command("sudo -u api-umbrella-deploy sudo -n api-umbrella status").stdout).to include("is running")
     command_result = command("sudo -u api-umbrella-deploy sudo -n /etc/init.d/api-umbrella status")
-    case(ENV["DIST"])
+    case(ENV.fetch("DIST"))
     when "centos-6", "centos-7"
       expect(command_result.stdout).to include("is running")
     else
@@ -414,7 +379,7 @@ describe "api-umbrella" do
   it "exits immediately if start is called when already started" do
     command_result = command("/etc/init.d/api-umbrella start")
     expect(command_result.exit_status).to eql(0)
-    case(ENV["DIST"])
+    case(ENV.fetch("DIST"))
     when "centos-6"
       expect(command_result.stdout).to include("api-umbrella is already running")
     when "centos-7"
@@ -473,7 +438,7 @@ describe "api-umbrella" do
     expect(service("api-umbrella")).to_not be_running.under(:init)
     command_result = command("/etc/init.d/api-umbrella status")
     expect(command_result.exit_status).to eql(3)
-    case(ENV["DIST"])
+    case(ENV.fetch("DIST"))
     when "centos-6", "centos-7"
       expect(command_result.stdout).to include("api-umbrella is stopped")
     else
@@ -486,7 +451,7 @@ describe "api-umbrella" do
     # Verify behavior of stop command after already stopped.
     command_result = command("/etc/init.d/api-umbrella stop")
     expect(command_result.exit_status).to eql(0)
-    case(ENV["DIST"])
+    case(ENV.fetch("DIST"))
     when "centos-6"
       expect(command_result.stdout).to include("api-umbrella is already stopped")
     when "centos-7"
@@ -500,7 +465,7 @@ describe "api-umbrella" do
 
     # Verify behavior of reload command when stopped.
     command_result = command("/etc/init.d/api-umbrella reload")
-    case(ENV["DIST"])
+    case(ENV.fetch("DIST"))
     when "centos-6"
       expect(command_result.exit_status).to eql(7)
       expect(command_result.stdout).to include("api-umbrella is stopped")
@@ -519,7 +484,7 @@ describe "api-umbrella" do
     expect(service("api-umbrella")).to_not be_running.under(:init)
     command_result = command("/etc/init.d/api-umbrella condrestart")
     expect(command_result.exit_status).to eql(0)
-    case(ENV["DIST"])
+    case(ENV.fetch("DIST"))
     when "centos-7"
       expect(command_result.stdout).to include("Restarting api-umbrella (via systemctl)")
       expect(command_result.stdout).to include("OK")
@@ -594,7 +559,6 @@ describe "api-umbrella" do
     [
       "/etc/init.d/api-umbrella",
       "/etc/logrotate.d/api-umbrella",
-      "/etc/sudoers.d/api-umbrella",
       "/opt/api-umbrella/embedded",
       "/usr/bin/api-umbrella",
       "/var/log/api-umbrella",

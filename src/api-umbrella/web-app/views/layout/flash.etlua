@@ -1,0 +1,12 @@
+<% flashes = restore_flashes() %>
+<% if flashes and next(flashes) ~= nil then %>
+  <% for flash_type, data in pairs(flashes) do %>
+    <div class="alert alert-<%= flash_type %>">
+      <% if data["html_safe"] then %>
+        <%- data["message"] %>
+      <% else %>
+        <%= data["message"] %>
+      <% end %>
+    </div>
+  <% end %>
+<% end %>

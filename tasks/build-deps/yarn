@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-yarn_version="1.22.17"
-yarn_hash="291fea6d3b993c201b946ab566de816c"
+yarn_version="1.22.19"
+yarn_hash="c04ea97bf9f72386c1a3da6b1c8510e3"
 
 set -e -u -x
 source ./tasks/helpers.sh
@@ -11,7 +11,7 @@ download "https://github.com/yarnpkg/yarn/releases/download/v$yarn_version/yarn-
 extract_download "yarn-v$yarn_version.tar.gz"
 
 mkdir -p "$DEV_INSTALL_PREFIX/yarn"
-rsync -a -v --delete "yarn-v$yarn_version/" "$DEV_INSTALL_PREFIX/yarn/"
+rsync -a --itemize-changes --delete "yarn-v$yarn_version/" "$DEV_INSTALL_PREFIX/yarn/"
 
 mkdir -p "$DEV_INSTALL_PREFIX/bin"
 (cd "$DEV_INSTALL_PREFIX/bin" && ln -snf ../yarn/bin/yarn ./yarn)

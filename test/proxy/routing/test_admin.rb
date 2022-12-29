@@ -11,31 +11,31 @@ class Test::Proxy::Routing::TestAdmin < Minitest::Test
   end
 
   def test_https_redirect
-    response = Typhoeus.get("http://127.0.0.1:9080/admin/login", keyless_http_options)
+    response = Typhoeus.get("http://127.0.0.1:9080/admin/login?#{unique_test_id}", keyless_http_options)
     assert_response_code(301, response)
-    assert_equal("https://127.0.0.1:9081/admin/login", response.headers["location"])
+    assert_equal("https://127.0.0.1:9081/admin/login?#{unique_test_id}", response.headers["location"])
   end
 
   def test_https_redirect_wildcard_host
-    response = Typhoeus.get("http://127.0.0.1:9080/admin/login", keyless_http_options.deep_merge({
+    response = Typhoeus.get("http://127.0.0.1:9080/admin/login?#{unique_test_id}", keyless_http_options.deep_merge({
       :headers => {
         "Host" => "unknown.foo",
       },
     }))
     assert_response_code(301, response)
-    assert_equal("https://unknown.foo:9081/admin/login", response.headers["location"])
+    assert_equal("https://unknown.foo:9081/admin/login?#{unique_test_id}", response.headers["location"])
   end
 
   def test_missing_trailing_slash
     http_opts = keyless_http_options
 
-    response = Typhoeus.get("http://127.0.0.1:9080/admin", http_opts)
+    response = Typhoeus.get("http://127.0.0.1:9080/admin?#{unique_test_id}", http_opts)
     assert_response_code(301, response)
-    assert_equal("https://127.0.0.1:9081/admin", response.headers["location"])
+    assert_equal("https://127.0.0.1:9081/admin?#{unique_test_id}", response.headers["location"])
 
-    response = Typhoeus.get("https://127.0.0.1:9081/admin", http_opts)
+    response = Typhoeus.get("https://127.0.0.1:9081/admin?#{unique_test_id}", http_opts)
     assert_response_code(301, response)
-    assert_equal("http://127.0.0.1:9080/admin/", response.headers["location"])
+    assert_equal("http://127.0.0.1:9080/admin/?#{unique_test_id}", response.headers["location"])
   end
 
   def test_missing_trailing_slash_wildcard_host
@@ -45,13 +45,13 @@ class Test::Proxy::Routing::TestAdmin < Minitest::Test
       },
     })
 
-    response = Typhoeus.get("http://127.0.0.1:9080/admin", http_opts)
+    response = Typhoeus.get("http://127.0.0.1:9080/admin?#{unique_test_id}", http_opts)
     assert_response_code(301, response)
-    assert_equal("https://unknown.foo:9081/admin", response.headers["location"])
+    assert_equal("https://unknown.foo:9081/admin?#{unique_test_id}", response.headers["location"])
 
-    response = Typhoeus.get("https://127.0.0.1:9081/admin", http_opts)
+    response = Typhoeus.get("https://127.0.0.1:9081/admin?#{unique_test_id}", http_opts)
     assert_response_code(301, response)
-    assert_equal("http://unknown.foo:9080/admin/", response.headers["location"])
+    assert_equal("http://unknown.foo:9080/admin/?#{unique_test_id}", response.headers["location"])
   end
 
   def test_gives_precedence_to_admin_over_api_prefixes

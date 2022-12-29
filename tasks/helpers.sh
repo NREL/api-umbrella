@@ -26,8 +26,9 @@ DEV_VENDOR_DIR="$DEV_INSTALL_PREFIX/vendor"
 # Where to install test-only dependencies.
 TEST_INSTALL_PREFIX="$WORK_DIR/test-env"
 TEST_VENDOR_DIR="$TEST_INSTALL_PREFIX/vendor"
-TEST_VENDOR_LUA_SHARE_DIR="$TEST_VENDOR_DIR/share/lua/5.1"
-TEST_VENDOR_LUA_LIB_DIR="$TEST_VENDOR_DIR/lib/lua/5.1"
+TEST_VENDOR_LUA_DIR="$TEST_VENDOR_DIR/lua"
+TEST_VENDOR_LUA_SHARE_DIR="$TEST_VENDOR_LUA_DIR/share/lua/5.1"
+TEST_VENDOR_LUA_LIB_DIR="$TEST_VENDOR_LUA_DIR/lib/lua/5.1"
 
 # PATH variables to use when executing other commands.
 DEFAULT_PATH="$PATH"
@@ -35,12 +36,10 @@ STAGE_EMBEDDED_PATH="$STAGE_EMBEDDED_DIR/bin:$DEFAULT_PATH"
 DEV_PATH="$DEV_INSTALL_PREFIX/bin:$STAGE_EMBEDDED_PATH"
 
 # Where to install app-level vendor dependencies.
-APP_CORE_DIR="$STAGE_EMBEDDED_DIR/apps/core"
-APP_CORE_RELEASE_DIR="$APP_CORE_DIR/releases/0"
-APP_CORE_VENDOR_DIR="$APP_CORE_DIR/shared/vendor"
-APP_CORE_VENDOR_BUNDLE_DIR="$APP_CORE_VENDOR_DIR/bundle"
-APP_CORE_VENDOR_LUA_DIR="$APP_CORE_VENDOR_DIR/lua"
-APP_CORE_VENDOR_LUA_SHARE_DIR="$APP_CORE_VENDOR_LUA_DIR/share/lua/5.1"
+APP_DIR="$STAGE_EMBEDDED_DIR/app"
+APP_VENDOR_DIR="$APP_DIR/vendor"
+APP_VENDOR_LUA_DIR="$APP_VENDOR_DIR/lua"
+APP_VENDOR_LUA_SHARE_DIR="$APP_VENDOR_LUA_DIR/share/lua/5.1"
 
 # Determine the sub-path for the currently executing task. This can be used for
 # generating unique directories for the current task.
@@ -58,51 +57,17 @@ if [[ "$NPROC" -gt 4 ]]; then
   NPROC=4
 fi
 
-# Lock build tasks so they don't run in parallel. This prevents race conditions
-# with task dependencies trying to execute concurrently.
-#
-# This is a workaround until Task better supports not running the same
-# dependency concurrently:
-# https://github.com/go-task/task/issues/53#issuecomment-405881428
-lock() {
-  set +x
-  stamp_path="$WORK_DIR/stamp/$TASK_SUBPATH"
-  pre_lock_stamp_modified=$(stat -c %y "$stamp_path" 2> /dev/null || echo -n "")
+if [ -z "${TARGETARCH:-}" ]; then
+  TARGETARCH=$(uname -m)
 
-  lock_path="$WORK_DIR/locks/$TASK_SUBPATH"
-  lock_dir=$(dirname "$lock_path")
-  mkdir -p "$lock_dir"
-  exec 200>"$lock_path"
-  echo "Locking task '$TASK_SUBPATH'"
-  set -x
-  while ! flock -x -w 60 200; do
-    echo "Still waiting to acquire lock for task '$TASK_SUBPATH'"
-  done
-  set +x
-
-  post_lock_stamp_modified=$(stat -c %y "$stamp_path" 2> /dev/null || echo -n "")
-  echo "pre_lock_stamp_modified: $pre_lock_stamp_modified"
-  echo "post_lock_stamp_modified: $post_lock_stamp_modified"
-
-  # Since this process may have been locked while another process was running
-  # this same task, perform a sanity check to see if another task completed
-  # this work, in which case we can skip work.
-  if [ "$pre_lock_stamp_modified" != "$post_lock_stamp_modified" ]; then
-    echo "Skipping task '$TASK_SUBPATH' since another process ran it while this processes was acquiring a lock"
-    set -x
-    unlock
-    exit 0
+  # Normalize architectures based on how Docker and Go represents these:
+  # https://stackoverflow.com/a/70889505
+  if [ "$TARGETARCH" == "aarch64" ]; then
+    TARGETARCH="arm64"
+  elif [ "$TARGETARCH" == "x86_64" ]; then
+    TARGETARCH="amd64"
   fi
-
-  set -x
-}
-
-unlock() {
-  set +x
-  echo "Unlocking task '$TASK_SUBPATH'"
-  exec 200>&-
-  set -x
-}
+fi
 
 # Cleanup any files not in the special "_persist" directory before and after
 # running tasks. This ensures clean builds if a task is being executed (since
@@ -133,8 +98,6 @@ clean_task_working_dir() {
 # For example, ./tasks/deps/openresty's working directory would be
 # ./build/work/tasks/deps/openresty
 task_working_dir() {
-  lock
-
   set +x
   dir="$WORK_DIR/tasks/$TASK_SUBPATH"
   set -x
@@ -182,8 +145,6 @@ stamp() {
   openssl rand -hex 64 >> "$stamp_path"
 
   set -x
-
-  unlock
 }
 
 download() {
@@ -192,10 +153,14 @@ download() {
   hash_algorithm=$2
   expected_hash=$3
 
-  # Download the file.
+  # Download the file. Include the hash of the full URL in the filename so that
+  # if the version isn't in the file path (but somewhere else in the URL), we
+  # still download a new file).
   filename=$(basename "$url")
+  url_hash=$(echo -n "$url" | openssl dgst -sha256 | awk '{print $NF}')
+  download_filename="${url_hash:0:10}-$filename"
   downloads_dir="$(pwd)/_persist/downloads"
-  download_path="$downloads_dir/$filename"
+  download_path="$downloads_dir/$download_filename"
   mkdir -p "$downloads_dir"
   if [ ! -f "$download_path" ]; then
     set -x
@@ -204,13 +169,18 @@ download() {
   fi
 
   # Verify the checksum of the downloaded file.
-  actual_hash=$(openssl dgst -"$hash_algorithm" "$download_path" | awk '{print $2}')
+  actual_hash=$(openssl dgst -"$hash_algorithm" "$download_path" | awk '{print $NF}')
   if [ "$expected_hash" != "$actual_hash" ]; then
     echo "Checksum for $download_path did not match"
     echo "  Expected hash: $expected_hash"
     echo "    Actual hash: $actual_hash"
     exit 1
   fi
+
+  # Symlink the file path to the actual download file (which includes the URL
+  # hash so that if the URL changes but the filename does not, we still ensure
+  # we get the newer version).
+  ln -snf "$download_path" "$downloads_dir/$filename"
 
   set -x
 }

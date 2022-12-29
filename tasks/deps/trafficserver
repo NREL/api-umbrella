@@ -1,14 +1,7 @@
 #!/usr/bin/env bash
 
-# Don't upgrade to 8.1.0 yet, since I believe these changes to connection
-# timeouts affect some of our workaround logic related to
-# proxy.config.http.connect_attempts_timeout and
-# proxy.config.http.connect_attempts_max_retries. The new behavior actually
-# seems like it might be preferable and remove the need for some of our
-# workarounds, but 8.1.0 breaks some of our assumptions, so for now, we'll hold
-# back on upgrading.
-trafficserver_version="9.1.0"
-trafficserver_hash="52c5ee7c3ed2124a29273a2333e0a0d6656db35d573b7908789485848e831628be3c7a724ce66914bc9b1ebe0ba8ef5a3e324c1af4cae8e12887d15f8ad55e64"
+trafficserver_version="9.1.4"
+trafficserver_hash="f18aca66e444470738f6031366edc45db26942917e3fe8cba9fbb3b28173e01e06991aa9846e459047365946738931b1910719574c9c2afee72e4dfb30eab617"
 
 set -e -u -x
 source ./tasks/helpers.sh
@@ -29,9 +22,6 @@ elif [[ "$ID" == "debian" && "$VERSION_ID" == "9" ]]; then
 fi
 
 cd "trafficserver-$trafficserver_version"
-
-# Patch so GET/HEAD requests aren't retried if the connection was ever established.
-patch -p1 < "$SOURCE_DIR/build/patches/trafficserver-retries.patch"
 
 SPHINXBUILD=false ./configure \
   --disable-tests \

@@ -1,8 +1,14 @@
 <FormFields::FieldWrapper @model={{this.model}} @style={{this.style}} @fieldName={{this.fieldName}} @inputId={{this.inputId}} @label={{this.label}} @tooltip={{this.tooltip}} @hint={{this.hint}}>
-  <MultiselectCheckboxes @options={{this.options}} @selection={{get this.model this.fieldName}} @tagName="div" @valueProperty="id" as |option isSelected|>
+  {{#each this.checkboxes as |checkbox|}}
     <div class="custom-control custom-checkbox">
-      <Input @type="checkbox" @checked={{isSelected}} id={{concat this.inputId "-" option.id}} class="custom-control-input" />
-      <label class="custom-control-label" for="{{this.inputId}}-{{option.id}}">{{option.name}}</label>
+      <input
+        type="checkbox"
+        checked={{checkbox.isChecked}}
+        onclick={{action (action this.toggleCheckbox checkbox.option.id) value="target.checked"}}
+        id={{checkbox.inputId}}
+        class="custom-control-input"
+      />
+      <label class="custom-control-label" for={{checkbox.inputId}}>{{checkbox.option.name}}</label>
     </div>
-  </MultiselectCheckboxes>
+  {{/each}}
 </FormFields::FieldWrapper>

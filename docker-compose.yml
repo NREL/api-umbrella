@@ -13,13 +13,38 @@ services:
       - .:/app
       - build_cache:/build
     environment:
-      HTTP_PORT: 8100
-      HTTPS_PORT: 8101
+      HTTP_PORT: 8200
+      HTTPS_PORT: 8201
+      SECRET_KEY: for-development-not-secure
     ports:
-      - "8100:8100"
-      - "8101:8101"
-      - "14050:14050"
+      - "8200:8200"
+      - "8201:8201"
     sysctls:
       - net.ipv6.conf.all.disable_ipv6=0
+    depends_on:
+      - postgres
+      - elasticsearch
+  postgres:
+    image: postgres:10
+    environment:
+      POSTGRES_PASSWORD: dev_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "14011:5432"
+  elasticsearch:
+    image: opensearchproject/opensearch:1.3.2
+    environment:
+      OPENSEARCH_JAVA_OPTS: "-Xms32m -Xmx256m"
+      DISABLE_INSTALL_DEMO_CONFIG: "true"
+      DISABLE_SECURITY_PLUGIN: "true"
+      discovery.type: single-node
+      cluster.routing.allocation.disk.threshold_enabled: "false"
+    volumes:
+      - opensearch_data:/usr/share/opensearch/data
+    ports:
+      - "14002:9200"
 volumes:
   build_cache:
+  postgres_data:
+  opensearch_data:

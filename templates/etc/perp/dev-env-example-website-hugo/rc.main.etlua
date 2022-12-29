@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+set -e -u
+
+# Redirect stderr to stdout
+exec 2>&1
+
+umask "<%- config['umask'] %>"
+
+if [ "${1}" = "start" ]; then
+  echo "starting ${2}..."
+  api_umbrella_user="<%- config['user'] %>"
+
+  dir="<%- config['_src_root_dir'] %>/src/api-umbrella/example-website"
+  run_args=("-e" "rc.env" "-c" "$dir")
+  if [ -n "$api_umbrella_user" ]; then
+    run_args+=("-u" "$api_umbrella_user")
+  fi
+
+  PATH="<%- config['_dev_env_install_dir'] %>/sbin:<%- config['_dev_env_install_dir'] %>/bin:$PATH"
+  exec env runtool ${run_args[@]+"${run_args[@]}"} \
+    hugo server \
+      --port "<%- config['static_site']['port'] %>" \
+      --verbose \
+      --verboseLog \
+      --baseURL "https://localhost:<%- config['https_port'] %>/" \
+      --appendPort=false \
+      --debug
+fi
+
+exit 0

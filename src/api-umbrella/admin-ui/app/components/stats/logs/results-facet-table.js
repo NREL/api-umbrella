@@ -17,11 +17,11 @@ export default class ResultsFacetTable extends Component {
   // eslint-disable-next-line ember/no-observers
   @observes('facets')
   setLinks() {
-    each(this.facets, function(bucket) {
+    each(this.facets, (bucket) => {
       let params = clone(this.presentQueryParamValues);
       params.search = compact([params.search, this.field + ':"' + bucket.key + '"']).join(' AND ');
       bucket.link = '#/stats/logs?' + $.param(params);
-    }.bind(this));
+    });
   }
 
   @action

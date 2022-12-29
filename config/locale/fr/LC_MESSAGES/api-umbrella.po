@@ -1,0 +1,22 @@
+# French translations for PACKAGE package.
+# Copyright (C) 2017 THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# Muerdter <nmuerdte@nmuerdte-30631s>, 2017.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-07-08 13:31-0600\n"
+"PO-Revision-Date: 2017-07-08 13:33-0600\n"
+"Last-Translator: Muerdter <nmuerdte@nmuerdte-30631s>\n"
+"Language-Team: French\n"
+"Language: fr\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=ASCII\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#: src/api-umbrella/lapis/app.lua:8
+msgid "Superuser"
+msgstr "Oui Oui"

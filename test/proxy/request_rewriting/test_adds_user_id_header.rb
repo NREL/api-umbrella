@@ -17,19 +17,6 @@ class Test::Proxy::RequestRewriting::TestAddsUserIdHeader < Minitest::Test
     assert_equal(36, data["headers"]["x-api-user-id"].length)
   end
 
-  def test_passes_mongo_object_ids_as_hex_strings
-    user = FactoryBot.create(:api_user, :id => BSON::ObjectId.new)
-    response = Typhoeus.get("http://127.0.0.1:9080/api/info/", http_options.deep_merge({
-      :headers => {
-        "X-Api-Key" => user.api_key,
-      },
-    }))
-    assert_response_code(200, response)
-    data = MultiJson.load(response.body)
-    assert_equal(user.id, data["headers"]["x-api-user-id"])
-    assert_equal(24, data["headers"]["x-api-user-id"].length)
-  end
-
   def test_strips_forged_values
     response = Typhoeus.get("http://127.0.0.1:9080/api/info/", http_options.deep_merge({
       :headers => {

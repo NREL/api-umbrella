@@ -9,9 +9,11 @@ class Test::Proxy::ApiKeyValidation::TestApiKeyCache < Minitest::Test
     setup_server
   end
 
-  def test_caches_keys_inside_workers_for_couple_seconds
-    user = FactoryBot.create(:api_user, :settings => {
-      :rate_limit_mode => "unlimited",
+  def test_caches_keys_inside_workers_for_up_to_a_few_seconds
+    user = FactoryBot.create(:api_user, {
+      :settings => FactoryBot.build(:api_user_settings, {
+        :rate_limit_mode => "unlimited",
+      }),
     })
 
     # Make requests against all the workers processes so the key is cache
@@ -28,18 +30,28 @@ class Test::Proxy::ApiKeyValidation::TestApiKeyCache < Minitest::Test
     user.disabled_at = Time.now.utc
     user.save!
 
-    # Immediately make more requests. These should still succeed due to the
-    # local cache.
+    # Immediately make more requests. These may or may not hit cached results,
+    # depending on the exact timing of when the
+    # `api_users_store_delete_stale_cache` job expires the shared dict cache,
+    # and then when the `api_users_store_refresh_local_cache` job updates the
+    # local worker caches. But since those jobs execute every 1 second, if the
+    # jobs are staggered in certain cases, it may take 2-3 seconds for the
+    # cache to be purged.
     responses = exercise_all_workers("/api/info/", {
       :headers => { "X-Api-Key" => user.api_key },
       :params => { :step => "post-save" },
     })
     responses.each do |response|
-      assert_response_code(200, response)
+      if response.code == 200
+        assert_response_code(200, response)
+      else
+        assert_response_code(403, response)
+        assert_match("API_KEY_DISABLED", response.body)
+      end
     end
 
     # Wait for the cache to expire
-    sleep 2.1
+    sleep 3.1
 
     # With the cache expired, now all requests should be rejected due to the
     # disabled key.
@@ -54,8 +66,10 @@ class Test::Proxy::ApiKeyValidation::TestApiKeyCache < Minitest::Test
   end
 
   def test_keys_across_parallel_hits_with_key_caching
-    user = FactoryBot.create(:api_user, :settings => {
-      :rate_limit_mode => "unlimited",
+    user = FactoryBot.create(:api_user, {
+      :settings => FactoryBot.build(:api_user_settings, {
+        :rate_limit_mode => "unlimited",
+      }),
     })
 
     hydra = Typhoeus::Hydra.new
@@ -75,8 +89,10 @@ class Test::Proxy::ApiKeyValidation::TestApiKeyCache < Minitest::Test
   end
 
   def test_keys_across_repated_hits_with_key_caching
-    user = FactoryBot.create(:api_user, :settings => {
-      :rate_limit_mode => "unlimited",
+    user = FactoryBot.create(:api_user, {
+      :settings => FactoryBot.build(:api_user_settings, {
+        :rate_limit_mode => "unlimited",
+      }),
     })
 
     20.times do
@@ -93,9 +109,11 @@ class Test::Proxy::ApiKeyValidation::TestApiKeyCache < Minitest::Test
       "gatekeeper" => {
         "api_key_cache" => false,
       },
-    }, "--router") do
-      user = FactoryBot.create(:api_user, :settings => {
-        :rate_limit_mode => "unlimited",
+    }) do
+      user = FactoryBot.create(:api_user, {
+        :settings => FactoryBot.build(:api_user_settings, {
+          :rate_limit_mode => "unlimited",
+        }),
       })
 
       # Make requests against all the workers processes.

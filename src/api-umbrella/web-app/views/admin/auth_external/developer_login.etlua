@@ -1,0 +1,24 @@
+<h1><%= t("Dummy Sign In") %></h1>
+
+<div class="alert alert-info">
+  <strong><%= t("Enter any email address you'd like.") %></strong><br>
+  <%- t("This login option is for <strong>development only</strong>. Enter any email address and you'll be logged in under that account (an account will be created if one doesn't already exist).") %>
+</div>
+
+<div class="login-container">
+  <form novalidate="novalidate" class="simple_form new_admin" id="new_admin" action="/admins/auth/developer/callback" accept-charset="UTF-8" method="post">
+    <input type="hidden" name="csrf_token" value="<%= generate_csrf_token() %>" />
+    <% render("api-umbrella.web-app.views.layout.errors") %>
+
+    <div class="form-inputs">
+      <div class="form-group string optional admin_username">
+        <label class="control-label string optional" for="admin_username"><%= username_label %></label>
+        <input class="form-control string optional" autofocus="autofocus" type="text" name="admin[username]" id="admin_username" value="<%= admin_params["username"] or "" %>" />
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <input type="submit" name="commit" value="<%= t("Sign in") %>" id="sign_in" class="btn btn-default" />
+    </div>
+  </form>
+</div>

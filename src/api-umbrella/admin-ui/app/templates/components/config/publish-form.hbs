@@ -43,7 +43,7 @@
     {{/if}}
 
     <div class="publish-toggle-checkboxes">
-      <a href="#" id="toggle_checkboxes" {{action "toggleAllCheckboxes"}} data-check-all={{t "admin.check_all"}} data-uncheck-all={{t "admin.uncheck_all"}}>{{t "admin.check_all"}}</a>
+      <a href="#" id="toggle_checkboxes" {{action "toggleAllCheckboxes"}} data-check-all={{t "Check all"}} data-uncheck-all={{t "Uncheck all"}}>{{t "Check all"}}</a>
     </div>
 
     <div class="text-center">
@@ -51,8 +51,8 @@
     </div>
   </form>
 {{else}}
-  <div class="row-fluid">
-    <div class="span4 offset4">
+  <div class="row">
+    <div class="col-4 offset-4">
       <div class="alert alert-success text-center">
         <p class="h4">Published configuration is up to date</p>
         <p class="mb-0"><small><em>Recently published changes should be live within a few seconds</em></small></p>

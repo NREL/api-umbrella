@@ -27,35 +27,26 @@ output: interleaved
 run: when_changed
 
 tasks:
-  deps:bundler:
+  deps:cue:
+    cmds:
+      - ./tasks/deps/cue
+    sources:
+      - ./tasks/deps/cue
+      - ./tasks/helpers.sh
+    generates:
+      - ./build/work/stamp/deps/cue
+
+  deps:envoy:
     deps:
-      - deps:rubygems
+      - build-deps:crane
     cmds:
-      - ./tasks/deps/bundler
+      - ./tasks/deps/envoy
     sources:
-      - ./build/work/stamp/deps/rubygems
-      - ./tasks/deps/bundler
+      - ./build/work/stamp/build-deps/crane
+      - ./tasks/deps/envoy
       - ./tasks/helpers.sh
     generates:
-      - ./build/work/stamp/deps/bundler
-
-  deps:elasticsearch:
-    cmds:
-      - ./tasks/deps/elasticsearch
-    sources:
-      - ./tasks/deps/elasticsearch
-      - ./tasks/helpers.sh
-    generates:
-      - ./build/work/stamp/deps/elasticsearch
-
-  deps:icu4c:
-    cmds:
-      - ./tasks/deps/icu4c
-    sources:
-      - ./tasks/deps/icu4c
-      - ./tasks/helpers.sh
-    generates:
-      - ./build/work/stamp/deps/icu4c
+      - ./build/work/stamp/deps/envoy
 
   deps:libcidr:
     cmds:
@@ -93,6 +84,16 @@ tasks:
     generates:
       - ./build/work/stamp/deps/libmaxminddb
 
+  deps:libpsl:
+    cmds:
+      - ./tasks/deps/libpsl
+    sources:
+      - ./tasks/deps/libpsl
+      - ./tasks/helpers.sh
+    generates:
+      - ./build/work/stamp/deps/libpsl
+    method: checksum
+
   deps:luarocks:
     deps:
       - deps:openresty
@@ -104,24 +105,6 @@ tasks:
       - ./tasks/helpers.sh
     generates:
       - ./build/work/stamp/deps/luarocks
-
-  deps:mongodb:
-    cmds:
-      - ./tasks/deps/mongodb
-    sources:
-      - ./tasks/deps/mongodb
-      - ./tasks/helpers.sh
-    generates:
-      - ./build/work/stamp/deps/mongodb
-
-  deps:mora:
-    cmds:
-      - ./tasks/deps/mora
-    sources:
-      - ./tasks/deps/mora
-      - ./tasks/helpers.sh
-    generates:
-      - ./build/work/stamp/deps/mora
 
   deps:openresty:
     deps:
@@ -158,27 +141,6 @@ tasks:
     generates:
       - ./build/work/stamp/deps/rsyslog
 
-  deps:ruby:
-    cmds:
-      - ./tasks/deps/ruby
-    sources:
-      - ./tasks/deps/ruby
-      - ./tasks/helpers.sh
-    generates:
-      - ./build/work/stamp/deps/ruby
-
-  deps:rubygems:
-    deps:
-      - deps:ruby
-    cmds:
-      - ./tasks/deps/rubygems
-    sources:
-      - ./build/work/stamp/deps/ruby
-      - ./tasks/deps/rubygems
-      - ./tasks/helpers.sh
-    generates:
-      - ./build/work/stamp/deps/rubygems
-
   deps:runit_svlogd:
     cmds:
       - ./tasks/deps/runit_svlogd
@@ -202,18 +164,34 @@ tasks:
 
   deps:
     cmds:
-      - task: deps:bundler
-      - task: deps:elasticsearch
-      - task: deps:icu4c
+      - task: deps:cue
+      - task: deps:envoy
       - task: deps:libcidr
+      - task: deps:libpsl
       - task: deps:luarocks
-      - task: deps:mongodb
-      - task: deps:mora
       - task: deps:openresty
       - task: deps:perp
       - task: deps:rsyslog
       - task: deps:runit_svlogd
       - task: deps:trafficserver
+
+  build-deps:crane:
+    cmds:
+      - ./tasks/build-deps/crane
+    sources:
+      - ./tasks/build-deps/crane
+      - ./tasks/helpers.sh
+    generates:
+      - ./build/work/stamp/build-deps/crane
+
+  build-deps:hugo:
+    cmds:
+      - ./tasks/build-deps/hugo
+    sources:
+      - ./tasks/build-deps/hugo
+      - ./tasks/helpers.sh
+    generates:
+      - ./build/work/stamp/build-deps/hugo
 
   build-deps:nodejs:
     cmds:
@@ -238,6 +216,8 @@ tasks:
 
   build-deps:
     cmds:
+      - task: build-deps:crane
+      - task: build-deps:hugo
       - task: build-deps:yarn
 
   app-deps:admin-ui:yarn:
@@ -255,267 +235,57 @@ tasks:
     generates:
       - ./build/work/stamp/app-deps/admin-ui/yarn
 
-  app-deps:lua:argparse:
+  app-deps:example-website:yarn:
     deps:
-      - deps:luarocks
+      - build-deps:yarn
     cmds:
-      - ./tasks/app-deps/lua/argparse
+      - ./tasks/app-deps/example-website/yarn
     sources:
-      - ./build/work/stamp/deps/luarocks
-      - ./tasks/app-deps/lua/argparse
+      - ./build/work/stamp/build-deps/yarn
+      - ./src/api-umbrella/example-website/package.json
+      - ./src/api-umbrella/example-website/yarn.lock
+      - ./tasks/app-deps/example-website/yarn
       - ./tasks/helpers.sh
-      - ./tasks/helpers/lua.sh
     generates:
-      - ./build/work/stamp/app-deps/lua/argparse
+      - ./build/work/stamp/app-deps/example-website/yarn
 
-  app-deps:lua:cmsgpack:
-    deps:
-      - deps:luarocks
-    cmds:
-      - ./tasks/app-deps/lua/cmsgpack
-    sources:
-      - ./build/work/stamp/deps/luarocks
-      - ./tasks/app-deps/lua/cmsgpack
-      - ./tasks/helpers.sh
-      - ./tasks/helpers/lua.sh
-    generates:
-      - ./build/work/stamp/app-deps/lua/cmsgpack
-
-  app-deps:lua:icu-date-ffi:
-    deps:
-      - deps:icu4c
-      - deps:luarocks
-    cmds:
-      - ./tasks/app-deps/lua/icu-date-ffi
-    sources:
-      - ./build/work/stamp/deps/icu4c
-      - ./build/work/stamp/deps/luarocks
-      - ./tasks/app-deps/lua/icu-date-ffi
-      - ./tasks/helpers.sh
-      - ./tasks/helpers/lua.sh
-    generates:
-      - ./build/work/stamp/app-deps/lua/icu-date-ffi
-
-  app-deps:lua:inspect:
-    deps:
-      - deps:luarocks
-    cmds:
-      - ./tasks/app-deps/lua/inspect
-    sources:
-      - ./build/work/stamp/deps/luarocks
-      - ./tasks/app-deps/lua/inspect
-      - ./tasks/helpers.sh
-      - ./tasks/helpers/lua.sh
-    generates:
-      - ./build/work/stamp/app-deps/lua/inspect
-
-  app-deps:lua:libcidr-ffi:
+  app-deps:luarocks:
     deps:
       - deps:libcidr
       - deps:luarocks
     cmds:
-      - ./tasks/app-deps/lua/libcidr-ffi
+      - ./tasks/app-deps/luarocks
     sources:
       - ./build/work/stamp/deps/libcidr
       - ./build/work/stamp/deps/luarocks
-      - ./tasks/app-deps/lua/libcidr-ffi
+      - ./src/api-umbrella-git-1.rockspec
+      - ./src/luarocks.lock
+      - ./tasks/app-deps/luarocks
       - ./tasks/helpers.sh
       - ./tasks/helpers/lua.sh
     generates:
-      - ./build/work/stamp/app-deps/lua/libcidr-ffi
+      - ./build/work/stamp/app-deps/luarocks
 
-  app-deps:lua:luaposix:
+  app-deps:web-app:yarn:
     deps:
-      - deps:luarocks
+      - build-deps:yarn
     cmds:
-      - ./tasks/app-deps/lua/luaposix
+      - ./tasks/app-deps/web-app/yarn
     sources:
-      - ./build/work/stamp/deps/luarocks
-      - ./tasks/app-deps/lua/luaposix
+      - ./build/work/stamp/build-deps/yarn
+      - ./src/api-umbrella/web-app/package.json
+      - ./src/api-umbrella/web-app/yarn.lock
+      - ./tasks/app-deps/web-app/yarn
       - ./tasks/helpers.sh
-      - ./tasks/helpers/lua.sh
     generates:
-      - ./build/work/stamp/app-deps/lua/luaposix
-
-  app-deps:lua:luasocket:
-    deps:
-      - deps:luarocks
-    cmds:
-      - ./tasks/app-deps/lua/luasocket
-    sources:
-      - ./build/work/stamp/deps/luarocks
-      - ./tasks/app-deps/lua/luasocket
-      - ./tasks/helpers.sh
-      - ./tasks/helpers/lua.sh
-    generates:
-      - ./build/work/stamp/app-deps/lua/luasocket
-
-  app-deps:lua:lustache:
-    deps:
-      - deps:luarocks
-    cmds:
-      - ./tasks/app-deps/lua/lustache
-    sources:
-      - ./build/work/stamp/deps/luarocks
-      - ./tasks/app-deps/lua/lustache
-      - ./tasks/helpers.sh
-      - ./tasks/helpers/lua.sh
-    generates:
-      - ./build/work/stamp/app-deps/lua/lustache
-
-  app-deps:lua:lyaml:
-    deps:
-      - deps:luarocks
-    cmds:
-      - ./tasks/app-deps/lua/lyaml
-    sources:
-      - ./build/work/stamp/deps/luarocks
-      - ./tasks/app-deps/lua/lyaml
-      - ./tasks/helpers.sh
-      - ./tasks/helpers/lua.sh
-    generates:
-      - ./build/work/stamp/app-deps/lua/lyaml
-
-  app-deps:lua:penlight:
-    deps:
-      - deps:luarocks
-    cmds:
-      - ./tasks/app-deps/lua/penlight
-    sources:
-      - ./build/work/stamp/deps/luarocks
-      - ./tasks/app-deps/lua/penlight
-      - ./tasks/helpers.sh
-      - ./tasks/helpers/lua.sh
-    generates:
-      - ./build/work/stamp/app-deps/lua/penlight
-
-  app-deps:lua:resty-auto-ssl:
-    deps:
-      - deps:luarocks
-    cmds:
-      - ./tasks/app-deps/lua/resty-auto-ssl
-    sources:
-      - ./build/work/stamp/deps/luarocks
-      - ./tasks/app-deps/lua/resty-auto-ssl
-      - ./tasks/helpers.sh
-      - ./tasks/helpers/lua.sh
-    generates:
-      - ./build/work/stamp/app-deps/lua/resty-auto-ssl
-
-  app-deps:lua:resty-http:
-    deps:
-      - deps:luarocks
-    cmds:
-      - ./tasks/app-deps/lua/resty-http
-    sources:
-      - ./build/work/stamp/deps/luarocks
-      - ./tasks/app-deps/lua/resty-http
-      - ./tasks/helpers.sh
-      - ./tasks/helpers/lua.sh
-    generates:
-      - ./build/work/stamp/app-deps/lua/resty-http
-
-  app-deps:lua:resty-logger-socket:
-    deps:
-      - deps:luarocks
-    cmds:
-      - ./tasks/app-deps/lua/resty-logger-socket
-    sources:
-      - ./build/work/stamp/deps/luarocks
-      - ./tasks/app-deps/lua/resty-logger-socket
-      - ./tasks/helpers.sh
-      - ./tasks/helpers/lua.sh
-    generates:
-      - ./build/work/stamp/app-deps/lua/resty-logger-socket
-
-  app-deps:lua:resty-shcache:
-    deps:
-      - deps:luarocks
-    cmds:
-      - ./tasks/app-deps/lua/resty-shcache
-    sources:
-      - ./build/work/stamp/deps/luarocks
-      - ./tasks/app-deps/lua/resty-shcache
-      - ./tasks/helpers.sh
-      - ./tasks/helpers/lua.sh
-    generates:
-      - ./build/work/stamp/app-deps/lua/resty-shcache
-
-  app-deps:lua:resty-txid:
-    deps:
-      - deps:luarocks
-    cmds:
-      - ./tasks/app-deps/lua/resty-txid
-    sources:
-      - ./build/work/stamp/deps/luarocks
-      - ./tasks/app-deps/lua/resty-txid
-      - ./tasks/helpers.sh
-      - ./tasks/helpers/lua.sh
-    generates:
-      - ./build/work/stamp/app-deps/lua/resty-txid
-
-  app-deps:lua:resty-uuid:
-    deps:
-      - deps:luarocks
-    cmds:
-      - ./tasks/app-deps/lua/resty-uuid
-    sources:
-      - ./build/work/stamp/deps/luarocks
-      - ./tasks/app-deps/lua/resty-uuid
-      - ./tasks/helpers.sh
-      - ./tasks/helpers/lua.sh
-    generates:
-      - ./build/work/stamp/app-deps/lua/resty-uuid
-
-  app-deps:lua:shell-games:
-    deps:
-      - deps:luarocks
-    cmds:
-      - ./tasks/app-deps/lua/shell-games
-    sources:
-      - ./build/work/stamp/deps/luarocks
-      - ./tasks/app-deps/lua/shell-games
-      - ./tasks/helpers.sh
-      - ./tasks/helpers/lua.sh
-    generates:
-      - ./build/work/stamp/app-deps/lua/shell-games
-
-  app-deps:web-app:bundle:
-    deps:
-      - deps:bundler
-    cmds:
-      - ./tasks/app-deps/web-app/bundle
-    sources:
-      - ./build/work/stamp/deps/bundler
-      - ./src/api-umbrella/web-app/Gemfile
-      - ./src/api-umbrella/web-app/Gemfile.lock
-      - ./tasks/app-deps/web-app/bundle
-      - ./tasks/helpers.sh
-      - ./tasks/helpers/lua.sh
-    generates:
-      - ./build/work/stamp/app-deps/web-app/bundle
+      - ./build/work/stamp/app-deps/web-app/yarn
 
   app-deps:
     cmds:
       - task: app-deps:admin-ui:yarn
-      - task: app-deps:lua:argparse
-      - task: app-deps:lua:cmsgpack
-      - task: app-deps:lua:icu-date-ffi
-      - task: app-deps:lua:inspect
-      - task: app-deps:lua:libcidr-ffi
-      - task: app-deps:lua:luaposix
-      - task: app-deps:lua:luasocket
-      - task: app-deps:lua:lustache
-      - task: app-deps:lua:lyaml
-      - task: app-deps:lua:penlight
-      - task: app-deps:lua:resty-auto-ssl
-      - task: app-deps:lua:resty-http
-      - task: app-deps:lua:resty-logger-socket
-      - task: app-deps:lua:resty-shcache
-      - task: app-deps:lua:resty-txid
-      - task: app-deps:lua:resty-uuid
-      - task: app-deps:lua:shell-games
-      - task: app-deps:web-app:bundle
+      - task: app-deps:example-website:yarn
+      - task: app-deps:luarocks
+      - task: app-deps:web-app:yarn
 
   app:admin-ui:build:
     deps:
@@ -539,44 +309,60 @@ tasks:
   app:core:
     deps:
       - app:admin-ui:build
+      - app:example-website:build
+      - app:locale
       - app:web-app:precompile
     cmds:
       - ./tasks/app/core
     sources:
       - ./build/work/stamp/app/admin-ui/build
+      - ./build/work/stamp/app/example-website/build
+      - ./build/work/stamp/app/locale
       - ./build/work/stamp/app/web-app/precompile
       - ./tasks/app/core
       - ./tasks/helpers.sh
     generates:
       - ./build/work/stamp/app/core
 
-  app:static-site:
+  app:example-website:build:
     deps:
-      - build-deps:nodejs
-      - deps:bundler
+      - app-deps:example-website:yarn
     cmds:
-      - ./tasks/app/static-site
+      - ./tasks/app/example-website/build
     sources:
-      - ./build/work/stamp/build-deps/nodejs
-      - ./build/work/stamp/deps/bundler
-      - ./tasks/app/static-site
+      - ./build/work/stamp/app-deps/example-website/yarn
+      - ./src/api-umbrella/example-website/config.yaml
+      - ./src/api-umbrella/example-website/assets/**/*
+      - ./src/api-umbrella/example-website/content/**/*
+      - ./src/api-umbrella/example-website/layouts/**/*
+      - ./tasks/app/example-website/build
       - ./tasks/helpers.sh
     generates:
-      - ./build/work/stamp/app/static-site
+      - ./build/work/stamp/app/example-website/build
+
+  app:locale:
+    deps:
+      - app-deps:admin-ui:yarn
+    cmds:
+      - ./tasks/app/locale
+    sources:
+      - ./build/work/stamp/app-deps/admin-ui/yarn
+      - ./locale/*.po
+      - ./tasks/app/locale
+      - ./tasks/helpers.sh
+    generates:
+      - ./build/work/stamp/app/locale
+    method: checksum
 
   app:web-app:precompile:
     deps:
-      - build-deps:nodejs
-      - app-deps:web-app:bundle
+      - app-deps:web-app:yarn
     cmds:
       - ./tasks/app/web-app/precompile
     sources:
-      - ./build/work/stamp/app-deps/web-app/bundle
-      - ./build/work/stamp/build-deps/nodejs
-      - ./src/api-umbrella/web-app/app/assets/**/*.css
-      - ./src/api-umbrella/web-app/app/assets/**/*.erb
-      - ./src/api-umbrella/web-app/app/assets/**/*.js
-      - ./src/api-umbrella/web-app/app/assets/**/*.scss
+      - ./build/work/stamp/app-deps/web-app/yarn
+      - ./src/api-umbrella/web-app/assets/**/*.scss
+      - ./src/api-umbrella/web-app/webpack.config.js
       - ./tasks/app/web-app/precompile
       - ./tasks/helpers.sh
     generates:
@@ -585,7 +371,6 @@ tasks:
   app:
     cmds:
       - task: app:core
-      - task: app:static-site
 
   all:
     cmds:
@@ -595,36 +380,15 @@ tasks:
       - task: app
 
   test-deps:bundle:
-    deps:
-      - deps:bundler
     cmds:
       - ./tasks/test-deps/bundle
     sources:
-      - ./build/work/stamp/deps/bundler
       - ./Gemfile
       - ./Gemfile.lock
       - ./tasks/test-deps/bundle
       - ./tasks/helpers.sh
     generates:
       - ./build/work/stamp/test-deps/bundle
-
-  test-deps:elasticsearch6:
-    cmds:
-      - ./tasks/test-deps/elasticsearch6
-    sources:
-      - ./tasks/test-deps/elasticsearch6
-      - ./tasks/helpers.sh
-    generates:
-      - ./build/work/stamp/test-deps/elasticsearch6
-
-  test-deps:elasticsearch7:
-    cmds:
-      - ./tasks/test-deps/elasticsearch7
-    sources:
-      - ./tasks/test-deps/elasticsearch7
-      - ./tasks/helpers.sh
-    generates:
-      - ./build/work/stamp/test-deps/elasticsearch7
 
   test-deps:glauth:
     cmds:
@@ -635,49 +399,29 @@ tasks:
     generates:
       - ./build/work/stamp/test-deps/glauth
 
-  test-deps:lua:luacheck:
+  test-deps:luarocks:
     deps:
       - deps:luarocks
     cmds:
-      - ./tasks/test-deps/lua/luacheck
+      - ./tasks/test-deps/luarocks
     sources:
       - ./build/work/stamp/deps/luarocks
-      - ./tasks/test-deps/lua/luacheck
+      - ./test/api-umbrella-git-1.rockspec
+      - ./test/luarocks.lock
+      - ./tasks/test-deps/luarocks
       - ./tasks/helpers.sh
       - ./tasks/helpers/lua.sh
     generates:
-      - ./build/work/stamp/test-deps/lua/luacheck
+      - ./build/work/stamp/test-deps/luarocks
 
-  test-deps:lua:penlight:
-    deps:
-      - deps:luarocks
+  test-deps:mailpit:
     cmds:
-      - ./tasks/test-deps/lua/penlight
+      - ./tasks/test-deps/mailpit
     sources:
-      - ./build/work/stamp/deps/luarocks
-      - ./tasks/test-deps/lua/penlight
-      - ./tasks/helpers.sh
-      - ./tasks/helpers/lua.sh
-    generates:
-      - ./build/work/stamp/test-deps/lua/penlight
-
-  test-deps:mailhog:
-    cmds:
-      - ./tasks/test-deps/mailhog
-    sources:
-      - ./tasks/test-deps/mailhog
+      - ./tasks/test-deps/mailpit
       - ./tasks/helpers.sh
     generates:
-      - ./build/work/stamp/test-deps/mailhog
-
-  test-deps:mongo-orchestration:
-    cmds:
-      - ./tasks/test-deps/mongo-orchestration
-    sources:
-      - ./tasks/test-deps/mongo-orchestration
-      - ./tasks/helpers.sh
-    generates:
-      - ./build/work/stamp/test-deps/mongo-orchestration
+      - ./build/work/stamp/test-deps/mailpit
 
   test-deps:shellcheck:
     cmds:
@@ -691,30 +435,28 @@ tasks:
   test-deps:
     cmds:
       - task: test-deps:bundle
-      - task: test-deps:elasticsearch6
-      - task: test-deps:elasticsearch7
       - task: test-deps:glauth
-      - task: test-deps:lua:luacheck
-      - task: test-deps:lua:penlight
-      - task: test-deps:mailhog
-      - task: test-deps:mongo-orchestration
+      - task: test-deps:luarocks
+      - task: test-deps:mailpit
       - task: test-deps:shellcheck
 
   lint:js:
     deps:
       - app-deps:admin-ui:yarn
+      - app-deps:example-website:yarn
+      - app-deps:web-app:yarn
     cmds:
       - ./tasks/lint/js
 
   lint:lua:
     deps:
-      - test-deps:lua:luacheck
+      - test-deps:luarocks
     cmds:
       - ./tasks/lint/lua
 
   lint:resty:
     deps:
-      - test-deps:lua:penlight
+      - test-deps:luarocks
     cmds:
       - ./tasks/lint/resty/run
 
@@ -738,16 +480,23 @@ tasks:
       - task: lint:ruby
       - task: lint:shell
 
+  update:luarocks:
+    cmds:
+      - ./tasks/update/luarocks
+
+  update:test-deps:luarocks:
+    cmds:
+      - ./tasks/update/test-deps/luarocks
+
   outdated:
     cmds:
-      - ./tasks/outdated
+      - ./tasks/helpers/test-bundle-exec thor outdated:all
 
   test:
-    deps:
-      - all
-      - test-deps
     cmds:
-      - ./tasks/test/default
+      - task: all
+      - task: test-deps
+      - ./tasks/helpers/test-bundle-exec thor test:test
 
   clean:dev:
     cmds:

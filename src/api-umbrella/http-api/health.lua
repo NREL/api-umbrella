@@ -1,4 +1,5 @@
-local config = require "api-umbrella.proxy.models.file_config"
+local active_config_exists = require("api-umbrella.proxy.stores.active_config_store").exists
+local config = require("api-umbrella.utils.load_config")()
 local elasticsearch = require "api-umbrella.utils.elasticsearch"
 local http = require "resty.http"
 local icu_date = require "icu-date-ffi"
@@ -11,22 +12,16 @@ local function status_response(quick)
     status = "red",
     details = {
       apis_config = "red",
-      api_users = "red",
     },
   }
 
   -- Check to see if the APIs have been loaded.
-  if ngx.shared.active_config:get("db_config_last_fetched_at") then
+  if active_config_exists() then
     response["details"]["apis_config"] = "green"
   end
 
-  -- Check to see if the users have been loaded.
-  if ngx.shared.api_users:get("last_fetched_at") then
-    response["details"]["api_users"] = "green"
-  end
-
   if quick then
-    if response["details"]["apis_config"] == "green" and response["details"]["api_users"] == "green" then
+    if response["details"]["apis_config"] == "green" then
       response["status"] = "green"
     end
 
@@ -67,7 +62,7 @@ local function status_response(quick)
   res, err = httpc:request_uri("http://127.0.0.1:" .. config["web"]["port"] .. "/_web-app-health")
   if err then
     ngx.log(ngx.ERR, "failed to fetch web app: ", err)
-  elseif res.body then
+  elseif res.status == 200 then
     response["details"]["web_app"] = "green"
   end
 
@@ -78,9 +73,9 @@ local function status_response(quick)
   -- content), ElasticSearch seems to get stuck in the yellow status, even though
   -- everything appears operational (but then it becomes green once content
   -- starts indexing).
-  if response["details"]["apis_config"] == "green" and response["details"]["api_users"] == "green" and (response["details"]["analytics_db"] == "yellow" or response["details"]["analytics_db"] == "green") and response["details"]["analytics_db_setup"] == "green" and response["details"]["web_app"] == "green" then
+  if response["details"]["apis_config"] == "green" and (response["details"]["analytics_db"] == "yellow" or response["details"]["analytics_db"] == "green") and response["details"]["analytics_db_setup"] == "green" and response["details"]["web_app"] == "green" then
     response["status"] = "green"
-  elseif response["details"]["apis_config"] == "green" and response["details"]["api_users"] == "green" then
+  elseif response["details"]["apis_config"] == "green" then
     response["status"] = "yellow"
   end
 

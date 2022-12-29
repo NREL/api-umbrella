@@ -8,20 +8,23 @@ class Test::Apis::V1::Config::TestPendingChangesAdminPermissionsApis < Minitest:
   def setup
     super
     setup_server
-    Api.delete_all
-    WebsiteBackend.delete_all
-    ConfigVersion.delete_all
 
-    @api = FactoryBot.create(:api)
-    @google_api = FactoryBot.create(:google_api)
-    @google_extra_url_match_api = FactoryBot.create(:google_extra_url_match_api)
-    @yahoo_api = FactoryBot.create(:yahoo_api)
-    ConfigVersion.publish!(ConfigVersion.pending_config)
+    publish_default_config_version
+    @api = FactoryBot.create(:api_backend)
+    @google_api = FactoryBot.create(:google_api_backend)
+    @google_extra_url_match_api = FactoryBot.create(:google_extra_url_match_api_backend)
+    @yahoo_api = FactoryBot.create(:yahoo_api_backend)
+    publish_api_backends([
+      @api.id,
+      @google_api.id,
+      @google_extra_url_match_api.id,
+      @yahoo_api.id,
+    ])
   end
 
   def after_all
     super
-    default_config_version_needed
+    publish_default_config_version
   end
 
   def test_all_apis_for_superuser
@@ -32,7 +35,7 @@ class Test::Apis::V1::Config::TestPendingChangesAdminPermissionsApis < Minitest:
     assert_equal([], data["config"]["apis"]["deleted"])
     assert_equal([], data["config"]["apis"]["modified"])
     assert_equal([], data["config"]["apis"]["new"])
-    api_ids = data["config"]["apis"]["identical"].map { |api| api["pending"]["_id"] }
+    api_ids = data["config"]["apis"]["identical"].map { |api| api["pending"]["id"] }
     assert_includes(api_ids, @api.id)
     assert_includes(api_ids, @google_api.id)
     assert_includes(api_ids, @google_extra_url_match_api.id)
@@ -48,7 +51,7 @@ class Test::Apis::V1::Config::TestPendingChangesAdminPermissionsApis < Minitest:
     assert_equal([], data["config"]["apis"]["deleted"])
     assert_equal([], data["config"]["apis"]["modified"])
     assert_equal([], data["config"]["apis"]["new"])
-    api_ids = data["config"]["apis"]["identical"].map { |api| api["pending"]["_id"] }
+    api_ids = data["config"]["apis"]["identical"].map { |api| api["pending"]["id"] }
     assert_includes(api_ids, @google_api.id)
   end
 
@@ -61,7 +64,7 @@ class Test::Apis::V1::Config::TestPendingChangesAdminPermissionsApis < Minitest:
     assert_equal([], data["config"]["apis"]["deleted"])
     assert_equal([], data["config"]["apis"]["modified"])
     assert_equal([], data["config"]["apis"]["new"])
-    api_ids = data["config"]["apis"]["identical"].map { |api| api["pending"]["_id"] }
+    api_ids = data["config"]["apis"]["identical"].map { |api| api["pending"]["id"] }
     refute_includes(api_ids, @yahoo_api.id)
   end
 
@@ -74,7 +77,7 @@ class Test::Apis::V1::Config::TestPendingChangesAdminPermissionsApis < Minitest:
     assert_equal([], data["config"]["apis"]["deleted"])
     assert_equal([], data["config"]["apis"]["modified"])
     assert_equal([], data["config"]["apis"]["new"])
-    api_ids = data["config"]["apis"]["identical"].map { |api| api["pending"]["_id"] }
+    api_ids = data["config"]["apis"]["identical"].map { |api| api["pending"]["id"] }
     refute_includes(api_ids, @google_extra_url_match_api.id)
   end
 
@@ -87,7 +90,7 @@ class Test::Apis::V1::Config::TestPendingChangesAdminPermissionsApis < Minitest:
     assert_equal([], data["config"]["apis"]["deleted"])
     assert_equal([], data["config"]["apis"]["modified"])
     assert_equal([], data["config"]["apis"]["new"])
-    api_ids = data["config"]["apis"]["identical"].map { |api| api["pending"]["_id"] }
+    api_ids = data["config"]["apis"]["identical"].map { |api| api["pending"]["id"] }
     assert_equal(0, api_ids.length)
   end
 end

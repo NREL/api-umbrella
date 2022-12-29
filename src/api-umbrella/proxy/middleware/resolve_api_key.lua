@@ -1,4 +1,4 @@
-local config = require "api-umbrella.proxy.models.file_config"
+local config = require("api-umbrella.utils.load_config")()
 local is_empty = require "api-umbrella.utils.is_empty"
 
 return function()
@@ -9,9 +9,9 @@ return function()
   for _, method in ipairs(api_key_methods) do
     if method == "header" then
       api_key = ngx.ctx.http_x_api_key
-    elseif method == "getParam" then
+    elseif method == "get_param" then
       api_key = ngx.ctx.arg_api_key
-    elseif method == "basicAuthUsername" then
+    elseif method == "basic_auth_username" then
       api_key = ngx.ctx.remote_user
     end
 

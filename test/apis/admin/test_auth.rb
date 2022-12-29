@@ -31,22 +31,21 @@ class Test::Apis::Admin::TestAuth < Minitest::Test
 
     assert_equal([
       "admin",
-      "admin_auth_token",
       "analytics_timezone",
       "api_key",
       "api_umbrella_version",
       "authenticated",
-      "elasticsearch_template_version",
+      "csrf_token",
       "local_auth_enabled",
       "password_length_min",
       "username_is_email",
     ].sort, data.keys.sort)
 
     assert_kind_of(Hash, data["admin"])
-    assert_kind_of(String, data["admin_auth_token"])
     assert_kind_of(String, data["analytics_timezone"])
     assert_kind_of(String, data["api_key"])
     assert_kind_of(String, data["api_umbrella_version"])
+    assert_kind_of(String, data["csrf_token"])
     assert_includes([TrueClass, FalseClass], data["authenticated"].class)
 
     assert_equal([

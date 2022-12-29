@@ -1,0 +1,5 @@
+<% for _, trusted_proxy in ipairs(config["router"]["trusted_proxies"]) do %>
+  set_real_ip_from <%- trusted_proxy %>;
+<% end %>
+real_ip_header X-Forwarded-For;
+real_ip_recursive on;

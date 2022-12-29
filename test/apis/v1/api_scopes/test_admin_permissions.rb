@@ -8,7 +8,6 @@ class Test::Apis::V1::ApiScopes::TestAdminPermissions < Minitest::Test
   def setup
     super
     setup_server
-    ApiScope.delete_all
   end
 
   def test_default_permissions
@@ -222,6 +221,6 @@ class Test::Apis::V1::ApiScopes::TestAdminPermissions < Minitest::Test
   end
 
   def active_count
-    ApiScope.where(:deleted_at => nil).count
+    ApiScope.count
   end
 end

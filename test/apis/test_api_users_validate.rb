@@ -7,7 +7,6 @@ class Test::Apis::TestApiUsersValidate < Minitest::Test
   def setup
     super
     setup_server
-    ApiUser.where(:registration_source.ne => "seed").delete_all
   end
 
   def test_valid_api_key

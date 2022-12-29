@@ -11,33 +11,31 @@ class Test::Proxy::RateLimits::TestConcurrency < Minitest::Test
     setup_server
     once_per_class_setup do
       override_config_set({
-        :apiSettings => {
+        :default_api_backend_settings => {
           :rate_limits => [
             {
               :duration => 2 * 60 * 60 * 1000, # 2 hours
-              :accuracy => 1 * 60 * 1000, # 1 minute
-              :limit_by => "apiKey",
-              :limit => 50,
+              :limit_by => "api_key",
+              :limit_to => 50,
               :distributed => false,
               :response_headers => false,
             },
             {
               :duration => 60 * 60 * 1000, # 1 hour
-              :accuracy => 1 * 60 * 1000, # 1 minute
-              :limit_by => "apiKey",
-              :limit => 60,
+              :limit_by => "api_key",
+              :limit_to => 60,
               :distributed => false,
               :response_headers => true,
             },
           ],
         },
-      }, "--router")
+      })
     end
   end
 
   def after_all
     super
-    override_config_reset("--router")
+    override_config_reset
   end
 
   def test_accurately_reports_remaining_requests_across_parallel_requests

@@ -57,6 +57,7 @@ module ApiUmbrellaTestHelpers
       if(options[:no_response_headers])
         refute(response.headers["x-ratelimit-limit"])
         refute(response.headers["x-ratelimit-remaining"])
+        refute(response.headers["retry-after"])
       else
         expected_limit = limit
         if(options[:response_header_limit])
@@ -65,6 +66,12 @@ module ApiUmbrellaTestHelpers
 
         assert_equal(expected_limit.to_s, response.headers["x-ratelimit-limit"])
         assert_equal((expected_limit - 1).to_s, response.headers["x-ratelimit-remaining"])
+
+        if response.headers["x-ratelimit-remaining"] == "0"
+          assert(response.headers["retry-after"])
+        else
+          refute(response.headers["retry-after"])
+        end
       end
     end
 
@@ -103,14 +110,16 @@ module ApiUmbrellaTestHelpers
       http_opts = keyless_http_options.deep_merge({
         :headers => {},
       })
-      if(options[:api_key])
+      if(options[:api_user])
+        http_opts[:headers]["X-Api-Key"] = options[:api_user].api_key
+      elsif(options[:api_key])
         http_opts[:headers]["X-Api-Key"] = options[:api_key]
       end
       if(options[:ip])
         http_opts[:headers]["X-Forwarded-For"] = options[:ip]
       end
       if(options[:time])
-        http_opts[:headers]["X-Fake-Time"] = options[:time].strftime("%s%L").to_i
+        http_opts[:headers]["X-Fake-Time"] = options[:time].strftime("%s.%L")
       end
       if(options[:http_options])
         http_opts.deep_merge!(options[:http_options])

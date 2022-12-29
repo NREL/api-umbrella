@@ -1,28 +1,49 @@
-class Admin
-  include Mongoid::Document
-  include Mongoid::Timestamps
-  field :_id, :type => String, :overwrite => true, :default => lambda { SecureRandom.uuid }
-  field :username, :type => String
-  field :name, :type => String
-  field :notes, :type => String
-  field :superuser, :type => Boolean
-  field :authentication_token, :type => String, :default => lambda { SecureRandom.hex(20) }
-  field :current_sign_in_provider, :type => String
-  field :last_sign_in_provider, :type => String
-  field :email, :type => String
-  field :encrypted_password, :type => String
-  field :reset_password_token, :type => String
-  field :reset_password_sent_at, :type => Time
-  field :remember_created_at, :type => Time
-  field :sign_in_count, :type => Integer, :default => 0
-  field :current_sign_in_at, :type => Time
-  field :last_sign_in_at, :type => Time
-  field :current_sign_in_ip, :type => String
-  field :last_sign_in_ip, :type => String
-  field :failed_attempts, :type => Integer, :default => 0
-  field :unlock_token, :type => String
-  field :locked_at, :type => Time
-  field :created_by, :type => String
-  field :updated_by, :type => String
-  has_and_belongs_to_many :groups, :class_name => "AdminGroup", :inverse_of => nil
+class Admin < ApplicationRecord
+  has_and_belongs_to_many :groups, -> { order(:name) }, :class_name => "AdminGroup"
+
+  def id=(id)
+    prev_id = self[:id]
+    self[:id] = id
+
+    # Re-encrypt if the ID (used for the auth data) changes.
+    if prev_id && prev_id != id && @unencrypted_authentication_token
+      self.authentication_token = @unencrypted_authentication_token
+    end
+  end
+
+  def authentication_token=(value)
+    @unencrypted_authentication_token = value
+
+    # Ensure the record ID is set (it may not be on initial create), since we
+    # need the ID for the auth data.
+    self.id ||= SecureRandom.uuid
+
+    self.authentication_token_hash = OpenSSL::HMAC.hexdigest("sha256", $config["secret_key"], value)
+    self.authentication_token_encrypted_iv = SecureRandom.hex(6)
+    self.authentication_token_encrypted = Base64.strict_encode64(Encryptor.encrypt({
+      :value => value,
+      :iv => self.authentication_token_encrypted_iv,
+      :key => Digest::SHA256.digest($config["secret_key"]),
+      :auth_data => self.id,
+    }))
+  end
+
+  def authentication_token
+    Encryptor.decrypt({
+      :value => Base64.strict_decode64(self.authentication_token_encrypted),
+      :iv => self.authentication_token_encrypted_iv,
+      :key => Digest::SHA256.digest($config["secret_key"]),
+      :auth_data => self.id,
+    })
+  end
+
+  def serializable_hash(options = nil)
+    options ||= {}
+    options.merge!({
+      :methods => [
+        :group_ids,
+      ],
+    })
+    super(options)
+  end
 end

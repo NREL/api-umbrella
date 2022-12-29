@@ -14,10 +14,10 @@ class Test::Proxy::TestHttpsRequirements < Minitest::Test
       # that most of our test suite can use just http, which is sometimes
       # easier to debug.
       override_config_set({
-        "apiSettings" => {
+        "default_api_backend_settings" => {
           "require_https" => "required_return_error",
         },
-      }, "--router")
+      })
 
       prepend_api_backends([
         {
@@ -76,7 +76,7 @@ class Test::Proxy::TestHttpsRequirements < Minitest::Test
 
   def after_all
     super
-    override_config_reset("--router")
+    override_config_reset
   end
 
   def test_default_required_return_error

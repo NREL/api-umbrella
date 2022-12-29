@@ -1,17 +1,31 @@
 import { computed } from '@ember/object';
 import Model, { attr, belongsTo } from '@ember-data/model';
+import { t } from 'api-umbrella-admin-ui/utils/i18n';
 import classic from 'ember-classic-decorator';
 import { buildValidations, validator } from 'ember-cp-validations';
 import compact from 'lodash-es/compact';
 
 const Validations = buildValidations({
-  firstName: validator('presence', true),
-  lastName: validator('presence', true),
-  email: validator('presence', true),
+  firstName: validator('presence', {
+    presence: true,
+    description: t('First Name'),
+  }),
+  lastName: validator('presence', {
+    presence: true,
+    description: t('Last Name'),
+  }),
+  email: validator('presence', {
+    presence: true,
+    description: t('Email'),
+  }),
 });
 
 @classic
 class ApiUser extends Model.extend(Validations) {
+  static urlRoot = '/api-umbrella/v1/users';
+  static singlePayloadKey = 'user';
+  static arrayPayloadKey = 'data';
+
   @attr()
   apiKey;
 
@@ -81,10 +95,15 @@ class ApiUser extends Model.extend(Validations) {
   @attr()
   registrationOrigin;
 
-  @belongsTo('api/settings', { async: false })
+  @attr()
+  metadataYamlString;
+
+  @belongsTo('api/settings', { async: false, inverse: null })
   settings;
 
-  ready() {
+  init() {
+    super.init(...arguments);
+
     this.setDefaults();
   }
 
@@ -121,11 +140,5 @@ class ApiUser extends Model.extend(Validations) {
     this.set('roles', roles);
   }
 }
-
-ApiUser.reopenClass({
-  urlRoot: '/api-umbrella/v1/users',
-  singlePayloadKey: 'user',
-  arrayPayloadKey: 'data',
-});
 
 export default ApiUser;

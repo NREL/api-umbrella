@@ -1,11 +1,13 @@
-import classic from 'ember-classic-decorator';
+import { inject as service } from '@ember/service';
+import { clearStoreCache } from 'api-umbrella-admin-ui/utils/uncached-model';
 
 import Form from './form';
 
-@classic
 export default class EditRoute extends Form {
+  @service store;
+
   model(params) {
-    this.clearStoreCache();
+    clearStoreCache(this.store);
     return this.store.findRecord('api-scope', params.api_scope_id, { reload: true });
   }
 }

@@ -1,8 +1,8 @@
-local file = require "pl.file"
-local path = require "pl.path"
+local config = require("api-umbrella.utils.load_config")()
+local path_join = require "api-umbrella.utils.path_join"
+local readfile = require("pl.utils").readfile
 local stringx = require "pl.stringx"
 
 return function()
-  local src_root_dir = os.getenv("API_UMBRELLA_SRC_ROOT")
-  return stringx.strip(file.read(path.join(src_root_dir, "src/api-umbrella/version.txt")))
+  return stringx.strip(readfile(path_join(config["_src_root_dir"], "src/api-umbrella/version.txt")))
 end

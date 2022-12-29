@@ -1,5 +1,5 @@
 <div ...attributes>
   <FieldsFor @model={{this.model}} @style="horizontal" as |f|>
-    {{f.textarea-field "allowedIpsString" label=(t "mongoid.attributes.api/settings.allowed_ips") tooltip=(t "admin.api.settings.allowed_ips_tooltip_markdown") placeholder="10.0.0.0/8"}}
+    {{f.textarea-field "allowedIpsString" label=(t "Restrict Access to IPs") tooltip=(t "Restrict this API key so that it may only be used from the specified IP addresses.\n\nSingle IP addresses may be given (`10.20.30.40`) or IP ranges may be given in CIDR notation (`10.0.0.0/8`).\n\nMultiple IP addresses can be allowed by entering each one on a new line.") placeholder="10.0.0.0/8"}}
   </FieldsFor>
 </div>

@@ -1,59 +1,42 @@
 require_relative "../test_helper"
 
-class Test::AdminUi::TestElasticsearchProxy < Minitest::Capybara::Test
-  include Capybara::Screenshot::MiniTestPlugin
+class Test::AdminUi::TestElasticsearchProxy < Minitest::Test
   include ApiUmbrellaTestHelpers::AdminAuth
   include ApiUmbrellaTestHelpers::Setup
+  parallelize_me!
 
   def setup
     super
     setup_server
   end
 
-  def test_redirect_to_login_for_unauthenticated_requests
+  def test_no_longer_exists_for_unauthenticated_requests
     FactoryBot.create(:admin)
 
-    visit "/admin/elasticsearch"
-    assert_text("You need to sign in")
-    refute_text('"lucene_version"')
-    assert_match(%r{/admin/login\z}, page.current_url)
+    response = Typhoeus.get("https://127.0.0.1:9081/admin/elasticsearch", keyless_http_options)
+    assert_response_code(404, response)
 
-    visit "/admin/elasticsearch/_search"
-    assert_text("You need to sign in")
-    refute_text('"hits"')
-    assert_match(%r{/admin/login\z}, page.current_url)
+    response = Typhoeus.get("https://127.0.0.1:9081/admin/elasticsearch/_search", keyless_http_options)
+    assert_response_code(404, response)
   end
 
-  def test_forbidden_for_unauthorized_admins
-    admin_login(FactoryBot.create(:limited_admin))
+  def test_no_longer_exists_for_unauthorized_admins
+    admin = FactoryBot.create(:limited_admin)
 
-    visit "/admin/elasticsearch"
-    assert_text("Forbidden")
-    refute_text('"lucene_version"')
+    response = Typhoeus.get("https://127.0.0.1:9081/admin/elasticsearch", keyless_http_options.deep_merge(admin_session(admin)))
+    assert_response_code(404, response)
 
-    visit "/admin/elasticsearch/_search"
-    assert_text("Forbidden")
-    refute_text('"hits"')
+    response = Typhoeus.get("https://127.0.0.1:9081/admin/elasticsearch/_search", keyless_http_options.deep_merge(admin_session(admin)))
+    assert_response_code(404, response)
   end
 
-  def test_allowed_for_superuser_admins
-    admin_login
+  def test_no_longer_exists_for_superuser_admins
+    admin = FactoryBot.create(:admin)
 
-    visit "/admin/elasticsearch"
-    assert_text('"lucene_version"')
+    response = Typhoeus.get("https://127.0.0.1:9081/admin/elasticsearch", keyless_http_options.deep_merge(admin_session(admin)))
+    assert_response_code(404, response)
 
-    visit "/admin/elasticsearch/_search"
-    assert_text('"hits"')
-
-    # Redirect rewriting
-    response = Typhoeus.get("https://127.0.0.1:9081/admin/elasticsearch/_plugin/foobar", keyless_http_options.deep_merge({
-      :headers => {
-        "Cookie" => "_api_umbrella_session=#{selenium_cookie_named("_api_umbrella_session").fetch(:value)}",
-      },
-    }))
-    assert_response_code(301, response)
-    assert_equal("/admin/elasticsearch/_plugin/foobar/", response.headers["Location"])
-    assert_match(%r{URL=/admin/elasticsearch/_plugin/foobar/}, response.body)
-    assert_equal(response.body.bytesize, response.headers["Content-Length"].to_i)
+    response = Typhoeus.get("https://127.0.0.1:9081/admin/elasticsearch/_search", keyless_http_options.deep_merge(admin_session(admin)))
+    assert_response_code(404, response)
   end
 end

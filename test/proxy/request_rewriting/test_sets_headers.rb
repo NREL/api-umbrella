@@ -2,6 +2,7 @@ require_relative "../../test_helper"
 
 class Test::Proxy::RequestRewriting::TestSetsHeaders < Minitest::Test
   include ApiUmbrellaTestHelpers::Setup
+  include ApiUmbrellaTestHelpers::StripStandardRequestHeaders
   parallelize_me!
 
   def setup
@@ -43,7 +44,7 @@ class Test::Proxy::RequestRewriting::TestSetsHeaders < Minitest::Test
     assert_equal({
       "x-add1" => "test1",
       "x-add2" => "test2",
-    }, strip_standard_headers(data["headers"]))
+    }, strip_standard_request_headers(data["headers"]))
   end
 
   def test_overrides_and_merges_existing_headers_case_insensitively
@@ -60,7 +61,7 @@ class Test::Proxy::RequestRewriting::TestSetsHeaders < Minitest::Test
       "x-add1" => "test1",
       "x-add2" => "test2",
       "x-foo" => "bar",
-    }, strip_standard_headers(data["headers"]))
+    }, strip_standard_request_headers(data["headers"]))
   end
 
   def test_sub_url_settings_overrides_parent_settings
@@ -69,24 +70,6 @@ class Test::Proxy::RequestRewriting::TestSetsHeaders < Minitest::Test
     data = MultiJson.load(response.body)
     assert_equal({
       "x-add2" => "overridden",
-    }, strip_standard_headers(data["headers"]))
-  end
-
-  private
-
-  def strip_standard_headers(headers)
-    headers.except(
-      "accept",
-      "connection",
-      "host",
-      "user-agent",
-      "via",
-      "x-api-key",
-      "x-api-umbrella-request-id",
-      "x-api-user-id",
-      "x-forwarded-for",
-      "x-forwarded-port",
-      "x-forwarded-proto",
-    )
+    }, strip_standard_request_headers(data["headers"]))
   end
 end

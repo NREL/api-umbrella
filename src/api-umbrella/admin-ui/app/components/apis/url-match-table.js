@@ -1,24 +1,18 @@
 // eslint-disable-next-line ember/no-classic-components
 import Component from '@ember/component';
 import { action } from '@ember/object';
-import { reads } from '@ember/object/computed';
-import { inject } from '@ember/service';
+import { inject as service } from '@ember/service';
 import { tagName } from '@ember-decorators/component';
-// eslint-disable-next-line ember/no-mixins
-import Sortable from 'api-umbrella-admin-ui/mixins/sortable';
 import bootbox from 'bootbox';
 import classic from 'ember-classic-decorator';
+import without from 'lodash-es/without';
 
 @classic
 @tagName("")
-export default class UrlMatchTable extends Component.extend(Sortable) {
-  @inject()
-  store;
+export default class UrlMatchTable extends Component {
+  @service store;
 
   openModal = false;
-
-  @reads('model.urlMatches')
-  sortableCollection;
 
   @action
   add() {
@@ -34,10 +28,11 @@ export default class UrlMatchTable extends Component.extend(Sortable) {
 
   @action
   remove(urlMatch) {
-    bootbox.confirm('Are you sure you want to remove this URL prefix?', function(response) {
+    bootbox.confirm('Are you sure you want to remove this URL prefix?', (response) => {
       if(response) {
-        this.model.urlMatches.removeObject(urlMatch);
+        let collection = without(this.model.urlMatches, urlMatch);
+        this.model.set('urlMatches', collection);
       }
-    }.bind(this));
+    });
   }
 }

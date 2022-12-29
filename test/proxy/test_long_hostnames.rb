@@ -48,7 +48,7 @@ class Test::Proxy::TestLongHostnames < Minitest::Test
       :nginx => {
         :server_names_hash_bucket_size => 200,
       },
-    }, "--router") do
+    }) do
       prepend_api_backends([
         {
           :frontend_host => long_frontend_host,

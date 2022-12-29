@@ -7,11 +7,39 @@
         {{f.text-field "name" label="Name"}}
         {{f.text-field "host" label="Host"}}
         {{f.text-field "pathPrefix" label="Path Prefix"}}
+
+        {{#if this.currentAdmin.superuser}}
+          {{#if this.model.id}}
+            {{#f.static-field "admin_groups" label="Admin Groups"}}
+              {{#if this.model.adminGroups}}
+                <ul>
+                  {{#each this.model.adminGroups as |adminGroup|}}
+                    <li><LinkTo @route="admin_groups.edit" @model={{adminGroup.id}}>{{adminGroup.name}}</LinkTo></li>
+                  {{/each}}
+                </ul>
+              {{else}}
+                None
+              {{/if}}
+            {{/f.static-field}}
+
+            {{#f.static-field "apis" label="API Backends"}}
+              {{#if this.model.apis}}
+                <ul>
+                  {{#each this.model.apis as |apiBackend|}}
+                    <li><LinkTo @route="apis.edit" @model={{apiBackend.id}}>{{apiBackend.name}}</LinkTo></li>
+                  {{/each}}
+                </ul>
+              {{else}}
+                None
+              {{/if}}
+            {{/f.static-field}}
+          {{/if}}
+        {{/if}}
       </fieldset>
 
       <div class="row">
         <div class="col-sm-6">
-          <button type="submit" class="btn btn-lg btn-primary save-button"><span class="btn-label">Save</span><span class="btn-loading-label"><FaIcon @icon="sync-alt" spin={{true}} />Saving...</span></button>
+          <button type="submit" class="btn btn-lg btn-primary save-button"><span class="btn-label">Save</span><span class="btn-loading-label"><FaIcon @icon="sync-alt" @spin={{true}} />Saving...</span></button>
         </div>
         <div class="col-sm-6 record-details">
           {{#if this.model.id}}

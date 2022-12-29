@@ -11,8 +11,17 @@ export function initialize(appInstance) {
         options.headers['X-Api-Key'] = data.api_key;
       }
 
-      if(data.admin_auth_token) {
-        options.headers['X-Admin-Auth-Token'] = data.admin_auth_token;
+      if(data.csrf_token) {
+        options.headers['X-CSRF-Token'] = data.csrf_token;
+      }
+    }
+
+    const originalError = options.error;
+    options.error = function(xhr, error, code) {
+      if(xhr.status === 401) {
+        session.invalidate();
+      } else if(originalError) {
+        originalError.bind(this)(xhr, error, code);
       }
     }
   });

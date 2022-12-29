@@ -1,0 +1,346 @@
+msgid ""
+msgstr ""
+"Language: sv\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+# errors.messages.not_saved.other
+msgid "%{count} errors prohibited this %{resource} from being saved:"
+msgstr "%{count} fel hindrade denna %{resource} från att sparas:"
+
+# errors.messages.not_saved.one
+msgid "1 error prohibited this %{resource} from being saved:"
+msgstr "1 fel hindrade denna %{resource} från att sparas:"
+
+# devise.registrations.signed_up_but_unconfirmed
+msgid "A message with a confirmation link has been sent to your email address. Please follow the link to activate your account."
+msgstr "Ett meddelande med en länk för att bekräfta din registrering har skickats till din epostadress. Följ länken för att aktivera ditt konto."
+
+# devise.registrations.edit.are_you_sure
+msgid "Are you sure?"
+msgstr "Är du säker?"
+
+# devise.shared.links.back
+msgid "Back"
+msgstr "Tillbaka"
+
+# devise.registrations.destroyed
+msgid "Bye! Your account has been successfully cancelled. We hope to see you again soon."
+msgstr "Hej då! Ditt konto har avregistrerats. Vi hoppas få se dig snart igen."
+
+# devise.registrations.edit.cancel_my_account
+msgid "Cancel my account"
+msgstr "Avsluta mitt konto"
+
+# devise.passwords.edit.change_my_password
+msgid "Change My Password"
+msgstr "Ändra mitt lösenord"
+
+# devise.passwords.edit.change_your_password
+msgid "Change Your Password"
+msgstr "Ändra ditt lösenord"
+
+# devise.mailer.reset_password_instructions.action
+msgid "Change my password"
+msgstr "Byt lösenord"
+
+# devise.mailer.unlock_instructions.instruction
+msgid "Click the link below to unlock your account:"
+msgstr "Följ länken nedan för att låsa upp ditt konto:"
+
+# devise.passwords.edit.confirm_new_password
+msgid "Confirm New Password"
+msgstr "Bekräfta nytt lösenord"
+
+# devise.mailer.confirmation_instructions.action
+msgid "Confirm my account"
+msgstr "Bekräfta mitt konto"
+
+# devise.mailer.confirmation_instructions.subject
+msgid "Confirmation instructions"
+msgstr "Instruktioner för bekräftning av konto"
+
+# devise.omniauth_callbacks.failure
+msgid "Could not authenticate you from %{kind} because \"%{reason}\"."
+msgstr "Kunde inte autentisera dig med %{kind} för \"%{reason}\"."
+
+# mongoid.attributes.admin.current_password
+msgid "Current Password"
+msgstr "Nuvarande lösenord"
+
+# activerecord.attributes.user.current_password
+msgid "Current password"
+msgstr "Nuvarande lösenord"
+
+# devise.registrations.edit.currently_waiting_confirmation_for_email
+msgid "Currently waiting confirmation for: %{email}"
+msgstr "Väntar på bekräftelse för: %{email}"
+
+# devise.shared.links.didn_t_receive_confirmation_instructions
+msgid "Didn't receive confirmation instructions?"
+msgstr "Fick du inga bekräftelseinstruktioner?"
+
+# devise.shared.links.didn_t_receive_unlock_instructions
+msgid "Didn't receive unlock instructions?"
+msgstr "Fick du inga instruktioner om hur du låser upp ditt konto?"
+
+# devise.registrations.edit.title
+msgid "Edit %{resource}"
+msgstr "Ändra %{resource}"
+
+# activerecord.attributes.user.email
+msgid "Email"
+msgstr "Email"
+
+# devise.shared.links.forgot_your_password
+msgid "Forgot your password?"
+msgstr "Glömt ditt lösenord?"
+
+# devise.mailer.unlock_instructions.greeting
+msgid "Hello %{recipient}!"
+msgstr "Hej %{recipient}!"
+
+# devise.mailer.reset_password_instructions.instruction_2
+msgid "If you didn't request this, please ignore this email."
+msgstr "Om ändringen inte begärdes utav dig, var snäll att ignorera detta email."
+
+# devise.unlocks.send_paranoid_instructions
+msgid "If your account exists, you will receive an email with instructions for how to unlock it in a few minutes."
+msgstr "Om ditt konto finns, kommer du att få ett email med instruktioner om hur du låser upp det inom några minuter."
+
+# devise.passwords.send_paranoid_instructions
+msgid "If your email address exists in our database, you will receive a password recovery link at your email address in a few minutes."
+msgstr "Om din epostadress finns i vår databas kommer du att få en lösenordslänk skickad till din epost."
+
+# devise.confirmations.send_paranoid_instructions
+msgid "If your email address exists in our database, you will receive an email with instructions for how to confirm your email address in a few minutes."
+msgstr "Om din epostadress finns i vår databas, kommer du att få ett epost-meddelande inom några minuter med instruktioner om hur du ska göra för att aktivera ditt konto igen."
+
+# devise.failure.not_found_in_database
+msgid "Invalid %{authentication_keys} or password."
+msgstr "Ogiltig epost eller lösenord."
+
+# devise.passwords.edit.new_password
+msgid "New Password"
+msgstr "Nytt lösenord"
+
+# activerecord.attributes.user.password
+msgid "Password"
+msgstr "Lösenord"
+
+# devise.mailer.password_change.subject
+msgid "Password Changed"
+msgstr "Lösenorded uppdaterades"
+
+# mongoid.attributes.admin.password_confirmation
+msgid "Password Confirmation"
+msgstr "Bekräfta lösenord"
+
+# activerecord.attributes.user.password_confirmation
+msgid "Password confirmation"
+msgstr "Bekräfta lösenord"
+
+# activerecord.attributes.user.remember_me
+msgid "Remember me"
+msgstr "Kom ihåg mig"
+
+# devise.confirmations.new.resend_confirmation_instructions
+msgid "Resend confirmation instructions"
+msgstr "Skicka instruktioner för att bekräfta konto igen"
+
+# devise.unlocks.new.resend_unlock_instructions
+msgid "Resend unlock instructions"
+msgstr "Skicka instruktioner för upplåsning av konto igen"
+
+# devise.mailer.reset_password_instructions.subject
+msgid "Reset password instructions"
+msgstr "Instruktioner för återställning av lösenord"
+
+# activerecord.attributes.user.reset_password_token
+msgid "Reset password token"
+msgstr "Återställ token för lösenord"
+
+# devise.passwords.new.send_me_reset_password_instructions
+msgid "Send me reset password instructions"
+msgstr "Skicka instruktion för återställning av lösenord"
+
+# devise.shared.links.sign_in
+msgid "Sign in"
+msgstr "Logga in"
+
+# devise.shared.links.sign_in_with_provider
+msgid "Sign in with %{provider}"
+msgstr "Logga in med %{provider}"
+
+# devise.shared.links.sign_up
+msgid "Sign up"
+msgstr "Registrera dig"
+
+# devise.sessions.signed_in
+msgid "Signed in successfully."
+msgstr "Loggade in."
+
+# devise.sessions.signed_out
+msgid "Signed out successfully."
+msgstr "Loggade ut."
+
+# devise.mailer.reset_password_instructions.instruction
+msgid "Someone has requested a link to change your password, and you can do this through the link below."
+msgstr "Någon har begärt att ändra ditt lösenordet. Du kan göra det genom länken nedan."
+
+# devise.omniauth_callbacks.success
+msgid "Successfully authenticated from %{kind} account."
+msgstr "Autentiserat med %{kind}-konto."
+
+# devise.registrations.edit.unhappy
+msgid "Unhappy?"
+msgstr "Missnöjd"
+
+# devise.mailer.unlock_instructions.subject
+msgid "Unlock instructions"
+msgstr "Instruktioner för upplåsning av konto"
+
+# devise.mailer.unlock_instructions.action
+msgid "Unlock my account"
+msgstr "Lås upp mitt konto"
+
+# activerecord.attributes.user.unlock_token
+msgid "Unlock token"
+msgstr "Token för återaktivering"
+
+# devise.registrations.edit.update
+msgid "Update"
+msgstr "Uppdatera"
+
+# activerecord.models.user
+msgid "User"
+msgstr "Användare"
+
+# devise.mailer.password_change.message
+msgid "We're contacting you to notify you that your password has been changed."
+msgstr "Vi kontaktar dig för att meddela dig att att ditt lösenord har blivit ändrat."
+
+# devise.mailer.confirmation_instructions.greeting
+msgid "Welcome %{recipient}!"
+msgstr "Välkommen %{recipient}!"
+
+# devise.registrations.signed_up
+msgid "Welcome! You have signed up successfully."
+msgstr "Välkommen! Ditt nya konto har skapats."
+
+# devise.failure.already_authenticated
+msgid "You are already signed in."
+msgstr "Du är redan inloggad."
+
+# devise.mailer.confirmation_instructions.instruction
+msgid "You can confirm your account email through the link below:"
+msgstr "Du kan bekräfta ditt konto med länken nedan:"
+
+# devise.passwords.no_token
+msgid "You can't access this page without coming from a password reset email. If you do come from a password reset email, please make sure you used the full URL provided."
+msgstr "Tillgång till den här sidan kräver att du kommer från ett mejl som sätter tillbaka ditt lösenord. Om du kom hit från ett sånt mejl, säkerställ att du har använt hela URL:en."
+
+# devise.failure.last_attempt
+msgid "You have one more attempt before your account is locked."
+msgstr "Du har ett försök kvar, sen låser vi ditt konto."
+
+# devise.registrations.signed_up_but_locked
+msgid "You have signed up successfully. However, we could not sign you in because your account is locked."
+msgstr "Du är nu registrerad. Däremot kunde vi inte logga in dig, eftersom ditt konto är låst."
+
+# devise.registrations.signed_up_but_inactive
+msgid "You have signed up successfully. However, we could not sign you in because your account is not yet activated."
+msgstr "Du är nu registrerad. Däremot kunde vi inte logga in dig, eftersom ditt konto ännu inte aktiverats."
+
+# devise.failure.unconfirmed
+msgid "You have to confirm your email address before continuing."
+msgstr "Du måste bekräfta ditt konto innan du kan fortsätta."
+
+# devise.failure.unauthenticated
+msgid "You need to sign in or sign up before continuing."
+msgstr "Du måste logga in eller skapa ett konto innan du kan fortsätta."
+
+# devise.registrations.update_needs_confirmation
+msgid "You updated your account successfully, but we need to verify your new email address. Please check your email and follow the confirm link to confirm your new email address."
+msgstr "Ditt konto uppdaterades, men vi behöver verifiera din nya epostadress. Kontrollera din epost och klicka på länken för att bekräfta din nya epostadress."
+
+# devise.confirmations.send_instructions
+msgid "You will receive an email with instructions for how to confirm your email address in a few minutes."
+msgstr "Du kommer att få epost med instruktioner om hur du kan bekräfta ditt konto inom några minuter."
+
+# devise.unlocks.send_instructions
+msgid "You will receive an email with instructions for how to unlock your account in a few minutes."
+msgstr "Du kommer få epost med instruktioner om hur du kan låsa upp ditt konto inom några minuter."
+
+# devise.passwords.send_instructions
+msgid "You will receive an email with instructions on how to reset your password in a few minutes."
+msgstr "Du kommer få epost med instruktioner för hur du kan återställa ditt lösenord inom några minuter."
+
+# devise.mailer.unlock_instructions.message
+msgid "Your account has been locked due to an excessive amount of unsuccessful sign in attempts."
+msgstr "Ditt konto har låsts på grund av för många felaktiga inloggningsförsök."
+
+# devise.unlocks.unlocked
+msgid "Your account has been unlocked successfully. Please sign in to continue."
+msgstr "Ditt konto har låsts upp. Du är nu inloggad."
+
+# devise.registrations.updated
+msgid "Your account has been updated successfully."
+msgstr "Ditt konto har uppdaterats."
+
+# devise.failure.locked
+msgid "Your account is locked."
+msgstr "Ditt konto är låst."
+
+# devise.failure.inactive
+msgid "Your account is not activated yet."
+msgstr "Ditt konto har inte aktiverats ännu."
+
+# devise.confirmations.confirmed
+msgid "Your email address has been successfully confirmed."
+msgstr "Ditt konto har bekräftats. Du är nu inloggad."
+
+# devise.passwords.updated_not_active
+msgid "Your password has been changed successfully."
+msgstr "Ditt lösenord uppdaterades."
+
+# devise.passwords.updated
+msgid "Your password has been changed successfully. You are now signed in."
+msgstr "Ditt lösenord har uppdaterats. Du är nu inloggad."
+
+# devise.mailer.reset_password_instructions.instruction_3
+msgid "Your password won't change until you access the link above and create a new one."
+msgstr "Ditt lösenord ändras ej förrän du följer länken ovan och skapar ett nytt lösenord."
+
+# devise.failure.timeout
+msgid "Your session expired. Please sign in again to continue."
+msgstr "Din session är inte längre giltig, vänligen logga in igen för att fortsätta."
+
+# errors.messages.expired
+msgid "has expired, please request a new one"
+msgstr "är inte längre giltig. Vänligen begär en ny"
+
+# devise.registrations.edit.leave_blank_if_you_don_t_want_to_change_it
+msgid "leave blank if you don't want to change it"
+msgstr "lämna tomt om du inte vill byta det"
+
+# errors.messages.confirmation_period_expired
+msgid "needs to be confirmed within %{period}, please request a new one"
+msgstr "behöver bekräftas inom %{period}. Vänligen begär en ny"
+
+# errors.messages.not_found
+msgid "not found"
+msgstr "hittades inte"
+
+# errors.messages.already_confirmed
+msgid "was already confirmed, please try signing in"
+msgstr "är redan bekräftad, vänligen logga in igen"
+
+# errors.messages.not_locked
+msgid "was not locked"
+msgstr "var inte låst"
+
+# devise.registrations.edit.we_need_your_current_password_to_confirm_your_changes
+msgid "we need your current password to confirm your changes"
+msgstr "vi behöver ditt nuvarande lösenord för att bekräfta dina ändringar"

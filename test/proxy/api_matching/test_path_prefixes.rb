@@ -17,7 +17,7 @@ class Test::Proxy::ApiMatching::TestPathPrefixes < Minitest::Test
           :url_matches => [{ :frontend_prefix => "/#{unique_test_class_id}/specific/", :backend_prefix => "/info/" }],
           :settings => {
             :headers => [
-              { :key => "X-Backend", :value => "specific-prefix-other-host" },
+              { :key => "X-Test-Backend", :value => "specific-prefix-other-host" },
             ],
           },
         },
@@ -28,7 +28,7 @@ class Test::Proxy::ApiMatching::TestPathPrefixes < Minitest::Test
           :url_matches => [{ :frontend_prefix => "/#{unique_test_class_id}/specific/", :backend_prefix => "/info/" }],
           :settings => {
             :headers => [
-              { :key => "X-Backend", :value => "specific-prefix" },
+              { :key => "X-Test-Backend", :value => "specific-prefix" },
             ],
           },
         },
@@ -39,7 +39,7 @@ class Test::Proxy::ApiMatching::TestPathPrefixes < Minitest::Test
           :url_matches => [{ :frontend_prefix => "/#{unique_test_class_id}/no-trailing", :backend_prefix => "/info/" }],
           :settings => {
             :headers => [
-              { :key => "X-Backend", :value => "no-trailing-prefix" },
+              { :key => "X-Test-Backend", :value => "no-trailing-prefix" },
             ],
           },
         },

@@ -22,14 +22,14 @@ class Test::AdminUi::TestApiUsersApiKeyVisibility < Minitest::Capybara::Test
     click_button("Save")
 
     assert_text("Successfully saved the user")
-    user = ApiUser.order_by(:created_at.asc).last
+    user = ApiUser.order(:created_at => :asc).last
     assert_equal("Doe", user.last_name)
     assert_text(user.api_key)
   end
 
   def test_api_key_can_be_revealed_when_admin_has_permissions
     admin = FactoryBot.create(:admin)
-    user = FactoryBot.create(:api_user, :created_by => admin.id, :created_at => Time.now.utc - 2.weeks + 5.minutes)
+    user = FactoryBot.create(:api_user, :created_by_id => admin.id, :created_at => Time.now.utc - 2.weeks - 5.minutes)
     admin_login(admin)
     visit "/admin/#/api_users/#{user.id}/edit"
 
@@ -49,7 +49,8 @@ class Test::AdminUi::TestApiUsersApiKeyVisibility < Minitest::Capybara::Test
 
   def test_api_key_is_hidden_when_admin_lacks_permissions
     admin = FactoryBot.create(:limited_admin)
-    user = FactoryBot.create(:api_user, :created_by => admin.id, :created_at => Time.now.utc - 2.weeks - 5.minutes)
+    other_admin = FactoryBot.create(:limited_admin)
+    user = FactoryBot.create(:api_user, :created_by_id => other_admin.id, :created_at => Time.now.utc - 2.weeks - 5.minutes)
     admin_login(admin)
     visit "/admin/#/api_users/#{user.id}/edit"
 

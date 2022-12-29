@@ -21,11 +21,14 @@ nginx:
   proxy_send_timeout: 9
 trafficserver:
   port: 13009
+envoy:
+  port: 13000
+  admin:
+    port: 13001
 api_server:
   port: 13010
 web:
   port: 13012
-  rails_secret_token: aeec385fb48a0594b6bb0b18f62473190f1d01b0b6113766af525be2ae1a317a03ab0ee1b3ee6aca3fb1572dc87684e033dcec21acd90d0ca0f111ca1785d0e9
   admin:
     auth_strategies:
       facebook:
@@ -52,42 +55,34 @@ web:
       address: 127.0.0.1
       port: 13102
   contact_form_email: default-test-contact-email@example.com
+  analytics_v0_summary_start_time: 2013-07-01T00:00:00.000-06:00
+  analytics_v0_summary_end_time: 2013-08-31T23:59:59.999-06:00
 router:
   trusted_proxies:
     - 192.168.12.0/23
     - 10.10.10.10
+  active_config:
+    # Force the local cache to be refreshed on every request, instead of in the
+    # background. The background behavior is probably fine in production, where
+    # it's fine if things are eventually consistent across the workers after
+    # 1-2 seconds, but to make testing easier, force immediate refreshes in the
+    # test environment.
+    refresh_local_cache_interval: 0
 rsyslog:
   port: 13014
-mongodb:
-  url: "mongodb://127.0.0.1:13001/api_umbrella_test"
-  embedded_server_config:
-    net:
-      port: 13001
-    storage:
-      journal:
-        enabled: false
-mora:
-  port: 13004
-elasticsearch:
-  hosts:
-    - "http://127.0.0.1:13002"
-  embedded_server_config:
-    http:
-      port: 13002
-    transport:
-      tcp:
-        port: 13003
+postgresql:
+  database: api_umbrella_test
+  password: dev_password
+  migrations:
+    password: dev_password
+  auto_ssl:
+    password: dev_password
 unbound:
   port: 13100
   control_port: 13101
-mailhog:
-  bind_addr: "127.0.0.1"
-  smtp_port: 13102
-  api_port: 13103
-  ui_port: 13103
 glauth:
   port: 13104
-apiSettings:
+default_api_backend_settings:
   require_https: optional
 _test_config:
   default_null_override_hash:
@@ -95,3 +90,18 @@ _test_config:
   default_null_override_string: foobar
   default_empty_hash_override_hash:
     baz: qux
+apis:
+  - id: 00000000-0000-0000-0000-100000000000
+    name: default-test-api-backend
+    backend_protocol: http
+    balance_algorithm: least_conn
+    frontend_host: 127.0.0.1
+    backend_host: 127.0.0.1
+    servers:
+      - id: 00000000-0000-0000-0000-200000000000
+        host: 127.0.0.1
+        port: 9444
+    url_matches:
+      - id: 00000000-0000-0000-0000-300000000000
+        frontend_prefix: /api/
+        backend_prefix: /

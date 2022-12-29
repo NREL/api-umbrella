@@ -1,4 +1,0 @@
-Defaults:api-umbrella-deploy !requiretty
-
-Cmnd_Alias API_UMBRELLA_DEPLOY_COMMANDS = /etc/init.d/api-umbrella,/usr/bin/api-umbrella
-api-umbrella-deploy ALL=(ALL) NOPASSWD:API_UMBRELLA_DEPLOY_COMMANDS

@@ -81,7 +81,7 @@ namespace :maps do
       puts "#{scale} Extra Countries: #{extra_countries.inspect}"
 
       combined_path = File.join($input_dir, "tmp/world-#{scale}-combined.json")
-      File.open(combined_path, "w") { |f| f.write(Oj.dump(sovereignties)) }
+      File.write(combined_path, Oj.dump(sovereignties))
     end
 
     # Use the low resolution version for the globe.
@@ -121,7 +121,7 @@ namespace :maps do
         file.write(Oj.dump(state_data))
       end
     end
-    File.open(output_path, "w") { |f| f.write(Oj.dump(data)) }
+    File.write(output_path, Oj.dump(data))
   end
 
   task :simplify do
@@ -162,14 +162,14 @@ namespace :maps do
           "name" => code,
         }
       end
-      File.open(path, "w") { |f| f.write(Oj.dump(data, :float_precision => 9)) }
+      File.write(path, Oj.dump(data, :float_precision => 9))
     end
   end
 
   task :generate do
     require "fileutils"
 
-    $input_dir = ENV["INPUT_DIR"] || File.join(API_UMBRELLA_SRC_ROOT, "build/work/maps")
+    $input_dir = ENV.fetch("INPUT_DIR", File.join(API_UMBRELLA_SRC_ROOT, "build/work/maps"))
     FileUtils.rm_rf(File.join($input_dir, "tmp"))
     FileUtils.mkdir_p(File.join($input_dir, "tmp"))
 

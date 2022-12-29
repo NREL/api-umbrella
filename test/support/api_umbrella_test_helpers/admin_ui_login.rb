@@ -20,29 +20,13 @@ module ApiUmbrellaTestHelpers
       refute_link("my_account_nav_link")
     end
 
-    def omniauth_base_data(options)
-      omniauth_base_data = LazyHash.build_hash
-      omniauth_base_data["provider"] = options.fetch(:provider).to_s
-      if(options[:verified_path])
-        LazyHash.add(omniauth_base_data, options.fetch(:verified_path), true)
-      end
-
-      if(options[:extra])
-        omniauth_base_data.deep_merge!(options[:extra])
-      end
-
-      omniauth_base_data
-    end
-
-    def mock_omniauth(omniauth_data)
-      # Set a cookie to mock the OmniAuth responses. This relies on the
-      # TestMockOmniauth middleware we install into the Rails app during the test
-      # environment. This gives us a way to mock this data from outside the Rails
-      # test suite.
-      selenium_add_cookie("test_mock_omniauth", Base64.urlsafe_encode64(MultiJson.dump(omniauth_data)))
+    def mock_userinfo(data)
+      # Set a cookie to mock the userinfo responses. When the app is running in
+      # test mode, it looks for this cookie to provide mock data.
+      selenium_add_cookie("test_mock_userinfo", CGI.escape(Base64.strict_encode64(data)))
       yield
     ensure
-      selenium_delete_cookie("test_mock_omniauth")
+      selenium_delete_cookie("test_mock_userinfo")
     end
   end
 end

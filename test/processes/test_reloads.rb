@@ -10,16 +10,17 @@ class Test::Processes::TestReloads < Minitest::Test
   end
 
   def test_no_file_descriptor_leaks_across_nginx_reloads
-    descriptor_counts = []
-    urandom_descriptor_counts = []
+    all_reload_descriptors = []
+    all_reload_urandom_descriptors = []
 
     parent_pid = nginx_parent_pid
 
     # Now perform a number of reloads and gather file descriptor information
     # after each one.
-    15.times do
+    num_reloads = 15
+    num_reloads.times do
       # Get the list of original nginx worker process PIDs on startup.
-      original_child_pids = nginx_child_pids(parent_pid)
+      original_child_pids = api_umbrella_process.nginx_child_pids(parent_pid, $config["nginx"]["workers"])
 
       # Send a reload signal to nginx.
       ::Process.kill("HUP", parent_pid.to_i)
@@ -28,20 +29,7 @@ class Test::Processes::TestReloads < Minitest::Test
       # processes is running. This prevents us from checking file descriptors
       # when some of the old worker processes are still alive, but in the
       # process of shutting down.
-      output = nil
-      begin
-        Timeout.timeout(70) do
-          loop do
-            new_child_pids = nginx_child_pids(parent_pid)
-            pid_intersection = new_child_pids & original_child_pids
-            break if(pid_intersection.empty?)
-
-            sleep 0.1
-          end
-        end
-      rescue Timeout::Error
-        flunk("nginx child processes did not change during reload. original_child_pids: #{original_child_pids.inspect} Last output: #{output.inspect}")
-      end
+      api_umbrella_process.nginx_wait_for_new_child_pids(parent_pid, $config["nginx"]["workers"], original_child_pids)
 
       # Make a number of concurrent requests to ensure that each nginx worker
       # process is warmed up. This ensures that each worker should at least
@@ -62,28 +50,31 @@ class Test::Processes::TestReloads < Minitest::Test
       # Now check for open file descriptors.
       files = lsof("-c", "nginx")
 
-      descriptor_count = 0
-      urandom_descriptor_count = 0
+      reload_descriptors = []
+      reload_urandom_descriptors = []
       files.each do |file|
         # Only count lines from the lsof output that belong to this nginx's PID
         # and aren't network sockets (we exclude those when checking for leaks,
         # since it's expected that there's much more variation in those
         # depending on the requests made by tests, keepalive connections, etc).
         if([file.fetch(:pid), file.fetch(:ppid)].include?(parent_pid) && !["IPv4", "IPv6", "unix", "sock"].include?(file[:type]))
-          descriptor_count += 1
+          reload_descriptors << file
 
           if(file.fetch(:file).include?("urandom"))
-            urandom_descriptor_count += 1
+            reload_urandom_descriptors << file
           end
         end
       end
 
-      descriptor_counts << descriptor_count
-      urandom_descriptor_counts << urandom_descriptor_count
+      all_reload_descriptors << reload_descriptors
+      all_reload_urandom_descriptors << reload_urandom_descriptors
     end
 
-    assert_equal(15, descriptor_counts.length)
-    assert_equal(15, urandom_descriptor_counts.length)
+    assert_equal(num_reloads, all_reload_descriptors.length)
+    assert_equal(num_reloads, all_reload_urandom_descriptors.length)
+
+    all_reload_descriptors.sort_by! { |d| d.length }
+    all_reload_urandom_descriptors.sort_by! { |d| d.length }
 
     # Test to ensure nginx modules aren't leaking urandom descriptors. Allow
     # for some small fluctuations in the /dev/urandom sockets, since nginx
@@ -94,16 +85,24 @@ class Test::Processes::TestReloads < Minitest::Test
     # ngx_txid (using lua-resty-txid instead), so urandom descriptors shouldn't
     # actually be present, but we'll keep this test in place to ensure similar
     # leaks don't crop up again.
-    range = urandom_descriptor_counts.max - urandom_descriptor_counts.min
-    assert_operator(range, :<=, $config["nginx"]["workers"] * 4)
+    min_reload_urandom_descriptors = all_reload_urandom_descriptors.first
+    max_reload_urandom_descriptors = all_reload_urandom_descriptors.last
+    range = max_reload_urandom_descriptors.length - min_reload_urandom_descriptors.length
+    max_urandom_descriptor_change = $config["nginx"]["workers"] * 4
+    assert_operator(max_urandom_descriptor_change, :<, ($config["nginx"]["workers"] * num_reloads) / 2.0)
+    assert_operator(range, :<=, max_urandom_descriptor_change, "Minimum reload urandom descriptors: #{min_reload_urandom_descriptors.length}\n#{MultiJson.dump(min_reload_urandom_descriptors)}\n\nMaximum reload urandom descriptors: #{max_reload_urandom_descriptors.length}\n#{MultiJson.dump(max_reload_urandom_descriptors)}")
 
     # A more general test to ensure that we don't see other unexpected file
     # descriptor growth. We'll allow some growth for this test, though, just to
     # account for small fluctuations in sockets due to other things nginx may
     # be doing.
-    assert_operator(descriptor_counts.min, :>, 0)
-    range = descriptor_counts.max - descriptor_counts.min
-    assert_operator(range, :<=, $config["nginx"]["workers"] * 4)
+    min_reload_descriptors = all_reload_descriptors.first
+    max_reload_descriptors = all_reload_descriptors.last
+    assert_operator(min_reload_descriptors.length, :>, 0)
+    range = max_reload_descriptors.length - min_reload_descriptors.length
+    max_reload_descriptor_change = $config["nginx"]["workers"] * 6
+    assert_operator(max_reload_descriptor_change, :<, ($config["nginx"]["workers"] * num_reloads) / 2.0)
+    assert_operator(range, :<=, max_reload_descriptor_change, "Minimum reload descriptors: #{min_reload_descriptors.length}\n#{MultiJson.dump(min_reload_descriptors)}\n\nMaximum reload descriptors: #{max_reload_descriptors.length}\n#{MultiJson.dump(max_reload_descriptors)}")
   end
 
   def test_no_dropped_connections_during_reloads
@@ -122,13 +121,13 @@ class Test::Processes::TestReloads < Minitest::Test
       parent_pid = nginx_parent_pid
 
       # Gather the worker ids at the start (so we can sanity check that the reloads happened).
-      original_child_pids = nginx_child_pids(parent_pid)
+      original_child_pids = api_umbrella_process.nginx_child_pids(parent_pid, $config["nginx"]["workers"])
 
       # Randomly send reload signals every 5-500ms during the testing period.
       reload_thread = Thread.new do
         loop do
           sleep rand(0.005..0.5)
-          api_umbrella_process.reload("--router")
+          api_umbrella_process.reload
         end
       end
 
@@ -145,7 +144,7 @@ class Test::Processes::TestReloads < Minitest::Test
       reload_thread.exit
 
       # Gather the worker ids at the end (so we can sanity check that the reloads happened).
-      final_child_pids = nginx_child_pids(parent_pid)
+      final_child_pids = api_umbrella_process.nginx_child_pids(parent_pid, $config["nginx"]["workers"])
 
       refute_equal(original_child_pids.sort, final_child_pids.sort)
     end
@@ -161,7 +160,7 @@ class Test::Processes::TestReloads < Minitest::Test
       "nginx" => {
         "workers" => 1,
       },
-    }, "--router") do
+    }) do
       nginx_config = File.read(nginx_config_path)
       assert_match("worker_processes 1;", nginx_config)
     end
@@ -186,7 +185,7 @@ class Test::Processes::TestReloads < Minitest::Test
           },
         },
       ],
-    }, "--router") do
+    }) do
       response = Typhoeus.get("https://127.0.0.1:9081/#{unique_test_id}/file-config/info/", http_options)
       assert_response_code(200, response)
       data = MultiJson.load(response.body)
@@ -204,27 +203,5 @@ class Test::Processes::TestReloads < Minitest::Test
     assert(parent_pid)
 
     parent_pid
-  end
-
-  def nginx_child_pids(parent_pid)
-    pids = []
-    output = nil
-    expected_num_workers = $config["nginx"]["workers"]
-    begin
-      Timeout.timeout(70) do
-        loop do
-          output, status = run_shell("pgrep", "-P", parent_pid)
-          assert_equal(0, status, output)
-          pids = output.strip.split("\n")
-          break if(pids.length == expected_num_workers)
-
-          sleep 0.1
-        end
-      end
-    rescue Timeout::Error
-      flunk("Did not find expected number of nginx child processes. Last output: #{output.inspect}")
-    end
-
-    pids
   end
 end

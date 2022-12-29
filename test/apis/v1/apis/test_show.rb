@@ -3,11 +3,11 @@ require_relative "../../../test_helper"
 class Test::Apis::V1::Apis::TestShow < Minitest::Test
   include ApiUmbrellaTestHelpers::AdminAuth
   include ApiUmbrellaTestHelpers::Setup
+  parallelize_me!
 
   def setup
     super
     setup_server
-    Api.delete_all
   end
 
   def test_request_headers
@@ -23,8 +23,8 @@ class Test::Apis::V1::Apis::TestShow < Minitest::Test
   end
 
   def test_embedded_custom_rate_limit_object
-    api = FactoryBot.create(:api, {
-      :settings => FactoryBot.build(:custom_rate_limit_api_setting),
+    api = FactoryBot.create(:api_backend, {
+      :settings => FactoryBot.build(:custom_rate_limit_api_backend_settings),
     })
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/apis/#{api.id}.json", http_options.deep_merge(admin_token))
     assert_response_code(200, response)
@@ -41,13 +41,73 @@ class Test::Apis::V1::Apis::TestShow < Minitest::Test
       "limit_by",
       "response_headers",
     ].sort, rate_limit.keys.sort)
-    assert_match(/\A[0-9a-f\-]{36}\z/, rate_limit["id"])
-    assert_equal(5000, rate_limit["accuracy"])
+    assert_match(/\A[0-9a-f-]{36}\z/, rate_limit["id"])
+    assert_nil(rate_limit.fetch("accuracy"))
     assert_equal(true, rate_limit["distributed"])
     assert_equal(60000, rate_limit["duration"])
     assert_equal(500, rate_limit["limit"])
     assert_equal("ip", rate_limit["limit_by"])
     assert_equal(true, rate_limit["response_headers"])
+  end
+
+  def test_orders_url_matches
+    api = FactoryBot.create(:api_backend, {
+      :url_matches => [FactoryBot.build(:api_backend_url_match, :frontend_prefix => "/1")],
+    })
+
+    # Create the prefixes separately and in randomdized order to best ensure
+    # insertion order doesn't affect things.
+    prefixes = [
+      "/foo",
+      "/foo/",
+      "/foo/bar",
+      "/baz",
+      "/baz/foo/bar",
+      "/a",
+      "/A",
+      "/ä",
+      "/ab",
+      "/b",
+      "/B",
+      "/c/d/e/f/g",
+      "/foo-bar/baz",
+      "/foo_bar/baz",
+      "/c-d/",
+      "/api/",
+      "/API/",
+      "/aPi/",
+    ]
+    prefixes.shuffle!
+    prefixes.each do |prefix|
+      FactoryBot.create(:api_backend_url_match, :frontend_prefix => prefix, :api_backend_id => api.id)
+    end
+
+    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/apis/#{api.id}.json", http_options.deep_merge(admin_token))
+    data = MultiJson.load(response.body)
+
+    expected_frontend_prefix_order = [
+      "/1",
+      "/a",
+      "/A",
+      "/ä",
+      "/ab",
+      "/api/",
+      "/aPi/",
+      "/API/",
+      "/b",
+      "/B",
+      "/baz/foo/bar",
+      "/baz",
+      "/c/d/e/f/g",
+      "/c-d/",
+      "/foo/bar",
+      "/foo/",
+      "/foo",
+      "/foo_bar/baz",
+      "/foo-bar/baz",
+    ]
+    assert_equal(expected_frontend_prefix_order, data.fetch("api").fetch("url_matches").map { |u| u.fetch("frontend_prefix") })
+    assert_equal(expected_frontend_prefix_order.join(", "), data.fetch("api").fetch("frontend_prefixes"))
   end
 
   private
@@ -59,23 +119,22 @@ class Test::Apis::V1::Apis::TestShow < Minitest::Test
   end
 
   def assert_headers_field_no_headers(field)
-    api = FactoryBot.create(:api, {
-      :settings => FactoryBot.attributes_for(:api_setting, {
-      }),
+    api = FactoryBot.create(:api_backend, {
+      :settings => FactoryBot.build(:api_backend_settings, {}),
     })
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/apis/#{api.id}.json", http_options.deep_merge(admin_token))
     assert_response_code(200, response)
 
     data = MultiJson.load(response.body)
     assert_equal("", data["api"]["settings"]["#{field}_string"])
-    assert_nil(data["api"]["settings"][field.to_s])
+    assert_equal([], data["api"]["settings"][field.to_s])
   end
 
   def assert_headers_field_single_header(field)
-    api = FactoryBot.create(:api, {
-      :settings => FactoryBot.attributes_for(:api_setting, {
+    api = FactoryBot.create(:api_backend, {
+      :settings => FactoryBot.build(:api_backend_settings, {
         :"#{field}" => [
-          FactoryBot.attributes_for(:api_header, { :key => "X-Add1", :value => "test1" }),
+          FactoryBot.build(:api_backend_http_header, { :key => "X-Add1", :value => "test1" }),
         ],
       }),
     })
@@ -92,11 +151,11 @@ class Test::Apis::V1::Apis::TestShow < Minitest::Test
   end
 
   def assert_headers_field_multiple_headers(field)
-    api = FactoryBot.create(:api, {
-      :settings => FactoryBot.attributes_for(:api_setting, {
+    api = FactoryBot.create(:api_backend, {
+      :settings => FactoryBot.build(:api_backend_settings, {
         :"#{field}" => [
-          FactoryBot.attributes_for(:api_header, { :key => "X-Add1", :value => "test1" }),
-          FactoryBot.attributes_for(:api_header, { :key => "X-Add2", :value => "test2" }),
+          FactoryBot.build(:api_backend_http_header, { :key => "X-Add1", :value => "test1" }),
+          FactoryBot.build(:api_backend_http_header, { :key => "X-Add2", :value => "test2" }),
         ],
       }),
     })

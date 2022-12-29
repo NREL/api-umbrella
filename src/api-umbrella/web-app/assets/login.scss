@@ -1,0 +1,89 @@
+@import "~bootstrap/scss/bootstrap";
+
+body {
+  padding: 20px;
+}
+
+.login .btn {
+  font-size: 16px;
+}
+
+.login h1 {
+  text-align: center;
+  margin: 0px 0px 15px 0px;
+  font-weight: 200;
+}
+
+.login label {
+  font-weight: normal;
+}
+
+.login, .alert {
+  max-width: 400px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.alert p:last-child {
+  margin-bottom: 0px;
+}
+
+.login .btn {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  background-color: #07c;
+  color: #fff;
+  border-style: none;
+}
+
+.login .btn:hover {
+  background-color: #005a9a;
+}
+
+.login .btn:disabled,
+.login .btn[disabled]:hover,
+.login .btn[disabled]:focus {
+  background-color: #ddd;
+  color: #666;
+}
+
+.login .login-container {
+  border: 1px solid #ddd;
+  border-radius: 2px;
+  padding: 15px;
+  margin: 15px 0px;
+}
+
+.external-login {
+  margin-top: 20px;
+  line-height: 24px;
+}
+
+.external-login:first-child {
+  margin-top: 0px;
+}
+
+.external-login .alert {
+  margin-bottom: 2px;
+  font-size: 14px;
+}
+
+.external-login .btn span {
+  display: inline-block;
+}
+
+.external-login .btn .svg-inline--fa {
+  margin-right: 3px;
+  font-size: 24px;
+}
+
+.external-login .btn span,
+.external-login .btn .svg-inline--fa {
+  vertical-align: middle;
+  line-height: 24px;
+}
+
+.login .checkbox {
+  margin: 0px;
+}

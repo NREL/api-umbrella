@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-libmaxminddb_version="1.6.0"
-libmaxminddb_hash="34beeef1cd60e0269516d0576868cf28"
+libmaxminddb_version="1.7.1"
+libmaxminddb_hash="7bec377d9a7c1c986a6715203eecfcd6"
 
 set -e -u -x
 source ./tasks/helpers.sh

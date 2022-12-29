@@ -3,11 +3,11 @@ require_relative "../../../test_helper"
 class Test::Apis::V1::Users::TestShow < Minitest::Test
   include ApiUmbrellaTestHelpers::AdminAuth
   include ApiUmbrellaTestHelpers::Setup
+  parallelize_me!
 
   def setup
     super
     setup_server
-    ApiUser.where(:registration_source.ne => "seed").delete_all
   end
 
   def test_user_response
@@ -25,13 +25,18 @@ class Test::Apis::V1::Users::TestShow < Minitest::Test
       "api_key_hides_at",
       "api_key_preview",
       "created_at",
+      "created_by",
       "creator",
+      "deleted_at",
+      "disabled_at",
       "email",
       "email_verified",
       "enabled",
       "first_name",
       "id",
       "last_name",
+      "metadata",
+      "metadata_yaml_string",
       "registration_ip",
       "registration_origin",
       "registration_referer",
@@ -40,14 +45,14 @@ class Test::Apis::V1::Users::TestShow < Minitest::Test
       "roles",
       "settings",
       "throttle_by_ip",
+      "ts",
       "updated_at",
+      "updated_by",
       "updater",
       "use_description",
+      "version",
+      "website",
     ]
-
-    if(ApiUser.fields.include?("website"))
-      expected_keys << "website"
-    end
 
     assert_equal(expected_keys.sort, data["user"].keys.sort)
   end
@@ -74,9 +79,9 @@ class Test::Apis::V1::Users::TestShow < Minitest::Test
       "limit_by",
       "response_headers",
     ].sort, rate_limit.keys.sort)
-    assert_match(/\A[0-9a-f\-]{36}\z/, rate_limit["id"])
+    assert_match(/\A[0-9a-f-]{36}\z/, rate_limit["id"])
     assert_equal(rate_limit["id"], rate_limit["_id"])
-    assert_equal(5000, rate_limit["accuracy"])
+    assert_nil(rate_limit.fetch("accuracy"))
     assert_equal(true, rate_limit["distributed"])
     assert_equal(60000, rate_limit["duration"])
     assert_equal(500, rate_limit["limit"])

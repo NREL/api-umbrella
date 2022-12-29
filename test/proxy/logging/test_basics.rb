@@ -90,8 +90,10 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
 
     mapping_options = {
       :index => hit["_index"],
+      :include_type_name => false,
     }
     if $config["elasticsearch"]["api_version"] < 7
+      mapping_options[:include_type_name] = true
       mapping_options[:type] = hit["_type"]
     end
     mapping = LogItem.client.indices.get_mapping(mapping_options)
@@ -288,8 +290,10 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
 
     mapping_options = {
       :index => hit["_index"],
+      :include_type_name => false,
     }
     if $config["elasticsearch"]["api_version"] < 7
+      mapping_options[:include_type_name] = true
       mapping_options[:type] = hit["_type"]
     end
     result = LogItem.client.indices.get_mapping(mapping_options)
@@ -319,7 +323,7 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
   end
 
   def test_logs_requests_that_time_out
-    time_out_delay = $config["nginx"]["proxy_read_timeout"] * 1000 + 3500
+    time_out_delay = ($config["nginx"]["proxy_read_timeout"] * 1000) + 3500
     response = Typhoeus.get("http://127.0.0.1:9080/api/delay/#{time_out_delay}", log_http_options)
     assert_response_code(504, response)
 
@@ -397,10 +401,11 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
       },
     ]) do
       response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/down", log_http_options)
-      assert_response_code(502, response)
+      assert_response_code(503, response)
+      assert_match("upstream connect error or disconnect/reset before headers. retried and the latest reset reason: connection failure, transport failure reason: delayed connect error: 111", response.body)
 
       record = wait_for_log(response)[:hit_source]
-      assert_equal(502, record["response_status"])
+      assert_equal(503, record["response_status"])
       assert_logs_base_fields(record, api_user)
     end
   end
@@ -605,46 +610,91 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
     end
   end
 
-  def test_does_not_website_backend_requests
-    response = Typhoeus.get("https://127.0.0.1:9081/", log_http_options)
+  def test_does_not_log_api_health_requests
+    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/health", log_http_options)
     assert_response_code(200, response)
-
-    error = assert_raises Timeout::Error do
-      wait_for_log(response, :timeout => 5)
-    end
-    assert_match("Log not found: ", error.message)
+    refute_log(response)
   end
 
-  def test_does_not_log_web_app_requests
+  def test_does_not_log_api_state_requests
+    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/state", log_http_options)
+    assert_response_code(200, response)
+    refute_log(response)
+  end
+
+  def test_does_not_log_website_backend_requests
+    response = Typhoeus.get("https://127.0.0.1:9081/", log_http_options)
+    assert_response_code(200, response)
+    refute_log(response)
+  end
+
+  def test_logs_web_app_login_submit_requests
+    FactoryBot.create(:admin)
+    response = Typhoeus.post("https://127.0.0.1:9081/admin/login", log_http_options.deep_merge(csrf_session))
+    assert_response_code(200, response)
+    assert_log(response)
+  end
+
+  def test_logs_web_app_api_stats_requests
+    FactoryBot.create(:admin)
+    response = Typhoeus.get("https://127.0.0.1:9081/admin/stats/users.json", log_http_options)
+    assert_response_code(401, response)
+    assert_log(response)
+  end
+
+  def test_logs_web_app_api_requests
+    FactoryBot.create(:admin)
+    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/users.json", log_http_options)
+    assert_response_code(401, response)
+    assert_log(response)
+  end
+
+  def test_does_not_log_web_app_other_admin_requests
     FactoryBot.create(:admin)
     response = Typhoeus.get("https://127.0.0.1:9081/admin/login", log_http_options)
     assert_response_code(200, response)
+    refute_log(response)
+  end
 
-    error = assert_raises Timeout::Error do
-      wait_for_log(response, :timeout => 5)
-    end
-    assert_match("Log not found: ", error.message)
+  def test_does_not_log_web_app_asset_requests
+    FactoryBot.create(:admin)
+    response = Typhoeus.get("https://127.0.0.1:9081/web-assets/test.css", log_http_options)
+    assert_response_code(404, response)
+    refute_log(response)
   end
 
   def test_logs_matched_api_backend_id
-    api_id = SecureRandom.uuid
-    url_match_id = SecureRandom.uuid
-
     prepend_api_backends([
       {
-        :_id => api_id,
+        :name => unique_test_id,
         :frontend_host => "127.0.0.1",
         :backend_host => "127.0.0.1",
         :servers => [{ :host => "127.0.0.1", :port => 9444 }],
-        :url_matches => [{ :_id => url_match_id, :frontend_prefix => "/#{unique_test_id}/", :backend_prefix => "/" }],
+        :url_matches => [{ :frontend_prefix => "/#{unique_test_id}/", :backend_prefix => "/" }],
       },
     ]) do
+      api = ApiBackend.find_by!(:name => unique_test_id)
+
       response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/hello", log_http_options)
       assert_response_code(200, response)
 
       record = wait_for_log(response)[:hit_source]
-      assert_equal(api_id, record["api_backend_id"])
-      assert_equal(url_match_id, record["api_backend_url_match_id"])
+      assert_equal(api.id, record["api_backend_id"])
+      assert_equal(api.url_matches.first.id, record["api_backend_url_match_id"])
     end
+  end
+
+  private
+
+  def refute_log(response)
+    error = assert_raises Timeout::Error do
+      wait_for_log(response, :timeout => 5)
+    end
+    assert_match("Log not found: ", error.message)
+  end
+
+  def assert_log(response)
+    record = wait_for_log(response)[:hit_source]
+    assert(record)
   end
 end

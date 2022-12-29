@@ -53,7 +53,7 @@ class Test::Apis::V1::Admins::TestUpdateEmbeddedArrayFields < Minitest::Test
     admin = FactoryBot.create(:admin, {
       :group_ids => [admin_group1.id, admin_group2.id],
     })
-    assert_equal([admin_group1.id, admin_group2.id], admin.group_ids)
+    assert_equal([admin_group1.id, admin_group2.id].sort, admin.group_ids.sort)
 
     attributes = admin.serializable_hash
     attributes["group_ids"].shift

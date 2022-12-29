@@ -1,0 +1,1 @@
+<%- config["_strip_response_cookies_regex"] or "" -%>

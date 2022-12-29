@@ -81,8 +81,8 @@ class Test::Proxy::Dns::TestDefaultServers < Minitest::Test
       },
     ]) do
       response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/invalid-hostname/", http_options)
-      assert_response_code(500, response)
-      assert_match("Unknown Host", response.body)
+      assert_response_code(503, response)
+      assert_match("no healthy upstream", response.body)
     end
   end
 end

@@ -21,8 +21,8 @@ class Test::AdminUi::TestApiUsersAllowedIps < Minitest::Capybara::Test
     click_button("Save")
 
     assert_text("Successfully saved the user")
-    user = ApiUser.order_by(:created_at.asc).last
-    assert_nil(user["settings"]["allowed_ips"])
+    user = ApiUser.order(:created_at => :asc).last
+    assert_nil(user.settings.allowed_ips)
   end
 
   def test_multiple_lines_saves_as_array
@@ -37,12 +37,16 @@ class Test::AdminUi::TestApiUsersAllowedIps < Minitest::Capybara::Test
     click_button("Save")
 
     assert_text("Successfully saved the user")
-    user = ApiUser.order_by(:created_at.asc).last
-    assert_equal(["10.0.0.0/8", "127.0.0.1"], user["settings"]["allowed_ips"])
+    user = ApiUser.order(:created_at => :asc).last
+    assert_equal([IPAddr.new("10.0.0.0/8"), IPAddr.new("127.0.0.1")], user.settings.allowed_ips)
   end
 
   def test_displays_existing_array_as_multiple_lines
-    user = FactoryBot.create(:api_user, :settings => { :allowed_ips => ["10.0.0.0/24", "10.2.2.2"] })
+    user = FactoryBot.create(:api_user, {
+      :settings => FactoryBot.build(:api_user_settings, {
+        :allowed_ips => ["10.0.0.0/24", "10.2.2.2"],
+      }),
+    })
     admin_login
     visit "/admin/#/api_users/#{user.id}/edit"
 
@@ -50,7 +54,11 @@ class Test::AdminUi::TestApiUsersAllowedIps < Minitest::Capybara::Test
   end
 
   def test_nullifies_existing_array_when_empty_input_saved
-    user = FactoryBot.create(:api_user, :settings => { :allowed_ips => ["10.0.0.0/24", "10.2.2.2"] })
+    user = FactoryBot.create(:api_user, {
+      :settings => FactoryBot.build(:api_user_settings, {
+        :allowed_ips => ["10.0.0.0/24", "10.2.2.2"],
+      }),
+    })
     admin_login
     visit "/admin/#/api_users/#{user.id}/edit"
 
@@ -60,6 +68,6 @@ class Test::AdminUi::TestApiUsersAllowedIps < Minitest::Capybara::Test
 
     assert_text("Successfully saved the user")
     user.reload
-    assert_nil(user["settings"]["allowed_ips"])
+    assert_nil(user.settings.allowed_ips)
   end
 end

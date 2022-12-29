@@ -11,14 +11,14 @@ mkdir -p _persist
 cd _persist
 
 # Install all the gems for use in development/test.
-export PATH="$STAGE_EMBEDDED_PATH"
+export PATH="$DEV_PATH"
 export BUNDLE_GEMFILE="$SOURCE_DIR/Gemfile"
 BUNDLE_APP_CONFIG="$(pwd)/.bundle"
 export BUNDLE_APP_CONFIG
+perl -0 -p -i -e 's/BUNDLED WITH[\n\r]+.+$//igs' Gemfile.lock
 bundle config --local build.nokogiri --use-system-libraries
 bundle config --local path "$(pwd)/bundle"
 bundle config --local clean true
 bundle install
-bundle update --bundler
 
 stamp

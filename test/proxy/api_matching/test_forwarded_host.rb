@@ -16,7 +16,7 @@ class Test::Proxy::ApiMatching::TestForwardedHost < Minitest::Test
           :url_matches => [{ :frontend_prefix => "/", :backend_prefix => "/" }],
           :settings => {
             :headers => [
-              { :key => "X-Backend", :value => "host-a" },
+              { :key => "X-Test-Backend", :value => "host-a" },
             ],
           },
         },
@@ -27,7 +27,7 @@ class Test::Proxy::ApiMatching::TestForwardedHost < Minitest::Test
           :url_matches => [{ :frontend_prefix => "/", :backend_prefix => "/" }],
           :settings => {
             :headers => [
-              { :key => "X-Backend", :value => "host-b" },
+              { :key => "X-Test-Backend", :value => "host-b" },
             ],
           },
         },
@@ -45,7 +45,7 @@ class Test::Proxy::ApiMatching::TestForwardedHost < Minitest::Test
       :router => {
         :match_x_forwarded_host => true,
       },
-    }, "--router") do
+    }) do
       response = make_request_to_host("#{unique_test_class_id}-a", "/info/", :headers => { "X-Forwarded-Host" => "#{unique_test_class_id}-b" })
       assert_backend_match("host-b", response)
     end

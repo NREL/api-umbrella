@@ -8,7 +8,7 @@ class Test::AdminUi::Login::TestUsernameIsEmail < Minitest::Capybara::Test
   def setup
     super
     setup_server
-    Admin.delete_all
+
     @admin = FactoryBot.create(:admin)
   end
 

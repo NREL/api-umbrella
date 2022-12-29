@@ -17,7 +17,7 @@ class Test::Proxy::ApiMatching::TestHostWildcardSubdomains < Minitest::Test
           :url_matches => [{ :frontend_prefix => "/", :backend_prefix => "/" }],
           :settings => {
             :headers => [
-              { :key => "X-Backend", :value => "wildcard-star-dot" },
+              { :key => "X-Test-Backend", :value => "wildcard-star-dot" },
             ],
           },
         },
@@ -28,7 +28,7 @@ class Test::Proxy::ApiMatching::TestHostWildcardSubdomains < Minitest::Test
           :url_matches => [{ :frontend_prefix => "/", :backend_prefix => "/" }],
           :settings => {
             :headers => [
-              { :key => "X-Backend", :value => "wildcard-star-dot-backend" },
+              { :key => "X-Test-Backend", :value => "wildcard-star-dot-backend" },
             ],
           },
         },
@@ -39,7 +39,7 @@ class Test::Proxy::ApiMatching::TestHostWildcardSubdomains < Minitest::Test
           :url_matches => [{ :frontend_prefix => "/", :backend_prefix => "/" }],
           :settings => {
             :headers => [
-              { :key => "X-Backend", :value => "wildcard-dot" },
+              { :key => "X-Test-Backend", :value => "wildcard-dot" },
             ],
           },
         },
@@ -50,18 +50,7 @@ class Test::Proxy::ApiMatching::TestHostWildcardSubdomains < Minitest::Test
           :url_matches => [{ :frontend_prefix => "/", :backend_prefix => "/" }],
           :settings => {
             :headers => [
-              { :key => "X-Backend", :value => "wildcard-dot-backend" },
-            ],
-          },
-        },
-        {
-          :frontend_host => "*star.#{unique_test_class_id}",
-          :backend_host => "example.com",
-          :servers => [{ :host => "127.0.0.1", :port => 9444 }],
-          :url_matches => [{ :frontend_prefix => "/", :backend_prefix => "/" }],
-          :settings => {
-            :headers => [
-              { :key => "X-Backend", :value => "wildcard-star" },
+              { :key => "X-Test-Backend", :value => "wildcard-dot-backend" },
             ],
           },
         },

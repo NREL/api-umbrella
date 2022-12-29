@@ -95,19 +95,19 @@ class Test::Apis::Admin::Stats::TestSearch < Minitest::Test
     assert_response_code(200, response)
     data = MultiJson.load(response.body)
     assert_equal(2, data["stats"]["total_hits"])
-    assert_equal("Sun, Mar 8, 2015 12:00am MST", data["hits_over_time"][0]["c"][0]["f"])
+    assert_equal("Sun, Mar 8, 2015 12:00AM MST", data["hits_over_time"][0]["c"][0]["f"])
     assert_equal(1425798000000, data["hits_over_time"][0]["c"][0]["v"])
     assert_equal("0", data["hits_over_time"][0]["c"][1]["f"])
     assert_equal(0, data["hits_over_time"][0]["c"][1]["v"])
-    assert_equal("Sun, Mar 8, 2015 1:00am MST", data["hits_over_time"][1]["c"][0]["f"])
+    assert_equal("Sun, Mar 8, 2015 1:00AM MST", data["hits_over_time"][1]["c"][0]["f"])
     assert_equal(1425801600000, data["hits_over_time"][1]["c"][0]["v"])
     assert_equal("1", data["hits_over_time"][1]["c"][1]["f"])
     assert_equal(1, data["hits_over_time"][1]["c"][1]["v"])
-    assert_equal("Sun, Mar 8, 2015 3:00am MDT", data["hits_over_time"][2]["c"][0]["f"])
+    assert_equal("Sun, Mar 8, 2015 3:00AM MDT", data["hits_over_time"][2]["c"][0]["f"])
     assert_equal(1425805200000, data["hits_over_time"][2]["c"][0]["v"])
     assert_equal("1", data["hits_over_time"][2]["c"][1]["f"])
     assert_equal(1, data["hits_over_time"][2]["c"][1]["v"])
-    assert_equal("Sun, Mar 8, 2015 4:00am MDT", data["hits_over_time"][3]["c"][0]["f"])
+    assert_equal("Sun, Mar 8, 2015 4:00AM MDT", data["hits_over_time"][3]["c"][0]["f"])
     assert_equal(1425808800000, data["hits_over_time"][3]["c"][0]["v"])
     assert_equal("0", data["hits_over_time"][3]["c"][1]["f"])
     assert_equal(0, data["hits_over_time"][3]["c"][1]["v"])
@@ -167,21 +167,48 @@ class Test::Apis::Admin::Stats::TestSearch < Minitest::Test
     assert_response_code(200, response)
     data = MultiJson.load(response.body)
     assert_equal(2, data["stats"]["total_hits"])
-    assert_equal("Sun, Nov 2, 2014 1:00am MDT", data["hits_over_time"][1]["c"][0]["f"])
+    assert_equal("Sun, Nov 2, 2014 1:00AM MDT", data["hits_over_time"][1]["c"][0]["f"])
     assert_equal(1414911600000, data["hits_over_time"][1]["c"][0]["v"])
     assert_equal("0", data["hits_over_time"][1]["c"][1]["f"])
     assert_equal(0, data["hits_over_time"][1]["c"][1]["v"])
-    assert_equal("Sun, Nov 2, 2014 1:00am MST", data["hits_over_time"][2]["c"][0]["f"])
+    assert_equal("Sun, Nov 2, 2014 1:00AM MST", data["hits_over_time"][2]["c"][0]["f"])
     assert_equal(1414915200000, data["hits_over_time"][2]["c"][0]["v"])
     assert_equal("1", data["hits_over_time"][2]["c"][1]["f"])
     assert_equal(1, data["hits_over_time"][2]["c"][1]["v"])
-    assert_equal("Sun, Nov 2, 2014 2:00am MST", data["hits_over_time"][3]["c"][0]["f"])
+    assert_equal("Sun, Nov 2, 2014 2:00AM MST", data["hits_over_time"][3]["c"][0]["f"])
     assert_equal(1414918800000, data["hits_over_time"][3]["c"][0]["v"])
     assert_equal("1", data["hits_over_time"][3]["c"][1]["f"])
     assert_equal(1, data["hits_over_time"][3]["c"][1]["v"])
-    assert_equal("Sun, Nov 2, 2014 3:00am MST", data["hits_over_time"][4]["c"][0]["f"])
+    assert_equal("Sun, Nov 2, 2014 3:00AM MST", data["hits_over_time"][4]["c"][0]["f"])
     assert_equal(1414922400000, data["hits_over_time"][4]["c"][0]["v"])
     assert_equal("0", data["hits_over_time"][4]["c"][1]["f"])
     assert_equal(0, data["hits_over_time"][4]["c"][1]["v"])
+  end
+
+  def test_no_results_non_existent_indices
+    response = Typhoeus.get("https://127.0.0.1:9081/admin/stats/search.json", http_options.deep_merge(admin_session).deep_merge({
+      :params => {
+        :search => "",
+        :start_at => "2000-01-13",
+        :end_at => "2000-01-18",
+        :interval => "day",
+      },
+    }))
+
+    assert_response_code(200, response)
+    data = MultiJson.load(response.body)
+    assert_equal({
+      "hits_over_time" => [],
+      "stats" => {
+        "total_users" => 0,
+        "total_ips" => 0,
+        "total_hits" => 0,
+        "average_response_time" => nil,
+      },
+      "aggregations" => {
+        "ips" => [],
+        "users" => [],
+      },
+    }, data)
   end
 end

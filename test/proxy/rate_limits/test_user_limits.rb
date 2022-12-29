@@ -11,25 +11,24 @@ class Test::Proxy::RateLimits::TestUserLimits < Minitest::Test
     setup_server
     once_per_class_setup do
       override_config_set({
-        :apiSettings => {
+        :default_api_backend_settings => {
           :rate_limits => [
             {
               :duration => 60 * 60 * 1000, # 1 hour
-              :accuracy => 1 * 60 * 1000, # 1 minute
-              :limit_by => "apiKey",
-              :limit => 5,
+              :limit_by => "api_key",
+              :limit_to => 5,
               :distributed => true,
               :response_headers => true,
             },
           ],
         },
-      }, "--router")
+      })
     end
   end
 
   def after_all
     super
-    override_config_reset("--router")
+    override_config_reset
   end
 
   def test_non_user_default_limit
@@ -47,9 +46,9 @@ class Test::Proxy::RateLimits::TestUserLimits < Minitest::Test
   def test_user_unlimited
     assert_unlimited_rate_limit("/api/hello", 5, {
       :user_factory_overrides => {
-        :settings => {
+        :settings => FactoryBot.build(:api_user_settings, {
           :rate_limit_mode => "unlimited",
-        },
+        }),
       },
     })
   end
@@ -57,35 +56,33 @@ class Test::Proxy::RateLimits::TestUserLimits < Minitest::Test
   def test_user_custom_limit
     assert_api_key_rate_limit("/api/hello", 10, {
       :user_factory_overrides => {
-        :settings => {
+        :settings => FactoryBot.build(:api_user_settings, {
           :rate_limits => [
-            {
+            FactoryBot.build(:rate_limit, {
               :duration => 60 * 60 * 1000, # 1 hour
-              :accuracy => 1 * 60 * 1000, # 1 minute
-              :limit_by => "apiKey",
-              :limit => 10,
+              :limit_by => "api_key",
+              :limit_to => 10,
               :distributed => true,
               :response_headers => true,
-            },
+            }),
           ],
-        },
+        }),
       },
     })
   end
 
-  def test_live_changes_within_2_seconds
-    user = FactoryBot.create(:api_user, :settings => {
+  def test_live_changes_within_3_seconds
+    user = FactoryBot.create(:api_user, :settings => FactoryBot.build(:api_user_settings, {
       :rate_limits => [
-        {
+        FactoryBot.build(:rate_limit, {
           :duration => 60 * 60 * 1000, # 1 hour
-          :accuracy => 1 * 60 * 1000, # 1 minute
-          :limit_by => "apiKey",
-          :limit => 10,
+          :limit_by => "api_key",
+          :limit_to => 10,
           :distributed => true,
           :response_headers => true,
-        },
+        }),
       ],
-    })
+    }))
     http_opts = keyless_http_options.deep_merge({
       :headers => {
         "X-Api-Key" => user.api_key,
@@ -95,11 +92,11 @@ class Test::Proxy::RateLimits::TestUserLimits < Minitest::Test
     response = Typhoeus.get("http://127.0.0.1:9080/api/hello", http_opts)
     assert_equal("10", response.headers["x-ratelimit-limit"])
 
-    user.settings.rate_limits[0].limit = 90
-    user.save!
+    user.settings.rate_limits[0].limit_to = 90
+    user.settings.rate_limits[0].save!
 
     # Wait for any local caches to expire (2 seconds).
-    sleep 2.1
+    sleep 3.1
 
     # Make sure any local worker cache is cleared across all possible worker
     # processes.

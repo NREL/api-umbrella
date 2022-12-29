@@ -8,8 +8,6 @@ class Test::AdminUi::TestApiScopes < Minitest::Capybara::Test
   def setup
     super
     setup_server
-
-    ApiScope.delete_all
   end
 
   def test_create
@@ -23,7 +21,7 @@ class Test::AdminUi::TestApiScopes < Minitest::Capybara::Test
     click_button("Save")
     assert_text("Successfully saved")
 
-    api_scope = ApiScope.desc(:created_at).first
+    api_scope = ApiScope.order(:created_at => :desc).first
     assert_equal("Example", api_scope.name)
     assert_equal("example.com", api_scope.host)
     assert_equal("/foo/", api_scope.path_prefix)

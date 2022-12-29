@@ -241,11 +241,11 @@ export default class ResultsMap extends Component {
       animation: false,
       tooltip: {
         trigger: 'item',
-        formatter: function(params) {
+        formatter: (params) => {
           let label = this.labels[params.name] || params.name;
           let valueDisplay = (params.data && params.data.valueDisplay) ? params.data.valueDisplay : 0;
           return '<strong>' + label + '</strong><br>Hits: <strong>' + valueDisplay + '</strong>';
-        }.bind(this),
+        },
       },
       visualMap: {
         type: 'continuous',

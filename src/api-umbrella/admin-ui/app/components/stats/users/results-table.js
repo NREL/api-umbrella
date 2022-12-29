@@ -21,9 +21,9 @@ export default class ResultsTable extends Component {
       serverSide: true,
       ajax: {
         url: '/admin/stats/users.json',
-        data: function(data) {
+        data: (data) => {
           return extend({}, data, this.backendQueryParamValues);
-        }.bind(this),
+        },
       },
       order: [[4, 'desc']],
       columns: [
@@ -31,7 +31,7 @@ export default class ResultsTable extends Component {
           data: 'email',
           title: 'Email',
           defaultContent: '-',
-          render: function(email, type, data) {
+          render: (email, type, data) => {
             if(type === 'display' && email && email !== '-') {
               let params = clone(this.presentQueryParamValues);
               params.search = 'user_id:"' + data.id + '"';
@@ -41,7 +41,7 @@ export default class ResultsTable extends Component {
             }
 
             return email;
-          }.bind(this),
+          },
         },
         {
           data: 'first_name',

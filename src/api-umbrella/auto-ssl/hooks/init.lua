@@ -1,10 +1,10 @@
-local config = require "api-umbrella.proxy.models.file_config"
-local path = require "pl.path"
+local config = require("api-umbrella.utils.load_config")()
+local path_join = require "api-umbrella.utils.path_join"
 
 auto_ssl = (require "resty.auto-ssl").new({
-  dir = path.join(config["etc_dir"], "auto-ssl"),
+  dir = path_join(config["etc_dir"], "auto-ssl"),
   hook_server_port = config["auto_ssl"]["hook_server"]["port"],
-  storage_adapter = "api-umbrella.auto-ssl.storage_adapters.mongodb",
+  storage_adapter = "api-umbrella.auto-ssl.storage_adapters.postgresql",
 })
 
 auto_ssl:init()

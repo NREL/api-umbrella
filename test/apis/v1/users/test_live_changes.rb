@@ -27,7 +27,7 @@ class Test::Apis::V1::Users::TestLiveChanges < Minitest::Test
     assert_equal(new_user["user"]["id"], data["headers"]["x-api-user-id"])
   end
 
-  def test_detects_role_changes_within_2_seconds
+  def test_detects_role_changes_within_a_few_seconds
     prepend_api_backends([
       {
         :frontend_host => "127.0.0.1",
@@ -39,9 +39,9 @@ class Test::Apis::V1::Users::TestLiveChanges < Minitest::Test
     ]) do
       user = FactoryBot.create(:api_user)
 
-      # Wait 2 seconds so we know the initial key created for this test has
+      # Wait a few seconds so we know the initial key created for this test has
       # already been seen by the background task that clears the cache.
-      sleep 2.1
+      sleep 3.1
 
       # Ensure that the key works as expected for an initial request.
       response = Typhoeus.get("https://127.0.0.1:9081/api/info/", http_options.deep_merge({
@@ -65,8 +65,9 @@ class Test::Apis::V1::Users::TestLiveChanges < Minitest::Test
       }))
       assert_response_code(200, response)
 
-      # Wait 2 seconds to ensure the existing cache for this key get purged.
-      sleep 2.1
+      # Wait a few seconds to ensure the existing cache for this key get
+      # purged.
+      sleep 3.1
 
       # The request to the restricted endpoint should now succeed. If it
       # doesn't, the cache purging may not be working as expected.
@@ -77,15 +78,33 @@ class Test::Apis::V1::Users::TestLiveChanges < Minitest::Test
       data = MultiJson.load(response.body)
       assert_equal(user.id, data["headers"]["x-api-user-id"])
       assert_equal("restricted", data["headers"]["x-api-roles"])
+
+      # Remove the restricted role (to verify role removal also gets picked up)
+      # and ensure that the request goes back to being forbidden.
+      response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/users/#{user.id}.json", http_options.deep_merge(admin_token).deep_merge({
+        :headers => { "Content-Type" => "application/json" },
+        :body => MultiJson.dump(:user => { :roles => [] }),
+      }))
+      assert_response_code(200, response)
+
+      # Wait a few seconds to ensure the existing cache for this key get
+      # purged.
+      sleep 3.1
+
+      # Ensure that the key is rejected from a restricted endpoint.
+      response = Typhoeus.get("https://127.0.0.1:9081/#{unique_test_id}/restricted-info/", http_options.deep_merge({
+        :headers => { "X-Api-Key" => user.api_key },
+      }))
+      assert_response_code(403, response)
     end
   end
 
-  def test_detects_rate_limit_changes_within_2_seconds
+  def test_detects_rate_limit_changes_within_a_few_seconds
     user = FactoryBot.create(:api_user)
 
-    # Wait 2 seconds so we know the initial key created for this test has
+    # Wait a few seconds so we know the initial key created for this test has
     # already been seen by the background task that clears the cache.
-    sleep 2.1
+    sleep 3.1
 
     # Ensure that the key works as expected for an initial request.
     response = Typhoeus.get("https://127.0.0.1:9081/api/info/", http_options.deep_merge({
@@ -103,15 +122,15 @@ class Test::Apis::V1::Users::TestLiveChanges < Minitest::Test
         :settings => {
           :rate_limit_mode => "custom",
           :rate_limits => [
-            FactoryBot.attributes_for(:api_rate_limit, :limit => 10, :response_headers => true),
+            FactoryBot.attributes_for(:rate_limit, :limit_to => 10, :response_headers => true),
           ],
         },
       }),
     }))
     assert_response_code(200, response)
 
-    # Wait 2 seconds to ensure the existing cache for this key get purged.
-    sleep 2.1
+    # Wait a few seconds to ensure the existing cache for this key get purged.
+    sleep 3.1
 
     # The request to the restricted endpoint should now succeed. If it
     # doesn't, the cache purging may not be working as expected.

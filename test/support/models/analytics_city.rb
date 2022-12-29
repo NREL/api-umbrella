@@ -1,0 +1,2 @@
+class AnalyticsCity < ApplicationRecord
+end

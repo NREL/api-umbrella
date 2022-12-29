@@ -5,7 +5,7 @@ class Test::AdminUi::TestLocales < Minitest::Capybara::Test
   include ApiUmbrellaTestHelpers::AdminAuth
   include ApiUmbrellaTestHelpers::Setup
 
-  LOCALES_ROOT_DIR = File.join(API_UMBRELLA_SRC_ROOT, "src/api-umbrella/web-app/config/locales")
+  LOCALES_ROOT_DIR = File.join(API_UMBRELLA_SRC_ROOT, "locale")
   EXPECTED_I18N = {
     :de => {
       :allowed_ips => "IP-Adresse Beschränkungen",
@@ -54,11 +54,10 @@ class Test::AdminUi::TestLocales < Minitest::Capybara::Test
   def setup
     super
     setup_server
-    once_per_class_setup do
-      # Ensure at least one admin exists so the login page can be hit directly
-      # without redirecting to the first-time admin create page.
-      FactoryBot.create(:admin)
-    end
+
+    # Ensure at least one admin exists so the login page can be hit directly
+    # without redirecting to the first-time admin create page.
+    FactoryBot.create(:admin)
   end
 
   # Test all the available locales except the special test "zy" (which we use
@@ -96,7 +95,7 @@ class Test::AdminUi::TestLocales < Minitest::Capybara::Test
     selenium_use_language_driver(locale)
     visit "/admin/login"
 
-    refute(File.exist?(File.join(LOCALES_ROOT_DIR, "#{locale}.yml")))
+    refute(File.exist?(File.join(LOCALES_ROOT_DIR, "#{locale}.po")))
     assert_i18n_text(:en, :password, find("label[for=admin_password]"))
   end
 
@@ -106,7 +105,7 @@ class Test::AdminUi::TestLocales < Minitest::Capybara::Test
     admin_login
     visit "/admin/#/api_users/new"
 
-    refute(File.exist?(File.join(LOCALES_ROOT_DIR, "#{locale}.yml")))
+    refute(File.exist?(File.join(LOCALES_ROOT_DIR, "#{locale}.po")))
     assert_i18n_text(:en, :allowed_ips, find("label[for$='allowedIpsString']"))
   end
 
@@ -115,7 +114,7 @@ class Test::AdminUi::TestLocales < Minitest::Capybara::Test
     selenium_use_language_driver(locale)
     visit "/admin/login"
 
-    assert(File.exist?(File.join(LOCALES_ROOT_DIR, "#{locale}.yml")))
+    assert(File.exist?(File.join(LOCALES_ROOT_DIR, "#{locale}.po")))
     assert_i18n_text(:en, :password, find("label[for=admin_password]"))
   end
 
@@ -125,7 +124,7 @@ class Test::AdminUi::TestLocales < Minitest::Capybara::Test
     admin_login
     visit "/admin/#/api_users/new"
 
-    assert(File.exist?(File.join(LOCALES_ROOT_DIR, "#{locale}.yml")))
+    assert(File.exist?(File.join(LOCALES_ROOT_DIR, "#{locale}.po")))
     assert_i18n_text(:en, :allowed_ips, find("label[for$='allowedIpsString']"))
   end
 

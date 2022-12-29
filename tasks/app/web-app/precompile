@@ -11,17 +11,18 @@ task_working_dir
 mkdir -p _persist
 cd _persist
 
-export PATH="$DEV_INSTALL_PREFIX/bin:$STAGE_EMBEDDED_PATH"
-export BUNDLE_GEMFILE="$SOURCE_DIR/src/api-umbrella/web-app/Gemfile"
-export BUNDLE_APP_CONFIG="$WORK_DIR/tasks/app-deps/web-app/bundle/_persist/.bundle"
-RAILS_TMP_PATH="$(pwd)/tmp"
-export RAILS_TMP_PATH
-RAILS_PUBLIC_PATH="$(pwd)/public"
-export RAILS_PUBLIC_PATH
-export RAILS_ENV=production
-export RAILS_SECRET_TOKEN=temp
-export RAILS_ASSETS_PRECOMPILE=true
-bundle exec rake -f "$SOURCE_DIR/src/api-umbrella/web-app/Rakefile" assets:clobber assets:precompile
-rm -rf "$RAILS_TMP_PATH"
+rsync -a \
+  --itemize-changes \
+  --delete \
+  --delete-excluded \
+  --include=/assets/*** \
+  --include=/webpack.config.js \
+  --exclude=* \
+  "$SOURCE_DIR/src/api-umbrella/web-app/" \
+  ./
+
+node_modules_dir="$WORK_DIR/tasks/app-deps/web-app/yarn/_persist/node_modules"
+ln -s "$node_modules_dir" ./node_modules
+PATH="$DEV_PATH" ./node_modules/.bin/webpack
 
 stamp

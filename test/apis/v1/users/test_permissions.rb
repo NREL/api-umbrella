@@ -8,11 +8,6 @@ class Test::Apis::V1::Users::TestPermissions < Minitest::Test
   def setup
     super
     setup_server
-    ApiUser.where(:registration_source.ne => "seed").delete_all
-    Admin.delete_all
-    AdminGroup.delete_all
-    Api.delete_all
-    ApiScope.delete_all
   end
 
   def test_no_admin_and_api_key_with_key_creator_role
@@ -163,7 +158,7 @@ class Test::Apis::V1::Users::TestPermissions < Minitest::Test
     assert_equal(1, active_count - initial_count)
     data = MultiJson.load(response.body)
     record = ApiUser.find(data["user"]["id"])
-    assert_nil(record.roles)
+    assert_equal([], record.roles)
     assert_nil(record.settings)
   end
 
@@ -257,10 +252,10 @@ class Test::Apis::V1::Users::TestPermissions < Minitest::Test
       data = MultiJson.load(response.body)
       assert_equal([], data["data"])
     else
-      if(!api_key)
-        assert_response_code(403, response)
-      else
+      if(api_key)
         assert_response_code(401, response)
+      else
+        assert_response_code(403, response)
       end
       data = MultiJson.load(response.body)
       assert_equal(["error"], data.keys)
@@ -285,10 +280,10 @@ class Test::Apis::V1::Users::TestPermissions < Minitest::Test
       data = MultiJson.load(response.body)
       assert_equal(["errors"], data.keys)
     else
-      if(!api_key)
-        assert_response_code(403, response)
-      else
+      if(api_key)
         assert_response_code(401, response)
+      else
+        assert_response_code(403, response)
       end
       data = MultiJson.load(response.body)
       assert_equal(["error"], data.keys)
@@ -323,10 +318,10 @@ class Test::Apis::V1::Users::TestPermissions < Minitest::Test
       data = MultiJson.load(response.body)
       assert_equal(["errors"], data.keys)
     else
-      if(!api_key)
-        assert_response_code(403, response)
-      else
+      if(api_key)
         assert_response_code(401, response)
+      else
+        assert_response_code(403, response)
       end
       data = MultiJson.load(response.body)
       assert_equal(["error"], data.keys)
@@ -365,10 +360,10 @@ class Test::Apis::V1::Users::TestPermissions < Minitest::Test
       data = MultiJson.load(response.body)
       assert_equal(["errors"], data.keys)
     else
-      if(!api_key)
-        assert_response_code(403, response)
-      else
+      if(api_key)
         assert_response_code(401, response)
+      else
+        assert_response_code(403, response)
       end
       data = MultiJson.load(response.body)
       assert_equal(["error"], data.keys)
@@ -392,10 +387,10 @@ class Test::Apis::V1::Users::TestPermissions < Minitest::Test
     initial_count = active_count
     response = Typhoeus.delete("https://127.0.0.1:9081/api-umbrella/v1/users/#{record.id}.json", http_options(api_key, admin))
 
-    if(!api_key)
-      assert_response_code(403, response)
-    else
+    if(api_key)
       assert_response_code(404, response)
+    else
+      assert_response_code(403, response)
     end
     assert_equal(0, active_count - initial_count)
   end
@@ -425,6 +420,6 @@ class Test::Apis::V1::Users::TestPermissions < Minitest::Test
   end
 
   def active_count
-    ApiUser.where(:deleted_at => nil).count
+    ApiUser.count
   end
 end

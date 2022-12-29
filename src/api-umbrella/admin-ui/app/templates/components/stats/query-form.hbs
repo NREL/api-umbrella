@@ -3,17 +3,17 @@
     <div class="row">
       <div class="col-sm-4">
         <div class="form-control-plaintext form-control-sm">
-          <a id="filter_toggle" data-toggle="collapse" data-target="#filters_ui" href="#"><FaIcon @icon="caret-down" @fixedWidth={{true}} />{{t "admin.stats.filter_results"}}</a>
+          <a id="filter_toggle" data-toggle="collapse" data-target="#filters_ui" href="#"><FaIcon @icon="caret-down" @fixedWidth={{true}} />{{t "Filter Results"}}</a>
         </div>
       </div>
       <div class="col-sm-8 filter-times">
         {{#if this.enableInterval}}
           <BsButtonGroup @value={{this.interval}} @onChange={{action (mut this.interval)}} @type="radio" @size="sm" @id="interval_buttons" as |bg|>
-            <bg.button @type="light" @value="minute">{{t "admin.stats.minute"}}</bg.button>
-            <bg.button @type="light" @value="hour">{{t "admin.stats.hour"}}</bg.button>
-            <bg.button @type="light" @value="day">{{t "admin.stats.day"}}</bg.button>
-            <bg.button @type="light" @value="week">{{t "admin.stats.week"}}</bg.button>
-            <bg.button @type="light" @value="month">{{t "admin.stats.month"}}</bg.button>
+            <bg.button @type="light" @value="minute">{{t "Minute"}}</bg.button>
+            <bg.button @type="light" @value="hour">{{t "Hour"}}</bg.button>
+            <bg.button @type="light" @value="day">{{t "Day"}}</bg.button>
+            <bg.button @type="light" @value="week">{{t "Week"}}</bg.button>
+            <bg.button @type="light" @value="month">{{t "Month"}}</bg.button>
           </BsButtonGroup>
         {{/if}}
 
@@ -32,11 +32,11 @@
             <div id="query_builder"></div>
             <div class="row">
               <div class="col-sm-6">
-                <button class="btn btn-primary btn-sm" type="submit">{{t "admin.stats.filter"}}</button>
+                <button class="btn btn-primary btn-sm" type="submit">{{t "Filter"}}</button>
               </div>
               <div class="col-sm-6 text-right">
                 <div class="form-control-plaintext form-control-sm">
-                  <a href="#" {{action "toggleFilterType" "advanced"}} class="filter-type-toggle">{{t "admin.stats.switch_advanced_filters"}}</a>
+                  <a href="#" {{action "toggleFilterType" "advanced"}} class="filter-type-toggle">{{t "Switch to advanced filters"}}</a>
                 </div>
               </div>
             </div>
@@ -44,31 +44,31 @@
           <div id="filter_type_advanced" class="filter-type" style="display: none;">
             <div id="search_field">
               <div class="input-group">
-                <input type="text" name="search" class="form-control" placeholder={{t "admin.stats.advanced_filters_placeholder"}} value={{this.query.params.search}} aria-label="Advanced filters">
+                <input type="text" name="search" class="form-control" placeholder={{t "Advanced filters..."}} value={{this.query.params.search}} aria-label="Advanced filters">
                 <span class="input-group-append">
-                  <button class="btn btn-primary" type="submit">{{t "admin.stats.filter"}}</button>
+                  <button class="btn btn-primary" type="submit">{{t "Filter"}}</button>
                 </span>
               </div>
               <div class="row">
                 <div class="col-sm-6">
-                  <div class="form-control-plaintext form-control-sm text-muted">{{! template-lint-disable no-bare-strings no-triple-curlies }}{{{t "admin.stats.advanced_filters_tip"}}}</div>
+                  <div class="form-control-plaintext form-control-sm text-muted">{{! template-lint-disable no-bare-strings no-triple-curlies }}{{{t "Advanced filters use <a href=\"#query_syntax_help_content\" rel=\"popover\">Lucene's Query Syntax</a>."}}}</div>
                 </div>
                 <div class="col-sm-6 text-right">
                   <div class="form-control-plaintext form-control-sm">
-                    <a href="#" {{action "toggleFilterType" "builder"}} class="filter-type-toggle">{{t "admin.stats.switch_simple_filters"}}</a>
+                    <a href="#" {{action "toggleFilterType" "builder"}} class="filter-type-toggle">{{t "Switch to simple filters"}}</a>
                   </div>
                 </div>
               </div>
               <div id="query_syntax_help_content" style="display: none;">
-                <p>{{! template-lint-disable no-bare-strings no-triple-curlies }}{{{t "admin.stats.advanced_filters_help_content"}}}</p>
-                <p>{{t "admin.stats.example"}}:</p>
+                <p>{{! template-lint-disable no-bare-strings no-triple-curlies }}{{{t "Use <a href=\"http://www.lucenetutorial.com/lucene-query-syntax.html\" target=\"_blank\">Lucene's query syntax</a> to perform complex queries."}}}</p>
+                <p>{{t "Example"}}:</p>
                 <pre class="code-block">request_method:"POST" AND response_status:[400 TO *]</pre>
-                <p>{{t "admin.stats.available_fields"}}:</p>
+                <p>{{t "Available Fields"}}:</p>
                 <table class="table table-sm query-syntax-help">
                   <thead>
                     <tr>
-                      <th>{{t "admin.stats.field"}}</th>
-                      <th class="example">{{t "admin.stats.example"}}</th>
+                      <th>{{t "Field"}}</th>
+                      <th class="example">{{t "Example"}}</th>
                     </tr>
                   </thead>
                   <tbody>

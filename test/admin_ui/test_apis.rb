@@ -8,12 +8,10 @@ class Test::AdminUi::TestApis < Minitest::Capybara::Test
   def setup
     super
     setup_server
-
-    Api.delete_all
   end
 
   def test_saves_when_only_nested_fields_change
-    api = FactoryBot.create(:api_with_settings, :name => "Save Test API")
+    api = FactoryBot.create(:api_backend_with_settings, :name => "Save Test API")
     assert_nil(api.settings.error_data)
 
     admin_login
@@ -28,7 +26,7 @@ class Test::AdminUi::TestApis < Minitest::Capybara::Test
     click_button("Save")
     assert_text("Successfully saved")
 
-    api = Api.find(api.id)
+    api = ApiBackend.find(api.id)
     assert_equal({
       "api_key_missing" => {
         "hello1" => "foo",
@@ -38,7 +36,7 @@ class Test::AdminUi::TestApis < Minitest::Capybara::Test
   end
 
   def test_loads_from_server_on_each_load
-    api = FactoryBot.create(:api_with_settings, :name => "Test Load API", :frontend_host => "example1.com")
+    api = FactoryBot.create(:api_backend_with_settings, :name => "Test Load API", :frontend_host => "example1.com")
     admin_login
     visit "/admin/#/apis"
     assert_text("Add API Backend")
@@ -58,7 +56,7 @@ class Test::AdminUi::TestApis < Minitest::Capybara::Test
   end
 
   def test_validation_error_when_all_servers_removed_from_existing_api
-    api = FactoryBot.create(:api)
+    api = FactoryBot.create(:api_backend)
     admin_login
     visit "/admin/#/apis/#{api.id}/edit"
     find("#servers_table a", :text => /Remove/).click
@@ -66,12 +64,12 @@ class Test::AdminUi::TestApis < Minitest::Capybara::Test
     click_button("Save")
     assert_text("Must have at least one servers")
 
-    api = Api.find(api.id)
+    api = ApiBackend.find(api.id)
     assert_equal(1, api.servers.length)
   end
 
   def test_validation_error_when_all_url_prefixes_removed_from_existing_api
-    api = FactoryBot.create(:api)
+    api = FactoryBot.create(:api_backend)
     admin_login
     visit "/admin/#/apis/#{api.id}/edit"
     find("#url_matches_table a", :text => /Remove/).click
@@ -79,7 +77,7 @@ class Test::AdminUi::TestApis < Minitest::Capybara::Test
     click_button("Save")
     assert_text("Must have at least one url_matches")
 
-    api = Api.find(api.id)
+    api = ApiBackend.find(api.id)
     assert_equal(1, api.url_matches.length)
   end
 
@@ -221,7 +219,7 @@ class Test::AdminUi::TestApis < Minitest::Capybara::Test
     click_button("Save")
     assert_text("Successfully saved")
 
-    api = Api.desc(:created_at).first
+    api = ApiBackend.order(:created_at => :desc).first
     visit "/admin/#/apis/#{api.id}/edit"
 
     assert_field("Name", :with => "Testing API Backend")
@@ -319,16 +317,16 @@ class Test::AdminUi::TestApis < Minitest::Capybara::Test
     assert_codemirror_field("JSON Template", :with => '{"foo":"bar"}')
     assert_codemirror_field("XML Template", :with => "<foo>bar</foo>")
     assert_codemirror_field("CSV Template", :with => "foo,bar\nbar,foo")
-    assert_codemirror_field("API Key Missing", :with => "foo1: bar1\nbar1: foo1")
-    assert_codemirror_field("API Key Invalid", :with => "foo2: bar2\nbar2: foo2")
-    assert_codemirror_field("API Key Disabled", :with => "foo3: bar3\nbar3: foo3")
-    assert_codemirror_field("API Key Unauthorized", :with => "foo4: bar4\nbar4: foo4")
-    assert_codemirror_field("Over Rate Limit", :with => "foo5: bar5\nbar5: foo5")
+    assert_codemirror_field("API Key Missing", :with => "bar1: foo1\nfoo1: bar1")
+    assert_codemirror_field("API Key Invalid", :with => "bar2: foo2\nfoo2: bar2")
+    assert_codemirror_field("API Key Disabled", :with => "bar3: foo3\nfoo3: bar3")
+    assert_codemirror_field("API Key Unauthorized", :with => "bar4: foo4\nfoo4: bar4")
+    assert_codemirror_field("Over Rate Limit", :with => "bar5: foo5\nfoo5: bar5")
   end
 
   def test_edit_custom_rate_limits
-    api = FactoryBot.create(:api, {
-      :settings => FactoryBot.build(:custom_rate_limit_api_setting),
+    api = FactoryBot.create(:api_backend, {
+      :settings => FactoryBot.build(:custom_rate_limit_api_backend_settings),
     })
     admin_login
     visit "/admin/#/apis/#{api.id}/edit"
@@ -351,11 +349,11 @@ class Test::AdminUi::TestApis < Minitest::Capybara::Test
 
     assert_equal(1, api.settings.rate_limits.length)
     rate_limit = api.settings.rate_limits.first
-    assert_equal(200, rate_limit.limit)
+    assert_equal(200, rate_limit.limit_to)
   end
 
   def test_nested_select_menu_behavior_inside_modals
-    api = FactoryBot.create(:api, :name => unique_test_id)
+    api = FactoryBot.create(:api_backend, :name => unique_test_id)
     admin_login
     visit "/admin/#/apis/#{api.id}/edit"
 

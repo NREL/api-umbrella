@@ -37,8 +37,8 @@ class Test::Proxy::Logging::TestIpGeocoding < Minitest::Test
       :country => "US",
       :region => "CA",
       :city => "San Jose",
-      :lat => 37.3388,
-      :lon => -121.8914,
+      :lat => 37.1835,
+      :lon => -121.7714,
     })
   end
 
@@ -75,41 +75,41 @@ class Test::Proxy::Logging::TestIpGeocoding < Minitest::Test
       :country => "US",
       :region => "CA",
       :city => "San Jose",
-      :lat => 37.3388,
-      :lon => -121.8914,
+      :lat => 37.1835,
+      :lon => -121.7714,
     })
   end
 
   def test_country_city_no_region
     response = Typhoeus.get("http://127.0.0.1:9080/api/hello", log_http_options.deep_merge({
       :headers => {
-        "X-Forwarded-For" => "104.250.168.24",
+        "X-Forwarded-For" => "102.38.240.0",
       },
     }))
     assert_response_code(200, response)
 
     record = wait_for_log(response)[:hit_source]
     assert_geocode(record, {
-      :ip => "104.250.168.24",
+      :ip => "102.38.240.0",
       :country => "MC",
       :region => nil,
       :city => "Monte Carlo",
-      :lat => 43.7333,
-      :lon => 7.4167,
+      :lat => 43.7312,
+      :lon => 7.4138,
     })
   end
 
   def test_country_no_region_city
     response = Typhoeus.get("http://127.0.0.1:9080/api/hello", log_http_options.deep_merge({
       :headers => {
-        "X-Forwarded-For" => "1.1.1.1",
+        "X-Forwarded-For" => "1.1.1.0",
       },
     }))
     assert_response_code(200, response)
 
     record = wait_for_log(response)[:hit_source]
     assert_geocode(record, {
-      :ip => "1.1.1.1",
+      :ip => "1.1.1.0",
       :country => "AU",
       :region => nil,
       :city => nil,
@@ -151,8 +151,8 @@ class Test::Proxy::Logging::TestIpGeocoding < Minitest::Test
       :country => "CA",
       :region => "QC",
       :city => "Trois-Rivières",
-      :lat => 46.3633,
-      :lon => -72.6143,
+      :lat => 46.3877,
+      :lon => -72.5357,
     })
   end
 
@@ -232,6 +232,39 @@ class Test::Proxy::Logging::TestIpGeocoding < Minitest::Test
     })
   end
 
+  # Since this table involves a "point" type column, ensure some of the SQL
+  # triggers doing comparisons on changes work as expected. See:
+  # https://www.mail-archive.com/pgsql-general@postgresql.org/msg198563.html
+  # https://www.mail-archive.com/pgsql-general@postgresql.org/msg198866.html
+  def test_cache_upsert_timestamp_tracking
+    AnalyticsCity.connection.execute("INSERT INTO analytics_cities(country, region, city, location) VALUES('US', 'CO', #{AnalyticsCity.connection.quote(unique_test_id)}, point(1, 2)) ON CONFLICT (country, region, city) DO UPDATE SET location = EXCLUDED.location")
+    city = AnalyticsCity.find_by!(:country => "US", :region => "CO", :city => unique_test_id)
+    orig_created_at = city.created_at
+    prev_updated_at = city.updated_at
+    assert_equal(prev_updated_at.iso8601(10), city.created_at.iso8601(10))
+
+    # Ensure a change triggers updated_at to change.
+    AnalyticsCity.connection.execute("INSERT INTO analytics_cities(country, region, city, location) VALUES('US', 'CO', #{AnalyticsCity.connection.quote(unique_test_id)}, point(1, 3)) ON CONFLICT (country, region, city) DO UPDATE SET location = EXCLUDED.location")
+    city.reload
+    assert_equal(orig_created_at.iso8601(10), city.created_at.iso8601(10))
+    refute_equal(prev_updated_at.iso8601(10), city.updated_at.iso8601(10))
+    prev_updated_at = city.updated_at
+
+    # If an update is performed without actually changing the values, then
+    # updated_at should remain the same.
+    AnalyticsCity.connection.execute("INSERT INTO analytics_cities(country, region, city, location) VALUES('US', 'CO', #{AnalyticsCity.connection.quote(unique_test_id)}, point(1, 3)) ON CONFLICT (country, region, city) DO UPDATE SET location = EXCLUDED.location")
+    city.reload
+    assert_equal(orig_created_at.iso8601(10), city.created_at.iso8601(10))
+    assert_equal(prev_updated_at.iso8601(10), city.updated_at.iso8601(10))
+    prev_updated_at = city.updated_at
+
+    # Another change test.
+    AnalyticsCity.connection.execute("INSERT INTO analytics_cities(country, region, city, location) VALUES('US', 'CO', #{AnalyticsCity.connection.quote(unique_test_id)}, point(1, 4)) ON CONFLICT (country, region, city) DO UPDATE SET location = EXCLUDED.location")
+    city.reload
+    assert_equal(orig_created_at.iso8601(10), city.created_at.iso8601(10))
+    refute_equal(prev_updated_at.iso8601(10), city.updated_at.iso8601(10))
+  end
+
   private
 
   def assert_geocode(record, options)
@@ -264,26 +297,35 @@ class Test::Proxy::Logging::TestIpGeocoding < Minitest::Test
   end
 
   def assert_geocode_cache(record, options)
-    id = Digest::SHA256.hexdigest("#{options.fetch(:country)}-#{options.fetch(:region)}-#{options.fetch(:city)}")
-    locations = LogCityLocation.where(:_id => id).all
-    assert_equal(1, locations.length)
+    cities = AnalyticsCity.where(:country => options.fetch(:country), :region => options.fetch(:region), :city => options.fetch(:city)).all
+    assert_equal(1, cities.length)
 
-    location = locations[0].attributes
-    updated_at = location.delete("updated_at")
-    coordinates = location["location"].delete("coordinates")
+    city = cities.first
+    assert_equal([
+      "id",
+      "country",
+      "region",
+      "city",
+      "location",
+      "created_at",
+      "updated_at",
+    ].sort, city.attributes.keys.sort)
 
-    assert_kind_of(Time, updated_at)
-    assert_equal(2, coordinates.length)
-    assert_in_delta(options.fetch(:lon), coordinates[0], 0.02)
-    assert_in_delta(options.fetch(:lat), coordinates[1], 0.02)
-    assert_equal({
-      "_id" => id,
-      "country" => options.fetch(:country),
-      "region" => options.fetch(:region),
-      "city" => options.fetch(:city),
-      "location" => {
-        "type" => "Point",
-      },
-    }.compact, location)
+    assert_kind_of(Numeric, city.id)
+    assert_equal(options.fetch(:country), city.country)
+    if(options.fetch(:region).nil?)
+      assert_nil(city.region)
+    else
+      assert_equal(options.fetch(:region), city.region)
+    end
+    if(options.fetch(:city).nil?)
+      assert_nil(city.city)
+    else
+      assert_equal(options.fetch(:city), city.city)
+    end
+    assert_in_delta(options.fetch(:lon), city.location.x, 0.02)
+    assert_in_delta(options.fetch(:lat), city.location.y, 0.02)
+    assert_kind_of(Time, city.created_at)
+    assert_kind_of(Time, city.updated_at)
   end
 end
