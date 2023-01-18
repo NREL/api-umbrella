@@ -60,7 +60,7 @@ gem "capybara-screenshot", "~> 1.0.22"
 gem "nokogiri", "~> 1.10"
 
 # Useful additions
-gem "activesupport", "~> 7.0.2"
+gem "activesupport", "~> 7.0.4"
 
 # Generating fake strings and data.
 gem "faker", "~> 3.0"
