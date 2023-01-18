@@ -34,7 +34,7 @@ gem "multi_json", "~> 1.15.0"
 gem "oj", "~> 3.10"
 
 # Database libraries
-gem "activerecord", "~> 7.0.2", :require => "active_record"
+gem "activerecord", "~> 7.0.4", :require => "active_record"
 gem "pg", "~> 1.4.1"
 gem "elasticsearch", "~> 7.13.3"
 gem "active_attr", "~> 0.15.0"
