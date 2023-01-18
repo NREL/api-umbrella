@@ -1,0 +1,26 @@
+@import "bootstrap";
+
+abbr.required,
+.abbr-required {
+  border-style: none;
+  cursor: default;
+  color: #e87723;
+  font-family: "Verdana";
+  font-size: 14px;
+  font-weight: bold;
+  font-weight: 1000;
+}
+
+label abbr.required,
+label .abbr-required {
+  margin-left: 2px;
+}
+
+.required-fields {
+  font-size: 93%;
+  color: #555;
+}
+
+.required-fields .abbr-required {
+  font-size: 12px;
+}

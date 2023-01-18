@@ -1,6 +1,0 @@
-# Dynamic handler for issuing or returning certs.
-ssl_certificate_by_lua_file "{{_src_root_dir}}/src/api-umbrella/auto-ssl/hooks/ssl_certificate.lua";
-
-# Fallback certificate (must be present for nginx to start).
-ssl_certificate {{etc_dir}}/ssl/auto_ssl_fallback.crt;
-ssl_certificate_key {{etc_dir}}/ssl/auto_ssl_fallback.key;

@@ -1,5 +1,6 @@
 require "English"
 require "ipaddr"
+require "support/api_umbrella_test_helpers/admin_auth"
 require "support/api_umbrella_test_helpers/common_asserts"
 require "support/api_umbrella_test_helpers/shell"
 
@@ -7,6 +8,7 @@ module ApiUmbrellaTestHelpers
   module Setup
     extend ActiveSupport::Concern
 
+    include ApiUmbrellaTestHelpers::AdminAuth
     include ApiUmbrellaTestHelpers::CommonAsserts
     include ApiUmbrellaTestHelpers::Shell
 
@@ -52,6 +54,24 @@ module ApiUmbrellaTestHelpers
           self.api_umbrella_process = ApiUmbrellaTestHelpers::Process.instance
           self.api_umbrella_process.start
           self.start_complete = true
+
+          ActiveRecord::Base.establish_connection({
+            :adapter => "postgresql",
+            :encoding => "unicode",
+            :host => $config["postgresql"]["host"],
+            :port => $config["postgresql"]["port"],
+            :database => $config["postgresql"]["database"],
+            :username => $config["postgresql"]["migrations"]["username"],
+            :password => $config["postgresql"]["migrations"]["password"],
+            :pool => 50,
+            :schema_search_path => "api_umbrella, public",
+            :variables => {
+              "timezone" => "UTC",
+              "audit.application_name" => "test_app_name",
+              "audit.application_user_id" => "00000000-1111-2222-3333-444444444444",
+              "audit.application_user_name" => "test_example_admin_username",
+            },
+          })
         end
       end
 
@@ -63,14 +83,6 @@ module ApiUmbrellaTestHelpers
     def setup_server
       self.setup_lock.synchronize do
         unless self.setup_complete
-          Mongoid.load_configuration({
-            :clients => {
-              :default => {
-                :uri => $config["mongodb"]["url"],
-              },
-            },
-          })
-
           require "typhoeus/adapters/faraday"
           client = Elasticsearch::Client.new({
             :hosts => $config["elasticsearch"]["hosts"],
@@ -90,38 +102,17 @@ module ApiUmbrellaTestHelpers
           self.setup_complete = true
         end
 
-        unless self.setup_config_version_complete
-          ConfigVersion.delete_all
-          ConfigVersion.publish!({
-            "apis" => [
-              {
-                "_id" => "example",
-                "frontend_host" => "127.0.0.1",
-                "backend_host" => "127.0.0.1",
-                "servers" => [
-                  { "host" => "127.0.0.1", "port" => 9444 },
-                ],
-                "url_matches" => [
-                  { "_id" => SecureRandom.uuid, "frontend_prefix" => "/api/", "backend_prefix" => "/" },
-                ],
-              },
-            ],
-          }).wait_until_live
-
-          self.setup_config_version_complete = true
-        end
-
         unless self.setup_api_user_complete
-          ApiUser.where(:registration_source.ne => "seed").delete_all
           user = FactoryBot.create(:api_user, {
             :registration_source => "seed",
-            :settings => {
+            :settings => FactoryBot.build(:api_user_settings, {
               :rate_limit_mode => "unlimited",
-            },
+            }),
           })
 
           @@api_user = user
-          @@api_key = user["api_key"]
+          @@api_key = user.api_key
+          assert(@@api_key)
           @@http_options = {
             # Disable SSL verification by default, since most of our tests are
             # against our self-signed SSL certificate for the test environment.
@@ -134,24 +125,25 @@ module ApiUmbrellaTestHelpers
             :params_encoding => :rack,
 
             :headers => {
-              "X-Api-Key" => user["api_key"],
+              "X-Api-Key" => @@api_key,
             }.freeze,
           }.freeze
           @@keyless_http_options = @@http_options.except(:headers).freeze
 
           self.setup_api_user_complete = true
         end
+
+        unless self.setup_config_version_complete
+          publish_default_config_version
+          self.setup_config_version_complete = true
+        end
       end
     end
 
-    # If tests need to delete all the ConfigVersion records from the database,
-    # then they need to call this method after finishing so the default
-    # ConfigVersion record will be re-created for other tests that depend on
-    # it.
-    def default_config_version_needed
-      ApiUmbrellaTestHelpers::Setup.setup_lock.synchronize do
-        ApiUmbrellaTestHelpers::Setup.setup_config_version_complete = false
-      end
+    def publish_default_config_version
+      PublishedConfig.delete_all
+      PublishedConfig.create!(:config => {})
+      PublishedConfig.active.wait_until_live
     end
 
     # If tests need to delete all the ApiUser records from the database, then
@@ -174,83 +166,138 @@ module ApiUmbrellaTestHelpers
       end
     end
 
-    def prepend_api_backends(apis)
+    def prepend_api_backends(api_attributes)
       @prepend_api_backends_counter ||= 0
-      apis.map! do |api|
-        api.deep_stringify_keys!
+      api_ids = api_attributes.map! do |attributes|
+        attributes.deep_symbolize_keys!
 
         @prepend_api_backends_counter += 1
-        api["_id"] ||= "#{unique_test_id}-#{@prepend_api_backends_counter}"
-        if(api["url_matches"])
-          api["url_matches"].each do |url_match|
-            url_match["_id"] ||= SecureRandom.uuid
-          end
+        attributes[:name] ||= "#{unique_test_id}-#{@prepend_api_backends_counter}"
+        attributes[:backend_protocol] ||= "http"
+        attributes[:balance_algorithm] ||= "least_conn"
+
+        response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/apis.json", @@http_options.deep_merge(admin_token).deep_merge({
+          :headers => { "Content-Type" => "application/json" },
+          :body => MultiJson.dump(:api => attributes),
+        }))
+        assert_response_code(201, response)
+        data = MultiJson.load(response.body)
+
+        id = data["api"]["id"]
+        assert(id)
+
+        id
+      end
+
+      publish_api_backends(api_ids)
+
+      yield if(block_given?)
+    ensure
+      if(block_given? && api_ids && api_ids.any?)
+        unpublish_api_backends(api_ids)
+      end
+    end
+
+    def prepend_website_backends(website_attributes)
+      website_ids = website_attributes.map do |attributes|
+        attributes.deep_stringify_keys!
+        WebsiteBackend.create!(attributes).id
+      end
+
+      publish_website_backends(website_ids)
+
+      yield if(block_given?)
+    ensure
+      if(block_given? && website_ids && website_ids.any?)
+        unpublish_website_backends(website_ids)
+      end
+    end
+
+    def publish_api_backends(record_ids)
+      publish_backends("apis", record_ids)
+    end
+
+    def publish_website_backends(record_ids)
+      publish_backends("website_backends", record_ids)
+    end
+
+    # Publish backend changes for the given record IDs.
+    #
+    # Publishing is performed by hitting the internal publish API endpoint. We
+    # do this via the API, rather than directly manipulating the
+    # PublishedConfig database table, since the resulting published config is
+    # dependent on how backend records get serialized into JSON during the
+    # publishing process. Since the Lua models might do this differently, use
+    # the real API to ensure we're testing the real publishing process, and the
+    # real resulting JSON.
+    def publish_backends(type, record_ids)
+      self.config_publish_lock.synchronize do
+        config = { type => {} }
+        record_ids.each do |record_id|
+          config[type][record_id] = { :publish => "1" }
         end
 
-        api
-      end
+        response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/config/publish.json", @@http_options.deep_merge(admin_token).deep_merge({
+          :headers => { "Content-Type" => "application/json" },
+          :body => MultiJson.dump(:config => config),
+        }))
 
-      publish_backends("apis", apis)
-
-      yield if(block_given?)
-    ensure
-      if(block_given?)
-        unpublish_backends("apis", apis)
+        assert_response_code(201, response)
+        PublishedConfig.active.wait_until_live
       end
     end
 
-    def prepend_website_backends(websites)
-      @prepend_website_backends_counter ||= 0
-      websites.map! do |website|
-        website.deep_stringify_keys!
-
-        @prepend_website_backends_counter += 1
-        website["_id"] = "#{unique_test_id}-#{@prepend_website_backends_counter}"
-
-        website
-      end
-
-      publish_backends("website_backends", websites)
-
-      yield if(block_given?)
-    ensure
-      if(block_given?)
-        unpublish_backends("website_backends", websites)
-      end
-    end
-
-    def publish_backends(type, records)
+    def unpublish_api_backends(record_ids)
       self.config_publish_lock.synchronize do
-        config = ConfigVersion.active_config || {}
-        config[type] = records + (config[type] || [])
-        ConfigVersion.publish!(config).wait_until_live
+        ApiBackend.delete(record_ids)
+        publish_backends("apis", record_ids)
       end
     end
 
-    def unpublish_backends(type, records)
+    def unpublish_website_backends(record_ids)
       self.config_publish_lock.synchronize do
-        record_ids = records.map { |record| record["_id"] }
-        config = ConfigVersion.active_config || {}
-        config[type].reject! { |record| record_ids.include?(record["_id"]) }
-        ConfigVersion.publish!(config).wait_until_live
+        WebsiteBackend.delete(record_ids)
+        publish_backends("website_backends", record_ids)
       end
     end
 
-    def override_config(config, reload_flag)
+    # Typically we want to publish config by using the "publish_backends"
+    # method, which uses the API to publish config (to better replicate what
+    # will happen in the real app). But in cases where we want to explicitly
+    # test invalid configuration that the app may not allow (eg, to test how
+    # existing data might be handled before extra validations were added), we
+    # can use this method to directly override the published config JSON.
+    def force_publish_config
+      self.config_publish_lock.synchronize do
+        new_published_config = nil
+        PublishedConfig.transaction do
+          # Within the lock and transaction, find the current config, yield it
+          # to the block to allow for modifications, and then publish the
+          # resulting modified config.
+          config = PublishedConfig.active_config
+          new_config = yield config
+          new_published_config = PublishedConfig.create!(:config => new_config)
+        end
+
+        new_published_config.wait_until_live
+      end
+    end
+
+    def override_config(config)
       self.config_lock.synchronize do
-        original_config = @@current_override_config
+        original_config = @@current_override_config.deep_dup
         original_config["version"] ||= SecureRandom.uuid
 
         begin
-          override_config_set(config, reload_flag)
+          override_config_set(config)
           yield
         ensure
-          override_config_set(original_config, reload_flag)
+          override_config_set(original_config)
         end
       end
     end
 
-    def override_config_set(config, reload_flag)
+    def override_config_set(config)
       self.config_set_lock.synchronize do
         if(self.class.test_order == :parallel)
           raise "`override_config_set` cannot be called with `parallelize_me!` in the same class. Since overriding config affects the global state, it cannot be used with parallel tests."
@@ -260,51 +307,38 @@ module ApiUmbrellaTestHelpers
 
         config = config.deep_stringify_keys
         config["version"] = SecureRandom.uuid
-        File.write(ApiUmbrellaTestHelpers::Process::CONFIG_OVERRIDES_PATH, YAML.dump(config))
-        self.api_umbrella_process.reload(reload_flag)
-        @@current_override_config = config
+        ApiUmbrellaTestHelpers::Process.instance.write_test_config(config)
+
+        self.api_umbrella_process.reload
+        @@current_override_config = config.deep_dup
         Timeout.timeout(50) do
-          begin
-            self.api_umbrella_process.wait_for_config_version("file_config_version", config["version"], config)
-          rescue MultiJson::ParseError => e
-            # If the configuration changes involve changes to the
-            # "active_config" shdict size, then this can result in the API
-            # configuration being temporarily unpublished during reloads. In
-            # these cases, the publishing process may temporarily throw errors,
-            # since the "state" and "health" endpoints may temporarily go
-            # missing. So in these cases, retry and wait for the configuration
-            # publishing to take effect again.
-            if(previous_override_config.dig("nginx", "shared_dicts", "active_config") || @@current_override_config.dig("nginx", "shared_dicts", "active_config"))
-              sleep 0.1
-              retry
-            else
-              raise e
-            end
+          self.api_umbrella_process.wait_for_config_version("file_config_version", config["version"], config)
+        rescue MultiJson::ParseError => e
+          # If the configuration changes involve changes to the
+          # "active_config" shdict size, then this can result in the API
+          # configuration being temporarily unpublished during reloads. In
+          # these cases, the publishing process may temporarily throw errors,
+          # since the "state" and "health" endpoints may temporarily go
+          # missing. So in these cases, retry and wait for the configuration
+          # publishing to take effect again.
+          if(previous_override_config.dig("nginx", "shared_dicts", "active_config") || @@current_override_config.dig("nginx", "shared_dicts", "active_config"))
+            sleep 0.1
+            retry
+          else
+            raise e
           end
         end
 
-        # When changes to the DNS server are made, this is one area where a
-        # simple "reload" signal won't do the trick. Instead, we also need to
-        # fully restart Traffic Server to pick up these changes (technically
-        # there's ways to force Traffic Server to pick these changes up without
-        # a full restart, but it's hard to figure out the timing, so with this
-        # mainly being a test issue, we'll force a full restart).
-        if(previous_override_config.dig("dns_resolver", "nameservers") || @@current_override_config.dig("dns_resolver", "nameservers"))
-          self.api_umbrella_process.restart_trafficserver
-
-        # When changing the keepalive idle timeout, a normal reload will pick
-        # these changes up, but they don't kick in for a few seconds, which is
-        # hard to time correctly in the test suite. So similarly, do a full
-        # restart to make it easier to know for sure the new settings are in
-        # effect.
-        elsif(previous_override_config.dig("router", "api_backends", "keepalive_idle_timeout") || @@current_override_config.dig("router", "api_backends", "keepalive_idle_timeout"))
+        # Restart trafficserver when changing the response stripping config,
+        # since that alters Trafficserver's plugin.config, requiring a restart.
+        if(previous_override_config["strip_response_cookies"] || @@current_override_config["strip_response_cookies"])
           self.api_umbrella_process.restart_trafficserver
         end
       end
     end
 
-    def override_config_reset(reload_flag)
-      override_config_set({}, reload_flag)
+    def override_config_reset
+      override_config_set({})
     end
 
     def to_unique_id(name)
@@ -383,6 +417,12 @@ module ApiUmbrellaTestHelpers
       @empty_http_header_counter += 1
       {
         :headers => {
+          # First set the header to null to prevent Typheous from adding some
+          # default headers back in (like Content-Type).
+          header => nil,
+
+          # Next, add a fake header, and in the content of the header add line
+          # breaks and the real header without a value.
           "X-Empty-Http-Header-Curl-Workaround#{@empty_http_header_counter}" => "ignore\r\n#{header}:",
         },
       }

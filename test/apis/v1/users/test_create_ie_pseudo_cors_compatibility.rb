@@ -7,11 +7,11 @@ require_relative "../../../test_helper"
 class Test::Apis::V1::Users::TestCreateIePseudoCorsCompatibility < Minitest::Test
   include ApiUmbrellaTestHelpers::AdminAuth
   include ApiUmbrellaTestHelpers::Setup
+  parallelize_me!
 
   def setup
     super
     setup_server
-    ApiUser.where(:registration_source.ne => "seed").delete_all
 
     @attributes = {
       :first_name => "Mr",
@@ -58,6 +58,6 @@ class Test::Apis::V1::Users::TestCreateIePseudoCorsCompatibility < Minitest::Tes
       :roles => ["api-umbrella-key-creator"],
     })
 
-    { :headers => { "X-Api-Key" => user["api_key"] } }
+    { :headers => { "X-Api-Key" => user.api_key } }
   end
 end

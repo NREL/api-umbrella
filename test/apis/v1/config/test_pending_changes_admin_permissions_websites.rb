@@ -8,18 +8,19 @@ class Test::Apis::V1::Config::TestPendingChangesAdminPermissionsWebsites < Minit
   def setup
     super
     setup_server
-    Api.delete_all
-    WebsiteBackend.delete_all
-    ConfigVersion.delete_all
 
-    @localhost_website = FactoryBot.create(:website_backend)
+    publish_default_config_version
+    @localhost_website = FactoryBot.create(:website_backend_localhost)
     @example_com_website = FactoryBot.create(:example_com_website_backend)
-    ConfigVersion.publish!(ConfigVersion.pending_config)
+    publish_website_backends([
+      @localhost_website.id,
+      @example_com_website.id,
+    ])
   end
 
   def after_all
     super
-    default_config_version_needed
+    publish_default_config_version
   end
 
   def test_all_websites_for_superuser
@@ -30,7 +31,7 @@ class Test::Apis::V1::Config::TestPendingChangesAdminPermissionsWebsites < Minit
     assert_equal([], data["config"]["apis"]["deleted"])
     assert_equal([], data["config"]["apis"]["modified"])
     assert_equal([], data["config"]["apis"]["new"])
-    website_ids = data["config"]["website_backends"]["identical"].map { |website| website["pending"]["_id"] }
+    website_ids = data["config"]["website_backends"]["identical"].map { |website| website["pending"]["id"] }
     assert_includes(website_ids, @localhost_website.id)
     assert_includes(website_ids, @example_com_website.id)
   end
@@ -44,7 +45,7 @@ class Test::Apis::V1::Config::TestPendingChangesAdminPermissionsWebsites < Minit
     assert_equal([], data["config"]["apis"]["deleted"])
     assert_equal([], data["config"]["apis"]["modified"])
     assert_equal([], data["config"]["apis"]["new"])
-    website_ids = data["config"]["website_backends"]["identical"].map { |website| website["pending"]["_id"] }
+    website_ids = data["config"]["website_backends"]["identical"].map { |website| website["pending"]["id"] }
     assert_includes(website_ids, @localhost_website.id)
   end
 
@@ -57,7 +58,7 @@ class Test::Apis::V1::Config::TestPendingChangesAdminPermissionsWebsites < Minit
     assert_equal([], data["config"]["apis"]["deleted"])
     assert_equal([], data["config"]["apis"]["modified"])
     assert_equal([], data["config"]["apis"]["new"])
-    website_ids = data["config"]["website_backends"]["identical"].map { |website| website["pending"]["_id"] }
+    website_ids = data["config"]["website_backends"]["identical"].map { |website| website["pending"]["id"] }
     refute_includes(website_ids, @example_com_website.id)
   end
 
@@ -70,7 +71,7 @@ class Test::Apis::V1::Config::TestPendingChangesAdminPermissionsWebsites < Minit
     assert_equal([], data["config"]["apis"]["deleted"])
     assert_equal([], data["config"]["apis"]["modified"])
     assert_equal([], data["config"]["apis"]["new"])
-    website_ids = data["config"]["website_backends"]["identical"].map { |website| website["pending"]["_id"] }
+    website_ids = data["config"]["website_backends"]["identical"].map { |website| website["pending"]["id"] }
     assert_equal(0, website_ids.length)
   end
 
@@ -83,7 +84,7 @@ class Test::Apis::V1::Config::TestPendingChangesAdminPermissionsWebsites < Minit
     assert_equal([], data["config"]["apis"]["deleted"])
     assert_equal([], data["config"]["apis"]["modified"])
     assert_equal([], data["config"]["apis"]["new"])
-    website_ids = data["config"]["website_backends"]["identical"].map { |website| website["pending"]["_id"] }
+    website_ids = data["config"]["website_backends"]["identical"].map { |website| website["pending"]["id"] }
     assert_equal(0, website_ids.length)
   end
 end

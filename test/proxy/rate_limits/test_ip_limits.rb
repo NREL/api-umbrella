@@ -10,25 +10,24 @@ class Test::Proxy::RateLimits::TestIpLimits < Minitest::Test
     setup_server
     once_per_class_setup do
       override_config_set({
-        :apiSettings => {
+        :default_api_backend_settings => {
           :rate_limits => [
             {
               :duration => 60 * 60 * 1000, # 1 hour
-              :accuracy => 1 * 60 * 1000, # 1 minute
               :limit_by => "ip",
-              :limit => 5,
+              :limit_to => 5,
               :distributed => true,
               :response_headers => true,
             },
           ],
         },
-      }, "--router")
+      })
     end
   end
 
   def after_all
     super
-    override_config_reset("--router")
+    override_config_reset
   end
 
   def test_ip_rate_limit

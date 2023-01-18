@@ -17,19 +17,8 @@ if [ -z "${API_UMBRELLA_SRC_ROOT:-}" ]; then
     source="$(readlink "$source")"
     [[ $source != /* ]] && source="$dir/$source"
   done
-  dir="$(cd -P "$(dirname "$(dirname "$source")")" && pwd)"
-
-  # If the current path is a timestamped directory inside the "releases"
-  # directory, then prefer the "current" symlink that points to the current
-  # release. This better ensures that this path can work, even if deployments
-  # are done which gets rid of the current timestamp directory.
-  current_symlink="$(dirname "$(dirname "$dir")")/current"
+  API_UMBRELLA_SRC_ROOT="$(cd -P "$(dirname "$(dirname "$source")")" && pwd)"
   export API_UMBRELLA_SRC_ROOT
-  if [ -L "$current_symlink" ]; then
-    API_UMBRELLA_SRC_ROOT="$current_symlink"
-  else
-    API_UMBRELLA_SRC_ROOT="$dir"
-  fi
 fi
 
 # Determine the default root of the API Umbrella installation (where all of our
@@ -59,9 +48,8 @@ export LD_LIBRARY_PATH="$API_UMBRELLA_EMBEDDED_ROOT/openresty/luajit/lib:$API_UM
 # Note that we purposefully don't use any of the default Lua load paths (like
 # /usr/local) so that other Lua packages on the system aren't picked up (since
 # they might conflict).
-export LUA_PATH="$API_UMBRELLA_EMBEDDED_ROOT/apps/core/shared/vendor/lua/resty_modules/lualib/?.lua;\
-$API_UMBRELLA_EMBEDDED_ROOT/apps/core/shared/vendor/lua/share/lua/5.1/?.lua;\
-$API_UMBRELLA_EMBEDDED_ROOT/apps/core/shared/vendor/lua/share/lua/5.1/?/init.lua;\
+export LUA_PATH="$API_UMBRELLA_EMBEDDED_ROOT/app/vendor/lua/share/lua/5.1/?.lua;\
+$API_UMBRELLA_EMBEDDED_ROOT/app/vendor/lua/share/lua/5.1/?/init.lua;\
 $API_UMBRELLA_EMBEDDED_ROOT/openresty/lualib/?.lua;\
 $API_UMBRELLA_EMBEDDED_ROOT/openresty/lualib/?/init.lua;\
 $API_UMBRELLA_EMBEDDED_ROOT/openresty/luajit/share/luajit-2.1.0-beta2/?.lua;\
@@ -71,34 +59,6 @@ $API_UMBRELLA_EMBEDDED_ROOT/openresty/luajit/share/lua/5.1/?/init.lua"
 if [ -n "$API_UMBRELLA_SRC_ROOT" ]; then
   export LUA_PATH="$API_UMBRELLA_SRC_ROOT/src/?.lua;$LUA_PATH"
 fi
-export LUA_CPATH="$API_UMBRELLA_EMBEDDED_ROOT/apps/core/shared/vendor/lua/resty_modules/?.so;\
-$API_UMBRELLA_EMBEDDED_ROOT/apps/core/shared/vendor/lua/lib/lua/5.1/?.so;\
+export LUA_CPATH="$API_UMBRELLA_EMBEDDED_ROOT/app/vendor/lua/lib/lua/5.1/?.so;\
 $API_UMBRELLA_EMBEDDED_ROOT/openresty/lualib/?.so;\
 $API_UMBRELLA_EMBEDDED_ROOT/openresty/luajit/lib/lua/5.1/?.so"
-
-# Ignore any Ruby Bundler wrapper settings, since we always want to use our
-# internal gems and bundler.
-#
-# This helps ensure we don't accidentally pick up another version of Ruby or
-# another Gemfile if the process calling api-umbrella has its own bundler
-# environment set (while probably rare, this happens in some of our
-# build/package/verify scripts, since they use Ruby to perform tests).
-unset BUNDLER_ORIG_BUNDLER_VERSION
-unset BUNDLER_ORIG_BUNDLE_APP_CONFIG
-unset BUNDLER_ORIG_BUNDLE_BIN_PATH
-unset BUNDLER_ORIG_BUNDLE_GEMFILE
-unset BUNDLER_ORIG_GEM_HOME
-unset BUNDLER_ORIG_GEM_PATH
-unset BUNDLER_ORIG_PATH
-unset BUNDLER_ORIG_RUBYLIB
-unset BUNDLER_ORIG_RUBYOPT
-unset BUNDLER_ORIG_RUBY_ROOT
-unset BUNDLER_VERSION
-unset BUNDLE_APP_CONFIG
-unset BUNDLE_BIN_PATH
-unset BUNDLE_GEMFILE
-unset GEM_HOME
-unset GEM_PATH
-unset RUBYLIB
-unset RUBYOPT
-unset RUBY_ROOT

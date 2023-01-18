@@ -10,7 +10,7 @@ class Test::AdminUi::Login::TestExternalProviders < Minitest::Capybara::Test
   def setup
     super
     setup_server
-    Admin.delete_all
+
     once_per_class_setup do
       override_config_set({
         "web" => {
@@ -18,6 +18,7 @@ class Test::AdminUi::Login::TestExternalProviders < Minitest::Capybara::Test
             "auth_strategies" => {
               "enabled" => [
                 "facebook",
+                "login.gov",
                 "max.gov",
                 "github",
                 "gitlab",
@@ -27,18 +28,18 @@ class Test::AdminUi::Login::TestExternalProviders < Minitest::Capybara::Test
             },
           },
         },
-      }, ["--router", "--web"])
+      })
     end
   end
 
   def after_all
     super
-    override_config_reset(["--router", "--web"])
+    override_config_reset
   end
 
   def test_forbids_first_time_admin_creation
     assert_equal(0, Admin.count)
-    assert_first_time_admin_creation_forbidden
+    assert_first_time_admin_creation_not_found
   end
 
   def test_shows_message_when_no_admins_exist
@@ -55,7 +56,7 @@ class Test::AdminUi::Login::TestExternalProviders < Minitest::Capybara::Test
     # No local login fields
     refute_field("Email")
     refute_field("Password")
-    refute_field("Remember me")
+    refute_field("Remember me", :visible => :all)
     refute_link("Forgot your password?")
     refute_button(:text => /\ASign in\z/)
 
@@ -66,6 +67,7 @@ class Test::AdminUi::Login::TestExternalProviders < Minitest::Capybara::Test
     buttons = page.all(".login-container .btn").map { |btn| btn.text }
     assert_equal([
       "Sign in with Facebook",
+      "Sign in with login.gov",
       "Sign in with MAX.gov",
       "Sign in with GitHub",
       "Sign in with GitLab",
@@ -102,17 +104,16 @@ class Test::AdminUi::Login::TestExternalProviders < Minitest::Capybara::Test
     uri = Addressable::URI.parse(response.headers["Location"])
     assert_equal("https", uri.scheme)
     assert_equal("accounts.google.com", uri.host)
-    assert_equal("/o/oauth2/auth", uri.path)
+    assert_equal("/o/oauth2/v2/auth", uri.path)
     assert_equal([
-      "access_type",
       "client_id",
+      "nonce",
       "prompt",
       "redirect_uri",
       "response_type",
       "scope",
       "state",
     ].sort, uri.query_values.keys.sort)
-    assert_equal("offline", uri.query_values.fetch("access_type"))
     assert_equal("test_fake_id", uri.query_values.fetch("client_id"))
     assert_equal("select_account", uri.query_values.fetch("prompt"))
     # Ensure the host used to access the site is part of the redirect URI (and
@@ -120,47 +121,120 @@ class Test::AdminUi::Login::TestExternalProviders < Minitest::Capybara::Test
     # used instead).
     assert_equal("https://foobar.example.com:9081/admins/auth/google_oauth2/callback", uri.query_values.fetch("redirect_uri"))
     assert_equal("code", uri.query_values.fetch("response_type"))
-    assert_equal("https://www.googleapis.com/auth/userinfo.email", uri.query_values.fetch("scope"))
+    assert_equal("openid email", uri.query_values.fetch("scope"))
     assert_kind_of(String, uri.query_values.fetch("state"))
+    assert_kind_of(String, uri.query_values.fetch("nonce"))
   end
 
   [
     {
       :provider => :facebook,
       :login_button_text => "Sign in with Facebook",
-      :username_path => "info.email",
-      :verified_path => "info.verified",
+      :mock_userinfo => MultiJson.dump({
+        "email" => "{{username}}",
+        "verified" => true,
+      }),
+      :mock_userinfo_unverified => MultiJson.dump({
+        "email" => "{{username}}",
+        "verified" => false,
+      }),
     },
     {
       :provider => :github,
       :login_button_text => "Sign in with GitHub",
-      :username_path => "info.email",
+      :mock_userinfo => MultiJson.dump([
+        {
+          "email" => "other-email@example.com",
+          "primary" => false,
+          "verified" => true,
+        },
+        {
+          "email" => "{{username}}",
+          "primary" => true,
+          "verified" => true,
+        },
+      ]),
+      :mock_userinfo_unverified => MultiJson.dump([
+        {
+          "email" => "other-email@example.com",
+          "primary" => false,
+          "verified" => true,
+        },
+        {
+          "email" => "{{username}}",
+          "primary" => true,
+          "verified" => false,
+        },
+      ]),
     },
     {
       :provider => :gitlab,
       :login_button_text => "Sign in with GitLab",
-      :username_path => "info.email",
+      :mock_userinfo => MultiJson.dump({
+        "user" => {
+          "email" => "{{username}}",
+          "email_verified" => true,
+        },
+      }),
+      :mock_userinfo_unverified => MultiJson.dump({
+        "user" => {
+          "email" => "{{username}}",
+          "email_verified" => false,
+        },
+      }),
     },
     {
       :provider => :google_oauth2,
       :login_button_text => "Sign in with Google",
-      :username_path => "info.email",
-      :verified_path => "extra.raw_info.email_verified",
+      :mock_userinfo => MultiJson.dump({
+        "id_token" => {
+          "email" => "{{username}}",
+          "email_verified" => true,
+        },
+      }),
+      :mock_userinfo_unverfied => MultiJson.dump({
+        "id_token" => {
+          "email" => "{{username}}",
+          "email_verified" => false,
+        },
+      }),
+    },
+    {
+      :provider => "login.gov",
+      :login_button_text => "Sign in with login.gov",
+      :mock_userinfo => MultiJson.dump({
+        "id_token" => {
+          "email" => "{{username}}",
+          "email_verified" => true,
+        },
+      }),
+      :mock_userinfo_unverfied => MultiJson.dump({
+        "id_token" => {
+          "email" => "{{username}}",
+          "email_verified" => false,
+        },
+      }),
     },
     {
       :provider => :ldap,
       :login_button_text => "Sign in with LDAP",
-      :username_path => "extra.raw_info.sAMAccountName",
+      :mock_userinfo => MultiJson.dump({
+        "sAMAccountName" => "{{username}}",
+      }),
     },
     {
-      :provider => :cas,
+      :provider => "max.gov",
       :login_button_text => "Sign in with MAX.gov",
-      :username_path => "uid",
-      :extra => {
-        "extra" => {
-          "MaxSecurityLevel" => "standard, securePlus2",
-        },
-      },
+      :mock_userinfo => <<~EOS,
+        <cas:serviceResponse xmlns:cas="http://www.yale.edu/tp/cas">
+          <cas:authenticationSuccess>
+            <cas:user>{{username}}</cas:user>
+            <cas:attributes>
+              <maxAttribute:MaxSecurityLevel>standard, securePlus2</maxAttribute:MaxSecurityLevel>
+            </cas:attributes>
+          </cas:authenticationSuccess>
+        </cas:serviceResponse>
+      EOS
     },
   ].each do |options|
     define_method("test_#{options.fetch(:provider)}_valid_admin") do
@@ -175,7 +249,7 @@ class Test::AdminUi::Login::TestExternalProviders < Minitest::Capybara::Test
       assert_login_nonexistent_admin(options)
     end
 
-    if(options[:verified_path])
+    if(options[:mock_userinfo_unverified])
       define_method("test_#{options.fetch(:provider)}_unverified_email") do
         assert_login_unverified_email_login(options)
       end
@@ -204,40 +278,35 @@ class Test::AdminUi::Login::TestExternalProviders < Minitest::Capybara::Test
 
   def assert_login_valid_admin(options)
     admin = FactoryBot.create(:admin, :username => "valid@example.com")
-    omniauth_data = omniauth_base_data(options)
-    LazyHash.add(omniauth_data, options.fetch(:username_path), admin.username)
+    data = options.fetch(:mock_userinfo).gsub("{{username}}", admin.username)
 
-    mock_omniauth(omniauth_data) do
+    mock_userinfo(data) do
       assert_login_permitted(options.fetch(:login_button_text), admin)
     end
   end
 
   def assert_login_case_insensitive_username_admin(options)
     admin = FactoryBot.create(:admin, :username => "hello@example.com")
-    omniauth_data = omniauth_base_data(options)
-    LazyHash.add(omniauth_data, options.fetch(:username_path), "Hello@ExamplE.Com")
+    data = options.fetch(:mock_userinfo).gsub("{{username}}", "Hello@ExamplE.Com")
 
-    mock_omniauth(omniauth_data) do
+    mock_userinfo(data) do
       assert_login_permitted(options.fetch(:login_button_text), admin)
     end
   end
 
   def assert_login_nonexistent_admin(options)
-    omniauth_data = omniauth_base_data(options)
-    LazyHash.add(omniauth_data, options.fetch(:username_path), "noadmin@example.com")
+    data = options.fetch(:mock_userinfo).gsub("{{username}}", "noadmin@example.com")
 
-    mock_omniauth(omniauth_data) do
+    mock_userinfo(data) do
       assert_login_forbidden(options.fetch(:login_button_text), "not authorized")
     end
   end
 
   def assert_login_unverified_email_login(options)
     admin = FactoryBot.create(:admin, :username => "unverified@example.com")
-    omniauth_data = omniauth_base_data(options)
-    LazyHash.add(omniauth_data, options.fetch(:username_path), admin.username)
-    LazyHash.add(omniauth_data, options.fetch(:verified_path), false)
+    data = options.fetch(:mock_userinfo_unverified).gsub("{{username}}", admin.username)
 
-    mock_omniauth(omniauth_data) do
+    mock_userinfo(data) do
       assert_login_forbidden(options.fetch(:login_button_text), "not verified")
     end
   end

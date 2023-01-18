@@ -3,15 +3,13 @@ require_relative "../test_helper"
 class Test::StaticSite::TestSignup < Minitest::Capybara::Test
   include Capybara::Screenshot::MiniTestPlugin
   include ApiUmbrellaTestHelpers::Setup
-  include ApiUmbrellaTestHelpers::DelayedJob
+  include ApiUmbrellaTestHelpers::SentEmails
 
   def setup
     super
     setup_server
-    ApiUser.where(:registration_source.ne => "seed").delete_all
 
-    response = Typhoeus.delete("http://127.0.0.1:#{$config["mailhog"]["api_port"]}/api/v1/messages")
-    assert_response_code(200, response)
+    clear_all_test_emails
   end
 
   def test_submission
@@ -26,13 +24,13 @@ class Test::StaticSite::TestSignup < Minitest::Capybara::Test
 
     assert_text("Your API key for foo@example.com is:")
 
-    user = ApiUser.order_by(:created_at.asc).last
+    user = ApiUser.order(:created_at => :asc).last
     assert(user)
     assert(user.api_key)
     assert_equal("foo@example.com", user.email)
     assert_text(user.api_key)
 
-    messages = delayed_job_sent_messages
-    assert_equal(1, messages.length)
+    messages = sent_emails
+    assert_equal(1, messages.fetch("total"))
   end
 end

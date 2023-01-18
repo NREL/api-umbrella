@@ -1,99 +1,13 @@
-local _M = {}
-
-local array_last = require "api-umbrella.utils.array_last"
-local config = require "api-umbrella.proxy.models.file_config"
-local distributed_rate_limit_queue = require "api-umbrella.proxy.distributed_rate_limit_queue"
-local is_empty = require "api-umbrella.utils.is_empty"
-local mongo = require "api-umbrella.utils.mongo"
-local plutils = require "pl.utils"
+local distributed_push = require("api-umbrella.proxy.stores.rate_limit_counters_store").distributed_push
 local xpcall_error_handler = require "api-umbrella.utils.xpcall_error_handler"
-
-local split = plutils.split
 
 local delay = 0.25  -- in seconds
 local new_timer = ngx.timer.at
 
-local indexes_created = false
+local _M = {}
 
-local function create_indexes()
-  if not indexes_created then
-    local _, err = mongo.create("system.indexes", {
-      ns = config["mongodb"]["_database"] .. ".rate_limits",
-      key = {
-        ts = -1,
-      },
-      name = "ts",
-      background = true,
-    })
-    if err then
-      ngx.log(ngx.ERR, "failed to create mongodb ts index: ", err)
-    end
-
-    _, err = mongo.create("system.indexes", {
-      ns = config["mongodb"]["_database"] .. ".rate_limits",
-      key = {
-        expire_at = 1,
-      },
-      name = "expire_at",
-      expireAfterSeconds = 0,
-      background = true,
-    })
-    if err then
-      ngx.log(ngx.ERR, "failed to create mongodb expire_at index: ", err)
-    end
-
-    indexes_created = true
-  end
-end
-
-local function do_check()
-  create_indexes()
-
-  local current_save_time = ngx.now() * 1000
-
-  local data = distributed_rate_limit_queue.pop()
-  if is_empty(data) then
-    return
-  end
-
-  local success = true
-  for key, count in pairs(data) do
-    local key_parts = split(key, ":", true)
-    local duration = tonumber(key_parts[2])
-    local bucket_start_time = tonumber(array_last(key_parts))
-    local _, err = mongo.update("rate_limits", key, {
-      ["$currentDate"] = {
-        ts = { ["$type"] = "timestamp" },
-      },
-      ["$inc"] = {
-        count = count,
-      },
-      ["$setOnInsert"] = {
-        -- Set this key to automatically expire after the bucket's duration,
-        -- plus 60 seconds as a small buffer.
-        expire_at = {
-          ["$date"] = { ["$numberLong"] = tostring(bucket_start_time + duration + 60000) },
-        },
-      },
-    })
-    if err then
-      ngx.log(ngx.ERR, "failed to update rate limits in mongodb: ", err)
-      success = false
-    end
-  end
-
-  if success then
-    local set_ok, set_err, set_forcible = ngx.shared.stats:set("distributed_last_pushed_at", current_save_time)
-    if not set_ok then
-      ngx.log(ngx.ERR, "failed to set 'distributed_last_pushed_at' in 'stats' shared dict: ", set_err)
-    elseif set_forcible then
-      ngx.log(ngx.WARN, "forcibly set 'distributed_last_pushed_at' in 'stats' shared dict (shared dict may be too small)")
-    end
-  end
-end
-
--- Repeat calls to do_check() inside each worker on the specified interval
--- (every 0.25 seconds).
+-- Repeat calls to distributed_push() inside each worker on the specified
+-- interval (every 0.25 seconds).
 --
 -- We don't use interval_lock.repeat_with_mutex() here like most of our other
 -- background jobs, because in this job's case we're pushing local worker data
@@ -107,7 +21,7 @@ local function check(premature)
     return
   end
 
-  local ok, err = xpcall(do_check, xpcall_error_handler)
+  local ok, err = xpcall(distributed_push, xpcall_error_handler)
   if not ok then
     ngx.log(ngx.ERR, "failed to run backend load cycle: ", err)
   end

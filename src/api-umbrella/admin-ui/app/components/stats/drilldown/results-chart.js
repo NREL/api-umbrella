@@ -34,12 +34,9 @@ export default class ResultsChart extends Component {
         sampling: 'average',
         stack: 'hits',
         areaStyle: {
-          normal: {},
         },
         lineStyle: {
-          normal: {
-            width: 1,
-          },
+          width: 1,
         },
         data: [],
       });
@@ -53,10 +50,8 @@ export default class ResultsChart extends Component {
       }
     }
 
-    this.setProperties({
-      chartData: data,
-      chartLabels: labels,
-    });
+    this.chartData = data;
+    this.chartLabels = labels;
 
     this.draw();
   }

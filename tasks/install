@@ -6,15 +6,10 @@ source ./tasks/helpers.sh
 destdir="${DESTDIR:-}"
 install_prefix="$PREFIX"
 
-# Define a timestamped release name for our app installations. Base this on the
-# last git commit timestamp so installs are consistent for each git commit.
-release_timestamp=$(date -d "$(git log --max-count=1 --date=iso --format=%cd)" -u "+%Y%m%d%H%M%S")
-
 mkdir -p "$destdir$install_prefix"
-rsync -a -v "$STAGE_PREFIX_DIR/" "$destdir$install_prefix/"
+rsync -a --stats "$STAGE_PREFIX_DIR/" "$destdir$install_prefix/"
 install -D -m 755 "$SOURCE_DIR/build/package/files/etc/init.d/api-umbrella" "$destdir/etc/init.d/api-umbrella"
 install -D -m 644 "$SOURCE_DIR/build/package/files/etc/logrotate.d/api-umbrella" "$destdir/etc/logrotate.d/api-umbrella"
-install -D -m 440 "$SOURCE_DIR/build/package/files/etc/sudoers.d/api-umbrella" "$destdir/etc/sudoers.d/api-umbrella"
 
 # If /etc/api-umbrella/api-umbrella.yml doesn't exist, install it.
 #
@@ -26,20 +21,6 @@ if [ -f "$destdir/etc/api-umbrella/api-umbrella.yml" ]; then
 else
   install -D -m 644 "$SOURCE_DIR/build/package/files/etc/api-umbrella/api-umbrella.yml" "$destdir/etc/api-umbrella/api-umbrella.yml"
 fi
-
-(
-  cd "$destdir$install_prefix/embedded/apps/core"
-  rm -rf "releases/$release_timestamp"
-  mv releases/0 "releases/$release_timestamp"
-  ln -snf "releases/$release_timestamp" ./current
-)
-
-(
-  cd "$destdir$install_prefix/embedded/apps/static-site"
-  rm -rf "releases/$release_timestamp"
-  mv releases/0 "releases/$release_timestamp"
-  ln -snf "releases/$release_timestamp" ./current
-)
 
 mkdir -p \
   "$destdir/usr/bin" \

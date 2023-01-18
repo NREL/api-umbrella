@@ -1,17 +1,16 @@
-local config = require "api-umbrella.proxy.models.file_config"
+local append_array = require "api-umbrella.utils.append_array"
+local config = require("api-umbrella.utils.load_config")()
 local matches_hostname = require "api-umbrella.utils.matches_hostname"
-local random_num = require "api-umbrella.utils.random_num"
 local stringx = require "pl.stringx"
 local utils = require "api-umbrella.proxy.utils"
 
-local append_array = utils.append_array
 local set_uri = utils.set_uri
 local startswith = stringx.startswith
 
 local function apis_for_request_host(active_config)
   local apis = {}
 
-  local all_apis = active_config["apis"] or {}
+  local all_apis = active_config["api_backends"] or {}
   local apis_for_default_host = {}
   for _, api in ipairs(all_apis) do
     if matches_hostname(api["_frontend_host_normalized"], api["_frontend_host_wildcard_regex"]) then
@@ -21,7 +20,7 @@ local function apis_for_request_host(active_config)
     end
   end
 
-  -- If a default host exists, append its APIs to the end sot hey have a lower
+  -- If a default host exists, append its APIs to the end so they have a lower
   -- matching precedence than any APIs that actually match the host.
   append_array(apis, apis_for_default_host)
 
@@ -32,8 +31,12 @@ local function match_api(active_config, request_path)
   -- Find the API backends that match this host.
   local apis = apis_for_request_host(active_config)
 
-  -- Search through each API backend for the first that matches the URL path
-  -- prefix.
+  -- Search through each API backend for URL path prefix matches. Choose the
+  -- match that is the longest prefix path string, since this would be the most
+  -- specific match in cases where multiple path prefixes would match.
+  local matched_api = nil
+  local matched_url_match = nil
+  local matched_length = 0
   for _, api in ipairs(apis) do
     if api["url_matches"] then
       for _, url_match in ipairs(api["url_matches"]) do
@@ -44,11 +47,18 @@ local function match_api(active_config, request_path)
           matches = true
         end
 
-        if matches then
-          return api, url_match
+        local length = string.len(url_match["frontend_prefix"])
+        if matches and length > matched_length then
+          matched_api = api
+          matched_url_match = url_match
+          matched_length = length
         end
       end
     end
+  end
+
+  if matched_api and matched_url_match then
+    return matched_api, matched_url_match
   end
 end
 
@@ -82,19 +92,7 @@ return function(active_config)
       end
     end
 
-
-    local server_index
-    if api["_servers_count"] == 1 then
-      server_index = 1
-    else
-      server_index = random_num(1, api["_servers_count"])
-    end
-    local server = api["servers"][server_index]
-
-    ngx.ctx.proxy_host = host
-    ngx.ctx.proxy_server_scheme = api["backend_protocol"] or "http"
-    ngx.ctx.proxy_server_host = server["host"]
-    ngx.ctx.proxy_server_port = server["port"]
+    ngx.ctx.backend_host = host
 
     return api, url_match
   else

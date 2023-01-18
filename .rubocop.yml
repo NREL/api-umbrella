@@ -1,8 +1,5 @@
-require:
-  - rubocop-rails
-
 AllCops:
-  TargetRubyVersion: 2.4
+  TargetRubyVersion: 2.5
   NewCops: enable
   Exclude:
     - bin/**/*
@@ -12,11 +9,6 @@ AllCops:
     - src/api-umbrella/web-app/vendor/**/*
     - tmp/**/*
     - vendor/**/*
-
-Rails:
-  Enabled: true
-  Exclude:
-    - test/**/*
 
 Bundler/OrderedGems:
   Enabled: false
@@ -97,6 +89,9 @@ Metrics/MethodLength:
 Metrics/ModuleLength:
   Enabled: false
 
+Metrics/ParameterLists:
+  CountKeywordArgs: false
+
 Metrics/PerceivedComplexity:
   Enabled: false
 
@@ -104,24 +99,6 @@ Naming/HeredocDelimiterNaming:
   Enabled: false
 
 Naming/VariableNumber:
-  Enabled: false
-
-Rails/ApplicationMailer:
-  Enabled: false
-
-Rails/FindBy:
-  Enabled: false
-
-Rails/HasAndBelongsToMany:
-  Enabled: false
-
-Rails/Pluck:
-  Enabled: false
-
-Rails/RakeEnvironment:
-  Enabled: false
-
-Rails/WhereExists:
   Enabled: false
 
 Style/AsciiComments:
@@ -156,7 +133,7 @@ Style/GuardClause:
   Enabled: false
 
 Style/HashSyntax:
-  EnforcedStyle: hash_rockets
+  EnforcedStyle: no_mixed_keys
 
 Style/IfInsideElse:
   Enabled: false

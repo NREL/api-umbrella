@@ -1,0 +1,5 @@
+<h1><%= string.format(t("Sign in with %s"), config["web"]["admin"]["auth_strategies"]["ldap"]["options"]["title"] or t("LDAP")) %></h1>
+
+<div class="login-container">
+  <% render("api-umbrella.web-app.views.admin.sessions._login_form_ldap") %>
+</div>

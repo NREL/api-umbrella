@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+set -e
+# rc.perp: perpd startup script for perpboot
+# ===
+
+### --- configure ---
+perpd_args=()
+
+### --- script ---
+
+# Attempt to set hard limit values (if not root, this will generate a warning).
+# The runlimit call below will set the soft values to the maximum hard limit
+# allowed (regardless of whether root or not).
+# shellcheck disable=SC2039
+ulimit -Hn "<%- config['rlimits']['nofile'] %>" || true
+# shellcheck disable=SC2039
+ulimit -Hu "<%- config['rlimits']['nproc'] %>" || true
+
+## exec perpd:
+##   * options as configured above
+##   * runchoom(8) abate linux oom-killer
+##   * runlimit(8) configured in ./rlimit.conf
+##   * PERP_BASE defined in environment by perpboot(8)
+exec \
+  runchoom \
+  runlimit -F ./rlimit.conf \
+  perpd "${perpd_args[@]}" "${PERP_BASE}"
+
+### EOF

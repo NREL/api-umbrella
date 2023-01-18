@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+set -e -u -x
+source ./tasks/helpers.sh
+source ./tasks/helpers/lua.sh
+
+cd "$SOURCE_DIR/test"
+
+rm -rf "$TEST_VENDOR_LUA_DIR"
+
+extra_args=(
+  "--only-deps"
+  "--pin"
+)
+
+test_luarocks_install "./api-umbrella-test-git-1.rockspec" "git-1" "${extra_args[@]}"

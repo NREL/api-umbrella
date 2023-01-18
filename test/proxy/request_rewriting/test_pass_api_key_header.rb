@@ -18,6 +18,15 @@ class Test::Proxy::RequestRewriting::TestPassApiKeyHeader < Minitest::Test
             :pass_api_key_header => true,
           },
         },
+        {
+          :frontend_host => "127.0.0.1",
+          :backend_host => "127.0.0.1",
+          :servers => [{ :host => "127.0.0.1", :port => 9444 }],
+          :url_matches => [{ :frontend_prefix => "/#{unique_test_class_id}/pass-api-key-header-disabled/", :backend_prefix => "/" }],
+          :settings => {
+            :pass_api_key_header => false,
+          },
+        },
       ])
     end
   end
@@ -49,5 +58,14 @@ class Test::Proxy::RequestRewriting::TestPassApiKeyHeader < Minitest::Test
     assert_equal({}, data["url"]["query"])
     refute(data["basic_auth_username"])
     refute(data["headers"]["authorization"])
+  end
+
+  def test_disabled
+    assert(http_options[:headers]["X-Api-Key"])
+    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/pass-api-key-header-disabled/info/", http_options)
+    assert_response_code(200, response)
+    data = MultiJson.load(response.body)
+    assert_nil(data["headers"]["x-api-key"])
+    assert_equal({}, data["url"]["query"])
   end
 end

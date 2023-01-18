@@ -1,40 +1,51 @@
-import { computed } from '@ember/object';
 import Model, { attr, belongsTo, hasMany } from '@ember-data/model';
+import { t } from 'api-umbrella-admin-ui/utils/i18n';
 import classic from 'ember-classic-decorator';
 import { buildValidations, validator } from 'ember-cp-validations';
-import I18n from 'i18n-js';
 
 const Validations = buildValidations({
-  name: validator('presence', true),
+  name: validator('presence', {
+    presence: true,
+    description: t('Name'),
+  }),
   frontendHost: [
-    validator('presence', true),
+    validator('presence', {
+      presence: true,
+      description: t('Frontend Host'),
+    }),
     validator('format', {
       regex: CommonValidations.host_format_with_wildcard,
-      message: I18n.t('errors.messages.invalid_host_format'),
+      description: t('Frontend Host'),
+      message: t('must be in the format of "example.com"'),
     }),
   ],
   backendHost: [
     validator('presence', {
       presence: true,
-      disabled: computed('model.frontendHost', function() {
+      description: t('Frontend Host'),
+      disabled: () => {
         return (this.model.frontendHost && this.model.frontendHost[0] === '*');
-      }),
+      },
     }),
     validator('format', {
       regex: CommonValidations.host_format_with_wildcard,
-      message: I18n.t('errors.messages.invalid_host_format'),
-      disabled: computed.not('model.backendHost'),
+      description: t('Backend Host'),
+      message: t('must be in the format of "example.com"'),
+      disabled: () => {
+        return !this.model.backendHost;
+      },
     }),
   ],
 });
 
 @classic
 class Api extends Model.extend(Validations) {
+  static urlRoot = '/api-umbrella/v1/apis';
+  static singlePayloadKey = 'api';
+  static arrayPayloadKey = 'data';
+
   @attr()
   name;
-
-  @attr('number')
-  sortOrder;
 
   @attr('string', { defaultValue: 'http' })
   backendProtocol;
@@ -60,22 +71,39 @@ class Api extends Model.extend(Validations) {
   @attr()
   updater;
 
-  @hasMany('api/server', { async: false })
+  @attr()
+  organizationName;
+
+  @attr()
+  statusDescription;
+
+  @attr()
+  rootApiScope;
+
+  @attr()
+  apiScopes;
+
+  @attr()
+  adminGroups;
+
+  @hasMany('api/server', { async: false, inverse: null })
   servers;
 
-  @hasMany('api/url-match', { async: false })
+  @hasMany('api/url-match', { async: false, inverse: null })
   urlMatches;
 
-  @belongsTo('api/settings', { async: false })
+  @belongsTo('api/settings', { async: false, inverse: null })
   settings;
 
-  @hasMany('api/sub-settings', { async: false })
+  @hasMany('api/sub-settings', { async: false, inverse: null })
   subSettings;
 
-  @hasMany('api/rewrites', { async: false })
+  @hasMany('api/rewrites', { async: false, inverse: null })
   rewrites;
 
-  ready() {
+  init() {
+    super.init(...arguments);
+
     this.setDefaults();
   }
 
@@ -85,21 +113,13 @@ class Api extends Model.extend(Validations) {
     }
   }
 
-  @computed('frontendHost')
   get exampleIncomingUrlRoot() {
     return 'https://' + (this.frontendHost || '');
   }
 
-  @computed('backendHost', 'backendProtocol', 'fontendHost', 'frontendHost')
   get exampleOutgoingUrlRoot() {
     return this.backendProtocol + '://' + (this.backendHost || this.frontendHost || '');
   }
 }
-
-Api.reopenClass({
-  urlRoot: '/api-umbrella/v1/apis',
-  singlePayloadKey: 'api',
-  arrayPayloadKey: 'data',
-});
 
 export default Api;

@@ -5,7 +5,7 @@
     <FieldsFor @model={{this.model}} @style="horizontal" as |f|>
       <fieldset class="form-horizontal condensed">
         {{f.text-field "frontendHost" label="Frontend Host" placeholder="example.com"}}
-        {{f.select-field "backendProtocol" label=(t "mongoid.attributes.api.backend_protocol") options=this.backendProtocolOptions}}
+        {{f.select-field "backendProtocol" label=(t "Backend Protocol") options=this.backendProtocolOptions}}
         {{f.text-field "serverHost" label="Backend Server" placeholder="example.github.io"}}
         {{f.text-field "serverPort" label="Backend Port"}}
       </fieldset>

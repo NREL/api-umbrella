@@ -21,24 +21,24 @@
             <td>{{rewrite.frontendMatcher}}</td>
             <td>{{rewrite.backendReplacement}}</td>
             <td class="table-row-actions">
-              <a href="#" {{action "edit" rewrite}}><FaIcon @icon="pencil-alt" />{{t "admin.edit"}}</a>
-              <a href="#" class="remove-action" {{action "remove" rewrite}}><FaIcon @icon="times" />{{t "admin.remove"}}</a>
+              <a href="#" {{action "edit" rewrite}}><FaIcon @icon="pencil-alt" />{{t "Edit"}}</a>
+              <a href="#" class="remove-action" {{action "remove" rewrite}}><FaIcon @icon="times" />{{t "Remove"}}</a>
             </td>
             <td class="reorder-handle"><FaIcon @icon="bars" /></td>
           </tr>
         {{/each}}
       {{else}}
-        <tr class="empty"><td colspan="6">{{t "admin.api.rewrites.empty_list" add=(t "admin.api.rewrites.add")}}</td></tr>
+        <tr class="empty"><td colspan="6">{{sprintf (t "No request rewrites have been added yet. Click \"%s\" below to get started.") (t "Add Rewrite")}}</td></tr>
       {{/if}}
     </tbody>
   </table>
-  <div class="row-fluid">
-    <div class="span6">
-      <button type="button" class="btn btn-light btn-sm" {{action "add"}}><FaIcon @icon="plus-circle" /> {{t "admin.api.rewrites.add"}}</button>
+  <div class="row">
+    <div class="col-6">
+      <button type="button" class="btn btn-light btn-sm" {{action "add"}}><FaIcon @icon="plus-circle" /> {{t "Add Rewrite"}}</button>
     </div>
-    <div class="span6 text-right">
-      {{#if this.isReorderable}}
-        <button type="button" id="rewrites_reorder" class="btn btn-light btn-sm" {{action "reorderCollection" "rewrites"}}><FaIcon @icon="bars" /> <span class="reorder-button-text">{{t "admin.reorder"}}</span></button>
+    <div class="col-6 text-right">
+      {{#if this.sortable.isReorderable}}
+        <button type="button" id="rewrites_reorder" class="btn btn-light btn-sm" {{on "click" (fn this.sortable.reorderCollection "rewrites")}}><FaIcon @icon="bars" /> <span class="reorder-button-text">{{t "Reorder"}}</span></button>
       {{/if}}
     </div>
   </div>

@@ -1,29 +1,31 @@
-local config = require "api-umbrella.proxy.models.file_config"
-local is_empty = require "api-umbrella.utils.is_empty"
+local config = require("api-umbrella.utils.load_config")()
 local lustache = require "lustache"
 local plutils = require "pl.utils"
-local stringx = require "pl.stringx"
+local re_split = require("ngx.re").split
 local tablex = require "pl.tablex"
 local utils = require "api-umbrella.proxy.utils"
 local xpcall_error_handler = require "api-umbrella.utils.xpcall_error_handler"
 
 local gsub = ngx.re.gsub
+local re_find = ngx.re.find
+local re_match = ngx.re.match
 local keys = tablex.keys
 local set_uri = utils.set_uri
 local size = tablex.size
 local split = plutils.split
-local strip = stringx.strip
 
-local function pass_api_key(user, settings)
+local function pass_api_key(settings)
+  local api_key = ngx.ctx.api_key
+
   -- DEPRECATED: We don't want to pass api keys to backends for security
   -- reasons. Instead, we want to only pass the X-Api-User-Id for identifying
   -- the user. But for legacy purposes, we still support passing api keys to
   -- specific backends.
   local pass_api_key_header = settings["pass_api_key_header"]
-  if pass_api_key_header and user then
+  if pass_api_key_header and api_key then
     -- Standardize how the api key is passed to backends, so backends only have
     -- to check one place (the HTTP header).
-    ngx.req.set_header("X-Api-Key", user["api_key"])
+    ngx.req.set_header("X-Api-Key", api_key)
   else
     ngx.req.clear_header("X-Api-Key")
   end
@@ -34,10 +36,10 @@ local function pass_api_key(user, settings)
   -- for specific backends.
   local pass_api_key_query_param = settings["pass_api_key_query_param"]
   local arg_api_key = ngx.ctx.arg_api_key
-  if pass_api_key_query_param and user then
-    if arg_api_key ~= user["api_key"] then
+  if pass_api_key_query_param and api_key then
+    if arg_api_key ~= api_key then
       local args = utils.remove_arg(ngx.ctx.args, "api_key")
-      args = utils.append_args(args, "api_key=" .. user["api_key"])
+      args = utils.append_args(args, "api_key=" .. api_key)
       set_uri(nil, args)
     end
   else
@@ -50,7 +52,7 @@ local function pass_api_key(user, settings)
   -- Never pass along basic auth if it's how the api key was passed in
   -- (otherwise, we don't want to touch the basic auth and pass along
   -- whatever it contains)..
-  if user and ngx.ctx.remote_user == user["api_key"] then
+  if api_key and ngx.ctx.remote_user == api_key then
     ngx.req.clear_header("Authorization")
   end
 end
@@ -128,52 +130,49 @@ end
 
 local function set_http_basic_auth(settings)
   if settings["_http_basic_auth_header"] then
-    ngx.req.set_header("Authorization", settings["_http_basic_auth_header"])
-    ngx.req.set_header("X-Api-Umbrella-Allow-Authorization-Caching", "true")
+    ngx.req.clear_header("Authorization")
+    ngx.req.set_header("X-Api-Umbrella-Backend-Authorization", settings["_http_basic_auth_header"])
   end
 end
 
 local function strip_cookies(api)
   local cookie_header = ngx.var.http_cookie
-  if not cookie_header then return end
-
-  local strips = {}
-  if config["strip_cookies"] then
-    for _, strip_regex in ipairs(config["strip_cookies"]) do
-      table.insert(strips, strip_regex)
-    end
+  if not cookie_header then
+    return
   end
-  if api["_id"] ~= "api-umbrella-web-app-backend" then
-    table.insert(strips, "^_api_umbrella_session$")
-  end
-  if #strips == 0 then return end
 
-  local cookies = split(cookie_header, "; *")
+  local strip_request_cookie_regex
+  if api["id"] == "api-umbrella-web-app-backend" then
+    strip_request_cookie_regex = config["_strip_request_cookies_regex_web_app_backend"]
+  else
+    strip_request_cookie_regex = config["_strip_request_cookies_regex_non_web_app_backends"]
+  end
+
+  if not strip_request_cookie_regex then
+    return
+  end
+
+  local cookies, split_err = re_split(cookie_header, "; *", "jo")
+  if split_err then
+    ngx.log(ngx.ERR, "regex error: ", split_err)
+    return
+  end
+
   local kept_cookies = {}
-
   for _, cookie in ipairs(cookies) do
     local cookie_name = string.match(cookie, "(.-)=")
-    local remove_cookie = false
 
-    if cookie_name then
-      cookie_name = strip(cookie_name)
-      for _, strip_regex in ipairs(strips) do
-        local matches, match_err = ngx.re.match(cookie_name, strip_regex, "io")
-        if matches then
-          remove_cookie = true
-          break
-        elseif match_err then
-          ngx.log(ngx.ERR, "regex error: ", match_err)
-        end
-      end
+    local find_from, _, find_err = re_find(cookie_name, strip_request_cookie_regex, "ijo")
+    if find_err then
+      ngx.log(ngx.ERR, "regex error: ", find_err)
     end
 
-    if not remove_cookie then
+    if not find_from then
       table.insert(kept_cookies, cookie)
     end
   end
 
-  if is_empty(kept_cookies) then
+  if #kept_cookies == 0 then
     ngx.req.clear_header("Cookie")
   else
     ngx.req.set_header("Cookie", table.concat(kept_cookies, "; "))
@@ -209,7 +208,7 @@ local function url_rewrites(api)
           args_length = size(args)
         end
 
-        local matches, match_err = ngx.re.match(path, rewrite["_frontend_path_regex"])
+        local matches, match_err = re_match(path, rewrite["_frontend_path_regex"])
         if matches then
           if rewrite["_frontend_args_length"] then
             if rewrite["_frontend_args_allow_wildcards"] or args_length == rewrite["_frontend_args_length"] then
@@ -268,7 +267,7 @@ local function url_rewrites(api)
 end
 
 return function(user, api, settings)
-  pass_api_key(user, settings)
+  pass_api_key(settings)
   set_user_id_header(user)
   set_roles_header(user)
   append_query_string(settings)

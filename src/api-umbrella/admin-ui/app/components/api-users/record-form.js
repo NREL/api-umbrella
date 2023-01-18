@@ -1,27 +1,33 @@
 // eslint-disable-next-line ember/no-classic-components
 import Component from '@ember/component';
-import { action } from '@ember/object';
+import { action, computed } from '@ember/object';
+import { inject } from '@ember/service';
 // eslint-disable-next-line ember/no-mixins
 import Save from 'api-umbrella-admin-ui/mixins/save';
+import { t } from 'api-umbrella-admin-ui/utils/i18n';
 import classic from 'ember-classic-decorator';
-import I18n from 'i18n-js';
 import $ from 'jquery';
 import escape from 'lodash-es/escape';
 
 @classic
 export default class RecordForm extends Component.extend(Save) {
-  init() {
-    super.init(...arguments);
+  @inject('session')
+  session;
 
-    this.throttleByIpOptions = [
-      { id: false, name: 'Rate limit by API key' },
-      { id: true, name: 'Rate limit by IP address' },
-    ];
+  throttleByIpOptions = [
+    { id: false, name: 'Rate limit by API key' },
+    { id: true, name: 'Rate limit by IP address' },
+  ];
 
-    this.enabledOptions = [
-      { id: true, name: 'Enabled' },
-      { id: false, name: 'Disabled' },
-    ];
+  enabledOptions = [
+    { id: true, name: 'Enabled' },
+    { id: false, name: 'Disabled' },
+  ];
+
+  @computed('session.data.authenticated.admin')
+  get isDisabled() {
+    const currentAdmin = this.session.data.authenticated.admin;
+    return !currentAdmin.permissions.user_manage;
   }
 
   @action
@@ -32,27 +38,50 @@ export default class RecordForm extends Component.extend(Save) {
     if($key.data('revealed') === 'true') {
       $key.text($key.data('api-key-preview'));
       $key.data('revealed', 'false');
-      $toggle.text(I18n.t('admin.reveal_action'));
+      $toggle.text(t('(reveal)'));
     } else {
       $key.text($key.data('api-key'));
       $key.data('revealed', 'true');
-      $toggle.text(I18n.t('admin.hide_action'));
+      $toggle.text(t('(hide)'));
     }
   }
 
   @action
   submitForm(event) {
     event.preventDefault();
+
+    const currentAdmin = this.session.data.authenticated.admin;
+    if(!currentAdmin.permissions.user_manage) {
+      console.info('No permissions to manage users');
+      return;
+    }
+
+    const isNew = this.model.get('isNew');
     this.saveRecord({
       element: event.target,
       transitionToRoute: 'api_users',
       message(model) {
-        let message = 'Successfully saved the user "' + escape(model.get('email')) + '"';
-        if(model.get('apiKey')) {
-          message += '<br>API Key: <code>' + escape(model.get('apiKey')) + '</code>';
+        let message = '<p>Successfully saved the user "' + escape(model.get('email')) + '"</p>';
+        if(isNew && model.get('apiKey')) {
+          message += '<p style="font-size: 18px;"><strong>API Key:</strong> <code>' + escape(model.get('apiKey')) + '</code></p>';
+          message += '<p><strong>Note:</strong> This API key will not be displayed again, so make note of it if needed.</p>';
         }
 
         return message;
+      },
+      messageHide(model) {
+        if(isNew && model.get('apiKey')) {
+          return false;
+        } else {
+          return true;
+        }
+      },
+      messageWidth(model) {
+        if(isNew && model.get('apiKey')) {
+          return '500px';
+        } else {
+          return undefined;
+        }
       },
     });
   }

@@ -1,0 +1,666 @@
+msgid ""
+msgstr ""
+"Language: es\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+# breadcrumb_divider
+msgid "&raquo;"
+msgstr "&raquo;"
+
+# admin.nav.api_backends
+msgid "API Backends"
+msgstr "API Backends"
+
+# admin.nav.api_drilldown
+msgid "API Drilldown"
+msgstr "API Drilldown"
+
+# admin.nav.api_scopes
+msgid "API Scopes"
+msgstr "API Scopes"
+
+# admin.nav.api_users
+msgid "API Users"
+msgstr "API Users"
+
+# admin.api.rewrites.add
+msgid "Add Rewrite"
+msgstr "Add Rewrite"
+
+# admin.api.servers.add
+msgid "Add Server"
+msgstr "Add Server"
+
+# admin.api.url_matches.add
+msgid "Add URL Prefix"
+msgstr "Add URL Prefix"
+
+# admin.nav.admin_accounts
+msgid "Admin Accounts"
+msgstr "Admin Accounts"
+
+# admin.nav.admin_groups
+msgid "Admin Groups"
+msgstr "Admin Groups"
+
+# admin.api.rewrites.legend
+msgid "Advanced Requests Rewriting"
+msgstr "Advanced Requests Rewriting"
+
+# admin.nav.analytics
+msgid "Analytics"
+msgstr "Analítica"
+
+# mongoid.attributes.api/settings.append_query_string
+msgid "Append Query String Parameters"
+msgstr "Añadir parámetros de cadena de consulta"
+
+# admin.api.servers.legend
+msgid "Backend"
+msgstr "Backend"
+
+# mongoid.attributes.api.backend_host
+msgid "Backend Host"
+msgstr "Backend Host"
+
+# mongoid.attributes.api/url_match.backend_prefix
+msgid "Backend Prefix"
+msgstr "Backend Prefix"
+
+# mongoid.attributes.api.backend_protocol
+msgid "Backend Protocol"
+msgstr "Backend Protocol"
+
+# mongoid.attributes.api/server.host
+msgid "Backend server host"
+msgstr "Backend server host"
+
+# admin.nav.by_location
+msgid "By Location"
+msgstr "By Location"
+
+# admin.nav.by_users
+msgid "By Users"
+msgstr "By Users"
+
+# admin.api.sub_settings.note
+msgid "Change settings for specific sub-URLs within this API."
+msgstr "Change settings for specific sub-URLs within this API."
+
+# admin.check_all
+msgid "Check all"
+msgstr "Marcar todos"
+
+# admin.nav.configuration
+msgid "Configuration"
+msgstr "Configuration"
+
+# admin.nav.dashboard
+msgid "Dashboard"
+msgstr "Tablero de instrumentos"
+
+# admin.api.host.note
+msgid "Define the host that we will listen for, and then the host the API backend is listening for."
+msgstr "Define the host that we will listen for, and then the host the API backend is listening for."
+
+# admin.api.servers.note
+msgid "Define the server where the API is hosted. Multiple servers can be defined to perform load balancing."
+msgstr "Define the server where the API is hosted. Multiple servers can be defined to perform load balancing."
+
+# admin.edit
+msgid "Edit"
+msgstr "Editar"
+
+# mongoid.attributes.api/settings.error_data
+msgid "Error Data"
+msgstr "Datos erróneos"
+
+# mongoid.attributes.api/settings.error_templates
+msgid "Error Templates"
+msgstr "Plantillas erróneos"
+
+# omniauth_providers.facebook
+msgid "Facebook"
+msgstr "Facebook"
+
+# admin.nav.filter_logs
+msgid "Filter Logs"
+msgstr "Filter Logs"
+
+# mongoid.attributes.api.frontend_host
+msgid "Frontend Host"
+msgstr "Frontend Host"
+
+# mongoid.attributes.api/url_match.frontend_prefix
+msgid "Frontend Prefix"
+msgstr "Frontend Prefix"
+
+# omniauth_providers.github
+msgid "GitHub"
+msgstr "GitHub"
+
+# omniauth_providers.google_oauth2
+msgid "Google"
+msgstr "Google"
+
+# admin.api.host.legend
+msgid "Host"
+msgstr "Host"
+
+# admin.nav.import_export
+msgid "Import/Export"
+msgstr "Importación/Exportación"
+
+# omniauth_providers.cas
+msgid "MAX.gov"
+msgstr "MAX.gov"
+
+# admin.api.url_matches.legend
+msgid "Matching URL Prefixes"
+msgstr "Matching URL Prefixes"
+
+# admin.api.rewrites.note
+msgid "Modify the incoming request's URL or headers before passing it to the backend."
+msgstr "Modify the incoming request's URL or headers before passing it to the backend."
+
+# admin.errors.host_format
+msgid "Must be in the format of \"example.com\""
+msgstr "Debe ser en formato de \"example.com\""
+
+# admin.nav.my_account
+msgid "My Account"
+msgstr "My Account"
+
+# mongoid.attributes.api.name
+msgid "Name"
+msgstr "Nombre"
+
+# admin.api.url_matches.empty_list
+msgid "No URL prefix matches have been added yet. Click \"%{add}\" below to get started."
+msgstr "No URL prefix matches have been added yet. Click \"%{add}\" below to get started."
+
+# admin.api.servers.empty_list
+msgid "No backend servers have been added yet. Click \"%{add}\" below to get started."
+msgstr "No backend servers have been added yet. Click \"%{add}\" below to get started."
+
+# admin.api.rewrites.empty_list
+msgid "No request rewrites have been added yet. Click \"%{add}\" below to get started."
+msgstr "No request rewrites have been added yet. Click \"%{add}\" below to get started."
+
+# admin.nav.permissions_management
+msgid "Permissions Management"
+msgstr "Permissions Management"
+
+# mongoid.attributes.api/server.port
+msgid "Port"
+msgstr "Puerto"
+
+# admin.nav.publish_changes
+msgid "Publish Changes"
+msgstr "Publicar cambio"
+
+# mongoid.attributes.api/settings.rate_limit_mode
+msgid "Rate Limit"
+msgstr "Límite de velocidad"
+
+# admin.remove
+msgid "Remove"
+msgstr "Quitar"
+
+# admin.reorder
+msgid "Reorder"
+msgstr "Reordenar"
+
+# mongoid.attributes.api/settings.allowed_referers
+msgid "Restrict Access to HTTP Referers"
+msgstr "Restringir acceso a referentes de HTTP"
+
+# mongoid.attributes.api/settings.allowed_ips
+msgid "Restrict Access to IPs"
+msgstr "Restringir acceso a IPs"
+
+# admin.api.servers.server
+msgid "Server"
+msgstr "Server"
+
+# mongoid.attributes.api/settings.http_basic_auth
+msgid "Set Headers"
+msgstr "Ajustar los títulos"
+
+# admin.nav.logout
+msgid "Sign out"
+msgstr "Logout"
+
+# admin.api.sub_settings.legend
+msgid "Sub-URL Request Settings"
+msgstr "Sub-URL Request Settings"
+
+# admin.uncheck_all
+msgid "Uncheck all"
+msgstr "Desmarcar todos"
+
+# admin.nav.users
+msgid "Users"
+msgstr "Users"
+
+# admin.api.url_matches.note
+msgid "What URL prefixes should be routed to this backend?"
+msgstr "What URL prefixes should be routed to this backend?"
+
+# omniauth_providers.developer
+msgid "dummy login (development only)"
+msgstr "demo login (solo para desarollo)"
+
+# errors.messages.invalid_host_format
+msgid "must be in the format of \"example.com\""
+msgstr "debe ser en el formato de \"example.com\""
+
+# errors.messages.invalid_url_prefix_format
+msgid "must start with \"/\""
+msgstr "debe empezar de \"/\""
+
+# errors.messages.not_saved.other
+msgid "%{count} errors prohibited this %{resource} from being saved:"
+msgstr "Ocurrieron %{count} errores al tratar de guardar %{resource}:"
+
+# errors.messages.not_saved.one
+msgid "1 error prohibited this %{resource} from being saved:"
+msgstr "Ocurrió un error al tratar de guardar %{resource}:"
+
+# devise.registrations.signed_up_but_unconfirmed
+msgid "A message with a confirmation link has been sent to your email address. Please follow the link to activate your account."
+msgstr "Se ha enviado un mensaje con un enlace de confirmación a tu correo electrónico. Abre el enlace para activar tu cuenta."
+
+# devise.registrations.edit.are_you_sure
+msgid "Are you sure?"
+msgstr "¿Está usted seguro?"
+
+# devise.shared.links.back
+msgid "Back"
+msgstr "Atrás"
+
+# devise.registrations.destroyed
+msgid "Bye! Your account has been successfully cancelled. We hope to see you again soon."
+msgstr "¡Adiós! Tu cuenta ha sido cancelada correctamente. Esperamos verte pronto."
+
+# devise.registrations.edit.cancel_my_account
+msgid "Cancel my account"
+msgstr "Anular mi cuenta"
+
+# devise.passwords.edit.change_my_password
+msgid "Change My Password"
+msgstr "Cambiar mi contraseña"
+
+# devise.passwords.edit.change_your_password
+msgid "Change Your Password"
+msgstr "Cambie su contraseña"
+
+# devise.mailer.reset_password_instructions.action
+msgid "Change my password"
+msgstr "Cambiar mi contraseña"
+
+# devise.mailer.unlock_instructions.instruction
+msgid "Click the link below to unlock your account:"
+msgstr "Haga click en el siguiente enlace para desbloquear su cuenta:"
+
+# devise.passwords.edit.confirm_new_password
+msgid "Confirm New Password"
+msgstr "Confirme la nueva contraseña"
+
+# devise.mailer.confirmation_instructions.action
+msgid "Confirm my account"
+msgstr "Confirmar mi cuenta"
+
+# devise.mailer.confirmation_instructions.subject
+msgid "Confirmation instructions"
+msgstr "Instrucciones de confirmación"
+
+# activerecord.attributes.user.confirmation_sent_at
+msgid "Confirmation sent at"
+msgstr "Fecha de envío de confirmación"
+
+# activerecord.attributes.user.confirmation_token
+msgid "Confirmation token"
+msgstr "Código de confirmación"
+
+# activerecord.attributes.user.confirmed_at
+msgid "Confirmed at"
+msgstr "Fecha de confirmación"
+
+# devise.omniauth_callbacks.failure
+msgid "Could not authenticate you from %{kind} because \"%{reason}\"."
+msgstr "No has sido autorizado en la cuenta %{kind} porque \"%{reason}\"."
+
+# activerecord.attributes.user.created_at
+msgid "Created at"
+msgstr "Fecha de creación"
+
+# mongoid.attributes.admin.current_password
+msgid "Current Password"
+msgstr "Contraseña actual"
+
+# activerecord.attributes.user.current_password
+msgid "Current password"
+msgstr "Contraseña actual"
+
+# activerecord.attributes.user.current_sign_in_ip
+msgid "Current sign in IP"
+msgstr "IP del ingreso actual"
+
+# activerecord.attributes.user.current_sign_in_at
+msgid "Current sign in at"
+msgstr "Fecha del ingreso actual"
+
+# devise.registrations.edit.currently_waiting_confirmation_for_email
+msgid "Currently waiting confirmation for: %{email}"
+msgstr "Actualmente esperando la confirmacion de: %{email}"
+
+# devise.shared.links.didn_t_receive_confirmation_instructions
+msgid "Didn't receive confirmation instructions?"
+msgstr "¿No ha recibido las instrucciones de confirmación?"
+
+# devise.shared.links.didn_t_receive_unlock_instructions
+msgid "Didn't receive unlock instructions?"
+msgstr "¿No ha recibido instrucciones para desbloquear?"
+
+# devise.registrations.edit.title
+msgid "Edit %{resource}"
+msgstr "Editar %{resource}"
+
+# activerecord.attributes.user.email
+msgid "Email"
+msgstr "Email"
+
+# activerecord.attributes.user.encrypted_password
+msgid "Encrypted password"
+msgstr "Contraseña cifrada"
+
+# activerecord.attributes.user.failed_attempts
+msgid "Failed attempts"
+msgstr "Intentos fallidos"
+
+# devise.shared.links.forgot_your_password
+msgid "Forgot your password?"
+msgstr "¿Ha olvidado su contraseña?"
+
+# devise.mailer.unlock_instructions.greeting
+msgid "Hello %{recipient}!"
+msgstr "¡Hola %{recipient}!"
+
+# devise.mailer.reset_password_instructions.instruction_2
+msgid "If you didn't request this, please ignore this email."
+msgstr "Si usted no lo ha solicitado, por favor ignore este correo electrónico."
+
+# devise.unlocks.send_paranoid_instructions
+msgid "If your account exists, you will receive an email with instructions for how to unlock it in a few minutes."
+msgstr "Si tu cuenta existe, vas a recibir instrucciones para desbloquear tu cuenta en unos pocos minutos."
+
+# devise.passwords.send_paranoid_instructions
+msgid "If your email address exists in our database, you will receive a password recovery link at your email address in a few minutes."
+msgstr "Si tu correo existe en nuestra base de datos, recibirás un correo con instrucciones sobre cómo resetear tu contraseña en tu bandeja de entrada."
+
+# devise.confirmations.send_paranoid_instructions
+msgid "If your email address exists in our database, you will receive an email with instructions for how to confirm your email address in a few minutes."
+msgstr "Si tu correo existe en nuestra base de datos, en unos minutos recibirás un correo con instrucciones sobre cómo confirmar tu cuenta."
+
+# devise.failure.not_found_in_database
+msgid "Invalid %{authentication_keys} or password."
+msgstr "Email o contraseña no válidos."
+
+# activerecord.attributes.user.last_sign_in_ip
+msgid "Last sign in IP"
+msgstr "IP del último ingreso"
+
+# activerecord.attributes.user.last_sign_in_at
+msgid "Last sign in at"
+msgstr "Fecha del último ingreso"
+
+# activerecord.attributes.user.locked_at
+msgid "Locked at"
+msgstr "Fecha de bloqueo"
+
+# devise.passwords.edit.new_password
+msgid "New Password"
+msgstr "Nueva contraseña"
+
+# activerecord.attributes.user.password
+msgid "Password"
+msgstr "Contraseña"
+
+# devise.mailer.password_change.subject
+msgid "Password Changed"
+msgstr "Contraseña cambiada"
+
+# mongoid.attributes.admin.password_confirmation
+msgid "Password Confirmation"
+msgstr "Confirmación de la contraseña"
+
+# activerecord.attributes.user.password_confirmation
+msgid "Password confirmation"
+msgstr "Confirmación de la contraseña"
+
+# activerecord.attributes.user.remember_created_at
+msgid "Remember created at"
+msgstr "Fecha de 'Recordarme'"
+
+# activerecord.attributes.user.remember_me
+msgid "Remember me"
+msgstr "Recordarme"
+
+# devise.confirmations.new.resend_confirmation_instructions
+msgid "Resend confirmation instructions"
+msgstr "Reenviar instrucciones de confirmación"
+
+# devise.unlocks.new.resend_unlock_instructions
+msgid "Resend unlock instructions"
+msgstr "Reenviar instrucciones para desbloquear"
+
+# devise.mailer.reset_password_instructions.subject
+msgid "Reset password instructions"
+msgstr "Instrucciones de recuperación de contraseña"
+
+# activerecord.attributes.user.reset_password_sent_at
+msgid "Reset password sent at"
+msgstr "Fecha de envío de código para contraseña"
+
+# activerecord.attributes.user.reset_password_token
+msgid "Reset password token"
+msgstr "Código para restablecer contraseña"
+
+# devise.passwords.new.send_me_reset_password_instructions
+msgid "Send me reset password instructions"
+msgstr "Envíeme las instrucciones para resetear mi contraseña"
+
+# devise.shared.links.sign_in
+msgid "Sign in"
+msgstr "Iniciar sesión"
+
+# activerecord.attributes.user.sign_in_count
+msgid "Sign in count"
+msgstr "Cantidad de ingresos"
+
+# devise.shared.links.sign_in_with_provider
+msgid "Sign in with %{provider}"
+msgstr "Iniciar sesión con %{provider}"
+
+# devise.shared.links.sign_up
+msgid "Sign up"
+msgstr "Registrarse"
+
+# devise.sessions.signed_in
+msgid "Signed in successfully."
+msgstr "Sesión iniciada."
+
+# devise.sessions.signed_out
+msgid "Signed out successfully."
+msgstr "Sesión finalizada."
+
+# devise.mailer.reset_password_instructions.instruction
+msgid "Someone has requested a link to change your password, and you can do this through the link below."
+msgstr "Alguien ha solicitado un enlace para cambiar su contraseña, lo que se puede realizar a través del siguiente enlace."
+
+# devise.omniauth_callbacks.success
+msgid "Successfully authenticated from %{kind} account."
+msgstr "Has sido autorizado satisfactoriamente en la cuenta %{kind}."
+
+# activerecord.attributes.user.unconfirmed_email
+msgid "Unconfirmed email"
+msgstr "Email no confirmado"
+
+# devise.registrations.edit.unhappy
+msgid "Unhappy?"
+msgstr "Infeliz"
+
+# devise.mailer.unlock_instructions.subject
+msgid "Unlock instructions"
+msgstr "Instrucciones para desbloquear"
+
+# devise.mailer.unlock_instructions.action
+msgid "Unlock my account"
+msgstr "Desbloquear mi cuenta"
+
+# activerecord.attributes.user.unlock_token
+msgid "Unlock token"
+msgstr "Código de desbloqueo"
+
+# devise.registrations.edit.update
+msgid "Update"
+msgstr "Actualizar"
+
+# activerecord.attributes.user.updated_at
+msgid "Updated at"
+msgstr "Fecha de actualización"
+
+# activerecord.models.user
+msgid "User"
+msgstr "Usuario"
+
+# devise.mailer.password_change.message
+msgid "We're contacting you to notify you that your password has been changed."
+msgstr "Le estamos contactando para notificarle que su contraseña ha sido cambiada."
+
+# devise.mailer.confirmation_instructions.greeting
+msgid "Welcome %{recipient}!"
+msgstr "¡Bienvenido %{recipient}!"
+
+# devise.registrations.signed_up
+msgid "Welcome! You have signed up successfully."
+msgstr "Bienvenido. Tu cuenta fue creada."
+
+# devise.failure.already_authenticated
+msgid "You are already signed in."
+msgstr "Ya has iniciado sesión."
+
+# devise.mailer.confirmation_instructions.instruction
+msgid "You can confirm your account email through the link below:"
+msgstr "Usted puede confirmar el correo electrónico de su cuenta a través de este enlace:"
+
+# devise.passwords.no_token
+msgid "You can't access this page without coming from a password reset email. If you do come from a password reset email, please make sure you used the full URL provided."
+msgstr "No puedes acceder a esta página si no es a través de un enlace para resetear tu contraseña. Si has llegado hasta aquí desde el email para resetear tu contraseña, por favor asegúrate de que la URL introducida está completa."
+
+# devise.failure.last_attempt
+msgid "You have one more attempt before your account is locked."
+msgstr "Tienes un intento más antes de que tu cuenta sea bloqueada."
+
+# devise.registrations.signed_up_but_locked
+msgid "You have signed up successfully. However, we could not sign you in because your account is locked."
+msgstr "Tu cuenta ha sido creada correctamente. Sin embargo, no hemos podido iniciar la sesión porque que tu cuenta está bloqueada."
+
+# devise.registrations.signed_up_but_inactive
+msgid "You have signed up successfully. However, we could not sign you in because your account is not yet activated."
+msgstr "Tu cuenta ha sido creada correctamente. Sin embargo, no hemos podido iniciar la sesión porque tu cuenta aún no está activada."
+
+# devise.failure.unconfirmed
+msgid "You have to confirm your email address before continuing."
+msgstr "Tienes que confirmar tu cuenta para poder continuar."
+
+# devise.failure.unauthenticated
+msgid "You need to sign in or sign up before continuing."
+msgstr "Tienes que iniciar sesión o registrarte para poder continuar."
+
+# devise.registrations.update_needs_confirmation
+msgid "You updated your account successfully, but we need to verify your new email address. Please check your email and follow the confirm link to confirm your new email address."
+msgstr "Has actualizado tu cuenta correctamente, pero es necesario confirmar tu nuevo correo electrónico. Por favor, comprueba tu correo y sigue el enlace de confirmación para finalizar la comprobación del nuevo correo electrónico."
+
+# devise.confirmations.send_instructions
+msgid "You will receive an email with instructions for how to confirm your email address in a few minutes."
+msgstr "Vas a recibir un correo con instrucciones sobre cómo confirmar tu cuenta en unos minutos."
+
+# devise.unlocks.send_instructions
+msgid "You will receive an email with instructions for how to unlock your account in a few minutes."
+msgstr "Vas a recibir instrucciones para desbloquear tu cuenta en unos pocos minutos."
+
+# devise.passwords.send_instructions
+msgid "You will receive an email with instructions on how to reset your password in a few minutes."
+msgstr "Recibirás un correo con instrucciones sobre cómo resetear tu contraseña en unos pocos minutos."
+
+# devise.mailer.unlock_instructions.message
+msgid "Your account has been locked due to an excessive amount of unsuccessful sign in attempts."
+msgstr "Su cuenta ha sido bloqueada debido a una cantidad excesiva de intentos infructuosos para ingresar."
+
+# devise.unlocks.unlocked
+msgid "Your account has been unlocked successfully. Please sign in to continue."
+msgstr "Tu cuenta ha sido desbloqueada. Ya puedes iniciar sesión."
+
+# devise.registrations.updated
+msgid "Your account has been updated successfully."
+msgstr "Tu cuenta se ha actualizada."
+
+# devise.failure.locked
+msgid "Your account is locked."
+msgstr "Tu cuenta está bloqueada."
+
+# devise.failure.inactive
+msgid "Your account is not activated yet."
+msgstr "Tu cuenta aún no ha sido activada."
+
+# devise.confirmations.confirmed
+msgid "Your email address has been successfully confirmed."
+msgstr "Tu cuenta ha sido confirmada satisfactoriamente."
+
+# devise.passwords.updated_not_active
+msgid "Your password has been changed successfully."
+msgstr "Tu contraseña fue cambiada."
+
+# devise.passwords.updated
+msgid "Your password has been changed successfully. You are now signed in."
+msgstr "Se ha cambiado tu contraseña. Ya iniciaste sesión."
+
+# devise.mailer.reset_password_instructions.instruction_3
+msgid "Your password won't change until you access the link above and create a new one."
+msgstr "Su contraseña no será cambiada hasta que usted acceda al enlace y cree una nueva."
+
+# devise.failure.timeout
+msgid "Your session expired. Please sign in again to continue."
+msgstr "Tu sesión expiró. Por favor, inicia sesión nuevamente para continuar."
+
+# errors.messages.expired
+msgid "has expired, please request a new one"
+msgstr "ha expirado, por favor solicita una nueva"
+
+# devise.registrations.edit.leave_blank_if_you_don_t_want_to_change_it
+msgid "leave blank if you don't want to change it"
+msgstr "dejar en blanco si no desea cambiarlo"
+
+# errors.messages.confirmation_period_expired
+msgid "needs to be confirmed within %{period}, please request a new one"
+msgstr "necesita confirmarse dentro de %{period}, por favor solicita una nueva"
+
+# errors.messages.not_found
+msgid "not found"
+msgstr "no se ha encontrado"
+
+# errors.messages.already_confirmed
+msgid "was already confirmed, please try signing in"
+msgstr "ya ha sido confirmada, por favor intenta iniciar sesión"
+
+# errors.messages.not_locked
+msgid "was not locked"
+msgstr "no estaba bloqueada"
+
+# devise.registrations.edit.we_need_your_current_password_to_confirm_your_changes
+msgid "we need your current password to confirm your changes"
+msgstr "necesitamos su contraseña actual para confirmar los cambios"

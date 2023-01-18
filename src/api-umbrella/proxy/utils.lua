@@ -1,32 +1,6 @@
 local _M = {}
 
-local is_empty = require "api-umbrella.utils.is_empty"
-local json_null = require("cjson").null
-local plutils = require "pl.utils"
-local stringx = require "pl.stringx"
-local tablex = require "pl.tablex"
-
-local escape = plutils.escape
 local gsub = ngx.re.gsub
-local split = plutils.split
-local strip = stringx.strip
-local table_keys = tablex.keys
-
--- Append an array to the end of the destination array.
---
--- In benchmarks, appears faster than moses.append and pl.tablex.move
--- implementations.
-function _M.append_array(dest, src)
-  if type(dest) ~= "table" or type(src) ~= "table" then return end
-
-  local dest_length = #dest
-  local src_length = #src
-  for i=1, src_length do
-    dest[dest_length + i] = src[i]
-  end
-
-  return dest
-end
 
 function _M.base_url()
   local ngx_ctx = ngx.ctx
@@ -42,178 +16,6 @@ function _M.base_url()
   end
 
   return base
-end
-
-function _M.pick_where_present(dict, keys)
-  local selected = {}
-
-  if type(dict) == "table" and type(keys) == "table" then
-    for _, key in ipairs(keys) do
-      if dict[key] and dict[key] ~= false and dict[key] ~= json_null and not is_empty(dict[key]) then
-        selected[key] = dict[key]
-      end
-    end
-  end
-
-  return selected
-end
-
-function _M.cache_computed_settings(settings)
-  if not settings then return end
-
-  -- Parse and cache the allowed IPs as CIDR ranges.
-  if not is_empty(settings["allowed_ips"]) then
-    settings["_allowed_ips"] = settings["allowed_ips"]
-  end
-  settings["allowed_ips"] = nil
-
-  -- Parse and cache the allowed referers as matchers
-  if not is_empty(settings["allowed_referers"]) then
-    settings["_allowed_referer_matchers"] = {}
-    for _, referer in ipairs(settings["allowed_referers"]) do
-      local matcher = escape(referer)
-      matcher = string.gsub(matcher, "%%%*", ".*")
-      matcher = "^" .. matcher .. "$"
-      table.insert(settings["_allowed_referer_matchers"], matcher)
-    end
-  end
-  settings["allowed_referers"] = nil
-
-  if not is_empty(settings["headers"]) then
-    settings["_headers"] = {}
-    for _, header in ipairs(settings["headers"]) do
-      if header["value"] and string.find(header["value"], "{{") then
-        header["_process_as_template"] = true
-      end
-
-      table.insert(settings["_headers"], header)
-    end
-  end
-  settings["headers"] = nil
-
-  if not is_empty(settings["default_response_headers"]) then
-    settings["_default_response_headers"] = settings["default_response_headers"]
-  end
-  settings["default_response_headers"] = nil
-
-  if not is_empty(settings["override_response_headers"]) then
-    settings["_override_response_headers"] = settings["override_response_headers"]
-  end
-  settings["override_response_headers"] = nil
-
-  if not is_empty(settings["append_query_string"]) then
-    settings["_append_query_arg_names"] = table_keys(ngx.decode_args(settings["append_query_string"]))
-  elseif settings["append_query_string"] then
-    settings["append_query_string"] = nil
-  end
-
-  if not is_empty(settings["http_basic_auth"]) then
-    settings["_http_basic_auth_header"] = "Basic " .. ngx.encode_base64(settings["http_basic_auth"])
-  end
-  settings["http_basic_auth"] = nil
-
-  if settings["api_key_verification_transition_start_at"] and settings["api_key_verification_transition_start_at"]["$date"] then
-    settings["_api_key_verification_transition_start_at"] = settings["api_key_verification_transition_start_at"]["$date"]
-  end
-  settings["api_key_verification_transition_start_at"] = nil
-
-  if settings["require_https_transition_start_at"] and settings["require_https_transition_start_at"]["$date"] then
-    settings["_require_https_transition_start_at"] = settings["require_https_transition_start_at"]["$date"]
-  end
-  settings["require_https_transition_start_at"] = nil
-
-  if settings["rate_limits"] then
-    for _, limit in ipairs(settings["rate_limits"]) do
-      local num_buckets = math.ceil(limit["duration"] / limit["accuracy"])
-
-      -- For each bucket in this limit, store the time difference we'll
-      -- subtract from the current time when determining each bucket's time.
-      -- Sort the items so that the most recent bucket (0 time difference)
-      -- comes last. This is to help minimize the amount of time between the
-      -- metrics fetch for the current time bucket and the incrementing of that
-      -- same bucket (see rate_limit.lua).
-      limit["_bucket_time_diffs"] = {}
-      for i = num_buckets - 1, 0, -1 do
-        table.insert(limit["_bucket_time_diffs"], i * limit["accuracy"])
-      end
-    end
-  end
-end
-
-function _M.parse_accept(header, supported_media_types)
-  if not header then
-    return nil
-  end
-
-  local accepts = {}
-  local accept_header = split(header, ",", true)
-  for index, accept_string in ipairs(accept_header) do
-    local parts = split(accept_string, ";", true, 2)
-    local media = parts[1]
-    local params = parts[2]
-    if params then
-      params = split(params, ";", true)
-    end
-
-    local media_parts = split(media, "/", true)
-    local media_type = strip(media_parts[1] or "")
-    local media_subtype = strip(media_parts[2] or "")
-
-    local q = 1
-    if params then
-      for _, param in ipairs(params) do
-        local param_parts = split(param, "=", true)
-        local param_key = strip(param_parts[1] or "")
-        local param_value = strip(param_parts[2] or "")
-        if param_key == "q" then
-          q = tonumber(param_value) or 0
-        end
-      end
-    end
-
-    if q == 0 then
-      break
-    end
-
-    local accept = {
-      media_type = media_type,
-      media_subtype = media_subtype,
-      q = q,
-      original_index = index,
-    }
-
-    table.insert(accepts, accept)
-  end
-
-  if accepts then
-    table.sort(accepts, function(a, b)
-      if a.q < b.q then
-        return false
-      elseif a.q > b.q then
-        return true
-      elseif (a.media_type == "*" and b.media_type ~= "*") or (a.media_subtype == "*" and b.media_subtype ~= "*") then
-        return false
-      elseif (a.media_type ~= "*" and b.media_type == "*") or (a.media_subtype ~= "*" and b.media_subtype == "*") then
-        return true
-      else
-        return a.original_index < b.original_index
-      end
-    end)
-  end
-
-  for _, accept in ipairs(accepts) do
-    for _, supported in ipairs(supported_media_types) do
-      if accept.media_type == supported.media_type and accept.media_subtype == supported.media_subtype then
-        return supported
-      elseif accept.media_type == supported.media_type and accept.media_subtype == "*" then
-        return supported
-      elseif accept.media_type == "*" and accept.media_subtype == "*" then
-        return supported
-      end
-    end
-  end
-
-  return nil
 end
 
 function _M.remove_arg(original_args, remove)
@@ -262,13 +64,10 @@ function _M.set_uri(new_path, new_args)
   local ngx_ctx = ngx.ctx
 
   if new_path then
-    -- Update the cached variable, which is used for ngx.ctx.request_uri and
-    -- eventually set as the URL in proxy_pass (via $proxy_request_uri).
-    --
-    -- Note that we can't use ngx.req.set_uri, since it can't be used to set
-    -- and proxy URLs with special characters (like spaces):
-    -- https://github.com/openresty/lua-nginx-module/issues/1676
-    ngx_ctx.uri_path = new_path
+    ngx.req.set_uri(new_path)
+
+    -- Update the cached variable.
+    ngx_ctx.uri_path = ngx.var.uri
   end
 
   if new_args then

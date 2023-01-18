@@ -11,14 +11,10 @@ import escape from 'lodash-es/escape';
 @classic
 @tagName("")
 export default class RecordForm extends Component.extend(Save) {
-  init() {
-    super.init(...arguments);
-
-    this.backendProtocolOptions = [
-      { id: 'http', name: 'http' },
-      { id: 'https', name: 'https' },
-    ];
-  }
+  backendProtocolOptions = [
+    { id: 'http', name: 'http' },
+    { id: 'https', name: 'https' },
+  ];
 
   // eslint-disable-next-line ember/no-observers
   @observes('model.backendProtocol')

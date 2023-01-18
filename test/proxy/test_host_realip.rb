@@ -15,7 +15,7 @@ class Test::Proxy::Logging::TestHostRealip < Minitest::Test
             "real_ip_header" => "True-Client-IP",
           },
         ],
-      }, "--router")
+      })
 
       prepend_api_backends([
         {
@@ -27,9 +27,8 @@ class Test::Proxy::Logging::TestHostRealip < Minitest::Test
             :rate_limits => [
               {
                 :duration => 60 * 60 * 1000, # 1 hour
-                :accuracy => 1 * 60 * 1000, # 1 minute
                 :limit_by => "ip",
-                :limit => 5,
+                :limit_to => 5,
                 :distributed => true,
                 :response_headers => true,
               },

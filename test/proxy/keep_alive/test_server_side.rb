@@ -16,7 +16,7 @@ class Test::Proxy::KeepAlive::TestServerSide < Minitest::Test
             :keepalive_idle_timeout => @keepalive_idle_timeout,
           },
         },
-      }, ["--router"])
+      })
 
       prepend_api_backends([
         {
@@ -31,7 +31,7 @@ class Test::Proxy::KeepAlive::TestServerSide < Minitest::Test
 
   def after_all
     super
-    override_config_reset(["--router"])
+    override_config_reset
   end
 
   def test_keeps_idle_connections_open

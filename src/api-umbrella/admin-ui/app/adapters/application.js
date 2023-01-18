@@ -1,12 +1,10 @@
 import { inject } from '@ember/service';
 import RESTAdapter from '@ember-data/adapter/rest';
-import classic from 'ember-classic-decorator';
 import flatten from 'lodash-es/flatten';
 import isArray from 'lodash-es/isArray';
 import isPlainObject from 'lodash-es/isPlainObject';
 import isString from 'lodash-es/isString';
 
-@classic
 export default class Application extends RESTAdapter {
   @inject session;
 
@@ -19,8 +17,8 @@ export default class Application extends RESTAdapter {
         headers['X-Api-Key'] = data.api_key;
       }
 
-      if(data.admin_auth_token) {
-        headers['X-Admin-Auth-Token'] = data.admin_auth_token;
+      if(data.csrf_token) {
+        headers['X-CSRF-Token'] = data.csrf_token;
       }
     }
 
@@ -30,22 +28,32 @@ export default class Application extends RESTAdapter {
   // Build the URL using the customizable "urlRoot" attribute that can be set
   // on the model class.
   buildURL(modelName, id, snapshot) {
-    if(snapshot && snapshot.type && snapshot.type.urlRoot) {
-      let url = snapshot.type.urlRoot;
-      if(id) {
-        url += '/' + encodeURIComponent(id);
+    let url;
+    if(snapshot && snapshot.modelName) {
+      const modelClass = this.store.modelFor(snapshot.modelName);
+      if(modelClass.urlRoot) {
+        url = modelClass.urlRoot;
+        if(id) {
+          url += '/' + encodeURIComponent(id);
+        }
       }
-
-      return url;
-    } else {
-      return super.buildURL(...arguments);
     }
+
+    if(!url) {
+      url = super.buildURL(...arguments);
+    }
+
+    return url;
   }
 
   // Ember data requires that errors from the API be returned as an array. This
   // normalizes some of our different error responses, so they're always an
   // array.
   handleResponse(status, headers, payload) {
+    if(status === 401 && this.session) {
+      this.session.invalidate();
+    }
+
     if(!this.isSuccess(status, headers, payload)) {
       this.normalizePayloadErrors(payload, 'errors');
       this.normalizePayloadErrors(payload, 'error');

@@ -8,17 +8,15 @@ class Test::Apis::V1::Config::TestPendingChangesIdentical < Minitest::Test
   def setup
     super
     setup_server
-    Api.delete_all
-    WebsiteBackend.delete_all
-    ConfigVersion.delete_all
 
-    @api = FactoryBot.create(:api)
-    ConfigVersion.publish!(ConfigVersion.pending_config)
+    publish_default_config_version
+    @api = FactoryBot.create(:api_backend)
+    publish_api_backends([@api.id])
   end
 
   def after_all
     super
-    default_config_version_needed
+    publish_default_config_version
   end
 
   def test_identical_if_no_changes_since_publish
@@ -41,9 +39,11 @@ class Test::Apis::V1::Config::TestPendingChangesIdentical < Minitest::Test
     assert_equal("identical", api_data["mode"])
     assert_equal(@api.id, api_data["id"])
     assert_equal(@api.name, api_data["name"])
-    assert_equal(@api.id, api_data["active"]["_id"])
-    assert_includes(api_data["active_yaml"], "name: #{@api.name}")
-    assert_equal(@api.id, api_data["pending"]["_id"])
-    assert_includes(api_data["pending_yaml"], "name: #{@api.name}")
+    assert_equal(@api.id, api_data["active"]["id"])
+    assert_includes(api_data["active_yaml"], "frontend_host: #{@api.frontend_host}")
+    refute_includes(api_data["active_yaml"], "name: ")
+    assert_equal(@api.id, api_data["pending"]["id"])
+    assert_includes(api_data["pending_yaml"], "frontend_host: #{@api.frontend_host}")
+    refute_includes(api_data["pending_yaml"], "name: ")
   end
 end

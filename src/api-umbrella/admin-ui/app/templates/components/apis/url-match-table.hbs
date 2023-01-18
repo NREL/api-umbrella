@@ -8,7 +8,6 @@
           <th>Frontend Prefix</th>
           <th>Backend Prefix</th>
           <th></th>
-          <th class="reorder-handle"></th>
         </tr>
       </thead>
       <tbody>
@@ -18,25 +17,19 @@
               <td>{{urlMatch.frontendPrefix}}</td>
               <td>{{urlMatch.backendPrefixWithDefault}}</td>
               <td class="table-row-actions">
-                <a href="#" {{action "edit" urlMatch}}><FaIcon @icon="pencil-alt" />{{t "admin.edit"}}</a>
-                <a href="#" class="remove-action" {{action "remove" urlMatch}}><FaIcon @icon="times" />{{t "admin.remove"}}</a>
+                <a href="#" {{action "edit" urlMatch}}><FaIcon @icon="pencil-alt" />{{t "Edit"}}</a>
+                <a href="#" class="remove-action" {{action "remove" urlMatch}}><FaIcon @icon="times" />{{t "Remove"}}</a>
               </td>
-              <td class="reorder-handle"><FaIcon @icon="bars" /></td>
             </tr>
           {{/each}}
         {{else}}
-          <tr class="empty"><td colspan="3">{{t "admin.api.url_matches.empty_list" add=(t "admin.api.url_matches.add")}}</td></tr>
+          <tr class="empty"><td colspan="3">{{sprintf (t "No URL prefix matches have been added yet. Click \"%s\" below to get started.") (t "Add URL Prefix")}}</td></tr>
         {{/if}}
       </tbody>
     </table>
     <div class="row">
       <div class="col-6">
-        <button type="button" class="btn btn-light btn-sm" {{action "add"}}><FaIcon @icon="plus-circle" /> {{t "admin.api.url_matches.add"}}</button>
-      </div>
-      <div class="col-6 text-right">
-        {{#if this.isReorderable}}
-          <button type="button" id="url_matches_reorder" class="btn btn-light btn-sm" {{action "reorderCollection" "url_matches"}}><FaIcon @icon="bars" /> <span class="reorder-button-text">{{t "admin.reorder"}}</span></button>
-        {{/if}}
+        <button type="button" class="btn btn-light btn-sm" {{action "add"}}><FaIcon @icon="plus-circle" /> {{t "Add URL Prefix"}}</button>
       </div>
     </div>
   </div>

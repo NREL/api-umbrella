@@ -8,17 +8,15 @@ class Test::Apis::V1::Config::TestPublishAdminPermissionsWebsites < Minitest::Te
   def setup
     super
     setup_server
-    Api.delete_all
-    WebsiteBackend.delete_all
-    ConfigVersion.delete_all
 
-    @localhost_website = FactoryBot.create(:website_backend)
+    publish_default_config_version
+    @localhost_website = FactoryBot.create(:website_backend_localhost)
     @example_com_website = FactoryBot.create(:example_com_website_backend)
   end
 
   def after_all
     super
-    default_config_version_needed
+    publish_default_config_version
   end
 
   def test_superusers_publish_anything
@@ -35,12 +33,12 @@ class Test::Apis::V1::Config::TestPublishAdminPermissionsWebsites < Minitest::Te
     }))
 
     assert_response_code(201, response)
-    active_config = ConfigVersion.active_config
-    assert_equal(2, active_config["website_backends"].length)
+    active_config = PublishedConfig.active_config
+    assert_equal(2, active_config.fetch("website_backends").length)
     assert_equal([
       @localhost_website.id,
       @example_com_website.id,
-    ].sort, active_config["website_backends"].map { |api| api["_id"] }.sort)
+    ].sort, active_config.fetch("website_backends").map { |api| api.fetch("id") }.sort)
   end
 
   def test_allow_limited_admins_publish_permitted_websites
@@ -57,9 +55,9 @@ class Test::Apis::V1::Config::TestPublishAdminPermissionsWebsites < Minitest::Te
     }))
 
     assert_response_code(201, response)
-    active_config = ConfigVersion.active_config
-    assert_equal(1, active_config["website_backends"].length)
-    assert_equal(@localhost_website.id, active_config["website_backends"].first["_id"])
+    active_config = PublishedConfig.active_config
+    assert_equal(1, active_config.fetch("website_backends").length)
+    assert_equal(@localhost_website.id, active_config.fetch("website_backends").first.fetch("id"))
   end
 
   def test_reject_limited_admins_publish_forbidden_website_backends
@@ -78,7 +76,7 @@ class Test::Apis::V1::Config::TestPublishAdminPermissionsWebsites < Minitest::Te
     assert_response_code(403, response)
     data = MultiJson.load(response.body)
     assert_equal(["errors"], data.keys)
-    assert_nil(ConfigVersion.active_config)
+    assert_equal({}, PublishedConfig.active_config)
   end
 
   def test_reject_limited_admins_without_publish_permission
@@ -97,7 +95,7 @@ class Test::Apis::V1::Config::TestPublishAdminPermissionsWebsites < Minitest::Te
     assert_response_code(403, response)
     data = MultiJson.load(response.body)
     assert_equal(["errors"], data.keys)
-    assert_nil(ConfigVersion.active_config)
+    assert_equal({}, PublishedConfig.active_config)
   end
 
   def test_reject_limited_admins_without_root_url_permission
@@ -116,6 +114,6 @@ class Test::Apis::V1::Config::TestPublishAdminPermissionsWebsites < Minitest::Te
     assert_response_code(403, response)
     data = MultiJson.load(response.body)
     assert_equal(["errors"], data.keys)
-    assert_nil(ConfigVersion.active_config)
+    assert_equal({}, PublishedConfig.active_config)
   end
 end

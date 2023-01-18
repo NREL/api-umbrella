@@ -1,10 +1,10 @@
-local dir = require "pl.dir"
-local file = require "pl.file"
+local find_cmd = require "api-umbrella.utils.find_cmd"
 local lexer = require "pl.lexer"
-local path = require "pl.path"
+local readfile = require("pl.utils").readfile
+local realpath = require("posix.stdlib").realpath
 
 local function parse_require_paths(file_path)
-  local source = file.read(file_path)
+  local source = readfile(file_path)
   if not source then
     error("Could not read file " .. file_path)
     return
@@ -27,8 +27,14 @@ local function parse_require_paths(file_path)
 end
 
 local function parse_require_paths_in_dir(src_dir, preload_file)
+  local file_paths, find_err = find_cmd(src_dir, { "-type", "f", "-name", "*.lua" })
+  if find_err then
+    print(find_err)
+    os.exit(1)
+  end
+
   local require_paths = {}
-  for file_path in dir.getallfiles(path.abspath(src_dir), "*.lua"):iter() do
+  for _, file_path in ipairs(file_paths) do
     if file_path ~= preload_file then
       local file_require_paths = parse_require_paths(file_path)
       for file_require_path, _ in pairs(file_require_paths) do
@@ -45,8 +51,8 @@ local function check(src_dir, preload_file)
   preload_require_path = string.gsub(preload_require_path, "%.lua$", "")
   preload_require_path = string.gsub(preload_require_path, "/", ".")
 
-  src_dir = path.abspath(src_dir)
-  preload_file = path.abspath(preload_file)
+  src_dir = realpath(src_dir)
+  preload_file = realpath(preload_file)
 
   local dir_require_paths = parse_require_paths_in_dir(src_dir, preload_file)
   local preload_require_paths = parse_require_paths(preload_file)
@@ -97,7 +103,8 @@ local function check(src_dir, preload_file)
   return ok
 end
 
-local ok = check("src/api-umbrella/proxy", "src/api-umbrella/proxy/hooks/init_preload_modules.lua")
-if not ok then
+local proxy_ok = check("src/api-umbrella/proxy", "src/api-umbrella/proxy/hooks/init_preload_modules.lua")
+local web_app_ok = check("src/api-umbrella/web-app", "src/api-umbrella/web-app/hooks/init_preload_modules.lua")
+if not proxy_ok or not web_app_ok then
   os.exit(1)
 end

@@ -7,6 +7,14 @@ mkdir -p /etc/api-umbrella
   echo "app_env: development"
   echo "http_port: $HTTP_PORT"
   echo "https_port: $HTTPS_PORT"
+  echo "log:"
+  echo "  destination: console"
+  echo "postgresql:"
+  echo "  password: dev_password"
+  echo "  migrations:"
+  echo "    password: dev_password"
+  echo "  auto_ssl:"
+  echo "    password: dev_password"
 } > /etc/api-umbrella/api-umbrella.yml
 
 mkdir -p /build/.task
@@ -24,11 +32,14 @@ ln -snf /build/test/tmp/run /app/test/tmp/run
 mkdir -p /app/build/work/tasks/app-deps/admin-ui/yarn/_persist/node_modules
 ln -snf /app/build/work/tasks/app-deps/admin-ui/yarn/_persist/node_modules /app/src/api-umbrella/admin-ui/node_modules
 
+mkdir -p /app/build/work/tasks/app-deps/example-website/yarn/_persist/node_modules
+ln -snf /app/build/work/tasks/app-deps/example-website/yarn/_persist/node_modules /app/src/api-umbrella/example-website/node_modules
+
+mkdir -p /app/build/work/tasks/app-deps/web-app/yarn/_persist/node_modules
+ln -snf /app/build/work/tasks/app-deps/web-app/yarn/_persist/node_modules /app/src/api-umbrella/web-app/node_modules
+
 mkdir -p /app/build/work/tasks/test-deps/bundle/_persist/.bundle
 ln -snf /app/build/work/tasks/test-deps/bundle/_persist/.bundle /app/.bundle
-
-mkdir -p /app/build/work/tasks/app-deps/web-app/bundle/_persist/.bundle
-ln -snf /app/build/work/tasks/app-deps/web-app/bundle/_persist/.bundle /app/src/api-umbrella/web-app/.bundle
 
 mkdir -p /app/src/api-umbrella/admin-ui/tmp
 chmod 1777 /app/src/api-umbrella/admin-ui/tmp

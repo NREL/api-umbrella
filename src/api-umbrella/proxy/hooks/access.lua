@@ -1,6 +1,7 @@
 -- Try to find the matching API backend first, since it dictates further
 -- settings and requirements.
-local api = ngx.ctx.matched_api
+local ngx_ctx = ngx.ctx
+local api = ngx_ctx.matched_api
 if not api then
   return true
 end
@@ -30,9 +31,9 @@ if err then
 end
 
 -- Find the API key set on the request.
-err, err_data = resolve_api_key()
+err = resolve_api_key()
 if err then
-  return error_handler(err, settings, err_data)
+  return error_handler(err, settings)
 end
 
 -- If this API requires access over HTTPS, verify that it's happening.
@@ -59,7 +60,7 @@ if err then
 end
 
 -- Store the settings for use by the header_filter.
-ngx.ctx.settings = settings
+ngx_ctx.settings = settings
 
 -- For API backends that are transitioning to HTTPS usage, verify these after
 -- the API key information has been fetched (since the transition behavior
@@ -91,7 +92,7 @@ end
 
 -- If we've gotten this far, it means the user is authorized to access this
 -- API, so apply the rate limits for this user and API.
-err = rate_limit(settings, user)
+err = rate_limit(api, settings, user, ngx_ctx.remote_addr)
 if err then
   return error_handler(err, settings)
 end
@@ -101,5 +102,3 @@ err = rewrite_request(user, api, settings)
 if err then
   return error_handler(err, settings)
 end
-
-ngx.var.proxy_request_uri = ngx.ctx.request_uri

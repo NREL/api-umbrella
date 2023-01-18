@@ -9,18 +9,32 @@ local _M = {}
 -- @param name - a unique identifier for this lock (automatically namespaced)
 -- @param fn - function to execute if the lock can be held
 _M.mutex_exec = function(name, fn)
-  local check_lock = lock:new("locks", {["timeout"] = 0})
+  local check_lock, new_err = lock:new("locks", { timeout = 0 })
+  if new_err then
+    ngx.log(ngx.ERR, "failed to create lock (" .. (name or "") .. "): ", new_err)
+    return
+  end
+
   local _, lock_err = check_lock:lock("mutex_exec:" .. name)
-  if not lock_err then
-    local pcall_ok, pcall_err = xpcall(fn, xpcall_error_handler)
-    -- always attempt to unlock, even if the call failed
-    local unlock_ok, unlock_err = check_lock:unlock()
-    if not pcall_ok then
-      ngx.log(ngx.ERR, "mutex exec pcall failed: ", pcall_err)
+  if lock_err then
+    -- Since we don't wait to obtain a lock (timeout=0), timeout errors are
+    -- expected, so don't log those (this should just mean that another worker
+    -- is occupying this lock, so the work is being performed, just not by this
+    -- worker).
+    if lock_err ~= "timeout" then
+      ngx.log(ngx.ERR, "failed to obtain lock (" .. (name or "") .. "): ", lock_err)
     end
-    if not unlock_ok then
-      ngx.log(ngx.ERR, "failed to unlock: ", unlock_err)
-    end
+    return
+  end
+
+  local pcall_ok, pcall_err = xpcall(fn, xpcall_error_handler)
+  -- always attempt to unlock, even if the call failed
+  local unlock_ok, unlock_err = check_lock:unlock()
+  if not pcall_ok then
+    ngx.log(ngx.ERR, "mutex exec pcall failed: ", pcall_err)
+  end
+  if not unlock_ok then
+    ngx.log(ngx.ERR, "failed to unlock: ", unlock_err)
   end
 end
 

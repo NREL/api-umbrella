@@ -1,0 +1,26 @@
+<% if display_external_provider_buttons then %>
+  <% if display_login_form then %>
+    <hr>
+  <% end %>
+
+  <% for _, provider in ipairs(external_providers) do %>
+    <div class="external-login">
+      <% if provider["not_configured"] then %>
+        <div class="alert alert-danger">
+          <%= string.format(t("%s authentication provider not yet configured."), provider["name"]) %><br>
+          <%- string.format(t("Access tokens must be defined in %s (see the %s section)"), "<code>/etc/api-umbrella/api-umbrella.yml</code>", "<code>web.admin.auth_strategies</code>") %>
+        </div>
+      <% end %>
+      <form action="/admins/auth/<%= provider["strategy"] %>" method="post">
+        <input type="hidden" name="csrf_token" value="<%= generate_csrf_token() %>" />
+
+        <button type="submit" class="btn btn-primary"<% if provider["not_configured"] then %> disabled="disabled"<% end %>>
+          <% if provider["icon"] then %>
+            <i class="fab fa-<%= provider["icon"] %> fa-fw"></i>
+          <% end %>
+          <span><%= string.format(t("Sign in with %s"), provider["name"]) %></span>
+        </button>
+      </form>
+    </div>
+  <% end %>
+<% end %>

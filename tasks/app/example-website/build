@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+
+set -e -u -x
+source ./tasks/helpers.sh
+
+task_working_dir
+
+# Copy the example-website app locally so that we can build locally (outside of the
+# source directory) without affecting the "node_modules" setup in the source
+# directory.
+mkdir -p app
+cd app
+rsync -a \
+  --itemize-changes \
+  --delete \
+  --delete-excluded \
+  --filter=":- $SOURCE_DIR/src/api-umbrella/example-website/.gitignore" \
+  "$SOURCE_DIR/src/api-umbrella/example-website/" \
+  ./
+
+node_modules_dir="$WORK_DIR/tasks/app-deps/example-website/yarn/_persist/node_modules"
+ln -s "$node_modules_dir" ./node_modules
+
+# Install the build result into the task's special _persist directory so that
+# these dependencies for the tasks/app/core task are still present if core
+# needs to be re-run, but not this task.
+mkdir -p ../_persist
+PATH="$DEV_PATH" hugo \
+  --destination=../_persist/public
+
+stamp

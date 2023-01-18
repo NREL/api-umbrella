@@ -10,31 +10,29 @@ class Test::Proxy::RateLimits::TestUnlimited < Minitest::Test
     setup_server
     once_per_class_setup do
       override_config_set({
-        :apiSettings => {
+        :default_api_backend_settings => {
           :rate_limit_mode => "unlimited",
           :rate_limits => [
             {
               :duration => 60 * 60 * 1000, # 1 hour
-              :accuracy => 1 * 60 * 1000, # 1 minute
-              :limit_by => "apiKey",
-              :limit => 5,
+              :limit_by => "api_key",
+              :limit_to => 5,
               :response_headers => true,
             },
             {
               :duration => 60 * 60 * 1000, # 1 hour
-              :accuracy => 1 * 60 * 1000, # 1 minute
               :limit_by => "ip",
-              :limit => 5,
+              :limit_to => 5,
             },
           ],
         },
-      }, "--router")
+      })
     end
   end
 
   def after_all
     super
-    override_config_reset("--router")
+    override_config_reset
   end
 
   def test_unlimited_rate_limit
@@ -44,9 +42,9 @@ class Test::Proxy::RateLimits::TestUnlimited < Minitest::Test
   def test_user_with_settings_but_null_rate_limit_mode
     assert_unlimited_rate_limit("/api/hello", 5, {
       :user_factory_overrides => {
-        :settings => {
+        :settings => FactoryBot.build(:api_user_settings, {
           :rate_limit_mode => nil,
-        },
+        }),
       },
     })
   end

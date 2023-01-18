@@ -1,13 +1,13 @@
 <div ...attributes>
   <FieldsFor @model={{this.model}} @style="horizontal-wide-labels" as |f|>
-    {{f.select-field "requireHttps" label=(t "admin.api.settings.require_https") tooltip=(t "admin.api.settings.require_https_tooltip_markdown") options=this.requireHttpsOptions}}
-    {{f.select-field "disableApiKey" label=(t "admin.api.settings.disable_api_key") options=this.disableApiKeyOptions}}
-    {{f.select-field "apiKeyVerificationLevel" label=(t "admin.api.settings.api_key_verification_level") options=this.apiKeyVerificationLevelOptions}}
-    {{f.selectize-field "requiredRolesString" label=(t "admin.api.settings.required_roles") tooltip=(t "admin.api.settings.required_roles_tooltip_markdown") options=this.roleOptions}}
+    {{f.select-field "requireHttps" label=(t "HTTPS Requirements") tooltip=(marked (t "Choose whether HTTPS is required to access this API. HTTPS is encouraged to protect the API keys.\n\n- **Required:** HTTPS is required to access the API. HTTP requests will return an error message instructing the user to use an HTTPS URL instead. This is the recommended and default strategy.\n- **Transitionary:** New API keys that signup after choosing this setting will be forced to use HTTPS. Existing API keys may continue to use either HTTP or HTTPS. New API keys using HTTP will return an error message instructing the user to use an HTTPS URL instead.\n- **Optional**: HTTPS is optional and either HTTP or HTTPS may be used.\n\n*Notes on redirects:*\n\n- Not all API clients will automatically follow redirects, so be careful if using a redirect strategy for existing APIs (since existing calls may break).\n- If API clients rely on the redirect for HTTPS access, this strategy does not secure the API keys, since the client may still be making an insecure initial HTTP request with their API key.\n- For GET requests a `301 Moved Permanently` redirect will be returned. For all other HTTP methods a `307 Temporary Redirect` redirect will be returned (to instruct the client to retry using the same HTTP method).")) options=this.requireHttpsOptions}}
+    {{f.select-field "disableApiKey" label=(t "API Key Checks") options=this.disableApiKeyOptions}}
+    {{f.select-field "apiKeyVerificationLevel" label=(t "API Key Verification Requirements") options=this.apiKeyVerificationLevelOptions}}
+    {{f.selectize-field "requiredRolesString" label=(t "Required Roles") tooltip=(t "Define roles that API keys must have in order to access this API. If multiple roles are set, then the API key must have all of the roles.") options=this.roleOptions}}
     {{#if this.isSubSettings}}
-      {{f.checkbox-field "requiredRolesOverride" label=(t "admin.api.settings.required_roles_override") tooltip=(t "admin.api.settings.required_roles_override_tooltip_markdown")}}
+      {{f.checkbox-field "requiredRolesOverride" label=(t "Override required roles from \"Global Request Settings\"") tooltip=(t "By default, roles defined in \"Sub-URL Request Settings\" will be appended to any required roles defined in the parent \"Global Request Settings.\" Choosing this option will cause the roles defined here to clear and override any parent roles.")}}
     {{/if}}
-    {{f.checkboxes-field "passApiKey" label=(t "admin.api.settings.pass_api_key") tooltip=(t "admin.api.settings.pass_api_key_tooltip_markdown") options=this.passApiKeyOptions}}
+    {{f.checkboxes-field "passApiKey" label=(t "Pass API Key to Backend (deprecated)") tooltip=(marked (t "Whether to pass the user's api key to this API backend.\n\n***Deprecated:*** This is deprecated and support of this will be removed in the future. Enabling either option is not recommend.\n\nIf your API backend needs to uniquely reference the requesting user, use the `X-Api-User-Id` HTTP header instead.\n\n*Note:* Passing via GET query parameter with render API Umbrella's HTTP caching layer mostly ineffectual (since the cache will be maintained per API key)")) options=this.passApiKeyOptions}}
 
     <Apis::Settings::RateLimitFields @model={{this.model}} @style="horizontal-wide-labels" />
     {{#if this.model.disableApiKey}}
@@ -15,7 +15,7 @@
       {{f.select-field "authenticatedRateLimitBehavior" label="Authenticated Rate Limit Behavior" options=this.authenticatedRateLimitBehaviorOptions}}
     {{/if}}
 
-    {{f.textarea-field "defaultResponseHeadersString" label=(t "admin.api.settings.default_response_headers") tooltip=(t "admin.api.settings.default_response_headers_tooltip_markdown") placeholder="X-Example-Header: value"}}
-    {{f.textarea-field "overrideResponseHeadersString" label=(t "admin.api.settings.override_response_headers") tooltip=(t "admin.api.settings.override_response_headers_tooltip_markdown") placeholder="X-Example-Header: value"}}
+    {{f.textarea-field "defaultResponseHeadersString" label=(t "Default Response Headers") tooltip=(marked (t "Define header values that will be set in the response regardless of whether the header is already set in the response.\n\nFor example, to set default CORS headers on all responses that don't explicitly set their own CORS headers:\n\n```\nAccess-Control-Allow-Origin: *\n```")) placeholder="X-Example-Header: value"}}
+    {{f.textarea-field "overrideResponseHeadersString" label=(t "Override Response Headers") tooltip=(marked (t "Define header values that will be set in the response regardless of whether the header is already set in the response.\n\nFor example, to force CORS headers on all responses:\n\n```\nAccess-Control-Allow-Origin: *\n```")) placeholder="X-Example-Header: value"}}
   </FieldsFor>
 </div>

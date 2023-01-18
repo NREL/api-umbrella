@@ -58,9 +58,6 @@ class Test::Processes::TestNetworkBinds < Minitest::Test
     # output.
     assert_operator(listening[:local].length, :>, 0)
     assert_operator(listening[:local_ports].length, :>, 0)
-    assert_includes(listening[:local_ports], $config.fetch("elasticsearch").fetch("embedded_server_config").fetch("http").fetch("port"))
-    assert_includes(listening[:local_ports], $config.fetch("mongodb").fetch("embedded_server_config").fetch("net").fetch("port"))
-    assert_includes(listening[:local_ports], $config.fetch("mora").fetch("port"))
     assert_includes(listening[:local_ports], $config.fetch("trafficserver").fetch("port"))
   end
 end

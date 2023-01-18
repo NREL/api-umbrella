@@ -1,0 +1,6 @@
+<% if display_no_auth_alert then %>
+  <div class="alert alert-danger">
+    <strong><%= t("No authentication strategies are set.") %></strong><br>
+    <%- string.format(t("You must define at least one authentication strategy in %s (see the %s section)"), "<code>/etc/api-umbrella/api-umbrella.yml</code>", "<code>web.admin.auth_strategies.enabled</code>") %>
+  </div>
+<% end %>

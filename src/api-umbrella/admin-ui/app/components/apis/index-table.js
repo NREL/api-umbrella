@@ -1,17 +1,11 @@
-import 'jquery-ui/ui/widgets/sortable';
-
 // eslint-disable-next-line ember/no-classic-components
 import Component from '@ember/component';
-import { action } from '@ember/object';
+import { action, computed } from '@ember/object';
 import { inject } from '@ember/service';
-import { observes } from '@ember-decorators/object';
-import { tracked } from '@glimmer/tracking';
 import DataTablesHelpers from 'api-umbrella-admin-ui/utils/data-tables-helpers';
-import bootbox from 'bootbox';
 import classic from 'ember-classic-decorator';
 import $ from 'jquery';
 import escape from 'lodash-es/escape';
-import isEqual from 'lodash-es/isEqual';
 
 @classic
 export default class IndexTable extends Component {
@@ -21,11 +15,14 @@ export default class IndexTable extends Component {
   @inject('busy')
   busy;
 
-  @tracked reorderActive = false;
+  @inject('session')
+  session;
 
   @action
   didInsert(element) {
-    this.table = $(element).find('table').DataTable({
+    const currentAdmin = this.session.data.authenticated.admin;
+
+    const dataTable = $(element).find('table').DataTable({
       serverSide: true,
       ajax: '/api-umbrella/v1/apis.json',
       pageLength: 50,
@@ -54,117 +51,75 @@ export default class IndexTable extends Component {
           render: DataTablesHelpers.renderEscaped,
         },
         {
-          data: 'frontend_prefixes',
+          data: 'url_matches',
           title: 'Prefixes',
           defaultContent: '-',
-          render: DataTablesHelpers.renderEscaped,
-        },
-        {
-          data: 'sort_order',
-          title: 'Matching Order',
-          defaultContent: '-',
-          width: 130,
-          render: DataTablesHelpers.renderEscaped,
-        },
-        {
-          data: null,
-          className: 'reorder-handle',
           orderable: false,
-          render() {
-            return '<i class="fas fa-bars"></i>';
-          },
+          render: DataTablesHelpers.renderList({
+            nameField: 'frontend_prefix',
+          }),
         },
+        ...(currentAdmin.superuser ? [
+          {
+            data: 'organization_name',
+            title: 'Organization Name',
+            defaultContent: '-',
+            render: DataTablesHelpers.renderEscaped,
+          },
+          {
+            data: 'status_description',
+            title: 'Status',
+            defaultContent: '-',
+            render: DataTablesHelpers.renderEscaped,
+          },
+          {
+            data: 'root_api_scope.name',
+            title: 'Root API Scope',
+            defaultContent: '-',
+            render: DataTablesHelpers.renderLink({
+              editLink: '#/api_scopes/',
+              idField: 'root_api_scope.id',
+            }),
+          },
+          {
+            data: 'api_scopes',
+            title: 'API Scopes',
+            defaultContent: '-',
+            orderable: false,
+            render: DataTablesHelpers.renderLinkedList({
+              editLink: '#/api_scopes/',
+              nameField: 'name',
+            }),
+          },
+          {
+            data: 'admin_groups',
+            title: 'Admin Groups',
+            defaultContent: '-',
+            orderable: false,
+            render: DataTablesHelpers.renderLinkedList({
+              editLink: '#/admin_groups/',
+              nameField: 'name',
+            }),
+          },
+        ] : []),
       ],
     });
 
-    this.table
-      .on('search', (event, settings) => {
-        // Disable reordering if the user tries to filter the table by anything
-        // (otherwise, our reordering logic won't work, since it relies on the
-        // neighboring rows).
-        if(this.reorderActive) {
-          if(settings.oPreviousSearch && settings.oPreviousSearch.sSearch) {
-            this.reorderActive = false;
-          }
-        }
-      })
-      .on('order', (event, settings) => {
-        // Disable reordering if the user tries to sort the table by anything
-        // other than the sort order (otherwise, our reordering logic won't
-        // work, since it relies on the neighboring rows).
-        if(this.reorderActive) {
-          if(settings.aaSorting && !isEqual(settings.aaSorting, [[3, 'asc']])) {
-            this.reorderActive = false;
-          }
-        }
-      });
-
-    $(element).find('tbody').sortable({
-      handle: '.reorder-handle',
-      placeholder: 'reorder-placeholder',
-      helper(event, ui) {
-        ui.children().each(function() {
-          $(this).width($(this).width());
-        });
-        return ui;
-      },
-      stop: (event, ui) => {
-        let row = $(ui.item);
-        let previousRow = row.prev('tbody tr');
-        let moveAfterId = null;
-        if(previousRow.length > 0) {
-          moveAfterId = $(previousRow[0]).data('id');
-        }
-
-        this.saveReorder(row.data('id'), moveAfterId);
-      },
+    dataTable.on('draw.dt', () => {
+      let params = dataTable.ajax.params();
+      delete params.start;
+      delete params.length;
+      this.set('csvQueryParams', params);
     });
   }
 
-  // eslint-disable-next-line ember/no-observers
-  @observes('reorderActive')
-  handleReorderChange() {
-    if(this.reorderActive) {
-      $(this.element).find('table').addClass('reorder-active');
-      this.table
-        .order([[3, 'asc']])
-        .search('')
-        .draw();
-    } else {
-      $(this.element).find('table').removeClass('reorder-active');
-    }
-
-    let $container = $(this.element);
-    if($container) {
-      let $buttonText = $(this.element).find('.reorder-button-text');
-      if(this.reorderActive) {
-        $buttonText.data('originalText',  $buttonText.text());
-        $buttonText.text('Done');
-      } else {
-        $buttonText.text($buttonText.data('originalText'));
-      }
-    }
-  }
-
-  saveReorder(id, moveAfterId) {
-    this.busy.show();
-    $.ajax({
-      url: '/api-umbrella/v1/apis/' + id + '/move_after.json',
-      method: 'PUT',
-      data: { move_after_id: moveAfterId },
-    }).done(() => {
-      // eslint-disable-next-line ember/jquery-ember-run
-      this.table.draw();
-    }).fail((xhr) => {
-      // eslint-disable-next-line no-console
-      console.error('Unexpected error: ' + xhr.status + ' ' + xhr.statusText + ' (' + xhr.readyState + '): ' + xhr.responseText);
-      bootbox.alert('An unexpected error occurred. Please try again.');
-      this.table.draw();
+  @computed('csvQueryParams', 'session.data.authenticated.api_key')
+  get downloadUrl() {
+    const params = $.param({
+      ...(this.csvQueryParams || {}),
+      api_key: this.session.data.authenticated.api_key,
     });
-  }
 
-  @action
-  toggleReorderApis() {
-    this.reorderActive = !this.reorderActive;
+    return `/api-umbrella/v1/apis.csv?${params}`;
   }
 }

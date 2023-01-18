@@ -12,27 +12,23 @@ import classic from 'ember-classic-decorator';
 export default class RewriteForm extends Component {
   openModal = false;
 
-  init() {
-    super.init(...arguments);
+  matcherTypeOptions = [
+    { id: 'route', name: 'Route Pattern' },
+    { id: 'regex', name: 'Regular Expression' },
+  ];
 
-    this.matcherTypeOptions = [
-      { id: 'route', name: 'Route Pattern' },
-      { id: 'regex', name: 'Regular Expression' },
-    ];
-
-    this.httpMethodOptions = [
-      { id: 'any', name: 'Any' },
-      { id: 'GET', name: 'GET' },
-      { id: 'POST', name: 'POST' },
-      { id: 'PUT', name: 'PUT' },
-      { id: 'DELETE', name: 'DELETE' },
-      { id: 'HEAD', name: 'HEAD' },
-      { id: 'TRACE', name: 'TRACE' },
-      { id: 'OPTIONS', name: 'OPTIONS' },
-      { id: 'CONNECT', name: 'CONNECT' },
-      { id: 'PATCH', name: 'PATCH' },
-    ];
-  }
+  httpMethodOptions = [
+    { id: 'any', name: 'Any' },
+    { id: 'GET', name: 'GET' },
+    { id: 'POST', name: 'POST' },
+    { id: 'PUT', name: 'PUT' },
+    { id: 'DELETE', name: 'DELETE' },
+    { id: 'HEAD', name: 'HEAD' },
+    { id: 'TRACE', name: 'TRACE' },
+    { id: 'OPTIONS', name: 'OPTIONS' },
+    { id: 'CONNECT', name: 'CONNECT' },
+    { id: 'PATCH', name: 'PATCH' },
+  ];
 
   @computed('model.isNew')
   get modalTitle() {
@@ -54,7 +50,7 @@ export default class RewriteForm extends Component {
     event.preventDefault();
     this.bufferedModel.applyChanges();
     if(this.model.isNew) {
-      this.collection.pushObject(this.model);
+      this.collection.push(this.model);
     }
 
     this.set('openModal', false);

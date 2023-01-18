@@ -1,0 +1,346 @@
+msgid ""
+msgstr ""
+"Language: yo\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+# errors.messages.not_saved.other
+msgid "%{count} errors prohibited this %{resource} from being saved:"
+msgstr "%{count}àsìse sèdíwọ elè yìí %{resource} láti lè fi pamọ́"
+
+# errors.messages.not_saved.one
+msgid "1 error prohibited this %{resource} from being saved:"
+msgstr "1 àsìse sèdíwọ elè yìí %{resource} láti lè fi pamọ́"
+
+# devise.registrations.signed_up_but_unconfirmed
+msgid "A message with a confirmation link has been sent to your email address. Please follow the link to activate your account."
+msgstr "O gba í-meèlì pelu àrídájú ìtọ́kasí. Jọ̀wọ́ tẹ̀lẹ́ ìtọ́kasí tí o sọ di aṣiṣẹ́ ki àkántì rẹ to le ṣiṣẹ́"
+
+# devise.registrations.edit.are_you_sure
+msgid "Are you sure?"
+msgstr "Ṣé o da ẹ lójú?"
+
+# devise.shared.links.back
+msgid "Back"
+msgstr "Padà sẹ́yìn"
+
+# devise.registrations.destroyed
+msgid "Bye! Your account has been successfully cancelled. We hope to see you again soon."
+msgstr "òdàbö! A ti fagi lé àkántì re. A léro pé o maa padà wá"
+
+# devise.registrations.edit.cancel_my_account
+msgid "Cancel my account"
+msgstr "Fagi lé àkántì mi"
+
+# devise.passwords.edit.change_my_password
+msgid "Change My Password"
+msgstr "ṣàyípadà aṣínà mi"
+
+# devise.passwords.edit.change_your_password
+msgid "Change Your Password"
+msgstr "ṣàyípadà aṣínà rẹ"
+
+# devise.mailer.reset_password_instructions.action
+msgid "Change my password"
+msgstr "ṣàyípadà aṣínà mi"
+
+# devise.mailer.unlock_instructions.instruction
+msgid "Click the link below to unlock your account:"
+msgstr "ṣíra tẹ̀ẹ́ ìtọ́kasí isalẹ láti síí àkántì rẹ"
+
+# devise.passwords.edit.confirm_new_password
+msgid "Confirm New Password"
+msgstr "Fi àṣẹsí aṣínà tuntun"
+
+# devise.mailer.confirmation_instructions.action
+msgid "Confirm my account"
+msgstr "Fi àṣẹsí àkántì mi"
+
+# devise.mailer.confirmation_instructions.subject
+msgid "Confirmation instructions"
+msgstr "ìmúdájú ìlànà"
+
+# devise.omniauth_callbacks.failure
+msgid "Could not authenticate you from %{kind} because \"%{reason}\"."
+msgstr "Ko le ṣàrídájú rẹ láti %{kind} nítorítí “%{reason}"
+
+# mongoid.attributes.admin.current_password
+msgid "Current Password"
+msgstr "ọ̀rọ̀ aṣínà lọ́wọ́lọ́wọ́"
+
+# activerecord.attributes.user.current_password
+msgid "Current password"
+msgstr "ọ̀rọ̀ aṣínà lọ́wọ́lọ́wọ́"
+
+# devise.registrations.edit.currently_waiting_confirmation_for_email
+msgid "Currently waiting confirmation for: %{email}"
+msgstr "A n dúró lọ́wọ́lọ́wọ́ fún ìfàṣẹsí : %{email}"
+
+# devise.shared.links.didn_t_receive_confirmation_instructions
+msgid "Didn't receive confirmation instructions?"
+msgstr "Ko gba ìmúdájú ilana?"
+
+# devise.shared.links.didn_t_receive_unlock_instructions
+msgid "Didn't receive unlock instructions?"
+msgstr "Ko gba kọ́kọ́rọ́ ilana?"
+
+# devise.registrations.edit.title
+msgid "Edit %{resource}"
+msgstr "ṣàtúnṣe %{resource}"
+
+# activerecord.attributes.user.email
+msgid "Email"
+msgstr "í-meèlì"
+
+# devise.shared.links.forgot_your_password
+msgid "Forgot your password?"
+msgstr "Gbàgbe aṣínà?"
+
+# devise.mailer.unlock_instructions.greeting
+msgid "Hello %{recipient}!"
+msgstr "Ẹ ǹlẹ́ o %{recipient}!"
+
+# devise.mailer.reset_password_instructions.instruction_2
+msgid "If you didn't request this, please ignore this email."
+msgstr "í ẹ ko bá bèèrè fun, ejọwọ, ẹ ma tẹ̀lé ìmọ̀ràn inu í-meèlì yi"
+
+# devise.unlocks.send_paranoid_instructions
+msgid "If your account exists, you will receive an email with instructions for how to unlock it in a few minutes."
+msgstr "Ti àkántì rẹ bá wà, O gba í-meèlì pẹ̀lú ilana bí o ṣe lè ṣe ṣi kọ́kọ́rọ́ àkántì rẹ ní ìṣẹ́jú díẹ̀"
+
+# devise.passwords.send_paranoid_instructions
+msgid "If your email address exists in our database, you will receive a password recovery link at your email address in a few minutes."
+msgstr "Ti àdírẹ́ẹ̀sì í-meèlì rẹ ba wà ní àkójọpọ̀ data wa, ìwọ yóò gba ìtọ́kasí aṣínà ní í-meèlì rẹ ní ìṣẹ́jú díẹ̀"
+
+# devise.confirmations.send_paranoid_instructions
+msgid "If your email address exists in our database, you will receive an email with instructions for how to confirm your email address in a few minutes."
+msgstr "Ti àdírẹ́ẹ̀sì í-meèlì rẹ ba wà ní àkójọpọ̀ data wa, ìwọ yóò gba í-meèlì láti ọ̀dọ̀ wa pẹ̀lú ìlànà  bí o se maa fi ìfàṣẹsí ṣí àdírẹ́ẹ̀sì í-meèlì rẹ ní ìṣẹ́jú díẹ̀"
+
+# devise.failure.not_found_in_database
+msgid "Invalid %{authentication_keys} or password."
+msgstr "àìfẹsẹ̀múlẹ̀ í-meèlì àdírẹ́sì wọlé ọ̀rọ̀ aṣínà"
+
+# devise.passwords.edit.new_password
+msgid "New Password"
+msgstr "Aṣínà tuntun"
+
+# activerecord.attributes.user.password
+msgid "Password"
+msgstr "ọ̀rọ̀ aṣínà"
+
+# devise.mailer.password_change.subject
+msgid "Password Changed"
+msgstr "aṣínà ti yípadà"
+
+# mongoid.attributes.admin.password_confirmation
+msgid "Password Confirmation"
+msgstr "ìfàṣẹsí ọ̀rọ̀ aṣínà"
+
+# activerecord.attributes.user.password_confirmation
+msgid "Password confirmation"
+msgstr "ìfàṣẹsí ọ̀rọ̀ aṣínà"
+
+# activerecord.attributes.user.remember_me
+msgid "Remember me"
+msgstr "Rántí mi"
+
+# devise.confirmations.new.resend_confirmation_instructions
+msgid "Resend confirmation instructions"
+msgstr "Fi ìfàṣẹsí ìlànà ṣọwó"
+
+# devise.unlocks.new.resend_unlock_instructions
+msgid "Resend unlock instructions"
+msgstr "Fi kọ́kọ́rọ́ ilana ṣọwó lẹ́ẹ̀kàn si"
+
+# devise.mailer.reset_password_instructions.subject
+msgid "Reset password instructions"
+msgstr "ṣàtúntò aṣínà ìtọ́sọ́nà"
+
+# activerecord.attributes.user.reset_password_token
+msgid "Reset password token"
+msgstr "Tún ọ̀rọ̀ aṣínà tè"
+
+# devise.passwords.new.send_me_reset_password_instructions
+msgid "Send me reset password instructions"
+msgstr "Fi ṣàtúntò aṣínà ìtọ́sọ́nà ránṣẹ́"
+
+# devise.shared.links.sign_in
+msgid "Sign in"
+msgstr "Wọlé"
+
+# devise.shared.links.sign_in_with_provider
+msgid "Sign in with %{provider}"
+msgstr "Wọlé pẹ̀lú %{provider}"
+
+# devise.shared.links.sign_up
+msgid "Sign up"
+msgstr "Forúkọsílẹ̀"
+
+# devise.sessions.signed_in
+msgid "Signed in successfully."
+msgstr "O wọlé pẹ̀lú àṣeyọrí"
+
+# devise.sessions.signed_out
+msgid "Signed out successfully."
+msgstr "O jáde pẹ̀lú àṣeyọrí"
+
+# devise.mailer.reset_password_instructions.instruction
+msgid "Someone has requested a link to change your password, and you can do this through the link below."
+msgstr "Eni kan bèrè láti yí aṣínà yín padà, ẹ le se eléyi pẹ̀lú ìtọ́kasí ni isalẹ"
+
+# devise.omniauth_callbacks.success
+msgid "Successfully authenticated from %{kind} account."
+msgstr "áṣeyọrí ìjẹ́rìísí láti %{kind} àkántì"
+
+# devise.registrations.edit.unhappy
+msgid "Unhappy?"
+msgstr "ìbànújẹ́?"
+
+# devise.mailer.unlock_instructions.subject
+msgid "Unlock instructions"
+msgstr "Síí ìtọ́sọ́nà"
+
+# devise.mailer.unlock_instructions.action
+msgid "Unlock my account"
+msgstr "Síí àkántì mi"
+
+# activerecord.attributes.user.unlock_token
+msgid "Unlock token"
+msgstr "Síí àmì"
+
+# devise.registrations.edit.update
+msgid "Update"
+msgstr "ṣàfikùn"
+
+# activerecord.models.user
+msgid "User"
+msgstr "aṣàmúlò"
+
+# devise.mailer.password_change.message
+msgid "We're contacting you to notify you that your password has been changed."
+msgstr "A n kàn sí yin láti sọ fún yín wípé a ti pa ọ̀rọ̀ aṣínà yín padà"
+
+# devise.mailer.confirmation_instructions.greeting
+msgid "Welcome %{recipient}!"
+msgstr "Káàbọ̀ %{recipient}!"
+
+# devise.registrations.signed_up
+msgid "Welcome! You have signed up successfully."
+msgstr "Káàbọ̀! iforúkọsílẹ̀ rẹ wọlé pẹ̀lú àṣeyọrí"
+
+# devise.failure.already_authenticated
+msgid "You are already signed in."
+msgstr "ẹ̀ ti wọlé síbẹ́síbẹ́"
+
+# devise.mailer.confirmation_instructions.instruction
+msgid "You can confirm your account email through the link below:"
+msgstr "O lé fi àṣẹsí àkántì í-meèlì rẹ pẹ̀lú ìtọ́kasí ni isalẹ"
+
+# devise.passwords.no_token
+msgid "You can't access this page without coming from a password reset email. If you do come from a password reset email, please make sure you used the full URL provided."
+msgstr "O ko le wọlé síí ìwé yii láì se nípasẹ̀ àtúntò í-meèlì aṣínà re. Tí o bá wá láti aṣínà àtúntò í-meèlì, jọ̀wọ́ rii dáni loju pé o lo URL tí a pèsè"
+
+# devise.failure.last_attempt
+msgid "You have one more attempt before your account is locked."
+msgstr "O ní ànfààní ìgbìnyànjú kan si kí a tó tii àkántì rẹ pa"
+
+# devise.registrations.signed_up_but_locked
+msgid "You have signed up successfully. However, we could not sign you in because your account is locked."
+msgstr "Iforúkọsílẹ̀ rẹ wọlé pẹ̀lú àṣeyọrí. Ṣùgbọ́n, a kò lé jẹ́ kí o wọlé nítoripe àkántì re tii tì pa"
+
+# devise.registrations.signed_up_but_inactive
+msgid "You have signed up successfully. However, we could not sign you in because your account is not yet activated."
+msgstr "Iforúkọsílẹ̀ rẹ wọlé pẹ̀lú àṣeyọrí. Ṣùgbọ́n, a kò lé jẹ́ kí o wọlé nítoripe àkántì rẹ ko tí sọ di aṣiṣẹ́"
+
+# devise.failure.unconfirmed
+msgid "You have to confirm your email address before continuing."
+msgstr "Wà ni láti fi àṣẹsí  í-meèlì rẹ kí o tó tẹ̀síwájú"
+
+# devise.failure.unauthenticated
+msgid "You need to sign in or sign up before continuing."
+msgstr "O nílọ̀ láti wọlé kí o tó tẹ̀síwájú"
+
+# devise.registrations.update_needs_confirmation
+msgid "You updated your account successfully, but we need to verify your new email address. Please check your email and follow the confirm link to confirm your new email address."
+msgstr "O ti ṣàfikún àkántì rẹ pẹ̀lú àṣeyọrí, Ṣùgbọ́n, a nilo láti ṣàrídájú í-meèlì tuntun. Jọ̀wọ́ yẹ í-meèlì rẹ ki o si ṣàrídájú ìtọ́kasí láti ṣàrídájú í-meèlì tuntun"
+
+# devise.confirmations.send_instructions
+msgid "You will receive an email with instructions for how to confirm your email address in a few minutes."
+msgstr "Wàá gba í-meèlì pẹ̀lú ìlànà bí o se maa fi ìfàṣẹsí ṣí àdírẹ́ẹ̀sì í-meèlì rẹ ní ìṣẹ́jú díẹ̀"
+
+# devise.unlocks.send_instructions
+msgid "You will receive an email with instructions for how to unlock your account in a few minutes."
+msgstr "O gba í-meèlì pẹ̀lú ilana bí o ṣe le ṣe ṣi kọ́kọ́rọ́ àkántì rẹ ní ìṣẹ́jú díẹ̀"
+
+# devise.passwords.send_instructions
+msgid "You will receive an email with instructions on how to reset your password in a few minutes."
+msgstr "O gba í-meèlì pelu àlàyé bí o se le ṣàtúntò aṣínà rẹ ní ìṣẹ́jú díẹ̀"
+
+# devise.mailer.unlock_instructions.message
+msgid "Your account has been locked due to an excessive amount of unsuccessful sign in attempts."
+msgstr "àkántì re tii tì pa nítorí ìgbìyànjú ati wọlé nigba púpọ̀ to forí ṣánpọ́n"
+
+# devise.unlocks.unlocked
+msgid "Your account has been unlocked successfully. Please sign in to continue."
+msgstr "Kọ́kọ́rọ́ àkántì rẹ ti si pẹ̀lú àṣeyọrí. Jọ̀wọ́ wọlé láti tẹ̀ síwájú"
+
+# devise.registrations.updated
+msgid "Your account has been updated successfully."
+msgstr "A ti ṣàfikún àkántì rẹ pẹ̀lú àṣeyọrí"
+
+# devise.failure.locked
+msgid "Your account is locked."
+msgstr "àkántì re tii tì pa"
+
+# devise.failure.inactive
+msgid "Your account is not activated yet."
+msgstr "àkántì rẹ  ko ṣiṣẹ síbẹ́síbẹ́"
+
+# devise.confirmations.confirmed
+msgid "Your email address has been successfully confirmed."
+msgstr "ìfàṣẹsí ti wà fún í-meèlì rẹ tí a ti ní"
+
+# devise.passwords.updated_not_active
+msgid "Your password has been changed successfully."
+msgstr "A ti sàyípadà aṣínà re"
+
+# devise.passwords.updated
+msgid "Your password has been changed successfully. You are now signed in."
+msgstr "A ti sàyípadà aṣínà re. ẹ̀ ti wọlé"
+
+# devise.mailer.reset_password_instructions.instruction_3
+msgid "Your password won't change until you access the link above and create a new one."
+msgstr "Aṣínà yín ko ni yin pada laise pe ẹ tẹ̀lé ìtọ́kasí towa loke ki ẹ to le dá titun"
+
+# devise.failure.timeout
+msgid "Your session expired. Please sign in again to continue."
+msgstr "ìgbà re tii parí. Jọ̀wọ́ wọlé lẹẹkan si láti tẹ̀síwájú"
+
+# errors.messages.expired
+msgid "has expired, please request a new one"
+msgstr "O ti kú, Jọ̀wọ́ béèrè fún tuntun"
+
+# devise.registrations.edit.leave_blank_if_you_don_t_want_to_change_it
+msgid "leave blank if you don't want to change it"
+msgstr "Fi sílẹ̀ ti o ko ba fe yi padà"
+
+# errors.messages.confirmation_period_expired
+msgid "needs to be confirmed within %{period}, please request a new one"
+msgstr "A ni láti ṣe àrídájú rẹ %{period}, jọ̀wọ́ béèrè fún tuntun"
+
+# errors.messages.not_found
+msgid "not found"
+msgstr "Kò sí"
+
+# errors.messages.already_confirmed
+msgid "was already confirmed, please try signing in"
+msgstr "A ti ṣe àrídájú, jọ̀wọ́ wọlé"
+
+# errors.messages.not_locked
+msgid "was not locked"
+msgstr "A kò tí"
+
+# devise.registrations.edit.we_need_your_current_password_to_confirm_your_changes
+msgid "we need your current password to confirm your changes"
+msgstr "A nilo aṣínà ti o n lo lọ́wọ́lọ́wọ́ láti ṣàrídájú àyípadà rẹ"

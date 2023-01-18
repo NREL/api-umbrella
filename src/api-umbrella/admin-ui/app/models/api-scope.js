@@ -1,29 +1,41 @@
-import { computed } from '@ember/object';
 import Model, { attr } from '@ember-data/model';
-import classic from 'ember-classic-decorator';
+import { t } from 'api-umbrella-admin-ui/utils/i18n';
 import { buildValidations, validator } from 'ember-cp-validations';
-import I18n from 'i18n-js';
 
 const Validations = buildValidations({
-  name: validator('presence', true),
+  name: validator('presence', {
+    presence: true,
+    description: t('Name'),
+  }),
   host: [
-    validator('presence', true),
+    validator('presence', {
+      presence: true,
+      description: t('Host'),
+    }),
     validator('format', {
       regex: CommonValidations.host_format_with_wildcard,
-      message: I18n.t('errors.messages.invalid_host_format'),
+      description: t('Host'),
+      message: t('must be in the format of "example.com"'),
     }),
   ],
   pathPrefix: [
-    validator('presence', true),
+    validator('presence', {
+      presence: true,
+      description: t('Path Prefix'),
+    }),
     validator('format', {
       regex: CommonValidations.url_prefix_format,
-      message: I18n.t('errors.messages.invalid_url_prefix_format'),
+      description: t('Path Prefix'),
+      message: t('must start with "/"'),
     }),
   ],
 });
 
-@classic
 class ApiScope extends Model.extend(Validations) {
+  static urlRoot = '/api-umbrella/v1/api_scopes';
+  static singlePayloadKey = 'api_scope';
+  static arrayPayloadKey = 'data';
+
   @attr()
   name;
 
@@ -32,6 +44,9 @@ class ApiScope extends Model.extend(Validations) {
 
   @attr()
   pathPrefix;
+
+  @attr()
+  adminGroups;
 
   @attr()
   createdAt;
@@ -45,16 +60,9 @@ class ApiScope extends Model.extend(Validations) {
   @attr()
   updater;
 
-  @computed('name', 'host', 'pathPrefix')
   get displayName() {
     return this.name + ' - ' + this.host + this.pathPrefix;
   }
 }
-
-ApiScope.reopenClass({
-  urlRoot: '/api-umbrella/v1/api_scopes',
-  singlePayloadKey: 'api_scope',
-  arrayPayloadKey: 'data',
-});
 
 export default ApiScope;

@@ -1,16 +1,17 @@
 import { action } from '@ember/object';
 import Route from '@ember/routing/route';
-import { inject } from '@ember/service';
+import { inject as service } from '@ember/service';
 import { observes } from '@ember-decorators/object';
-import classic from 'ember-classic-decorator';
-// eslint-disable-next-line ember/no-mixins
-import ApplicationRouteMixin from 'ember-simple-auth/mixins/application-route-mixin';
 import isString from 'lodash-es/isString';
 
-@classic
-export default class ApplicationRoute extends Route.extend(ApplicationRouteMixin) {
-  @inject('busy')
-  busy;
+export default class ApplicationRoute extends Route {
+  @service session;
+
+  @service busy;
+
+  async beforeModel() {
+    await this.session.setup();
+  }
 
   // By default, ember-simple-auth sets the "session.attemptedTransition" value
   // to track where to redirect unauthenticated users to after logging in.
@@ -39,7 +40,7 @@ export default class ApplicationRoute extends Route.extend(ApplicationRouteMixin
     const attemptedTransitionUrl = this.session.data.attemptedTransitionUrl;
     if(attemptedTransitionUrl) {
       this.transitionTo(attemptedTransitionUrl);
-      this.set('session.attemptedTransition', null);
+      this.session.set('attemptedTransition', null);
       this.session.set('data.attemptedTransitionUrl', null);
     } else {
       this.transitionTo(this.routeAfterAuthentication);

@@ -1,9 +1,0 @@
-#!/usr/bin/env bash
-
-set -e -u -x
-source ./tasks/helpers.sh
-
-export PATH="$STAGE_EMBEDDED_PATH"
-export BUNDLE_GEMFILE="$SOURCE_DIR/Gemfile"
-export BUNDLE_APP_CONFIG="$WORK_DIR/tasks/test-deps/bundle/_persist/.bundle"
-bundle exec rake outdated

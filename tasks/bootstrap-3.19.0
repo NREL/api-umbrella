@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+
+set -e -u -x
+root_dir="$(cd "$(dirname "$(dirname "${BASH_SOURCE[0]}")")" && pwd)"
+# shellcheck source=tasks/helpers.sh
+source "$root_dir/tasks/helpers.sh"
+
+task_version="3.19.0"
+task_hash="a2960c13cd265b090086c71bb6ee77f6ffc4970cd992f9f63629a3d66309bc68"
+if [ "$TARGETARCH" == "arm64" ]; then
+  task_hash="6710372385739a0bb40da61652288ee994b38f0eece701f16116b7553c6fe7dd"
+fi
+
+task_working_dir
+download "https://github.com/go-task/task/releases/download/v$task_version/task_linux_${TARGETARCH}.tar.gz" "sha256" "$task_hash"
+extract_download "task_linux_${TARGETARCH}.tar.gz"
+cp ./task "$WORK_DIR/task"
+
+stamp

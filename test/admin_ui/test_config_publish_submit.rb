@@ -9,18 +9,17 @@ class Test::AdminUi::TestConfigPublishSubmit < Minitest::Capybara::Test
   def setup
     super
     setup_server
-    Api.delete_all
-    WebsiteBackend.delete_all
-    ConfigVersion.delete_all
+
+    publish_default_config_version
   end
 
   def after_all
     super
-    default_config_version_needed
+    publish_default_config_version
   end
 
   def test_publishing_changes
-    api = FactoryBot.create(:api)
+    api = FactoryBot.create(:api_backend)
 
     admin_login
     visit "/admin/#/config/publish"
@@ -28,14 +27,14 @@ class Test::AdminUi::TestConfigPublishSubmit < Minitest::Capybara::Test
     assert_text("Successfully published the configuration")
 
     assert_text("Published configuration is up to date")
-    active_config = ConfigVersion.active_config
+    active_config = PublishedConfig.active_config
     assert_equal(1, active_config["apis"].length)
-    assert_equal(api.id, active_config["apis"].first["_id"])
+    assert_equal(api.id, active_config["apis"].first["id"])
   end
 
   def test_publishing_only_selected_changes
-    api1 = FactoryBot.create(:api)
-    FactoryBot.create(:api)
+    api1 = FactoryBot.create(:api_backend)
+    FactoryBot.create(:api_backend)
 
     admin_login
     visit "/admin/#/config/publish"
@@ -45,8 +44,8 @@ class Test::AdminUi::TestConfigPublishSubmit < Minitest::Capybara::Test
 
     refute_text("Published configuration is up to date")
     assert_text("1 New API Backends")
-    active_config = ConfigVersion.active_config
+    active_config = PublishedConfig.active_config
     assert_equal(1, active_config["apis"].length)
-    assert_equal(api1.id, active_config["apis"].first["_id"])
+    assert_equal(api1.id, active_config["apis"].first["id"])
   end
 end

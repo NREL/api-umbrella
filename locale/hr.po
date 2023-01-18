@@ -1,0 +1,166 @@
+msgid ""
+msgstr ""
+"Language: hr\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+# errors.messages.not_saved.other
+msgid "%{count} errors prohibited this %{resource} from being saved:"
+msgstr "%{count} grešaka sprečavaju snimanje %{resource}:"
+
+# errors.messages.not_saved.one
+msgid "1 error prohibited this %{resource} from being saved:"
+msgstr "1 greška sprečava snimanje %{resource}:"
+
+# devise.registrations.signed_up_but_unconfirmed
+msgid "A message with a confirmation link has been sent to your email address. Please follow the link to activate your account."
+msgstr "Poruka s linkom za potvrdu je poslana na Vašu e-mail adresu. Molimo kliknite na link da aktivirate Vaš račun."
+
+# devise.registrations.destroyed
+msgid "Bye! Your account has been successfully cancelled. We hope to see you again soon."
+msgstr "Pozdrav! Vaš račun je uspješno obrisan. Nadamo se da ćete se brzo vratiti."
+
+# devise.mailer.confirmation_instructions.subject
+msgid "Confirmation instructions"
+msgstr "Upute za potvrdu korisničkog računa"
+
+# devise.omniauth_callbacks.failure
+msgid "Could not authenticate you from %{kind} because \"%{reason}\"."
+msgstr "Nismo Vas u mogućnosti autorizirati sa %{kind} računom zbog \"%{reason}\"."
+
+# devise.unlocks.send_paranoid_instructions
+msgid "If your account exists, you will receive an email with instructions for how to unlock it in a few minutes."
+msgstr "Ako Vaš račun postoji, na email ćete u roku nekoliko minuta primiti upute kako ga otključati."
+
+# devise.passwords.send_paranoid_instructions
+msgid "If your email address exists in our database, you will receive a password recovery link at your email address in a few minutes."
+msgstr "Ukoliko se Vaša email adresa nalazi u našoj bazi, na istu ćete u roku od nekoliko minuta primiti link za resetiranje lozinke."
+
+# devise.confirmations.send_paranoid_instructions
+msgid "If your email address exists in our database, you will receive an email with instructions for how to confirm your email address in a few minutes."
+msgstr "Ukoliko se Vaša email adresa nalazi u našoj bazi u roku od nekoliko minuta ćete primiti mail s uputama kako potvrditi Vaš račun."
+
+# devise.failure.not_found_in_database
+msgid "Invalid %{authentication_keys} or password."
+msgstr "Neispravan e-mail ili lozinka."
+
+# devise.mailer.reset_password_instructions.subject
+msgid "Reset password instructions"
+msgstr "Upute za promjenu lozinke"
+
+# devise.sessions.signed_in
+msgid "Signed in successfully."
+msgstr "Uspješno ste se prijavili."
+
+# devise.sessions.signed_out
+msgid "Signed out successfully."
+msgstr "Uspješno ste se odjavili."
+
+# devise.omniauth_callbacks.success
+msgid "Successfully authenticated from %{kind} account."
+msgstr "Uspješna autorizacija sa %{kind} računa."
+
+# devise.mailer.unlock_instructions.subject
+msgid "Unlock instructions"
+msgstr "Upute za otključavanje korisničkog računa"
+
+# devise.registrations.signed_up
+msgid "Welcome! You have signed up successfully."
+msgstr "Dobrodošli! Uspješno ste se registrirali."
+
+# devise.failure.already_authenticated
+msgid "You are already signed in."
+msgstr "Već ste prijavljeni."
+
+# devise.passwords.no_token
+msgid "You can't access this page without coming from a password reset email. If you do come from a password reset email, please make sure you used the full URL provided."
+msgstr "Ne možete pristupiti ovoj stranici ako niste kliknuli na link u emailu za resetiranje lozinke."
+
+# devise.failure.last_attempt
+msgid "You have one more attempt before your account is locked."
+msgstr "Imate još jedan pokušaj prije nego Vaš račun bude zaključan."
+
+# devise.registrations.signed_up_but_locked
+msgid "You have signed up successfully. However, we could not sign you in because your account is locked."
+msgstr "Uspješno ste se registrirali. Nažalost ne možete se prijaviti jer Vam je račun zaključan."
+
+# devise.registrations.signed_up_but_inactive
+msgid "You have signed up successfully. However, we could not sign you in because your account is not yet activated."
+msgstr "Uspješno ste se registrirali. Doduše, ne možete se prijaviti u sustav zato što Vaš račun još nije aktiviran."
+
+# devise.failure.unconfirmed
+msgid "You have to confirm your email address before continuing."
+msgstr "Prije nastavka morate potvrditi Vaš račun."
+
+# devise.failure.unauthenticated
+msgid "You need to sign in or sign up before continuing."
+msgstr "Za nastavak se morate prijaviti ili registrirati."
+
+# devise.registrations.update_needs_confirmation
+msgid "You updated your account successfully, but we need to verify your new email address. Please check your email and follow the confirm link to confirm your new email address."
+msgstr "Uspješno ste ažurirali Vaš račun, ali trebamo potvrditi Vašu novu e-mail adresu. Molimo provjerite svoje sanduče i kliknite na link za potvrdu."
+
+# devise.confirmations.send_instructions
+msgid "You will receive an email with instructions for how to confirm your email address in a few minutes."
+msgstr "U roku nekoliko minuta ćete primiti e-mail s uputama za potvrdu Vašeg računa."
+
+# devise.unlocks.send_instructions
+msgid "You will receive an email with instructions for how to unlock your account in a few minutes."
+msgstr "U roku nekoliko minuta ćete primiti e-mail s uputama za otključavanje Vašeg računa."
+
+# devise.passwords.send_instructions
+msgid "You will receive an email with instructions on how to reset your password in a few minutes."
+msgstr "U roku nekoliko minuta ćete primiti e-mail s uputama za promjenu Vaše lozinke."
+
+# devise.unlocks.unlocked
+msgid "Your account has been unlocked successfully. Please sign in to continue."
+msgstr "Vaš račun je uspješno otključan. Molimo prijavite se."
+
+# devise.registrations.updated
+msgid "Your account has been updated successfully."
+msgstr "Uspješno ste izmjenili Vaš račun."
+
+# devise.failure.locked
+msgid "Your account is locked."
+msgstr "Vaš račun je zaključan."
+
+# devise.failure.inactive
+msgid "Your account is not activated yet."
+msgstr "Vaš račun još nije aktiviran."
+
+# devise.confirmations.confirmed
+msgid "Your email address has been successfully confirmed."
+msgstr "Vaš račun je uspješno potvrđen. Sad ste prijavljeni."
+
+# devise.passwords.updated_not_active
+msgid "Your password has been changed successfully."
+msgstr "Vaša lozinka je uspješno promijenjena."
+
+# devise.passwords.updated
+msgid "Your password has been changed successfully. You are now signed in."
+msgstr "Vaša lozinka je uspješno promjenjena. Sad ste prijavljeni."
+
+# devise.failure.timeout
+msgid "Your session expired. Please sign in again to continue."
+msgstr "Vrijeme trajanja Vaše sesije je isteklo. Za nastavak se prijavite ponovno."
+
+# errors.messages.expired
+msgid "has expired, please request a new one"
+msgstr "je istekao, molimo zatražite novi"
+
+# errors.messages.confirmation_period_expired
+msgid "needs to be confirmed within %{period}, please request a new one"
+msgstr "je trebao biti potvrđen tijekom perioda %{period}, molimo tražite novi"
+
+# errors.messages.not_found
+msgid "not found"
+msgstr "nije pronađeno"
+
+# errors.messages.already_confirmed
+msgid "was already confirmed, please try signing in"
+msgstr "je već potvrđen, molimo pokušajte se prijaviti"
+
+# errors.messages.not_locked
+msgid "was not locked"
+msgstr "nije zaključan"

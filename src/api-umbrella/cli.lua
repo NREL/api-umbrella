@@ -54,19 +54,41 @@ function _M.processes()
   processes()
 end
 
+function _M.db_setup()
+  local db_setup = require "api-umbrella.cli.db_setup"
+  db_setup()
+end
+
+function _M.migrate()
+  local migrate = require "api-umbrella.cli.migrate"
+  migrate()
+end
+
+function _M.wait_for_migrations()
+  local wait_for_migrations = require "api-umbrella.cli.wait_for_migrations"
+  wait_for_migrations()
+end
+
 function _M.health(args)
   local health = require "api-umbrella.cli.health"
   health(args)
 end
 
 function _M.version()
-  local file = require "pl.file"
-  local path = require "pl.path"
-  local stringx = require "pl.stringx"
-  local src_root_dir = os.getenv("API_UMBRELLA_SRC_ROOT")
-  local version = stringx.strip(file.read(path.join(src_root_dir, "src/api-umbrella/version.txt")))
+  local get_api_umbrella_version = require "api-umbrella.utils.get_api_umbrella_version"
+  local version = get_api_umbrella_version()
   print(version)
   os.exit(0)
+end
+
+function _M.dump_config(args)
+  local dump_config = require "api-umbrella.cli.dump_config"
+  dump_config(args)
+end
+
+function _M.cloud_foundry_generate_config()
+  local cloud_foundry_generate_config = require "api-umbrella.cli.cloud_foundry_generate_config"
+  cloud_foundry_generate_config()
 end
 
 function _M.help()
@@ -93,13 +115,9 @@ parser:command("restart")
   :description("Restart the API Umbrella server.")
   :action(_M.restart)
 
-local reload_command = parser:command("reload")
+parser:command("reload")
   :description("Reload the configuration of the API Umbrella server.")
   :action(_M.reload)
-reload_command:flag("--router")
-  :description("Reload only the router processes")
-reload_command:flag("--web")
-  :description("Reload only the web processes")
 
 parser:command("status")
   :description("Show the status of the API Umbrella server.")
@@ -113,6 +131,18 @@ parser:command("processes")
   :description("List the status of the processes running under API Umbrella.")
   :action(_M.processes)
 
+parser:command("db-setup")
+  :description("Run the initial database setup task.")
+  :action(_M.db_setup)
+
+parser:command("migrate")
+  :description("Run the database migrations task.")
+  :action(_M.migrate)
+
+parser:command("wait-for-migrations")
+  :description("Wait for the database to be available and fully migrated.")
+  :action(_M.wait_for_migrations)
+
 local health_command = parser:command("health")
   :description("Print the health of the API Umbrella services.")
   :action(_M.health)
@@ -123,6 +153,14 @@ health_command:option("--wait-timeout")
   :default("50")
   :convert(tonumber)
   :show_default(true)
+
+parser:command("dump-config")
+  :description("Dump the full runtime configuration after parsing and loading files.")
+  :action(_M.dump_config)
+
+parser:command("cloud-foundry-generate-config")
+  :description("For cloud foundry environments: Generate the api-umbrella.yml file from VCAP_SERVICES")
+  :action(_M.cloud_foundry_generate_config)
 
 parser:command("version")
   :description("Print the API Umbrella version number.")

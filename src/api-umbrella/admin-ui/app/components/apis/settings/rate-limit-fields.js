@@ -6,6 +6,7 @@ import { tagName } from "@ember-decorators/component";
 import bootbox from 'bootbox';
 import classic from 'ember-classic-decorator';
 import uniqueId from 'lodash-es/uniqueId';
+import without from 'lodash-es/without';
 
 @tagName("")
 @classic
@@ -13,27 +14,23 @@ export default class RateLimitFields extends Component {
   @inject()
   store;
 
-  init() {
-    super.init(...arguments);
+  rateLimitModeOptions = [
+    { id: null, name: 'Default rate limits' },
+    { id: 'custom', name: 'Custom rate limits' },
+    { id: 'unlimited', name: 'Unlimited requests' },
+  ];
 
-    this.rateLimitModeOptions = [
-      { id: null, name: 'Default rate limits' },
-      { id: 'custom', name: 'Custom rate limits' },
-      { id: 'unlimited', name: 'Unlimited requests' },
-    ];
+  rateLimitDurationUnitOptions = [
+    { id: 'seconds', name: 'seconds' },
+    { id: 'minutes', name: 'minutes' },
+    { id: 'hours', name: 'hours' },
+    { id: 'days', name: 'days' },
+  ];
 
-    this.rateLimitDurationUnitOptions = [
-      { id: 'seconds', name: 'seconds' },
-      { id: 'minutes', name: 'minutes' },
-      { id: 'hours', name: 'hours' },
-      { id: 'days', name: 'days' },
-    ];
-
-    this.rateLimitLimitByOptions = [
-      { id: 'apiKey', name: 'API Key' },
-      { id: 'ip', name: 'IP Address' },
-    ];
-  }
+  rateLimitLimitByOptions = [
+    { id: 'apiKey', name: 'API Key' },
+    { id: 'ip', name: 'IP Address' },
+  ];
 
   @computed
   get uniqueSettingsId() {
@@ -55,15 +52,15 @@ export default class RateLimitFields extends Component {
   @action
   addRateLimit() {
     let collection = this.model.rateLimits;
-    collection.pushObject(this.store.createRecord('api/rate-limit'));
+    collection.push(this.store.createRecord('api/rate-limit'));
   }
 
   @action
   deleteRateLimit(rateLimit) {
-    let collection = this.model.rateLimits;
-    bootbox.confirm('Are you sure you want to remove this rate limit?', function(result) {
+    bootbox.confirm('Are you sure you want to remove this rate limit?', (result) => {
       if(result) {
-        collection.removeObject(rateLimit);
+        let collection = without(this.model.rateLimits, rateLimit);
+        this.model.set('rateLimits', collection);
       }
     });
   }

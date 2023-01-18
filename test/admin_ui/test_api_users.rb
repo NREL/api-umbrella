@@ -42,7 +42,7 @@ class Test::AdminUi::TestApiUsers < Minitest::Capybara::Test
     click_button("Save")
     assert_text("Successfully saved")
 
-    user = ApiUser.desc(:created_at).first
+    user = ApiUser.order(:created_at => :desc).first
     visit "/admin/#/api_users/#{user.id}/edit"
 
     # User Info

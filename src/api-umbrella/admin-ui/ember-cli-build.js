@@ -1,18 +1,17 @@
 'use strict';
 
 const EmberApp = require('ember-cli/lib/broccoli/ember-app');
-const nodeSass = require('node-sass');
+const sass = require('sass');
 const autoprefixer = require('autoprefixer');
 
 module.exports = function(defaults) {
-  let app = new EmberApp(defaults, {
+  const app = new EmberApp(defaults, {
     autoImport: {
       alias: {
         'jQuery-QueryBuilder': 'jQuery-QueryBuilder/dist/js/query-builder.standalone',
         bootbox: 'bootbox/bootbox',
         diff: 'diff/dist/diff',
         inflection: 'inflection/lib/inflection',
-        marked: 'marked/lib/marked',
         numeral: 'numeral/numeral',
         selectize: 'selectize/dist/js/standalone/selectize',
       },
@@ -28,7 +27,7 @@ module.exports = function(defaults) {
     },
 
     sassOptions: {
-      implementation: nodeSass,
+      implementation: sass,
 
       // The Sass number precision must be increased to 8 for Bootstrap, or
       // else certain things don't line up:
@@ -48,6 +47,7 @@ module.exports = function(defaults) {
             module: autoprefixer,
           },
         ],
+        exclude: ['**/*.css.map'],
       },
     },
 
@@ -59,6 +59,10 @@ module.exports = function(defaults) {
       'bootstrapVersion': 4,
       'importBootstrapFont': false,
       'importBootstrapCSS': false,
+    },
+
+    'ember-simple-auth': {
+      useSessionSetupMethod: true,
     },
   });
 

@@ -53,15 +53,9 @@ if [ "$remove_accounts" = "true" ]; then
   group=api-umbrella
   auto_ssl_user=api-umbrella-auto-ssl
   auto_ssl_group=api-umbrella-auto-ssl
-  deploy_user=api-umbrella-deploy
-  deploy_group=api-umbrella-deploy
 
   if getent passwd $auto_ssl_user > /dev/null; then
     userdel $auto_ssl_user
-  fi
-
-  if getent passwd $deploy_user > /dev/null; then
-    userdel $deploy_user
   fi
 
   if getent passwd $user > /dev/null; then
@@ -70,10 +64,6 @@ if [ "$remove_accounts" = "true" ]; then
 
   if getent group $auto_ssl_group > /dev/null; then
     groupdel $auto_ssl_group
-  fi
-
-  if getent group $deploy_group > /dev/null; then
-    groupdel $deploy_group
   fi
 
   if getent group $group > /dev/null; then

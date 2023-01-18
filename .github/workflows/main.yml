@@ -1,6 +1,9 @@
 name: CI
 
-on: [push, pull_request]
+on:
+  push:
+    branches: "**"
+  pull_request:
 
 env:
   REGISTRY: ghcr.io
@@ -13,61 +16,115 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1.5.1
+        uses: docker/setup-buildx-action@v1.7.0
         with:
           driver-opts: network=host
 
       - name: Log in to the Container registry
-        uses: docker/login-action@v1.10.0
+        uses: docker/login-action@v1.14.1
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract metadata (tags, labels) for Docker
+      - name: dev-env container metadata
         id: meta
-        uses: docker/metadata-action@v3.5.0
+        uses: docker/metadata-action@v3.8.0
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           flavor: |
-            prefix=dev-env-
+            suffix=-dev-env
 
-      - name: Extract metadata (tags, labels) for Docker
+      - name: build-cache container metadata
         id: build_cache_meta
-        uses: docker/metadata-action@v3.5.0
+        uses: docker/metadata-action@v3.8.0
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           flavor: |
-            prefix=build-cache-
+            suffix=-build-cache-test
 
       - name: Build and push
         id: docker_build
-        uses: docker/build-push-action@v2.7.0
+        uses: docker/build-push-action@v2.10.0
         with:
           target: test
           pull: true
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.build_cache_meta.outputs.version }}
+          cache-from: |
+            type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.build_cache_meta.outputs.version }}
+            type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:build-cache-test-recent
           cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.build_cache_meta.outputs.version }},mode=max
+
+      # Push the build cache also to a `build-cache-test-recent` tag (in
+      # addition to the branch name tag cached above). This is so that other
+      # branches or tags can still leverage some recent cache, even if there
+      # isn't a cache for that tag/branch yet.
+      #
+      # Ideally this could be accomplished above via multiple cache-to
+      # arguments, but that isn't currently supported:
+      # https://github.com/moby/buildkit/issues/2818
+      - name: Push recent test cache
+        uses: docker/build-push-action@v2.10.0
+        with:
+          target: test
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.build_cache_meta.outputs.version }}
+          cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:build-cache-test-recent,mode=max
+
+  build_runtime:
+    needs: [build]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1.7.0
+        with:
+          driver-opts: network=host
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@v1.14.1
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: build-cache container metadata
+        id: build_cache_meta
+        uses: docker/metadata-action@v3.8.0
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          flavor: |
+            suffix=-build-cache-test
+
+      - name: Push recent runtime cache
+        uses: docker/build-push-action@v2.10.0
+        with:
+          target: runtime
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.build_cache_meta.outputs.version }}
+          cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:build-cache-runtime-recent,mode=max
 
   lint:
     needs: [build]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
-      - name: Extract metadata (tags, labels) for Docker
+      - name: dev-env container metadata
         id: meta
-        uses: docker/metadata-action@v3.5.0
+        uses: docker/metadata-action@v3.8.0
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           flavor: |
-            prefix=dev-env-
+            suffix=-dev-env
 
       - name: Pull
         run: docker pull "$DOCKER_IMAGE_CACHE_FROM"
@@ -82,21 +139,44 @@ jobs:
   test:
     needs: [build]
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:10
+        env:
+          POSTGRES_PASSWORD: dev_password
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      elasticsearch:
+        image: opensearchproject/opensearch:1.3.5
+        env:
+          OPENSEARCH_JAVA_OPTS: "-Xms32m -Xmx256m"
+          DISABLE_INSTALL_DEMO_CONFIG: "true"
+          DISABLE_SECURITY_PLUGIN: "true"
+          discovery.type: single-node
+          cluster.routing.allocation.disk.threshold_enabled: "false"
+        options: >-
+          --health-cmd "curl -fsS http://localhost:9200/_cluster/health"
+          --health-interval 10s
+          --health-timeout 90s
+          --health-retries 10
     strategy:
       fail-fast: false
       matrix:
         ci_node_total: [6]
         ci_node_index: [0, 1, 2, 3, 4, 5]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
-      - name: Extract metadata (tags, labels) for Docker
+      - name: dev-env container metadata
         id: meta
-        uses: docker/metadata-action@v3.5.0
+        uses: docker/metadata-action@v3.8.0
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           flavor: |
-            prefix=dev-env-
+            suffix=-dev-env
 
       - name: Pull
         run: docker pull "$DOCKER_IMAGE_CACHE_FROM"
@@ -110,8 +190,9 @@ jobs:
 
           tests=$(split_tests --glob "${{ env.TESTS_GLOB }}" --split-total=${CI_NODE_TOTAL} --split-index=${CI_NODE_INDEX})
           docker run --rm \
+            --network "${{ job.services.postgres.network }}" \
             -v "$(pwd)/test/tmp/artifacts:/app/test/tmp/artifacts" \
-            -e TESTOPTS="--ci-dir=./test/tmp/artifacts/reports" \
+            -e CI=true \
             -e TESTS="${tests}" \
             -e MAXMIND_LICENSE_KEY="${MAXMIND_LICENSE_KEY}" \
             "$DOCKER_IMAGE_CACHE_FROM" \
@@ -125,30 +206,59 @@ jobs:
 
       - name: Artifact permissions
         if: ${{ always() }}
-        run: sudo chmod -R 777 test/tmp/artifacts
+        run: sudo chmod -R a+rwX test/tmp/artifacts
+
+      - name: Dump docker logs
+        if: ${{ always() }}
+        uses: jwalton/gh-docker-logs@v2.2.0
+        with:
+          dest: test/tmp/artifacts/docker-logs
+
+      - name: Compress artifacts
+        if: ${{ always() }}
+        run: gzip -r ./test/tmp/artifacts/log ./test/tmp/artifacts/docker-logs
 
       - name: Archive artifacts
-        uses: actions/upload-artifact@v2
         if: ${{ always() }}
+        uses: actions/upload-artifact@v3
         with:
           name: test-artifacts-matrix-${{ matrix.ci_node_index }}
-          path: |
-            test/tmp/artifacts/**/*
-            !test/tmp/artifacts/**/log/*/lock
+          path: test/tmp/artifacts/
 
   test_elasticsearch_v6:
     needs: [build]
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:10
+        env:
+          POSTGRES_PASSWORD: dev_password
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      elasticsearch:
+        image: docker.elastic.co/elasticsearch/elasticsearch-oss:6.8.18
+        env:
+          ES_JAVA_OPTS: "-Xms32m -Xmx256m"
+          discovery.type: single-node
+          cluster.routing.allocation.disk.threshold_enabled: "false"
+        options: >-
+          --health-cmd "curl -fsS http://localhost:9200/_cluster/health"
+          --health-interval 10s
+          --health-timeout 90s
+          --health-retries 5
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
-      - name: Extract metadata (tags, labels) for Docker
+      - name: dev-env container metadata
         id: meta
-        uses: docker/metadata-action@v3.5.0
+        uses: docker/metadata-action@v3.8.0
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           flavor: |
-            prefix=dev-env-
+            suffix=-dev-env
 
       - name: Pull
         run: docker pull "$DOCKER_IMAGE_CACHE_FROM"
@@ -160,10 +270,11 @@ jobs:
           shopt -s globstar
           tests=(${{ env.ELASTICSEARCH_TESTS_GLOB }})
           docker run --rm \
+            --network "${{ job.services.postgres.network }}" \
             -v "$(pwd)/test/tmp/artifacts:/app/test/tmp/artifacts" \
             -e ELASTICSEARCH_TEST_API_VERSION=6 \
             -e ELASTICSEARCH_TEST_TEMPLATE_VERSION=2 \
-            -e TESTOPTS="--ci-dir=./test/tmp/artifacts/reports" \
+            -e CI=true \
             -e TESTS="${tests[*]}" \
             -e MAXMIND_LICENSE_KEY="${MAXMIND_LICENSE_KEY}" \
             "$DOCKER_IMAGE_CACHE_FROM" \
@@ -174,79 +285,59 @@ jobs:
 
       - name: Artifact permissions
         if: ${{ always() }}
-        run: sudo chmod -R 777 test/tmp/artifacts
+        run: sudo chmod -R a+rwX test test/tmp/artifacts
+
+      - name: Dump docker logs
+        if: ${{ always() }}
+        uses: jwalton/gh-docker-logs@v2.2.0
+        with:
+          dest: test/tmp/artifacts/docker-logs
+
+      - name: Compress artifacts
+        if: ${{ always() }}
+        run: gzip -r ./test/tmp/artifacts/log ./test/tmp/artifacts/docker-logs
 
       - name: Archive artifacts
-        uses: actions/upload-artifact@v2
         if: ${{ always() }}
+        uses: actions/upload-artifact@v3
         with:
           name: test-artifacts-elasticsearch-v6
-          path: |
-            test/tmp/artifacts/**/*
-            !test/tmp/artifacts/**/log/*/lock
-
-  test_elasticsearch_v7:
-    needs: [build]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-
-      - name: Extract metadata (tags, labels) for Docker
-        id: meta
-        uses: docker/metadata-action@v3.5.0
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          flavor: |
-            prefix=dev-env-
-
-      - name: Pull
-        run: docker pull "$DOCKER_IMAGE_CACHE_FROM"
-        env:
-          DOCKER_IMAGE_CACHE_FROM: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }}
-
-      - name: Test
-        run: |
-          shopt -s globstar
-          tests=(${{ env.ELASTICSEARCH_TESTS_GLOB }})
-          docker run --rm \
-            -v "$(pwd)/test/tmp/artifacts:/app/test/tmp/artifacts" \
-            -e ELASTICSEARCH_TEST_API_VERSION=7 \
-            -e ELASTICSEARCH_TEST_TEMPLATE_VERSION=2 \
-            -e TESTOPTS="--ci-dir=./test/tmp/artifacts/reports" \
-            -e TESTS="${tests[*]}" \
-            -e MAXMIND_LICENSE_KEY="${MAXMIND_LICENSE_KEY}" \
-            "$DOCKER_IMAGE_CACHE_FROM" \
-            make test
-        env:
-          DOCKER_IMAGE_CACHE_FROM: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }}
-          MAXMIND_LICENSE_KEY: ${{ secrets.MAXMIND_LICENSE_KEY }}
-
-      - name: Artifact permissions
-        if: ${{ always() }}
-        run: sudo chmod -R 777 test/tmp/artifacts
-
-      - name: Archive artifacts
-        uses: actions/upload-artifact@v2
-        if: ${{ always() }}
-        with:
-          name: test-artifacts-elasticsearch-v7
-          path: |
-            test/tmp/artifacts/**/*
-            !test/tmp/artifacts/**/log/*/lock
+          path: test/tmp/artifacts/
 
   test_elasticsearch_v7_daily:
     needs: [build]
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:10
+        env:
+          POSTGRES_PASSWORD: dev_password
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      elasticsearch:
+        image: docker.elastic.co/elasticsearch/elasticsearch-oss:7.10.2
+        env:
+          ES_JAVA_OPTS: "-Xms32m -Xmx256m"
+          discovery.type: single-node
+          cluster.routing.allocation.disk.threshold_enabled: "false"
+        options: >-
+          --health-cmd "curl -fsS http://localhost:9200/_cluster/health"
+          --health-interval 10s
+          --health-timeout 90s
+          --health-retries 5
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
-      - name: Extract metadata (tags, labels) for Docker
+      - name: dev-env container metadata
         id: meta
-        uses: docker/metadata-action@v3.5.0
+        uses: docker/metadata-action@v3.8.0
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           flavor: |
-            prefix=dev-env-
+            suffix=-dev-env
 
       - name: Pull
         run: docker pull "$DOCKER_IMAGE_CACHE_FROM"
@@ -258,11 +349,12 @@ jobs:
           shopt -s globstar
           tests=(${{ env.ELASTICSEARCH_TESTS_GLOB }})
           docker run --rm \
+            --network "${{ job.services.postgres.network }}" \
             -v "$(pwd)/test/tmp/artifacts:/app/test/tmp/artifacts" \
             -e ELASTICSEARCH_TEST_API_VERSION=7 \
             -e ELASTICSEARCH_TEST_TEMPLATE_VERSION=2 \
             -e ELASTICSEARCH_TEST_INDEX_PARTITION=daily \
-            -e TESTOPTS="--ci-dir=./test/tmp/artifacts/reports" \
+            -e CI=true \
             -e TESTS="${tests[*]}" \
             -e MAXMIND_LICENSE_KEY="${MAXMIND_LICENSE_KEY}" \
             "$DOCKER_IMAGE_CACHE_FROM" \
@@ -273,13 +365,42 @@ jobs:
 
       - name: Artifact permissions
         if: ${{ always() }}
-        run: sudo chmod -R 777 test/tmp/artifacts
+        run: sudo chmod -R a+rwX test/tmp/artifacts
+
+      - name: Dump docker logs
+        if: ${{ always() }}
+        uses: jwalton/gh-docker-logs@v2.2.0
+        with:
+          dest: test/tmp/artifacts/docker-logs
+
+      - name: Compress artifacts
+        if: ${{ always() }}
+        run: gzip -r ./test/tmp/artifacts/log ./test/tmp/artifacts/docker-logs
 
       - name: Archive artifacts
-        uses: actions/upload-artifact@v2
         if: ${{ always() }}
+        uses: actions/upload-artifact@v3
         with:
           name: test-artifacts-elasticsearch-v7-daily
-          path: |
-            test/tmp/artifacts/**/*
-            !test/tmp/artifacts/**/log/*/lock
+          path: test/tmp/artifacts/
+
+  publish-test-results:
+    runs-on: ubuntu-latest
+    needs:
+      - test
+      - test_elasticsearch_v6
+      - test_elasticsearch_v7_daily
+    permissions:
+      checks: write
+    if: always()
+    steps:
+      - name: Download Artifacts
+        uses: actions/download-artifact@v3
+        with:
+          path: ./artifacts
+
+      - name: Publish Unit Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v1
+        with:
+          files: "artifacts/*/reports/**/*.xml"
+          comment_mode: off

@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+set -e -u
+
+# Redirect stderr to stdout
+exec 2>&1
+
+umask "<%- config['umask'] %>"
+
+if [ "${1}" = "start" ]; then
+  echo "starting ${2}..."
+  api_umbrella_user="<%- config['user'] %>"
+  api_umbrella_group="<%- config['group'] %>"
+
+  run_args=("-e" "rc.env")
+  if [ -n "$api_umbrella_user" ]; then
+    run_args+=("-u" "$api_umbrella_user")
+  fi
+
+  dirs=("<%- config['run_dir'] %>/envoy")
+  mkdir -p "${dirs[@]}"
+  chmod 750 "${dirs[@]}"
+  if [ -n "$api_umbrella_user" ]; then
+    chown "$api_umbrella_user":"$api_umbrella_group" "${dirs[@]}"
+
+    destination="<%- config['log']['destination'] %>"
+    if [ "$destination" = "console" ]; then
+      # Envoy needs have /dev/stdout writable for access logging to stdout,
+      # since it opens /dev/stdout as a file (it performs a similar chown in
+      # its own docker container). But since this is being executed inside perp
+      # with rc.log, perp's handling means that /dev/stdout has actually been
+      # replaced with a pipe (to the rc.log process) that is specific to this
+      # process. So this chown actually just affects the pipe that's specific
+      # to this process, and should not actually affect anything system wide.
+      chown "$api_umbrella_user":"$api_umbrella_group" /dev/stdout
+    fi
+  fi
+
+  exec runtool "${run_args[@]}" envoy \
+    --config-path "<%- config['etc_dir'] %>/envoy/envoy.yaml" \
+    --use-dynamic-base-id \
+    --base-id-path "<%- config['run_dir'] %>/envoy/base-id"
+fi
+
+exit 0

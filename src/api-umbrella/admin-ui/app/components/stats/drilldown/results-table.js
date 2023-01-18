@@ -27,7 +27,7 @@ export default class ResultsTable extends Component {
           data: 'path',
           title: 'Path',
           defaultContent: '-',
-          render: function(name, type, data) {
+          render: (name, type, data) => {
             if(type === 'display' && name && name !== '-') {
               if(data.terminal) {
                 return '<i class="far fa-file fa-fw mr-1"></i>' + escape(name);
@@ -41,7 +41,7 @@ export default class ResultsTable extends Component {
             }
 
             return name;
-          }.bind(this),
+          },
         },
         {
           data: 'hits',

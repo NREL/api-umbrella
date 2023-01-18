@@ -9,7 +9,7 @@ class Test::AdminUi::Login::TestLocalAndExternalProviders < Minitest::Capybara::
   def setup
     super
     setup_server
-    Admin.delete_all
+
     once_per_class_setup do
       override_config_set({
         "web" => {
@@ -22,13 +22,13 @@ class Test::AdminUi::Login::TestLocalAndExternalProviders < Minitest::Capybara::
             },
           },
         },
-      }, ["--router", "--web"])
+      })
     end
   end
 
   def after_all
     super
-    override_config_reset(["--router", "--web"])
+    override_config_reset
   end
 
   def test_allows_first_time_admin_creation
@@ -45,7 +45,7 @@ class Test::AdminUi::Login::TestLocalAndExternalProviders < Minitest::Capybara::
     # Local login fields
     assert_field("Email")
     assert_field("Password")
-    assert_field("Remember me")
+    assert_field("Remember me", :visible => :all)
     assert_link("Forgot your password?")
     assert_button("Sign in")
 

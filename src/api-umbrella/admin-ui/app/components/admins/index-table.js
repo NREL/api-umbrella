@@ -3,8 +3,9 @@ import Component from '@ember/component';
 import { action, computed } from '@ember/object';
 import { inject } from '@ember/service';
 import DataTablesHelpers from 'api-umbrella-admin-ui/utils/data-tables-helpers';
+import { t } from 'api-umbrella-admin-ui/utils/i18n';
+import usernameLabel from 'api-umbrella-admin-ui/utils/username-label';
 import classic from 'ember-classic-decorator';
-import I18n from 'i18n-js';
 import $ from 'jquery';
 import escape from 'lodash-es/escape';
 
@@ -17,7 +18,7 @@ export default class IndexTable extends Component {
 
   @action
   didInsert(element) {
-    let dataTable = $(element).find('table').DataTable({
+    const dataTable = $(element).find('table').DataTable({
       serverSide: true,
       ajax: '/api-umbrella/v1/admins.json',
       pageLength: 50,
@@ -26,7 +27,7 @@ export default class IndexTable extends Component {
         {
           data: 'username',
           name: 'Username',
-          title: I18n.t('mongoid.attributes.admin.username'),
+          title: usernameLabel(),
           defaultContent: '-',
           render: (username, type, data) => {
             if(type === 'display' && username && username !== '-') {
@@ -38,17 +39,31 @@ export default class IndexTable extends Component {
           },
         },
         {
-          data: 'group_names',
+          data: 'groups',
           name: 'Groups',
-          title: 'Groups',
+          title: t('Groups'),
           orderable: false,
-          render: DataTablesHelpers.renderListEscaped,
+          render: (value, type, row) => {
+            if(row.superuser === true) {
+              // For superusers, append this to the list of groups for display
+              // purposes (even though it isn't really a group and can't be
+              // linked, like the other admin groups).
+              value.push({
+                name: t('Superuser'),
+              });
+            }
+
+            return DataTablesHelpers.renderLinkedList({
+              editLink: '#/admin_groups/',
+              nameField: 'name',
+            })(value, type);
+          },
         },
         {
           data: 'current_sign_in_at',
           type: 'date',
           name: 'Last Signed In',
-          title: 'Last Signed In',
+          title: t('Last Signed In'),
           defaultContent: '-',
           render: DataTablesHelpers.renderTime,
         },
@@ -56,19 +71,19 @@ export default class IndexTable extends Component {
           data: 'created_at',
           type: 'date',
           name: 'Created',
-          title: 'Created',
+          title: t('Created'),
           defaultContent: '-',
           render: DataTablesHelpers.renderTime,
         },
       ],
     });
 
-    dataTable.on('draw.dt', function() {
+    dataTable.on('draw.dt', () => {
       let params = dataTable.ajax.params();
       delete params.start;
       delete params.length;
       this.set('queryParams', params);
-    }.bind(this));
+    });
   }
 
   @computed('queryParams', 'session.data.authenticated.api_key')

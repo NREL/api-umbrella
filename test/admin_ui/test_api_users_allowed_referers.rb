@@ -21,8 +21,8 @@ class Test::AdminUi::TestApiUsersAllowedReferers < Minitest::Capybara::Test
     click_button("Save")
 
     assert_text("Successfully saved the user")
-    user = ApiUser.order_by(:created_at.asc).last
-    assert_nil(user["settings"]["allowed_referers"])
+    user = ApiUser.order(:created_at => :asc).last
+    assert_nil(user.settings.allowed_referers)
   end
 
   def test_multiple_lines_saves_as_array
@@ -37,12 +37,16 @@ class Test::AdminUi::TestApiUsersAllowedReferers < Minitest::Capybara::Test
     click_button("Save")
 
     assert_text("Successfully saved the user")
-    user = ApiUser.order_by(:created_at.asc).last
-    assert_equal(["*.example.com/*", "http://google.com/*"], user["settings"]["allowed_referers"])
+    user = ApiUser.order(:created_at => :asc).last
+    assert_equal(["*.example.com/*", "http://google.com/*"], user.settings.allowed_referers)
   end
 
   def test_displays_existing_array_as_multiple_lines
-    user = FactoryBot.create(:api_user, :settings => { :allowed_referers => ["*.example.com/*", "http://google.com/*"] })
+    user = FactoryBot.create(:api_user, {
+      :settings => FactoryBot.build(:api_user_settings, {
+        :allowed_referers => ["*.example.com/*", "http://google.com/*"],
+      }),
+    })
     admin_login
     visit "/admin/#/api_users/#{user.id}/edit"
 
@@ -50,7 +54,11 @@ class Test::AdminUi::TestApiUsersAllowedReferers < Minitest::Capybara::Test
   end
 
   def test_nullifies_existing_array_when_empty_input_saved
-    user = FactoryBot.create(:api_user, :settings => { :allowed_referers => ["*.example.com/*", "http://google.com/*"] })
+    user = FactoryBot.create(:api_user, {
+      :settings => FactoryBot.build(:api_user_settings, {
+        :allowed_referers => ["*.example.com/*", "http://google.com/*"],
+      }),
+    })
     admin_login
     visit "/admin/#/api_users/#{user.id}/edit"
 
@@ -60,6 +68,6 @@ class Test::AdminUi::TestApiUsersAllowedReferers < Minitest::Capybara::Test
 
     assert_text("Successfully saved the user")
     user.reload
-    assert_nil(user["settings"]["allowed_referers"])
+    assert_nil(user.settings.allowed_referers)
   end
 end

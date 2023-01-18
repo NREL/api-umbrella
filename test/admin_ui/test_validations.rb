@@ -8,8 +8,6 @@ class Test::AdminUi::TestValidations < Minitest::Capybara::Test
   def setup
     super
     setup_server
-
-    Api.delete_all
   end
 
   def test_client_side_validations
@@ -35,10 +33,10 @@ class Test::AdminUi::TestValidations < Minitest::Capybara::Test
     assert_text("can't be blank")
     messages = page.all(".error-messages li").map { |msg| msg.text }
     assert_equal([
-      "First Name: This field can't be blank",
-      "Last Name: This field can't be blank",
-      "Email: This field can't be blank",
-    ], messages)
+      "First Name can't be blank",
+      "Last Name can't be blank",
+      "Email can't be blank",
+    ].sort, messages.sort)
 
     # Top messages container
     assert_selector(".alert-danger")
@@ -91,7 +89,7 @@ class Test::AdminUi::TestValidations < Minitest::Capybara::Test
     assert_equal([
       "Email: Provide a valid email address.",
       "Terms and conditions: Check the box to agree to the terms and conditions.",
-    ], messages)
+    ].sort, messages.sort)
 
     # Top messages container
     assert_selector(".alert-danger")
@@ -111,8 +109,8 @@ class Test::AdminUi::TestValidations < Minitest::Capybara::Test
     assert_text("Oops")
     messages = page.all(".error-messages li").map { |msg| msg.text }
     assert_equal([
-      "Email: This field can't be blank",
-    ], messages)
+      "Email can't be blank",
+    ].sort, messages.sort)
   end
 
   def test_i18n_server_side
@@ -127,6 +125,6 @@ class Test::AdminUi::TestValidations < Minitest::Capybara::Test
     assert_equal([
       "Email: is invalid",
       "Groups: must belong to at least one group or be a superuser",
-    ], messages)
+    ].sort, messages.sort)
   end
 end

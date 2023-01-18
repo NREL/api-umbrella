@@ -44,14 +44,14 @@ class Test::Proxy::TestRefererValidation < Minitest::Test
       ])
 
       @@user_with_allowed_referers = FactoryBot.create(:api_user, {
-        :settings => {
+        :settings => FactoryBot.build(:api_user_settings, {
           :rate_limit_mode => "unlimited",
           :allowed_referers => [
             "*.example.com/specific*",
             "https://google.com/specific",
             "*.yahoo.com/*",
           ],
-        },
+        }),
       })
     end
   end
@@ -72,10 +72,16 @@ class Test::Proxy::TestRefererValidation < Minitest::Test
     })
   end
 
+  def test_required_authorized_case_insensitive
+    assert_authorized_referer("/#{unique_test_class_id}/required-referers/hello", {
+      "Referer" => "hTtPs://GOOGLE.COM/",
+    })
+  end
+
   def test_required_unauthorized_exact_match
     assert_unauthorized_referer("/#{unique_test_class_id}/required-referers/hello", {
       "Referer" => "https://google.com/extra",
-    })
+    }, :origin_authorized => true)
   end
 
   def test_required_authorized_wildcard_match
@@ -136,14 +142,14 @@ class Test::Proxy::TestRefererValidation < Minitest::Test
     assert_unauthorized_referer("/#{unique_test_class_id}/required-referers/hello", {
       "X-Api-Key" => @@user_with_allowed_referers.api_key,
       "Referer" => "http://www.example.com/testing",
-    })
+    }, :origin_authorized => true)
   end
 
   def test_user_unauthorized_when_user_or_api_dont_allow_exact
     assert_unauthorized_referer("/#{unique_test_class_id}/required-referers/hello", {
       "X-Api-Key" => @@user_with_allowed_referers.api_key,
       "Referer" => "https://google.com/specific",
-    })
+    }, :origin_authorized => true)
   end
 
   def test_user_authorized_when_user_allows_no_api_settings
@@ -162,26 +168,115 @@ class Test::Proxy::TestRefererValidation < Minitest::Test
 
   def test_user_authorized_when_empty_array
     user = FactoryBot.create(:api_user, {
-      :settings => {
+      :settings => FactoryBot.build(:api_user_settings, {
         :rate_limit_mode => "unlimited",
         :allowed_referers => [],
-      },
+      }),
     })
 
     assert_authorized_referer("/api/hello", {
       "X-Api-Key" => user.api_key,
       "Referer" => "http://www.foobar.com/",
     })
+
+    assert_authorized_referer("/#{unique_test_class_id}/required-referers/hello/sub-settings", {
+      "X-Api-Key" => user.api_key,
+      "Referer" => "http://www.foobar.com/",
+    })
+  end
+
+  def test_referer_takes_precedence_over_origin
+    assert_authorized_referer("/#{unique_test_class_id}/required-referers/hello", {
+      "Origin" => "https://google.com",
+      "Referer" => "https://google.com/extra",
+    })
+
+    assert_unauthorized_referer("/#{unique_test_class_id}/required-referers/hello", {
+      "Origin" => "https://bing.com",
+      "Referer" => "https://google.com/extra",
+    })
+
+    assert_authorized_referer("/#{unique_test_class_id}/required-referers/hello", {
+      "Origin" => "https://google.com",
+      "Referer" => "https://google.com/",
+    })
+
+    assert_authorized_referer("/#{unique_test_class_id}/required-referers/hello", {
+      "Origin" => "https://bing.com",
+      "Referer" => "https://google.com/",
+    })
+  end
+
+  def test_origin_fallback_excludes_path_matching
+    assert_authorized_referer("/#{unique_test_class_id}/required-referers/hello", {
+      "Origin" => "https://google.com",
+    })
+
+    assert_unauthorized_referer("/#{unique_test_class_id}/required-referers/hello", {
+      "Referer" => "https://google.com",
+      "Origin" => nil,
+    })
+
+    assert_authorized_referer("/#{unique_test_class_id}/required-referers/hello/sub-settings", {
+      "Origin" => "http://foo.foobar.com",
+    })
+
+    assert_unauthorized_referer("/#{unique_test_class_id}/required-referers/hello/sub-settings", {
+      "Referer" => "http://foo.foobar.com",
+      "Origin" => nil,
+    })
+
+    assert_authorized_referer("/#{unique_test_class_id}/required-referers/hello", {
+      "X-Api-Key" => @@user_with_allowed_referers.api_key,
+      "Origin" => "http://www.example.com",
+    })
+
+    assert_unauthorized_referer("/#{unique_test_class_id}/required-referers/hello", {
+      "X-Api-Key" => @@user_with_allowed_referers.api_key,
+      "Referer" => "http://www.example.com",
+      "Origin" => nil,
+    })
   end
 
   private
 
-  def assert_unauthorized_referer(path, headers = {})
+  def assert_unauthorized_referer(path, headers = {}, origin_authorized: false)
     response = Typhoeus.get("http://127.0.0.1:9080#{path}", http_options.deep_merge({
       :headers => headers,
     }))
     assert_response_code(403, response)
     assert_match("API_KEY_UNAUTHORIZED", response.body)
+
+    if headers && headers.key?("Referer") && !headers.key?("Origin")
+      uri = Addressable::URI.parse(headers["Referer"])
+      uri.path = nil
+      uri.query = nil
+      origin = uri.to_s
+
+      response = Typhoeus.get("http://127.0.0.1:9080#{path}", http_options.deep_merge({
+        :headers => headers.deep_merge({
+          "Origin" => origin,
+        }),
+      }))
+      if origin_authorized
+        assert_response_code(200, response)
+      else
+        assert_response_code(403, response)
+        assert_match("API_KEY_UNAUTHORIZED", response.body)
+      end
+
+      response = Typhoeus.get("http://127.0.0.1:9080#{path}", http_options.deep_merge({
+        :headers => headers.except("Referer").deep_merge({
+          "Origin" => origin,
+        }),
+      }))
+      if origin_authorized
+        assert_response_code(200, response)
+      else
+        assert_response_code(403, response)
+        assert_match("API_KEY_UNAUTHORIZED", response.body)
+      end
+    end
   end
 
   def assert_authorized_referer(path, headers = {})
@@ -189,5 +284,26 @@ class Test::Proxy::TestRefererValidation < Minitest::Test
       :headers => headers,
     }))
     assert_response_code(200, response)
+
+    if headers && headers.key?("Referer") && !headers.key?("Origin")
+      uri = Addressable::URI.parse(headers["Referer"])
+      uri.path = nil
+      uri.query = nil
+      origin = uri.to_s
+
+      response = Typhoeus.get("http://127.0.0.1:9080#{path}", http_options.deep_merge({
+        :headers => headers.deep_merge({
+          "Origin" => origin,
+        }),
+      }))
+      assert_response_code(200, response)
+
+      response = Typhoeus.get("http://127.0.0.1:9080#{path}", http_options.deep_merge({
+        :headers => headers.except("Referer").deep_merge({
+          "Origin" => origin,
+        }),
+      }))
+      assert_response_code(200, response)
+    end
   end
 end

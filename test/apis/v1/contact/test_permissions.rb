@@ -32,7 +32,7 @@ class Test::Apis::V1::Contact::TestPermissions < Minitest::Test
   def make_request(user)
     Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/contact.json", http_options.deep_merge({
       :headers => {
-        "X-Api-Key" => user["api_key"],
+        "X-Api-Key" => user.api_key,
         "Content-Type" => "application/x-www-form-urlencoded",
       },
       :body => {

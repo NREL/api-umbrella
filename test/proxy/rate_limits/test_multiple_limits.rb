@@ -10,32 +10,30 @@ class Test::Proxy::RateLimits::TestMultipleLimits < Minitest::Test
     setup_server
     once_per_class_setup do
       override_config_set({
-        :apiSettings => {
+        :default_api_backend_settings => {
           :rate_limits => [
             {
               :duration => 10 * 1000, # 10 second
-              :accuracy => 1000, # 1 second
-              :limit_by => "apiKey",
-              :limit => 3,
+              :limit_by => "api_key",
+              :limit_to => 3,
               :response_headers => true,
             },
             {
               :duration => 60 * 60 * 1000, # 1 hour
-              :accuracy => 1 * 60 * 1000, # 1 minute
-              :limit_by => "apiKey",
-              :limit => 10,
+              :limit_by => "api_key",
+              :limit_to => 10,
               :response_headers => false,
               :distributed => true,
             },
           ],
         },
-      }, "--router")
+      })
     end
   end
 
   def after_all
     super
-    override_config_reset("--router")
+    override_config_reset
   end
 
   def test_api_key_rate_limit

@@ -2,6 +2,7 @@ require_relative "../../test_helper"
 
 class Test::Proxy::RequestRewriting::TestSetsHeadersDynamicValues < Minitest::Test
   include ApiUmbrellaTestHelpers::Setup
+  include ApiUmbrellaTestHelpers::StripStandardRequestHeaders
   parallelize_me!
 
   def setup
@@ -52,7 +53,7 @@ class Test::Proxy::RequestRewriting::TestSetsHeadersDynamicValues < Minitest::Te
       # x-dynamic-missing is not set
       "x-dynamic-default-absent" => "default",
       "x-dynamic-default-present" => "dynamic",
-    }, strip_standard_headers(data["headers"]))
+    }, strip_standard_request_headers(data["headers"]))
   end
 
   def test_inverted_statements
@@ -69,7 +70,7 @@ class Test::Proxy::RequestRewriting::TestSetsHeadersDynamicValues < Minitest::Te
       "x-dynamic-missing" => "not-missing",
       "x-dynamic-default-absent" => "not-missing",
       "x-dynamic-default-present" => "static",
-    }, strip_standard_headers(data["headers"]))
+    }, strip_standard_request_headers(data["headers"]))
   end
 
   def test_sub_url_settings_overrides_parent_settings
@@ -83,24 +84,6 @@ class Test::Proxy::RequestRewriting::TestSetsHeadersDynamicValues < Minitest::Te
     assert_equal({
       "x-dynamic-source" => "dynamic",
       "x-dynamic-sub" => "dynamic",
-    }, strip_standard_headers(data["headers"]))
-  end
-
-  private
-
-  def strip_standard_headers(headers)
-    headers.except(
-      "accept",
-      "connection",
-      "host",
-      "user-agent",
-      "via",
-      "x-api-key",
-      "x-api-umbrella-request-id",
-      "x-api-user-id",
-      "x-forwarded-for",
-      "x-forwarded-port",
-      "x-forwarded-proto",
-    )
+    }, strip_standard_request_headers(data["headers"]))
   end
 end

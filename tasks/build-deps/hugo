@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+
+set -e -u -x
+source ./tasks/helpers.sh
+
+hugo_version="0.109.0"
+hugo_hash="42b866b58a6534e5ab82314a449bea4501ca3919f89906f141f13e9ea0b7a5f6"
+
+download_arch="$TARGETARCH"
+if [ "$TARGETARCH" == "amd64" ]; then
+  download_arch="64bit"
+elif [ "$TARGETARCH" == "arm64" ]; then
+  download_arch="arm64"
+  hugo_hash="4da3ecbe0f9665666fc66cad5b7c16bc6d8ab33eabfe69b5c521a6926314e365"
+fi
+
+task_working_dir
+download "https://github.com/gohugoio/hugo/releases/download/v${hugo_version}/hugo_extended_${hugo_version}_Linux-${download_arch}.tar.gz" "sha256" "$hugo_hash"
+extract_download "hugo_extended_${hugo_version}_Linux-${download_arch}.tar.gz"
+
+install -D -m 755 "hugo" "$DEV_INSTALL_PREFIX/bin/hugo"
+
+stamp

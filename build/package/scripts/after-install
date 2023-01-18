@@ -33,11 +33,8 @@ if [ "$configure" = "true" ]; then
   group=api-umbrella
   auto_ssl_user=api-umbrella-auto-ssl
   auto_ssl_group=api-umbrella-auto-ssl
-  deploy_user=api-umbrella-deploy
-  deploy_group=api-umbrella-deploy
   destdir="${DESTDIR:-}"
   prefix_dir="$destdir${PREFIX:-/opt/api-umbrella}"
-  embedded_dir=$prefix_dir/embedded
 
   if [ -n "$destdir" ]; then
     mkdir -p "$destdir/usr/bin"
@@ -62,42 +59,14 @@ if [ "$configure" = "true" ]; then
       -d "$prefix_dir" -c "API Umbrella auto-ssl user" "$auto_ssl_user"
   fi
 
-  # Create the deploy user & group.
-  if ! getent group "$deploy_group" > /dev/null; then
-    groupadd -r "$deploy_group"
-  fi
-  if ! getent passwd "$deploy_user" > /dev/null; then
-    useradd -r -g "$deploy_group" -s /bin/bash \
-      -d "/home/$deploy_user" -c "API Umbrella deployment user" "$deploy_user"
-  fi
-
-  # Add the auto-ssl and deploy users to the app group, so these users can read
+  # Add the auto-ssl user to the app group, so these users can read
   # config files.
   if ! groups "$auto_ssl_user" | grep -q -E "\\s$group(\\s|$)"; then
     usermod -a -G "$group" "$auto_ssl_user"
   fi
-  if ! groups "$deploy_user" | grep -q -E "\\s$group(\\s|$)"; then
-    usermod -a -G "$group" "$deploy_user"
-  fi
-
-  # Fix previously created deploy user that couldn't actually login.
-  if getent passwd "$deploy_user" | grep -q "/sbin/nologin"; then
-    usermod -d "$destdir/home/$deploy_user" -s /bin/bash "$deploy_user"
-  fi
-
-  # Create an empty .ssh/authorized_keys file if it doesn't already exist.
-  mkdir -p "$destdir/home/$deploy_user/.ssh"
-  touch "$destdir/home/$deploy_user/.ssh/authorized_keys"
 
   # Set file permissions
-  chmod 700 "$destdir/home/$deploy_user"
-  chmod 700 "$destdir/home/$deploy_user/.ssh"
-  chmod 600 "$destdir/home/$deploy_user/.ssh/authorized_keys"
   chown -R "$user:$group" "$prefix_dir/etc" "$prefix_dir/var"
-  chown -R "$deploy_user:$deploy_group" "$embedded_dir/apps"
-  chown "$deploy_user:$deploy_group" "$destdir/home/$deploy_user"
-  chown "$deploy_user:$deploy_group" "$destdir/home/$deploy_user/.ssh"
-  chown "$deploy_user:$deploy_group" "$destdir/home/$deploy_user/.ssh/authorized_keys"
 
   # Re-create symlinks that may have inadvertently been cleaned up by the API
   # Umbrella v0.8 and v0.9 after-remove scripts during upgrades (this should be

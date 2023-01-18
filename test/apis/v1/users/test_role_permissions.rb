@@ -8,17 +8,12 @@ class Test::Apis::V1::Users::TestRolePermissions < Minitest::Test
   def setup
     super
     setup_server
-    ApiUser.where(:registration_source.ne => "seed").delete_all
-    Admin.delete_all
-    AdminGroup.delete_all
-    Api.delete_all
-    ApiScope.delete_all
   end
 
   def test_permits_superuser_assign_any_role
-    FactoryBot.create(:google_api)
-    FactoryBot.create(:yahoo_api)
-    existing_roles = ApiUserRole.all
+    FactoryBot.create(:google_api_backend)
+    FactoryBot.create(:yahoo_api_backend)
+    existing_roles = ApiRole.all_ids
     assert_includes(existing_roles, "google-write")
     assert_includes(existing_roles, "yahoo-write")
     refute_includes(existing_roles, "new-write#{unique_test_id}")
@@ -41,8 +36,8 @@ class Test::Apis::V1::Users::TestRolePermissions < Minitest::Test
   end
 
   def test_permits_limited_admin_assign_role_within_scope
-    FactoryBot.create(:google_api)
-    existing_roles = ApiUserRole.all
+    FactoryBot.create(:google_api_backend)
+    existing_roles = ApiRole.all_ids
     assert_includes(existing_roles, "google-write")
 
     admin = FactoryBot.create(:limited_admin, :groups => [FactoryBot.create(:google_admin_group, :user_view_and_manage_permission)])
@@ -54,8 +49,8 @@ class Test::Apis::V1::Users::TestRolePermissions < Minitest::Test
   end
 
   def test_forbids_limited_admin_assign_role_outside_scope
-    FactoryBot.create(:yahoo_api)
-    existing_roles = ApiUserRole.all
+    FactoryBot.create(:yahoo_api_backend)
+    existing_roles = ApiRole.all_ids
     assert_includes(existing_roles, "yahoo-write")
 
     admin = FactoryBot.create(:limited_admin, :groups => [FactoryBot.create(:google_admin_group, :user_view_and_manage_permission)])
@@ -67,8 +62,8 @@ class Test::Apis::V1::Users::TestRolePermissions < Minitest::Test
   end
 
   def test_forbids_limited_admin_assign_role_partial_access
-    FactoryBot.create(:google_extra_url_match_api)
-    existing_roles = ApiUserRole.all
+    FactoryBot.create(:google_extra_url_match_api_backend)
+    existing_roles = ApiRole.all_ids
     assert_includes(existing_roles, "google-extra-write")
 
     admin = FactoryBot.create(:limited_admin, :groups => [FactoryBot.create(:google_admin_group, :user_view_and_manage_permission)])
@@ -107,9 +102,9 @@ class Test::Apis::V1::Users::TestRolePermissions < Minitest::Test
   end
 
   def test_forbids_updating_permitted_users_with_unpermitted_values
-    FactoryBot.create(:google_api)
-    FactoryBot.create(:yahoo_api)
-    existing_roles = ApiUserRole.all
+    FactoryBot.create(:google_api_backend)
+    FactoryBot.create(:yahoo_api_backend)
+    existing_roles = ApiRole.all_ids
     assert_includes(existing_roles, "google-write")
     assert_includes(existing_roles, "yahoo-write")
 
@@ -140,9 +135,9 @@ class Test::Apis::V1::Users::TestRolePermissions < Minitest::Test
   end
 
   def test_forbids_updating_unpermitted_users_with_permitted_values
-    FactoryBot.create(:google_api)
-    FactoryBot.create(:yahoo_api)
-    existing_roles = ApiUserRole.all
+    FactoryBot.create(:google_api_backend)
+    FactoryBot.create(:yahoo_api_backend)
+    existing_roles = ApiRole.all_ids
     assert_includes(existing_roles, "google-write")
     assert_includes(existing_roles, "yahoo-write")
 
@@ -172,6 +167,55 @@ class Test::Apis::V1::Users::TestRolePermissions < Minitest::Test
     assert_equal(["yahoo-write"], record.roles)
   end
 
+  def test_allows_api_umbrella_key_creator_role_allowed_by_itself
+    admin = FactoryBot.create(:admin)
+    attr_overrides = {
+      "roles" => ["api-umbrella-key-creator"],
+    }
+    assert_admin_permitted_create(:api_user, admin, attr_overrides)
+    assert_admin_permitted_update(:api_user, admin, attr_overrides)
+  end
+
+  def test_rejects_api_umbrella_key_creator_role_with_other_roles
+    admin = FactoryBot.create(:admin)
+    attr_overrides = {
+      "roles" => ["api-umbrella-key-creator", "foo"],
+    }
+
+    attributes = FactoryBot.attributes_for(:api_user).deep_stringify_keys.deep_merge(attr_overrides)
+    response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(admin_token(admin)).deep_merge({
+      :headers => { "Content-Type" => "application/json" },
+      :body => MultiJson.dump(:user => attributes),
+    }))
+    assert_response_code(422, response)
+    data = MultiJson.load(response.body)
+    assert_equal({
+      "errors" => [{
+        "code" => "INVALID_INPUT",
+        "field" => "role_ids",
+        "full_message" => "Roles: no other roles can be assigned when the \"api-umbrella-key-creator\" role is present",
+        "message" => "no other roles can be assigned when the \"api-umbrella-key-creator\" role is present",
+      }],
+    }, data)
+
+    user = FactoryBot.create(:api_user)
+    attributes = user.serializable_hash.deep_merge(attr_overrides)
+    response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/users/#{user.id}.json", http_options.deep_merge(admin_token(admin)).deep_merge({
+      :headers => { "Content-Type" => "application/json" },
+      :body => MultiJson.dump(:user => attributes),
+    }))
+    assert_response_code(422, response)
+    data = MultiJson.load(response.body)
+    assert_equal({
+      "errors" => [{
+        "code" => "INVALID_INPUT",
+        "field" => "role_ids",
+        "full_message" => "Roles: no other roles can be assigned when the \"api-umbrella-key-creator\" role is present",
+        "message" => "no other roles can be assigned when the \"api-umbrella-key-creator\" role is present",
+      }],
+    }, data)
+  end
+
   private
 
   def assert_admin_permitted_create(factory, admin, attr_overrides = {})
@@ -190,7 +234,7 @@ class Test::Apis::V1::Users::TestRolePermissions < Minitest::Test
     record = ApiUser.find(data["user"]["id"])
 
     refute_empty(attr_overrides["roles"])
-    assert_equal(attr_overrides["roles"], record.roles)
+    assert_equal(attr_overrides["roles"].sort, record.roles.sort)
   end
 
   def assert_admin_forbidden_create(factory, admin, attr_overrides = {})
@@ -223,7 +267,7 @@ class Test::Apis::V1::Users::TestRolePermissions < Minitest::Test
     assert_equal(attributes["first_name"], record.first_name)
 
     refute_empty(attr_overrides["roles"])
-    assert_equal(attr_overrides["roles"], record.roles)
+    assert_equal(attr_overrides["roles"].sort, record.roles.sort)
   end
 
   def assert_admin_forbidden_update(factory, admin, attr_overrides = {})
@@ -249,6 +293,6 @@ class Test::Apis::V1::Users::TestRolePermissions < Minitest::Test
   end
 
   def active_count
-    ApiUser.where(:deleted_at => nil).count
+    ApiUser.count
   end
 end

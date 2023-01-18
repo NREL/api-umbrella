@@ -1,0 +1,210 @@
+msgid ""
+msgstr ""
+"Language: fr-CA\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+# errors.messages.not_saved.other
+msgid "%{count} errors prohibited this %{resource} from being saved:"
+msgstr "%{count} erreurs ont empêché ce (cet ou cette) %{resource} d’être enregistré(e) :"
+
+# errors.messages.not_saved.one
+msgid "1 error prohibited this %{resource} from being saved:"
+msgstr "une erreur a empêché ce (cet ou cette) %{resource} d’être enregistré(e) :"
+
+# devise.registrations.signed_up_but_unconfirmed
+msgid "A message with a confirmation link has been sent to your email address. Please follow the link to activate your account."
+msgstr "Un message avec un lien de confirmation vous a été envoyé par mail. Veuillez suivre ce lien pour activer votre compte."
+
+# devise.registrations.destroyed
+msgid "Bye! Your account has been successfully cancelled. We hope to see you again soon."
+msgstr "Au revoir ! Votre compte a été annulé avec succès. Nous espérons vous revoir bientôt."
+
+# devise.mailer.confirmation_instructions.subject
+msgid "Confirmation instructions"
+msgstr "Instructions de confirmation"
+
+# devise.omniauth_callbacks.failure
+msgid "Could not authenticate you from %{kind} because \"%{reason}\"."
+msgstr "Nous ne pouvons pas vous authentifier depuis %{kind} pour la raison suivante : '%{reason}'."
+
+# mongoid.attributes.admin.current_password
+msgid "Current Password"
+msgstr "Mot de passe courant"
+
+# activerecord.attributes.user.current_password
+msgid "Current password"
+msgstr "Mot de passe courant"
+
+# activerecord.attributes.user.email
+msgid "Email"
+msgstr "Courriel"
+
+# devise.unlocks.send_paranoid_instructions
+msgid "If your account exists, you will receive an email with instructions for how to unlock it in a few minutes."
+msgstr "Si votre courriel existe sur notre base de données, vous recevrez sous quelques minutes un message avec des instructions pour déverrouiller votre compte."
+
+# devise.passwords.send_paranoid_instructions
+msgid "If your email address exists in our database, you will receive a password recovery link at your email address in a few minutes."
+msgstr "Si votre courriel existe dans notre base de données, vous recevrez un lien vous permettant de récupérer votre mot de passe."
+
+# devise.confirmations.send_paranoid_instructions
+msgid "If your email address exists in our database, you will receive an email with instructions for how to confirm your email address in a few minutes."
+msgstr "Si votre courriel existe sur notre base de données, vous recevrez sous quelques minutes un message avec des instructions pour confirmer votre compte."
+
+# devise.failure.not_found_in_database
+msgid "Invalid %{authentication_keys} or password."
+msgstr "Courriel ou mot de passe incorrect."
+
+# activerecord.attributes.user.password
+msgid "Password"
+msgstr "Mot de passe"
+
+# mongoid.attributes.admin.password_confirmation
+msgid "Password Confirmation"
+msgstr "Confirmation de mot de passe"
+
+# activerecord.attributes.user.password_confirmation
+msgid "Password confirmation"
+msgstr "Confirmation de mot de passe"
+
+# activerecord.attributes.user.remember_me
+msgid "Remember me"
+msgstr "Se souvenir de moi"
+
+# devise.confirmations.new.resend_confirmation_instructions
+msgid "Resend confirmation instructions"
+msgstr "Renvoyer les instructions de confirmation"
+
+# devise.mailer.reset_password_instructions.subject
+msgid "Reset password instructions"
+msgstr "Instructions pour changer le mot de passe"
+
+# activerecord.attributes.user.reset_password_token
+msgid "Reset password token"
+msgstr "Clé de réinitialisation du mot de passe"
+
+# devise.sessions.signed_in
+msgid "Signed in successfully."
+msgstr "Connecté(e) avec succès."
+
+# devise.sessions.signed_out
+msgid "Signed out successfully."
+msgstr "Déconnecté(e) avec succès."
+
+# devise.omniauth_callbacks.success
+msgid "Successfully authenticated from %{kind} account."
+msgstr "Autorisé avec succès par votre compte %{kind}."
+
+# devise.mailer.unlock_instructions.subject
+msgid "Unlock instructions"
+msgstr "Instructions pour déverrouiller le compte"
+
+# activerecord.attributes.user.unlock_token
+msgid "Unlock token"
+msgstr "Clé de déblocage"
+
+# activerecord.models.user
+msgid "User"
+msgstr "Utilisateur"
+
+# devise.registrations.signed_up
+msgid "Welcome! You have signed up successfully."
+msgstr "Bienvenue ! Vous vous êtes enregistré(e) avec succès."
+
+# devise.failure.already_authenticated
+msgid "You are already signed in."
+msgstr "Vous êtes déjà connecté(e)."
+
+# devise.passwords.no_token
+msgid "You can't access this page without coming from a password reset email. If you do come from a password reset email, please make sure you used the full URL provided."
+msgstr "Vous ne pouvez pas accéder à cette page si vous n’y accédez pas depuis un courriel de réinitialisation de mot de passe. Si vous venez en effet d’un tel courriel, vérifiez que vous avez copié l’adresse URL en entier."
+
+# devise.failure.last_attempt
+msgid "You have one more attempt before your account is locked."
+msgstr "Il vous reste une chance avant que votre compte soit bloqué."
+
+# devise.registrations.signed_up_but_locked
+msgid "You have signed up successfully. However, we could not sign you in because your account is locked."
+msgstr "Vous vous êtes enregistré(e) avec succès. Cependant, nous n’avons pas pu vous connecter car votre compte est verrouillé."
+
+# devise.registrations.signed_up_but_inactive
+msgid "You have signed up successfully. However, we could not sign you in because your account is not yet activated."
+msgstr "Vous vous êtes enregistré(e) avec succès. Cependant, nous n’avons pas pu vous connecter car votre compte n’a pas encore été activé."
+
+# devise.failure.unconfirmed
+msgid "You have to confirm your email address before continuing."
+msgstr "Vous devez confirmer votre compte par courriel."
+
+# devise.failure.unauthenticated
+msgid "You need to sign in or sign up before continuing."
+msgstr "Vous devez vous connecter ou vous enregistrer pour continuer."
+
+# devise.registrations.update_needs_confirmation
+msgid "You updated your account successfully, but we need to verify your new email address. Please check your email and follow the confirm link to confirm your new email address."
+msgstr "Vous avez modifié votre compte avec succès, mais nous devons vérifier votre nouvelle adresse de courriel. Veuillez consulter vos courriels et cliquer sur le lien de confirmation pour confirmer votre nouvelle adresse."
+
+# devise.confirmations.send_instructions
+msgid "You will receive an email with instructions for how to confirm your email address in a few minutes."
+msgstr "Vous allez recevoir sous quelques minutes un courriel comportant des instructions pour confirmer votre compte."
+
+# devise.unlocks.send_instructions
+msgid "You will receive an email with instructions for how to unlock your account in a few minutes."
+msgstr "Vous allez recevoir sous quelques minutes un courriel comportant des instructions pour déverrouiller votre compte."
+
+# devise.passwords.send_instructions
+msgid "You will receive an email with instructions on how to reset your password in a few minutes."
+msgstr "Vous allez recevoir sous quelques minutes un courriel vous indiquant comment réinitialiser votre mot de passe."
+
+# devise.unlocks.unlocked
+msgid "Your account has been unlocked successfully. Please sign in to continue."
+msgstr "Votre compte a été déverrouillé avec succès. Veuillez vous connecter."
+
+# devise.registrations.updated
+msgid "Your account has been updated successfully."
+msgstr "Votre compte a été modifié avec succès."
+
+# devise.failure.locked
+msgid "Your account is locked."
+msgstr "Votre compte est verrouillé."
+
+# devise.failure.inactive
+msgid "Your account is not activated yet."
+msgstr "Votre compte n’est pas encore activé."
+
+# devise.confirmations.confirmed
+msgid "Your email address has been successfully confirmed."
+msgstr "Votre compte a été confirmé avec succès."
+
+# devise.passwords.updated_not_active
+msgid "Your password has been changed successfully."
+msgstr "Votre mot de passe a été modifié avec succès."
+
+# devise.passwords.updated
+msgid "Your password has been changed successfully. You are now signed in."
+msgstr "Votre mot de passe a été modifié avec succès. Vous êtes maintenant connecté(e)."
+
+# devise.failure.timeout
+msgid "Your session expired. Please sign in again to continue."
+msgstr "Votre session est expirée, veuillez vous reconnecter pour continuer."
+
+# errors.messages.expired
+msgid "has expired, please request a new one"
+msgstr "est expiré, veuillez en demander un autre"
+
+# errors.messages.confirmation_period_expired
+msgid "needs to be confirmed within %{period}, please request a new one"
+msgstr "doit être confirmé(e) en %{period}, veuillez en demander un(e) autre"
+
+# errors.messages.not_found
+msgid "not found"
+msgstr "n’a pas été trouvé(e)"
+
+# errors.messages.already_confirmed
+msgid "was already confirmed, please try signing in"
+msgstr "a déjà été confirmé(e)"
+
+# errors.messages.not_locked
+msgid "was not locked"
+msgstr "n’était pas verrouillé(e)"

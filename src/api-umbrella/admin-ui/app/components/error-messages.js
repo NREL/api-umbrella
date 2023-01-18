@@ -3,12 +3,11 @@ import Component from '@ember/component';
 import { computed } from '@ember/object';
 import { gt } from '@ember/object/computed';
 import { tagName } from '@ember-decorators/component';
+import { t } from 'api-umbrella-admin-ui/utils/i18n';
 import classic from 'ember-classic-decorator';
-import I18n from 'i18n-js';
-import { titleize, underscore } from 'inflection';
 import each from 'lodash-es/each';
 import isArray from 'lodash-es/isArray';
-import marked from 'marked';
+import { marked } from 'marked';
 
 @classic
 @tagName("")
@@ -16,7 +15,6 @@ export default class ErrorMessages extends Component {
   @computed('model.{constructor.modelName,clientErrors,serverErrors}')
   get messages() {
     let errors = [];
-    let modelI18nRoot = 'mongoid.attributes.' + this.model.constructor.modelName.replace('-', '_');
 
     let clientErrors = this.model.clientErrors;
     if(clientErrors) {
@@ -27,13 +25,16 @@ export default class ErrorMessages extends Component {
             errors.push({
               attribute: clientError.get('attribute'),
               message: message,
+              // Assume the client-side validators are setup with a
+              // "description" so they are suitable for full sentence display.
+              fullMessage: message,
             });
           } else {
-            errors.push({ message: 'Unexpected error' });
+            errors.push({ message: t('Unexpected error') });
           }
         });
       } else {
-        errors.push({ message: 'Unexpected error' });
+        errors.push({ message: t('Unexpected error') });
       }
     }
 
@@ -56,11 +57,11 @@ export default class ErrorMessages extends Component {
               fullMessage: serverError.full_message,
             });
           } else {
-            errors.push({ message: 'Unexpected error' });
+            errors.push({ message: t('Unexpected error') });
           }
         });
       } else {
-        errors.push({ message: 'Unexpected error' });
+        errors.push({ message: t('Unexpected error') });
       }
     }
 
@@ -69,20 +70,15 @@ export default class ErrorMessages extends Component {
       let message = '';
       if(error.fullMessage) {
         message += error.fullMessage;
-      } else if(error.attribute && error.attribute !== 'base') {
-        let attributeTitle = I18n.t(modelI18nRoot + '.' + underscore(error.attribute), { defaultValue: false });
-        if(attributeTitle === false) {
-          attributeTitle = titleize(underscore(error.attribute));
-        }
-
-        message += attributeTitle + ': ';
-        message += error.message || 'Unexpected error';
       } else {
-        if(error.message) {
-          message += error.message.charAt(0).toUpperCase() + error.message.slice(1);
-        } else {
-          message += 'Unexpected error';
+        // If a full sentence error message isn't available, then fallback to
+        // showing the attribute name, plus the error message. While not ideal,
+        // since the attribute name won't be localized and may not be
+        // super-readable for humans, it's at least some context.
+        if(error.attribute && error.attribute !== 'base') {
+          message += error.attribute + ': ';
         }
+        message += error.message || t('Unexpected error');
       }
 
       messages.push(marked(message));

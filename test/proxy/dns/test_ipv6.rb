@@ -13,10 +13,9 @@ class Test::Proxy::Dns::TestIpv6 < Minitest::Test
     override_config({
       "dns_resolver" => {
         "nameservers" => ["[127.0.0.1]:#{$config["unbound"]["port"]}"],
-        "max_stale" => 0,
         "negative_ttl" => false,
       },
-    }, "--router") do
+    }) do
       set_dns_records(["#{unique_test_hostname} 60 AAAA ::1"])
 
       prepend_api_backends([
@@ -28,8 +27,8 @@ class Test::Proxy::Dns::TestIpv6 < Minitest::Test
         },
       ]) do
         response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/", http_options)
-        assert_response_code(500, response)
-        assert_match("Unknown Host", response.body)
+        assert_response_code(503, response)
+        assert_match("no healthy upstream", response.body)
       end
     end
   end
@@ -40,11 +39,10 @@ class Test::Proxy::Dns::TestIpv6 < Minitest::Test
     override_config({
       "dns_resolver" => {
         "nameservers" => ["[127.0.0.1]:#{$config["unbound"]["port"]}"],
-        "max_stale" => 0,
         "negative_ttl" => false,
         "allow_ipv6" => true,
       },
-    }, "--router") do
+    }) do
       set_dns_records(["#{unique_test_hostname} 60 AAAA ::1"])
 
       prepend_api_backends([

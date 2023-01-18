@@ -1,0 +1,16 @@
+header_rewrite.so "<%- config["etc_dir"] %>/trafficserver/header_rewrite.conf"
+
+# Include the host header which includes the API Umbrella backend ID, so each
+# backend is kept separate.
+
+# Include the backend host header that will eventually be used as the real host
+# in the URL (with Envoy), to ensure separate host URLs are kept separate.
+#
+# Include the HTTP method (GET, POST, etc) in the cache key. This prevents
+# delayed processing when long-running GET and POSTs are running against
+# the same URL:  https://issues.apache.org/jira/browse/TS-3431
+cachekey.so --include-headers=Host,X-Api-Umbrella-Backend-Host,X-Api-Umbrella-Cache-Request-Method
+
+<% if config["_strip_response_cookies_regex"] then %>
+  tslua.so "<%- config["etc_dir"] %>/trafficserver/strip_response_cookies.lua" "<%- config["etc_dir"] %>/trafficserver/strip_response_cookies_regex.txt"
+<% end %>

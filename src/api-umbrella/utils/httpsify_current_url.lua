@@ -1,4 +1,4 @@
-local config = require "api-umbrella.proxy.models.file_config"
+local config = require("api-umbrella.utils.load_config")()
 
 return function()
   local https_url = {

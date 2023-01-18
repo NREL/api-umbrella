@@ -1,0 +1,16 @@
+<h1><%= t("Admin Sign In") %></h1>
+
+<% if config["web"]["admin"]["login_header"] then %>
+  <%- config["web"]["admin"]["login_header"] %>
+<% end %>
+
+<div class="login-container">
+  <% render("api-umbrella.web-app.views.admin.sessions._no_admin_alert") %>
+  <% render("api-umbrella.web-app.views.admin.sessions._login_form") %>
+  <% render("api-umbrella.web-app.views.admin.sessions._external_provider_buttons") %>
+  <% render("api-umbrella.web-app.views.admin.sessions._no_auth_alert") %>
+</div>
+
+<% if config["web"]["admin"]["login_footer"] then %>
+  <%- config["web"]["admin"]["login_footer"] %>
+<% end %>

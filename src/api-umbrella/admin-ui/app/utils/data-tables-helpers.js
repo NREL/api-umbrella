@@ -1,27 +1,84 @@
 import escape from 'lodash-es/escape';
-import isArray from 'lodash-es/isArray';
+import get from 'lodash-es/get';
 import map from 'lodash-es/map';
 import moment from 'moment-timezone';
 
+function getName(value, options) {
+  let name = value;
+  if(options && options.nameField) {
+    if(typeof options.nameField === 'function') {
+      name = options.nameField(value);
+    } else {
+      name = get(value, options.nameField);
+    }
+  }
+
+  return name;
+}
+
 export default {
   renderEscaped(value, type) {
-    if(type === 'display' && value) {
+    if(type === 'display') {
+      if(!value) {
+        return '-';
+      }
+
       return escape(value);
     }
 
     return value;
   },
 
-  renderListEscaped(value, type) {
-    if(type === 'display' && value) {
-      if(isArray(value)) {
-        return map(value, function(v) { return escape(v); }).join('<br>');
-      } else {
-        return escape(value);
-      }
-    }
+  renderLink(options) {
+    return function(value, type, row) {
+      if(type === 'display') {
+        if(!value) {
+          return '-';
+        }
 
-    return value;
+        const link = options.editLink + encodeURIComponent(get(row, options.idField)) + '/edit';
+        return '<a href="' + link + '">' + escape(value) + '</a>';
+      }
+
+      return value;
+    }
+  },
+
+  renderList(options) {
+    return function(value, type) {
+      if(type === 'display') {
+        if(!value || value.length === 0) {
+          return '-';
+        }
+
+        return '<ul>' + map(value, function(v) {
+          return '<li>' + escape(getName(v, options)) + '</a></li>';
+        }).join('') + '</ul>';
+      }
+
+      return value;
+    }
+  },
+
+  renderLinkedList(options) {
+    return function(value, type) {
+      if(type === 'display') {
+        if(!value || value.length === 0) {
+          return '-';
+        }
+
+        return '<ul>' + map(value, function(v) {
+          if(v.id) {
+            const link = options.editLink + encodeURIComponent(v.id) + '/edit';
+            return '<li><a href="' + link + '">' + escape(getName(v, options)) + '</a></li>';
+          } else {
+            return '<li>' + escape(getName(v, options)) + '</li>';
+          }
+        }).join('') + '</ul>';
+      }
+
+      return value;
+    }
   },
 
   renderTime(value, type) {

@@ -67,8 +67,7 @@ class Test::Proxy::ApiKeyValidation::TestRoleRequirements < Minitest::Test
             {
               :http_method => "any",
               :regex => "^/hello/sub-unset-roles/",
-              :settings => {
-              },
+              :settings => {},
             },
             {
               :http_method => "any",

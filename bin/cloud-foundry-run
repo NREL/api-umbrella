@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+set -Eeuxo pipefail
+
+# First generate the /etc/api-umbrella/api-umbrella.yml config file that API
+# Umbrella reads.
+api-umbrella cloud-foundry-generate-config
+
+# Perform migrations only on the first instance being deployed.
+if [ "$CF_INSTANCE_INDEX" == "0" ]; then
+  api-umbrella migrate
+fi
+
+# All other instances should wait for the migrations to complete.
+api-umbrella wait-for-migrations
+
+# Then run API Umbrella as normal.
+exec api-umbrella run

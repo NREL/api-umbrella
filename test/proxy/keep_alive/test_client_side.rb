@@ -26,7 +26,7 @@ class Test::Proxy::KeepAlive::TestClientSide < Minitest::Test
         # Test 0 seconds to disable keepalive.
         :keepalive_timeout => 0,
       },
-    }, "--router") do
+    }) do
       response = Typhoeus.get("http://127.0.0.1:9080/api/hello", http_options.merge(:verbose => true))
       assert_response_code(200, response)
 

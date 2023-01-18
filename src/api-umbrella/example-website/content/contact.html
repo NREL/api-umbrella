@@ -1,0 +1,187 @@
+---
+title: Contact Us
+---
+
+<p>
+  Feel free to contact us with questions, comments, or to report any problems
+  with Your API Site Name.
+</p>
+
+<div class="row">
+  <div class="col-md-6 text-center">
+    <a
+      href="{{< param githubRepoUrl >}}/issues"
+      class="center-block btn btn-secondary btn-lg"
+    >
+      <i class="fa fa-github"></i>
+      <span>File an issue on GitHub</span>
+    </a>
+  </div>
+  <div class="col-md-6 text-center">
+    <a href="#contact" class="center-block btn btn-secondary btn-lg">
+      <i class="fa fa-comments-o"></i>
+      <span>Contact us directly</span>
+    </a>
+  </div>
+</div>
+
+<h3 id="contact" style="margin-top: 3em;">
+  <i class="fa fa-comments-o"></i> Contact us directly
+</h3>
+<p class="required-fields">
+  <abbr title="Required" class="required"
+    ><span class="abbr-required">*</span></abbr
+  >
+  Required fields
+</p>
+<form id="api_umbrella_contact_form" novalidate>
+  <div class="row mb-3">
+    <label class="col-sm-4 col-form-label text-end" for="contact_name"
+      ><abbr title="Required" class="required"
+        ><span class="abbr-required">*</span></abbr
+      >
+      Name</label
+    >
+    <div class="col-sm-8">
+      <input
+        class="form-control"
+        id="contact_name"
+        aria-describedby="contact_name_feedback"
+        name="contact[name]"
+        size="50"
+        type="text"
+        required
+      />
+      <div id="contact_name_feedback" class="invalid-feedback">
+        Fill out this field.
+      </div>
+    </div>
+  </div>
+  <div class="row mb-3">
+    <label class="col-sm-4 col-form-label text-end" for="contact_email"
+      ><abbr title="Required" class="required"
+        ><span class="abbr-required">*</span></abbr
+      >
+      Email</label
+    >
+    <div class="col-sm-8">
+      <input
+        class="form-control"
+        id="contact_email"
+        aria-describedby="contact_email_feedback"
+        name="contact[email]"
+        size="50"
+        type="email"
+        required
+      />
+      <div id="contact_email_feedback" class="invalid-feedback">
+        Enter an email address.
+      </div>
+    </div>
+  </div>
+  <div class="row mb-3">
+    <label class="col-sm-4 col-form-label text-end" for="contact_api"
+      ><abbr title="Required" class="required"
+        ><span class="abbr-required">*</span></abbr
+      >
+      Which API are you inquiring about?</label
+    >
+    <div class="col-sm-8">
+      <input
+        class="form-control"
+        id="contact_api"
+        aria-describedby="contact_api_feedback"
+        name="contact[api]"
+        size="50"
+        type="text"
+        required
+      />
+      <div id="contact_api_feedback" class="invalid-feedback">
+        Fill out this field.
+      </div>
+    </div>
+  </div>
+  <div class="row mb-3">
+    <label class="col-sm-4 col-form-label text-end" for="contact_subject"
+      ><abbr title="Required" class="required"
+        ><span class="abbr-required">*</span></abbr
+      >
+      What can we help you with?</label
+    >
+    <div class="col-sm-8">
+      <select
+        id="contact_subject"
+        aria-describedby="contact_subject_feedback"
+        name="contact[subject]"
+        class="form-select"
+        required
+      >
+        <option value="">Please select one...</option>
+        <option>API key support</option>
+        <option>Requesting higher rate limits</option>
+        <option>Other</option>
+      </select>
+      <div id="contact_subject_feedback" class="invalid-feedback">
+        Select an item in the list.
+      </div>
+    </div>
+  </div>
+  <div class="row mb-3">
+    <label class="col-sm-4 col-form-label text-end" for="contact_message"
+      ><abbr title="Required" class="required"
+        ><span class="abbr-required">*</span></abbr
+      >
+      Message</label
+    >
+    <div class="col-sm-8">
+      <textarea
+        class="form-control"
+        cols="40"
+        id="contact_message"
+        aria-describedby="contact_message_feedback"
+        name="contact[message]"
+        rows="6"
+        required
+      ></textarea>
+      <div id="contact_message_feedback" class="invalid-feedback">
+        Fill out this field.
+      </div>
+    </div>
+  </div>
+  <div class="row mb-3">
+    <div class="col-sm-8 offset-sm-4">
+      <noscript
+        ><div class="alert alert-danger" role="alert">
+          Please enable JavaScript to contact us.
+        </div></noscript
+      >
+      <button type="submit" class="btn btn-lg btn-primary">Send</button>
+    </div>
+  </div>
+  <div class="modal" id="alert_modal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-body">
+          <button
+            type="button"
+            class="btn-close float-end"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          ></button>
+          <div id="alert_modal_message"></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" data-bs-dismiss="modal">
+            OK
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</form>
+<script type="text/javascript">
+  var apiUmbrellaContactOptions = {
+    apiKey: '{{< param apiUmbrellaApiKey >}}',
+    issuesUrl: '{{< param githubRepoUrl >}}/issues'
+  };
+</script> {{< contact-js >}}

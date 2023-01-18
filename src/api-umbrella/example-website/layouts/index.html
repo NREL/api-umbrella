@@ -1,0 +1,24 @@
+{{ define "main" }}
+  {{ .Content }}
+
+
+  <div class="row">
+    <div class="col-md-6 feature feature-doc">
+      <h2><a href="/docs">Web Service Documentation</a></h2>
+      <p>Explore our available Web services.</p>
+      <ul>
+        {{ range (where (where .Site.RegularPages "Section" "docs") "Params.generalDocs" "!=" true) }}
+          <li><a href="{{ .RelPermalink }}">{{ .Title }}</a></li>
+        {{ end }}
+      </ul>
+    </div>
+
+    <div class="col-md-6 feature feature-key">
+      <h2><a href="/signup">API Key</a></h2>
+      <p>Sign up to use our APIs.</p>
+      <ul>
+        <li><a href="/signup">Get an API Key</a></li>
+      </ul>
+    </div>
+  </div>
+{{ end }}

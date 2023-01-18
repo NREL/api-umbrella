@@ -1,0 +1,22 @@
+[ldap]
+  enabled = true
+  listen = "127.0.0.1:<%- config["glauth"]["port"] %>"
+
+[ldaps]
+  enabled = false
+
+[behaviors]
+  IgnoreCapabilities = true
+
+[backend]
+  datastore = "config"
+  baseDN = "dc=planetexpress,dc=com"
+  nameformat = "uid"
+
+[[users]]
+  name = "admin"
+  passsha256 = "8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918" # admin
+
+[[users]]
+  name = "hermes"
+  passsha256 = "8cfde6efdfc4ed5ab1f6acbbd1ba49bf31932f84d0a4c090eb41c7d151e8b180" # hermes

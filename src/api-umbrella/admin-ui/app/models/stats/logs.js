@@ -6,17 +6,10 @@ import { Promise } from 'rsvp';
 
 @classic
 class Logs extends EmberObject.extend(Evented) {
-  hits_over_time = null;
-  stats = null;
-  facets = null;
-  logs = null;
-}
+  static urlRoot = '/admin/stats/search.json';
 
-Logs.reopenClass({
-  urlRoot: '/admin/stats/search.json',
-
-  find(params) {
-    return new Promise(function(resolve, reject) {
+  static find(params) {
+    return new Promise((resolve, reject) => {
       return $.ajax({
         url: this.urlRoot,
         data: params,
@@ -25,8 +18,13 @@ Logs.reopenClass({
       }, function(data) {
         reject(data.responseText);
       });
-    }.bind(this));
-  },
-});
+    });
+  }
+
+  hits_over_time = null;
+  stats = null;
+  facets = null;
+  logs = null;
+}
 
 export default Logs;

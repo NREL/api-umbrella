@@ -39,3 +39,7 @@
 /website/build
 /website/.sass-cache
 /docs/_build
+
+/docker-compose.override.yml
+/config/local.yml
+/tmp

@@ -51,9 +51,10 @@ class Test::Apis::Admin::Stats::TestLogs < Minitest::Test
     }))
 
     assert_response_code(200, response)
-    body = response.body
-    assert_match(",http://127.0.0.1/with_api_key/?foo=bar,", body)
-    refute_match("my_secret_key", body)
+
+    csv = CSV.parse(response.body)
+    assert_includes(csv[1], "http://127.0.0.1/with_api_key/?foo=bar")
+    refute_match("my_secret_key", response.body)
   end
 
   def test_downloading_csv_that_uses_scan_and_scroll_elasticsearch_query
@@ -71,7 +72,7 @@ class Test::Apis::Admin::Stats::TestLogs < Minitest::Test
 
     assert_response_code(200, response)
     assert_equal("text/csv", response.headers["Content-Type"])
-    assert_match("attachment; filename=\"api_logs (#{Time.now.utc.strftime("%b %-e %Y")}).csv\"", response.headers["Content-Disposition"])
+    assert_match("attachment; filename=\"api_logs_#{Time.now.utc.strftime("%Y-%m-%d")}.csv\"", response.headers["Content-Disposition"])
 
     csv = CSV.parse(response.body)
     assert_equal(1506, csv.length, csv)
@@ -182,5 +183,26 @@ class Test::Apis::Admin::Stats::TestLogs < Minitest::Test
     assert_equal(1, data["recordsTotal"])
     assert_equal("POST", data["data"][0]["request_method"])
     assert_equal(unique_test_id, data["data"][0]["request_user_agent"])
+  end
+
+  def test_no_results_non_existent_indices
+    response = Typhoeus.get("https://127.0.0.1:9081/admin/stats/logs.json", http_options.deep_merge(admin_session).deep_merge({
+      :params => {
+        "start_at" => "2000-01-13",
+        "end_at" => "2000-01-18",
+        "interval" => "day",
+        "start" => "0",
+        "length" => "10",
+      },
+    }))
+
+    assert_response_code(200, response)
+    data = MultiJson.load(response.body)
+    assert_equal({
+      "data" => [],
+      "draw" => 0,
+      "recordsFiltered" => 0,
+      "recordsTotal" => 0,
+    }, data)
   end
 end

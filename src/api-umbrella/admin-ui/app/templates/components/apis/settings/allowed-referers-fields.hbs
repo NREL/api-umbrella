@@ -1,5 +1,5 @@
 <div ...attributes>
   <FieldsFor @model={{this.model}} @style="horizontal" as |f|>
-    {{f.textarea-field "allowedReferersString" label=(t "mongoid.attributes.api/settings.allowed_referers") tooltip=(t "admin.api.settings.allowed_referers_tooltip_markdown") placeholder="*.example.com/*"}}
+    {{f.textarea-field "allowedReferersString" label=(t "Restrict Access to HTTP Referers") tooltip=(t "Restrict this API key so that it may only be used when the specified URLs are present in the `Referer` HTTP header. This can be used to prevent an API key from being reused on other client-side web applications that don't match this URL (but note that this does not prevent server-side reuse where the referer could be forged).\n\nA full URL may be given (`https://example.com/foo`), or wildcards can be used (`*.example.com/*`).\n\nMultiple referers can be allowed by entering each one on a new line.") placeholder="*.example.com/*"}}
   </FieldsFor>
 </div>

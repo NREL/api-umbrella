@@ -1,4 +1,4 @@
-local config = require "api-umbrella.proxy.models.file_config"
+local config = require("api-umbrella.utils.load_config")()
 local http = require "resty.http"
 local icu_date = require "icu-date-ffi"
 local is_empty = require "api-umbrella.utils.is_empty"
@@ -24,14 +24,19 @@ function _M.query(path, options)
     options = {}
   end
 
+  if options["server"] then
+    server = options["server"]
+    options["server"] = nil
+  end
+
   options["path"] = path
 
   if not options["headers"] then
     options["headers"] = {}
   end
 
-  if server["userinfo"] and not options["headers"]["Authorization"] then
-     options["headers"]["Authorization"] = "Basic " .. ngx.encode_base64(server["userinfo"])
+  if (server["user"] or server["password"]) and not options["headers"]["Authorization"] then
+     options["headers"]["Authorization"] = "Basic " .. ngx.encode_base64((server["user"] or "") .. ":" .. (server["password"] or ""))
   end
 
   if options["body"] and type(options["body"]) == "table" then
@@ -79,11 +84,15 @@ function _M.query(path, options)
     return nil, "elasticsearch keepalive error: " .. (keepalive_err or "")
   end
 
-  if res.status >= 400 and res.status ~= 404 then
+  if res.status >= 300 and res.status ~= 404 then
     return nil, "Unsuccessful response: " .. (body or "")
   else
     if res.headers["Content-Type"] and string.sub(res.headers["Content-Type"], 1, 16) == "application/json" and not is_empty(body) then
       res["body_json"] = json_decode(body)
+
+      if res["body_json"]["_shards"] and not is_empty(res["body_json"]["_shards"]["failures"]) then
+        return nil, "Unsuccessful response: " .. (body or "")
+      end
     end
 
     return res

@@ -8,18 +8,16 @@ class Test::Apis::V1::Config::TestPendingChangesDeleted < Minitest::Test
   def setup
     super
     setup_server
-    Api.delete_all
-    WebsiteBackend.delete_all
-    ConfigVersion.delete_all
 
-    @api = FactoryBot.create(:api)
-    ConfigVersion.publish!(ConfigVersion.pending_config)
-    @api.update(:deleted_at => Time.now.utc)
+    publish_default_config_version
+    @api = FactoryBot.create(:api_backend)
+    publish_api_backends([@api.id])
+    @api.delete
   end
 
   def after_all
     super
-    default_config_version_needed
+    publish_default_config_version
   end
 
   def test_deleted_after_last_publish
@@ -42,8 +40,9 @@ class Test::Apis::V1::Config::TestPendingChangesDeleted < Minitest::Test
     assert_equal("deleted", api_data["mode"])
     assert_equal(@api.id, api_data["id"])
     assert_equal(@api.name, api_data["name"])
-    assert_equal(@api.id, api_data["active"]["_id"])
-    assert_includes(api_data["active_yaml"], "name: #{@api.name}")
+    assert_equal(@api.id, api_data["active"]["id"])
+    assert_includes(api_data["active_yaml"], "frontend_host: #{@api.frontend_host}")
+    refute_includes(api_data["active_yaml"], "name: ")
     assert_nil(api_data["pending"])
     assert_equal("", api_data["pending_yaml"])
   end

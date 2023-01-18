@@ -13,13 +13,13 @@ class Test::Proxy::Logging::TestIpGeocodingNoLicenseKey < Minitest::Test
         "geoip" => {
           "maxmind_license_key" => nil,
         },
-      }, "--router")
+      })
     end
   end
 
   def after_all
     super
-    override_config_reset("--router")
+    override_config_reset
   end
 
   def test_no_nginx_geoip_config

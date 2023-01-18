@@ -1,4 +1,4 @@
-local get_user = require("api-umbrella.proxy.user_store").get
+local get_user = require("api-umbrella.proxy.stores.api_users_store").get
 
 return function(settings)
   -- Retrieve the API key found in the resolve_api_key middleware.
@@ -16,10 +16,6 @@ return function(settings)
   if not user then
     return nil, "api_key_invalid"
   end
-
-  -- Store the api key on the user object for easier access (the user object
-  -- doesn't contain it directly, to save memory storage in the lookup table).
-  user["api_key"] = api_key
 
   -- Store user details for logging.
   ngx.ctx.user_id = user["id"]

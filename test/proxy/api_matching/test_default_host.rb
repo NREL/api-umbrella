@@ -16,7 +16,7 @@ class Test::Proxy::ApiMatching::TestDefaultHost < Minitest::Test
           :url_matches => [{ :frontend_prefix => "/", :backend_prefix => "/" }],
           :settings => {
             :headers => [
-              { :key => "X-Backend", :value => "host-default" },
+              { :key => "X-Test-Backend", :value => "host-default" },
             ],
           },
         },
@@ -27,7 +27,7 @@ class Test::Proxy::ApiMatching::TestDefaultHost < Minitest::Test
           :url_matches => [{ :frontend_prefix => "/", :backend_prefix => "/" }],
           :settings => {
             :headers => [
-              { :key => "X-Backend", :value => "host-other" },
+              { :key => "X-Test-Backend", :value => "host-other" },
             ],
           },
         },
@@ -54,7 +54,7 @@ class Test::Proxy::ApiMatching::TestDefaultHost < Minitest::Test
           :default => true,
         },
       ],
-    }, "--router") do
+    }) do
       response = make_request_to_host("other-#{unique_test_class_id}", "/info/")
       assert_backend_match("host-other", response)
 

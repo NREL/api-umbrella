@@ -45,14 +45,14 @@ export default class ServerForm extends Component {
     event.preventDefault();
     this.bufferedModel.applyChanges();
     if(this.model.isNew) {
-      this.collection.pushObject(this.model);
+      this.collection.push(this.model);
     }
 
     // After the first server is added, fill out a default value for the
     // "Backend Host" field based on the server's host (because in most
     // non-load balancing situations they will match).
     if(!this.apiBackendHost) {
-      let server = this.collection.firstObject;
+      let server = this.collection[0];
       if(server && server.get('host')) {
         this.set('apiBackendHost', server.get('host'));
       }

@@ -32,10 +32,8 @@ export default class ResultsChart extends Component {
       labels.push(hits[i].c[0].f);
     }
 
-    this.setProperties({
-      chartData: data,
-      chartLabels: labels,
-    });
+    this.chartData = data;
+    this.chartLabels = labels;
 
     this.draw();
   }
@@ -76,12 +74,9 @@ export default class ResultsChart extends Component {
           showAllSymbol: showAllSymbol,
           symbolSize: lineWidth + 4,
           areaStyle: {
-            normal: {},
           },
           lineStyle: {
-            normal: {
-              width: lineWidth,
-            },
+            width: lineWidth,
           },
           data: this.chartData,
         },

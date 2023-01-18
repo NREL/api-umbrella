@@ -1,9 +1,10 @@
-local path = require "pl.path"
+local config = require("api-umbrella.utils.load_config")({ persist_runtime_config = true })
+local path_join = require "api-umbrella.utils.path_join"
 local setup = require "api-umbrella.cli.setup"
 local status = require "api-umbrella.cli.status"
 local unistd = require "posix.unistd"
 
-local function start_perp(config, options)
+local function start_perp(options)
   local running, _ = status()
   if running then
     print "api-umbrella is already running"
@@ -14,10 +15,10 @@ local function start_perp(config, options)
     end
   end
 
-  local perp_base = path.join(config["etc_dir"], "perp")
+  local perp_base = path_join(config["etc_dir"], "perp")
   local args = {
     "-0", "api-umbrella",
-    "-P", path.join(config["run_dir"], "perpboot.pid"),
+    "-P", path_join(config["run_dir"], "perpboot.pid"),
   }
 
   -- If we want everything to stdout/stderr, then execute the lower-level perpd
@@ -45,6 +46,6 @@ local function start_perp(config, options)
 end
 
 return function(options)
-  local config = setup()
-  start_perp(config, options)
+  setup()
+  start_perp(options)
 end

@@ -22,7 +22,7 @@ module ApiUmbrellaTestHelpers
       @custom_dns_records_set_during_this_test = true
       unbound_config_path = File.join($config["root_dir"], "etc/test-env/unbound/active_test.conf")
       content = (records.map { |r| "local-data: '#{r}'" } + options).join("\n")
-      File.open(unbound_config_path, "w") { |f| f.write(content) }
+      File.write(unbound_config_path, content)
 
       api_umbrella_process.perp_signal("test-env-unbound", "hup")
     end

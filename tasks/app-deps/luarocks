@@ -1,0 +1,85 @@
+#!/usr/bin/env bash
+
+set -e -u -x
+source ./tasks/helpers.sh
+source ./tasks/helpers/lua.sh
+
+task_working_dir
+
+cp "$SOURCE_DIR/src/api-umbrella-git-1.rockspec" ./
+cp "$SOURCE_DIR/src/luarocks.lock" ./
+
+rm -rf "$APP_VENDOR_LUA_DIR"
+
+(
+  # lua-resty-auto-ssl's Makefile also uses the BUILD_DIR environment variable,
+  # so unset our own to avoid potential conflicts.
+  unset BUILD_DIR
+
+  extra_args=(
+    "--only-deps"
+    "CIDR_DIR=$STAGE_EMBEDDED_DIR"
+  )
+
+  luarocks_install "./api-umbrella-git-1.rockspec" "git-1" "${extra_args[@]}"
+)
+
+# lrexlib-pcre2
+(
+  lrexlib_pcre2_version="2.9.1-1"
+  lrexlib_pcre2_hash="8d5ef9cae7d210f4d574f39100df6435"
+
+  mkdir -p ./lrexlib-pcre2
+  cd ./lrexlib-pcre2
+
+  download "https://luarocks.org/manifests/rrt/lrexlib-pcre2-$lrexlib_pcre2_version.rockspec" "md5" "$lrexlib_pcre2_hash"
+  pwd
+  ls -lah
+  find .
+  cp -L "_persist/downloads/lrexlib-pcre2-$lrexlib_pcre2_version.rockspec" ./
+
+  # Install a patched version of lrexlib-pcre2 that is linked to luajit-5.1 so
+  # that this works in Trafficserver, where more explicit linking is required:
+  # https://github.com/apache/trafficserver/issues/5158
+  patch -p1 < "$SOURCE_DIR/build/patches/lrexlib-pcre2.patch"
+
+  extra_args=(
+    "STAGE_EMBEDDED_LIBDIR=$STAGE_EMBEDDED_DIR/openresty/luajit/lib"
+  )
+
+  luarocks_install "lrexlib-pcre2-$lrexlib_pcre2_version.rockspec" "$lrexlib_pcre2_version" "${extra_args[@]}"
+)
+
+# lua-icu-date-ffi
+(
+  lua_icu_date_ffi_version="fa74ff0890ea1d600d826258b6ea83d0d774d63f"
+  lua_icu_date_ffi_hash="53fecec4d7d38b6866f700236fe352b1"
+
+  mkdir -p ./lua-icu-date-ffi
+  cd ./lua-icu-date-ffi
+
+  download "https://github.com/GUI/lua-icu-date-ffi/archive/$lua_icu_date_ffi_version.tar.gz" "md5" "$lua_icu_date_ffi_hash"
+  extract_download "$lua_icu_date_ffi_version.tar.gz"
+
+  cd "lua-icu-date-ffi-$lua_icu_date_ffi_version"
+  luarocks_install "icu-date-ffi-git-1.rockspec" "$lua_icu_date_ffi_version"
+)
+
+# lua-resty-logger-socket
+(
+  lua_resty_logger_socket_version="15cc1c256e55b8e68ec9b220b6883c227a763d4e"
+  lua_resty_logger_socket_hash="efe14697a8c4be612c011f54fce06191"
+
+  mkdir -p ./lua-resty-logger-socket
+  cd ./lua-resty-logger-socket
+
+  download "https://github.com/cloudflare/lua-resty-logger-socket/archive/$lua_resty_logger_socket_version.tar.gz" "md5" "$lua_resty_logger_socket_hash"
+  extract_download "$lua_resty_logger_socket_version.tar.gz"
+
+  install -D -m 644 "lua-resty-logger-socket-$lua_resty_logger_socket_version/lib/resty/logger/socket.lua" "$APP_VENDOR_LUA_SHARE_DIR/resty/logger/socket.lua"
+)
+
+# Always used cjson bundled with OpenResty, since Luarocks version is older.
+"${LUAROCKS_CMD[@]}" --tree="$APP_VENDOR_LUA_DIR" remove --force "lua-cjson"
+
+stamp

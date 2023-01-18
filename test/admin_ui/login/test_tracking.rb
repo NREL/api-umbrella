@@ -8,7 +8,6 @@ class Test::AdminUi::Login::TestTracking < Minitest::Capybara::Test
   def setup
     super
     setup_server
-    Admin.delete_all
   end
 
   def test_populates_tracking_fields_on_first_login
@@ -29,11 +28,11 @@ class Test::AdminUi::Login::TestTracking < Minitest::Capybara::Test
 
     admin.reload
     assert_kind_of(Time, admin.current_sign_in_at)
-    assert_kind_of(Time, admin.last_sign_in_at)
-    assert_kind_of(String, admin.current_sign_in_ip)
-    assert_kind_of(String, admin.last_sign_in_ip)
+    assert_nil(admin.last_sign_in_at)
+    assert_kind_of(IPAddr, admin.current_sign_in_ip)
+    assert_nil(admin.last_sign_in_ip)
     assert_equal("local", admin.current_sign_in_provider)
-    assert_equal("local", admin.last_sign_in_provider)
+    assert_nil(admin.last_sign_in_provider)
     assert_equal(1, admin.sign_in_count)
   end
 
@@ -58,8 +57,8 @@ class Test::AdminUi::Login::TestTracking < Minitest::Capybara::Test
     assert_kind_of(Time, admin.current_sign_in_at)
     refute_equal(Time.iso8601("2017-01-01T01:27:00Z"), admin.current_sign_in_at)
     assert_equal(Time.iso8601("2017-01-01T01:27:00Z"), admin.last_sign_in_at)
-    refute_equal("127.0.0.100", admin.current_sign_in_ip)
-    assert_equal("127.0.0.100", admin.last_sign_in_ip)
+    refute_equal(IPAddr.new("127.0.0.100"), admin.current_sign_in_ip)
+    assert_equal(IPAddr.new("127.0.0.100"), admin.last_sign_in_ip)
     assert_equal("local", admin.current_sign_in_provider)
     assert_equal("google_oauth2", admin.last_sign_in_provider)
     assert_equal(9, admin.sign_in_count)
