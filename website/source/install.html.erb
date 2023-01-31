@@ -37,10 +37,11 @@ header: Install
   %>
 
   <div id="docker" class="platform-download" style="display: none;">
-    <p>In this simple example, custom API Umbrella configuration can be defined in the <code>config/api-umbrella.yml</code> file on host machine. This gets mounted as <code>/etc/api-umbrella/api-umbrella.yml</code> inside the container, which is the path for the configuration file the rest of the documentation will reference.</p>
+    <p>In this simple example, custom API Umbrella configuration can be defined in the <code>config/api-umbrella.yml</code> file on host machine. This gets mounted as <code>/etc/api-umbrella/api-umbrella.yml</code> inside the container, which is the path for the configuration file the rest of the documentation will reference.  The database configuration is found in the <code>/opt/api-umbrella/var/db directory</code>, which in the example below is mounted into the "db" directory.  Note that this example is not suitable for persisting changes made to the frontend site and
+    is just a quickstart example.</p>
 
     <pre>$ mkdir config && touch config/api-umbrella.yml
-$ docker run -d --name=api-umbrella -p 80:80 -p 443:443 -v "$(pwd)/config":/etc/api-umbrella nrel/api-umbrella</pre>
+$ docker run -d --name=api-umbrella -p 80:80 -p 443:443 -v "$(pwd)/config":/etc/api-umbrella -v "$(pwd)/db":/opt/api-umbrella/var/db -v "$(pwd)/log":/opt/api-umbrella/var/log nrel/api-umbrella</pre>
   </div>
 
   <% packages.each do |id, distro| %>
