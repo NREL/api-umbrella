@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-envoy_version="1.24.1"
+envoy_version="1.25.0"
 
 set -e -u -x
 source ./tasks/helpers.sh
@@ -17,5 +17,6 @@ fi
 tar -xof "_persist/downloads/envoy-${envoy_version}-${TARGETARCH}.tar" usr/local/bin/envoy
 
 install -D -m 755 usr/local/bin/envoy "$STAGE_EMBEDDED_DIR/bin/envoy"
+chrpath -d "$STAGE_EMBEDDED_DIR/bin/envoy"
 
 stamp

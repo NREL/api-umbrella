@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-trafficserver_version="9.1.4"
-trafficserver_hash="f18aca66e444470738f6031366edc45db26942917e3fe8cba9fbb3b28173e01e06991aa9846e459047365946738931b1910719574c9c2afee72e4dfb30eab617"
+trafficserver_version="9.2.0"
+trafficserver_hash="ed0f150e4f189d2513fc2ae6b177945aa30257d9b5f84018379540b3c173185c1b46443a990abdaa1466629cce3071bf33c2b4b45f62377bad362492fc350c32"
 
 set -e -u -x
 source ./tasks/helpers.sh
@@ -33,6 +33,7 @@ SPHINXBUILD=false ./configure \
 make -j"$NPROC"
 make install DESTDIR="$STAGE_DIR"
 chrpath -d "$STAGE_EMBEDDED_DIR/lib/libtscore.so"
+chrpath -d "$STAGE_EMBEDDED_DIR/lib/libtscpputil.so"
 chrpath -d "$STAGE_EMBEDDED_DIR/lib/libtsmgmt.so"
 find "$STAGE_EMBEDDED_DIR/libexec/trafficserver/" -name "*.so" -exec chrpath -d {} \;
 find "$STAGE_EMBEDDED_DIR/bin/" -name "traffic_*" -exec chrpath -d {} \;

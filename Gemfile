@@ -6,7 +6,7 @@ ruby "~> 2.5"
 gem "thor", "~> 1.2.1"
 
 # Tests
-gem "minitest", "~> 5.16.1"
+gem "minitest", "~> 5.17.0"
 
 # CLI helper for running tests
 gem "minitest-sprint", "~> 1.2.0"
@@ -66,7 +66,7 @@ gem "activesupport", "~> 7.0.2"
 gem "faker", "~> 3.0"
 
 # Concurrency helpers.
-gem "concurrent-ruby", "~> 1.1.1"
+gem "concurrent-ruby", "~> 1.2.0"
 
 # Time zone randomization for tests.
 gem "zonebie", "~> 0.6.1"
