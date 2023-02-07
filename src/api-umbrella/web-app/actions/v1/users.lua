@@ -186,7 +186,7 @@ function _M.create(self)
   -- response and will only be included in the e-mail to the user, we can
   -- assume that if the key is being used the it's only because it was received
   -- at the user's e-mail address.
-  if options["verify_email"] or self.current_admin then
+  if options["verify_email"] or (self.current_admin and options["verify_email"] ~= false) then
     user_params["email_verified"] = true
   else
     user_params["email_verified"] = false
