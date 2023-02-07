@@ -43,3 +43,5 @@
 /docker-compose.override.yml
 /config/local.yml
 /tmp
+
+/src/api-umbrella/example-website/.hugo_build.lock

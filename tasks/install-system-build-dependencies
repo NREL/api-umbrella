@@ -70,8 +70,8 @@ if [ "${INSTALL_TEST_DEPENDENCIES:-}" == "true" ]; then
       # instead.
       apt-get -y install chromium curl unzip
       chromium --version
-      curl -fsSL -o /tmp/chromedriver-v22.0.0-linux-arm64.zip https://github.com/electron/electron/releases/download/v22.0.0/chromedriver-v22.0.0-linux-arm64.zip
-      unzip -d /usr/local/bin /tmp/chromedriver-v22.0.0-linux-arm64.zip chromedriver
+      curl -fsSL -o /tmp/chromedriver-v22.1.0-linux-arm64.zip https://github.com/electron/electron/releases/download/v22.1.0/chromedriver-v22.1.0-linux-arm64.zip
+      unzip -d /usr/local/bin /tmp/chromedriver-v22.1.0-linux-arm64.zip chromedriver
       chromedriver --version
     fi
   fi
