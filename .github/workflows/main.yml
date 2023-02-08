@@ -19,12 +19,12 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1.7.0
+        uses: docker/setup-buildx-action@v2.4.1
         with:
           driver-opts: network=host
 
       - name: Log in to the Container registry
-        uses: docker/login-action@v1.14.1
+        uses: docker/login-action@v2.1.0
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
@@ -32,7 +32,7 @@ jobs:
 
       - name: dev-env container metadata
         id: meta
-        uses: docker/metadata-action@v3.8.0
+        uses: docker/metadata-action@v4.3.0
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           flavor: |
@@ -40,7 +40,7 @@ jobs:
 
       - name: build-cache container metadata
         id: build_cache_meta
-        uses: docker/metadata-action@v3.8.0
+        uses: docker/metadata-action@v4.3.0
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           flavor: |
@@ -48,7 +48,7 @@ jobs:
 
       - name: Build and push
         id: docker_build
-        uses: docker/build-push-action@v2.10.0
+        uses: docker/build-push-action@v4.0.0
         with:
           target: test
           pull: true
@@ -69,7 +69,7 @@ jobs:
       # arguments, but that isn't currently supported:
       # https://github.com/moby/buildkit/issues/2818
       - name: Push recent test cache
-        uses: docker/build-push-action@v2.10.0
+        uses: docker/build-push-action@v4.0.0
         with:
           target: test
           tags: ${{ steps.meta.outputs.tags }}
@@ -84,12 +84,12 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1.7.0
+        uses: docker/setup-buildx-action@v2.4.1
         with:
           driver-opts: network=host
 
       - name: Log in to the Container registry
-        uses: docker/login-action@v1.14.1
+        uses: docker/login-action@v2.1.0
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
@@ -97,14 +97,14 @@ jobs:
 
       - name: build-cache container metadata
         id: build_cache_meta
-        uses: docker/metadata-action@v3.8.0
+        uses: docker/metadata-action@v4.3.0
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           flavor: |
             suffix=-build-cache-test
 
       - name: Push recent runtime cache
-        uses: docker/build-push-action@v2.10.0
+        uses: docker/build-push-action@v4.0.0
         with:
           target: runtime
           tags: ${{ steps.meta.outputs.tags }}
@@ -120,7 +120,7 @@ jobs:
 
       - name: dev-env container metadata
         id: meta
-        uses: docker/metadata-action@v3.8.0
+        uses: docker/metadata-action@v4.3.0
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           flavor: |
@@ -172,7 +172,7 @@ jobs:
 
       - name: dev-env container metadata
         id: meta
-        uses: docker/metadata-action@v3.8.0
+        uses: docker/metadata-action@v4.3.0
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           flavor: |
@@ -210,7 +210,7 @@ jobs:
 
       - name: Dump docker logs
         if: ${{ always() }}
-        uses: jwalton/gh-docker-logs@v2.2.0
+        uses: jwalton/gh-docker-logs@v2.2.1
         with:
           dest: test/tmp/artifacts/docker-logs
 
@@ -254,7 +254,7 @@ jobs:
 
       - name: dev-env container metadata
         id: meta
-        uses: docker/metadata-action@v3.8.0
+        uses: docker/metadata-action@v4.3.0
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           flavor: |
@@ -289,7 +289,7 @@ jobs:
 
       - name: Dump docker logs
         if: ${{ always() }}
-        uses: jwalton/gh-docker-logs@v2.2.0
+        uses: jwalton/gh-docker-logs@v2.2.1
         with:
           dest: test/tmp/artifacts/docker-logs
 
@@ -333,7 +333,7 @@ jobs:
 
       - name: dev-env container metadata
         id: meta
-        uses: docker/metadata-action@v3.8.0
+        uses: docker/metadata-action@v4.3.0
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           flavor: |
@@ -369,7 +369,7 @@ jobs:
 
       - name: Dump docker logs
         if: ${{ always() }}
-        uses: jwalton/gh-docker-logs@v2.2.0
+        uses: jwalton/gh-docker-logs@v2.2.1
         with:
           dest: test/tmp/artifacts/docker-logs
 
@@ -400,7 +400,7 @@ jobs:
           path: ./artifacts
 
       - name: Publish Unit Test Results
-        uses: EnricoMi/publish-unit-test-result-action@v1
+        uses: EnricoMi/publish-unit-test-result-action@v2.3.0
         with:
-          files: "artifacts/*/reports/**/*.xml"
+          junit_files: "artifacts/*/reports/**/*.xml"
           comment_mode: off
