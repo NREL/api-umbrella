@@ -344,7 +344,7 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
     response = Typhoeus.get("http://127.0.0.1:9080/api/delay/2000", log_http_options.deep_merge({
       :timeout => 0.5,
     }))
-    assert(response.timed_out?)
+    assert_predicate(response, :timed_out?)
 
     record = wait_for_log(response, :lookup_by_unique_user_agent => true)[:hit_source]
     assert_equal(499, record["response_status"])

@@ -95,7 +95,7 @@ class Test::AdminUi::TestLocales < Minitest::Capybara::Test
     selenium_use_language_driver(locale)
     visit "/admin/login"
 
-    refute(File.exist?(File.join(LOCALES_ROOT_DIR, "#{locale}.po")))
+    refute_path_exists(File.join(LOCALES_ROOT_DIR, "#{locale}.po"))
     assert_i18n_text(:en, :password, find("label[for=admin_password]"))
   end
 
@@ -105,7 +105,7 @@ class Test::AdminUi::TestLocales < Minitest::Capybara::Test
     admin_login
     visit "/admin/#/api_users/new"
 
-    refute(File.exist?(File.join(LOCALES_ROOT_DIR, "#{locale}.po")))
+    refute_path_exists(File.join(LOCALES_ROOT_DIR, "#{locale}.po"))
     assert_i18n_text(:en, :allowed_ips, find("label[for$='allowedIpsString']"))
   end
 
@@ -114,7 +114,7 @@ class Test::AdminUi::TestLocales < Minitest::Capybara::Test
     selenium_use_language_driver(locale)
     visit "/admin/login"
 
-    assert(File.exist?(File.join(LOCALES_ROOT_DIR, "#{locale}.po")))
+    assert_path_exists(File.join(LOCALES_ROOT_DIR, "#{locale}.po"))
     assert_i18n_text(:en, :password, find("label[for=admin_password]"))
   end
 
@@ -124,7 +124,7 @@ class Test::AdminUi::TestLocales < Minitest::Capybara::Test
     admin_login
     visit "/admin/#/api_users/new"
 
-    assert(File.exist?(File.join(LOCALES_ROOT_DIR, "#{locale}.po")))
+    assert_path_exists(File.join(LOCALES_ROOT_DIR, "#{locale}.po"))
     assert_i18n_text(:en, :allowed_ips, find("label[for$='allowedIpsString']"))
   end
 

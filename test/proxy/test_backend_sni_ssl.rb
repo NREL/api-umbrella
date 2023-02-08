@@ -47,8 +47,8 @@ class Test::Proxy::TestBackendSniSsl < Minitest::Test
     ]) do
       # Verify that a non-SNI connection directly to the backend fails
       # completely, rather than returning some default certificate.
+      ssl_client = OpenSSL::SSL::SSLSocket.new(TCPSocket.new("127.0.0.1", 9448), OpenSSL::SSL::SSLContext.new)
       assert_raises OpenSSL::SSL::SSLError do
-        ssl_client = OpenSSL::SSL::SSLSocket.new(TCPSocket.new("127.0.0.1", 9448), OpenSSL::SSL::SSLContext.new)
         ssl_client.connect
       end
 

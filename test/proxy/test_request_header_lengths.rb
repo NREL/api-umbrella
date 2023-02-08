@@ -30,7 +30,7 @@ class Test::Proxy::TestRequestHeaderLengths < Minitest::Test
     assert_response_code(200, response)
     data = MultiJson.load(response.body)
     refute_nil(data["headers"]["x-test001"])
-    assert_equal("x-test001: #{data["headers"]["x-test001"]}\r\n".length, 8192)
+    assert_equal(8192, "x-test001: #{data["headers"]["x-test001"]}\r\n".length)
   end
 
   def test_header_line_length_limit_exceeded
@@ -48,7 +48,7 @@ class Test::Proxy::TestRequestHeaderLengths < Minitest::Test
 
     assert_response_code(200, response)
     data = MultiJson.load(response.body)
-    assert_equal(data["headers"].length, 200)
+    assert_equal(200, data["headers"].length)
   end
 
   def test_rejects_above_max_request_headers_count

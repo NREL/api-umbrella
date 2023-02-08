@@ -24,7 +24,7 @@ class Test::Processes::TestNetworkBinds < Minitest::Test
       assert_includes(["IPv4", "IPv6"], ip_version)
 
       port = file.fetch(:file).match(/:(\d+)/)[1]
-      assert(port, file)
+      assert(port)
 
       listen = "#{port}:#{ip_version}"
       if(file.fetch(:file).start_with?("127.0.0.1:", "[::1]:"))

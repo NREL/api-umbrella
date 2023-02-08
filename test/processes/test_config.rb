@@ -27,18 +27,18 @@ class Test::Processes::TestConfig < Minitest::Test
     begin
       FileUtils.mv(new_path, new_path_backup)
 
-      refute(File.exist?(legacy_path))
-      refute(File.exist?(new_path))
+      refute_path_exists(legacy_path)
+      refute_path_exists(new_path)
 
       File.write(legacy_path, YAML.dump(legacy_config))
 
-      assert(File.exist?(legacy_path))
-      refute(File.exist?(new_path))
+      assert_path_exists(legacy_path)
+      refute_path_exists(new_path)
 
       api_umbrella_process.reload
 
-      refute(File.exist?(legacy_path))
-      assert(File.exist?(new_path))
+      refute_path_exists(legacy_path)
+      assert_path_exists(new_path)
 
       runtime_config = MultiJson.load(File.read(File.join($config["run_dir"], "runtime_config.json")))
       assert_equal(legacy_config.fetch("secret_key"), runtime_config.fetch("secret_key"))
@@ -48,8 +48,8 @@ class Test::Processes::TestConfig < Minitest::Test
       FileUtils.mv(new_path_backup, new_path)
       api_umbrella_process.reload
 
-      refute(File.exist?(legacy_path))
-      assert(File.exist?(new_path))
+      refute_path_exists(legacy_path)
+      assert_path_exists(new_path)
 
       runtime_config = MultiJson.load(File.read(File.join($config["run_dir"], "runtime_config.json")))
       assert_equal(prior_runtime_config, runtime_config)

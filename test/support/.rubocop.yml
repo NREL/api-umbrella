@@ -1,4 +1,7 @@
 inherit_from: ../.rubocop.yml
 
+Minitest/TestFileName:
+  Enabled: false
+
 Naming/FileName:
   ExpectMatchingDefinition: false

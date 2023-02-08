@@ -1,5 +1,19 @@
 inherit_from: ../.rubocop.yml
 
+require: rubocop-minitest
+
+Minitest/AssertEmptyLiteral:
+  Enabled: false
+
+Minitest/AssertTruthy:
+  Enabled: false
+
+Minitest/EmptyLineBeforeAssertionMethods:
+  Enabled: false
+
+Minitest/RefuteFalse:
+  Enabled: false
+
 Naming/FileName:
   ExpectMatchingDefinition: true
   Exclude:

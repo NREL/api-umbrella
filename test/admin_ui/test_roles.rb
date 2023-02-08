@@ -106,7 +106,7 @@ class Test::AdminUi::TestRoles < Minitest::Capybara::Test
     page.execute_script("window.PNotifyRemoveAll()")
 
     user.reload
-    assert_equal(user.roles, ["test-role2"])
+    assert_equal(["test-role2"], user.roles)
 
     # Remove last role
     visit "/admin/#/api_users/#{user.id}/edit"
@@ -145,7 +145,7 @@ class Test::AdminUi::TestRoles < Minitest::Capybara::Test
     page.execute_script("window.PNotifyRemoveAll()")
 
     api.reload
-    assert_equal(api.settings.required_roles, ["test-role2"])
+    assert_equal(["test-role2"], api.settings.required_roles)
 
     # Remove 1 role
     visit "/admin/#/apis/#{api.id}/edit"

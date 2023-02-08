@@ -189,7 +189,7 @@ class Test::Processes::TestReloads < Minitest::Test
       response = Typhoeus.get("https://127.0.0.1:9081/#{unique_test_id}/file-config/info/", http_options)
       assert_response_code(200, response)
       data = MultiJson.load(response.body)
-      assert_equal(data["headers"]["x-test-file-config"], "foo")
+      assert_equal("foo", data["headers"]["x-test-file-config"])
     end
 
     response = Typhoeus.get("https://127.0.0.1:9081/#{unique_test_id}/file-config/info/", http_options)
