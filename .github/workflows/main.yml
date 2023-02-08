@@ -132,7 +132,7 @@ jobs:
           DOCKER_IMAGE_CACHE_FROM: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }}
 
       - name: Lint
-        run: docker run --rm --volume "$(pwd)/.git:/app/.git" "$DOCKER_IMAGE_CACHE_FROM" make lint
+        run: docker run --rm --volume "$(pwd)/.git:/app/.git" "$DOCKER_IMAGE_CACHE_FROM" bash -c 'git config --global --add safe.directory /app && make lint'
         env:
           DOCKER_IMAGE_CACHE_FROM: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }}
 
