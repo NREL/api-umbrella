@@ -1,13 +1,27 @@
 require_relative "../../../test_helper"
 
-class Test::Apis::V1::Users::TestCreateEmailVerification < Minitest::Test
+class Test::Apis::V1::Users::TestCreateEmailVerificationForced < Minitest::Test
   include ApiUmbrellaTestHelpers::AdminAuth
   include ApiUmbrellaTestHelpers::Setup
-  parallelize_me!
+  include Minitest::Hooks
 
   def setup
     super
     setup_server
+    once_per_class_setup do
+      override_config_set({
+        "web" => {
+          "api_user" => {
+            "force_public_verify_email" => true,
+          },
+        },
+      })
+    end
+  end
+
+  def after_all
+    super
+    override_config_reset
   end
 
   def test_not_email_verified_by_default
@@ -18,9 +32,10 @@ class Test::Apis::V1::Users::TestCreateEmailVerification < Minitest::Test
     assert_response_code(201, response)
 
     data = MultiJson.load(response.body)
-    assert_kind_of(String, data["user"]["api_key"])
+    assert_nil(data["user"]["api_key"])
     user = ApiUser.find(data["user"]["id"])
-    assert_equal(false, user.email_verified)
+    assert_equal(true, user.email_verified)
+    refute_match(user.api_key, response.body)
   end
 
   def test_verify_email_explicit_false
@@ -34,9 +49,10 @@ class Test::Apis::V1::Users::TestCreateEmailVerification < Minitest::Test
     assert_response_code(201, response)
 
     data = MultiJson.load(response.body)
-    assert_kind_of(String, data["user"]["api_key"])
+    assert_nil(data["user"]["api_key"])
     user = ApiUser.find(data["user"]["id"])
-    assert_equal(false, user.email_verified)
+    assert_equal(true, user.email_verified)
+    refute_match(user.api_key, response.body)
   end
 
   def test_email_verification_does_not_return_key

@@ -58,7 +58,9 @@ local function get_options(self)
     options["send_welcome_email"] = true
   end
 
-  if options["verify_email"] ~= nil then
+  if not self.current_admin and config["web"]["api_user"]["force_public_verify_email"] then
+    options["verify_email"] = true
+  elseif options["verify_email"] ~= nil then
     options["verify_email"] = (tostring(options["verify_email"]) == "true")
   end
 

@@ -191,6 +191,7 @@ import "path"
       email_regex: string | *"\\A[^@\\s]+@[^@\\s]+\\.[^@\\s]+\\z"
       first_name_exclude_regex: string | *"(http|https|www|<|>|\\r|\\n)"
       last_name_exclude_regex: string | *"(http|https|www|<|>|\\r|\\n)"
+      force_public_verify_email: bool | *false
     }
     admin: {
       initial_superusers: [...string] | *[]
