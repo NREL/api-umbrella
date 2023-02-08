@@ -1,3 +1,0 @@
-ENV["PROJECT_ROOT"] = File.expand_path(__dir__)
-
-require "middleman-gh-pages"
