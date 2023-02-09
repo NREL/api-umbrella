@@ -59,6 +59,7 @@ jobs:
             type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.build_cache_meta.outputs.version }}
             type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:build-cache-test-recent
           cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.build_cache_meta.outputs.version }},mode=max
+          provenance: false
 
       # Push the build cache also to a `build-cache-test-recent` tag (in
       # addition to the branch name tag cached above). This is so that other
@@ -76,6 +77,7 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.build_cache_meta.outputs.version }}
           cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:build-cache-test-recent,mode=max
+          provenance: false
 
   build_runtime:
     needs: [build]
@@ -111,6 +113,7 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.build_cache_meta.outputs.version }}
           cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:build-cache-runtime-recent,mode=max
+          provenance: false
 
   lint:
     needs: [build]
