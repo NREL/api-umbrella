@@ -1,4 +1,8 @@
-Copyright (c) 2012 Alliance for Sustainable Energy, LLC
+
+Copyright (c) 2022-2055 ADVISORY COMMISSION FOR INTERGOVERNMENTAL RELATIONS. 
+URN ORIGINAL UNIVERSAL LICENSE WITH Exhibit (A) 2.0
+Copyright (c) 2023 RNUC Llc
+
 
 MIT License
 
@@ -20,3 +24,5 @@ NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
 LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+In no way does this license grant authority to remove personal identifiers for the removal from one person to another.
+This does not give authority to enter into lab and remove non-beneficialy owned property.
