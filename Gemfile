@@ -12,7 +12,7 @@ gem "minitest", "~> 5.17.0"
 gem "minitest-sprint", "~> 1.2.0"
 
 # More test outputs
-gem "minitest-reporters", "~> 1.5.0"
+gem "minitest-reporters", "~> 1.6.0"
 
 # For an "after_all" callback.
 gem "minitest-hooks", "~> 1.5.0"
@@ -22,7 +22,7 @@ gem "minitest-ci", "~> 3.4.0"
 
 # Ruby lint/style checker
 gem "rubocop", "~> 1.4", :require => false
-gem "rubocop-minitest", "~> 0.27.0", :require => false
+gem "rubocop-minitest", "~> 0.28.0", :require => false
 
 # Running background processes
 gem "childprocess"
