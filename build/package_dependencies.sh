@@ -12,6 +12,7 @@ if [[ "$ID_NORMALIZED" == "rhel" ]]; then
   core_runtime_dependencies=(
     # General
     bash
+    ca-certificates
     glibc
     libffi
     libuuid
@@ -160,6 +161,7 @@ elif [[ "$ID_NORMALIZED" == "debian" ]]; then
   core_runtime_dependencies=(
     # General
     bash
+    ca-certificates
     libc6
     "libffi$libffi_version"
     libncurses5
