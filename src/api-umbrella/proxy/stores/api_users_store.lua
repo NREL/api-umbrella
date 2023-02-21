@@ -49,14 +49,32 @@ local function fetch_user(api_key_prefix, api_key)
   -- key afterwards, but this makes lookups for non-existent keys cheaper,
   -- since we don't have to perform the hash if the prefix doesn't exist.
   --
+  -- Allow for retries to deal with sporadic database connection issues.
+  -- Ideally this shouldn't be necessary, but enable while we're debugging some
+  -- sporadic connection issues.
+  --
   -- TODO: Replace with `api_users_flattened` once we're done testing different
   -- approaches in parallel.
-  local result, err = query("SELECT * FROM api_users_flattened_temp WHERE api_key_prefix = :api_key_prefix", { api_key_prefix = api_key_prefix })
+  local result, err
+  for i = 1, 5 do
+    result, err = query("SELECT * FROM api_users_flattened_temp WHERE api_key_prefix = :api_key_prefix", { api_key_prefix = api_key_prefix })
+    if not result then
+      ngx.log(ngx.ERR, "failed to fetch user from database, attempt " .. i .. ": ", err)
+      ngx.sleep(0.1)
+    else
+      break
+    end
+  end
+  -- If a database error occured, return the error so that caching doesn't
+  -- occur (since this is distinct from the database query succeeding, but
+  -- simply not returning any rows).
   if not result then
     ngx.log(ngx.ERR, "failed to fetch user from database: ", err)
-    return nil
+    return nil, err
   end
 
+  -- If there was no result in the database return nil which may be cached for
+  -- `neg_ttl` time.
   local user = result[1]
   if not user then
     return nil
