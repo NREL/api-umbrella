@@ -296,26 +296,6 @@ elif [[ "$ID_NORMALIZED" == "debian" ]]; then
       libc++abi1-7
     )
   fi
-
-  # Since we're still bundling Elasticsearch v2, this depends on an older JDK
-  # version not available in newer Debian releases.
-  if [[ "$ID" == "debian" && ( "$VERSION_ID" == "10" || "$VERSION_ID" == "11" ) ]]; then
-    apt-get update
-    apt-get -y install curl gnupg2
-    echo "deb https://adoptopenjdk.jfrog.io/adoptopenjdk/deb/ $VERSION_CODENAME main" > /etc/apt/sources.list.d/adoptopenjdk.list
-    curl -fsSL https://adoptopenjdk.jfrog.io/adoptopenjdk/api/gpg/key/public | apt-key add -
-    apt-get update
-
-    core_runtime_dependencies+=(
-      # ElasticSearch
-      "adoptopenjdk-8-hotspot-jre"
-    )
-  else
-    core_runtime_dependencies+=(
-      # ElasticSearch
-      "openjdk-8-jre-headless"
-    )
-  fi
 else
   echo "Unknown build system"
   exit 1
