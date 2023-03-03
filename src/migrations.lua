@@ -832,19 +832,6 @@ return {
     ]])
 
     db.query([[
-      CREATE TABLE auto_ssl_storage (
-        key text PRIMARY KEY,
-        value_encrypted bytea NOT NULL,
-        value_encrypted_iv varchar(12) NOT NULL,
-        expires_at timestamp with time zone,
-        created_at timestamp with time zone NOT NULL DEFAULT transaction_timestamp(),
-        updated_at timestamp with time zone NOT NULL DEFAULT transaction_timestamp()
-      )
-    ]])
-    db.query("CREATE INDEX ON auto_ssl_storage (expires_at)")
-    db.query("CREATE TRIGGER auto_ssl_storage_stamp_record BEFORE UPDATE ON auto_ssl_storage FOR EACH ROW EXECUTE PROCEDURE update_timestamp()")
-
-    db.query([[
       CREATE TABLE audit.legacy_log(
         id bigserial PRIMARY KEY,
         version bigint NOT NULL,

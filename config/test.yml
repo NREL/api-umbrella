@@ -75,8 +75,6 @@ postgresql:
   password: dev_password
   migrations:
     password: dev_password
-  auto_ssl:
-    password: dev_password
 unbound:
   port: 13100
   control_port: 13101

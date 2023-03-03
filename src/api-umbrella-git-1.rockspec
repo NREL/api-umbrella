@@ -12,7 +12,6 @@ dependencies = {
   "inspect ~> 3.1.3",
   "lapis ~> 1.12.0",
   "libcidr-ffi ~> 1.0.0",
-  "lua-resty-auto-ssl ~> 0.13.1",
   "lua-resty-http ~> 0.16.1",
   "lua-resty-mail ~> 1.0.2",
   "lua-resty-mlcache ~> 2.6.0",

@@ -36,14 +36,6 @@ local function reload_nginx_web_app(perp_base)
   end
 end
 
-local function reload_nginx_auto_ssl(perp_base)
-  local _, err = shell_blocking_capture_combined({ "perpctl", "-b", perp_base, "hup", "nginx-auto-ssl" })
-  if err then
-    print("Failed to reload nginx\n" .. err)
-    os.exit(1)
-  end
-end
-
 local function reload_geoip_auto_updater(perp_base)
   local _, err = shell_blocking_capture_combined({ "perpctl", "-b", perp_base, "term", "geoip-auto-updater" })
   if err then
@@ -85,10 +77,6 @@ return function(options)
     if config["geoip"]["_enabled"] then
       reload_geoip_auto_updater(perp_base)
     end
-  end
-
-  if config["_service_auto_ssl_enabled?"] then
-    reload_nginx_auto_ssl(perp_base)
   end
 
   if config["app_env"] == "development" then

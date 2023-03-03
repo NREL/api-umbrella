@@ -1146,20 +1146,6 @@ CREATE SEQUENCE api_umbrella.api_users_version_seq
 
 
 --
--- Name: auto_ssl_storage; Type: TABLE; Schema: api_umbrella; Owner: -
---
-
-CREATE TABLE api_umbrella.auto_ssl_storage (
-    key text NOT NULL,
-    value_encrypted bytea NOT NULL,
-    value_encrypted_iv character varying(12) NOT NULL,
-    expires_at timestamp with time zone,
-    created_at timestamp with time zone DEFAULT transaction_timestamp() NOT NULL,
-    updated_at timestamp with time zone DEFAULT transaction_timestamp() NOT NULL
-);
-
-
---
 -- Name: cache; Type: TABLE; Schema: api_umbrella; Owner: -
 --
 
@@ -1790,14 +1776,6 @@ ALTER TABLE ONLY api_umbrella.api_users_roles
 
 
 --
--- Name: auto_ssl_storage auto_ssl_storage_pkey; Type: CONSTRAINT; Schema: api_umbrella; Owner: -
---
-
-ALTER TABLE ONLY api_umbrella.auto_ssl_storage
-    ADD CONSTRAINT auto_ssl_storage_pkey PRIMARY KEY (key);
-
-
---
 -- Name: cache cache_pkey; Type: CONSTRAINT; Schema: api_umbrella; Owner: -
 --
 
@@ -2002,13 +1980,6 @@ CREATE UNIQUE INDEX api_users_roles_api_user_id_api_role_id_idx ON api_umbrella.
 --
 
 CREATE UNIQUE INDEX api_users_version_idx ON api_umbrella.api_users USING btree (version);
-
-
---
--- Name: auto_ssl_storage_expires_at_idx; Type: INDEX; Schema: api_umbrella; Owner: -
---
-
-CREATE INDEX auto_ssl_storage_expires_at_idx ON api_umbrella.auto_ssl_storage USING btree (expires_at);
 
 
 --
@@ -2583,13 +2554,6 @@ CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_umbrella.rate_limits FOR 
 --
 
 CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_umbrella.website_backends FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
-
-
---
--- Name: auto_ssl_storage auto_ssl_storage_stamp_record; Type: TRIGGER; Schema: api_umbrella; Owner: -
---
-
-CREATE TRIGGER auto_ssl_storage_stamp_record BEFORE UPDATE ON api_umbrella.auto_ssl_storage FOR EACH ROW EXECUTE PROCEDURE api_umbrella.update_timestamp();
 
 
 --

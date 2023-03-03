@@ -225,15 +225,6 @@ http {
         sub_filter 'vtsUpdateInterval=1000' 'vtsUpdateInterval=10000';
         vhost_traffic_status_display;
       }
-
-      <% if config["_service_auto_ssl_enabled?"] then %>
-        location /api-umbrella/v0/auto-ssl-nginx-status {
-          access_by_lua_file '<%- config["_src_root_dir"] %>/src/api-umbrella/http-api/require_system_info_role.lua';
-          sub_filter 'format/json"' 'format/json?api_key=" + new URLSearchParams(window.location.search).get("api_key")';
-          sub_filter 'vtsUpdateInterval=1000' 'vtsUpdateInterval=10000';
-          proxy_pass http://127.0.0.1:<%- config["auto_ssl"]["hook_server"]["port"] %>;
-        }
-      <% end %>
     <% end %>
   }
 

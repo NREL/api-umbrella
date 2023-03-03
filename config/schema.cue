@@ -15,7 +15,7 @@ import "path"
   "_src_root_dir": string @tag(src_root_dir)
   "_runtime_config_path": string | *path.Join([run_dir, "runtime_config.json"]) @tag(runtime_config_path)
 
-  #service_name: "router" | "web" | "auto_ssl"
+  #service_name: "router" | "web"
   _default_services: [...#service_name] & [
     "router",
     "web",
@@ -341,24 +341,6 @@ import "path"
     match_x_forwarded_host?: bool
   }
 
-  auto_ssl: {
-    workers: uint | "auto" | *1
-    worker_connections: uint | *8192
-    listen_so_keepalive: string | *"on"
-    listen_backlog?: uint
-    http: {
-      port: uint16 | *14005
-    }
-    https: {
-      port: uint16 | *14006
-    }
-    user: string | *"api-umbrella-auto-ssl"
-    group: string | *"api-umbrella-auto-ssl"
-    hook_server: {
-      port: uint16 | *14007
-    }
-  }
-
   rsyslog: {
     host: string | *"127.0.0.1"
     port: uint16 | *14014
@@ -389,10 +371,6 @@ import "path"
     ssl_required: bool | *false
     migrations: {
       username: string | *"api_umbrella_owner"
-      password?: string
-    }
-    auto_ssl: {
-      username: string | *"api_umbrella_auto_ssl"
       password?: string
     }
   }
@@ -666,9 +644,6 @@ import "path"
       }, {
         frontend_prefix: "/api-umbrella/v1/state"
         backend_prefix: "/api-umbrella/v1/state"
-      }, {
-        frontend_prefix: "/api-umbrella/v0/auto-ssl-nginx-status"
-        backend_prefix: "/api-umbrella/v0/auto-ssl-nginx-status"
       }, {
         frontend_prefix: "/api-umbrella/v0/nginx-status"
         backend_prefix: "/api-umbrella/v0/nginx-status"

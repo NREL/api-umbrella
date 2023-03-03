@@ -127,23 +127,6 @@ local function generate_self_signed_cert()
   end
 end
 
-local function generate_auto_ssl_fallback_cert()
-  local cert_required = false
-  if config["hosts"] then
-    for _, host in ipairs(config["hosts"]) do
-      if not host["ssl_cert"] then
-        cert_required = true
-        break
-      end
-    end
-  end
-
-  if cert_required then
-    generate_cert("/CN=sni-support-required-for-valid-ssl", "auto_ssl_fallback.key", "auto_ssl_fallback.crt")
-  end
-end
-
-
 local function ensure_geoip_db()
   local _, err = geoip_download_if_missing_or_old(config)
   if err then
@@ -340,9 +323,6 @@ local function activate_services()
     active_services["rsyslog"] = 1
     active_services["trafficserver"] = 1
   end
-  if config["_service_auto_ssl_enabled?"] then
-    active_services["nginx-auto-ssl"] = 1
-  end
   if config["_service_web_enabled?"] then
     active_services["nginx-web-app"] = 1
   end
@@ -424,7 +404,6 @@ return function()
   permission_check()
   prepare()
   generate_self_signed_cert()
-  generate_auto_ssl_fallback_cert()
   ensure_geoip_db()
   write_templates()
   write_static_site_key()

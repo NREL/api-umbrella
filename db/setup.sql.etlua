@@ -14,10 +14,6 @@ DO $$
     -- Create application user.
     PERFORM pg_temp.upsert_role('<%- config["postgresql"]["username"] %>', 'NOSUPERUSER NOCREATEDB NOCREATEROLE INHERIT LOGIN NOREPLICATION NOBYPASSRLS', '<%- config["postgresql"]["password"] %>');
 
-    -- Create auto-ssl user.
-    PERFORM pg_temp.upsert_role('<%- config["postgresql"]["auto_ssl"]["username"] %>', 'NOSUPERUSER NOCREATEDB NOCREATEROLE INHERIT LOGIN NOREPLICATION NOBYPASSRLS', '<%- config["postgresql"]["auto_ssl"]["password"] %>');
-
     GRANT <%- config["postgresql"]["username"] %> TO <%- config["postgresql"]["migrations"]["username"] %> WITH ADMIN OPTION;
-    GRANT <%- config["postgresql"]["auto_ssl"]["username"] %> TO <%- config["postgresql"]["migrations"]["username"] %> WITH ADMIN OPTION;
   END
 $$;
