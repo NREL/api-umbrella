@@ -10,7 +10,7 @@ dependencies = {
   "bcrypt ~> 2.3",
   "dkjson ~> 2.6",
   "inspect ~> 3.1.3",
-  "lapis ~> 1.12.0",
+  "lapis ~> 1.13.1",
   "libcidr-ffi ~> 1.0.0",
   "lua-resty-http ~> 0.16.1",
   "lua-resty-mail ~> 1.0.2",

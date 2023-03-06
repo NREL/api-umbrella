@@ -3,15 +3,15 @@
 set -e -u -x
 source ./tasks/helpers.sh
 
-hugo_version="0.111.1"
-hugo_hash="9c759a0f9f9839e411af113e8c4a7e56b2ecf6acdb9337f41979f63859f543cb"
+hugo_version="0.111.2"
+hugo_hash="05103c182c92d0720eef8032910f9d42fc61f33cd50a46c0eb857b9142a58808"
 
 download_arch="$TARGETARCH"
 if [ "$TARGETARCH" == "amd64" ]; then
   download_arch="64bit"
 elif [ "$TARGETARCH" == "arm64" ]; then
   download_arch="arm64"
-  hugo_hash="22cc83a3ff39906a301adf407b74f9c2236f7114995634b78cde0e0eb02b6c6f"
+  hugo_hash="945234d93860d86241bad4367011892d345205e0dc574c65664d5b2516a1c654"
 fi
 
 task_working_dir
