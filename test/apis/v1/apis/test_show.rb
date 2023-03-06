@@ -103,8 +103,8 @@ class Test::Apis::V1::Apis::TestShow < Minitest::Test
       "/foo/bar",
       "/foo/",
       "/foo",
-      "/foo_bar/baz",
       "/foo-bar/baz",
+      "/foo_bar/baz",
     ]
     assert_equal(expected_frontend_prefix_order, data.fetch("api").fetch("url_matches").map { |u| u.fetch("frontend_prefix") })
     assert_equal(expected_frontend_prefix_order.join(", "), data.fetch("api").fetch("frontend_prefixes"))

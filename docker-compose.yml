@@ -25,7 +25,7 @@ services:
       - postgres
       - elasticsearch
   postgres:
-    image: postgres:10
+    image: postgres:12
     environment:
       POSTGRES_PASSWORD: dev_password
     volumes:
