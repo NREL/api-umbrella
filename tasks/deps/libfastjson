@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-libfastjson_version="0.99.9"
-libfastjson_hash="3c45e6efc838cd364588d6d1822c4ea8"
+libfastjson_version="1.2304.0"
+libfastjson_hash="87f7752570bb8f878faafa5367df9b15"
 
 set -e -u -x
 source ./tasks/helpers.sh

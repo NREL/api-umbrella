@@ -6,7 +6,7 @@ ruby "~> 2.5"
 gem "thor", "~> 1.2.1"
 
 # Tests
-gem "minitest", "~> 5.17.0"
+gem "minitest", "~> 5.18.0"
 
 # CLI helper for running tests
 gem "minitest-sprint", "~> 1.2.0"
@@ -22,7 +22,7 @@ gem "minitest-ci", "~> 3.4.0"
 
 # Ruby lint/style checker
 gem "rubocop", "~> 1.4", :require => false
-gem "rubocop-minitest", "~> 0.28.0", :require => false
+gem "rubocop-minitest", "~> 0.30.0", :require => false
 
 # Running background processes
 gem "childprocess"
@@ -36,7 +36,7 @@ gem "oj", "~> 3.10"
 
 # Database libraries
 gem "activerecord", "~> 7.0.2", :require => "active_record"
-gem "pg", "~> 1.4.1"
+gem "pg", "~> 1.5.3"
 gem "elasticsearch", "~> 7.13.3"
 gem "active_attr", "~> 0.15.0"
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-rsyslog_version="8.2302.0"
-rsyslog_hash="25415f85b662615ce3c83077d53758029e8743cb5929044bfd3564e3d626a3b9"
+rsyslog_version="8.2304.0"
+rsyslog_hash="d090e90283eb4b80de8b43e5ffc6e4b59c4e3970f2aa91e63beef0a11720d74d"
 
 set -e -u -x
 source ./tasks/helpers.sh
