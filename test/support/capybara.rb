@@ -26,19 +26,6 @@ def capybara_register_driver(driver_name, options = {})
       raise "chromedriver not found: #{output}"
     end
 
-    # If passing in a custom language, use a wrapper script to parse the
-    # "--lang" argument into the LANG environment variable. We can't pass
-    # environment variables directly into chromdriver, so that's why we need
-    # the wrapper script. Chrome 80+ changes require this LANG environment
-    # variable instead of realying on the "--lang" argument itself.
-    #
-    # https://github.com/SeleniumHQ/selenium/issues/5412
-    # https://chromium.googlesource.com/chromium/src.git/+/b6a68c85183f42927186514212a8a9fd932a2413
-    if options[:lang]
-      service_options[:path] = File.expand_path("chromedriver_lang_wrapper", __dir__)
-      service_args << "--lang=#{options[:lang]}"
-    end
-
     service = Selenium::WebDriver::Service.chrome(**service_options.merge({
       :args => service_args,
     }))
@@ -60,6 +47,11 @@ def capybara_register_driver(driver_name, options = {})
     # Allow for usage in Docker.
     driver_options.args << "--disable-setuid-sandbox"
     driver_options.args << "--no-sandbox"
+
+    # Set the Accept-Language header used in tests.
+    if options[:lang]
+      driver_options.args << "--accept-lang=#{options[:lang]}"
+    end
 
     # Set download path for Chrome >= 77
     driver_options.add_preference(:download, :default_directory => ApiUmbrellaTestHelpers::Downloads::DOWNLOADS_ROOT)
