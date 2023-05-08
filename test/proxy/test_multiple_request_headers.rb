@@ -22,7 +22,7 @@ class Test::Proxy::TestMultipleRequestHeaders < Minitest::Test
   end
 
   def test_receives_no_headers_for_invalid_referer
-    assert_receives_no_headers("Referer")
+    assert_receives_single_comma_delimited_header("Referer")
   end
 
   def test_receives_single_header_for_valid_referer
