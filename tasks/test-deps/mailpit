@@ -4,9 +4,9 @@ set -e -u -x
 source ./tasks/helpers.sh
 
 mailpit_version="1.6.8"
-mailpit_hash="315e2f33fda1200197ade51b65fa289fa5a2dacaa91b2a052868c9b3be4c8ec6"
+mailpit_hash="444848134076ca7362f5b7e1afbdd0759cd19b9527181890117670d940cbb1d4"
 if [ "$TARGETARCH" == "arm64" ]; then
-  mailpit_hash="8b20588e8a900a698f8ec6835039fede14f8a49d326c543401e1fe3bda01e68d"
+  mailpit_hash="197826c3be0bf6f9d4dac97549b10ba61090d5729c0b37ce91a4248464c853ab"
 fi
 
 task_working_dir

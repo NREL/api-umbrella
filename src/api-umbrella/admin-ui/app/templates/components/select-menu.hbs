@@ -1,5 +1,5 @@
-<NativeSelectBox @value={{@value}} @onSelect={{this.handleSelect}} id={{@inputId}} class={{@inputClass}} as |sb|>
+<select id={{@inputId}} class={{@inputClass}} {{on "change" this.onChange}}>
   {{#each @options as |opt|}}
-    <sb.Option @value={{opt.id}}>{{opt.name}}</sb.Option>
+    <option value={{this.optionValue opt.id}} data-typed-value={{this.optionTypedValue opt.id}} selected={{this.isSelected opt.id}}>{{opt.name}}</option>
   {{/each}}
-</NativeSelectBox>
+</select>

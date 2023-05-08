@@ -15,7 +15,7 @@ class Test::AdminUi::TestApiUsersRateLimits < Minitest::Capybara::Test
     admin_login
     visit "/admin/#/api_users/#{user.id}/edit"
 
-    assert_field("Rate Limit", :with => "Default rate limits")
+    assert_field("Rate Limit", :with => "null")
     select "Custom rate limits", :from => "Rate Limit"
 
     find("button", :text => /Add Rate Limit/).click
