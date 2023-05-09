@@ -6,6 +6,7 @@ local logger = require "resty.logger.socket"
 local pg_utils = require "api-umbrella.utils.pg_utils"
 local plutils = require "pl.utils"
 local round = require "api-umbrella.utils.round"
+local shared_dict_retry_set = require("api-umbrella.utils.shared_dict_retry").set
 local user_agent_parser = require "api-umbrella.proxy.user_agent_parser"
 
 local split = plutils.split
@@ -22,6 +23,8 @@ local DAY_OF_WEEK = icu_date.fields.DAY_OF_WEEK
 -- the week to Mondays for ISO week calculations.
 local date = icu_date.new({ zone_id = config["analytics"]["timezone"] })
 date:set_attribute(icu_date.attributes.FIRST_DAY_OF_WEEK, 2)
+
+local geocode_city_cache_dict = ngx.shared.geocode_city_cache
 
 local _M = {}
 
@@ -206,8 +209,8 @@ function _M.cache_new_city_geocode(data)
 
   -- Only cache the first city location per startup to prevent lots of indexing
   -- churn re-indexing the same city.
-  if not ngx.shared.geocode_city_cache:get(id) then
-    local set_ok, set_err, set_forcible = ngx.shared.geocode_city_cache:set(id, true)
+  if not geocode_city_cache_dict:get(id) then
+    local set_ok, set_err, set_forcible = shared_dict_retry_set(geocode_city_cache_dict, id, true)
     if not set_ok then
       ngx.log(ngx.ERR, "failed to set city in 'geocode_city_cache' shared dict: ", set_err)
     elseif set_forcible then

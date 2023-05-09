@@ -8,6 +8,7 @@ local mlcache = require "resty.mlcache"
 local mutex_exec = require("api-umbrella.utils.interval_lock").mutex_exec
 local nillify_json_nulls = require "api-umbrella.utils.nillify_json_nulls"
 local pg_utils = require "api-umbrella.utils.pg_utils"
+local shared_dict_retry_set = require("api-umbrella.utils.shared_dict_retry").set
 
 local api_key_cache_enabled = config["gatekeeper"]["api_key_cache"]
 local api_key_max_length = config["gatekeeper"]["api_key_max_length"]
@@ -216,7 +217,7 @@ function _M.delete_stale_cache()
   end
 
   if new_last_fetched_version then
-    local set_ok, set_err, set_forcible = jobs_dict:set("api_users_store_last_fetched_version", new_last_fetched_version)
+    local set_ok, set_err, set_forcible = shared_dict_retry_set(jobs_dict, "api_users_store_last_fetched_version", new_last_fetched_version)
     if not set_ok then
       ngx.log(ngx.ERR, "failed to set 'api_users_store_last_fetched_version' in 'jobs' shared dict: ", set_err)
     elseif set_forcible then
