@@ -1,9 +1,0 @@
-#!/usr/bin/env bash
-
-set -Eeuo pipefail
-
-if [[ "$*" =~ --lang=([^ ]+) ]]; then
-  export LANG="${BASH_REMATCH[1]}"
-fi
-
-exec chromedriver "$@"

@@ -9,6 +9,11 @@ import each from 'lodash-es/each';
 import isArray from 'lodash-es/isArray';
 import { marked } from 'marked';
 
+marked.use({
+  mangle: false,
+  headerIds: false,
+});
+
 @classic
 @tagName("")
 export default class ErrorMessages extends Component {

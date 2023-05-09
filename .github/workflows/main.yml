@@ -144,7 +144,7 @@ jobs:
     runs-on: ubuntu-latest
     services:
       postgres:
-        image: postgres:10
+        image: postgres:12
         env:
           POSTGRES_PASSWORD: dev_password
         options: >-
@@ -235,7 +235,7 @@ jobs:
     runs-on: ubuntu-latest
     services:
       postgres:
-        image: postgres:10
+        image: postgres:12
         env:
           POSTGRES_PASSWORD: dev_password
         options: >-
@@ -314,7 +314,7 @@ jobs:
     runs-on: ubuntu-latest
     services:
       postgres:
-        image: postgres:10
+        image: postgres:12
         env:
           POSTGRES_PASSWORD: dev_password
         options: >-

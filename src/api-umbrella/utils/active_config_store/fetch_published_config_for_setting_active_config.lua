@@ -1,4 +1,5 @@
 local fetch_latest_published_config = require "api-umbrella.utils.active_config_store.fetch_latest_published_config"
+local shared_dict_retry_set = require("api-umbrella.utils.shared_dict_retry").set
 local worker_group_config_refresh_complete = require("api-umbrella.utils.worker_group").config_refresh_complete
 
 local jobs_dict = ngx.shared.jobs
@@ -21,7 +22,7 @@ return function(last_fetched_version, callback)
 
   worker_group_config_refresh_complete()
 
-  local set_ok, set_err, set_forcible = jobs_dict:set("active_config_store_last_fetched_version", db_version or "0")
+  local set_ok, set_err, set_forcible = shared_dict_retry_set(jobs_dict, "active_config_store_last_fetched_version", db_version or "0")
   if not set_ok then
     ngx.log(ngx.ERR, "failed to set 'active_config_store_last_fetched_version' in 'jobs' shared dict: ", set_err)
   elseif set_forcible then

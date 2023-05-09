@@ -36,7 +36,7 @@ class Test::Proxy::Dns::TestStaleCaching < Minitest::Test
     override_config_reset
   end
 
-  def test_nxdomain_host_keeps_stale_indefinitely
+  def test_nxdomain_host_expires_stale
     ttl = 4
     set_dns_records(["#{unique_test_hostname} #{ttl} A 127.0.0.1"])
 
@@ -45,20 +45,82 @@ class Test::Proxy::Dns::TestStaleCaching < Minitest::Test
         :frontend_host => "127.0.0.1",
         :backend_host => unique_test_hostname,
         :servers => [{ :host => unique_test_hostname, :port => 9444 }],
-        :url_matches => [{ :frontend_prefix => "/#{unique_test_id}/stale-caching-down-after-ttl-expires/", :backend_prefix => "/info/" }],
+        :url_matches => [{ :frontend_prefix => "/#{unique_test_id}/", :backend_prefix => "/info/" }],
       },
     ]) do
-      wait_for_response("/#{unique_test_id}/stale-caching-down-after-ttl-expires/", {
+      wait_for_response("/#{unique_test_id}/", {
+        :code => 200,
+        :local_interface_ip => "127.0.0.1",
+      })
+      start_time = Time.now.utc
+
+      set_dns_records([], ["local-zone: '#{unique_test_hostname}' always_nxdomain"])
+      wait_for_response("/#{unique_test_id}/", {
+        :code => 503,
+      })
+      duration = Time.now.utc - start_time
+      min_duration = ttl - TTL_BUFFER_NEG
+      max_duration = ttl + TTL_BUFFER_POS
+      assert_operator(min_duration, :>, 0)
+      assert_operator(duration, :>=, min_duration)
+      assert_operator(duration, :<, max_duration)
+    end
+  end
+
+  def test_nodata_host_expires_stale
+    ttl = 4
+    set_dns_records(["#{unique_test_hostname} #{ttl} A 127.0.0.1"])
+
+    prepend_api_backends([
+      {
+        :frontend_host => "127.0.0.1",
+        :backend_host => unique_test_hostname,
+        :servers => [{ :host => unique_test_hostname, :port => 9444 }],
+        :url_matches => [{ :frontend_prefix => "/#{unique_test_id}/", :backend_prefix => "/info/" }],
+      },
+    ]) do
+      wait_for_response("/#{unique_test_id}/", {
+        :code => 200,
+        :local_interface_ip => "127.0.0.1",
+      })
+      start_time = Time.now.utc
+
+      set_dns_records([], ["local-zone: '#{unique_test_hostname}' always_nodata"])
+      wait_for_response("/#{unique_test_id}/", {
+        :code => 503,
+      })
+      duration = Time.now.utc - start_time
+      min_duration = ttl - TTL_BUFFER_NEG
+      max_duration = ttl + TTL_BUFFER_POS
+      assert_operator(min_duration, :>, 0)
+      assert_operator(duration, :>=, min_duration)
+      assert_operator(duration, :<, max_duration)
+    end
+  end
+
+  def test_deny_host_keeps_stale_indefinitely
+    ttl = 4
+    set_dns_records(["#{unique_test_hostname} #{ttl} A 127.0.0.1"])
+
+    prepend_api_backends([
+      {
+        :frontend_host => "127.0.0.1",
+        :backend_host => unique_test_hostname,
+        :servers => [{ :host => unique_test_hostname, :port => 9444 }],
+        :url_matches => [{ :frontend_prefix => "/#{unique_test_id}/", :backend_prefix => "/info/" }],
+      },
+    ]) do
+      wait_for_response("/#{unique_test_id}/", {
         :code => 200,
         :local_interface_ip => "127.0.0.1",
       })
 
-      set_dns_records([], ["local-zone: '#{unique_test_hostname}' always_nxdomain"])
+      set_dns_records([], ["local-zone: '#{unique_test_hostname}' always_deny"])
 
       request_count = 0
       run_until = Time.now + (ttl * 2) + TTL_BUFFER_POS
       while Time.now <= run_until
-        response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/stale-caching-down-after-ttl-expires/", http_options)
+        response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/", http_options)
         request_count += 1
         assert_response_code(200, response)
         sleep 0.1
@@ -77,10 +139,10 @@ class Test::Proxy::Dns::TestStaleCaching < Minitest::Test
         :frontend_host => "127.0.0.1",
         :backend_host => unique_test_hostname,
         :servers => [{ :host => unique_test_hostname, :port => 9444 }],
-        :url_matches => [{ :frontend_prefix => "/#{unique_test_id}/stale-caching-down-after-ttl-expires/", :backend_prefix => "/info/" }],
+        :url_matches => [{ :frontend_prefix => "/#{unique_test_id}/", :backend_prefix => "/info/" }],
       },
     ]) do
-      wait_for_response("/#{unique_test_id}/stale-caching-down-after-ttl-expires/", {
+      wait_for_response("/#{unique_test_id}/", {
         :code => 200,
         :local_interface_ip => "127.0.0.1",
       })
@@ -90,7 +152,7 @@ class Test::Proxy::Dns::TestStaleCaching < Minitest::Test
       request_count = 0
       run_until = Time.now + (ttl * 2) + TTL_BUFFER_POS
       while Time.now <= run_until
-        response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/stale-caching-down-after-ttl-expires/", http_options)
+        response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/", http_options)
         request_count += 1
         assert_response_code(200, response)
         sleep 0.1

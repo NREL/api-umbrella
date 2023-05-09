@@ -3,6 +3,7 @@ local int64 = require "api-umbrella.utils.int64"
 local is_empty = require "api-umbrella.utils.is_empty"
 local lrucache = require "resty.lrucache.pureffi"
 local pg_utils_query = require("api-umbrella.utils.pg_utils").query
+local shared_dict_retry = require "api-umbrella.utils.shared_dict_retry"
 local split = require("pl.utils").split
 local table_clear = require "table.clear"
 local table_copy = require("pl.tablex").copy
@@ -16,6 +17,8 @@ local int64_min_value_string = int64.MIN_VALUE_STRING
 local int64_to_string = int64.to_string
 local jobs_dict = ngx.shared.jobs
 local now = ngx.now
+local shared_dict_retry_incr = shared_dict_retry.incr
+local shared_dict_retry_set = shared_dict_retry.set
 
 -- Rate limit implementation loosely based on
 -- https://blog.cloudflare.com/counting-things-a-lot-of-different-things/
@@ -113,7 +116,7 @@ local function has_already_exceeded_any_limits(self)
       if not exceed_expires_at and exceed_expires_at_err then
         ngx.log(ngx.ERR, "Error fetching rate limit exceeded: ", exceed_expires_at_err)
       elseif exceed_expires_at then
-        exceeded_local_cache:set(rate_limit_key, exceed_expires_at, exceed_expires_at - current_time)
+        shared_dict_retry_set(exceeded_local_cache, rate_limit_key, exceed_expires_at, exceed_expires_at - current_time)
         break
       end
     end
@@ -184,7 +187,7 @@ local function check_limit(rate_limit_key, rate_limit, limit_to, duration, incre
     -- estimated rate) so we can bypass any calculations on further over rate
     -- limit requests.
     local exceed_expires_at = current_time + retry_after
-    local set_ok, set_err, set_forcible = exceeded_dict:set(rate_limit_key, exceed_expires_at, retry_after)
+    local set_ok, set_err, set_forcible = shared_dict_retry_set(exceeded_dict, rate_limit_key, exceed_expires_at, retry_after)
     if not set_ok then
       ngx.log(ngx.ERR, "failed to set exceeded key in 'rate_limit_exceeded' shared dict: ", set_err)
     elseif set_forcible then
@@ -201,7 +204,7 @@ local function check_limit(rate_limit_key, rate_limit, limit_to, duration, incre
     -- rate limit exceeded situations to prevent further counts for the
     -- duration of being over rate limit (see above), that should mean there's
     -- not a ton of these increment then decrement operations performed.
-    local _, decr_err = counters_dict:incr(current_period_key, -1)
+    local _, decr_err = shared_dict_retry_incr(counters_dict, current_period_key, -1)
     if decr_err then
       ngx.log(ngx.ERR, "failed to decrement counters shared dict: ", decr_err)
     end
@@ -224,7 +227,7 @@ local function increment_limit(self, increment_by, rate_limit_index, rate_limit)
   local current_period_start_time = floor(floor(current_time / duration) * duration)
   local current_period_key = rate_limit_key .. "|" .. current_period_start_time
   local current_period_ttl = ceil(duration * 2 + 1)
-  local current_period_count, incr_err, incr_forcible = counters_dict:incr(current_period_key, increment_by, 0, current_period_ttl)
+  local current_period_count, incr_err, incr_forcible = shared_dict_retry_incr(counters_dict, current_period_key, increment_by, 0, current_period_ttl)
   if incr_err then
     ngx.log(ngx.ERR, "failed to increment counters shared dict: ", incr_err)
   elseif incr_forcible then
@@ -340,7 +343,7 @@ function _M.distributed_push()
   end
 
   if success then
-    local set_ok, set_err, set_forcible = jobs_dict:set("rate_limit_counters_store_distributed_last_pushed_at", current_save_time * 1000)
+    local set_ok, set_err, set_forcible = shared_dict_retry_set(jobs_dict, "rate_limit_counters_store_distributed_last_pushed_at", current_save_time * 1000)
     if not set_ok then
       ngx.log(ngx.ERR, "failed to set 'rate_limit_counters_store_distributed_last_pushed_at' in 'jobs' shared dict: ", set_err)
     elseif set_forcible then
@@ -399,7 +402,7 @@ function _M.distributed_pull()
       end
 
       local incr = distributed_count - local_count
-      local _, incr_err, incr_forcible = counters_dict:incr(key, incr, 0, ttl)
+      local _, incr_err, incr_forcible = shared_dict_retry_incr(counters_dict, key, incr, 0, ttl)
       if incr_err then
         ngx.log(ngx.ERR, "failed to increment counters shared dict: ", incr_err)
       elseif incr_forcible then
@@ -408,14 +411,14 @@ function _M.distributed_pull()
     end
   end
 
-  local set_ok, set_err, set_forcible = jobs_dict:set("rate_limit_counters_store_distributed_last_fetched_version", last_fetched_version)
+  local set_ok, set_err, set_forcible = shared_dict_retry_set(jobs_dict, "rate_limit_counters_store_distributed_last_fetched_version", last_fetched_version)
   if not set_ok then
     ngx.log(ngx.ERR, "failed to set 'rate_limit_counters_store_distributed_last_fetched_version' in 'jobs' shared dict: ", set_err)
   elseif set_forcible then
     ngx.log(ngx.WARN, "forcibly set 'rate_limit_counters_store_distributed_last_fetched_version' in 'jobs' shared dict (shared dict may be too small)")
   end
 
-  set_ok, set_err, set_forcible = jobs_dict:set("rate_limit_counters_store_distributed_last_pulled_at", current_fetch_time * 1000)
+  set_ok, set_err, set_forcible = shared_dict_retry_set(jobs_dict, "rate_limit_counters_store_distributed_last_pulled_at", current_fetch_time * 1000)
   if not set_ok then
     ngx.log(ngx.ERR, "failed to set 'rate_limit_counters_store_distributed_last_pulled_at' in 'jobs' shared dict: ", set_err)
   elseif set_forcible then

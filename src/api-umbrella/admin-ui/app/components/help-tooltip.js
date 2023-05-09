@@ -5,6 +5,11 @@ import { tagName } from '@ember-decorators/component';
 import classic from 'ember-classic-decorator';
 import { marked } from 'marked';
 
+marked.use({
+  mangle: false,
+  headerIds: false,
+});
+
 @classic
 @tagName("")
 export default class HelpTooltip extends Component {

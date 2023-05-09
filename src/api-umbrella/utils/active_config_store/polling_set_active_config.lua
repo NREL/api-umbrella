@@ -1,3 +1,4 @@
+local shared_dict_retry_set = require("api-umbrella.utils.shared_dict_retry").set
 local worker_group = require "api-umbrella.utils.worker_group"
 
 local active_config_dict = ngx.shared.active_config
@@ -68,7 +69,7 @@ return function(cache, callback)
       -- not use that), since that still requires this type of workaround:
       -- https://github.com/openresty/lua-nginx-module/issues/1365
       if previous_active_config_value then
-        local previous_set_ok, previous_set_err, previous_set_forcible = active_config_dict:set(namespaced_key, previous_active_config_value)
+        local previous_set_ok, previous_set_err, previous_set_forcible = shared_dict_retry_set(active_config_dict, namespaced_key, previous_active_config_value)
         if not previous_set_ok then
           ngx.log(ngx.ERR, "failed to set 'active_config' in 'active_config' shared dict: ", previous_set_err)
         elseif previous_set_forcible then

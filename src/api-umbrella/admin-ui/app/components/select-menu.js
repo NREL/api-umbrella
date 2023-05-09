@@ -24,7 +24,19 @@ export default class SelectMenu extends Component {
   }
 
   @action
-  handleSelect(value) {
-    this.args.action(value);
+  onChange(event) {
+    this.args.action(JSON.parse(event.target.selectedOptions[0].dataset.typedValue));
+  }
+
+  optionValue = (value) => {
+    return String(value);
+  }
+
+  optionTypedValue = (value) => {
+    return JSON.stringify(value);
+  }
+
+  isSelected = (optionValue) => {
+    return this.args.value === optionValue;
   }
 }

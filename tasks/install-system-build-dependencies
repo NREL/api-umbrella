@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -e -u -x
+set -Eeuxo pipefail
 source ./tasks/helpers.sh
 source ./tasks/helpers/detect_os_release.sh
 
@@ -68,10 +68,14 @@ if [ "${INSTALL_TEST_DEPENDENCIES:-}" == "true" ]; then
       # For ARM platforms, Chrome stable doesn't exist, so use Chromium
       # instead. chromedriver also doesn't exist, so use Electron's ARM builds
       # instead.
-      apt-get -y install chromium curl unzip
-      chromium --version
-      curl -fsSL -o /tmp/chromedriver-v22.1.0-linux-arm64.zip https://github.com/electron/electron/releases/download/v22.1.0/chromedriver-v22.1.0-linux-arm64.zip
-      unzip -d /usr/local/bin /tmp/chromedriver-v22.1.0-linux-arm64.zip chromedriver
+      CHROMIUM_VERSION="113.*"
+      CHROMEDRIVER_VERSION="24.2.0"
+      printf "Package: chromium*\nPin: version %s\nPin-Priority: 999\n" "$CHROMIUM_VERSION" > /etc/apt/preferences.d/chromium && \
+      apt-get update && \
+      apt-get -y --no-install-recommends install chromium curl unzip && \
+      chromium --version && \
+      curl -fsSL -o "/tmp/chromedriver-v${CHROMEDRIVER_VERSION}-linux.zip" "https://github.com/electron/electron/releases/download/v${CHROMEDRIVER_VERSION}/chromedriver-v${CHROMEDRIVER_VERSION}-linux-${TARGETARCH}.zip" && \
+      unzip -o -d /usr/local/bin "/tmp/chromedriver-v${CHROMEDRIVER_VERSION}-linux.zip" chromedriver && \
       chromedriver --version
     fi
   fi

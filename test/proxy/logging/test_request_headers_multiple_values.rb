@@ -15,7 +15,7 @@ class Test::Proxy::Logging::TestRequestHeadersMultipleValues < Minitest::Test
   end
 
   def test_logs_first_value_for_invalid_referer
-    assert_logs_first_value("Referer", "request_referer", :cleared_by_proxy => true)
+    assert_logs_first_value("Referer", "request_referer", :inline_header => true)
   end
 
   def test_logs_first_value_for_valid_referer
