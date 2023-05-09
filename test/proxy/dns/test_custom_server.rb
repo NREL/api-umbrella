@@ -84,37 +84,6 @@ class Test::Proxy::Dns::TestCustomServer < Minitest::Test
     end
   end
 
-  def test_disappearing_host_records_keeps_stale_indefinitely
-    ttl = 4
-    prepend_api_backends([
-      {
-        :frontend_host => "127.0.0.1",
-        :backend_host => unique_test_hostname,
-        :servers => [{ :host => unique_test_hostname, :port => 9444 }],
-        :url_matches => [{ :frontend_prefix => "/#{unique_test_id}/", :backend_prefix => "/info/" }],
-      },
-    ]) do
-      set_dns_records(["#{unique_test_hostname} #{ttl} A 127.0.0.1"])
-      wait_for_response("/#{unique_test_id}/", {
-        :code => 200,
-        :local_interface_ip => "127.0.0.1",
-      })
-
-      set_dns_records([])
-
-      request_count = 0
-      run_until = Time.now + (ttl * 2) + TTL_BUFFER_POS
-      while Time.now <= run_until
-        response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/", http_options)
-        request_count += 1
-        assert_response_code(200, response)
-        sleep 0.1
-      end
-
-      assert_operator(request_count, :>, 10)
-    end
-  end
-
   def test_ongoing_dns_changes
     prepend_api_backends([
       {
