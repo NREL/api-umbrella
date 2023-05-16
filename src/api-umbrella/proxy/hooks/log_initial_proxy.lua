@@ -19,6 +19,9 @@ local function build_log_data()
   -- Put together the basic log data.
   local id = ngx_var.x_api_umbrella_request_id
   local data = {
+    backend_resolved_host = response_headers["x-api-umbrella-backend-resolved-host"],
+    backend_response_code_details = response_headers["x-api-umbrella-backend-response-code-details"],
+    backend_response_flags = response_headers["x-api-umbrella-backend-response-flags"],
     denied_reason = ngx_ctx.gatekeeper_denied_code,
     id = id,
     request_accept = request_headers["accept"],
@@ -40,6 +43,9 @@ local function build_log_data()
     response_content_encoding = response_headers["content-encoding"],
     response_content_length = response_headers["content-length"],
     response_content_type = response_headers["content-type"],
+    response_custom1 = response_headers["x-api-umbrella-analytics-custom1"],
+    response_custom2 = response_headers["x-api-umbrella-analytics-custom2"],
+    response_custom3 = response_headers["x-api-umbrella-analytics-custom3"],
     response_server = ngx_var.upstream_http_server,
     response_size = ngx_var.bytes_sent,
     response_status = ngx_var.status,
@@ -60,6 +66,16 @@ local function build_log_data()
 
   if ngx_ctx.matched_api_url_match then
     data["api_backend_url_match_id"] = ngx_ctx.matched_api_url_match["id"]
+  end
+
+  -- Extract the Traffic Server codes in the "Via" HTTP header (eg, something
+  -- like "cMs f "):
+  -- https://docs.trafficserver.apache.org/en/9.1.x/appendices/faq.en.html#how-do-i-interpret-the-via-header-code
+  -- Our last layer should always be at the end, even if multiple Via headers
+  -- are present.
+  local via = response_headers["via"]
+  if via then
+    data["response_cache_flags"] = string.sub(via, -8, -3)
   end
 
   log_utils.set_request_ip_geo_fields(data, ngx_var)

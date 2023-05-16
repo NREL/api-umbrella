@@ -60,6 +60,14 @@ local function uppercase_truncate(value, max_length)
   return string.upper(truncate_string(value, max_length))
 end
 
+local function remove_envoy_empty_header_value(value)
+  if value and value == "-" then
+    return nil
+  end
+
+  return value
+end
+
 -- To make drill-downs queries easier, split up how the path is stored.
 --
 -- We store this in slightly different, but similar fashions for SQL storage
@@ -318,6 +326,9 @@ function _M.normalized_data(data)
   local normalized = {
     api_backend_id = lowercase_truncate(data["api_backend_id"], 36),
     api_backend_url_match_id = lowercase_truncate(data["api_backend_url_match_id"], 36),
+    backend_resolved_host = remove_envoy_empty_header_value(lowercase_truncate(data["backend_resolved_host"], 200)),
+    backend_response_code_details = remove_envoy_empty_header_value(truncate(data["backend_response_code_details"], 100)),
+    backend_response_flags = remove_envoy_empty_header_value(truncate(data["backend_response_flags"], 20)),
     denied_reason = lowercase_truncate(data["denied_reason"], 50),
     id = lowercase_truncate(data["id"], 20),
     request_accept = truncate(data["request_accept"], 200),
@@ -353,9 +364,13 @@ function _M.normalized_data(data)
     request_user_agent_type = truncate(data["request_user_agent_type"], 100),
     response_age = tonumber(data["response_age"]),
     response_cache = truncate(data["response_cache"], 200),
+    response_cache_flags = truncate(data["response_cache_flags"], 6),
     response_content_encoding = truncate(data["response_content_encoding"], 200),
     response_content_length = tonumber(data["response_content_length"]),
     response_content_type = truncate(data["response_content_type"], 200),
+    response_custom1 = truncate(data["response_custom1"], 400),
+    response_custom2 = truncate(data["response_custom2"], 400),
+    response_custom3 = truncate(data["response_custom3"], 400),
     response_server = truncate(data["response_server"], 100),
     response_size = tonumber(data["response_size"]),
     response_status = tonumber(data["response_status"]),

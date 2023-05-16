@@ -40,6 +40,17 @@
             "type": "keyword",
             "normalizer": "lowercase_normalizer"
           },
+          "backend_resolved_host": {
+            "type": "keyword",
+            "normalizer": "lowercase_normalizer"
+          },
+          "backend_response_code_details": {
+            "type": "keyword",
+            "normalizer": "lowercase_normalizer"
+          },
+          "backend_response_flags": {
+            "type": "keyword"
+          },
           "gatekeeper_denied_code": {
             "type": "keyword",
             "normalizer": "lowercase_normalizer"
@@ -163,6 +174,9 @@
             "type": "keyword",
             "normalizer": "lowercase_normalizer"
           },
+          "response_cache_flags": {
+            "type": "keyword"
+          },
           "response_content_encoding": {
             "type": "keyword",
             "normalizer": "lowercase_normalizer"
@@ -171,6 +185,18 @@
             "type": "integer"
           },
           "response_content_type": {
+            "type": "keyword",
+            "normalizer": "lowercase_normalizer"
+          },
+          "response_custom1": {
+            "type": "keyword",
+            "normalizer": "lowercase_normalizer"
+          },
+          "response_custom2": {
+            "type": "keyword",
+            "normalizer": "lowercase_normalizer"
+          },
+          "response_custom3": {
             "type": "keyword",
             "normalizer": "lowercase_normalizer"
           },
