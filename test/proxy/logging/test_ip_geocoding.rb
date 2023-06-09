@@ -151,22 +151,22 @@ class Test::Proxy::Logging::TestIpGeocoding < Minitest::Test
       :country => "CA",
       :region => "QC",
       :city => "Trois-Rivières",
-      :lat => 46.3633,
-      :lon => -72.6143,
+      :lat => 46.4176,
+      :lon => -72.6372,
     })
   end
 
   def test_custom_country_asia
     response = Typhoeus.get("http://127.0.0.1:9080/api/hello", log_http_options.deep_merge({
       :headers => {
-        "X-Forwarded-For" => "169.145.197.0",
+        "X-Forwarded-For" => "15.211.169.0",
       },
     }))
     assert_response_code(200, response)
 
     record = wait_for_log(response)[:hit_source]
     assert_geocode(record, {
-      :ip => "169.145.197.0",
+      :ip => "15.211.169.0",
       :country => "AP",
       :region => nil,
       :city => nil,
