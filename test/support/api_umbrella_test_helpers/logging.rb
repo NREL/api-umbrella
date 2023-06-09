@@ -6,7 +6,6 @@ module ApiUmbrellaTestHelpers
       http_options.deep_merge({
         :headers => {
           "User-Agent" => unique_test_id.downcase,
-          "X-Api-Umbrella-Test-Return-Request-Id" => "true",
         },
       })
     end
@@ -19,7 +18,7 @@ module ApiUmbrellaTestHelpers
       # what happens when the client cancels the request before receiving a
       # response). So in those cases, fall back to looking the log up by the
       # unique user agent that was part of the initial request.
-      request_id = response.headers["x-api-umbrella-test-request-id"]
+      request_id = response.headers["x-api-umbrella-request-id"]
       if(options[:lookup_by_unique_user_agent])
         refute(request_id)
         assert_equal(unique_test_id.downcase, response.request.options[:headers]["User-Agent"])

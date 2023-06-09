@@ -6,6 +6,9 @@ local split = require("pl.utils").split
 local startswith = require("pl.stringx").startswith
 local table_size = require("pl.tablex").size
 
+local decode_args = ngx.decode_args
+local re_gsub = ngx.re.gsub
+
 return function(api)
   if not api then return end
 
@@ -68,27 +71,27 @@ return function(api)
         local splatNamedParam = [[\*(\w+)]]
         local subPath = [[\*([^\w]|$)]]
 
-        local frontend_path_regex, _, gsub_err = ngx.re.gsub(path, escapeRegExp, "\\$0")
+        local frontend_path_regex, _, gsub_err = re_gsub(path, escapeRegExp, "\\$0")
         if gsub_err then
           ngx.log(ngx.ERR, "regex error: ", gsub_err)
         end
 
-        frontend_path_regex, _, gsub_err = ngx.re.gsub(frontend_path_regex, subPath, [[.*?$1]])
+        frontend_path_regex, _, gsub_err = re_gsub(frontend_path_regex, subPath, [[.*?$1]])
         if gsub_err then
           ngx.log(ngx.ERR, "regex error: ", gsub_err)
         end
 
-        frontend_path_regex, _, gsub_err = ngx.re.gsub(frontend_path_regex, namedParam, [[(?<$1>[^/]+)]])
+        frontend_path_regex, _, gsub_err = re_gsub(frontend_path_regex, namedParam, [[(?<$1>[^/]+)]])
         if gsub_err then
           ngx.log(ngx.ERR, "regex error: ", gsub_err)
         end
 
-        frontend_path_regex, _, gsub_err = ngx.re.gsub(frontend_path_regex, splatNamedParam, [[(?<$1>.*?)]])
+        frontend_path_regex, _, gsub_err = re_gsub(frontend_path_regex, splatNamedParam, [[(?<$1>.*?)]])
         if gsub_err then
           ngx.log(ngx.ERR, "regex error: ", gsub_err)
         end
 
-        frontend_path_regex, _, gsub_err = ngx.re.gsub(frontend_path_regex, "/$", "")
+        frontend_path_regex, _, gsub_err = re_gsub(frontend_path_regex, "/$", "")
         if gsub_err then
           ngx.log(ngx.ERR, "regex error: ", gsub_err)
         end
@@ -96,7 +99,7 @@ return function(api)
         rewrite["_frontend_path_regex"] = "^" .. frontend_path_regex .. "/?$"
 
         if args then
-          args = ngx.decode_args(args)
+          args = decode_args(args)
           rewrite["_frontend_args_length"] = table_size(args)
           rewrite["_frontend_args"] = {}
           for key, value in pairs(args) do

@@ -9,7 +9,9 @@ local round = require "api-umbrella.utils.round"
 local shared_dict_retry_set = require("api-umbrella.utils.shared_dict_retry").set
 local user_agent_parser = require "api-umbrella.proxy.user_agent_parser"
 
+local re_gsub = ngx.re.gsub
 local split = plutils.split
+local timer_at = ngx.timer.at
 
 local syslog_facility = 16 -- local0
 local syslog_severity = 6 -- info
@@ -100,15 +102,15 @@ end
 -- http://www.springyweb.com/2012/01/hierarchical-faceting-with-elastic.html
 function _M.set_url_hierarchy(data)
   -- Remote duplicate slashes (eg foo//bar becomes foo/bar).
-  local cleaned_path = ngx.re.gsub(data["request_url_path"], "//+", "/", "jo")
+  local cleaned_path = re_gsub(data["request_url_path"], "//+", "/", "jo")
 
   -- Remove trailing slashes. This is so that we can always distinguish the
   -- intermediate paths versus the actual endpoint.
-  cleaned_path = ngx.re.gsub(cleaned_path, "/$", "", "jo")
+  cleaned_path = re_gsub(cleaned_path, "/$", "", "jo")
 
   -- Remove the slash prefix so that split doesn't return an empty string as
   -- the first element.
-  cleaned_path = ngx.re.gsub(cleaned_path, "^/", "", "jo")
+  cleaned_path = re_gsub(cleaned_path, "^/", "", "jo")
 
   -- Split the path by slashes limiting to 6 levels deep (everything beyond
   -- the 6th level will be included on the 6th level string). This is to
@@ -227,7 +229,7 @@ function _M.cache_new_city_geocode(data)
 
     -- Perform the actual cache call in a timer because the http library isn't
     -- supported directly in the log_by_lua context.
-    ngx.timer.at(0, cache_city_geocode, data)
+    timer_at(0, cache_city_geocode, data)
   end
 end
 

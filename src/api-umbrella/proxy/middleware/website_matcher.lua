@@ -1,11 +1,11 @@
 local config = require("api-umbrella.utils.load_config")()
 local matches_hostname = require "api-umbrella.utils.matches_hostname"
 
-return function(active_config)
+return function(ngx_ctx, active_config)
   local websites = active_config["website_backends"] or {}
   local default_website
   for _, website in ipairs(websites) do
-    if matches_hostname(website["_frontend_host_normalized"], website["_frontend_host_wildcard_regex"]) then
+    if matches_hostname(ngx_ctx, website["_frontend_host_normalized"], website["_frontend_host_wildcard_regex"]) then
       return website
     elseif website["_frontend_host_normalized"] == config["_default_hostname_normalized"]then
       default_website = website

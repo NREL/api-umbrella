@@ -6,6 +6,7 @@ local path_join = require "api-umbrella.utils.path_join"
 local writefile = require("pl.utils").writefile
 
 local re_find = ngx.re.find
+local sleep = ngx.sleep
 
 local function build_cluster_resource(cluster_name, options)
   local resource = {
@@ -465,7 +466,7 @@ local function wait_for_live_config(config_version, cds)
       ready = true
       break
     else
-      ngx.sleep(0.1)
+      sleep(0.1)
     end
   end
 

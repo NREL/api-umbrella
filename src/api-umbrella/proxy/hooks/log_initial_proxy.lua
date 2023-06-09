@@ -4,6 +4,8 @@ local xpcall_error_handler = require "api-umbrella.utils.xpcall_error_handler"
 
 local ngx_ctx = ngx.ctx
 local ngx_var = ngx.var
+local req_get_headers = ngx.req.get_headers
+local resp_get_headers = ngx.resp.get_headers
 
 if log_utils.ignore_request(ngx_ctx) then
   return
@@ -13,15 +15,15 @@ local sec_to_ms = log_utils.sec_to_ms
 
 local function build_log_data()
   -- Fetch all the request and response headers.
-  local request_headers = flatten_headers(ngx.req.get_headers());
-  local response_headers = flatten_headers(ngx.resp.get_headers());
+  local request_headers = flatten_headers(req_get_headers());
+  local response_headers = flatten_headers(resp_get_headers());
 
   -- Put together the basic log data.
   local id = ngx_var.x_api_umbrella_request_id
   local data = {
-    backend_resolved_host = response_headers["x-api-umbrella-backend-resolved-host"],
-    backend_response_code_details = response_headers["x-api-umbrella-backend-response-code-details"],
-    backend_response_flags = response_headers["x-api-umbrella-backend-response-flags"],
+    backend_resolved_host = ngx_ctx.x_api_umbrella_backend_resolved_host,
+    backend_response_code_details = ngx_ctx.x_api_umbrella_backend_response_code_details,
+    backend_response_flags = ngx_ctx.x_api_umbrella_backend_response_flags,
     denied_reason = ngx_ctx.gatekeeper_denied_code,
     id = id,
     request_accept = request_headers["accept"],
@@ -43,9 +45,9 @@ local function build_log_data()
     response_content_encoding = response_headers["content-encoding"],
     response_content_length = response_headers["content-length"],
     response_content_type = response_headers["content-type"],
-    response_custom1 = response_headers["x-api-umbrella-analytics-custom1"],
-    response_custom2 = response_headers["x-api-umbrella-analytics-custom2"],
-    response_custom3 = response_headers["x-api-umbrella-analytics-custom3"],
+    response_custom1 = ngx_ctx.x_api_umbrella_analytics_custom1,
+    response_custom2 = ngx_ctx.x_api_umbrella_analytics_custom2,
+    response_custom3 = ngx_ctx.x_api_umbrella_analytics_custom3,
     response_server = ngx_var.upstream_http_server,
     response_size = ngx_var.bytes_sent,
     response_status = ngx_var.status,

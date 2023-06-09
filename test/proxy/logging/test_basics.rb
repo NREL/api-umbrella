@@ -417,6 +417,10 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
       record = wait_for_log(response)[:hit_source]
       assert_equal(503, record["response_status"])
       assert_logs_base_fields(record, api_user)
+      assert_equal("127.0.0.1:9450", record["backend_resolved_host"])
+      assert_equal("upstream_reset_before_response_started{connection_failure,delayed_connect_error:_111}", record["backend_response_code_details"])
+      assert_equal("UF,URX", record["backend_response_flags"])
+      assert_equal("cMsSf ", record["response_cache_flags"])
     end
   end
 

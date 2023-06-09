@@ -1,9 +1,11 @@
 local _M = {}
 
 local gsub = ngx.re.gsub
+local ngx_var = ngx.var
+local req_set_uri = ngx.req.set_uri
+local req_set_uri_args = ngx.req.set_uri_args
 
-function _M.base_url()
-  local ngx_ctx = ngx.ctx
+function _M.base_url(ngx_ctx)
   local protocol = ngx_ctx.protocol
   local host = ngx_ctx.host
   local port = ngx_ctx.port
@@ -60,21 +62,19 @@ function _M.append_args(original_args, append)
   return args
 end
 
-function _M.set_uri(new_path, new_args)
-  local ngx_ctx = ngx.ctx
-
+function _M.set_uri(ngx_ctx, new_path, new_args)
   if new_path then
-    ngx.req.set_uri(new_path)
+    req_set_uri(new_path)
 
     -- Update the cached variable.
-    ngx_ctx.uri_path = ngx.var.uri
+    ngx_ctx.uri_path = ngx_var.uri
   end
 
   if new_args then
-    ngx.req.set_uri_args(new_args)
+    req_set_uri_args(new_args)
 
     -- Update the cached variable.
-    ngx_ctx.args = ngx.var.args
+    ngx_ctx.args = ngx_var.args
   end
 
   -- If either value changed, update the cached request_uri variable. We have

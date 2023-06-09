@@ -17,6 +17,7 @@ local cursor = pg_utils.cursor
 local jobs_dict = ngx.shared.jobs
 local last_fetched_version_set_once = false
 local query = pg_utils.query
+local sleep = ngx.sleep
 
 local _M = {}
 
@@ -61,7 +62,7 @@ local function fetch_user(api_key_prefix, api_key)
     result, err = query("SELECT * FROM api_users_flattened_temp WHERE api_key_prefix = :api_key_prefix", { api_key_prefix = api_key_prefix })
     if not result then
       ngx.log(ngx.ERR, "failed to fetch user from database, attempt " .. i .. ": ", err)
-      ngx.sleep(0.1)
+      sleep(0.1)
     else
       break
     end

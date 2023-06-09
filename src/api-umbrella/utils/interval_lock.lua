@@ -1,6 +1,8 @@
 local lock = require "resty.lock"
 local xpcall_error_handler = require "api-umbrella.utils.xpcall_error_handler"
 
+local timer_at = ngx.timer.at
+
 local _M = {}
 
 --- Only one thread can execute fn through its execution duration
@@ -67,7 +69,7 @@ end
 -- @param fn - function to execute when the next timeout occurs
 _M.repeat_exec = function(interval, fn)
   -- schedule the next call
-  local ok, err = ngx.timer.at(interval, function(premature)
+  local ok, err = timer_at(interval, function(premature)
     if not premature then
       _M.repeat_exec(interval, fn)
     end
@@ -93,7 +95,7 @@ _M.repeat_with_mutex = function(name, interval, fn)
   -- Wrap the initial call in an immediate timer, so we know we're always
   -- executing fn() within the context of a timer (since some nginx APIs may
   -- not be available in other contexts, like init_worker_by_lua).
-  local ok, err = ngx.timer.at(0, function(premature)
+  local ok, err = timer_at(0, function(premature)
     if premature then
       return
     end

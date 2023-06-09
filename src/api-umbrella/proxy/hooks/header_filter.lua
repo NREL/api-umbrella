@@ -5,7 +5,7 @@ local ngx_ctx = ngx.ctx
 local settings = ngx_ctx.settings
 
 -- Perform any response rewriting.
-local err = rewrite_response(settings)
+local err = rewrite_response(ngx_ctx, settings)
 if err then
-  return error_handler(err, settings)
+  return error_handler(ngx_ctx, err, settings)
 end

@@ -1,3 +1,4 @@
+local ngx_var = ngx.var
 local re_match = ngx.re.match
 
 local settings_keys = {
@@ -38,8 +39,8 @@ return function(settings)
   --   http://www.privoxy.org/user-manual/actions-file.html#HIDE-REFERRER).
   -- - IE8-9 pseudo CORS support, which sends the Origin header, but no
   --   Referer.
-  local referer = ngx.var.http_referer
-  local origin = ngx.var.http_origin
+  local referer = ngx_var.http_referer
+  local origin = ngx_var.http_origin
 
   -- In most cases, we check the merged "settings" object, but in this case, we
   -- want to check the original API and User IP requirements independently.

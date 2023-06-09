@@ -61,6 +61,8 @@ module ApiUmbrellaTestHelpers
           sleep 0.1
         end
       end
+
+      response
     rescue Timeout::Error
       message = <<~EOS
         DNS change not detected:

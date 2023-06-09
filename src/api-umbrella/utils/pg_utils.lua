@@ -11,7 +11,10 @@ require "pgmoon.json"
 local _encode_bytea = pgmoon.Postgres.encode_bytea
 local _escape_identifier = pgmoon.Postgres.escape_identifier
 local _escape_literal = pgmoon.Postgres.escape_literal
+local now = ngx.now
 local pg_null = pgmoon.Postgres.NULL
+local re_gsub = ngx.re.gsub
+local sleep = ngx.sleep
 
 local _M = {}
 
@@ -93,7 +96,7 @@ function _M.is_raw(value)
 end
 
 function _M.escape_like(value)
-  return ngx.re.gsub(value, "[\\\\%_]", "\\$0", "jo")
+  return re_gsub(value, "[\\\\%_]", "\\$0", "jo")
 end
 
 function _M.escape_literal(value)
@@ -151,7 +154,7 @@ function _M.connect()
     ok, err = pg:connect()
     if not ok then
       ngx.log(ngx.ERR, "failed to connect to database: ", err)
-      ngx.sleep(0.1)
+      sleep(0.1)
     else
       break
     end
@@ -208,7 +211,7 @@ function _M.query(query, values, options)
     -- variable. Be careful not to match "::word", so that we don't match
     -- postgres type casting (eg, "foo::date").
     local _, gsub_err
-    query, _, gsub_err = ngx.re.gsub(query, [[(?<!:):(\w+)]], function(match)
+    query, _, gsub_err = re_gsub(query, [[(?<!:):(\w+)]], function(match)
       local key = match[1]
       local escaped_value = escaped_values[key] or "NULL"
       return escaped_value
@@ -312,7 +315,7 @@ function _M.cursor(query, values, cursor_size, options, callback)
     options = {}
   end
 
-  local cursor_name = "cursor_" .. (ngx.now() * 1000) .. "_" .. string.lower(random_token(16))
+  local cursor_name = "cursor_" .. (now() * 1000) .. "_" .. string.lower(random_token(16))
   local declare_sql = "DECLARE " .. cursor_name .. " NO SCROLL CURSOR WITHOUT HOLD FOR " .. query
   local fetch_sql = "FETCH " .. tonumber(cursor_size) .. " FROM " .. cursor_name
 

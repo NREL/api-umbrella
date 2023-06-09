@@ -7,12 +7,15 @@ local path_join = require "api-umbrella.utils.path_join"
 local shell_blocking_capture_combined = require("shell-games").capture_combined
 local stat = require("posix.sys.stat").stat
 
+local escape_uri = ngx.escape_uri
+local time = ngx.time
+
 local _M = {}
 
 local function perform_download(config, unzip_dir, download_path)
   -- Download file
   ngx.log(ngx.NOTICE, "Downloading new file (" .. download_path .. ")")
-  local download_url = "https://download.maxmind.com/app/geoip_download?edition_id=GeoLite2-City&suffix=tar.gz&license_key=" .. ngx.escape_uri(config["geoip"]["maxmind_license_key"])
+  local download_url = "https://download.maxmind.com/app/geoip_download?edition_id=GeoLite2-City&suffix=tar.gz&license_key=" .. escape_uri(config["geoip"]["maxmind_license_key"])
   local _, curl_err = shell_blocking_capture_combined({ "curl", "--silent", "--show-error", "--fail", "--location", "--retry", "3", "--output", download_path, download_url })
   if curl_err then
     return false, curl_err
@@ -114,7 +117,7 @@ function _M.download_if_missing_or_old(config)
     -- Check the age of the current file. Don't attempt to download if the
     -- current file has recently been updated.
     local city_db_stat = stat(city_db_path)
-    local age = ngx.time() - city_db_stat.st_mtime
+    local age = time() - city_db_stat.st_mtime
     if age < config["geoip"]["db_update_age"] then
       ngx.log(ngx.NOTICE, city_db_path .. " recently updated (" .. age .. "s ago) - skipping")
     else

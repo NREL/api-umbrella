@@ -1,6 +1,8 @@
 local lrucache = require "resty.lrucache.pureffi"
 local data = require "api-umbrella.proxy.user_agent_parser_data"
 
+local re_match = ngx.re.match
+
 -- local data = user_agent_parser_data
 local cache = lrucache.new(500)
 
@@ -25,7 +27,7 @@ return function(user_agent)
   end
 
   for _, browser_regex in ipairs(data["browser_regexes"]) do
-    local matches, match_err = ngx.re.match(user_agent, browser_regex["regex"], browser_regex["regex_flags"])
+    local matches, match_err = re_match(user_agent, browser_regex["regex"], browser_regex["regex_flags"])
     if matches then
       local browser = data["browsers"][browser_regex["browser_id"]]
       if browser then
