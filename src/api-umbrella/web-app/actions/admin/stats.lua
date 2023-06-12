@@ -342,6 +342,27 @@ function _M.logs(self)
       "User Agent Type",
       "Referer",
       "Origin",
+      "Request Accept",
+      "Request Connection",
+      "Request Content Type",
+      "Request Size",
+      "Response Age",
+      "Response Cache",
+      "Response Cache Flags",
+      "Response Content Encoding",
+      "Response Content Length",
+      "Response Server",
+      "Response Size",
+      "Response Transfer Encoding",
+      "Response Custom Dimension 1",
+      "Response Custom Dimension 2",
+      "Response Custom Dimension 3",
+      "User ID",
+      "API Backend ID",
+      "API Backend Resolved Host",
+      "API Backend Response Code Details",
+      "API Backend Response Flags",
+      "Request ID",
     }))
     ngx.flush(true)
 
@@ -368,6 +389,27 @@ function _M.logs(self)
           row["request_user_agent_type"] or null,
           row["request_referer"] or null,
           row["request_origin"] or null,
+          row["request_accept"] or null,
+          row["request_connection"] or null,
+          row["request_content_type"] or null,
+          row["request_size"] or null,
+          row["response_age"] or null,
+          row["response_cache"] or null,
+          row["response_cache_flags"] or null,
+          row["response_content_encoding"] or null,
+          row["response_content_length"] or null,
+          row["response_server"] or null,
+          row["response_size"] or null,
+          row["response_transfer_encoding"] or null,
+          row["response_custom1"] or null,
+          row["response_custom2"] or null,
+          row["response_custom3"] or null,
+          row["user_id"] or null,
+          row["api_backend_id"] or null,
+          row["api_backend_resolved_host"] or null,
+          row["api_backend_response_code_details"] or null,
+          row["api_backend_response_flags"] or null,
+          hit["_id"] or null,
         }))
       end
       ngx.flush(true)
@@ -389,6 +431,7 @@ function _M.logs(self)
       row["_type"] = nil
       row["_score"] = nil
       row["_index"] = nil
+      row["request_id"] = hit["_id"]
       row["request_url"] = sanitized_url_path_and_query(row)
       row["request_url_query"] = strip_api_key_from_query(row["request_url_query"])
       if row["request_query"] then

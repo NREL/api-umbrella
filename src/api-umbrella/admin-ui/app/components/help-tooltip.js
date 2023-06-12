@@ -6,6 +6,8 @@ import classic from 'ember-classic-decorator';
 import { marked } from 'marked';
 
 marked.use({
+  gfm: true,
+  breaks: true,
   mangle: false,
   headerIds: false,
 });

@@ -68,8 +68,8 @@ if [ "${INSTALL_TEST_DEPENDENCIES:-}" == "true" ]; then
       # For ARM platforms, Chrome stable doesn't exist, so use Chromium
       # instead. chromedriver also doesn't exist, so use Electron's ARM builds
       # instead.
-      CHROMIUM_VERSION="113.*"
-      CHROMEDRIVER_VERSION="24.2.0"
+      CHROMIUM_VERSION="114.*"
+      CHROMEDRIVER_VERSION="25.1.0"
       printf "Package: chromium*\nPin: version %s\nPin-Priority: 999\n" "$CHROMIUM_VERSION" > /etc/apt/preferences.d/chromium && \
       apt-get update && \
       apt-get -y --no-install-recommends install chromium curl unzip && \

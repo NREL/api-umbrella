@@ -36,6 +36,17 @@
               "type": "keyword",
               "normalizer": "lowercase_normalizer"
             },
+            "api_backend_resolved_host": {
+              "type": "keyword",
+              "normalizer": "lowercase_normalizer"
+            },
+            "api_backend_response_code_details": {
+              "type": "keyword",
+              "normalizer": "lowercase_normalizer"
+            },
+            "api_backend_response_flags": {
+              "type": "keyword"
+            },
             "api_backend_url_match_id": {
               "type": "keyword",
               "normalizer": "lowercase_normalizer"
@@ -43,17 +54,6 @@
             "api_key": {
               "type": "keyword",
               "normalizer": "lowercase_normalizer"
-            },
-            "backend_resolved_host": {
-              "type": "keyword",
-              "normalizer": "lowercase_normalizer"
-            },
-            "backend_response_code_details": {
-              "type": "keyword",
-              "normalizer": "lowercase_normalizer"
-            },
-            "backend_response_flags": {
-              "type": "keyword"
             },
             "gatekeeper_denied_code": {
               "type": "keyword",

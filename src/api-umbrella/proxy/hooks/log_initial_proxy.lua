@@ -21,9 +21,9 @@ local function build_log_data()
   -- Put together the basic log data.
   local id = ngx_var.x_api_umbrella_request_id
   local data = {
-    backend_resolved_host = ngx_ctx.x_api_umbrella_backend_resolved_host,
-    backend_response_code_details = ngx_ctx.x_api_umbrella_backend_response_code_details,
-    backend_response_flags = ngx_ctx.x_api_umbrella_backend_response_flags,
+    api_backend_resolved_host = ngx_ctx.x_api_umbrella_backend_resolved_host,
+    api_backend_response_code_details = ngx_ctx.x_api_umbrella_backend_response_code_details,
+    api_backend_response_flags = ngx_ctx.x_api_umbrella_backend_response_flags,
     denied_reason = ngx_ctx.gatekeeper_denied_code,
     id = id,
     request_accept = request_headers["accept"],

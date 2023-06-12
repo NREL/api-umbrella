@@ -328,9 +328,9 @@ function _M.normalized_data(data)
   local normalized = {
     api_backend_id = lowercase_truncate(data["api_backend_id"], 36),
     api_backend_url_match_id = lowercase_truncate(data["api_backend_url_match_id"], 36),
-    backend_resolved_host = remove_envoy_empty_header_value(lowercase_truncate(data["backend_resolved_host"], 200)),
-    backend_response_code_details = remove_envoy_empty_header_value(truncate(data["backend_response_code_details"], 100)),
-    backend_response_flags = remove_envoy_empty_header_value(truncate(data["backend_response_flags"], 20)),
+    api_backend_resolved_host = remove_envoy_empty_header_value(lowercase_truncate(data["api_backend_resolved_host"], 200)),
+    api_backend_response_code_details = remove_envoy_empty_header_value(truncate(data["api_backend_response_code_details"], 100)),
+    api_backend_response_flags = remove_envoy_empty_header_value(truncate(data["api_backend_response_flags"], 20)),
     denied_reason = lowercase_truncate(data["denied_reason"], 50),
     id = lowercase_truncate(data["id"], 20),
     request_accept = truncate(data["request_accept"], 200),

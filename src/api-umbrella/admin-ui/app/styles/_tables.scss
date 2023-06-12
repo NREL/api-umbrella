@@ -17,7 +17,9 @@ table.dataTable.table thead .sorting_desc:after, {
 table.dataTable.table thead .sorting,
 table.dataTable.table thead .sorting_asc,
 table.dataTable.table thead .sorting_desc {
-  .svg-inline--fa {
+  .svg-inline--fa.fa-sort,
+  .svg-inline--fa.fa-sort-up,
+  .svg-inline--fa.fa-sort-down, {
     color: $gray-500;
     position: absolute;
     right: 0.5rem;
@@ -27,13 +29,17 @@ table.dataTable.table thead .sorting_desc {
 
 table.dataTable.table thead .sorting_asc,
 table.dataTable.table thead .sorting_desc {
-  .svg-inline--fa {
+  .svg-inline--fa.fa-sort,
+  .svg-inline--fa.fa-sort-up,
+  .svg-inline--fa.fa-sort-down, {
     color: $link-color;
   }
 }
 
 table.dataTable.table thead .sorting_disabled {
-  .svg-inline--fa {
+  .svg-inline--fa.fa-sort,
+  .svg-inline--fa.fa-sort-up,
+  .svg-inline--fa.fa-sort-down, {
     display: none;
   }
 }
@@ -71,14 +77,8 @@ table.dataTable.table thead .sorting.sorting_desc {
   }
 }
 
-table.dataTable.table-sm > thead > tr > th {
-  padding-right: 1.5rem;
-}
-
-// Fix for broken styles in DataTables 1.10.21. Shouldn't be needed in 1.10.22+.
-// https://github.com/DataTables/DataTablesSrc/pull/166
-table.dataTable.table-sm > thead > tr > th :not(.sorting_disabled) {
-  padding-right: 0px;
+table.dataTable.table-sm > thead > tr > th:not(.sorting_disabled) {
+  padding-right: 1.8rem;
 }
 
 div.dataTables_wrapper div.dataTables_paginate ul.pagination {

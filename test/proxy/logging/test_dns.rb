@@ -41,8 +41,8 @@ class Test::Proxy::Logging::TestDns < Minitest::Test
 
       record = wait_for_log(response)[:hit_source]
       assert_logs_base_fields(record, api_user)
-      assert_equal("127.0.0.2:9444", record["backend_resolved_host"])
-      assert_equal("via_upstream", record["backend_response_code_details"])
+      assert_equal("127.0.0.2:9444", record["api_backend_resolved_host"])
+      assert_equal("via_upstream", record["api_backend_response_code_details"])
     end
   end
 end

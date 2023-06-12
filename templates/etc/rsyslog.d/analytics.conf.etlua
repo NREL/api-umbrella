@@ -19,14 +19,14 @@ action(name="analytics-jsonparse" type="mmjsonparse")
     set $!usr!es!api_key = $!raw!legacy_api_key;
   }
   <% if config["elasticsearch"]["_template_version_v2?"] then %>
-    if($!raw!backend_resolved_host != "") then {
-      set $!usr!es!backend_resolved_host = $!raw!backend_resolved_host;
+    if($!raw!api_backend_resolved_host != "") then {
+      set $!usr!es!api_backend_resolved_host = $!raw!api_backend_resolved_host;
     }
-    if($!raw!backend_response_code_details != "") then {
-      set $!usr!es!backend_response_code_details = $!raw!backend_response_code_details;
+    if($!raw!api_backend_response_code_details != "") then {
+      set $!usr!es!api_backend_response_code_details = $!raw!api_backend_response_code_details;
     }
-    if($!raw!backend_response_flags != "") then {
-      set $!usr!es!backend_response_flags = $!raw!backend_response_flags;
+    if($!raw!api_backend_response_flags != "") then {
+      set $!usr!es!api_backend_response_flags = $!raw!api_backend_response_flags;
     }
   <% end %>
   if($!raw!denied_reason != "") then {
