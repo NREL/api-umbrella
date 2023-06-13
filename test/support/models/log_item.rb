@@ -6,10 +6,17 @@ class LogItem
   mattr_reader(:setup_indices_lock) { Monitor.new }
 
   attribute :_id
+  attribute :api_backend_id
+  attribute :api_backend_resolved_host
+  attribute :api_backend_response_code_details
+  attribute :api_backend_response_flags
   attribute :api_key
   attribute :gatekeeper_denied_code
+  attribute :request_accept
   attribute :request_accept_encoding
   attribute :request_at
+  attribute :request_connection
+  attribute :request_content_type
   attribute :request_hierarchy
   attribute :request_host
   attribute :request_ip
@@ -17,8 +24,10 @@ class LogItem
   attribute :request_ip_country
   attribute :request_ip_region
   attribute :request_method
+  attribute :request_origin
   attribute :request_path
   attribute :request_query
+  attribute :request_referer
   attribute :request_scheme
   attribute :request_size
   attribute :request_url_query
@@ -26,12 +35,19 @@ class LogItem
   attribute :request_user_agent_family
   attribute :request_user_agent_type
   attribute :response_age
+  attribute :response_cache
+  attribute :response_cache_flags
+  attribute :response_content_encoding
   attribute :response_content_length
   attribute :response_content_type
+  attribute :response_custom1
+  attribute :response_custom2
+  attribute :response_custom3
   attribute :response_server
   attribute :response_size
   attribute :response_status
   attribute :response_time
+  attribute :response_transfer_encoding
   attribute :user_email
   attribute :user_id
   attribute :user_registration_source
