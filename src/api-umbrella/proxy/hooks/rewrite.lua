@@ -7,10 +7,13 @@ local host_normalize = require "api-umbrella.utils.host_normalize"
 local redirect_matches_to_https = require "api-umbrella.utils.redirect_matches_to_https"
 local website_matcher = require "api-umbrella.proxy.middleware.website_matcher"
 
-local ngx_var = ngx.var
-local ngx_ctx = ngx.ctx
 local get_active_config = active_config_store.get
+local ngx_ctx = ngx.ctx
+local ngx_var = ngx.var
 local refresh_local_active_config_cache = active_config_store.refresh_local_cache
+local re_find = ngx.re.find
+local re_sub = ngx.re.sub
+local req_set_header = ngx.req.set_header
 
 -- Determine the protocol/scheme and port this connection represents, based on
 -- forwarded info or override config.
@@ -49,10 +52,10 @@ end
 -- non-default port (not 80 or 443) and the host header doesn't already contain
 -- a port.
 if real_proto == "http" and config["override_public_http_port"] then
-  real_host = ngx.re.sub(real_host, "(:.*$|$)", ":" .. config["override_public_http_port"], "jo")
+  real_host = re_sub(real_host, "(:.*$|$)", ":" .. config["override_public_http_port"], "jo")
 elseif real_proto == "https" and config["override_public_https_port"] then
-  real_host = ngx.re.sub(real_host, "(:.*$|$)", ":" .. config["override_public_https_port"], "jo")
-elseif not ngx.re.find(real_host, ":", "jo") then
+  real_host = re_sub(real_host, "(:.*$|$)", ":" .. config["override_public_https_port"], "jo")
+elseif not re_find(real_host, ":", "jo") then
   if not (real_proto == "http" and real_port == "80") or not (real_proto == "https" and real_port == "443") then
     real_host = real_host .. ":" .. real_port
   end
@@ -69,7 +72,7 @@ ngx_ctx.port = real_port
 ngx_ctx.protocol = real_proto
 ngx_ctx.remote_addr = ngx_var.remote_addr
 ngx_ctx.remote_user = ngx_var.remote_user
-ngx_ctx.request_method = string.lower(ngx.var.request_method)
+ngx_ctx.request_method = string.lower(ngx_var.request_method)
 
 local args = ngx_var.args
 if args then
@@ -86,7 +89,7 @@ ngx_ctx.original_uri_path = uri_path
 ngx_ctx.uri_path = uri_path
 
 local function route()
-  ngx.var.proxy_host_header = ngx_ctx.proxy_host
+  ngx_var.proxy_host_header = ngx_ctx.proxy_host
 
   -- For cache key purposes, allow HEAD requests to re-use the cache key for
   -- GET requests (since HEAD queries can be answered from cached GET data).
@@ -97,14 +100,14 @@ local function route()
     cache_request_method = "get"
   end
 
-  ngx.req.set_header("X-Api-Umbrella-Backend-Host", ngx_ctx.backend_host)
-  ngx.req.set_header("X-Api-Umbrella-Cache-Request-Method", cache_request_method)
-  ngx.req.set_header("X-Forwarded-Proto", ngx_ctx.protocol)
-  ngx.req.set_header("X-Forwarded-Port", ngx_ctx.port)
+  req_set_header("X-Api-Umbrella-Backend-Host", ngx_ctx.backend_host)
+  req_set_header("X-Api-Umbrella-Cache-Request-Method", cache_request_method)
+  req_set_header("X-Forwarded-Proto", ngx_ctx.protocol)
+  req_set_header("X-Forwarded-Port", ngx_ctx.port)
 end
 
 local function route_to_api(api, url_match)
-  redirect_matches_to_https(config["router"]["api_backend_required_https_regex_default"])
+  redirect_matches_to_https(ngx_ctx, config["router"]["api_backend_required_https_regex_default"])
 
   ngx_ctx.matched_api = api
   ngx_ctx.matched_api_url_match = url_match
@@ -114,7 +117,7 @@ local function route_to_api(api, url_match)
 end
 
 local function route_to_website(website)
-  redirect_matches_to_https(website["website_backend_required_https_regex"] or config["router"]["website_backend_required_https_regex_default"])
+  redirect_matches_to_https(ngx_ctx, website["website_backend_required_https_regex"] or config["router"]["website_backend_required_https_regex_default"])
 
   ngx_ctx.proxy_host = "website-backend-" .. website["id"]
   ngx_ctx.backend_host = website["backend_host"] or ngx_ctx.host
@@ -133,16 +136,16 @@ end
 
 local active_config = get_active_config()
 
-local api, url_match, api_err = api_matcher(active_config)
+local api, url_match, api_err = api_matcher(ngx_ctx, active_config)
 if api and url_match then
   route_to_api(api, url_match)
 elseif api_err == "not_found" then
-  local website, website_err = website_matcher(active_config)
+  local website, website_err = website_matcher(ngx_ctx, active_config)
   if website then
     route_to_website(website)
   else
-    error_handler(website_err)
+    error_handler(ngx_ctx, website_err)
   end
 else
-  error_handler(api_err)
+  error_handler(ngx_ctx, api_err)
 end

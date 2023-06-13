@@ -8,7 +8,9 @@ local string_template = require "api-umbrella.utils.string_template"
 local tablex = require "pl.tablex"
 local strip = require("pl.stringx").strip
 
+local decode_args = ngx.decode_args
 local deepcopy = tablex.deepcopy
+local encode_base64 = ngx.encode_base64
 local re_gsub = ngx.re.gsub
 local re_sub = ngx.re.sub
 local table_keys = tablex.keys
@@ -153,13 +155,13 @@ return function(config, settings)
   settings["override_response_headers"] = nil
 
   if not is_empty(settings["append_query_string"]) then
-    settings["_append_query_arg_names"] = table_keys(ngx.decode_args(settings["append_query_string"]))
+    settings["_append_query_arg_names"] = table_keys(decode_args(settings["append_query_string"]))
   elseif settings["append_query_string"] then
     settings["append_query_string"] = nil
   end
 
   if not is_empty(settings["http_basic_auth"]) then
-    settings["_http_basic_auth_header"] = "Basic " .. ngx.encode_base64(settings["http_basic_auth"])
+    settings["_http_basic_auth_header"] = "Basic " .. encode_base64(settings["http_basic_auth"])
   end
   settings["http_basic_auth"] = nil
 

@@ -6,6 +6,7 @@ local icu_date = require "icu-date-ffi"
 local json_encode = require "api-umbrella.utils.json_encode"
 
 local elasticsearch_query = elasticsearch.query
+local ngx_var = ngx.var
 
 local function status_response(quick)
   local response = {
@@ -91,8 +92,8 @@ end
 -- until this status *or better* is met. green > yellow > red, so
 -- wait_for_status=yellow will return if the status is actually yellow.
 local response
-local wait_for_status = ngx.var.arg_wait_for_status
-local quick = ngx.var.arg_quick == "true"
+local wait_for_status = ngx_var.arg_wait_for_status
+local quick = ngx_var.arg_quick == "true"
 if not wait_for_status then
   response = status_response(quick)
 else
@@ -107,7 +108,7 @@ else
   end
 
   -- Validate the wait_timeout param (defaults to 50).
-  local wait_timeout = tonumber(ngx.var.arg_wait_timeout or 50)
+  local wait_timeout = tonumber(ngx_var.arg_wait_timeout or 50)
   if not wait_timeout then
     ngx.status = 422
     ngx.header["Content-Type"] = "application/json"

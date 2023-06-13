@@ -1,4 +1,10 @@
+# Set the request ID header on the requests so it's passed to API backends,
+# etc.
 proxy_set_header X-Api-Umbrella-Request-ID $x_api_umbrella_request_id;
+
+# Set the request ID header on the response so it can be used for debugging if
+# a user provides this ID.
+more_set_headers "X-Api-Umbrella-Request-ID $x_api_umbrella_request_id";
 
 # Don't buffer proxied requests to allow for streaming APIs.
 proxy_buffering off;

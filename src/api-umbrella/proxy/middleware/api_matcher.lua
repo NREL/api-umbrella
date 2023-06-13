@@ -4,16 +4,18 @@ local matches_hostname = require "api-umbrella.utils.matches_hostname"
 local stringx = require "pl.stringx"
 local utils = require "api-umbrella.proxy.utils"
 
+local re_match = ngx.re.match
+local re_sub = ngx.re.sub
 local set_uri = utils.set_uri
 local startswith = stringx.startswith
 
-local function apis_for_request_host(active_config)
+local function apis_for_request_host(ngx_ctx, active_config)
   local apis = {}
 
   local all_apis = active_config["api_backends"] or {}
   local apis_for_default_host = {}
   for _, api in ipairs(all_apis) do
-    if matches_hostname(api["_frontend_host_normalized"], api["_frontend_host_wildcard_regex"]) then
+    if matches_hostname(ngx_ctx, api["_frontend_host_normalized"], api["_frontend_host_wildcard_regex"]) then
       table.insert(apis, api)
     elseif api["_frontend_host_normalized"] == config["_default_hostname_normalized"]then
       table.insert(apis_for_default_host, api)
@@ -27,9 +29,9 @@ local function apis_for_request_host(active_config)
   return apis
 end
 
-local function match_api(active_config, request_path)
+local function match_api(ngx_ctx, active_config, request_path)
   -- Find the API backends that match this host.
-  local apis = apis_for_request_host(active_config)
+  local apis = apis_for_request_host(ngx_ctx, active_config)
 
   -- Search through each API backend for URL path prefix matches. Choose the
   -- match that is the longest prefix path string, since this would be the most
@@ -62,27 +64,27 @@ local function match_api(active_config, request_path)
   end
 end
 
-return function(active_config)
-  local request_path = ngx.ctx.original_uri_path
-  local api, url_match = match_api(active_config, request_path)
+return function(ngx_ctx, active_config)
+  local request_path = ngx_ctx.original_uri_path
+  local api, url_match = match_api(ngx_ctx, active_config, request_path)
 
   if api and url_match then
     -- Rewrite the URL prefix path.
-    local new_path, _, new_path_err = ngx.re.sub(request_path, url_match["_frontend_prefix_regex"], url_match["backend_prefix"], "jo")
+    local new_path, _, new_path_err = re_sub(request_path, url_match["_frontend_prefix_regex"], url_match["backend_prefix"], "jo")
     if new_path_err then
       ngx.log(ngx.ERR, "regex error: ", new_path_err)
     elseif new_path ~= request_path then
-      set_uri(new_path)
+      set_uri(ngx_ctx, new_path)
     end
 
-    local host = api["backend_host"] or ngx.ctx.host
+    local host = api["backend_host"] or ngx_ctx.host
     if api["_frontend_host_wildcard_regex"] then
-      local matches, match_err = ngx.re.match(ngx.ctx.host_normalized, api["_frontend_host_wildcard_regex"], "jo")
+      local matches, match_err = re_match(ngx_ctx.host_normalized, api["_frontend_host_wildcard_regex"], "jo")
       if matches then
         local wildcard_portion = matches[1]
         if wildcard_portion then
           local _, sub_err
-          host, _, sub_err = ngx.re.sub(host, "^([*.])", wildcard_portion, "jo")
+          host, _, sub_err = re_sub(host, "^([*.])", wildcard_portion, "jo")
           if sub_err then
             ngx.log(ngx.ERR, "regex error: ", sub_err)
           end
@@ -92,7 +94,7 @@ return function(active_config)
       end
     end
 
-    ngx.ctx.backend_host = host
+    ngx_ctx.backend_host = host
 
     return api, url_match
   else

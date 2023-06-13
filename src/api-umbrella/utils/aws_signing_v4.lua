@@ -4,6 +4,13 @@ local to_hex = require("resty.string").to_hex
 
 local escape_uri = ngx.escape_uri
 local gsub = ngx.re.gsub
+local ngx_var = ngx.var
+local now = ngx.now
+local req_get_body_data = ngx.req.get_body_data
+local req_get_headers = ngx.req.get_headers
+local req_get_uri_args = ngx.req.get_uri_args
+local req_read_body = ngx.req.read_body
+local req_set_header = ngx.req.set_header
 
 local AWS_SERVICE = "es"
 local UNSIGNED_HEADERS = {
@@ -49,7 +56,7 @@ end
 local function get_headers()
   local headers = {}
 
-  local raw_headers = ngx.req.get_headers()
+  local raw_headers = req_get_headers()
   for name, value in pairs(raw_headers) do
     if type(value) == "table" then
       for multi_name, multi_value in pairs(value) do
@@ -95,7 +102,7 @@ end
 
 local function get_canonical_query_string()
   local canonical = {}
-  local args = ngx.req.get_uri_args()
+  local args = req_get_uri_args()
   for name, value in pairs(args) do
     if type(value) == "table" then
       for multi_name, multi_value in pairs(value) do
@@ -112,8 +119,8 @@ end
 
 local function get_canonical_request(headers, signed_headers, content_sha256)
   return table.concat({
-    ngx.var.request_method,
-    gsub(escape_uri(ngx.var.uri), [[%2F]], "/", "ijo"),
+    ngx_var.request_method,
+    gsub(escape_uri(ngx_var.uri), [[%2F]], "/", "ijo"),
     get_canonical_query_string(),
     get_canonical_headers(headers) .. "\n",
     signed_headers,
@@ -156,14 +163,14 @@ local function get_authorization(aws_access_key_id, credential_scope, signed_hea
 end
 
 function _M.sign_request(aws_region, aws_access_key_id, aws_secret_access_key)
-  local datetime = os.date("!%Y%m%dT%H%M%SZ", ngx.now())
+  local datetime = os.date("!%Y%m%dT%H%M%SZ", now())
   local date = string.sub(datetime, 1, 8)
-  ngx.req.set_header("X-Amz-Date", os.date("!%Y%m%dT%H%M%SZ", ngx.now()))
+  req_set_header("X-Amz-Date", os.date("!%Y%m%dT%H%M%SZ", now()))
 
-  ngx.req.read_body()
-  local body = ngx.req.get_body_data()
+  req_read_body()
+  local body = req_get_body_data()
   local content_sha256 = sha256_hexdigest(body)
-  ngx.req.set_header("X-Amz-Content-Sha256", content_sha256)
+  req_set_header("X-Amz-Content-Sha256", content_sha256)
 
   local headers = get_headers()
   local signed_headers = get_signed_headers(headers)
@@ -173,7 +180,7 @@ function _M.sign_request(aws_region, aws_access_key_id, aws_secret_access_key)
   local string_to_sign = get_string_to_sign(datetime, credential_scope, canonical_request)
   local signature = get_signature(aws_region, aws_secret_access_key, date, string_to_sign)
   local authorization = get_authorization(aws_access_key_id, credential_scope, signed_headers, signature)
-  ngx.req.set_header("Authorization", authorization)
+  req_set_header("Authorization", authorization)
 end
 
 return _M

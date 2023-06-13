@@ -56,7 +56,7 @@ function _M.authorize_summary()
   if required_role == nil then
     allowed = true
   else
-    local current_roles = request_api_umbrella_roles()
+    local current_roles = request_api_umbrella_roles(ngx.ctx)
     if current_roles[required_role] then
       allowed = true
     end

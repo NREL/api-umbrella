@@ -27,9 +27,13 @@ class Test::Proxy::ResponseRewriting::TestResponseHeadersTestOnly < Minitest::Te
     assert(response.headers["x-api-umbrella-test-worker-pid"])
   end
 
+  # Previously, the "X-Api-Umbrella-Test-Return-Request-Id" header would return
+  # a "X-Api-Umbrella-Test-Request-Id" header, but this is no longer needed now
+  # that we return the "X-Api-Umbrella-Request-Id" header on all responses.
   def test_request_id
     response = Typhoeus.get("http://127.0.0.1:9080/api/hello", http_options)
     assert_response_code(200, response)
+    assert(response.headers["x-api-umbrella-request-id"])
     refute(response.headers["x-api-umbrella-test-request-id"])
 
     response = Typhoeus.get("http://127.0.0.1:9080/api/hello", http_options.deep_merge({
@@ -38,6 +42,7 @@ class Test::Proxy::ResponseRewriting::TestResponseHeadersTestOnly < Minitest::Te
       },
     }))
     assert_response_code(200, response)
-    assert(response.headers["x-api-umbrella-test-request-id"])
+    assert(response.headers["x-api-umbrella-request-id"])
+    refute(response.headers["x-api-umbrella-test-request-id"])
   end
 end

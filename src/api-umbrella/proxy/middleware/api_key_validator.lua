@@ -1,8 +1,8 @@
 local get_user = require("api-umbrella.proxy.stores.api_users_store").get
 
-return function(settings)
+return function(ngx_ctx, settings)
   -- Retrieve the API key found in the resolve_api_key middleware.
-  local api_key = ngx.ctx.api_key
+  local api_key = ngx_ctx.api_key
   if not api_key then
     if settings and settings["disable_api_key"] then
       return nil
@@ -18,9 +18,9 @@ return function(settings)
   end
 
   -- Store user details for logging.
-  ngx.ctx.user_id = user["id"]
-  ngx.ctx.user_email = user["email"]
-  ngx.ctx.user_registration_source = user["registration_source"]
+  ngx_ctx.user_id = user["id"]
+  ngx_ctx.user_email = user["email"]
+  ngx_ctx.user_registration_source = user["registration_source"]
 
   -- Check to make sure the user isn't disabled.
   if user["disabled_at"] then

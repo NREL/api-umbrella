@@ -9,6 +9,9 @@ local hmac = require "api-umbrella.utils.hmac"
 local encryptor = require "api-umbrella.utils.encryptor"
 local uuid = require "resty.uuid"
 
+local timer_at = ngx.timer.at
+local sleep = ngx.sleep
+
 local function wait_for_postgres()
   local postgres_alive = false
   local wait_time = 0
@@ -23,7 +26,7 @@ local function wait_for_postgres()
     end
 
     if not postgres_alive then
-      ngx.sleep(sleep_time)
+      sleep(sleep_time)
       wait_time = wait_time + sleep_time
     end
   until postgres_alive or wait_time > max_time
@@ -347,7 +350,7 @@ local function seed()
   local _, err = wait_for_postgres()
   if err then
     ngx.log(ngx.ERR, "timed out waiting for postgres before seeding, rerunning...")
-    ngx.sleep(5)
+    sleep(5)
     return seed()
   end
 
@@ -363,7 +366,7 @@ function _M.seed_once()
 end
 
 function _M.spawn()
-  local ok, err = ngx.timer.at(0, _M.seed_once)
+  local ok, err = timer_at(0, _M.seed_once)
   if not ok then
     ngx.log(ngx.ERR, "failed to create timer: ", err)
     return

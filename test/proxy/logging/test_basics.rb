@@ -41,6 +41,8 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
       "api_backend_id",
       "api_backend_url_match_id",
       "api_key",
+      "api_backend_resolved_host",
+      "api_backend_response_code_details",
       "request_accept",
       "request_accept_encoding",
       "request_at",
@@ -61,6 +63,7 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
       "request_user_agent_type",
       "response_age",
       "response_cache",
+      "response_cache_flags",
       "response_content_length",
       "response_content_type",
       "response_server",
@@ -107,9 +110,13 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
     ]
     if($config["elasticsearch"]["template_version"] >= 2)
       expected_mapping_fields += [
+        "api_backend_response_flags",
         "imported",
         "request_url_hierarchy_level5",
         "request_url_hierarchy_level6",
+        "response_custom1",
+        "response_custom2",
+        "response_custom3",
       ]
     end
     if $config["elasticsearch"]["api_version"] < 7
@@ -122,6 +129,8 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
     assert_kind_of(String, record["api_backend_id"])
     assert_kind_of(String, record["api_backend_url_match_id"])
     assert_equal(self.api_key, record["api_key"])
+    assert_equal("127.0.0.1:9444", record["api_backend_resolved_host"])
+    assert_equal("via_upstream", record["api_backend_response_code_details"])
     assert_equal("text/plain; q=0.5, text/html", record["request_accept"])
     assert_equal("compress, gzip", record["request_accept_encoding"])
     assert_kind_of(Numeric, record["request_at"])
@@ -174,6 +183,7 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
     assert_operator(record["response_age"], :>=, 20)
     assert_operator(record["response_age"], :<=, 40)
     assert_equal("MISS", record["response_cache"])
+    assert_equal("cMsSfW", record["response_cache_flags"])
     assert_equal("text/plain; charset=utf-8", record["response_content_type"])
     assert_equal("openresty", record["response_server"])
     assert_kind_of(Numeric, record["response_size"])
@@ -407,6 +417,10 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
       record = wait_for_log(response)[:hit_source]
       assert_equal(503, record["response_status"])
       assert_logs_base_fields(record, api_user)
+      assert_equal("127.0.0.1:9450", record["api_backend_resolved_host"])
+      assert_equal("upstream_reset_before_response_started{connection_failure,delayed_connect_error:_111}", record["api_backend_response_code_details"])
+      assert_equal("UF,URX", record["api_backend_response_flags"])
+      assert_equal("cMsSf ", record["response_cache_flags"])
     end
   end
 
@@ -682,6 +696,22 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
       assert_equal(api.id, record["api_backend_id"])
       assert_equal(api.url_matches.first.id, record["api_backend_url_match_id"])
     end
+  end
+
+  def test_logs_server_header
+    response = Typhoeus.get("http://127.0.0.1:9080/api/set-http-response-headers/", log_http_options.deep_merge({
+      :headers => { "Content-Type" => "application/json" },
+      :body => MultiJson.dump({
+        "http_response_headers" => {
+          "Server" => unique_test_id,
+        },
+      }),
+    }))
+    assert_response_code(200, response)
+    assert_equal("openresty", response.headers.fetch("Server"))
+
+    record = wait_for_log(response).fetch(:hit_source)
+    assert_equal(unique_test_id, record.fetch("response_server"))
   end
 
   private

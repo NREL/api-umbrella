@@ -7,7 +7,7 @@ local seq = require "pl.seq"
 local re_find = ngx.re.find
 local unique = seq.unique
 
-return function(api)
+return function(ngx_ctx, api)
   -- Fetch the default settings
   local settings = deepcopy(config["default_api_backend_settings"])
 
@@ -18,8 +18,8 @@ return function(api)
 
   -- See if there's any settings for a matching sub-url.
   if api["sub_settings"] then
-    local request_method = ngx.ctx.request_method
-    local request_uri = ngx.ctx.request_uri
+    local request_method = ngx_ctx.request_method
+    local request_uri = ngx_ctx.request_uri
     for _, sub_settings in ipairs(api["sub_settings"]) do
       if (sub_settings["http_method"] == "any" or sub_settings["http_method"] == request_method) and sub_settings["regex"] then
         local find_from, _, find_err = re_find(request_uri, sub_settings["regex"], "ijo")

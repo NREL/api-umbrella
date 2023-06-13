@@ -5,6 +5,7 @@ local is_empty = require "api-umbrella.utils.is_empty"
 local json_decode = require("cjson").decode
 local json_encode = require "api-umbrella.utils.json_encode"
 
+local encode_base64 = ngx.encode_base64
 local server = config["elasticsearch"]["_first_server"]
 
 local _M = {}
@@ -36,7 +37,7 @@ function _M.query(path, options)
   end
 
   if (server["user"] or server["password"]) and not options["headers"]["Authorization"] then
-     options["headers"]["Authorization"] = "Basic " .. ngx.encode_base64((server["user"] or "") .. ":" .. (server["password"] or ""))
+     options["headers"]["Authorization"] = "Basic " .. encode_base64((server["user"] or "") .. ":" .. (server["password"] or ""))
   end
 
   if options["body"] and type(options["body"]) == "table" then

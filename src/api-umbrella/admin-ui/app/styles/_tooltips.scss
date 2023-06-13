@@ -16,6 +16,8 @@
 .tippy-box {
   text-align: left;
   word-break: break-word;
+  min-width: 300px;
+  font-weight: normal;
 
   p:last-child {
     margin-bottom: 0px;

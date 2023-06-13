@@ -6,29 +6,43 @@ import { action } from '@ember/object';
 import { inject } from '@ember/service';
 import { tagName } from '@ember-decorators/component';
 import { observes } from '@ember-decorators/object';
+import Logs from 'api-umbrella-admin-ui/models/stats/logs';
 import { t } from 'api-umbrella-admin-ui/utils/i18n';
 import classic from 'ember-classic-decorator';
 import $ from 'jquery';
 import QueryBuilder from 'jQuery-QueryBuilder';
 import forEach from 'lodash-es/forEach';
+import { marked } from 'marked';
 import moment from 'moment-timezone';
+
+marked.use({
+  gfm: true,
+  breaks: true,
+  mangle: false,
+  headerIds: false,
+});
 
 QueryBuilder.define('filter-description', function() {
   this.on('afterUpdateRuleFilter afterUpdateRuleOperator', function(e, rule) {
-    let $b = rule.$el.find('button.filter-description');
+    let buttonEl = rule.$el[0].querySelector('button.filter-description');
     const description = e.builder.getFilterDescription(rule.filter, rule);
 
     if(!description) {
-      $b.hide();
+      buttonEl.style.display = 'none';
     } else {
-      if($b.length === 0) {
-        $b = $('<button type="button" class="btn btn-sm btn-info filter-description btn-tooltip tooltip-trigger"><i class="fas fa-question-circle"></i></button>');
-        $b.prependTo(rule.$el.find(QueryBuilder.selectors.rule_actions));
+      if(!buttonEl) {
+        buttonEl = document.createElement('button');
+        buttonEl.type = 'button';
+        buttonEl.className = 'btn btn-sm btn-info filter-description btn-tooltip tooltip-trigger';
+        buttonEl.innerHTML = '<i class="fas fa-question-circle"></i>';
+
+        const ruleActionEl = rule.$el[0].querySelector(QueryBuilder.selectors.rule_actions);
+        ruleActionEl.prepend(buttonEl);
       } else {
-        $b.css('display', '');
+        buttonEl.style.display = '';
       }
 
-      $b.attr('data-tippy-content', description);
+      buttonEl.dataset.tippyContent = marked(description);
     }
   });
 });
@@ -109,9 +123,49 @@ export default class QueryForm extends Component {
       allow_groups: false,
       filters: [
         {
+          id: 'request_host',
+          label: t('Request: URL Host'),
+          description: Logs.fieldTooltips.request_host,
+          type: 'string',
+          operators: stringOperators,
+        },
+        {
+          id: 'request_path',
+          label: t('Request: URL Path'),
+          description: Logs.fieldTooltips.request_path,
+          type: 'string',
+          operators: stringOperators,
+        },
+        {
+          id: 'request_scheme',
+          label: t('Request: URL Scheme'),
+          description: Logs.fieldTooltips.request_scheme,
+          type: 'string',
+          operators: selectOperators,
+          input: 'select',
+          values: {
+            'http': 'http',
+            'https': 'https',
+          },
+        },
+        {
+          id: 'request_url_query',
+          label: t('Request: URL Query String'),
+          description: Logs.fieldTooltips.request_url_query,
+          type: 'string',
+          operators: stringOperators,
+        },
+        ...((window.apiUmbrellaConfig.elasticsearch.template_version < 2) ? [{
+          id: 'request_url',
+          label: t('Request: Full URL & Query String'),
+          description: Logs.fieldTooltips.legacy_request_url,
+          type: 'string',
+          operators: stringOperators,
+        }] : []),
+        {
           id: 'request_method',
           label: t('Request: HTTP Method'),
-          description: t('The HTTP method of the request.\n*Example:* `GET`, `POST`, `PUT`, `DELETE`, etc.'),
+          description: Logs.fieldTooltips.request_method,
           type: 'string',
           operators: selectOperators,
           input: 'select',
@@ -126,140 +180,145 @@ export default class QueryForm extends Component {
           },
         },
         {
-          id: 'request_scheme',
-          label: t('Request: URL Scheme'),
-          description: t('The scheme of the original request URL.\n*Example:* `http` or `https`'),
-          type: 'string',
-          operators: selectOperators,
-          input: 'select',
-          values: {
-            'http': 'http',
-            'https': 'https',
-          },
-        },
-        {
-          id: 'request_host',
-          label: t('Request: URL Host'),
-          description: t('The host of the original request URL.\n*Example:* `example.com`'),
-          type: 'string',
-          operators: stringOperators,
-        },
-        {
-          id: 'request_path',
-          label: t('Request: URL Path'),
-          description: t('The path of the original request URL.\n*Example:* `/geocode/v1.json`'),
-          type: 'string',
-          operators: stringOperators,
-        },
-        {
-          id: 'request_url_query',
-          label: t('Request: Query String'),
-          description: t('The query string of the original request URL.\n*Example:* `address=1617+Cole+Blvd+Golden+CO&foo=bar`'),
-          type: 'string',
-          operators: stringOperators,
-        },
-        ...((window.apiUmbrellaConfig.elasticsearch.template_version < 2) ? [{
-          id: 'request_url',
-          label: t('Request: Full URL & Query String'),
-          description: t('The original, complete request URL.\n*Example:* `http://example.com/geocode/v1.json?address=1617+Cole+Blvd+Golden+CO`\n*Note:* If you want to simply filter on the host or path portion of the URL, your queries will run better if you use the separate "Request: URL Path" or "Request: URL Host" fields.'),
-          type: 'string',
-          operators: stringOperators,
-        }] : []),
-        {
           id: 'request_ip',
           label: t('Request: IP Address'),
-          description: t('The IP address of the requestor.\n*Example:* `93.184.216.119`'),
+          description: Logs.fieldTooltips.request_ip,
           type: 'string',
           operators: stringOperators,
         },
         {
           id: 'request_ip_country',
           label: t('Request: IP Country'),
-          description: t('The 2 letter country code (<a href="http://en.wikipedia.org/wiki/ISO_3166-1_alpha-2" target="_blank">ISO 3166-1</a>) that the IP address geocoded to.\n*Example:* `US`'),
+          description: Logs.fieldTooltips.request_ip_country,
           type: 'string',
           operators: stringOperators,
         },
         {
           id: 'request_ip_region',
           label: t('Request: IP State/Region'),
-          description: t('The 2 letter state or region code (<a href="http://en.wikipedia.org/wiki/ISO_3166-2" target="_blank">ISO 3166-2</a>) that the IP address geocoded to.\n*Example:* `CO`'),
+          description: Logs.fieldTooltips.request_ip_region,
           type: 'string',
           operators: stringOperators,
         },
         {
           id: 'request_ip_city',
           label: t('Request: IP City'),
-          description: t('The name of the city that the IP address geocoded to.\n*Example:* `Golden`'),
+          description: Logs.fieldTooltips.request_ip_city,
           type: 'string',
           operators: stringOperators,
         },
         {
           id: 'request_user_agent',
           label: t('Request: User Agent'),
-          description: t('The full user agent string of the requestor.\n*Example:* `curl/7.33.0`'),
+          description: Logs.fieldTooltips.request_user_agent,
           type: 'string',
           operators: stringOperators,
         },
         {
           id: 'request_user_agent_family',
           label: t('Request: User Agent Family'),
-          description: t('The overall family of the user agent.\n*Example:* `Chrome`'),
+          description: Logs.fieldTooltips.request_user_agent_family,
           type: 'string',
           operators: stringOperators,
         },
         {
           id: 'request_user_agent_type',
           label: t('Request: User Agent Type'),
-          description: t('The type of user agent.\n*Example:* `Browser`'),
+          description: Logs.fieldTooltips.request_user_agent_type,
           type: 'string',
           operators: stringOperators,
         },
         {
           id: 'request_referer',
           label: t('Request: Referer'),
-          description: t('The `Referer` header sent on the request\n*Example:* `https://example.com/foo`'),
+          description: Logs.fieldTooltips.request_referer,
           type: 'string',
           operators: stringOperators,
         },
         {
           id: 'request_origin',
           label: t('Request: Origin'),
-          description: t('The `Origin` header sent on the request\n*Example:* `https://example.com`'),
+          description: Logs.fieldTooltips.request_origin,
           type: 'string',
           operators: stringOperators,
         },
         {
+          id: 'request_accept',
+          label: t('Request: Accept'),
+          description: Logs.fieldTooltips.request_accept,
+          type: 'string',
+          operators: stringOperators,
+        },
+        {
+          id: 'request_accept_encoding',
+          label: t('Request: Accept Encoding'),
+          description: Logs.fieldTooltips.request_accept_encoding,
+          type: 'string',
+          operators: stringOperators,
+        },
+        {
+          id: 'request_content_type',
+          label: t('Request: Content Type'),
+          description: Logs.fieldTooltips.request_content_type,
+          type: 'string',
+          operators: stringOperators,
+        },
+        {
+          id: 'request_connection',
+          label: t('Request: Connection'),
+          description: Logs.fieldTooltips.request_connection,
+          type: 'string',
+          operators: stringOperators,
+        },
+        {
+          id: 'request_size',
+          label: t('Request: Size'),
+          description: Logs.fieldTooltips.request_size,
+          type: 'integer',
+          operators: numberOperators,
+        },
+        {
+          id: 'request_id',
+          label: t('Request: ID'),
+          description: Logs.fieldTooltips.request_id,
+          type: 'string',
+          operators: [
+            'equal',
+            'not_equal',
+          ],
+        },
+        {
           id: 'api_key',
           label: t('User: API Key'),
-          description: t('The API key used to make the request.\n*Example:* `vfcHB9tOyFKc6YbbdDsE8plxtFHvp9zXIJWAtaep`'),
+          description: Logs.fieldTooltips.api_key,
           type: 'string',
           operators: stringOperators,
         },
         {
           id: 'user_email',
           label: t('User: E-mail'),
-          description: t('The e-mail address associated with the API key used to make the request.\n*Example:* `john.doe@example.com`'),
+          description: Logs.fieldTooltips.user_email,
           type: 'string',
           operators: stringOperators,
         },
         {
           id: 'user_id',
           label: t('User: ID'),
-          description: t('The user ID associated with the API key used to make the request.\n*Example:* `ad2d94b6-e0f8-4e26-b1a6-1bc6b12f3d76`'),
+          description: Logs.fieldTooltips.user_id,
           type: 'string',
           operators: stringOperators,
         },
         {
           id: 'response_status',
           label: t('Response: HTTP Status Code'),
-          description: t('The HTTP status code returned for the response.\n*Example:* `200`, `403`, `429`, etc.'),
+          description: Logs.fieldTooltips.response_status,
           type: 'integer',
           operators: numberOperators,
         },
         {
           id: 'gatekeeper_denied_code',
           label: t('Response: API Umbrella Denied Code'),
-          description: t('If API Umbrella is responsible for blocking the request, this code value describes the reason for the block.\n*Example:* `api_key_missing`, `over_rate_limit`, etc.'),
+          description: Logs.fieldTooltips.gatekeeper_denied_code,
           type: 'string',
           operators: selectOperators,
           input: 'select',
@@ -276,16 +335,126 @@ export default class QueryForm extends Component {
           },
         },
         {
-          id: 'response_time',
-          label: t('Response: Load Time'),
-          description: t('The total amount of time taken to respond to the request (in milliseconds)'),
+          id: 'response_age',
+          label: t('Response: Age'),
+          description: Logs.fieldTooltips.response_age,
+          type: 'integer',
+          operators: numberOperators,
+        },
+        {
+          id: 'response_cache',
+          label: t('Response: Cache'),
+          description: Logs.fieldTooltips.response_cache,
+          type: 'string',
+          operators: selectOperators,
+          input: 'select',
+          values: {
+            'HIT': 'HIT',
+            'MISS': 'MISS',
+          },
+        },
+        {
+          id: 'response_cache_flags',
+          label: t('Response: Cache Flags'),
+          description: Logs.fieldTooltips.response_cache_flags,
+          type: 'string',
+          operators: stringOperators,
+        },
+        {
+          id: 'response_content_encoding',
+          label: t('Response: Content Encoding'),
+          description: Logs.fieldTooltips.response_content_encoding,
+          type: 'string',
+          operators: stringOperators,
+        },
+        {
+          id: 'response_content_length',
+          label: t('Response: Content Length'),
+          description: Logs.fieldTooltips.response_content_length,
           type: 'integer',
           operators: numberOperators,
         },
         {
           id: 'response_content_type',
           label: t('Response: Content Type'),
-          description: t('The content type of the response.\n*Example:* `application/json; charset=utf-8`'),
+          description: Logs.fieldTooltips.response_content_type,
+          type: 'string',
+          operators: stringOperators,
+        },
+        {
+          id: 'response_server',
+          label: t('Response: Server'),
+          description: Logs.fieldTooltips.response_server,
+          type: 'string',
+          operators: stringOperators,
+        },
+        {
+          id: 'response_transfer_encoding',
+          label: t('Response: Transfer Encoding'),
+          description: Logs.fieldTooltips.response_transfer_encoding,
+          type: 'string',
+          operators: stringOperators,
+        },
+        {
+          id: 'response_time',
+          label: t('Response: Load Time'),
+          description: Logs.fieldTooltips.response_time,
+          type: 'integer',
+          operators: numberOperators,
+        },
+        {
+          id: 'response_size',
+          label: t('Response: Size'),
+          description: Logs.fieldTooltips.response_size,
+          type: 'integer',
+          operators: numberOperators,
+        },
+        {
+          id: 'response_custom1',
+          label: t('Response: Custom Dimension 1'),
+          description: Logs.fieldTooltips.response_custom1,
+          type: 'string',
+          operators: stringOperators,
+        },
+        {
+          id: 'response_custom2',
+          label: t('Response: Custom Dimension 2'),
+          description: Logs.fieldTooltips.response_custom2,
+          type: 'string',
+          operators: stringOperators,
+        },
+        {
+          id: 'response_custom3',
+          label: t('Response: Custom Dimension 3'),
+          description: Logs.fieldTooltips.response_custom3,
+          type: 'string',
+          operators: stringOperators,
+        },
+        {
+          id: 'api_backend_id',
+          label: t('API Backend: ID'),
+          description: Logs.fieldTooltips.api_backend_id,
+          type: 'string',
+          operators: stringOperators,
+        },
+        {
+          id: 'api_backend_resolved_host',
+          label: t('API Backend: Resolved Host'),
+          description: Logs.fieldTooltips.api_backend_resolved_host,
+          type: 'string',
+          operators: stringOperators,
+        },
+        {
+          id: 'api_backend_response_code_details',
+          label: t('API Backend: Response Code Details'),
+          description: Logs.fieldTooltips.api_backend_response_code_details,
+          type: 'string',
+          operators: stringOperators,
+        },
+        {
+          id: 'api_backend_response_flags',
+          label: t('API Backend: Response Flags'),
+          description: Logs.fieldTooltips.api_backend_response_flags,
           type: 'string',
           operators: stringOperators,
         },

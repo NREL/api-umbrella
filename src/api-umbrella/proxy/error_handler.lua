@@ -8,7 +8,12 @@ local httpsify_current_url = require "api-umbrella.utils.httpsify_current_url"
 local string_template = require "api-umbrella.utils.string_template"
 local utils = require "api-umbrella.proxy.utils"
 
+local ngx_exit = ngx.exit
+local ngx_header = ngx.header
+local ngx_print = ngx.print
+local ngx_var = ngx.var
 local quote_json = ndk.set_var.set_quote_json_str
+local redirect = ngx.redirect
 
 local supported_media_types = {
   {
@@ -45,8 +50,8 @@ for _, media in ipairs(supported_media_types) do
   end
 end
 
-local function request_format()
-  local request_path = ngx.ctx.uri_path
+local function request_format(ngx_ctx)
+  local request_path = ngx_ctx.uri_path
   if request_path then
     local format = extension(request_path)
     if format then
@@ -57,14 +62,14 @@ local function request_format()
     end
   end
 
-  local format_arg = ngx.var.arg_format
+  local format_arg = ngx_var.arg_format
   if format_arg then
     if supported_formats[format_arg] then
       return format_arg, supported_formats[format_arg]
     end
   end
 
-  local accept_header = ngx.var.http_accept
+  local accept_header = ngx_var.http_accept
   if accept_header then
     local media = http_headers.preferred_accept(accept_header, supported_media_types)
     if media then
@@ -75,9 +80,9 @@ local function request_format()
   return "json", supported_formats["json"]
 end
 
-return function(denied_code, settings, extra_data)
+return function(ngx_ctx, denied_code, settings, extra_data)
   -- Store the gatekeeper rejection code for logging.
-  ngx.ctx.gatekeeper_denied_code = denied_code
+  ngx_ctx.gatekeeper_denied_code = denied_code
 
   -- Redirect "not_found" errors to HTTPS.
   --
@@ -88,13 +93,13 @@ return function(denied_code, settings, extra_data)
   -- HTTPS redirects are in place for the root request on custom domains
   -- without a website or API at the root.
   if denied_code == "not_found" and config["router"]["redirect_not_found_to_https"] then
-    if ngx.ctx.protocol ~= "https" then
-      return ngx.redirect(httpsify_current_url(), ngx.HTTP_MOVED_PERMANENTLY)
+    if ngx_ctx.protocol ~= "https" then
+      return redirect(httpsify_current_url(ngx_ctx), ngx.HTTP_MOVED_PERMANENTLY)
     end
   end
 
   if denied_code == "redirect_https" then
-    return ngx.redirect(httpsify_current_url(), ngx.HTTP_MOVED_PERMANENTLY)
+    return redirect(httpsify_current_url(ngx_ctx), ngx.HTTP_MOVED_PERMANENTLY)
   end
 
   if not settings then
@@ -103,7 +108,7 @@ return function(denied_code, settings, extra_data)
 
   -- Try to determine the format of the request (JSON, XML, etc), so we can
   -- attempt to match our response to the expected format.
-  local format, content_type = request_format()
+  local format, content_type = request_format(ngx_ctx)
 
   -- Fetch the error data for use with this error type.
   local error_data = settings["_error_data"][denied_code]
@@ -111,7 +116,7 @@ return function(denied_code, settings, extra_data)
   local new_error_data_vars = false
 
   if not error_data["base_url"] then
-    error_data["base_url"] = utils.base_url()
+    error_data["base_url"] = utils.base_url(ngx_ctx)
 
     -- Support legacy camel-case capitalization of variables. Moving forward,
     -- we're trying to clean things up and standardize on snake_case.
@@ -160,10 +165,10 @@ return function(denied_code, settings, extra_data)
   -- Allow all errors to be loaded over CORS (in case any underlying APIs are
   -- expected to be accessed over CORS then we want to make sure errors are
   -- also allowed via CORS).
-  ngx.header["Access-Control-Allow-Origin"] = "*"
+  ngx_header["Access-Control-Allow-Origin"] = "*"
 
   ngx.status = status_code
-  ngx.header.content_type = content_type
-  ngx.print(output)
-  return ngx.exit(ngx.HTTP_OK)
+  ngx_header.content_type = content_type
+  ngx_print(output)
+  return ngx_exit(ngx.HTTP_OK)
 end

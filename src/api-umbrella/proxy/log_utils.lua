@@ -9,7 +9,9 @@ local round = require "api-umbrella.utils.round"
 local shared_dict_retry_set = require("api-umbrella.utils.shared_dict_retry").set
 local user_agent_parser = require "api-umbrella.proxy.user_agent_parser"
 
+local re_gsub = ngx.re.gsub
 local split = plutils.split
+local timer_at = ngx.timer.at
 
 local syslog_facility = 16 -- local0
 local syslog_severity = 6 -- info
@@ -60,6 +62,14 @@ local function uppercase_truncate(value, max_length)
   return string.upper(truncate_string(value, max_length))
 end
 
+local function remove_envoy_empty_header_value(value)
+  if value and value == "-" then
+    return nil
+  end
+
+  return value
+end
+
 -- To make drill-downs queries easier, split up how the path is stored.
 --
 -- We store this in slightly different, but similar fashions for SQL storage
@@ -92,15 +102,15 @@ end
 -- http://www.springyweb.com/2012/01/hierarchical-faceting-with-elastic.html
 function _M.set_url_hierarchy(data)
   -- Remote duplicate slashes (eg foo//bar becomes foo/bar).
-  local cleaned_path = ngx.re.gsub(data["request_url_path"], "//+", "/", "jo")
+  local cleaned_path = re_gsub(data["request_url_path"], "//+", "/", "jo")
 
   -- Remove trailing slashes. This is so that we can always distinguish the
   -- intermediate paths versus the actual endpoint.
-  cleaned_path = ngx.re.gsub(cleaned_path, "/$", "", "jo")
+  cleaned_path = re_gsub(cleaned_path, "/$", "", "jo")
 
   -- Remove the slash prefix so that split doesn't return an empty string as
   -- the first element.
-  cleaned_path = ngx.re.gsub(cleaned_path, "^/", "", "jo")
+  cleaned_path = re_gsub(cleaned_path, "^/", "", "jo")
 
   -- Split the path by slashes limiting to 6 levels deep (everything beyond
   -- the 6th level will be included on the 6th level string). This is to
@@ -219,7 +229,7 @@ function _M.cache_new_city_geocode(data)
 
     -- Perform the actual cache call in a timer because the http library isn't
     -- supported directly in the log_by_lua context.
-    ngx.timer.at(0, cache_city_geocode, data)
+    timer_at(0, cache_city_geocode, data)
   end
 end
 
@@ -318,6 +328,9 @@ function _M.normalized_data(data)
   local normalized = {
     api_backend_id = lowercase_truncate(data["api_backend_id"], 36),
     api_backend_url_match_id = lowercase_truncate(data["api_backend_url_match_id"], 36),
+    api_backend_resolved_host = remove_envoy_empty_header_value(lowercase_truncate(data["api_backend_resolved_host"], 200)),
+    api_backend_response_code_details = remove_envoy_empty_header_value(truncate(data["api_backend_response_code_details"], 100)),
+    api_backend_response_flags = remove_envoy_empty_header_value(truncate(data["api_backend_response_flags"], 20)),
     denied_reason = lowercase_truncate(data["denied_reason"], 50),
     id = lowercase_truncate(data["id"], 20),
     request_accept = truncate(data["request_accept"], 200),
@@ -353,9 +366,13 @@ function _M.normalized_data(data)
     request_user_agent_type = truncate(data["request_user_agent_type"], 100),
     response_age = tonumber(data["response_age"]),
     response_cache = truncate(data["response_cache"], 200),
+    response_cache_flags = truncate(data["response_cache_flags"], 6),
     response_content_encoding = truncate(data["response_content_encoding"], 200),
     response_content_length = tonumber(data["response_content_length"]),
     response_content_type = truncate(data["response_content_type"], 200),
+    response_custom1 = truncate(data["response_custom1"], 400),
+    response_custom2 = truncate(data["response_custom2"], 400),
+    response_custom3 = truncate(data["response_custom3"], 400),
     response_server = truncate(data["response_server"], 100),
     response_size = tonumber(data["response_size"]),
     response_status = tonumber(data["response_status"]),

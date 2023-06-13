@@ -6,6 +6,7 @@ local path_join = require "api-umbrella.utils.path_join"
 local writefile = require("pl.utils").writefile
 
 local re_find = ngx.re.find
+local sleep = ngx.sleep
 
 local function build_cluster_resource(cluster_name, options)
   local resource = {
@@ -228,6 +229,7 @@ local function build_lds(config_version, rds_path)
           resp_flags = "%RESPONSE_FLAGS%",
           resp_detail = "%RESPONSE_CODE_DETAILS%",
           con_details = "%CONNECTION_TERMINATION_DETAILS%",
+          up_attempts = "%UPSTREAM_REQUEST_ATTEMPT_COUNT%",
           up_host = "%UPSTREAM_HOST%",
           up_fail = "%UPSTREAM_TRANSPORT_FAILURE_REASON%",
         },
@@ -325,7 +327,30 @@ local function build_rds(config_version)
       response_headers_to_remove = {
         "x-envoy-upstream-service-time",
       },
-    }
+      response_headers_to_add = {
+        {
+          append_action = "OVERWRITE_IF_EXISTS_OR_ADD",
+          header = {
+            key = "x-api-umbrella-backend-resolved-host",
+            value = "%UPSTREAM_HOST%",
+          },
+        },
+        {
+          append_action = "OVERWRITE_IF_EXISTS_OR_ADD",
+          header = {
+            key = "x-api-umbrella-backend-response-code-details",
+            value = "%RESPONSE_CODE_DETAILS%",
+          },
+        },
+        {
+          append_action = "OVERWRITE_IF_EXISTS_OR_ADD",
+          header = {
+            key = "x-api-umbrella-backend-response-flags",
+            value = "%RESPONSE_FLAGS%",
+          },
+        },
+      },
+    },
   }
 
   return rds
@@ -441,7 +466,7 @@ local function wait_for_live_config(config_version, cds)
       ready = true
       break
     else
-      ngx.sleep(0.1)
+      sleep(0.1)
     end
   end
 

@@ -16,6 +16,7 @@ local floor = math.floor
 local int64_min_value_string = int64.MIN_VALUE_STRING
 local int64_to_string = int64.to_string
 local jobs_dict = ngx.shared.jobs
+local ngx_var = ngx.var
 local now = ngx.now
 local shared_dict_retry_incr = shared_dict_retry.incr
 local shared_dict_retry_set = shared_dict_retry.set
@@ -289,14 +290,14 @@ function _M.check(api, settings, user, remote_addr)
 
   local increment_by = 1
   if config["app_env"] == "test" then
-    local fake_time = ngx.var.http_x_fake_time
+    local fake_time = ngx_var.http_x_fake_time
     if fake_time then
       self.current_time = tonumber(fake_time)
       exceeded_dict:flush_all()
       exceeded_local_cache:flush_all()
     end
 
-    if ngx.var.http_x_api_umbrella_test_skip_increment_limits == "true" then
+    if ngx_var.http_x_api_umbrella_test_skip_increment_limits == "true" then
       increment_by = 0
     end
   end

@@ -2,6 +2,7 @@
 import Component from '@ember/component';
 import { action, computed } from '@ember/object';
 import { observes } from '@ember-decorators/object';
+import Logs from 'api-umbrella-admin-ui/models/stats/logs';
 import DataTablesHelpers from 'api-umbrella-admin-ui/utils/data-tables-helpers';
 import classic from 'ember-classic-decorator';
 import $ from 'jquery';
@@ -9,7 +10,15 @@ import clone from 'lodash-es/clone';
 import compact from 'lodash-es/compact';
 import escape from 'lodash-es/escape';
 import extend from 'lodash-es/extend';
+import { marked } from 'marked';
 import tippy from 'tippy.js'
+
+marked.use({
+  gfm: true,
+  breaks: true,
+  mangle: false,
+  headerIds: false,
+});
 
 @classic
 export default class ResultsTable extends Component {
@@ -177,7 +186,176 @@ export default class ResultsTable extends Component {
           defaultContent: '-',
           render: DataTablesHelpers.renderEscaped,
         },
+        {
+          data: 'request_accept',
+          title: 'Request Accept',
+          defaultContent: '-',
+          render: DataTablesHelpers.renderEscaped,
+        },
+        {
+          data: 'request_connection',
+          title: 'Request Connection',
+          defaultContent: '-',
+          render: DataTablesHelpers.renderEscaped,
+        },
+        {
+          data: 'request_content_type',
+          title: 'Request Content Type',
+          defaultContent: '-',
+          render: DataTablesHelpers.renderEscaped,
+        },
+        {
+          data: 'request_scheme',
+          title: 'URL Scheme',
+          defaultContent: '-',
+          render: DataTablesHelpers.renderEscaped,
+        },
+        {
+          data: 'request_size',
+          title: 'Request Size',
+          defaultContent: '-',
+          render: DataTablesHelpers.renderEscaped,
+        },
+        {
+          data: 'response_age',
+          title: 'Response Age',
+          defaultContent: '-',
+          render: DataTablesHelpers.renderEscaped,
+        },
+        {
+          data: 'response_cache',
+          title: 'Response Cache',
+          defaultContent: '-',
+          render: DataTablesHelpers.renderEscaped,
+        },
+        {
+          data: 'response_cache_flags',
+          title: 'Response Cache Flags',
+          defaultContent: '-',
+          render: DataTablesHelpers.renderEscaped,
+        },
+        {
+          data: 'response_content_encoding',
+          title: 'Response Content Encoding',
+          defaultContent: '-',
+          render: DataTablesHelpers.renderEscaped,
+        },
+        {
+          data: 'response_content_length',
+          title: 'Response Content Length',
+          defaultContent: '-',
+          render: DataTablesHelpers.renderEscaped,
+        },
+        {
+          data: 'response_server',
+          title: 'Response Server',
+          defaultContent: '-',
+          render: DataTablesHelpers.renderEscaped,
+        },
+        {
+          data: 'response_size',
+          title: 'Response Size',
+          defaultContent: '-',
+          render: DataTablesHelpers.renderEscaped,
+        },
+        {
+          data: 'response_transfer_encoding',
+          title: 'Response Transfer Encoding',
+          defaultContent: '-',
+          render: DataTablesHelpers.renderEscaped,
+        },
+        {
+          data: 'response_custom1',
+          title: 'Response Custom Dimension 1',
+          defaultContent: '-',
+          render: DataTablesHelpers.renderEscaped,
+        },
+        {
+          data: 'response_custom2',
+          title: 'Response Custom Dimension 2',
+          defaultContent: '-',
+          render: DataTablesHelpers.renderEscaped,
+        },
+        {
+          data: 'response_custom3',
+          title: 'Response Custom Dimension 3',
+          defaultContent: '-',
+          render: DataTablesHelpers.renderEscaped,
+        },
+        {
+          data: 'user_id',
+          title: 'User ID',
+          defaultContent: '-',
+          render: DataTablesHelpers.renderEscaped,
+        },
+        {
+          data: 'api_backend_id',
+          title: 'API Backend ID',
+          defaultContent: '-',
+          render: DataTablesHelpers.renderEscaped,
+        },
+        {
+          data: 'api_backend_resolved_host',
+          title: 'API Backend Resolved Host',
+          defaultContent: '-',
+          render: DataTablesHelpers.renderEscaped,
+        },
+        {
+          data: 'api_backend_response_code_details',
+          title: 'API Backend Response Code Details',
+          defaultContent: '-',
+          render: DataTablesHelpers.renderEscaped,
+        },
+        {
+          data: 'api_backend_response_flags',
+          title: 'API Backend Response Flags',
+          defaultContent: '-',
+          render: DataTablesHelpers.renderEscaped,
+        },
+        {
+          data: 'request_id',
+          title: 'Request ID',
+          defaultContent: '-',
+          render: DataTablesHelpers.renderEscaped,
+        },
       ],
+      headerCallback(thead) {
+        if(!thead.classList.contains('tooltips-added')) {
+          this.api().columns().every(function() {
+            const tooltipContent = Logs.fieldTooltips[this.dataSrc()];
+
+            if(tooltipContent) {
+              const tooltipButtonEl = document.createElement('button');
+              tooltipButtonEl.className = 'btn btn-link btn-tooltip';
+              tooltipButtonEl.type = 'button';
+              tooltipButtonEl.innerHTML = '<i class="fas fa-question-circle"></i><span class="sr-only">Help</span>';
+
+              tippy(tooltipButtonEl, {
+                trigger: 'click',
+                interactive: true,
+                theme: 'light-border',
+                arrow: true,
+                allowHTML: true,
+                content: marked(tooltipContent),
+                onTrigger(tip, event) {
+                  event.stopPropagation();
+                },
+                onUntrigger(tip, event) {
+                  event.stopPropagation();
+                },
+              });
+
+              const headerEl = this.header();
+              headerEl.innerHTML += '&nbsp;';
+              headerEl.appendChild(tooltipButtonEl);
+            }
+          });
+
+          thead.classList.add('tooltips-added');
+        }
+
+        $.fn.DataTable.defaults.headerCallback.apply(this, arguments);
+      },
     });
   }
 

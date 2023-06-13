@@ -80,7 +80,7 @@ function _M.authorize_create(current_admin, data)
     -- This assumes API Umbrella is sitting in front and controlling access to
     -- this API with roles and other mechanisms (such as referer checking) to
     -- control signup access.
-    local current_roles = request_api_umbrella_roles()
+    local current_roles = request_api_umbrella_roles(ngx.ctx)
     if current_roles["api-umbrella-key-creator"] then
       allowed = true
     end

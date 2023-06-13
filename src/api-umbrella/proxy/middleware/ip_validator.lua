@@ -18,8 +18,8 @@ local function ip_in_cidrs(ip, allowed_ips)
   return false
 end
 
-return function(settings)
-  local ip = ngx.ctx.remote_addr
+return function(ngx_ctx, settings)
+  local ip = ngx_ctx.remote_addr
 
   -- In most cases, we check the merged "settings" object, but in this case, we
   -- want to check the original API and User IP requirements independently.

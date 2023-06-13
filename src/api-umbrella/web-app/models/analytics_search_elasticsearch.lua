@@ -92,6 +92,11 @@ local function parse_query_builder(query)
       local field = rule["field"]
       local value = rule["value"]
 
+      local es_field = field
+      if field == "request_id" then
+        es_field = "_id"
+      end
+
       if not CASE_SENSITIVE_FIELDS[field] and type(value) == "string" then
         if UPPERCASE_FIELDS[field] then
           value = string.upper(value)
@@ -103,37 +108,31 @@ local function parse_query_builder(query)
       if operator == "equal" or operator == "not_equal" then
         filter = {
           term = {
-            [field] = value,
-          },
-        }
-      elseif operator == "not_equal" then
-        filter = {
-          term = {
-            [field] = value,
+            [es_field] = value,
           },
         }
       elseif operator == "begins_with" or operator == "not_begins_with" then
         filter = {
           prefix = {
-            [field] = value,
+            [es_field] = value,
           },
         }
       elseif operator == "contains" or operator == "not_contains" then
         filter = {
           regexp = {
-            [field] = ".*" .. escape_regex(value) .. ".*",
+            [es_field] = ".*" .. escape_regex(value) .. ".*",
           },
         }
       elseif operator == "is_null" or operator == "is_not_null" then
         filter = {
           exists = {
-            field = field,
+            field = es_field,
           },
         }
       elseif operator == "less" then
         filter = {
           range = {
-            [field] = {
+            [es_field] = {
               lt = tonumber(value),
             },
           },
@@ -141,7 +140,7 @@ local function parse_query_builder(query)
       elseif operator == "less_or_equal" then
         filter = {
           range = {
-            [field] = {
+            [es_field] = {
               lte = tonumber(value),
             },
           },
@@ -149,7 +148,7 @@ local function parse_query_builder(query)
       elseif operator == "greater" then
         filter = {
           range = {
-            [field] = {
+            [es_field] = {
               gt = tonumber(value),
             },
           },
@@ -157,7 +156,7 @@ local function parse_query_builder(query)
       elseif operator == "greater_or_equal" then
         filter = {
           range = {
-            [field] = {
+            [es_field] = {
               gte = tonumber(value),
             },
           },
@@ -165,7 +164,7 @@ local function parse_query_builder(query)
       elseif operator == "between" then
         filter = {
           range = {
-            [field] = {
+            [es_field] = {
               gte = tonumber(value[1]),
               lte = tonumber(value[2]),
             },

@@ -6,6 +6,7 @@ local interval_lock = require "api-umbrella.utils.interval_lock"
 
 local elasticsearch_query = elasticsearch.query
 local jobs_dict = ngx.shared.jobs
+local sleep = ngx.sleep
 
 local delay = 3600  -- in seconds
 
@@ -25,7 +26,7 @@ function _M.wait_for_elasticsearch()
     end
 
     if not elasticsearch_alive then
-      ngx.sleep(sleep_time)
+      sleep(sleep_time)
       wait_time = wait_time + sleep_time
     end
   until elasticsearch_alive or wait_time > max_time
@@ -125,7 +126,7 @@ local function setup()
     _M.create_aliases()
   else
     ngx.log(ngx.ERR, "timed out waiting for eleasticsearch before setup, rerunning...")
-    ngx.sleep(5)
+    sleep(5)
     setup()
   end
 end

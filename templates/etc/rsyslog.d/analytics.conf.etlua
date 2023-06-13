@@ -18,6 +18,17 @@ action(name="analytics-jsonparse" type="mmjsonparse")
   if($!raw!legacy_api_key != "") then {
     set $!usr!es!api_key = $!raw!legacy_api_key;
   }
+  <% if config["elasticsearch"]["_template_version_v2?"] then %>
+    if($!raw!api_backend_resolved_host != "") then {
+      set $!usr!es!api_backend_resolved_host = $!raw!api_backend_resolved_host;
+    }
+    if($!raw!api_backend_response_code_details != "") then {
+      set $!usr!es!api_backend_response_code_details = $!raw!api_backend_response_code_details;
+    }
+    if($!raw!api_backend_response_flags != "") then {
+      set $!usr!es!api_backend_response_flags = $!raw!api_backend_response_flags;
+    }
+  <% end %>
   if($!raw!denied_reason != "") then {
     set $!usr!es!gatekeeper_denied_code = $!raw!denied_reason;
   }
@@ -123,6 +134,11 @@ action(name="analytics-jsonparse" type="mmjsonparse")
   if($!raw!response_cache != "") then {
     set $!usr!es!response_cache = $!raw!response_cache;
   }
+  <% if config["elasticsearch"]["_template_version_v2?"] then %>
+    if($!raw!response_cache_flags != "") then {
+      set $!usr!es!response_cache_flags = $!raw!response_cache_flags;
+    }
+  <% end %>
   if($!raw!response_content_encoding != "") then {
     set $!usr!es!response_content_encoding = $!raw!response_content_encoding;
   }
@@ -132,6 +148,17 @@ action(name="analytics-jsonparse" type="mmjsonparse")
   if($!raw!response_content_type != "") then {
     set $!usr!es!response_content_type = $!raw!response_content_type;
   }
+  <% if config["elasticsearch"]["_template_version_v2?"] then %>
+    if($!raw!response_custom1 != "") then {
+      set $!usr!es!response_custom1 = $!raw!response_custom1;
+    }
+    if($!raw!response_custom2 != "") then {
+      set $!usr!es!response_custom2 = $!raw!response_custom2;
+    }
+    if($!raw!response_custom3 != "") then {
+      set $!usr!es!response_custom3 = $!raw!response_custom3;
+    }
+  <% end %>
   if($!raw!response_server != "") then {
     set $!usr!es!response_server = $!raw!response_server;
   }
