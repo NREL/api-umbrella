@@ -110,7 +110,7 @@
     "qunit-dom": "^2.0.0",
     "sass": "^1.53.0",
     "selectize": "~0.12.4",
-    "stylelint": "^15.4.0",
+    "stylelint": "^15.10.1",
     "stylelint-config-standard": "^32.0.0",
     "stylelint-prettier": "^3.0.0",
     "timekeeper": "~2.2.0",
