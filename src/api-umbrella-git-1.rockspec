@@ -23,7 +23,7 @@ dependencies = {
   "lua-resty-validation ~> 2.7",
   "luajit-zstd ~> 0.2.3",
   "lualdap ~> 1.3.1",
-  "luaposix ~> 36.1",
+  "luaposix ~> 36.2.1",
   "luautf8 ~> 0.1.5",
   "lustache ~> 1.3.1",
   "lyaml ~> 6.2.8",

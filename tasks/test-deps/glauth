@@ -3,10 +3,10 @@
 set -e -u -x
 source ./tasks/helpers.sh
 
-glauth_version="2.1.0"
-glauth_hash="4432260e6468644f99bfa61cc8a9586439823aada05a5602e7aacda765fd320d"
+glauth_version="2.2.0"
+glauth_hash="546aa37ee96def22e24a93f77747bd16dccaa39dd09394e534beef89a5a7233c"
 if [ "$TARGETARCH" == "arm64" ]; then
-  glauth_hash="e25fccf3fe75f5638ad893ed34bbe0bfd18a3ac9539521110628c32f329dfe5d"
+  glauth_hash="6ea654b58f9dbdc63f67e0f0c4cc033797c09f488c2dd349a4d3e9a0754db137"
 fi
 
 task_working_dir
