@@ -10,10 +10,8 @@ if [ "$TARGETARCH" == "arm64" ]; then
 fi
 
 task_working_dir
-download "https://github.com/glauth/glauth/releases/download/v$glauth_version/linux${TARGETARCH}.zip" "sha256" "$glauth_hash"
-rm -rf "_persist/downloads/linux${TARGETARCH}"
-unzip "_persist/downloads/linux${TARGETARCH}.zip" -d "_persist/downloads/linux${TARGETARCH}"
+download "https://github.com/glauth/glauth/releases/download/v$glauth_version/glauth-linux-${TARGETARCH}" "sha256" "$glauth_hash"
 
-install -D -m 755 "_persist/downloads/linux${TARGETARCH}/glauth" "$TEST_INSTALL_PREFIX/bin/glauth"
+install -D -m 755 "_persist/downloads/glauth-linux-${TARGETARCH}" "$TEST_INSTALL_PREFIX/bin/glauth"
 
 stamp
