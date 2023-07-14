@@ -140,14 +140,14 @@ class Test::Proxy::Logging::TestIpGeocoding < Minitest::Test
   def test_city_accent_chars
     response = Typhoeus.get("http://127.0.0.1:9080/api/hello", log_http_options.deep_merge({
       :headers => {
-        "X-Forwarded-For" => "184.148.224.214",
+        "X-Forwarded-For" => "24.37.130.0",
       },
     }))
     assert_response_code(200, response)
 
     record = wait_for_log(response)[:hit_source]
     assert_geocode(record, {
-      :ip => "184.148.224.214",
+      :ip => "24.37.130.0",
       :country => "CA",
       :region => "QC",
       :city => "Trois-Rivières",
@@ -178,14 +178,14 @@ class Test::Proxy::Logging::TestIpGeocoding < Minitest::Test
   def test_custom_country_europe
     response = Typhoeus.get("http://127.0.0.1:9080/api/hello", log_http_options.deep_merge({
       :headers => {
-        "X-Forwarded-For" => "77.111.247.0",
+        "X-Forwarded-For" => "15.203.137.0",
       },
     }))
     assert_response_code(200, response)
 
     record = wait_for_log(response)[:hit_source]
     assert_geocode(record, {
-      :ip => "77.111.247.0",
+      :ip => "15.203.137.0",
       :country => "EU",
       :region => nil,
       :city => nil,
@@ -195,6 +195,8 @@ class Test::Proxy::Logging::TestIpGeocoding < Minitest::Test
   end
 
   def test_custom_country_anonymous_proxy
+    skip("No current Maxmind data has is_anonymous_proxy=1 and ommits geoname_id/country, which is what was previously required to test this scenario")
+
     response = Typhoeus.get("http://127.0.0.1:9080/api/hello", log_http_options.deep_merge({
       :headers => {
         "X-Forwarded-For" => "23.151.232.4",
