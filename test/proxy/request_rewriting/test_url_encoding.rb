@@ -16,6 +16,6 @@ class Test::Proxy::RequestRewriting::TestUrlEncoding < Minitest::Test
     response = Typhoeus.get("http://127.0.0.1:9080/api/info/test\\backslash?test=\\hello", http_options)
     assert_response_code(200, response)
     data = MultiJson.load(response.body)
-    assert_equal("http://127.0.0.1/info/test\\backslash?test=\\hello", data["raw_url"])
+    assert_equal("http://127.0.0.1/info/test%5Cbackslash?test=\\hello", data["raw_url"])
   end
 end

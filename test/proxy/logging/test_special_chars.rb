@@ -214,7 +214,7 @@ class Test::Proxy::Logging::TestSpecialChars < Minitest::Test
   end
 
   def test_optionally_encodable_ascii_strings_as_given
-    as_is = "-%2D ;%3B +%2B /%2F :%3A 0%30 >%3E {%7B"
+    as_is = "-%2D%20;%3B%20+%2B%20/%2F%20:%3A%200%30%20>%3E%20{%7B"
     response = Typhoeus.get("http://127.0.0.1:9080/api/hello/#{as_is}/?as_is=#{as_is}", log_http_options.deep_merge({
       :headers => {
         "Content-Type" => as_is,
@@ -245,8 +245,8 @@ class Test::Proxy::Logging::TestSpecialChars < Minitest::Test
       assert_equal("127.0.0.1:9080/", record.fetch("request_url_hierarchy_level0"))
       assert_equal("api/", record.fetch("request_url_hierarchy_level1"))
       assert_equal("hello/", record.fetch("request_url_hierarchy_level2"))
-      assert_equal("-%2D ;%3B +%2B /", record.fetch("request_url_hierarchy_level3"))
-      assert_equal("%2F :%3A 0%30 >%3E {%7B", record.fetch("request_url_hierarchy_level4"))
+      assert_equal("-%2D%20;%3B%20+%2B%20/", record.fetch("request_url_hierarchy_level3"))
+      assert_equal("%2F%20:%3A%200%30%20>%3E%20{%7B", record.fetch("request_url_hierarchy_level4"))
       refute(record.key?("request_url_hierarchy_level5"))
       refute(record.key?("request_url_hierarchy_level6"))
       refute(record.key?("request_hierarchy"))
