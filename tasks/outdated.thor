@@ -67,9 +67,6 @@ class Outdated < Thor
     },
     "openresty" => {
       :git => "https://github.com/openresty/openresty.git",
-      # Pin until newer version beyond 1.21.4 is released with this issue
-      # fixed: https://github.com/openresty/luajit2/issues/188
-      :constraint => "~> 1.19.9",
     },
     "openssl" => {
       :git => "https://github.com/openssl/openssl.git",
