@@ -228,6 +228,22 @@ http {
     <% end %>
   }
 
+  server {
+    listen <%- config["envoy"]["xds_rest_server"]["listen"]["host"] %>:<%- config["envoy"]["xds_rest_server"]["listen"]["port"] %> so_keepalive=<%- config["nginx"]["listen_so_keepalive"] %><% if config["nginx"]["listen_backlog"] then %> backlog=<%- config["nginx"]["listen_backlog"] %><% end %>;
+
+    # Disable logging, since polling is very frequent.
+    access_log off;
+
+    # The max body size and buffer size must be the same so we can always read
+    # the full contents in.
+    client_max_body_size <%- config["envoy"]["xds_rest_server"]["max_body_size"] %>;
+    client_body_buffer_size <%- config["envoy"]["xds_rest_server"]["max_body_size"] %>;
+
+    location / {
+      content_by_lua_file '<%- config["_src_root_dir"] %>/src/api-umbrella/http-api/xds.lua';
+    }
+  }
+
   <% for _, host in ipairs(config["hosts"]) do %>
     server {
       <% for _, address in ipairs(config["listen"]["addresses"]) do %>

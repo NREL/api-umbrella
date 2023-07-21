@@ -5,6 +5,7 @@ local etlua_render = require("etlua").render
 local find_cmd = require "api-umbrella.utils.find_cmd"
 local geoip_download_if_missing_or_old = require("api-umbrella.utils.geoip").download_if_missing_or_old
 local invert_table = require "api-umbrella.utils.invert_table"
+local json_encode = require "api-umbrella.utils.json_encode"
 local mkdir_p = require "api-umbrella.utils.mkdir_p"
 local path_exists = require "api-umbrella.utils.path_exists"
 local path_join = require "api-umbrella.utils.path_join"
@@ -196,7 +197,7 @@ local function write_templates()
 
         if template_ext == "etlua" then
           local render_ok, render_err
-          render_ok, content, render_err = xpcall(etlua_render, xpcall_error_handler, content, { config = config })
+          render_ok, content, render_err = xpcall(etlua_render, xpcall_error_handler, content, { config = config, json_encode = json_encode })
           if not render_ok or render_err then
             print("template compile error in " .. template_path ..": " .. (render_err or content))
             os.exit(1)

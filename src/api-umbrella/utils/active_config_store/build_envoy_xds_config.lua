@@ -1,12 +1,7 @@
 local file_config = require("api-umbrella.utils.load_config")()
-local http = require "resty.http"
-local json_decode = require("cjson").decode
-local json_encode = require "api-umbrella.utils.json_encode"
 local path_join = require "api-umbrella.utils.path_join"
-local writefile = require("pl.utils").writefile
 
 local re_find = ngx.re.find
-local sleep = ngx.sleep
 
 local function build_cluster_resource(cluster_name, options)
   local resource = {
@@ -14,13 +9,6 @@ local function build_cluster_resource(cluster_name, options)
     name = cluster_name,
     type = "STRICT_DNS",
     wait_for_warm_on_init = false,
-    typed_dns_resolver_config = {
-      name = "envoy.network.dns_resolver.cares",
-      typed_config = {
-        ["@type"] = "type.googleapis.com/envoy.extensions.network.dns_resolver.cares.v3.CaresDnsResolverConfig",
-        resolvers = file_config["dns_resolver"]["_nameservers_envoy"],
-      },
-    },
     dns_lookup_family = "V4_PREFERRED",
     respect_dns_ttl = true,
     ignore_health_on_host_removal = true,
@@ -205,7 +193,7 @@ local function build_cds(config_version)
   return cds
 end
 
-local function build_lds(config_version, rds_path)
+local function build_lds(config_version)
   local access_log = {
     name = "envoy.access_loggers.file",
     typed_config = {
@@ -281,8 +269,13 @@ local function build_lds(config_version, rds_path)
                   },
                   rds = {
                     config_source = {
-                      path_config_source = {
-                        path = rds_path,
+                      api_config_source = {
+                        api_type = "REST",
+                        transport_api_version = "V3",
+                        refresh_delay = file_config["envoy"]["xds_rest_server"]["refresh_delay"],
+                        cluster_names = {
+                          "api-umbrella-rest-xds-api-cluster",
+                        },
                       },
                       resource_api_version = "V3",
                     },
@@ -384,123 +377,16 @@ local function populate_backend_resources(active_config, cds, rds)
   end
 end
 
-local function wait_for_live_config(config_version, cds)
-  local httpc = http.new()
-  local connect_ok, connect_err = httpc:connect({
-    scheme = "http",
-    host = file_config["envoy"]["admin"]["host"],
-    port = file_config["envoy"]["admin"]["port"],
-  })
-
-  if not connect_ok then
-    httpc:close()
-    return nil, "envoy admin connect error: " .. (connect_err or "")
-  end
-
-  local ready = false
-  local ready_err
-  local versions_ready = false
-  local clusters_ready = false
-  for _ = 1, 50 do
-    if not versions_ready then
-      local stats_res, stats_err = httpc:request({
-        method = "GET",
-        path = "/stats?format=json&filter=\\.version_text$",
-      })
-      if stats_err then
-        httpc:close()
-        return nil, "envoy admin request error: " .. (stats_err or "")
-      end
-
-      local stats_body, stats_body_err = stats_res:read_body()
-      if stats_body_err then
-        httpc:close()
-        return nil, "envoy admin read body error: " .. (stats_body_err or "")
-      end
-
-      local stats = json_decode(stats_body)
-      for _, stat in ipairs(stats["stats"]) do
-        if stat["value"] == config_version then
-          versions_ready = true
-        else
-          versions_ready = false
-          ready_err = stat["name"] .. " version: " .. stat["value"]
-          break
-        end
-      end
-    end
-
-    if not clusters_ready then
-      local clusters_res, clusters_err = httpc:request({
-        method = "GET",
-        path = "/clusters?format=json",
-      })
-      if clusters_err then
-        httpc:close()
-        return nil, "envoy admin request error: " .. (clusters_err or "")
-      end
-
-      local clusters_body, clusters_body_err = clusters_res:read_body()
-      if clusters_body_err then
-        httpc:close()
-        return nil, "envoy admin read body error: " .. (clusters_body_err or "")
-      end
-
-      local clusters = json_decode(clusters_body)
-      local initialized_cluster_names = {}
-      for _, cluster in ipairs(clusters["cluster_statuses"]) do
-        initialized_cluster_names[cluster["name"]] = true
-      end
-      for _, cluster in ipairs(cds["resources"]) do
-        if not initialized_cluster_names[cluster["name"]] then
-          clusters_ready = false
-          ready_err = "cluster not initialized: " .. cluster["name"]
-          break
-        else
-          clusters_ready = true
-        end
-      end
-    end
-
-    if versions_ready and clusters_ready then
-      ready = true
-      break
-    else
-      sleep(0.1)
-    end
-  end
-
-  local keepalive_ok, keepalive_err = httpc:set_keepalive()
-  if not keepalive_ok then
-    httpc:close()
-    return nil, "envoy admin keepalive error: " .. (keepalive_err or "")
-  end
-
-  if not ready then
-    return nil, "envoy admin timed out waiting for configuration to be live. Waiting for: " .. (config_version or "") .. ", " .. (ready_err or "")
-  end
-end
-
 return function(active_config)
-  local cds_path = path_join(file_config["run_dir"], "envoy/cds.json")
-  local lds_path = path_join(file_config["run_dir"], "envoy/lds.json")
-  local rds_path = path_join(file_config["run_dir"], "envoy/rds.json")
-
   local cds = build_cds(active_config["version"])
-  local lds = build_lds(active_config["version"], rds_path)
+  local lds = build_lds(active_config["version"])
   local rds = build_rds(active_config["version"])
 
   populate_backend_resources(active_config, cds, rds)
 
-  writefile(cds_path .. ".tmp", json_encode(cds))
-  writefile(lds_path .. ".tmp", json_encode(lds))
-  writefile(rds_path .. ".tmp", json_encode(rds))
-
-  -- Push live in order described here:
-  -- https://www.envoyproxy.io/docs/envoy/v1.21.1/api-docs/xds_protocol.html#eventual-consistency-considerations
-  os.rename(cds_path .. ".tmp", cds_path)
-  os.rename(lds_path .. ".tmp", lds_path)
-  os.rename(rds_path .. ".tmp", rds_path)
-
-  wait_for_live_config(active_config["version"], cds)
+  return {
+    clusters = cds,
+    listeners = lds,
+    routes = rds,
+  }
 end

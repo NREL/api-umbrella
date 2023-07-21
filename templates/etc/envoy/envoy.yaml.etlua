@@ -1,15 +1,53 @@
 node:
-  cluster: test-cluster
-  id: test-id
+  cluster: api-umbrella-cluster
+  id: api-umbrella-node-id
+
+typed_dns_resolver_config:
+  name: envoy.network.dns_resolver.cares
+  typed_config:
+    "@type": type.googleapis.com/envoy.extensions.network.dns_resolver.cares.v3.CaresDnsResolverConfig
+    resolvers: <%- json_encode(config["dns_resolver"]["_nameservers_envoy"]) %>
+
+static_resources:
+  clusters:
+    - name: api-umbrella-rest-xds-api-cluster
+      type: LOGICAL_DNS
+      dns_lookup_family: V4_PREFERRED
+      respect_dns_ttl: true
+      ignore_health_on_host_removal: true
+      load_assignment:
+        cluster_name: api-umbrella-rest-xds-api-cluster
+        endpoints:
+          - lb_endpoints:
+              - endpoint:
+                  address:
+                    socket_address:
+                      address: <%- config["envoy"]["xds_rest_server"]["host"] %>
+                      port_value: <%- config["envoy"]["xds_rest_server"]["port"] %>
+      lb_policy: LEAST_REQUEST
+      connect_timeout: <%- config["envoy"]["_connect_timeout"] %>
+      upstream_connection_options:
+        tcp_keepalive:
+          keepalive_probes: 2
+          keepalive_time: 15
+          keepalive_interval: 5
 
 dynamic_resources:
   cds_config:
-    path_config_source:
-      path: <%- config["run_dir"] %>/envoy/cds.json
+    api_config_source:
+      api_type: REST
+      transport_api_version: V3
+      refresh_delay: <%- config["envoy"]["xds_rest_server"]["refresh_delay"] %>
+      cluster_names:
+        - api-umbrella-rest-xds-api-cluster
     resource_api_version: V3
   lds_config:
-    path_config_source:
-      path: <%- config["run_dir"] %>/envoy/lds.json
+    api_config_source:
+      api_type: REST
+      transport_api_version: V3
+      refresh_delay: <%- config["envoy"]["xds_rest_server"]["refresh_delay"] %>
+      cluster_names:
+        - api-umbrella-rest-xds-api-cluster
     resource_api_version: V3
 
 admin:
@@ -23,3 +61,5 @@ layered_runtime:
     - name: static_layer
       static_layer:
         envoy.reloadable_features.max_response_headers_count: 200
+        overload:
+          global_downstream_max_connections: <%- config["envoy"]["global_downstream_max_connections"] %>

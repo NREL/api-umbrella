@@ -171,6 +171,18 @@ import "path"
       "P-384",
       "P-521",
     ]
+    global_downstream_max_connections: uint16 | *8192
+
+    xds_rest_server: {
+      host: string | *"127.0.0.1"
+      port: uint16 | *14002
+      listen: {
+        host: string | *"127.0.0.1"
+        port: uint16 | *14002
+      }
+      max_body_size: string | *"5m"
+      refresh_delay: string | *"1s"
+    }
   }
 
   api_server: {

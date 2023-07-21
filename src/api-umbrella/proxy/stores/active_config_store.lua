@@ -3,7 +3,6 @@ local compressed_json = require "api-umbrella.utils.compressed_json"
 local fetch_published_config_for_setting_active_config = require "api-umbrella.utils.active_config_store.fetch_published_config_for_setting_active_config"
 local mlcache = require "resty.mlcache"
 local polling_set_active_config = require "api-umbrella.utils.active_config_store.polling_set_active_config"
-local set_envoy_config = require "api-umbrella.utils.active_config_store.set_envoy_config"
 
 local compress_json_encode = compressed_json.compress_json_encode
 local decompress_json_decode = compressed_json.decompress_json_decode
@@ -23,11 +22,6 @@ local function fetch_compressed_active_config(last_fetched_version)
     -- the L1 cache, since at that point, once Lua only keeps a single copy of
     -- identical strings.
     local compressed_active_config = compress_json_encode(active_config)
-
-    local _, envoy_err = set_envoy_config(active_config)
-    if envoy_err then
-      ngx.log(ngx.ERR, "set envoy error: ", envoy_err)
-    end
 
     return compressed_active_config, active_config["db_version"]
   end)
@@ -50,6 +44,8 @@ if not cache then
   ngx.log(ngx.ERR, "failed to create active_config mlcache: ", cache_err)
   return nil
 end
+
+_M.cache = cache
 
 function _M.get()
   local active_config, err = cache:get("active_config", nil, fetch_compressed_active_config)

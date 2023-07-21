@@ -308,7 +308,7 @@ module ApiUmbrellaTestHelpers
         Timeout.timeout(10) do
           loop do
             state = self.fetch("http://127.0.0.1:9080/api-umbrella/v1/state?#{rand}", config)
-            if(state[field].to_s == version.to_s && state.dig("web_app", field).to_s == version.to_s)
+            if(state[field].to_s == version.to_s && state.dig("web_app", field).to_s == version.to_s && state.dig("envoy", "versions_ready") == true && state.dig("envoy", "clusters_ready") == true)
               health = self.fetch("http://127.0.0.1:9080/api-umbrella/v1/health?#{rand}", config)
               if(health["status"] == "green")
                 break
