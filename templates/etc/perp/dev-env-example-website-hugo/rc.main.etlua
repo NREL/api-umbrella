@@ -20,8 +20,7 @@ if [ "${1}" = "start" ]; then
   exec env runtool ${run_args[@]+"${run_args[@]}"} \
     hugo server \
       --port "<%- config['static_site']['port'] %>" \
-      --verbose \
-      --verboseLog \
+      --logLevel info \
       --baseURL "https://localhost:<%- config['https_port'] %>/" \
       --appendPort=false \
       --debug
