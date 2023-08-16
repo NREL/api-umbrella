@@ -113,7 +113,7 @@
     "stylelint": "^15.4.0",
     "stylelint-config-standard": "^32.0.0",
     "stylelint-prettier": "^3.0.0",
-    "timekeeper": "~2.2.0",
+    "timekeeper": "^2.3.0",
     "tippy.js": "~6.3.1",
     "tracked-built-ins": "^3.1.1",
     "webpack": "^5.78.0"
