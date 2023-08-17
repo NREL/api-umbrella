@@ -20,7 +20,7 @@ return {
       ["lua-resty-mlcache"] = "2.6.0-2",
       ["lua-resty-nettle"] = "2.1-1",
       ["lua-resty-openidc"] = "1.7.6-3",
-      ["lua-resty-openssl"] = "0.8.23-1",
+      ["lua-resty-openssl"] = "0.8.24-1",
       ["lua-resty-session"] = "3.10-1",
       ["lua-resty-txid"] = "1.0.0-1",
       ["lua-resty-uuid"] = "1.1-1",

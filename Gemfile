@@ -1,6 +1,6 @@
 source "https://rubygems.org"
 
-ruby "~> 2.5"
+ruby "~> 3.1"
 
 # Task runner
 gem "thor", "~> 1.2.1"

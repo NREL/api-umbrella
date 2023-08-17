@@ -19,7 +19,7 @@ class Test::Proxy::TestConfig < Minitest::Test
       "foo" => "bar",
     }
 
-    test_config = YAML.load_file(File.join(API_UMBRELLA_SRC_ROOT, "config/test.yml"))
+    test_config = YAML.safe_load_file(File.join(API_UMBRELLA_SRC_ROOT, "config/test.yml"))
     assert_equal(expected_test_value, test_config.fetch("_test_config").fetch("default_null_override_hash"))
 
     assert_equal(expected_test_value, runtime_config.fetch("_test_config").fetch("default_null_override_hash"))
@@ -30,7 +30,7 @@ class Test::Proxy::TestConfig < Minitest::Test
 
     expected_test_value = "foobar"
 
-    test_config = YAML.load_file(File.join(API_UMBRELLA_SRC_ROOT, "config/test.yml"))
+    test_config = YAML.safe_load_file(File.join(API_UMBRELLA_SRC_ROOT, "config/test.yml"))
     assert_equal(expected_test_value, test_config.fetch("_test_config").fetch("default_null_override_string"))
 
     assert_equal(expected_test_value, runtime_config.fetch("_test_config").fetch("default_null_override_string"))
@@ -43,7 +43,7 @@ class Test::Proxy::TestConfig < Minitest::Test
       "baz" => "qux",
     }
 
-    test_config = YAML.load_file(File.join(API_UMBRELLA_SRC_ROOT, "config/test.yml"))
+    test_config = YAML.safe_load_file(File.join(API_UMBRELLA_SRC_ROOT, "config/test.yml"))
     assert_equal(expected_test_value, test_config.fetch("_test_config").fetch("default_empty_hash_override_hash"))
 
     assert_equal(expected_test_value, runtime_config.fetch("_test_config").fetch("default_empty_hash_override_hash"))

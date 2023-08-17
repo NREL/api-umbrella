@@ -11,7 +11,6 @@ rm -rf "$APP_VENDOR_LUA_DIR"
 extra_args=(
   "--only-deps"
   "--pin"
-  "CIDR_DIR=$STAGE_EMBEDDED_DIR"
 )
 
 luarocks_install "./api-umbrella-git-1.rockspec" "git-1" "${extra_args[@]}"

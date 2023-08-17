@@ -128,7 +128,7 @@ if [[ "$ID_NORMALIZED" == "rhel" ]]; then
     libxslt-devel
   )
 
-  if [[ "$VERSION_ID" == "7" ]]; then
+  if [[ "$VERSION_ID" -le "7" ]]; then
     # Install GCC 7+ for compiling TrafficServer (C++17 required).
     core_build_dependencies+=(
       centos-release-scl
@@ -150,12 +150,19 @@ if [[ "$ID_NORMALIZED" == "rhel" ]]; then
   fi
 elif [[ "$ID_NORMALIZED" == "debian" ]]; then
   libcurl_version=4
-  libffi_version=7
+  libffi_version=8
+  libldap_version="2.5-0"
 
-  if [[ "$ID" == "debian" && ( "$VERSION_ID" == "9" || "$VERSION_ID" == "10" ) ]]; then
+  if [[ "$ID" == "debian" && "$VERSION_ID" -le "11" ]]; then
+    libffi_version=7
+  elif [[ "$ID" == "debian" && "$VERSION_ID" -le "10" ]]; then
     libffi_version=6
-  elif [[ "$ID" == "ubuntu" && "$VERSION_ID" == "18.04" ]]; then
+  elif [[ "$ID" == "ubuntu" && "${VERSION_ID%.*}" -le "18" ]]; then
     libffi_version=6
+  fi
+
+  if [[ "$ID" == "debian" && "$VERSION_ID" -le "11" ]]; then
+    libldap_version="2.4-2"
   fi
 
   core_runtime_dependencies=(
@@ -173,6 +180,7 @@ elif [[ "$ID_NORMALIZED" == "debian" ]]; then
     logrotate
     openssl
     postgresql-client
+    runit
     zlib1g
 
     # geoip-auto-updater
@@ -182,6 +190,10 @@ elif [[ "$ID_NORMALIZED" == "debian" ]]; then
 
     # TrafficServer
     libxml2
+
+    # rsyslog
+    libestr0
+    libfastjson4
 
     # rsyslog omelasticsearch
     "libcurl$libcurl_version"
@@ -202,6 +214,9 @@ elif [[ "$ID_NORMALIZED" == "debian" ]]; then
     # For prefixed console output (gnu version for strftime support).
     gawk
 
+    # libcidr-ffi
+    libcidr0
+
     # lua-icu-date-ffi
     libicu-dev
 
@@ -209,10 +224,13 @@ elif [[ "$ID_NORMALIZED" == "debian" ]]; then
     "nettle-dev"
 
     # lualdap
-    libldap-2.4-2
+    "libldap-$libldap_version"
 
     # lua-psl
     libpsl5
+
+    # ngx_http_geoip2_module
+    libmaxminddb0
   )
   core_build_dependencies=(
     autoconf
@@ -226,7 +244,7 @@ elif [[ "$ID_NORMALIZED" == "debian" ]]; then
     libcurl4-openssl-dev
     libffi-dev
     libjansson-dev
-    libncurses5-dev
+    libncurses-dev
     libpcre3-dev
     libpcre2-dev
     libreadline-dev
@@ -239,7 +257,7 @@ elif [[ "$ID_NORMALIZED" == "debian" ]]; then
     make
     patch
     pkg-config
-    python
+    python3
     rsync
     tar
     unzip
@@ -256,6 +274,13 @@ elif [[ "$ID_NORMALIZED" == "debian" ]]; then
 
     # lua-psl
     libpsl-dev
+
+    # rsyslog
+    libestr-dev
+    libfastjson-dev
+
+    # ngx_http_geoip2_module
+    libmaxminddb-dev
   )
   test_runtime_dependencies=(
     unbound
@@ -286,7 +311,7 @@ elif [[ "$ID_NORMALIZED" == "debian" ]]; then
   )
 
   # Install GCC 7+ for compiling TrafficServer (C++17 required).
-  if [[ "$ID" == "debian" && "$VERSION_ID" == "9" ]]; then
+  if [[ "$ID" == "debian" && "$VERSION_ID" -le "9" ]]; then
     core_build_dependencies+=(
       clang-7
       libc++-7-dev

@@ -4326,9 +4326,9 @@ ee-first@1.1.1:
   integrity sha512-WMwm9LhRUo+WUaRN+vRuETqG89IgZphVSNkdFgeb6sS/E4OrDIN7t48CAewSHXc6C8lefD8KKfr5vY61brQlow==
 
 electron-to-chromium@^1.4.477:
-  version "1.4.492"
-  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.4.492.tgz#83fed8beb64ec60578069e15dddd17b13a77ca56"
-  integrity sha512-36K9b/6skMVwAIEsC7GiQ8I8N3soCALVSHqWHzNDtGemAcI9Xu8hP02cywWM0A794rTHm0b0zHPeLJHtgFVamQ==
+  version "1.4.493"
+  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.4.493.tgz#4654f3f806231854f457c97c4ee6db5fcf015635"
+  integrity sha512-T1k9mhYPdjnmS4VAz4J1oKVn6/M6LxoqQEVtYRL0swJVj73bA2NzqF0HjwxGsW3zL3ir0oPmLfd7lyi/RYzreg==
 
 ember-ajax@^5.0.0:
   version "5.1.2"

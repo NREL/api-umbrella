@@ -191,11 +191,6 @@ http {
     server_names_hash_bucket_size <%- config["nginx"]["server_names_hash_bucket_size"] %>;
   <% end %>
 
-  <% if config["nginx"]["vhost_traffic_status"]["enabled"] then %>
-    vhost_traffic_status_zone;
-    vhost_traffic_status_filter_by_host <%- config["nginx"]["vhost_traffic_status"]["filter_by_host"] %>;
-  <% end %>
-
   upstream api_umbrella_trafficserver_backend {
     server <%- config["trafficserver"]["host"] %>:<%- config["trafficserver"]["port"] %>;
     keepalive 10;
@@ -217,15 +212,6 @@ http {
     location /api-umbrella/v0/shared-memory-stats {
       content_by_lua_file '<%- config["_src_root_dir"] %>/src/api-umbrella/http-api/shared_memory_stats.lua';
     }
-
-    <% if config["nginx"]["vhost_traffic_status"]["enabled"] then %>
-      location /api-umbrella/v0/nginx-status {
-        access_by_lua_file '<%- config["_src_root_dir"] %>/src/api-umbrella/http-api/require_system_info_role.lua';
-        sub_filter 'format/json"' 'format/json?api_key=" + new URLSearchParams(window.location.search).get("api_key")';
-        sub_filter 'vtsUpdateInterval=1000' 'vtsUpdateInterval=10000';
-        vhost_traffic_status_display;
-      }
-    <% end %>
   }
 
   <% for _, host in ipairs(config["hosts"]) do %>

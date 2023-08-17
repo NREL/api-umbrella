@@ -11,10 +11,6 @@ download "https://www.rsyslog.com/files/download/rsyslog/rsyslog-$rsyslog_versio
 extract_download "rsyslog-$rsyslog_version.tar.gz"
 
 cd "rsyslog-$rsyslog_version"
-LIBESTR_CFLAGS="-I$STAGE_EMBEDDED_DIR/include" \
-LIBESTR_LIBS="-L$STAGE_EMBEDDED_DIR/lib -lestr" \
-LIBFASTJSON_CFLAGS="-I$STAGE_EMBEDDED_DIR/include/libfastjson" \
-LIBFASTJSON_LIBS="-L$STAGE_EMBEDDED_DIR/lib -lfastjson" \
 ./configure \
   --prefix="$INSTALL_PREFIX_EMBEDDED" \
   --disable-liblogging-stdlog \
