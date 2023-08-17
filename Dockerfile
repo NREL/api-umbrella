@@ -10,8 +10,6 @@ RUN ln -snf /build/.task /app/.task
 RUN ln -snf /build/build/work /app/build/work
 WORKDIR /app
 
-ENV NOKOGIRI_USE_SYSTEM_LIBRARIES 1
-
 COPY build/package_dependencies.sh /app/build/package_dependencies.sh
 COPY tasks/helpers.sh tasks/install-system-build-dependencies /app/tasks/
 COPY tasks/helpers/detect_os_release.sh tasks/helpers/lua.sh /app/tasks/helpers/
