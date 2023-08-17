@@ -44,39 +44,37 @@ fi
 
 if [ "${INSTALL_TEST_DEPENDENCIES:-}" == "true" ]; then
   if [ "$ID" == "debian" ]; then
+    # Add Chrome for integration tests.
     if [ "$TARGETARCH" == "amd64" ]; then
-      # Add Chrome for integration tests, similar to how the CircleCI images add it:
-      # https://github.com/CircleCI-Public/circleci-dockerfiles/blob/c24e69355b400aaba34a1ddfc55cdb1fef9dedff/buildpack-deps/images/xenial/browsers/Dockerfile#L47
-      apt-get -y install curl gnupg2 unzip
-      curl --silent --show-error --location --fail --retry 3 --output /tmp/google-chrome-stable_current_amd64.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-      (dpkg -i /tmp/google-chrome-stable_current_amd64.deb || apt-get -fy install)
-      rm -f /tmp/google-chrome-stable_current_amd64.deb
-      sed -i 's|HERE/chrome"|HERE/chrome" --disable-setuid-sandbox --no-sandbox|g' /opt/google/chrome/google-chrome
+      apt-get update
+      DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends install curl gnupg2 unzip ca-certificates
+      curl -fsSL https://dl.google.com/linux/linux_signing_key.pub | gpg --dearmor > /usr/share/keyrings/google-chrome.gpg
+      echo "deb [signed-by=/usr/share/keyrings/google-chrome.gpg] http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list
+      apt-get update
+      DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends install google-chrome-stable
       google-chrome --version
+
       CHROME_VERSION="$(google-chrome --version)"
-      CHROMEDRIVER_RELEASE=${CHROME_VERSION/Google Chrome /}
-      CHROMEDRIVER_RELEASE=${CHROMEDRIVER_RELEASE%%.*}
-      CHROMEDRIVER_VERSION=$(curl --silent --show-error --location --fail --retry 4 --retry-delay 5 "http://chromedriver.storage.googleapis.com/LATEST_RELEASE_${CHROMEDRIVER_RELEASE}")
-      curl --silent --show-error --location --fail --retry 4 --retry-delay 5 --output /tmp/chromedriver_linux64.zip "http://chromedriver.storage.googleapis.com/$CHROMEDRIVER_VERSION/chromedriver_linux64.zip"
-      cd /tmp
-      unzip chromedriver_linux64.zip
-      rm -rf chromedriver_linux64.zip
-      mv chromedriver /usr/local/bin/chromedriver
-      chmod +x /usr/local/bin/chromedriver
+      CHROMEDRIVER_VERSION="${CHROME_VERSION//[^0-9.]/}"
+      curl -fsSL "https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/$CHROMEDRIVER_VERSION/linux64/chromedriver-linux64.zip" -o "/tmp/chromedriver-linux64.zip"
+      unzip -o -j -d /usr/local/bin "/tmp/chromedriver-linux64.zip" "*/chromedriver"
       chromedriver --version
+      rm "/tmp/chromedriver-linux64.zip"
     else
       # For ARM platforms, Chrome stable doesn't exist, so use Chromium
       # instead. chromedriver also doesn't exist, so use Electron's ARM builds
       # instead.
       CHROMIUM_VERSION="115.*"
       CHROMEDRIVER_VERSION="26.0.0"
-      printf "Package: chromium*\nPin: version %s\nPin-Priority: 999\n" "$CHROMIUM_VERSION" > /etc/apt/preferences.d/chromium && \
-      apt-get update && \
-      apt-get -y --no-install-recommends install chromium curl unzip && \
-      chromium --version && \
-      curl -fsSL -o "/tmp/chromedriver-v${CHROMEDRIVER_VERSION}-linux.zip" "https://github.com/electron/electron/releases/download/v${CHROMEDRIVER_VERSION}/chromedriver-v${CHROMEDRIVER_VERSION}-linux-${TARGETARCH}.zip" && \
-      unzip -o -d /usr/local/bin "/tmp/chromedriver-v${CHROMEDRIVER_VERSION}-linux.zip" chromedriver && \
+      printf "Package: chromium*\nPin: version %s\nPin-Priority: 999\n" "$CHROMIUM_VERSION" > /etc/apt/preferences.d/chromium
+      apt-get update
+      apt-get -y --no-install-recommends install chromium curl unzip
+      chromium --version
+
+      curl -fsSL -o "/tmp/chromedriver-v${CHROMEDRIVER_VERSION}-linux.zip" "https://github.com/electron/electron/releases/download/v${CHROMEDRIVER_VERSION}/chromedriver-v${CHROMEDRIVER_VERSION}-linux-${TARGETARCH}.zip"
+      unzip -o -d /usr/local/bin "/tmp/chromedriver-v${CHROMEDRIVER_VERSION}-linux.zip" chromedriver
       chromedriver --version
+      rm "/tmp/chromedriver-v${CHROMEDRIVER_VERSION}-linux.zip"
     fi
   fi
 fi
