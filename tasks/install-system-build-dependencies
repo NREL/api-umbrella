@@ -65,7 +65,7 @@ if [ "${INSTALL_TEST_DEPENDENCIES:-}" == "true" ]; then
       # instead. chromedriver also doesn't exist, so use Electron's ARM builds
       # instead.
       CHROMIUM_VERSION="115.*"
-      CHROMEDRIVER_VERSION="26.0.0"
+      CHROMEDRIVER_VERSION="25.6.0"
       printf "Package: chromium*\nPin: version %s\nPin-Priority: 999\n" "$CHROMIUM_VERSION" > /etc/apt/preferences.d/chromium
       apt-get update
       apt-get -y --no-install-recommends install chromium curl unzip

@@ -412,13 +412,13 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
     ]) do
       response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/down", log_http_options)
       assert_response_code(503, response)
-      assert_match("upstream connect error or disconnect/reset before headers. retried and the latest reset reason: connection failure, transport failure reason: delayed connect error: 111", response.body)
+      assert_match("upstream connect error or disconnect/reset before headers. retried and the latest reset reason: remote connection failure, transport failure reason: delayed connect error: 111", response.body)
 
       record = wait_for_log(response)[:hit_source]
       assert_equal(503, record["response_status"])
       assert_logs_base_fields(record, api_user)
       assert_equal("127.0.0.1:9450", record["api_backend_resolved_host"])
-      assert_equal("upstream_reset_before_response_started{connection_failure,delayed_connect_error:_111}", record["api_backend_response_code_details"])
+      assert_equal("upstream_reset_before_response_started{remote_connection_failure,delayed_connect_error:_111}", record["api_backend_response_code_details"])
       assert_equal("UF,URX", record["api_backend_response_flags"])
       assert_equal("cMsSf ", record["response_cache_flags"])
     end
