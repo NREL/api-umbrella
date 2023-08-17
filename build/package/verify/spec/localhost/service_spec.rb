@@ -231,7 +231,7 @@ describe "api-umbrella" do
   end
 
   it "does not contain unexpected errors in logs" do
-    logs = Dir.glob("/opt/api-umbrella/var/log/*/current").sort
+    logs = Dir.glob("/opt/api-umbrella/var/log/*/current")
     expect(logs).to eql([
       "/opt/api-umbrella/var/log/elasticsearch/current",
       "/opt/api-umbrella/var/log/geoip-auto-updater/current",

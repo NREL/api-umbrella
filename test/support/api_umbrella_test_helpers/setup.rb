@@ -351,7 +351,7 @@ module ApiUmbrellaTestHelpers
       hostname = name.downcase.gsub(/[^a-z0-9]+/, "-")
 
       # Truncate the hostname so the label will fit in unbound's 63 char limit.
-      hostname = hostname[-56..-1] || hostname
+      hostname = hostname[-56..] || hostname
 
       # Strip first char if it happens to be a dash.
       hostname.gsub!(/^-/, "")

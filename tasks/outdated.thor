@@ -347,7 +347,7 @@ class Outdated < Thor
         exit 1
       end
       rockspec = JSON.parse(rockspec_output)
-      rockspec_constraints = rockspec.map { |r| r.split(/\s+/, 2) }.to_h
+      rockspec_constraints = rockspec.to_h { |r| r.split(/\s+/, 2) }
 
       lock_output, lock_status = Open3.capture2("api-umbrella-exec", "resty", "-e", "local cjson = require 'cjson'; print(cjson.encode(dofile('#{lock_path}')))")
       unless lock_status.success?
