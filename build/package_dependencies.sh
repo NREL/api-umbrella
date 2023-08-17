@@ -215,7 +215,7 @@ elif [[ "$ID_NORMALIZED" == "debian" ]]; then
     gawk
 
     # libcidr-ffi
-    libcidr0
+    libcidr-dev
 
     # lua-icu-date-ffi
     libicu-dev
