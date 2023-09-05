@@ -83,14 +83,14 @@ class Test::Proxy::Logging::TestIpGeocoding < Minitest::Test
   def test_country_city_no_region
     response = Typhoeus.get("http://127.0.0.1:9080/api/hello", log_http_options.deep_merge({
       :headers => {
-        "X-Forwarded-For" => "102.38.240.0",
+        "X-Forwarded-For" => "62.68.85.0",
       },
     }))
     assert_response_code(200, response)
 
     record = wait_for_log(response)[:hit_source]
     assert_geocode(record, {
-      :ip => "102.38.240.0",
+      :ip => "62.68.85.0",
       :country => "MC",
       :region => nil,
       :city => "Monte Carlo",
@@ -140,19 +140,19 @@ class Test::Proxy::Logging::TestIpGeocoding < Minitest::Test
   def test_city_accent_chars
     response = Typhoeus.get("http://127.0.0.1:9080/api/hello", log_http_options.deep_merge({
       :headers => {
-        "X-Forwarded-For" => "24.37.130.0",
+        "X-Forwarded-For" => "24.37.115.0",
       },
     }))
     assert_response_code(200, response)
 
     record = wait_for_log(response)[:hit_source]
     assert_geocode(record, {
-      :ip => "24.37.130.0",
+      :ip => "24.37.115.0",
       :country => "CA",
       :region => "QC",
       :city => "Trois-Rivières",
       :lat => 46.4176,
-      :lon => -72.6372,
+      :lon => -72.4927,
     })
   end
 
