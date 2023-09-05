@@ -41,7 +41,7 @@ gem "elasticsearch", "~> 7.13.3"
 gem "active_attr", "~> 0.15.0"
 
 # Factories for test database data
-gem "factory_bot", "~> 6.2.0"
+gem "factory_bot", "~> 6.3.0"
 
 # Programmatically generate Rails session cookies.
 gem "rails_compatible_cookies_utils", "~> 0.1.0"
