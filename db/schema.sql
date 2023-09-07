@@ -31,6 +31,13 @@ COMMENT ON SCHEMA audit IS 'Out-of-table audit/history logging tables and trigge
 
 
 --
+-- Name: public; Type: SCHEMA; Schema: -; Owner: -
+--
+
+-- *not* creating schema, since initdb creates it
+
+
+--
 -- Name: pgcrypto; Type: EXTENSION; Schema: -; Owner: -
 --
 
@@ -574,6 +581,8 @@ CREATE AGGREGATE api_umbrella.array_accum(anyarray) (
 
 
 SET default_tablespace = '';
+
+SET default_table_access_method = heap;
 
 --
 -- Name: admin_groups; Type: TABLE; Schema: api_umbrella; Owner: -
@@ -2091,518 +2100,518 @@ CREATE INDEX log_schema_name_table_name_idx ON audit.log USING btree (schema_nam
 -- Name: admin_groups_admin_permissions admin_groups_admin_permissions_stamp_record; Type: TRIGGER; Schema: api_umbrella; Owner: -
 --
 
-CREATE TRIGGER admin_groups_admin_permissions_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON api_umbrella.admin_groups_admin_permissions FOR EACH ROW EXECUTE PROCEDURE api_umbrella.stamp_record('[{"table_name":"admin_groups","primary_key":"id","foreign_key":"admin_group_id"}]');
+CREATE TRIGGER admin_groups_admin_permissions_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON api_umbrella.admin_groups_admin_permissions FOR EACH ROW EXECUTE FUNCTION api_umbrella.stamp_record('[{"table_name":"admin_groups","primary_key":"id","foreign_key":"admin_group_id"}]');
 
 
 --
 -- Name: admin_groups_admins admin_groups_admins_stamp_record; Type: TRIGGER; Schema: api_umbrella; Owner: -
 --
 
-CREATE TRIGGER admin_groups_admins_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON api_umbrella.admin_groups_admins FOR EACH ROW EXECUTE PROCEDURE api_umbrella.stamp_record('[{"table_name":"admins","primary_key":"id","foreign_key":"admin_id"}]');
+CREATE TRIGGER admin_groups_admins_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON api_umbrella.admin_groups_admins FOR EACH ROW EXECUTE FUNCTION api_umbrella.stamp_record('[{"table_name":"admins","primary_key":"id","foreign_key":"admin_id"}]');
 
 
 --
 -- Name: admin_groups_api_scopes admin_groups_api_scopes_stamp_record; Type: TRIGGER; Schema: api_umbrella; Owner: -
 --
 
-CREATE TRIGGER admin_groups_api_scopes_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON api_umbrella.admin_groups_api_scopes FOR EACH ROW EXECUTE PROCEDURE api_umbrella.stamp_record('[{"table_name":"admin_groups","primary_key":"id","foreign_key":"admin_group_id"}]');
+CREATE TRIGGER admin_groups_api_scopes_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON api_umbrella.admin_groups_api_scopes FOR EACH ROW EXECUTE FUNCTION api_umbrella.stamp_record('[{"table_name":"admin_groups","primary_key":"id","foreign_key":"admin_group_id"}]');
 
 
 --
 -- Name: admin_groups admin_groups_stamp_record; Type: TRIGGER; Schema: api_umbrella; Owner: -
 --
 
-CREATE TRIGGER admin_groups_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON api_umbrella.admin_groups FOR EACH ROW EXECUTE PROCEDURE api_umbrella.stamp_record();
+CREATE TRIGGER admin_groups_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON api_umbrella.admin_groups FOR EACH ROW EXECUTE FUNCTION api_umbrella.stamp_record();
 
 
 --
 -- Name: admin_permissions admin_permissions_stamp_record; Type: TRIGGER; Schema: api_umbrella; Owner: -
 --
 
-CREATE TRIGGER admin_permissions_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON api_umbrella.admin_permissions FOR EACH ROW EXECUTE PROCEDURE api_umbrella.stamp_record();
+CREATE TRIGGER admin_permissions_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON api_umbrella.admin_permissions FOR EACH ROW EXECUTE FUNCTION api_umbrella.stamp_record();
 
 
 --
 -- Name: admins admins_stamp_record; Type: TRIGGER; Schema: api_umbrella; Owner: -
 --
 
-CREATE TRIGGER admins_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON api_umbrella.admins FOR EACH ROW EXECUTE PROCEDURE api_umbrella.stamp_record();
+CREATE TRIGGER admins_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON api_umbrella.admins FOR EACH ROW EXECUTE FUNCTION api_umbrella.stamp_record();
 
 
 --
 -- Name: analytics_cache analytics_cache_stamp_record; Type: TRIGGER; Schema: api_umbrella; Owner: -
 --
 
-CREATE TRIGGER analytics_cache_stamp_record BEFORE UPDATE ON api_umbrella.analytics_cache FOR EACH ROW EXECUTE PROCEDURE api_umbrella.update_timestamp();
+CREATE TRIGGER analytics_cache_stamp_record BEFORE UPDATE ON api_umbrella.analytics_cache FOR EACH ROW EXECUTE FUNCTION api_umbrella.update_timestamp();
 
 
 --
 -- Name: analytics_cache analytics_cache_unique_user_ids; Type: TRIGGER; Schema: api_umbrella; Owner: -
 --
 
-CREATE TRIGGER analytics_cache_unique_user_ids BEFORE INSERT OR UPDATE OF data ON api_umbrella.analytics_cache FOR EACH ROW EXECUTE PROCEDURE api_umbrella.analytics_cache_extract_unique_user_ids();
+CREATE TRIGGER analytics_cache_unique_user_ids BEFORE INSERT OR UPDATE OF data ON api_umbrella.analytics_cache FOR EACH ROW EXECUTE FUNCTION api_umbrella.analytics_cache_extract_unique_user_ids();
 
 
 --
 -- Name: analytics_cities analytics_cities_stamp_record; Type: TRIGGER; Schema: api_umbrella; Owner: -
 --
 
-CREATE TRIGGER analytics_cities_stamp_record BEFORE UPDATE ON api_umbrella.analytics_cities FOR EACH ROW EXECUTE PROCEDURE api_umbrella.update_timestamp();
+CREATE TRIGGER analytics_cities_stamp_record BEFORE UPDATE ON api_umbrella.analytics_cities FOR EACH ROW EXECUTE FUNCTION api_umbrella.update_timestamp();
 
 
 --
 -- Name: api_backend_http_headers api_backend_http_headers_stamp_record; Type: TRIGGER; Schema: api_umbrella; Owner: -
 --
 
-CREATE TRIGGER api_backend_http_headers_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON api_umbrella.api_backend_http_headers FOR EACH ROW EXECUTE PROCEDURE api_umbrella.stamp_record('[{"table_name":"api_backend_settings","primary_key":"id","foreign_key":"api_backend_settings_id"}]');
+CREATE TRIGGER api_backend_http_headers_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON api_umbrella.api_backend_http_headers FOR EACH ROW EXECUTE FUNCTION api_umbrella.stamp_record('[{"table_name":"api_backend_settings","primary_key":"id","foreign_key":"api_backend_settings_id"}]');
 
 
 --
 -- Name: api_backend_rewrites api_backend_rewrites_stamp_record; Type: TRIGGER; Schema: api_umbrella; Owner: -
 --
 
-CREATE TRIGGER api_backend_rewrites_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON api_umbrella.api_backend_rewrites FOR EACH ROW EXECUTE PROCEDURE api_umbrella.stamp_record('[{"table_name":"api_backends","primary_key":"id","foreign_key":"api_backend_id"}]');
+CREATE TRIGGER api_backend_rewrites_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON api_umbrella.api_backend_rewrites FOR EACH ROW EXECUTE FUNCTION api_umbrella.stamp_record('[{"table_name":"api_backends","primary_key":"id","foreign_key":"api_backend_id"}]');
 
 
 --
 -- Name: api_backend_servers api_backend_servers_stamp_record; Type: TRIGGER; Schema: api_umbrella; Owner: -
 --
 
-CREATE TRIGGER api_backend_servers_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON api_umbrella.api_backend_servers FOR EACH ROW EXECUTE PROCEDURE api_umbrella.stamp_record('[{"table_name":"api_backends","primary_key":"id","foreign_key":"api_backend_id"}]');
+CREATE TRIGGER api_backend_servers_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON api_umbrella.api_backend_servers FOR EACH ROW EXECUTE FUNCTION api_umbrella.stamp_record('[{"table_name":"api_backends","primary_key":"id","foreign_key":"api_backend_id"}]');
 
 
 --
 -- Name: api_backend_settings_required_roles api_backend_settings_required_roles_stamp_record; Type: TRIGGER; Schema: api_umbrella; Owner: -
 --
 
-CREATE TRIGGER api_backend_settings_required_roles_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON api_umbrella.api_backend_settings_required_roles FOR EACH ROW EXECUTE PROCEDURE api_umbrella.stamp_record('[{"table_name":"api_backend_settings","primary_key":"id","foreign_key":"api_backend_settings_id"}]');
+CREATE TRIGGER api_backend_settings_required_roles_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON api_umbrella.api_backend_settings_required_roles FOR EACH ROW EXECUTE FUNCTION api_umbrella.stamp_record('[{"table_name":"api_backend_settings","primary_key":"id","foreign_key":"api_backend_settings_id"}]');
 
 
 --
 -- Name: api_backend_settings api_backend_settings_stamp_record; Type: TRIGGER; Schema: api_umbrella; Owner: -
 --
 
-CREATE TRIGGER api_backend_settings_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON api_umbrella.api_backend_settings FOR EACH ROW EXECUTE PROCEDURE api_umbrella.stamp_record('[{"table_name":"api_backends","primary_key":"id","foreign_key":"api_backend_id"},{"table_name":"api_backend_sub_url_settings","primary_key":"id","foreign_key":"api_backend_sub_url_settings_id"}]');
+CREATE TRIGGER api_backend_settings_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON api_umbrella.api_backend_settings FOR EACH ROW EXECUTE FUNCTION api_umbrella.stamp_record('[{"table_name":"api_backends","primary_key":"id","foreign_key":"api_backend_id"},{"table_name":"api_backend_sub_url_settings","primary_key":"id","foreign_key":"api_backend_sub_url_settings_id"}]');
 
 
 --
 -- Name: api_backend_sub_url_settings api_backend_sub_url_settings_stamp_record; Type: TRIGGER; Schema: api_umbrella; Owner: -
 --
 
-CREATE TRIGGER api_backend_sub_url_settings_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON api_umbrella.api_backend_sub_url_settings FOR EACH ROW EXECUTE PROCEDURE api_umbrella.stamp_record('[{"table_name":"api_backends","primary_key":"id","foreign_key":"api_backend_id"}]');
+CREATE TRIGGER api_backend_sub_url_settings_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON api_umbrella.api_backend_sub_url_settings FOR EACH ROW EXECUTE FUNCTION api_umbrella.stamp_record('[{"table_name":"api_backends","primary_key":"id","foreign_key":"api_backend_id"}]');
 
 
 --
 -- Name: api_backend_url_matches api_backend_url_matches_stamp_record; Type: TRIGGER; Schema: api_umbrella; Owner: -
 --
 
-CREATE TRIGGER api_backend_url_matches_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON api_umbrella.api_backend_url_matches FOR EACH ROW EXECUTE PROCEDURE api_umbrella.stamp_record('[{"table_name":"api_backends","primary_key":"id","foreign_key":"api_backend_id"}]');
+CREATE TRIGGER api_backend_url_matches_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON api_umbrella.api_backend_url_matches FOR EACH ROW EXECUTE FUNCTION api_umbrella.stamp_record('[{"table_name":"api_backends","primary_key":"id","foreign_key":"api_backend_id"}]');
 
 
 --
 -- Name: api_backends api_backends_stamp_record; Type: TRIGGER; Schema: api_umbrella; Owner: -
 --
 
-CREATE TRIGGER api_backends_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON api_umbrella.api_backends FOR EACH ROW EXECUTE PROCEDURE api_umbrella.stamp_record();
+CREATE TRIGGER api_backends_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON api_umbrella.api_backends FOR EACH ROW EXECUTE FUNCTION api_umbrella.stamp_record();
 
 
 --
 -- Name: api_roles api_roles_stamp_record; Type: TRIGGER; Schema: api_umbrella; Owner: -
 --
 
-CREATE TRIGGER api_roles_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON api_umbrella.api_roles FOR EACH ROW EXECUTE PROCEDURE api_umbrella.stamp_record();
+CREATE TRIGGER api_roles_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON api_umbrella.api_roles FOR EACH ROW EXECUTE FUNCTION api_umbrella.stamp_record();
 
 
 --
 -- Name: api_scopes api_scopes_stamp_record; Type: TRIGGER; Schema: api_umbrella; Owner: -
 --
 
-CREATE TRIGGER api_scopes_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON api_umbrella.api_scopes FOR EACH ROW EXECUTE PROCEDURE api_umbrella.stamp_record();
+CREATE TRIGGER api_scopes_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON api_umbrella.api_scopes FOR EACH ROW EXECUTE FUNCTION api_umbrella.stamp_record();
 
 
 --
 -- Name: api_user_settings api_user_settings_stamp_record; Type: TRIGGER; Schema: api_umbrella; Owner: -
 --
 
-CREATE TRIGGER api_user_settings_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON api_umbrella.api_user_settings FOR EACH ROW EXECUTE PROCEDURE api_umbrella.stamp_record('[{"table_name":"api_users","primary_key":"id","foreign_key":"api_user_id"}]');
+CREATE TRIGGER api_user_settings_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON api_umbrella.api_user_settings FOR EACH ROW EXECUTE FUNCTION api_umbrella.stamp_record('[{"table_name":"api_users","primary_key":"id","foreign_key":"api_user_id"}]');
 
 
 --
 -- Name: api_users api_users_increment_version_trigger; Type: TRIGGER; Schema: api_umbrella; Owner: -
 --
 
-CREATE TRIGGER api_users_increment_version_trigger BEFORE INSERT OR UPDATE ON api_umbrella.api_users FOR EACH ROW EXECUTE PROCEDURE api_umbrella.api_users_increment_version();
+CREATE TRIGGER api_users_increment_version_trigger BEFORE INSERT OR UPDATE ON api_umbrella.api_users FOR EACH ROW EXECUTE FUNCTION api_umbrella.api_users_increment_version();
 
 
 --
 -- Name: api_users_roles api_users_roles_stamp_record; Type: TRIGGER; Schema: api_umbrella; Owner: -
 --
 
-CREATE TRIGGER api_users_roles_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON api_umbrella.api_users_roles FOR EACH ROW EXECUTE PROCEDURE api_umbrella.stamp_record('[{"table_name":"api_users","primary_key":"id","foreign_key":"api_user_id"}]');
+CREATE TRIGGER api_users_roles_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON api_umbrella.api_users_roles FOR EACH ROW EXECUTE FUNCTION api_umbrella.stamp_record('[{"table_name":"api_users","primary_key":"id","foreign_key":"api_user_id"}]');
 
 
 --
 -- Name: api_users api_users_stamp_record; Type: TRIGGER; Schema: api_umbrella; Owner: -
 --
 
-CREATE TRIGGER api_users_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON api_umbrella.api_users FOR EACH ROW EXECUTE PROCEDURE api_umbrella.stamp_record();
+CREATE TRIGGER api_users_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON api_umbrella.api_users FOR EACH ROW EXECUTE FUNCTION api_umbrella.stamp_record();
 
 
 --
 -- Name: admin_groups audit_trigger_row; Type: TRIGGER; Schema: api_umbrella; Owner: -
 --
 
-CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_umbrella.admin_groups FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
+CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_umbrella.admin_groups FOR EACH ROW EXECUTE FUNCTION audit.if_modified_func('true');
 
 
 --
 -- Name: admin_groups_admin_permissions audit_trigger_row; Type: TRIGGER; Schema: api_umbrella; Owner: -
 --
 
-CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_umbrella.admin_groups_admin_permissions FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
+CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_umbrella.admin_groups_admin_permissions FOR EACH ROW EXECUTE FUNCTION audit.if_modified_func('true');
 
 
 --
 -- Name: admin_groups_admins audit_trigger_row; Type: TRIGGER; Schema: api_umbrella; Owner: -
 --
 
-CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_umbrella.admin_groups_admins FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
+CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_umbrella.admin_groups_admins FOR EACH ROW EXECUTE FUNCTION audit.if_modified_func('true');
 
 
 --
 -- Name: admin_groups_api_scopes audit_trigger_row; Type: TRIGGER; Schema: api_umbrella; Owner: -
 --
 
-CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_umbrella.admin_groups_api_scopes FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
+CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_umbrella.admin_groups_api_scopes FOR EACH ROW EXECUTE FUNCTION audit.if_modified_func('true');
 
 
 --
 -- Name: admin_permissions audit_trigger_row; Type: TRIGGER; Schema: api_umbrella; Owner: -
 --
 
-CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_umbrella.admin_permissions FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
+CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_umbrella.admin_permissions FOR EACH ROW EXECUTE FUNCTION audit.if_modified_func('true');
 
 
 --
 -- Name: admins audit_trigger_row; Type: TRIGGER; Schema: api_umbrella; Owner: -
 --
 
-CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_umbrella.admins FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
+CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_umbrella.admins FOR EACH ROW EXECUTE FUNCTION audit.if_modified_func('true');
 
 
 --
 -- Name: api_backend_http_headers audit_trigger_row; Type: TRIGGER; Schema: api_umbrella; Owner: -
 --
 
-CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_umbrella.api_backend_http_headers FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
+CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_umbrella.api_backend_http_headers FOR EACH ROW EXECUTE FUNCTION audit.if_modified_func('true');
 
 
 --
 -- Name: api_backend_rewrites audit_trigger_row; Type: TRIGGER; Schema: api_umbrella; Owner: -
 --
 
-CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_umbrella.api_backend_rewrites FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
+CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_umbrella.api_backend_rewrites FOR EACH ROW EXECUTE FUNCTION audit.if_modified_func('true');
 
 
 --
 -- Name: api_backend_servers audit_trigger_row; Type: TRIGGER; Schema: api_umbrella; Owner: -
 --
 
-CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_umbrella.api_backend_servers FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
+CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_umbrella.api_backend_servers FOR EACH ROW EXECUTE FUNCTION audit.if_modified_func('true');
 
 
 --
 -- Name: api_backend_settings audit_trigger_row; Type: TRIGGER; Schema: api_umbrella; Owner: -
 --
 
-CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_umbrella.api_backend_settings FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
+CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_umbrella.api_backend_settings FOR EACH ROW EXECUTE FUNCTION audit.if_modified_func('true');
 
 
 --
 -- Name: api_backend_settings_required_roles audit_trigger_row; Type: TRIGGER; Schema: api_umbrella; Owner: -
 --
 
-CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_umbrella.api_backend_settings_required_roles FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
+CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_umbrella.api_backend_settings_required_roles FOR EACH ROW EXECUTE FUNCTION audit.if_modified_func('true');
 
 
 --
 -- Name: api_backend_sub_url_settings audit_trigger_row; Type: TRIGGER; Schema: api_umbrella; Owner: -
 --
 
-CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_umbrella.api_backend_sub_url_settings FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
+CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_umbrella.api_backend_sub_url_settings FOR EACH ROW EXECUTE FUNCTION audit.if_modified_func('true');
 
 
 --
 -- Name: api_backend_url_matches audit_trigger_row; Type: TRIGGER; Schema: api_umbrella; Owner: -
 --
 
-CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_umbrella.api_backend_url_matches FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
+CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_umbrella.api_backend_url_matches FOR EACH ROW EXECUTE FUNCTION audit.if_modified_func('true');
 
 
 --
 -- Name: api_backends audit_trigger_row; Type: TRIGGER; Schema: api_umbrella; Owner: -
 --
 
-CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_umbrella.api_backends FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
+CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_umbrella.api_backends FOR EACH ROW EXECUTE FUNCTION audit.if_modified_func('true');
 
 
 --
 -- Name: api_roles audit_trigger_row; Type: TRIGGER; Schema: api_umbrella; Owner: -
 --
 
-CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_umbrella.api_roles FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
+CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_umbrella.api_roles FOR EACH ROW EXECUTE FUNCTION audit.if_modified_func('true');
 
 
 --
 -- Name: api_scopes audit_trigger_row; Type: TRIGGER; Schema: api_umbrella; Owner: -
 --
 
-CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_umbrella.api_scopes FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
+CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_umbrella.api_scopes FOR EACH ROW EXECUTE FUNCTION audit.if_modified_func('true');
 
 
 --
 -- Name: api_user_settings audit_trigger_row; Type: TRIGGER; Schema: api_umbrella; Owner: -
 --
 
-CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_umbrella.api_user_settings FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
+CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_umbrella.api_user_settings FOR EACH ROW EXECUTE FUNCTION audit.if_modified_func('true');
 
 
 --
 -- Name: api_users audit_trigger_row; Type: TRIGGER; Schema: api_umbrella; Owner: -
 --
 
-CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_umbrella.api_users FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
+CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_umbrella.api_users FOR EACH ROW EXECUTE FUNCTION audit.if_modified_func('true');
 
 
 --
 -- Name: api_users_roles audit_trigger_row; Type: TRIGGER; Schema: api_umbrella; Owner: -
 --
 
-CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_umbrella.api_users_roles FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
+CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_umbrella.api_users_roles FOR EACH ROW EXECUTE FUNCTION audit.if_modified_func('true');
 
 
 --
 -- Name: published_config audit_trigger_row; Type: TRIGGER; Schema: api_umbrella; Owner: -
 --
 
-CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_umbrella.published_config FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
+CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_umbrella.published_config FOR EACH ROW EXECUTE FUNCTION audit.if_modified_func('true');
 
 
 --
 -- Name: rate_limits audit_trigger_row; Type: TRIGGER; Schema: api_umbrella; Owner: -
 --
 
-CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_umbrella.rate_limits FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
+CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_umbrella.rate_limits FOR EACH ROW EXECUTE FUNCTION audit.if_modified_func('true');
 
 
 --
 -- Name: website_backends audit_trigger_row; Type: TRIGGER; Schema: api_umbrella; Owner: -
 --
 
-CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_umbrella.website_backends FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
+CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_umbrella.website_backends FOR EACH ROW EXECUTE FUNCTION audit.if_modified_func('true');
 
 
 --
 -- Name: admin_groups audit_trigger_stm; Type: TRIGGER; Schema: api_umbrella; Owner: -
 --
 
-CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_umbrella.admin_groups FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
+CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_umbrella.admin_groups FOR EACH STATEMENT EXECUTE FUNCTION audit.if_modified_func('true');
 
 
 --
 -- Name: admin_groups_admin_permissions audit_trigger_stm; Type: TRIGGER; Schema: api_umbrella; Owner: -
 --
 
-CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_umbrella.admin_groups_admin_permissions FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
+CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_umbrella.admin_groups_admin_permissions FOR EACH STATEMENT EXECUTE FUNCTION audit.if_modified_func('true');
 
 
 --
 -- Name: admin_groups_admins audit_trigger_stm; Type: TRIGGER; Schema: api_umbrella; Owner: -
 --
 
-CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_umbrella.admin_groups_admins FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
+CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_umbrella.admin_groups_admins FOR EACH STATEMENT EXECUTE FUNCTION audit.if_modified_func('true');
 
 
 --
 -- Name: admin_groups_api_scopes audit_trigger_stm; Type: TRIGGER; Schema: api_umbrella; Owner: -
 --
 
-CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_umbrella.admin_groups_api_scopes FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
+CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_umbrella.admin_groups_api_scopes FOR EACH STATEMENT EXECUTE FUNCTION audit.if_modified_func('true');
 
 
 --
 -- Name: admin_permissions audit_trigger_stm; Type: TRIGGER; Schema: api_umbrella; Owner: -
 --
 
-CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_umbrella.admin_permissions FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
+CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_umbrella.admin_permissions FOR EACH STATEMENT EXECUTE FUNCTION audit.if_modified_func('true');
 
 
 --
 -- Name: admins audit_trigger_stm; Type: TRIGGER; Schema: api_umbrella; Owner: -
 --
 
-CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_umbrella.admins FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
+CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_umbrella.admins FOR EACH STATEMENT EXECUTE FUNCTION audit.if_modified_func('true');
 
 
 --
 -- Name: api_backend_http_headers audit_trigger_stm; Type: TRIGGER; Schema: api_umbrella; Owner: -
 --
 
-CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_umbrella.api_backend_http_headers FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
+CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_umbrella.api_backend_http_headers FOR EACH STATEMENT EXECUTE FUNCTION audit.if_modified_func('true');
 
 
 --
 -- Name: api_backend_rewrites audit_trigger_stm; Type: TRIGGER; Schema: api_umbrella; Owner: -
 --
 
-CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_umbrella.api_backend_rewrites FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
+CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_umbrella.api_backend_rewrites FOR EACH STATEMENT EXECUTE FUNCTION audit.if_modified_func('true');
 
 
 --
 -- Name: api_backend_servers audit_trigger_stm; Type: TRIGGER; Schema: api_umbrella; Owner: -
 --
 
-CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_umbrella.api_backend_servers FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
+CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_umbrella.api_backend_servers FOR EACH STATEMENT EXECUTE FUNCTION audit.if_modified_func('true');
 
 
 --
 -- Name: api_backend_settings audit_trigger_stm; Type: TRIGGER; Schema: api_umbrella; Owner: -
 --
 
-CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_umbrella.api_backend_settings FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
+CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_umbrella.api_backend_settings FOR EACH STATEMENT EXECUTE FUNCTION audit.if_modified_func('true');
 
 
 --
 -- Name: api_backend_settings_required_roles audit_trigger_stm; Type: TRIGGER; Schema: api_umbrella; Owner: -
 --
 
-CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_umbrella.api_backend_settings_required_roles FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
+CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_umbrella.api_backend_settings_required_roles FOR EACH STATEMENT EXECUTE FUNCTION audit.if_modified_func('true');
 
 
 --
 -- Name: api_backend_sub_url_settings audit_trigger_stm; Type: TRIGGER; Schema: api_umbrella; Owner: -
 --
 
-CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_umbrella.api_backend_sub_url_settings FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
+CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_umbrella.api_backend_sub_url_settings FOR EACH STATEMENT EXECUTE FUNCTION audit.if_modified_func('true');
 
 
 --
 -- Name: api_backend_url_matches audit_trigger_stm; Type: TRIGGER; Schema: api_umbrella; Owner: -
 --
 
-CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_umbrella.api_backend_url_matches FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
+CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_umbrella.api_backend_url_matches FOR EACH STATEMENT EXECUTE FUNCTION audit.if_modified_func('true');
 
 
 --
 -- Name: api_backends audit_trigger_stm; Type: TRIGGER; Schema: api_umbrella; Owner: -
 --
 
-CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_umbrella.api_backends FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
+CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_umbrella.api_backends FOR EACH STATEMENT EXECUTE FUNCTION audit.if_modified_func('true');
 
 
 --
 -- Name: api_roles audit_trigger_stm; Type: TRIGGER; Schema: api_umbrella; Owner: -
 --
 
-CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_umbrella.api_roles FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
+CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_umbrella.api_roles FOR EACH STATEMENT EXECUTE FUNCTION audit.if_modified_func('true');
 
 
 --
 -- Name: api_scopes audit_trigger_stm; Type: TRIGGER; Schema: api_umbrella; Owner: -
 --
 
-CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_umbrella.api_scopes FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
+CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_umbrella.api_scopes FOR EACH STATEMENT EXECUTE FUNCTION audit.if_modified_func('true');
 
 
 --
 -- Name: api_user_settings audit_trigger_stm; Type: TRIGGER; Schema: api_umbrella; Owner: -
 --
 
-CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_umbrella.api_user_settings FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
+CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_umbrella.api_user_settings FOR EACH STATEMENT EXECUTE FUNCTION audit.if_modified_func('true');
 
 
 --
 -- Name: api_users audit_trigger_stm; Type: TRIGGER; Schema: api_umbrella; Owner: -
 --
 
-CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_umbrella.api_users FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
+CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_umbrella.api_users FOR EACH STATEMENT EXECUTE FUNCTION audit.if_modified_func('true');
 
 
 --
 -- Name: api_users_roles audit_trigger_stm; Type: TRIGGER; Schema: api_umbrella; Owner: -
 --
 
-CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_umbrella.api_users_roles FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
+CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_umbrella.api_users_roles FOR EACH STATEMENT EXECUTE FUNCTION audit.if_modified_func('true');
 
 
 --
 -- Name: published_config audit_trigger_stm; Type: TRIGGER; Schema: api_umbrella; Owner: -
 --
 
-CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_umbrella.published_config FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
+CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_umbrella.published_config FOR EACH STATEMENT EXECUTE FUNCTION audit.if_modified_func('true');
 
 
 --
 -- Name: rate_limits audit_trigger_stm; Type: TRIGGER; Schema: api_umbrella; Owner: -
 --
 
-CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_umbrella.rate_limits FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
+CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_umbrella.rate_limits FOR EACH STATEMENT EXECUTE FUNCTION audit.if_modified_func('true');
 
 
 --
 -- Name: website_backends audit_trigger_stm; Type: TRIGGER; Schema: api_umbrella; Owner: -
 --
 
-CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_umbrella.website_backends FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
+CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_umbrella.website_backends FOR EACH STATEMENT EXECUTE FUNCTION audit.if_modified_func('true');
 
 
 --
 -- Name: cache cache_stamp_record; Type: TRIGGER; Schema: api_umbrella; Owner: -
 --
 
-CREATE TRIGGER cache_stamp_record BEFORE UPDATE ON api_umbrella.cache FOR EACH ROW EXECUTE PROCEDURE api_umbrella.update_timestamp();
+CREATE TRIGGER cache_stamp_record BEFORE UPDATE ON api_umbrella.cache FOR EACH ROW EXECUTE FUNCTION api_umbrella.update_timestamp();
 
 
 --
 -- Name: distributed_rate_limit_counters distributed_rate_limit_counters_increment_version_trigger; Type: TRIGGER; Schema: api_umbrella; Owner: -
 --
 
-CREATE TRIGGER distributed_rate_limit_counters_increment_version_trigger BEFORE INSERT OR UPDATE ON api_umbrella.distributed_rate_limit_counters FOR EACH ROW EXECUTE PROCEDURE api_umbrella.distributed_rate_limit_counters_increment_version();
+CREATE TRIGGER distributed_rate_limit_counters_increment_version_trigger BEFORE INSERT OR UPDATE ON api_umbrella.distributed_rate_limit_counters FOR EACH ROW EXECUTE FUNCTION api_umbrella.distributed_rate_limit_counters_increment_version();
 
 
 --
 -- Name: distributed_rate_limit_counters_temp distributed_rate_limit_counters_temp_increment_version_trigger; Type: TRIGGER; Schema: api_umbrella; Owner: -
 --
 
-CREATE TRIGGER distributed_rate_limit_counters_temp_increment_version_trigger BEFORE INSERT OR UPDATE ON api_umbrella.distributed_rate_limit_counters_temp FOR EACH ROW EXECUTE PROCEDURE api_umbrella.distributed_rate_limit_counters_temp_increment_version();
+CREATE TRIGGER distributed_rate_limit_counters_temp_increment_version_trigger BEFORE INSERT OR UPDATE ON api_umbrella.distributed_rate_limit_counters_temp FOR EACH ROW EXECUTE FUNCTION api_umbrella.distributed_rate_limit_counters_temp_increment_version();
 
 
 --
 -- Name: published_config published_config_stamp_record; Type: TRIGGER; Schema: api_umbrella; Owner: -
 --
 
-CREATE TRIGGER published_config_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON api_umbrella.published_config FOR EACH ROW EXECUTE PROCEDURE api_umbrella.stamp_record();
+CREATE TRIGGER published_config_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON api_umbrella.published_config FOR EACH ROW EXECUTE FUNCTION api_umbrella.stamp_record();
 
 
 --
 -- Name: rate_limits rate_limits_stamp_record; Type: TRIGGER; Schema: api_umbrella; Owner: -
 --
 
-CREATE TRIGGER rate_limits_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON api_umbrella.rate_limits FOR EACH ROW EXECUTE PROCEDURE api_umbrella.stamp_record('[{"table_name":"api_backend_settings","primary_key":"id","foreign_key":"api_backend_settings_id"},{"table_name":"api_user_settings","primary_key":"id","foreign_key":"api_user_settings_id"}]');
+CREATE TRIGGER rate_limits_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON api_umbrella.rate_limits FOR EACH ROW EXECUTE FUNCTION api_umbrella.stamp_record('[{"table_name":"api_backend_settings","primary_key":"id","foreign_key":"api_backend_settings_id"},{"table_name":"api_user_settings","primary_key":"id","foreign_key":"api_user_settings_id"}]');
 
 
 --
 -- Name: sessions sessions_stamp_record; Type: TRIGGER; Schema: api_umbrella; Owner: -
 --
 
-CREATE TRIGGER sessions_stamp_record BEFORE UPDATE ON api_umbrella.sessions FOR EACH ROW EXECUTE PROCEDURE api_umbrella.update_timestamp();
+CREATE TRIGGER sessions_stamp_record BEFORE UPDATE ON api_umbrella.sessions FOR EACH ROW EXECUTE FUNCTION api_umbrella.update_timestamp();
 
 
 --
 -- Name: website_backends website_backends_stamp_record; Type: TRIGGER; Schema: api_umbrella; Owner: -
 --
 
-CREATE TRIGGER website_backends_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON api_umbrella.website_backends FOR EACH ROW EXECUTE PROCEDURE api_umbrella.stamp_record();
+CREATE TRIGGER website_backends_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON api_umbrella.website_backends FOR EACH ROW EXECUTE FUNCTION api_umbrella.stamp_record();
 
 
 --

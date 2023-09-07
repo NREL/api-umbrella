@@ -3,8 +3,10 @@ local setenv = require("posix.stdlib").setenv
 
 -- Override the default config details that Lapis will use in src/config.lua
 -- and src/migrations.lua to connect to the database.
-config["postgresql"]["username"] = config["postgresql"]["migrations"]["username"]
-config["postgresql"]["password"] = config["postgresql"]["migrations"]["password"]
+local migrate_username = os.getenv("DB_USERNAME") or config["postgresql"]["migrations"]["username"]
+local migrate_password = os.getenv("DB_PASSWORD") or config["postgresql"]["migrations"]["password"]
+config["postgresql"]["username"] = migrate_username
+config["postgresql"]["password"] = migrate_password
 
 local db = require("lapis.db")
 local migrations = require("lapis.db.migrations")
@@ -22,8 +24,8 @@ return function()
   db.query("SET search_path = api_umbrella, public")
   migrations.run_migrations(require("migrations"))
 
-  pg_utils.db_config["user"] = config["postgresql"]["migrations"]["username"]
-  pg_utils.db_config["password"] = config["postgresql"]["migrations"]["password"]
+  pg_utils.db_config["user"] = migrate_username
+  pg_utils.db_config["password"] = migrate_password
 
   local grants_sql_path = path_join(os.getenv("API_UMBRELLA_SRC_ROOT"), "db/grants.sql")
   local grants_sql = readfile(grants_sql_path, true)
@@ -34,8 +36,8 @@ return function()
     setenv("PGHOST", config["postgresql"]["host"])
     setenv("PGPORT", config["postgresql"]["port"])
     setenv("PGDATABASE", config["postgresql"]["database"])
-    setenv("PGUSER", config["postgresql"]["migrations"]["username"])
-    setenv("PGPASSWORD", config["postgresql"]["migrations"]["password"])
+    setenv("PGUSER", migrate_username)
+    setenv("PGPASSWORD", migrate_password)
     local schema_path = path_join(os.getenv("API_UMBRELLA_SRC_ROOT"), "db/schema.sql")
     local _, err = shell_blocking.run({
       "pg_dump",
