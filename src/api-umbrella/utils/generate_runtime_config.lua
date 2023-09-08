@@ -3,6 +3,7 @@ local array_includes = require "api-umbrella.utils.array_includes"
 local cache_computed_api_backend_settings = require("api-umbrella.utils.active_config_store.cache_computed_api_backend_settings")
 local deep_defaults = require "api-umbrella.utils.deep_defaults"
 local deep_merge_overwrite_arrays = require "api-umbrella.utils.deep_merge_overwrite_arrays"
+local deepcopy = require("pl.tablex").deepcopy
 local dirname = require("posix.libgen").dirname
 local getgrgid = require("posix.grp").getgrgid
 local getpwuid = require("posix.pwd").getpwuid
@@ -20,7 +21,6 @@ local random_token = require "api-umbrella.utils.random_token"
 local shell_blocking_capture = require("shell-games").capture
 local stat = require "posix.sys.stat"
 local strip = require("pl.stringx").strip
-local table_copy = require("pl.tablex").copy
 local unistd = require "posix.unistd"
 local url_parse = require "api-umbrella.utils.url_parse"
 
@@ -144,7 +144,8 @@ local function set_computed_config(config)
 
   process_api_backends(config)
   process_website_backends(config)
-  cache_computed_api_backend_settings(config, config["default_api_backend_settings"])
+  config["_default_api_backend_settings"] = deepcopy(config["default_api_backend_settings"])
+  cache_computed_api_backend_settings(config, config["_default_api_backend_settings"])
 
   local trusted_proxies = config["router"]["trusted_proxies"] or {}
   if not array_includes(trusted_proxies, "127.0.0.1") then
@@ -311,7 +312,7 @@ local function set_computed_config(config)
     config["analytics"]["outputs"] = { config["analytics"]["adapter"] }
   end
 
-  local strip_request_cookies = table_copy(config["strip_cookies"])
+  local strip_request_cookies = deepcopy(config["strip_cookies"])
   table.insert(strip_request_cookies, "^_api_umbrella_session$")
   table.insert(strip_request_cookies, "^_api_umbrella_csrf_token$")
   config["_strip_request_cookies_regex_non_web_app_backends"] = table.concat(strip_request_cookies, "|")

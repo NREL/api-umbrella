@@ -1,7 +1,7 @@
 local is_empty = require "api-umbrella.utils.is_empty"
 
 return function(settings, user)
-  local required_roles = settings["required_roles"]
+  local required_roles = settings["_required_roles"]
 
   -- If this API doesn't require any roles, no need to check anything, so
   -- continue on.
