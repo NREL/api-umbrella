@@ -694,20 +694,6 @@ server {
         return ngx.exit(400)
       end
 
-      -- Actually begin the response before the request has been received
-      -- entirely. This is to ensure that when testing a longer
-      -- "proxy_send_timeout" we don't end up hitting the "proxy_read_timeout"
-      -- sooner, which is expecting some type of response back.
-      local ok, err = sock:send(
-        "HTTP/1.1 200 OK\r\n" ..
-        "Connection: keep-alive\r\n" ..
-        "Content-Type: application/json\r\n" ..
-        "Transfer-Encoding: chunked\r\n\r\n"
-      )
-      if not ok then
-        error_exit("failed to send response: ", err)
-      end
-
       local MAX_CHUNKS = 1000
       local eof = false
       local chunks = {}
@@ -757,17 +743,20 @@ server {
         timer = ngx.now()
 
         chunks[i] = chunk
-
-        -- Send periodic responses of an empty space (" ") on the response to
-        -- ensure we don't hit the shorter "proxy_read_timeout" in tests.
-        local ok, err = sock:send("1\r\n \r\n")
-        if not ok then
-          error_exit("failed to send response: ", err)
-        end
       end
 
       if not eof then
         error_exit("too many chunks (more than ", MAX_CHUNKS, ")")
+      end
+
+      local ok, err = sock:send(
+        "HTTP/1.1 200 OK\r\n" ..
+        "Connection: keep-alive\r\n" ..
+        "Content-Type: application/json\r\n" ..
+        "Transfer-Encoding: chunked\r\n\r\n"
+      )
+      if not ok then
+        error_exit("failed to send response: ", err)
       end
 
       local body = cjson.encode({
