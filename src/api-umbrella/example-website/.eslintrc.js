@@ -7,5 +7,5 @@ module.exports = {
   parserOptions: {
     ecmaVersion: 12,
   },
-  extends: ["airbnb-base", "plugin:prettier/recommended"],
+  extends: ["airbnb-base", "prettier"],
 };

@@ -12,8 +12,6 @@ import { marked } from 'marked';
 marked.use({
   gfm: true,
   breaks: true,
-  mangle: false,
-  headerIds: false,
 });
 
 @classic
