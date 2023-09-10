@@ -189,6 +189,9 @@ elif [[ "$ID_NORMALIZED" == "debian" ]]; then
     gzip
 
     # TrafficServer
+    libhwloc15
+    libjemalloc2
+    libunwind8
     libxml2
 
     # rsyslog
@@ -281,6 +284,11 @@ elif [[ "$ID_NORMALIZED" == "debian" ]]; then
 
     # ngx_http_geoip2_module
     libmaxminddb-dev
+
+    # TrafficServer
+    libhwloc-dev
+    libjemalloc-dev
+    libunwind-dev
   )
   test_runtime_dependencies=(
     unbound

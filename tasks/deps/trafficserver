@@ -29,6 +29,7 @@ SPHINXBUILD=false ./configure \
   --disable-maintainer-mode \
   --disable-dependency-tracking \
   --prefix="$INSTALL_PREFIX_EMBEDDED" \
+  --with-jemalloc \
   --with-luajit="$STAGE_EMBEDDED_DIR/openresty/luajit"
 make -j"$NPROC"
 make install DESTDIR="$STAGE_DIR"
