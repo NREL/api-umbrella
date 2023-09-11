@@ -16,9 +16,6 @@ nginx:
   access_log_options:
   # Increase error log verbosity in tests.
   error_log_level: notice
-  proxy_connect_timeout: 2
-  proxy_read_timeout: 5
-  proxy_send_timeout: 9
 trafficserver:
   port: 13009
 envoy:
@@ -55,8 +52,8 @@ web:
       address: 127.0.0.1
       port: 13102
   contact_form_email: default-test-contact-email@example.com
-  analytics_v0_summary_start_time: 2013-07-01T00:00:00.000-06:00
-  analytics_v0_summary_end_time: 2013-08-31T23:59:59.999-06:00
+  analytics_v0_summary_start_time: "2013-07-01T00:00:00.000-06:00"
+  analytics_v0_summary_end_time: "2013-08-31T23:59:59.999-06:00"
 router:
   trusted_proxies:
     - 192.168.12.0/23

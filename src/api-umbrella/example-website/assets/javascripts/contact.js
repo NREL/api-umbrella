@@ -48,12 +48,10 @@ formEl.addEventListener("submit", (event) => {
         throw new Error("Response is not JSON");
       }
 
-      return response.json().then((data) => {
-        return {
-          response,
-          data,
-        };
-      });
+      return response.json().then((data) => ({
+        response,
+        data,
+      }));
     })
     .then(({ response, data }) => {
       if (!response.ok) {
@@ -96,7 +94,7 @@ formEl.addEventListener("submit", (event) => {
       }
 
       modalMessageEl.innerHTML = `Sending your message unexpectedly failed.${messageStr}<br>Please try again or <a href="${escapeHtml(
-        options.issuesUrl
+        options.issuesUrl,
       )}">file an issue</a> for assistance.`;
       modal.show();
     })

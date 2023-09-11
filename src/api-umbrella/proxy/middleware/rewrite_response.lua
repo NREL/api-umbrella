@@ -11,17 +11,19 @@ local resp_get_headers = ngx.resp.get_headers
 
 -- Parse the "cache-lookup" status out of the Via header into a simplified
 -- X-Cache HIT/MISS value:
--- https://docs.trafficserver.apache.org/en/7.1.x/appendices/faq.en.html?highlight=asked#how-do-i-interpret-the-via-header-code
+-- https://docs.trafficserver.apache.org/en/9.2.x/appendices/faq.en.html#how-do-i-interpret-the-via-header-code
+-- Currently undocumented "W" value indicates a cached response during
+-- read-while-writer: https://github.com/apache/trafficserver/issues/9478
 --
--- Note: Ideally we could handle this at the TrafficServer lua layer with the
--- simpler ts.http.get_cache_lookup_status(). However, that lookup status isn't
--- always accurate, since certain scenarios trigger cache revalidation without
--- updating the status code (like cache items not used due to authorization
--- headers, or this similar issue using the same underling
--- TSHttpTxnCacheLookupStatusGet:
--- https://issues.apache.org/jira/browse/TS-3432). So instead, we'll continue
--- to handle it here, using nginx's lua layer, instead of TrafficServer's lua
--- layer, since nginx's compiled regexes are probably a bit better optimized.
+-- Note: Ideally we could handle this with the TrafficServer header_rewrite
+-- plugin (see our header_rewrite.conf.etlua template file for an example).
+-- However, the internal status used there currently has issues for items that
+-- can't be cached (like Authorization related requests). So until these issues
+-- are resolved, we'll use this workaround at this layer based on the Via
+-- header:
+-- https://github.com/apache/trafficserver/issues/8539
+-- https://github.com/apache/trafficserver/pull/8545
+-- https://github.com/apache/trafficserver/pull/8637
 local function set_cache_header()
   local cache = "MISS"
   local via = ngx_header["Via"]
@@ -29,7 +31,7 @@ local function set_cache_header()
     local matches, match_err = re_match(via, "ApacheTrafficServer \\[.(.)", "jo")
     if matches and matches[1] then
       local cache_lookup_code = matches[1]
-      if cache_lookup_code == "H" or cache_lookup_code == "R" then
+      if cache_lookup_code == "H" or cache_lookup_code == "R" or cache_lookup_code == "W" then
         cache = "HIT"
       end
     elseif match_err then

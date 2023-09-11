@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-rsyslog_version="8.2306.0"
-rsyslog_hash="f6283efaadc609540a56e6bec88a362c966e77f29fe48e6b734bd6c1123e0be5"
+rsyslog_version="8.2308.0"
+rsyslog_hash="02086b9121e872cea69e5d0f6c8e2d8ebff33234b3cad5503665378d3af2e3c9"
 
 set -e -u -x
 source ./tasks/helpers.sh
@@ -11,10 +11,6 @@ download "https://www.rsyslog.com/files/download/rsyslog/rsyslog-$rsyslog_versio
 extract_download "rsyslog-$rsyslog_version.tar.gz"
 
 cd "rsyslog-$rsyslog_version"
-LIBESTR_CFLAGS="-I$STAGE_EMBEDDED_DIR/include" \
-LIBESTR_LIBS="-L$STAGE_EMBEDDED_DIR/lib -lestr" \
-LIBFASTJSON_CFLAGS="-I$STAGE_EMBEDDED_DIR/include/libfastjson" \
-LIBFASTJSON_LIBS="-L$STAGE_EMBEDDED_DIR/lib -lfastjson" \
 ./configure \
   --prefix="$INSTALL_PREFIX_EMBEDDED" \
   --disable-liblogging-stdlog \

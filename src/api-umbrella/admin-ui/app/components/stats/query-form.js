@@ -18,8 +18,6 @@ import moment from 'moment-timezone';
 marked.use({
   gfm: true,
   breaks: true,
-  mangle: false,
-  headerIds: false,
 });
 
 QueryBuilder.define('filter-description', function() {

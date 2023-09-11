@@ -9,7 +9,7 @@ module ApiUmbrellaTestHelpers
       label = find(:label, :for => field)
       label.click
 
-      fill_in(locator, options.merge(:visible => :all))
+      fill_in(locator, **options.merge(:visible => :all))
     end
 
     def assert_codemirror_field(locator, options = {})

@@ -30,7 +30,7 @@ class Test::Processes::TestConfig < Minitest::Test
       refute_path_exists(legacy_path)
       refute_path_exists(new_path)
 
-      File.write(legacy_path, YAML.dump(legacy_config))
+      File.write(legacy_path, YAML.safe_dump(legacy_config))
 
       assert_path_exists(legacy_path)
       refute_path_exists(new_path)

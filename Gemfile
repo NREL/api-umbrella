@@ -1,12 +1,12 @@
 source "https://rubygems.org"
 
-ruby "~> 2.5"
+ruby "~> 3.1"
 
 # Task runner
 gem "thor", "~> 1.2.1"
 
 # Tests
-gem "minitest", "~> 5.18.0"
+gem "minitest", "~> 5.20.0"
 
 # CLI helper for running tests
 gem "minitest-sprint", "~> 1.2.0"
@@ -41,7 +41,7 @@ gem "elasticsearch", "~> 7.13.3"
 gem "active_attr", "~> 0.15.0"
 
 # Factories for test database data
-gem "factory_bot", "~> 6.2.0"
+gem "factory_bot", "~> 6.3.0"
 
 # Programmatically generate Rails session cookies.
 gem "rails_compatible_cookies_utils", "~> 0.1.0"

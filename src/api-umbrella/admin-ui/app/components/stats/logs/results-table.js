@@ -16,8 +16,6 @@ import tippy from 'tippy.js'
 marked.use({
   gfm: true,
   breaks: true,
-  mangle: false,
-  headerIds: false,
 });
 
 @classic

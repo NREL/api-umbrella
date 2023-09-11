@@ -329,9 +329,18 @@ module ApiUmbrellaTestHelpers
           end
         end
 
-        # Restart trafficserver when changing the response stripping config,
-        # since that alters Trafficserver's plugin.config, requiring a restart.
-        if(previous_override_config["strip_response_cookies"] || @@current_override_config["strip_response_cookies"])
+        # Restart trafficserver when changing the configuration settings that
+        # require a full trafficserver restart.
+        if(
+          previous_override_config["strip_response_cookies"] ||
+          @@current_override_config["strip_response_cookies"] ||
+          previous_override_config.dig("nginx", "proxy_connect_timeout") ||
+          @@current_override_config.dig("nginx", "proxy_connect_timeout") ||
+          previous_override_config.dig("nginx", "proxy_read_timeout") ||
+          @@current_override_config.dig("nginx", "proxy_read_timeout") ||
+          previous_override_config.dig("nginx", "proxy_send_timeout") ||
+          @@current_override_config.dig("nginx", "proxy_send_timeout")
+        )
           self.api_umbrella_process.restart_trafficserver
         end
       end
@@ -351,7 +360,7 @@ module ApiUmbrellaTestHelpers
       hostname = name.downcase.gsub(/[^a-z0-9]+/, "-")
 
       # Truncate the hostname so the label will fit in unbound's 63 char limit.
-      hostname = hostname[-56..-1] || hostname
+      hostname = hostname[-56..] || hostname
 
       # Strip first char if it happens to be a dash.
       hostname.gsub!(/^-/, "")

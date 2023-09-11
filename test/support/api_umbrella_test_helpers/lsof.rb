@@ -55,7 +55,7 @@ module ApiUmbrellaTestHelpers
       parsing = nil
       lines.each do |line|
         field_id = line[0..0]
-        value = line[1..-1]
+        value = line[1..]
         field = nil
 
         case field_id
@@ -113,7 +113,7 @@ module ApiUmbrellaTestHelpers
           # The "T" field is special, since it can be specified multiple times,
           # but has a further suffix indicating the type of TCP field.
           tcp_info = line.split("=", 2)
-          field = :"tcp_#{tcp_info[0][1..-1]}".downcase
+          field = :"tcp_#{tcp_info[0][1..]}".downcase
           value = tcp_info[1]
         when "u"
           field = :user

@@ -36,13 +36,25 @@ class Test::Proxy::TestUrlSpecialCharacters < Minitest::Test
   end
 
   def test_unescaped_spaces_path_url
+    # Newer versions of libcurl no longer allow even making a request with an
+    # unescaped space, so validate curl/Typhoeus's behavior, but then do the
+    # actual test with Net/HTTP which allows for this.
     response = Typhoeus.get("http://127.0.0.1:9080/api/info/space/ /", http_options)
-    assert_response_code(400, response)
+    assert_equal(:url_malformat, response.return_code)
+
+    response = Net::HTTP.get_response("127.0.0.1", "/api/info/space/ /", 9080)
+    assert_equal("400", response.code)
   end
 
   def test_unescaped_spaces_query_url
+    # Newer versions of libcurl no longer allow even making a request with an
+    # unescaped space, so validate curl/Typhoeus's behavior, but then do the
+    # actual test with Net/HTTP which allows for this.
     response = Typhoeus.get("http://127.0.0.1:9080/api/info/space/?space= &foo", http_options)
-    assert_response_code(400, response)
+    assert_equal(:url_malformat, response.return_code)
+
+    response = Net::HTTP.get_response("127.0.0.1", "/api/info/space/?space= &foo", 9080)
+    assert_equal("400", response.code)
   end
 
   def test_escaped_spaces_urls

@@ -23,21 +23,6 @@ class Outdated < Thor
     "hugo" => {
       :git => "https://github.com/gohugoio/hugo.git",
     },
-    "libcidr" => {
-      :http => "https://www.over-yonder.net/~fullermd/projects/libcidr",
-    },
-    "libestr" => {
-      :git => "https://github.com/rsyslog/libestr.git",
-    },
-    "libfastjson" => {
-      :git => "https://github.com/rsyslog/libfastjson.git",
-    },
-    "libmaxminddb" => {
-      :git => "https://github.com/maxmind/libmaxminddb.git",
-    },
-    "libpsl" => {
-      :git => "https://github.com/rockdaboot/libpsl.git",
-    },
     "lrexlib_pcre2" => {
       :luarock => "lrexlib-pcre2",
     },
@@ -55,9 +40,6 @@ class Outdated < Thor
     "mailpit" => {
       :git => "https://github.com/axllent/mailpit.git",
     },
-    "nginx_module_vts" => {
-      :git => "https://github.com/vozlt/nginx-module-vts.git",
-    },
     "ngx_http_geoip2_module" => {
       :git => "https://github.com/leev/ngx_http_geoip2_module.git",
     },
@@ -68,18 +50,11 @@ class Outdated < Thor
     "openresty" => {
       :git => "https://github.com/openresty/openresty.git",
     },
-    "openssl" => {
-      :git => "https://github.com/openssl/openssl.git",
-      :string_version => true,
-    },
     "perp" => {
       :http => "http://b0llix.net/perp/site.cgi?page=download",
     },
     "rsyslog" => {
       :git => "https://github.com/rsyslog/rsyslog.git",
-    },
-    "runit" => {
-      :http => "http://smarden.org/runit/install.html",
     },
     "shellcheck" => {
       :git => "https://github.com/koalaman/shellcheck.git",
@@ -245,8 +220,6 @@ class Outdated < Thor
 
       # Project-specific normalizations.
       case(name)
-      when "openssl"
-        tag.tr!("_", ".")
       when "postgresql"
         tag.gsub!(/^rel_?/, "")
         tag.tr!("_", ".")
@@ -299,11 +272,6 @@ class Outdated < Thor
         content = Net::HTTP.get_response(URI.parse(options[:http])).body
         tags = content.scan(/#{name}-[\d.]+.tar/)
         tags.map! { |f| tag_to_semver(name, File.basename(f, ".tar")) }
-      end
-
-      case(name)
-      when "openssl"
-        tags.select! { |tag| tag =~ /^1\.1\.0[a-z]?$/ }
       end
 
       tags.compact!
@@ -379,7 +347,7 @@ class Outdated < Thor
         exit 1
       end
       rockspec = JSON.parse(rockspec_output)
-      rockspec_constraints = rockspec.map { |r| r.split(/\s+/, 2) }.to_h
+      rockspec_constraints = rockspec.to_h { |r| r.split(/\s+/, 2) }
 
       lock_output, lock_status = Open3.capture2("api-umbrella-exec", "resty", "-e", "local cjson = require 'cjson'; print(cjson.encode(dofile('#{lock_path}')))")
       unless lock_status.success?

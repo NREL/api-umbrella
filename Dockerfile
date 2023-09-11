@@ -1,7 +1,7 @@
 ###
 # Build
 ###
-FROM debian:bullseye AS build
+FROM public.ecr.aws/docker/library/debian:bookworm AS build
 
 ARG TARGETARCH
 
@@ -9,8 +9,6 @@ RUN mkdir -p /app/build /build/.task /build/build/work
 RUN ln -snf /build/.task /app/.task
 RUN ln -snf /build/build/work /app/build/work
 WORKDIR /app
-
-ENV NOKOGIRI_USE_SYSTEM_LIBRARIES 1
 
 COPY build/package_dependencies.sh /app/build/package_dependencies.sh
 COPY tasks/helpers.sh tasks/install-system-build-dependencies /app/tasks/
@@ -26,17 +24,14 @@ COPY tasks/clean/dev /app/tasks/clean/dev
 COPY tasks/deps/perp /app/tasks/deps/
 RUN make deps:perp && make clean:dev
 
-COPY tasks/deps/runit_svlogd /app/tasks/deps/
-RUN make deps:runit_svlogd && make clean:dev
-
 COPY build/patches/openresty* /app/build/patches/
-COPY tasks/deps/libmaxminddb tasks/deps/openresty /app/tasks/deps/
+COPY tasks/deps/openresty /app/tasks/deps/
 RUN make deps:openresty && make clean:dev
 
 COPY tasks/deps/trafficserver /app/tasks/deps/
 RUN make deps:trafficserver && make clean:dev
 
-COPY tasks/deps/libestr tasks/deps/libfastjson tasks/deps/rsyslog /app/tasks/deps/
+COPY tasks/deps/rsyslog /app/tasks/deps/
 RUN make deps:rsyslog && make clean:dev
 
 COPY src/api-umbrella-git-1.rockspec src/luarocks.lock /app/src/
@@ -98,7 +93,7 @@ RUN make && make clean:dev
 ###
 # Test
 ###
-FROM debian:bullseye AS test
+FROM public.ecr.aws/docker/library/debian:bookworm AS test
 
 ARG TARGETARCH
 
@@ -125,7 +120,7 @@ COPY tasks/test-deps/bundle /app/tasks/test-deps/
 RUN make test-deps:bundle && make clean:dev
 
 COPY test/api-umbrella-test-git-1.rockspec test/luarocks.lock /app/test/
-COPY tasks/deps/libmaxminddb tasks/deps/luarocks tasks/deps/openresty /app/tasks/deps/
+COPY tasks/deps/luarocks tasks/deps/openresty /app/tasks/deps/
 COPY tasks/test-deps /app/tasks/test-deps
 RUN make test-deps && make clean:dev
 
@@ -149,7 +144,7 @@ ENV \
 ###
 # Install
 ###
-FROM debian:bullseye AS install
+FROM public.ecr.aws/docker/library/debian:bookworm AS install
 
 RUN apt-get update && \
   apt-get -y install git rsync && \
@@ -166,7 +161,7 @@ RUN DESTDIR="/build/install-destdir" PREFIX=/opt/api-umbrella ./tasks/install
 ###
 # Runtime
 ###
-FROM debian:bullseye AS runtime
+FROM public.ecr.aws/docker/library/debian:bookworm AS runtime
 
 COPY --from=install /build/install-destdir /
 COPY build/package/scripts/after-install /tmp/install/build/package/scripts/after-install
