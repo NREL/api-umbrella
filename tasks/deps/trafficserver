@@ -1,7 +1,11 @@
 #!/usr/bin/env bash
 
-trafficserver_version="9.2.2"
-trafficserver_hash="1d00a3b9207648a16e0043f714c931bb5f30978ca329e0897d8d08b8d70d38a52bbe37ffe89884e98d5e7db09ad2762a90c3dc9654c70c0a979690a1fc342b72"
+# Hold at 9.1.x until we can figure out this issue currently present in 9.2.2:
+# https://github.com/apache/trafficserver/issues/10393 This issue has been
+# reproducible by running the following test in a loop:
+# bundle exec minitest test/apis/test_web_app_large_body.rb -n test_limit_is_configurable
+trafficserver_version="9.1.4"
+trafficserver_hash="f18aca66e444470738f6031366edc45db26942917e3fe8cba9fbb3b28173e01e06991aa9846e459047365946738931b1910719574c9c2afee72e4dfb30eab617"
 
 set -e -u -x
 source ./tasks/helpers.sh
@@ -34,7 +38,6 @@ SPHINXBUILD=false ./configure \
 make -j"$NPROC"
 make install DESTDIR="$STAGE_DIR"
 chrpath -d "$STAGE_EMBEDDED_DIR/lib/libtscore.so"
-chrpath -d "$STAGE_EMBEDDED_DIR/lib/libtscpputil.so"
 chrpath -d "$STAGE_EMBEDDED_DIR/lib/libtsmgmt.so"
 find "$STAGE_EMBEDDED_DIR/libexec/trafficserver/" -name "*.so" -exec chrpath -d {} \;
 find "$STAGE_EMBEDDED_DIR/bin/" -name "traffic_*" -exec chrpath -d {} \;
