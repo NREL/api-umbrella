@@ -14,10 +14,9 @@
   "devDependencies": {
     "eslint": "^8.11.0",
     "eslint-config-airbnb-base": "^15.0.0",
-    "eslint-config-prettier": "^8.3.0",
+    "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-import": "^2.24.2",
-    "eslint-plugin-prettier": "^4.0.0",
-    "prettier": "^2.3.2",
-    "prettier-plugin-go-template": "^0.0.13"
+    "prettier": "^3.0.3",
+    "prettier-plugin-go-template": "^0.0.15"
   }
 }

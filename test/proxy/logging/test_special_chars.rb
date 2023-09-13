@@ -45,7 +45,7 @@ class Test::Proxy::Logging::TestSpecialChars < Minitest::Test
     assert_response_code(200, response)
 
     record = wait_for_log(response)[:hit_source]
-    assert_equal("/api/hello/utf8/%E2%9C%93/encoded_utf8/%E2%9C%93/", record["request_path"])
+    assert_equal("/api/hello/utf8/%e2%9c%93/encoded_utf8/%E2%9C%93/", record["request_path"])
     assert_equal("utf8=%E2%9C%93&utf8_url_encoded=%E2%9C%93&more_utf8=%C2%AC%C2%B6%C2%AA%C3%BE%C2%A4l&more_utf8_hex=%C2%AC%C2%B6%C2%AA%C3%BE%C2%A4l&more_utf8_hex_lowercase=%C2%AC%C2%B6%C2%AA%C3%BE%C2%A4l&actual_backslash_x=\\xC2\\xAC\\xC2\\xB6\\xC2\\xAA\\xC3\\xBE\\xC2\\xA4l", record["request_url_query"])
   end
 
@@ -67,10 +67,11 @@ class Test::Proxy::Logging::TestSpecialChars < Minitest::Test
 
     # When in the URL path or query string, we expect the raw £ symbol to be
     # logged as the url encoded version.
-    expected_raw_in_url = url_encoded
+    expected_raw_in_url_path = url_encoded.downcase
+    expected_raw_in_url_query = url_encoded
 
     # URL
-    assert_equal("/api/hello/#{url_encoded}/#{base64ed}/#{expected_raw_in_url}/", record["request_path"])
+    assert_equal("/api/hello/#{url_encoded}/#{base64ed}/#{expected_raw_in_url_path}/", record["request_path"])
     if $config["elasticsearch"]["template_version"] < 2
       assert_equal([
         "0/127.0.0.1:9080/",
@@ -78,7 +79,7 @@ class Test::Proxy::Logging::TestSpecialChars < Minitest::Test
         "2/127.0.0.1:9080/api/hello/",
         "3/127.0.0.1:9080/api/hello/#{url_encoded}/",
         "4/127.0.0.1:9080/api/hello/#{url_encoded}/#{base64ed}/",
-        "5/127.0.0.1:9080/api/hello/#{url_encoded}/#{base64ed}/#{expected_raw_in_url}",
+        "5/127.0.0.1:9080/api/hello/#{url_encoded}/#{base64ed}/#{expected_raw_in_url_path}",
       ], record["request_hierarchy"])
       refute(record.key?("request_url_hierarchy_level0"))
       refute(record.key?("request_url_hierarchy_level1"))
@@ -93,11 +94,11 @@ class Test::Proxy::Logging::TestSpecialChars < Minitest::Test
       assert_equal("hello/", record.fetch("request_url_hierarchy_level2"))
       assert_equal("#{url_encoded}/", record.fetch("request_url_hierarchy_level3"))
       assert_equal("#{base64ed}/", record.fetch("request_url_hierarchy_level4"))
-      assert_equal(expected_raw_in_url, record.fetch("request_url_hierarchy_level5"))
+      assert_equal(expected_raw_in_url_path, record.fetch("request_url_hierarchy_level5"))
       refute(record.key?("request_url_hierarchy_level6"))
       refute(record.key?("request_hierarchy"))
     end
-    assert_equal("url_encoded=#{url_encoded}&base64ed=#{base64ed}&raw=#{expected_raw_in_url}", record["request_url_query"])
+    assert_equal("url_encoded=#{url_encoded}&base64ed=#{base64ed}&raw=#{expected_raw_in_url_query}", record["request_url_query"])
 
     # HTTP headers
     assert_equal(url_encoded, record["request_content_type"])
@@ -127,13 +128,15 @@ class Test::Proxy::Logging::TestSpecialChars < Minitest::Test
     # Since the encoding of this string wasn't actually a valid UTF-8 string,
     # we test situations where it's sent as the raw ISO-8859-1 value, as well
     # as the UTF-8 replacement character.
-    expected_raw_in_url = url_encoded
+    expected_raw_in_url_path = url_encoded.downcase
+    expected_raw_in_url_query = url_encoded
     expected_raw_in_header = " "
-    expected_raw_utf8_in_url = "%EF%BF%BD"
+    expected_raw_utf8_in_url_path = "%ef%bf%bd"
+    expected_raw_utf8_in_url_query = "%EF%BF%BD"
     expected_raw_utf8_in_header = Base64.decode64("77+9").force_encoding("utf-8")
 
     # URL
-    assert_equal("/api/hello/#{url_encoded}/#{base64ed}/#{expected_raw_in_url}/#{expected_raw_utf8_in_url}/", record["request_path"])
+    assert_equal("/api/hello/#{url_encoded}/#{base64ed}/#{expected_raw_in_url_path}/#{expected_raw_utf8_in_url_path}/", record["request_path"])
     if $config["elasticsearch"]["template_version"] < 2
       assert_equal([
         "0/127.0.0.1:9080/",
@@ -141,8 +144,8 @@ class Test::Proxy::Logging::TestSpecialChars < Minitest::Test
         "2/127.0.0.1:9080/api/hello/",
         "3/127.0.0.1:9080/api/hello/#{url_encoded}/",
         "4/127.0.0.1:9080/api/hello/#{url_encoded}/#{base64ed}/",
-        "5/127.0.0.1:9080/api/hello/#{url_encoded}/#{base64ed}/#{expected_raw_in_url}/",
-        "6/127.0.0.1:9080/api/hello/#{url_encoded}/#{base64ed}/#{expected_raw_in_url}/#{expected_raw_utf8_in_url}",
+        "5/127.0.0.1:9080/api/hello/#{url_encoded}/#{base64ed}/#{expected_raw_in_url_path}/",
+        "6/127.0.0.1:9080/api/hello/#{url_encoded}/#{base64ed}/#{expected_raw_in_url_path}/#{expected_raw_utf8_in_url_path}",
       ], record["request_hierarchy"])
       refute(record.key?("request_url_hierarchy_level0"))
       refute(record.key?("request_url_hierarchy_level1"))
@@ -157,11 +160,11 @@ class Test::Proxy::Logging::TestSpecialChars < Minitest::Test
       assert_equal("hello/", record.fetch("request_url_hierarchy_level2"))
       assert_equal("#{url_encoded}/", record.fetch("request_url_hierarchy_level3"))
       assert_equal("#{base64ed}/", record.fetch("request_url_hierarchy_level4"))
-      assert_equal("#{expected_raw_in_url}/", record.fetch("request_url_hierarchy_level5"))
-      assert_equal(expected_raw_utf8_in_url, record.fetch("request_url_hierarchy_level6"))
+      assert_equal("#{expected_raw_in_url_path}/", record.fetch("request_url_hierarchy_level5"))
+      assert_equal(expected_raw_utf8_in_url_path, record.fetch("request_url_hierarchy_level6"))
       refute(record.key?("request_hierarchy"))
     end
-    assert_equal("url_encoded=#{url_encoded}&base64ed=#{base64ed}&raw=#{expected_raw_in_url}&raw_utf8=#{expected_raw_utf8_in_url}", record["request_url_query"])
+    assert_equal("url_encoded=#{url_encoded}&base64ed=#{base64ed}&raw=#{expected_raw_in_url_query}&raw_utf8=#{expected_raw_utf8_in_url_query}", record["request_url_query"])
 
     # HTTP headers
     assert_equal(url_encoded, record["request_content_type"])

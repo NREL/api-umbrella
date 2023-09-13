@@ -3,6 +3,11 @@
 LOCAL proxy.local.incoming_ip_to_bind STRING <%- config["trafficserver"]["host"] %>
 CONFIG proxy.config.http.server_ports STRING <%- config["trafficserver"]["port"] %>
 
+# Use jemalloc for memory management.
+# https://github.com/apache/trafficserver/issues/9162#issuecomment-1292274810
+# https://github.com/apache/trafficserver/issues/3354
+CONFIG proxy.config.proxy_binary_opts STRING -M -f -F
+
 # Use the special "#-1" value to keep running as the current user (perp will
 # handle switching the user).
 CONFIG proxy.config.admin.user_id STRING #-1
@@ -171,7 +176,7 @@ CONFIG proxy.config.hostdb.strict_round_robin INT 1
 
 # Enable so_keepalive on the incoming and outgoing sockets to better detect
 # keepalive hangups.
-CONFIG proxy.config.net.sock_option_flag_in INT 7
+CONFIG proxy.config.net.sock_option_flag_in INT 3
 CONFIG proxy.config.net.sock_option_flag_out INT 3
 
 # Enable for debug logging.

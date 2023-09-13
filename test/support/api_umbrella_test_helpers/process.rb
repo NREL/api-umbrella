@@ -438,7 +438,7 @@ module ApiUmbrellaTestHelpers
           elasticsearch_test_index_partition = ENV.fetch("ELASTICSEARCH_TEST_INDEX_PARTITION")
         end
 
-        static = YAML.load_file(TEST_CONFIG_PATH)
+        static = YAML.safe_load_file(TEST_CONFIG_PATH)
 
         # Create an config file for computed overrides.
         static.deep_merge!({
@@ -482,7 +482,7 @@ module ApiUmbrellaTestHelpers
     end
 
     def write_test_config(test_config)
-      File.write(TEST_ACTIVE_CONFIG_PATH, YAML.dump(static_test_config.deep_merge(test_config)))
+      File.write(TEST_ACTIVE_CONFIG_PATH, YAML.safe_dump(static_test_config.deep_merge(test_config)))
     end
 
     def test_environment_variables

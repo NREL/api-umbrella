@@ -169,4 +169,135 @@ class Test::Proxy::FormattedErrors::TestDataVariables < Minitest::Test
       assert_equal("https://example.com/common-var-override", data["contact_url"])
     end
   end
+
+  def test_empty_sub_url_settings_inherits_parent_settings
+    prepend_api_backends([
+      {
+        :frontend_host => "127.0.0.1",
+        :backend_host => "127.0.0.1",
+        :servers => [{ :host => "127.0.0.1", :port => 9444 }],
+        :url_matches => [{ :frontend_prefix => "/#{unique_test_id}/", :backend_prefix => "/" }],
+        :settings => {
+          :error_data => {
+            :common => {
+              :signup_url => "https://example.com/testing-sub-settings-signup",
+            },
+          },
+        },
+        :sub_settings => [
+          {
+            :http_method => "any",
+            :regex => "^/hello/sub-inherit/",
+            :settings => {
+              :error_data => {},
+            },
+          },
+        ],
+      },
+    ]) do
+      response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/", keyless_http_options)
+      assert_response_code(403, response)
+      assert_equal("application/json", response.headers["content-type"])
+      data = MultiJson.load(response.body)
+      assert_equal("API_KEY_MISSING", data.fetch("error").fetch("code"))
+      assert_equal("No api_key was supplied. Get one at https://example.com/testing-sub-settings-signup", data.fetch("error").fetch("message"))
+
+      response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/hello/sub-inherit/", keyless_http_options)
+      assert_response_code(403, response)
+      assert_equal("application/json", response.headers["content-type"])
+      data = MultiJson.load(response.body)
+      assert_equal("API_KEY_MISSING", data.fetch("error").fetch("code"))
+      assert_equal("No api_key was supplied. Get one at https://example.com/testing-sub-settings-signup", data.fetch("error").fetch("message"))
+    end
+  end
+
+  def test_empty_settings_and_sub_url_settings_inherits_default
+    prepend_api_backends([
+      {
+        :frontend_host => "127.0.0.1",
+        :backend_host => "127.0.0.1",
+        :servers => [{ :host => "127.0.0.1", :port => 9444 }],
+        :url_matches => [{ :frontend_prefix => "/#{unique_test_id}/", :backend_prefix => "/" }],
+        :settings => {
+          :error_data => {},
+        },
+        :sub_settings => [
+          {
+            :http_method => "any",
+            :regex => "^/hello/sub-inherit/",
+            :settings => {
+              :error_data => {},
+            },
+          },
+        ],
+      },
+    ]) do
+      response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/", keyless_http_options)
+      assert_response_code(403, response)
+      assert_equal("application/json", response.headers["content-type"])
+      data = MultiJson.load(response.body)
+      assert_equal("API_KEY_MISSING", data.fetch("error").fetch("code"))
+      assert_equal("No api_key was supplied. Get one at http://127.0.0.1:9080", data.fetch("error").fetch("message"))
+
+      response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/hello/sub-inherit/", keyless_http_options)
+      assert_response_code(403, response)
+      assert_equal("application/json", response.headers["content-type"])
+      data = MultiJson.load(response.body)
+      assert_equal("API_KEY_MISSING", data.fetch("error").fetch("code"))
+      assert_equal("No api_key was supplied. Get one at http://127.0.0.1:9080", data.fetch("error").fetch("message"))
+    end
+  end
+
+  def test_sub_url_settings_overrides_parent_settings
+    prepend_api_backends([
+      {
+        :frontend_host => "127.0.0.1",
+        :backend_host => "127.0.0.1",
+        :servers => [{ :host => "127.0.0.1", :port => 9444 }],
+        :url_matches => [{ :frontend_prefix => "/#{unique_test_id}/", :backend_prefix => "/" }],
+        :settings => {
+          :error_templates => {
+            :json => '{ "error": { "code": {{code}}, "message": {{message}}, "signup_url": {{signup_url}}, "contact_url": {{contact_url}} } }',
+          },
+          :error_data => {
+            :common => {
+              :signup_url => "https://example.com/testing-sub-settings-signup",
+              :contact_url => "https://example.com/testing-sub-settings-contact",
+            },
+          },
+        },
+        :sub_settings => [
+          {
+            :http_method => "any",
+            :regex => "^/hello/sub-merge/",
+            :settings => {
+              :error_data => {
+                :common => {
+                  :signup_url => "https://example.com/testing-sub-settings-signup-override",
+                },
+              },
+            },
+          },
+        ],
+      },
+    ]) do
+      response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/", keyless_http_options)
+      assert_response_code(403, response)
+      assert_equal("application/json", response.headers["content-type"])
+      data = MultiJson.load(response.body)
+      assert_equal("API_KEY_MISSING", data.fetch("error").fetch("code"))
+      assert_equal("No api_key was supplied. Get one at https://example.com/testing-sub-settings-signup", data.fetch("error").fetch("message"))
+      assert_equal("https://example.com/testing-sub-settings-signup", data.fetch("error").fetch("signup_url"))
+      assert_equal("https://example.com/testing-sub-settings-contact", data.fetch("error").fetch("contact_url"))
+
+      response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/hello/sub-merge/", keyless_http_options)
+      assert_response_code(403, response)
+      assert_equal("application/json", response.headers["content-type"])
+      data = MultiJson.load(response.body)
+      assert_equal("API_KEY_MISSING", data.fetch("error").fetch("code"))
+      assert_equal("No api_key was supplied. Get one at https://example.com/testing-sub-settings-signup-override", data.fetch("error").fetch("message"))
+      assert_equal("https://example.com/testing-sub-settings-signup-override", data.fetch("error").fetch("signup_url"))
+      assert_equal("https://example.com/testing-sub-settings-contact", data.fetch("error").fetch("contact_url"))
+    end
+  end
 end

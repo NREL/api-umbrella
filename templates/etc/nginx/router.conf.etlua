@@ -138,7 +138,7 @@ http {
   <% if config["router"]["global_rate_limits"]["ip_connections"] then %>
     # Limit the number of simultaneous connections per IP address.
     limit_conn_zone $binary_remote_addr zone=api_umbrella_conn_addr_zone:<%- config["router"]["global_rate_limits"]["ip_connections_size"] %>;
-    limit_conn_status <%- config["default_api_backend_settings"]["error_data"]["over_rate_limit"]["status_code"] %>;
+    limit_conn_status <%- config["_default_api_backend_settings"]["_error_data"]["over_rate_limit"]["status_code"] %>;
     limit_conn_log_level <%- config["router"]["global_rate_limits"]["ip_connections_log_level"] %>;
   <% end %>
 
@@ -150,7 +150,7 @@ http {
     # the Gatekeeper's limits. This just provides an extra line of simple defense
     # against misbehaving clients from overloading the Gatekeeper.
     limit_req_zone $binary_remote_addr zone=api_umbrella_req_addr_zone:<%- config["router"]["global_rate_limits"]["ip_rate_size"] %> rate=<%- config["router"]["global_rate_limits"]["ip_rate"] %>;
-    limit_req_status <%- config["default_api_backend_settings"]["error_data"]["over_rate_limit"]["status_code"] %>;
+    limit_req_status <%- config["_default_api_backend_settings"]["_error_data"]["over_rate_limit"]["status_code"] %>;
     limit_req_log_level <%- config["router"]["global_rate_limits"]["ip_rate_log_level"] %>;
   <% end %>
 
@@ -191,11 +191,6 @@ http {
     server_names_hash_bucket_size <%- config["nginx"]["server_names_hash_bucket_size"] %>;
   <% end %>
 
-  <% if config["nginx"]["vhost_traffic_status"]["enabled"] then %>
-    vhost_traffic_status_zone;
-    vhost_traffic_status_filter_by_host <%- config["nginx"]["vhost_traffic_status"]["filter_by_host"] %>;
-  <% end %>
-
   upstream api_umbrella_trafficserver_backend {
     server <%- config["trafficserver"]["host"] %>:<%- config["trafficserver"]["port"] %>;
     keepalive 10;
@@ -217,15 +212,6 @@ http {
     location /api-umbrella/v0/shared-memory-stats {
       content_by_lua_file '<%- config["_src_root_dir"] %>/src/api-umbrella/http-api/shared_memory_stats.lua';
     }
-
-    <% if config["nginx"]["vhost_traffic_status"]["enabled"] then %>
-      location /api-umbrella/v0/nginx-status {
-        access_by_lua_file '<%- config["_src_root_dir"] %>/src/api-umbrella/http-api/require_system_info_role.lua';
-        sub_filter 'format/json"' 'format/json?api_key=" + new URLSearchParams(window.location.search).get("api_key")';
-        sub_filter 'vtsUpdateInterval=1000' 'vtsUpdateInterval=10000';
-        vhost_traffic_status_display;
-      }
-    <% end %>
   }
 
   server {

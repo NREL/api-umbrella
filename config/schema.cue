@@ -121,10 +121,6 @@ import "path"
         size: string | *"200k"
       }
     }
-    vhost_traffic_status: {
-      enabled: bool | *false
-      filter_by_host: string | *"on"
-    }
   }
 
   gatekeeper: {

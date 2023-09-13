@@ -1,3 +1,4 @@
+local append_array = require "api-umbrella.utils.append_array"
 local deep_defaults = require "api-umbrella.utils.deep_defaults"
 local deep_merge_overwrite_arrays = require "api-umbrella.utils.deep_merge_overwrite_arrays"
 local escape_regex = require "api-umbrella.utils.escape_regex"
@@ -5,8 +6,9 @@ local is_empty = require "api-umbrella.utils.is_empty"
 local is_hash = require "api-umbrella.utils.is_hash"
 local iso8601_ms_to_timestamp = require("api-umbrella.utils.time").iso8601_ms_to_timestamp
 local string_template = require "api-umbrella.utils.string_template"
-local tablex = require "pl.tablex"
 local strip = require("pl.stringx").strip
+local tablex = require "pl.tablex"
+local unique = require("pl.seq").unique
 
 local decode_args = ngx.decode_args
 local deepcopy = tablex.deepcopy
@@ -16,6 +18,13 @@ local re_sub = ngx.re.sub
 local table_keys = tablex.keys
 
 local function cache_error_data(config, settings)
+  if not settings["error_data"] then return end
+
+  -- Start with the base error_data (rather than the merged error_data from
+  -- settings), since we want to be more cautious about how this specific error
+  -- handling data gets merged to make sure the merged data is of the
+  -- appropriate type, etc (so we don't generate unexpected errors when
+  -- returning our error messages).
   local error_data = deepcopy(config["default_api_backend_settings"]["error_data"])
 
   -- Merge the "common" values first.
@@ -59,20 +68,22 @@ local function cache_error_data(config, settings)
   end
 
   settings["_error_data"] = error_data
-
-  -- If processing the "default_api_backend_settings", then keep its original
-  -- "error_data" around for processing other API backends (so the common data
-  -- overrides is more logical). Otherwise, if processing API backends, no need
-  -- to keep the original version around.
-  if settings["error_data"] ~= config["default_api_backend_settings"]["error_data"] then
-    settings["error_data"] = nil
-  end
+  settings["error_data"] = nil
 end
 
 local function cache_error_templates(config, settings)
+  if not settings["error_templates"] then return end
+
+  -- Start with the base error_data (rather than the merged error_data from
+  -- settings), since we want to be more cautious about how this specific error
+  -- handling data gets merged to make sure the merged data is of the
+  -- appropriate type, etc (so we don't generate unexpected errors when
+  -- returning our error messages).
   local error_templates = deepcopy(config["default_api_backend_settings"]["error_templates"])
+
   if is_hash(settings["error_templates"]) then
     for format, _ in pairs(error_templates) do
+      -- Merge the setting-specific overrides on top.
       local settings_template = settings["error_templates"][format]
       if type(settings_template) == "string" then
         error_templates[format] = settings_template
@@ -86,17 +97,38 @@ local function cache_error_templates(config, settings)
   end
 
   settings["_error_templates"] = error_templates
-
-  -- If processing the "default_api_backend_settings", then keep its original
-  -- "error_templates" around for processing API backends. Otherwise, remove
-  -- original version.
-  if settings["error_templates"] ~= config["default_api_backend_settings"]["error_templates"] then
-    settings["error_templates"] = nil
-  end
+  settings["error_templates"] = nil
 end
 
-return function(config, settings)
+return function(config, settings, parent_settings)
   if not settings then return end
+
+  if parent_settings then
+    -- If we're merging `required_roles` from parent and child settings, we
+    -- want to handle that differently, since we want them to default to be
+    -- additive, and only override in the child if specified. So first, grab a
+    -- copy of the parent and child required roles.
+    local parent_required_roles
+    if parent_settings and parent_settings["required_roles"] then
+      parent_required_roles = deepcopy(parent_settings["required_roles"])
+    end
+    local orig_required_roles = deepcopy(settings["required_roles"] or {})
+
+    -- Perform the merging so any missing settings default to the parent
+    -- values.
+    deep_defaults(settings, parent_settings)
+
+    -- Handle the special case of merging `required_roles` based on whether or
+    -- not the child should override or append.
+    settings["_required_roles"] = orig_required_roles
+    if not settings["required_roles_override"] and parent_required_roles then
+      append_array(settings["_required_roles"], parent_required_roles)
+      settings["_required_roles"] = unique(settings["_required_roles"], true)
+    end
+  else
+    settings["_required_roles"] = settings["required_roles"]
+  end
+  settings["required_roles"] = nil
 
   -- Parse and cache the allowed IPs as CIDR ranges.
   if not is_empty(settings["allowed_ips"]) then

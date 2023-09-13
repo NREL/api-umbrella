@@ -8,7 +8,7 @@ rm-header X-Api-Umbrella-Cache-Request-Method
 # normally cached. So we don't actually set the "Authorization" header (to
 # allow for caching) and only swap headers when making the actual request.
 cond %{SEND_REQUEST_HDR_HOOK}
-cond %{CLIENT-HEADER:X-Api-Umbrella-Backend-Authorization} /./
+cond %{CLIENT-HEADER:X-Api-Umbrella-Backend-Authorization} ="" [NOT]
 set-header Authorization %{HEADER:X-Api-Umbrella-Backend-Authorization}
 rm-header X-Api-Umbrella-Backend-Authorization
 
@@ -22,7 +22,7 @@ rm-header X-Api-Umbrella-Backend-Authorization
 # header for all the normal TTL information. We'll then restore the original
 # Cache-Control header in do_global_send_response().
 cond %{READ_RESPONSE_HDR_HOOK}
-cond %{HEADER:Surrogate-Control} /./
+cond %{HEADER:Surrogate-Control} ="" [NOT]
 set-header X-Api-Umbrella-Orig-Cache-Control %{HEADER:Cache-Control}
 set-header Cache-Control %{HEADER:Surrogate-Control}
 rm-header Surrogate-Control
@@ -31,6 +31,27 @@ rm-header Surrogate-Control
 # a different header to allow Surrogate-Control support in
 # do_global_read_response().
 cond %{SEND_RESPONSE_HDR_HOOK}
-cond %{HEADER:X-Api-Umbrella-Orig-Cache-Control} /./
+cond %{HEADER:X-Api-Umbrella-Orig-Cache-Control} ="" [NOT]
 set-header Cache-Control %{HEADER:X-Api-Umbrella-Orig-Cache-Control}
 rm-header X-Api-Umbrella-Orig-Cache-Control
+
+# This could offer an alternative to our Lua set_cache_header() workaround
+# (which sets this header based on parsing the "Via" header) in the future once
+# these issues are resolved:
+# https://github.com/apache/trafficserver/issues/8539
+# https://github.com/apache/trafficserver/pull/8545
+# https://github.com/apache/trafficserver/pull/8637
+#
+# Set a simplified "X-Cache: HIT" response header if "hit-fresh" (we'll treat
+# "hit-stale" as a "MISS" since it still results in a request to the backend).
+# cond %{SEND_RESPONSE_HDR_HOOK}
+# cond %{CACHE} ="hit-fresh"
+# set-header X-Cache HIT
+#
+# If the response was not cached and there was not an existing "X-Cache" header
+# from the underlying server response, then set a simplified "X-Cache: MISS"
+# response header for any other situation (miss, hit-stale, skipped, or none).
+# cond %{SEND_RESPONSE_HDR_HOOK}
+# cond %{HEADER:X-Cache} ="" [AND]
+# cond %{CACHE} ="hit-fresh" [NOT]
+# set-header X-Cache MISS

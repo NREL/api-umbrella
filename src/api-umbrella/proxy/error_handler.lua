@@ -103,7 +103,7 @@ return function(ngx_ctx, denied_code, settings, extra_data)
   end
 
   if not settings then
-    settings = config["default_api_backend_settings"]
+    settings = config["_default_api_backend_settings"]
   end
 
   -- Try to determine the format of the request (JSON, XML, etc), so we can

@@ -48,52 +48,6 @@ tasks:
     generates:
       - ./build/work/stamp/deps/envoy
 
-  deps:libcidr:
-    cmds:
-      - ./tasks/deps/libcidr
-    sources:
-      - ./tasks/deps/libcidr
-      - ./tasks/helpers.sh
-    generates:
-      - ./build/work/stamp/deps/libcidr
-
-  deps:libestr:
-    cmds:
-      - ./tasks/deps/libestr
-    sources:
-      - ./tasks/deps/libestr
-      - ./tasks/helpers.sh
-    generates:
-      - ./build/work/stamp/deps/libestr
-
-  deps:libfastjson:
-    cmds:
-      - ./tasks/deps/libfastjson
-    sources:
-      - ./tasks/deps/libfastjson
-      - ./tasks/helpers.sh
-    generates:
-      - ./build/work/stamp/deps/libfastjson
-
-  deps:libmaxminddb:
-    cmds:
-      - ./tasks/deps/libmaxminddb
-    sources:
-      - ./tasks/deps/libmaxminddb
-      - ./tasks/helpers.sh
-    generates:
-      - ./build/work/stamp/deps/libmaxminddb
-
-  deps:libpsl:
-    cmds:
-      - ./tasks/deps/libpsl
-    sources:
-      - ./tasks/deps/libpsl
-      - ./tasks/helpers.sh
-    generates:
-      - ./build/work/stamp/deps/libpsl
-    method: checksum
-
   deps:luarocks:
     deps:
       - deps:openresty
@@ -107,12 +61,9 @@ tasks:
       - ./build/work/stamp/deps/luarocks
 
   deps:openresty:
-    deps:
-      - deps:libmaxminddb
     cmds:
       - ./tasks/deps/openresty
     sources:
-      - ./build/work/stamp/deps/libmaxminddb
       - ./tasks/deps/openresty
       - ./tasks/helpers.sh
     generates:
@@ -128,27 +79,13 @@ tasks:
       - ./build/work/stamp/deps/perp
 
   deps:rsyslog:
-    deps:
-      - deps:libestr
-      - deps:libfastjson
     cmds:
       - ./tasks/deps/rsyslog
     sources:
-      - ./build/work/stamp/deps/libestr
-      - ./build/work/stamp/deps/libfastjson
       - ./tasks/deps/rsyslog
       - ./tasks/helpers.sh
     generates:
       - ./build/work/stamp/deps/rsyslog
-
-  deps:runit_svlogd:
-    cmds:
-      - ./tasks/deps/runit_svlogd
-    sources:
-      - ./tasks/deps/runit_svlogd
-      - ./tasks/helpers.sh
-    generates:
-      - ./build/work/stamp/deps/runit_svlogd
 
   deps:trafficserver:
     deps:
@@ -166,13 +103,10 @@ tasks:
     cmds:
       - task: deps:cue
       - task: deps:envoy
-      - task: deps:libcidr
-      - task: deps:libpsl
       - task: deps:luarocks
       - task: deps:openresty
       - task: deps:perp
       - task: deps:rsyslog
-      - task: deps:runit_svlogd
       - task: deps:trafficserver
 
   build-deps:crane:
@@ -251,12 +185,10 @@ tasks:
 
   app-deps:luarocks:
     deps:
-      - deps:libcidr
       - deps:luarocks
     cmds:
       - ./tasks/app-deps/luarocks
     sources:
-      - ./build/work/stamp/deps/libcidr
       - ./build/work/stamp/deps/luarocks
       - ./src/api-umbrella-git-1.rockspec
       - ./src/luarocks.lock

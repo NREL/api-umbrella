@@ -14,11 +14,11 @@ module FactoryBot
   # FactoryBot, but it lets us leverage the same factories for both
   # building/creating records, as well as returning hashes of data in the
   # format expected of our APIs (for POST/PUT calls).
-  def self.attributes_or_build(current_strategy, name, *traits_and_overrides, &block)
+  def self.attributes_or_build(current_strategy, name, ...)
     if(current_strategy.kind_of?(FactoryBot::Strategy::AttributesFor))
-      self.attributes_for(name, *traits_and_overrides, &block)
+      self.attributes_for(name, ...)
     else
-      self.build(name, *traits_and_overrides, &block)
+      self.build(name, ...)
     end
   end
 end

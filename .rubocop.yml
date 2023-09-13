@@ -1,12 +1,12 @@
 AllCops:
-  TargetRubyVersion: 2.5
+  TargetRubyVersion: 3.1
   NewCops: enable
   Exclude:
+    - .git/**/*
     - bin/**/*
+    - build/work/**/*
     - scripts/**/*
-    - src/api-umbrella/web-app/bin/**/*
-    - src/api-umbrella/web-app/tmp/**/*
-    - src/api-umbrella/web-app/vendor/**/*
+    - src/**/*
     - tmp/**/*
     - vendor/**/*
 
@@ -134,6 +134,7 @@ Style/GuardClause:
 
 Style/HashSyntax:
   EnforcedStyle: no_mixed_keys
+  EnforcedShorthandSyntax: either
 
 Style/IfInsideElse:
   Enabled: false

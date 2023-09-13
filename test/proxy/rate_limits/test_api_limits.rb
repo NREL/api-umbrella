@@ -64,6 +64,44 @@ class Test::Proxy::RateLimits::TestApiLimits < Minitest::Test
           :frontend_host => "127.0.0.1",
           :backend_host => "127.0.0.1",
           :servers => [{ :host => "127.0.0.1", :port => 9444 }],
+          :url_matches => [{ :frontend_prefix => "/#{unique_test_class_id}/settings-with-empty-sub-settings/", :backend_prefix => "/" }],
+          :settings => {
+            :rate_limits => [
+              {
+                :duration => 60 * 60 * 1000, # 1 hour
+                :limit_by => "api_key",
+                :limit_to => 4,
+                :distributed => true,
+                :response_headers => true,
+              },
+            ],
+          },
+          :sub_settings => [
+            {
+              :http_method => "any",
+              :regex => ".*",
+              :settings => {},
+            },
+          ],
+        },
+        {
+          :frontend_host => "127.0.0.1",
+          :backend_host => "127.0.0.1",
+          :servers => [{ :host => "127.0.0.1", :port => 9444 }],
+          :url_matches => [{ :frontend_prefix => "/#{unique_test_class_id}/empty-settings-and-sub-settings/", :backend_prefix => "/" }],
+          :settings => {},
+          :sub_settings => [
+            {
+              :http_method => "any",
+              :regex => ".*",
+              :settings => {},
+            },
+          ],
+        },
+        {
+          :frontend_host => "127.0.0.1",
+          :backend_host => "127.0.0.1",
+          :servers => [{ :host => "127.0.0.1", :port => 9444 }],
           :url_matches => [{ :frontend_prefix => "/#{unique_test_class_id}/different-bucket/", :backend_prefix => "/" }],
           :settings => {
             :rate_limit_bucket_name => "different",
@@ -112,6 +150,14 @@ class Test::Proxy::RateLimits::TestApiLimits < Minitest::Test
 
   def test_sub_settings_with_higher_limit
     assert_api_key_rate_limit("/#{unique_test_class_id}/lower/hello/sub-higher", 7)
+  end
+
+  def test_empty_sub_settings_inherits_parent
+    assert_api_key_rate_limit("/#{unique_test_class_id}/settings-with-empty-sub-settings/hello", 4)
+  end
+
+  def test_empty_settings_and_sub_settings_inherits_default
+    assert_api_key_rate_limit("/#{unique_test_class_id}/empty-settings-and-sub-settings/hello", 5)
   end
 
   def test_counts_explicit_buckets_differently
