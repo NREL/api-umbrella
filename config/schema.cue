@@ -167,17 +167,19 @@ import "path"
       "P-384",
       "P-521",
     ]
-    global_downstream_max_connections: uint16 | *8192
+    global_downstream_max_connections: uint16 | *32768
+  }
 
-    xds_rest_server: {
+  envoy_control_plane: {
+    host: string | *"127.0.0.1"
+    port: uint16 | *14002
+    listen: {
       host: string | *"127.0.0.1"
       port: uint16 | *14002
-      listen: {
-        host: string | *"127.0.0.1"
-        port: uint16 | *14002
-      }
-      max_body_size: string | *"5m"
-      refresh_delay: string | *"1s"
+    }
+    metrics_listen: {
+      host: string | *"127.0.0.1"
+      port: uint16 | *14003
     }
   }
 
@@ -816,7 +818,7 @@ import "path"
 
   contact_url?: string
 
-  version?: string
+  version?: uint16
 
   "_test_config": {
     default_null_override_hash: _ | *null

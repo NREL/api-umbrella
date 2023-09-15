@@ -22,11 +22,12 @@ envoy:
   port: 13000
   admin:
     port: 13001
-  xds_rest_server:
+envoy_control_plane:
+  port: 13002
+  listen:
     port: 13002
-    listen:
-      port: 13002
-    refresh_delay: 0.01s
+  metrics_listen:
+    port: 13003
 api_server:
   port: 13010
 web:

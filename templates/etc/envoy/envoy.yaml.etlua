@@ -10,22 +10,30 @@ typed_dns_resolver_config:
 
 static_resources:
   clusters:
-    - name: api-umbrella-rest-xds-api-cluster
+    - name: api-umbrella-cluster
       type: LOGICAL_DNS
       dns_lookup_family: V4_PREFERRED
       respect_dns_ttl: true
       ignore_health_on_host_removal: true
       load_assignment:
-        cluster_name: api-umbrella-rest-xds-api-cluster
+        cluster_name: api-umbrella-cluster
         endpoints:
           - lb_endpoints:
               - endpoint:
                   address:
                     socket_address:
-                      address: <%- config["envoy"]["xds_rest_server"]["host"] %>
-                      port_value: <%- config["envoy"]["xds_rest_server"]["port"] %>
+                      address: <%- config["envoy_control_plane"]["host"] %>
+                      port_value: <%- config["envoy_control_plane"]["port"] %>
       lb_policy: LEAST_REQUEST
       connect_timeout: <%- config["envoy"]["_connect_timeout"] %>
+      typed_extension_protocol_options:
+        envoy.extensions.upstreams.http.v3.HttpProtocolOptions:
+          "@type": type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions
+          explicit_http_config:
+            http2_protocol_options:
+              connection_keepalive:
+                interval: 10s
+                timeout: 5s
       upstream_connection_options:
         tcp_keepalive:
           keepalive_probes: 2
@@ -33,22 +41,18 @@ static_resources:
           keepalive_interval: 5
 
 dynamic_resources:
+  ads_config:
+    api_type: GRPC
+    transport_api_version: V3
+    grpc_services:
+      - envoy_grpc:
+          cluster_name: api-umbrella-cluster
   cds_config:
-    api_config_source:
-      api_type: REST
-      transport_api_version: V3
-      refresh_delay: <%- config["envoy"]["xds_rest_server"]["refresh_delay"] %>
-      cluster_names:
-        - api-umbrella-rest-xds-api-cluster
     resource_api_version: V3
+    ads: {}
   lds_config:
-    api_config_source:
-      api_type: REST
-      transport_api_version: V3
-      refresh_delay: <%- config["envoy"]["xds_rest_server"]["refresh_delay"] %>
-      cluster_names:
-        - api-umbrella-rest-xds-api-cluster
     resource_api_version: V3
+    ads: {}
 
 admin:
   address:

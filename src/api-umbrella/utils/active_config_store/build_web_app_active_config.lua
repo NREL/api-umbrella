@@ -27,7 +27,7 @@ return function(published_config)
     },
     db_version = combined_config["db_version"],
     file_version = combined_config["file_version"],
-    version = combined_config["version"],
+    envoy_version = combined_config["envoy_version"],
   }
 
   return active_config

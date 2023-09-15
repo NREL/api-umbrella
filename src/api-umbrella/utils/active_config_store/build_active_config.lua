@@ -1,5 +1,4 @@
 local build_combined_config = require("api-umbrella.utils.active_config_store.build_combined_config")
-local build_envoy_xds_config = require("api-umbrella.utils.active_config_store.build_envoy_xds_config")
 local parse_api_backends = require("api-umbrella.utils.active_config_store.parse_api_backends")
 local parse_website_backends = require("api-umbrella.utils.active_config_store.parse_website_backends")
 
@@ -11,13 +10,11 @@ return function(published_config)
     website_backends = combined_config["website_backends"],
     db_version = combined_config["db_version"],
     file_version = combined_config["file_version"],
-    version = combined_config["version"],
+    envoy_version = combined_config["envoy_version"],
   }
 
   parse_api_backends(active_config["api_backends"])
   parse_website_backends(active_config["website_backends"])
-
-  active_config["envoy_xds"] = build_envoy_xds_config(active_config)
 
   return active_config
 end

@@ -14,6 +14,7 @@ module ApiUmbrellaTestHelpers
 
     @@incrementing_unique_number = 0
     @@incrementing_unique_ip_addr = IPAddr.new("127.0.0.1")
+    @@file_config_version = 1
     @@current_override_config = {}
     mattr_reader :api_user
     mattr_reader :api_key
@@ -286,7 +287,6 @@ module ApiUmbrellaTestHelpers
     def override_config(config)
       self.config_lock.synchronize do
         original_config = @@current_override_config.deep_dup
-        original_config["version"] ||= SecureRandom.uuid
 
         begin
           override_config_set(config)
@@ -306,7 +306,10 @@ module ApiUmbrellaTestHelpers
         previous_override_config = @@current_override_config.deep_dup
 
         config = config.deep_stringify_keys
-        config["version"] = SecureRandom.uuid
+
+        @@file_config_version += 1
+        config["version"] ||= @@file_config_version
+
         ApiUmbrellaTestHelpers::Process.instance.write_test_config(config)
 
         self.api_umbrella_process.reload

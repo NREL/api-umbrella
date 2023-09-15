@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+set -e -u
+
+# Redirect stderr to stdout
+exec 2>&1
+
+umask "<%- config['umask'] %>"
+
+if [ "${1}" = "start" ]; then
+  echo "starting ${2}..."
+  api_umbrella_user="<%- config['user'] %>"
+  api_umbrella_group="<%- config['group'] %>"
+
+  dir="<%- config['run_dir'] %>/envoy-control-plane"
+  data_dir="$dir/data"
+  run_args=("-c" "$dir")
+  if [ -n "$api_umbrella_user" ]; then
+    run_args+=("-u" "$api_umbrella_user")
+  fi
+
+  dirs=("$data_dir" "$dir/tmp")
+  mkdir -p "${dirs[@]}"
+  chmod 750 "${dirs[@]}"
+  if [ -n "$api_umbrella_user" ]; then
+    chown "$api_umbrella_user":"$api_umbrella_group" "${dirs[@]}"
+  fi
+
+  exec runtool "${run_args[@]}" envoy-control-plane \
+    -addr "<%- config['envoy_control_plane']['listen']['host'] %>:<%- config['envoy_control_plane']['listen']['port'] %>" \
+    -metricsServerAddr "<%- config['envoy_control_plane']['metrics_listen']['host'] %>:<%- config['envoy_control_plane']['metrics_listen']['port'] %>" \
+    -ads \
+    -nodeID "api-umbrella-node-id" \
+    -watch "$data_dir" \
+    "$data_dir"
+fi
+
+exit 0

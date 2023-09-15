@@ -73,7 +73,6 @@ end
 
 local function fetch_envoy_state()
   local data = {}
-  local config_version = active_config["version"]
 
   local httpc = http.new()
   httpc:set_timeout(2000)
@@ -109,52 +108,8 @@ local function fetch_envoy_state()
     return nil, "failed to parse json: " .. (stats or "")
   end
 
-  data["versions_ready"] = false
   for _, stat in ipairs(stats["stats"]) do
     data[stat["name"]] = stat["value"]
-    if stat["value"] == config_version then
-      data["versions_ready"] = true
-    else
-      data["versions_ready"] = false
-      break
-    end
-  end
-
-  local clusters_res, clusters_err = httpc:request({
-    method = "GET",
-    path = "/clusters?format=json",
-  })
-  if clusters_err then
-    httpc:close()
-    return nil, "request error: " .. (clusters_err or "")
-  elseif clusters_res.status ~= 200 then
-    httpc:close()
-    return nil, "unsuccessful response: " .. (clusters_res.status or "")
-  end
-
-  local clusters_body, clusters_body_err = clusters_res:read_body()
-  if clusters_body_err then
-    httpc:close()
-    return nil, "envoy admin read body error: " .. (clusters_body_err or "")
-  end
-
-  local clusters_json_ok, clusters = xpcall(json_decode, xpcall_error_handler, clusters_body)
-  if not clusters_json_ok then
-    return nil, "failed to parse json: " .. (clusters or "")
-  end
-
-  data["clusters_ready"] = false
-  local initialized_cluster_names = {}
-  for _, cluster in ipairs(clusters["cluster_statuses"]) do
-    initialized_cluster_names[cluster["name"]] = true
-  end
-  for _, cluster in ipairs(active_config["envoy_xds"]["clusters"]["resources"]) do
-    if not initialized_cluster_names[cluster["name"]] then
-      data["clusters_ready"] = false
-      break
-    else
-      data["clusters_ready"] = true
-    end
   end
 
   local keepalive_ok, keepalive_err = httpc:set_keepalive()
