@@ -128,12 +128,18 @@ local function generate_self_signed_cert()
 end
 
 local function ensure_geoip_db()
+  config["geoip"]["_enabled"] = false
+  config["geoip"]["_auto_updater_enabled"] = false
+
   local _, err = geoip_download_if_missing_or_old(config)
   if err then
     ngx.log(ngx.ERR, "geoip database download failed: ", err)
-    config["geoip"]["_enabled"] = false
   else
     config["geoip"]["_enabled"] = true
+
+    if config["geoip"]["db_update_frequency"] ~= false then
+      config["geoip"]["_auto_updater_enabled"] = true
+    end
   end
 end
 
@@ -315,7 +321,7 @@ local function activate_services()
     active_services["elasticsearch-aws-signing-proxy"] = 1
   end
   if config["_service_router_enabled?"] then
-    if config["geoip"]["_enabled"] then
+    if config["geoip"]["_auto_updater_enabled"] then
       active_services["geoip-auto-updater"] = 1
     end
     active_services["envoy"] = 1

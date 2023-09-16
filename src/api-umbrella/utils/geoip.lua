@@ -104,29 +104,32 @@ function _M.download(config)
 end
 
 function _M.download_if_missing_or_old(config)
-  -- Ensure license key is present, since otherwise downloading won't work.
-  if not config["geoip"]["maxmind_license_key"] then
-    return false, "Can't download geoip database due to missing geoip.maxmind_license_key config"
+  local city_db_path = config["geoip"]["db_path"]
+  local download = true
+  if path_exists(city_db_path) then
+    if config["geoip"]["db_update_frequency"] == false then
+      download = false
+    else
+      -- Check the age of the current file. Don't attempt to download if the
+      -- current file has recently been updated.
+      local city_db_stat = stat(city_db_path)
+      local age = time() - city_db_stat.st_mtime
+      if age < config["geoip"]["db_update_age"] then
+        ngx.log(ngx.NOTICE, city_db_path .. " recently updated (" .. age .. "s ago) - skipping")
+        download = false
+      end
+    end
   end
 
-  local city_db_path = path_join(config["db_dir"], "geoip/GeoLite2-City.mmdb")
-  local download = false
-  if not path_exists(city_db_path) then
-    download = true
-  else
-    -- Check the age of the current file. Don't attempt to download if the
-    -- current file has recently been updated.
-    local city_db_stat = stat(city_db_path)
-    local age = time() - city_db_stat.st_mtime
-    if age < config["geoip"]["db_update_age"] then
-      ngx.log(ngx.NOTICE, city_db_path .. " recently updated (" .. age .. "s ago) - skipping")
-    else
-      download = true
-    end
+  -- Ensure license key is present, since otherwise downloading won't work.
+  if download and not config["geoip"]["maxmind_license_key"] then
+    return false, "Can't download geoip database due to missing geoip.maxmind_license_key config"
   end
 
   if download then
     return _M.download(config)
+  else
+    return true
   end
 end
 

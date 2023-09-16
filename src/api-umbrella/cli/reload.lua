@@ -74,7 +74,7 @@ return function(options)
     reload_trafficserver(config)
     reload_nginx(perp_base)
 
-    if config["geoip"]["_enabled"] then
+    if config["geoip"]["_auto_updater_enabled"] then
       reload_geoip_auto_updater(perp_base)
     end
   end
