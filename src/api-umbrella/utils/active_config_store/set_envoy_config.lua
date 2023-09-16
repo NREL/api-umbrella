@@ -19,6 +19,13 @@ local function build_cluster_resource(cluster_name, options)
     name = cluster_name,
     type = "STRICT_DNS",
     wait_for_warm_on_init = false,
+    typed_dns_resolver_config = {
+      name = "envoy.network.dns_resolver.cares",
+      typed_config = {
+        ["@type"] = "type.googleapis.com/envoy.extensions.network.dns_resolver.cares.v3.CaresDnsResolverConfig",
+        resolvers = file_config["dns_resolver"]["_nameservers_envoy"],
+      },
+    },
     dns_lookup_family = "V4_PREFERRED",
     respect_dns_ttl = true,
     ignore_health_on_host_removal = true,

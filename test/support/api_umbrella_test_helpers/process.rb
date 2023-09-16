@@ -272,7 +272,7 @@ module ApiUmbrellaTestHelpers
       # just restarts the traffic_server process (and not the manager), which
       # appears to work without any downtime. However, while DNS changes are
       # picked up after that type of restart, it's hard to predict when those
-      # changes are fully live within trafficserver, so that's why we[re opting
+      # changes are fully live within trafficserver, so that's why we're opting
       # for this full restart to handle DNS changes in the test suite (in real
       # live, DNS server changes shouldn't be likely, though, so this is mainly
       # a test environment issue).

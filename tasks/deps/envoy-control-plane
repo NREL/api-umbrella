@@ -3,10 +3,10 @@
 set -e -u -x
 source ./tasks/helpers.sh
 
-envoy_control_plane_version="1.1.0"
-envoy_control_plane_hash="eb3bb23bcfb0ca999852309a714635ee10c9d5426b900ca9697be0451c352837"
+envoy_control_plane_version="1.2.0"
+envoy_control_plane_hash="7add91783b597da5302aa2eb03f9e589227b9406be5f0ace087eaa62f3f5ddc2"
 if [ "$TARGETARCH" == "arm64" ]; then
-  envoy_control_plane_hash="dc6929318e43c1315d23a13ca4f295aa314a95824240847097dae88d00885c7c"
+  envoy_control_plane_hash="6aec5ed0f25b22c781eeeb1901b19d524a4b4c6eb20695b5069ee7d412d1be8b"
 fi
 
 task_working_dir
