@@ -73,6 +73,8 @@ router:
     refresh_local_cache_interval: 0
 rsyslog:
   port: 13014
+geoip:
+  db_update_frequency: false
 postgresql:
   database: api_umbrella_test
   password: dev_password

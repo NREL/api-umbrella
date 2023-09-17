@@ -96,7 +96,7 @@ http {
   <% end %>
 
   <% if config["geoip"]["_enabled"] then %>
-    geoip2 <%- config["db_dir"] %>/geoip/GeoLite2-City.mmdb {
+    geoip2 <%- config["geoip"]["db_path"] %> {
       $geoip2_data_continent_code continent code;
       $geoip2_data_country_code country iso_code;
       $geoip2_data_subdivision_code subdivisions 0 iso_code;

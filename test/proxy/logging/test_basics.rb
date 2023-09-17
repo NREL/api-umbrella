@@ -539,8 +539,6 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
   end
 
   def test_case_sensitivity
-    assert($config["geoip"]["maxmind_license_key"], "MAXMIND_LICENSE_KEY environment variable must be set with valid license for geoip tests to run")
-
     # Setup a backend to accept wildcard hosts so we can test an uppercase hostname.
     prepend_api_backends([
       {
@@ -561,7 +559,7 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
           "Origin" => "HTTP://FOO.EXAMPLE",
           "User-Agent" => "CURL/7.37.1",
           "Referer" => "HTTP://EXAMPLE.COM",
-          "X-Forwarded-For" => "0:0:0:0:0:FFFF:3434:76C0",
+          "X-Forwarded-For" => "2001:0480:0001:BD19:A700:D7FD:0074:CA2D",
         },
         :userpwd => "BASIC-AUTH-USERNAME-EXAMPLE:MY-SECRET-PASSWORD",
       }))
@@ -571,7 +569,7 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
 
       # Explicitly lowercased fields.
       assert_equal("foobar.example", record["request_host"])
-      assert_equal("::ffff:52.52.118.192", record["request_ip"])
+      assert_equal("2001:480:1:bd19:a700:d7fd:74:ca2d", record["request_ip"])
       assert_equal("http", record["request_scheme"])
 
       # Explicitly uppercased fields.
@@ -611,7 +609,7 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
         refute(record.key?("request_url_hierarchy_level6"))
         refute(record.key?("request_hierarchy"))
       end
-      assert_equal("San Jose", record["request_ip_city"])
+      assert_equal("San Diego", record["request_ip_city"])
       assert_equal("HTTP://FOO.EXAMPLE", record["request_origin"])
       assert_equal("/#{unique_test_id}/logging-example/FOO/BAR/", record["request_path"])
       assert_equal("URL1=FOO", record["request_url_query"])

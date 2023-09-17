@@ -107,5 +107,67 @@ module ApiUmbrellaTestHelpers
         refute(record.key?("request_url"))
       end
     end
+
+    def assert_geocode(record, options)
+      assert_geocode_log(record, options)
+      if !options.fetch(:lat).nil? || !options.fetch(:lon).nil?
+        assert_geocode_cache(record, options)
+      end
+    end
+
+    def assert_geocode_log(record, options)
+      assert_equal(options.fetch(:ip), record.fetch("request_ip"))
+      if(options.fetch(:country).nil?)
+        assert_nil(record["request_ip_country"])
+        refute(record.key?("request_ip_country"))
+      else
+        assert_equal(options.fetch(:country), record.fetch("request_ip_country"))
+      end
+      if(options.fetch(:region).nil?)
+        assert_nil(record["request_ip_region"])
+        refute(record.key?("request_ip_region"))
+      else
+        assert_equal(options.fetch(:region), record.fetch("request_ip_region"))
+      end
+      if(options.fetch(:city).nil?)
+        assert_nil(record["request_ip_city"])
+        refute(record.key?("request_ip_city"))
+      else
+        assert_equal(options.fetch(:city), record.fetch("request_ip_city"))
+      end
+    end
+
+    def assert_geocode_cache(record, options)
+      cities = AnalyticsCity.where(:country => options.fetch(:country), :region => options.fetch(:region), :city => options.fetch(:city)).all
+      assert_equal(1, cities.length)
+
+      city = cities.first
+      assert_equal([
+        "id",
+        "country",
+        "region",
+        "city",
+        "location",
+        "created_at",
+        "updated_at",
+      ].sort, city.attributes.keys.sort)
+
+      assert_kind_of(Numeric, city.id)
+      assert_equal(options.fetch(:country), city.country)
+      if(options.fetch(:region).nil?)
+        assert_nil(city.region)
+      else
+        assert_equal(options.fetch(:region), city.region)
+      end
+      if(options.fetch(:city).nil?)
+        assert_nil(city.city)
+      else
+        assert_equal(options.fetch(:city), city.city)
+      end
+      assert_in_delta(options.fetch(:lon), city.location.x, 0.02)
+      assert_in_delta(options.fetch(:lat), city.location.y, 0.02)
+      assert_kind_of(Time, city.created_at)
+      assert_kind_of(Time, city.updated_at)
+    end
   end
 end

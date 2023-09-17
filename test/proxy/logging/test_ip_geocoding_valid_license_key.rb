@@ -1,6 +1,6 @@
 require_relative "../../test_helper"
 
-class Test::Proxy::Logging::TestIpGeocodingNoLicenseKey < Minitest::Test
+class Test::Proxy::Logging::TestIpGeocodingValidLicenseKey < Minitest::Test
   include ApiUmbrellaTestHelpers::Setup
   include ApiUmbrellaTestHelpers::Logging
   include Minitest::Hooks
@@ -10,13 +10,15 @@ class Test::Proxy::Logging::TestIpGeocodingNoLicenseKey < Minitest::Test
     setup_server
 
     @@geoip_path = File.join($config.fetch("db_dir"), "geoip/GeoLite2-City.mmdb")
+    assert(ENV.fetch("MAXMIND_LICENSE_KEY", nil), "MAXMIND_LICENSE_KEY environment variable must be set with valid license for geoip tests to run")
 
     once_per_class_setup do
       FileUtils.rm_f(@@geoip_path)
       override_config_set({
         "geoip" => {
           "db_path" => @@geoip_path,
-          "maxmind_license_key" => nil,
+          "db_update_frequency" => 86400,
+          "maxmind_license_key" => ENV.fetch("MAXMIND_LICENSE_KEY"),
         },
       })
     end
@@ -28,32 +30,27 @@ class Test::Proxy::Logging::TestIpGeocodingNoLicenseKey < Minitest::Test
     FileUtils.rm_f(@@geoip_path)
   end
 
-  def test_no_nginx_geoip_config
-    nginx_config_path = File.join($config.fetch("etc_dir"), "nginx/router.conf")
-    nginx_config = File.read(nginx_config_path)
-    refute_match("geoip2", nginx_config)
-  end
-
   def test_runs_auto_update_process
     processes = api_umbrella_process.processes
-    assert_match(%r{^\[- --- ---\] *geoip-auto-updater *\(service not activated\)$}, processes)
+    assert_match(%r{^\[\+ \+\+\+ \+\+\+\] *geoip-auto-updater *uptime: \d+\w/\d+\w *pids: \d+/\d+$}, processes)
   end
 
-  def test_logs_but_no_geoip
+  def test_ipv4_address
     response = Typhoeus.get("http://127.0.0.1:9080/api/hello", log_http_options.deep_merge({
       :headers => {
-        "X-Forwarded-For" => "52.52.118.192",
+        "X-Forwarded-For" => "52.4.0.0",
       },
     }))
     assert_response_code(200, response)
 
     record = wait_for_log(response)[:hit_source]
-    assert_equal("52.52.118.192", record.fetch("request_ip"))
-    assert_nil(record["request_ip_country"])
-    refute(record.key?("request_ip_country"))
-    assert_nil(record["request_ip_region"])
-    refute(record.key?("request_ip_region"))
-    assert_nil(record["request_ip_city"])
-    refute(record.key?("request_ip_city"))
+    assert_geocode(record, {
+      :ip => "52.4.0.0",
+      :country => "US",
+      :region => "VA",
+      :city => "Ashburn",
+      :lat => 39.0469,
+      :lon => -77.4903,
+    })
   end
 end

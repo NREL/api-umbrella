@@ -444,7 +444,7 @@ module ApiUmbrellaTestHelpers
         static.deep_merge!({
           "root_dir" => TEST_RUN_API_UMBRELLA_ROOT,
           "geoip" => {
-            "maxmind_license_key" => ENV.fetch("MAXMIND_LICENSE_KEY", nil),
+            "db_path" => File.join(API_UMBRELLA_SRC_ROOT, "test/support/geoip/GeoLite2-City-Test.mmdb"),
           },
         })
         if(::Process.euid == 0)

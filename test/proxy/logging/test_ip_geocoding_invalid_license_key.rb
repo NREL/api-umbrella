@@ -8,14 +8,14 @@ class Test::Proxy::Logging::TestIpGeocodingInvalidLicenseKey < Minitest::Test
   def setup
     super
     setup_server
-    once_per_class_setup do
-      # Delete the existing geoip db file so that reloading forces an attempt
-      # at re-downloading the file (otherwise the recent file won't trigger a
-      # re-download in which case we don't know this is an invalid key).
-      FileUtils.rm_f(File.join($config.fetch("db_dir"), "geoip/GeoLite2-City.mmdb"))
 
+    @@geoip_path = File.join($config.fetch("db_dir"), "geoip/GeoLite2-City.mmdb")
+
+    once_per_class_setup do
+      FileUtils.rm_f(@@geoip_path)
       override_config_set({
         "geoip" => {
+          "db_path" => @@geoip_path,
           "maxmind_license_key" => "invalid-test",
         },
       })
@@ -25,6 +25,7 @@ class Test::Proxy::Logging::TestIpGeocodingInvalidLicenseKey < Minitest::Test
   def after_all
     super
     override_config_reset
+    FileUtils.rm_f(@@geoip_path)
   end
 
   def test_no_nginx_geoip_config
@@ -33,7 +34,7 @@ class Test::Proxy::Logging::TestIpGeocodingInvalidLicenseKey < Minitest::Test
     refute_match("geoip2", nginx_config)
   end
 
-  def test_runs_auto_update_process
+  def test_does_not_run_auto_update_process
     processes = api_umbrella_process.processes
     assert_match(%r{^\[- --- ---\] *geoip-auto-updater *\(service not activated\)$}, processes)
   end

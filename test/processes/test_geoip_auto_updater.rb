@@ -8,12 +8,16 @@ class Test::Processes::TestGeoipAutoUpdater < Minitest::Test
     super
     setup_server
 
-    @geoip_path = File.join($config.fetch("db_dir"), "geoip/GeoLite2-City.mmdb")
+    @@geoip_path = File.join($config.fetch("db_dir"), "geoip/GeoLite2-City.mmdb")
+    assert(ENV.fetch("MAXMIND_LICENSE_KEY", nil), "MAXMIND_LICENSE_KEY environment variable must be set with valid license for geoip tests to run")
 
     once_per_class_setup do
+      FileUtils.rm_f(@@geoip_path)
       override_config_set({
         "geoip" => {
+          "db_path" => @@geoip_path,
           "db_update_frequency" => 1,
+          "maxmind_license_key" => ENV.fetch("MAXMIND_LICENSE_KEY"),
         },
       })
     end
@@ -22,13 +26,14 @@ class Test::Processes::TestGeoipAutoUpdater < Minitest::Test
   def after_all
     super
     override_config_reset
+    FileUtils.rm_f(@@geoip_path)
   end
 
   def test_checks_for_updates_skipping_recent_files
     log_tail = LogTail.new("geoip-auto-updater/current")
     nginx_log_tail = LogTail.new("nginx/current")
 
-    FileUtils.touch(@geoip_path)
+    FileUtils.touch(@@geoip_path)
 
     log = log_tail.read_until(/Checking for geoip database updates.*Checking for geoip database updates/m)
     assert_match(%r{\[notice\].*Checking for geoip database updates}, log)
@@ -42,7 +47,7 @@ class Test::Processes::TestGeoipAutoUpdater < Minitest::Test
     log_tail = LogTail.new("geoip-auto-updater/current")
     nginx_log_tail = LogTail.new("nginx/current")
 
-    FileUtils.touch(@geoip_path, :mtime => Time.now.utc - 2.days)
+    FileUtils.touch(@@geoip_path, :mtime => Time.now.utc - 2.days)
 
     log = log_tail.read_until(/Checking for geoip database updates.*Downloading new file.*Checking for geoip database updates/m, :timeout => 30)
     assert_match(%r{\[notice\].*Checking for geoip database updates}, log)
@@ -57,8 +62,8 @@ class Test::Processes::TestGeoipAutoUpdater < Minitest::Test
     log_tail = LogTail.new("geoip-auto-updater/current")
     nginx_log_tail = LogTail.new("nginx/current")
 
-    File.open(@geoip_path, "a") { |f| f.puts("\n") }
-    FileUtils.touch(@geoip_path, :mtime => Time.now.utc - 2.days)
+    File.open(@@geoip_path, "a") { |f| f.puts("\n") }
+    FileUtils.touch(@@geoip_path, :mtime => Time.now.utc - 2.days)
 
     log = log_tail.read_until(/Checking for geoip database updates.*Installed new geoip database.*starting geoip-auto-updater.*Checking for geoip database updates/m, :timeout => 30)
     assert_match(%r{\[notice\].*Checking for geoip database updates}, log)
