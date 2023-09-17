@@ -8,9 +8,14 @@ class Test::Proxy::Logging::TestIpGeocodingNoLicenseKey < Minitest::Test
   def setup
     super
     setup_server
+
+    @@geoip_path = File.join($config.fetch("db_dir"), "geoip/GeoLite2-City.mmdb")
+
     once_per_class_setup do
+      FileUtils.rm_f(@@geoip_path)
       override_config_set({
         "geoip" => {
+          "db_path" => @@geoip_path,
           "maxmind_license_key" => nil,
         },
       })
@@ -20,6 +25,7 @@ class Test::Proxy::Logging::TestIpGeocodingNoLicenseKey < Minitest::Test
   def after_all
     super
     override_config_reset
+    FileUtils.rm_f(@@geoip_path)
   end
 
   def test_no_nginx_geoip_config
