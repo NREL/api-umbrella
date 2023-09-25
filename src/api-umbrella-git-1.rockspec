@@ -13,7 +13,7 @@ dependencies = {
   "lapis ~> 1.14.0",
   "libcidr-ffi ~> 1.0.0",
   "lua-resty-http ~> 0.17.1",
-  "lua-resty-mail ~> 1.0.2",
+  "lua-resty-mail ~> 1.1.0",
   "lua-resty-mlcache ~> 2.6.0",
   "lua-resty-nettle ~> 2.1",
   "lua-resty-openidc ~> 1.7.6",
