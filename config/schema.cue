@@ -68,7 +68,7 @@ import "path"
     variables_hash_max_size: uint | *2048
     server_names_hash_bucket_size?: uint
     lua_ssl_trusted_certificate?: string
-    lua_ssl_verify_depth: uint | *1
+    lua_ssl_verify_depth: uint | *5
     shared_dicts: {
       active_config: {
         size: string | *"3m"

@@ -86,8 +86,8 @@ http {
   lua_shared_dict locks <%- config["nginx"]["shared_dicts"]["locks"]["size"] %>;
   lua_shared_dict rate_limit_counters <%- config["nginx"]["shared_dicts"]["rate_limit_counters"]["size"] %>;
   lua_shared_dict rate_limit_exceeded <%- config["nginx"]["shared_dicts"]["rate_limit_exceeded"]["size"] %>;
-  <% if config["nginx"]["lua_ssl_trusted_certificate"] then %>
-    lua_ssl_trusted_certificate <%- config["nginx"]["lua_ssl_trusted_certificate"] %>;
+  <% if config["nginx"]["_lua_ssl_trusted_certificate"] then %>
+    lua_ssl_trusted_certificate <%- config["nginx"]["_lua_ssl_trusted_certificate"] %>;
     lua_ssl_verify_depth <%- config["nginx"]["lua_ssl_verify_depth"] %>;
   <% end %>
 

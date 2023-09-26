@@ -36,8 +36,8 @@ http {
     lua_code_cache off;
   <% end %>
 
-  <% if config["nginx"]["lua_ssl_trusted_certificate"] then %>
-    lua_ssl_trusted_certificate <%- config["nginx"]["lua_ssl_trusted_certificate"] %>;
+  <% if config["nginx"]["_lua_ssl_trusted_certificate"] then %>
+    lua_ssl_trusted_certificate <%- config["nginx"]["_lua_ssl_trusted_certificate"] %>;
     lua_ssl_verify_depth <%- config["nginx"]["lua_ssl_verify_depth"] %>;
   <% end %>
 
