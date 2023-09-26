@@ -58,6 +58,8 @@ module Test
 
     module Dns; end
 
+    module Envoy; end
+
     module FormattedErrors; end
 
     module Gzip; end

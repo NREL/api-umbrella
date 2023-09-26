@@ -176,3 +176,16 @@ RUN set -x && \
 EXPOSE 80 443
 
 CMD ["api-umbrella", "run"]
+
+###
+# Runtime - Egress Only
+# https://github.com/envoyproxy/envoy/blob/release/v1.27/ci/Dockerfile-envoy#L60-L69
+###
+FROM gcr.io/distroless/base-nossl-debian12:nonroot AS runtime-egress
+
+COPY --from=build --chown=0:0 --chmod=755 /app/build/work/stage/opt/api-umbrella/embedded/bin/envoy /usr/local/bin/
+
+EXPOSE 14001
+
+ENTRYPOINT ["/usr/local/bin/envoy"]
+CMD ["-c", "/etc/envoy/envoy.yaml"]

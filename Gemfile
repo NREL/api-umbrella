@@ -86,3 +86,6 @@ gem "awesome_print", "~> 1.9.2"
 
 # Deep freezing of objects.
 gem "ice_nine", "~> 0.11.2"
+
+# Testing SMTP directly.
+gem "net-smtp", "~> 0.4.0"

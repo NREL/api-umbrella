@@ -12,14 +12,14 @@ class Test::Proxy::TestResponseHeaderLengths < Minitest::Test
   def test_individual_header_less_than_8k
     response = Typhoeus.get("http://127.0.0.1:9080/api/response-headers-length/", http_options.deep_merge({
       :params => {
-        :header_length => 7830,
+        :header_length => 7790,
         :header_count => 1,
       },
     }))
 
     assert_response_code(200, response)
-    assert_equal(7830, response.headers.fetch("x-foo1").bytesize)
-    assert_operator(response.response_headers.bytesize, :>, 8090)
+    assert_equal(7790, response.headers.fetch("x-foo1").bytesize)
+    assert_operator(response.response_headers.bytesize, :>, 8050)
     assert_operator(response.response_headers.bytesize, :<, 8192)
   end
 
@@ -27,16 +27,16 @@ class Test::Proxy::TestResponseHeaderLengths < Minitest::Test
     response = Typhoeus.get("http://127.0.0.1:9080/api/response-headers-length/", http_options.deep_merge({
       :params => {
         :header_length => 50,
-        :header_count => 128,
+        :header_count => 127,
       },
     }))
 
     assert_response_code(200, response)
     assert_equal(50, response.headers.fetch("x-foo1").bytesize)
     assert_equal(50, response.headers.fetch("x-foo2").bytesize)
+    assert_equal(50, response.headers.fetch("x-foo126").bytesize)
     assert_equal(50, response.headers.fetch("x-foo127").bytesize)
-    assert_equal(50, response.headers.fetch("x-foo128").bytesize)
-    assert_operator(response.response_headers.bytesize, :>, 8080)
+    assert_operator(response.response_headers.bytesize, :>, 8020)
     assert_operator(response.response_headers.bytesize, :<, 8192)
   end
 

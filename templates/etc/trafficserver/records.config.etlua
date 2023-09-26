@@ -87,7 +87,7 @@ CONFIG proxy.config.http.transaction_active_timeout_out INT 0
 CONFIG proxy.config.http.connect_attempts_rr_retries INT 0
 CONFIG proxy.config.http.connect_attempts_max_retries INT 0
 CONFIG proxy.config.http.connect_attempts_max_retries_dead_server INT 0
-CONFIG proxy.config.http.connect.dead.policy 0
+CONFIG proxy.config.http.connect.dead.policy INT 0
 
 # Don't consider the backend down, even if some requests timeout. We don't want
 # some bad API requests to mark the entire backend as being down.
@@ -178,6 +178,14 @@ CONFIG proxy.config.hostdb.strict_round_robin INT 1
 # keepalive hangups.
 CONFIG proxy.config.net.sock_option_flag_in INT 3
 CONFIG proxy.config.net.sock_option_flag_out INT 3
+
+<% if config["envoy"]["scheme"] == "https" then %>
+CONFIG proxy.config.ssl.client.verify.server.properties STRING ALL
+CONFIG proxy.config.ssl.client.verify.server.policy STRING ENFORCED
+CONFIG proxy.config.ssl.client.CA.cert.path STRING <%- config["etc_dir"] %>/trafficserver
+CONFIG proxy.config.ssl.client.CA.cert.filename STRING ca_cert.pem
+CONFIG proxy.config.ssl.client.sni_policy STRING @<%- config["envoy"]["tls_certificate"]["domain"] %>
+<% end %>
 
 # Enable for debug logging.
 # CONFIG proxy.config.diags.debug.enabled INT 1

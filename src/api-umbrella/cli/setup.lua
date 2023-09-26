@@ -325,11 +325,13 @@ local function activate_services()
     if config["geoip"]["_auto_updater_enabled"] then
       active_services["geoip-auto-updater"] = 1
     end
-    active_services["envoy"] = 1
     active_services["envoy-control-plane"] = 1
     active_services["nginx"] = 1
     active_services["rsyslog"] = 1
     active_services["trafficserver"] = 1
+  end
+  if config["_service_egress_enabled?"] then
+    active_services["envoy"] = 1
   end
   if config["_service_web_enabled?"] then
     active_services["nginx-web-app"] = 1

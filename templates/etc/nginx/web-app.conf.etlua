@@ -36,9 +36,10 @@ http {
     lua_code_cache off;
   <% end %>
 
-  # FIXME: Detect path/make configurable.
-  lua_ssl_trusted_certificate /etc/ssl/certs/ca-certificates.crt;
-  lua_ssl_verify_depth 5;
+  <% if config["nginx"]["lua_ssl_trusted_certificate"] then %>
+    lua_ssl_trusted_certificate <%- config["nginx"]["lua_ssl_trusted_certificate"] %>;
+    lua_ssl_verify_depth <%- config["nginx"]["lua_ssl_verify_depth"] %>;
+  <% end %>
 
   lua_package_path '<%- config["_src_root_dir"] %>/src/api-umbrella/web-app/?.lua;<%- config["_package_path"] %>';
   lua_package_cpath '<%- config["_package_cpath"] %>';

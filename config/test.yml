@@ -20,14 +20,28 @@ trafficserver:
   port: 13009
 envoy:
   port: 13000
+  listen:
+    port: 13000
   admin:
     port: 13001
-envoy_control_plane:
-  port: 13002
-  listen:
+    listen:
+      port: 13001
+  http_proxy:
     port: 13002
-  metrics_listen:
+    listen:
+      port: 13002
+  smtp_proxy:
     port: 13003
+    listen:
+      port: 13003
+  # Flush logs more frequently in test.
+  cli_args: "--file-flush-interval-msec 500"
+envoy_control_plane:
+  port: 13007
+  listen:
+    port: 13007
+  metrics_listen:
+    port: 13008
 api_server:
   port: 13010
 web:

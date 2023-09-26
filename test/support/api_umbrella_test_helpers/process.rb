@@ -153,7 +153,7 @@ module ApiUmbrellaTestHelpers
       end
     end
 
-    def reload
+    def reload(stdout: $stdout, stderr: $stderr)
       # Read the currently active config (to detect any changes in
       # $config["nginx"]["workers"]).
       runtime_config_path = File.join($config["root_dir"], "var/run/runtime_config.json")
@@ -167,7 +167,8 @@ module ApiUmbrellaTestHelpers
 
       # Send the reload command.
       reload = ChildProcess.build(*[File.join(API_UMBRELLA_SRC_ROOT, "bin/api-umbrella"), "reload"].flatten.compact)
-      reload.io.inherit!
+      reload.io.stdout = stdout
+      reload.io.stderr = stderr
       reload.environment.merge!(test_environment_variables)
       reload.start
       reload.wait
@@ -259,11 +260,13 @@ module ApiUmbrellaTestHelpers
       end
     end
 
-    def restart_trafficserver
-      perp_restart("trafficserver")
-      restarted_pid = perp_pid("trafficserver")
+    def restart_services(services, options = {})
+      services.each do |service|
+        perp_restart(service)
+      end
+      restarted_pids = services.map { |service| perp_pid(service) }.sort
 
-      # After killing and restarting trafficserver, wait for it to come back
+      # After killing and restarting the service, wait for it to come back
       # online (since this full restart isn't a normal occurrence and will
       # incur downtime).
       #
@@ -278,7 +281,7 @@ module ApiUmbrellaTestHelpers
       # a test environment issue).
       response = nil
       begin
-        Timeout.timeout(40) do
+        Timeout.timeout(options.fetch(:restart_timeout, 40)) do
           loop do
             url = "http://127.0.0.1:9080/api-umbrella/v1/health?#{rand}"
             response = Typhoeus.get(url)
@@ -290,14 +293,14 @@ module ApiUmbrellaTestHelpers
           end
         end
       rescue Timeout::Error
-        raise Timeout::Error, "Trafficserver restart failed. Status: #{response&.code} Body: #{response&.body}"
+        raise Timeout::Error, "Services restart failed. Services: #{services.inspect} Status: #{response&.code} Body: #{response&.body}"
       end
 
-      # Sanity check to ensure Trafficserver was only restarted once, and isn't
+      # Sanity check to ensure the services were only restarted once, and isn't
       # flapping on and off.
-      current_pid = perp_pid("trafficserver")
-      if(restarted_pid != current_pid)
-        raise "Trafficserver was restarted multiple times, this is not expected (post-restart pid: #{restarted_pid}, current pid: #{current_pid})"
+      current_pids = services.map { |service| perp_pid(service) }.sort
+      if(restarted_pids != current_pids)
+        raise "Services were restarted multiple times, this is not expected (services: #{services.inspect}, post-restart pids: #{restarted_pids.inspect}, current pids: #{current_pids.inspect})"
       end
     end
 
@@ -319,7 +322,7 @@ module ApiUmbrellaTestHelpers
           end
         end
       rescue Timeout::Error
-        raise Timeout::Error, "API Umbrella configuration changes were not detected. Waiting for version #{field}=#{version} and status=green. Last seen: #{state.inspect} #{health.inspect}"
+        raise Timeout::Error, "API Umbrella configuration changes were not detected. Waiting for version #{field}=#{version} and status=green. Last seen: #{state.ai} #{health.ai}"
       end
     end
 

@@ -26,9 +26,10 @@ http {
   scgi_temp_path <%- config["tmp_dir"] %>/elasticsearch-aws-signing-proxy-scgi_temp;
   server_tokens off;
 
-  # FIXME: Detect path/make configurable.
-  lua_ssl_trusted_certificate /etc/ssl/certs/ca-certificates.crt;
-  lua_ssl_verify_depth 5;
+  <% if config["nginx"]["lua_ssl_trusted_certificate"] then %>
+    lua_ssl_trusted_certificate <%- config["nginx"]["lua_ssl_trusted_certificate"] %>;
+    lua_ssl_verify_depth <%- config["nginx"]["lua_ssl_verify_depth"] %>;
+  <% end %>
 
   lua_package_path '<%- config["_package_path"] %>';
   lua_package_cpath '<%- config["_package_cpath"] %>';

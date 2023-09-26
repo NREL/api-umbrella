@@ -64,6 +64,7 @@ http {
   <% if config["strip_server_header"] then %>
     more_clear_headers Server;
   <% end %>
+  more_clear_headers x-envoy-upstream-service-time;
 
   lua_package_path '<%- config["_package_path"] %>';
   lua_package_cpath '<%- config["_package_cpath"] %>';

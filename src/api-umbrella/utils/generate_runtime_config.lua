@@ -413,6 +413,7 @@ local function set_computed_config(config)
       ["_template_version_v2?"] = (config["elasticsearch"]["template_version"] == 2),
       ["_api_version_lte_2?"] = (config["elasticsearch"]["api_version"] <= 2),
     },
+    ["_service_egress_enabled?"] = array_includes(config["services"], "egress"),
     ["_service_elasticsearch_aws_signing_proxy_enabled?"] = array_includes(config["services"], "elasticsearch_aws_signing_proxy"),
     ["_service_router_enabled?"] = array_includes(config["services"], "router"),
     ["_service_web_enabled?"] = array_includes(config["services"], "web"),

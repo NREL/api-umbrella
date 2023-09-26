@@ -15,8 +15,9 @@ import "path"
   "_src_root_dir": string @tag(src_root_dir)
   "_runtime_config_path": string | *path.Join([run_dir, "runtime_config.json"]) @tag(runtime_config_path)
 
-  #service_name: "router" | "web"
+  #service_name: "egress" | "router" | "web"
   _default_services: [...#service_name] & [
+    "egress",
     "router",
     "web",
   ]
@@ -148,11 +149,44 @@ import "path"
   }
 
   envoy: {
+    #scheme: "http" | "https"
+    scheme: #scheme | *"http"
     host: string | *"127.0.0.1"
     port: uint16 | *14000
+    listen: {
+      host: string | *"127.0.0.1"
+      port: uint16 | *14000
+    }
     admin: {
       host: string | *"127.0.0.1"
       port: uint16 | *14001
+      listen: {
+        host: string | *"127.0.0.1"
+        port: uint16 | *14001
+      }
+    }
+    http_proxy: {
+      enabled: bool | *false
+      host: string | *"127.0.0.1"
+      port: uint16 | *14002
+      listen: {
+        host: string | *"127.0.0.1"
+        port: uint16 | *14002
+      }
+      allowed_domains: [...string] | *[]
+    }
+    smtp_proxy: {
+      enabled: bool | *false
+      host: string | *"127.0.0.1"
+      port: uint16 | *14003
+      listen: {
+        host: string | *"127.0.0.1"
+        port: uint16 | *14003
+      }
+      endpoint: {
+        host?: string
+        port?: uint16
+      }
     }
     // Allow additional/all ciphers for API backends that may not support the
     // default set.
@@ -167,19 +201,25 @@ import "path"
       "P-384",
       "P-521",
     ]
+    tls_certificate: {
+      certificate_chain?: string
+      private_key?: string
+      domain?: string
+    }
     global_downstream_max_connections: uint16 | *32768
+    cli_args?: string
   }
 
   envoy_control_plane: {
     host: string | *"127.0.0.1"
-    port: uint16 | *14002
+    port: uint16 | *14007
     listen: {
       host: string | *"127.0.0.1"
-      port: uint16 | *14002
+      port: uint16 | *14007
     }
     metrics_listen: {
       host: string | *"127.0.0.1"
-      port: uint16 | *14003
+      port: uint16 | *14008
     }
   }
 
@@ -301,7 +341,10 @@ import "path"
       smtp_settings: {
         address: string | *"127.0.0.1"
         port: uint16 | *25
+        starttls?: bool
         ssl?: bool
+        ssl_verify?: string
+        ssl_host?: string
         domain?: string
         authentication?: string
         user_name?: string
@@ -818,6 +861,9 @@ import "path"
   override_public_https_proto?: "http" | "https"
 
   contact_url?: string
+
+  http_proxy?: string
+  https_proxy?: string
 
   version?: uint16
 

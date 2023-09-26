@@ -55,6 +55,13 @@ function _M.authenticate(self, strategy_name, callback)
     },
   })
 
+  if config["http_proxy"] or config["https_proxy"] then
+    openidc_options["proxy_opts"] = {
+      http_proxy = config["http_proxy"],
+      https_proxy = config["https_proxy"],
+    }
+  end
+
   -- GitLab's OpenID Connect provider doesn't supply the email in the id_token
   -- (https://gitlab.com/gitlab-org/gitlab-ee/issues/5365). So for this
   -- provider, we must also access the userinfo endpoint to fetch the email.

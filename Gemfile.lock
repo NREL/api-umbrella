@@ -122,6 +122,10 @@ GEM
       path_expander (~> 1.1)
     multi_json (1.15.0)
     multipart-post (2.3.0)
+    net-protocol (0.2.1)
+      timeout
+    net-smtp (0.4.0)
+      net-protocol
     nokogiri (1.15.4)
       mini_portile2 (~> 2.8.2)
       racc (~> 1.4)
@@ -175,6 +179,7 @@ GEM
       childprocess (>= 0.5, < 4.0)
       rubyzip (>= 1.2.2)
     thor (1.2.2)
+    timeout (0.4.0)
     typhoeus (1.4.0)
       ethon (>= 0.9.0)
     tzinfo (2.0.6)
@@ -212,6 +217,7 @@ DEPENDENCIES
   minitest-reporters (~> 1.6.0)
   minitest-sprint (~> 1.2.0)
   multi_json (~> 1.15.0)
+  net-smtp (~> 0.4.0)
   nokogiri (~> 1.14)
   oj (~> 3.10)
   pg (~> 1.5.3)

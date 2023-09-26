@@ -49,6 +49,15 @@ return function(cache, callback)
       ngx.log(ngx.ERR, "Error fetching previous active_config: ", previous_get_err)
     end
 
+    -- We originally bailed if this wasn't part of the latest worker group (see
+    -- above), but it's possible between the time this method started and the
+    -- time we got here that this has changed, so do another sanity check before
+    -- setting the active config.
+    local is_latest = worker_group_is_latest()
+    if not is_latest then
+      return
+    end
+
     local set_ok, set_err = cache:set(key, nil, new_active_config_value)
     if not set_ok then
       ngx.log(ngx.ERR, "Error setting active_config: ", set_err)

@@ -7,6 +7,8 @@ typed_dns_resolver_config:
   typed_config:
     "@type": type.googleapis.com/envoy.extensions.network.dns_resolver.cares.v3.CaresDnsResolverConfig
     resolvers: <%- json_encode(config["dns_resolver"]["_nameservers_envoy"]) %>
+    dns_resolver_options:
+      no_default_search_domain: true
 
 static_resources:
   clusters:
@@ -57,8 +59,8 @@ dynamic_resources:
 admin:
   address:
     socket_address:
-      address: <%- config["envoy"]["admin"]["host"] %>
-      port_value: <%- config["envoy"]["admin"]["port"] %>
+      address: <%- config["envoy"]["admin"]["listen"]["host"] %>
+      port_value: <%- config["envoy"]["admin"]["listen"]["port"] %>
 
 layered_runtime:
   layers:
