@@ -143,6 +143,9 @@ class Test::Proxy::Envoy::TestHttpProxy < Minitest::Test
   end
 
   def test_geoip_requests_use_proxy
+    geoip_path = File.join($config.fetch("db_dir"), "geoip/GeoLite2-City.mmdb")
+    FileUtils.rm_f(geoip_path)
+
     override_config({
       "http_proxy" => "http://127.0.0.1:13002",
       "https_proxy" => "http://127.0.0.1:13002",
@@ -156,7 +159,7 @@ class Test::Proxy::Envoy::TestHttpProxy < Minitest::Test
         },
       },
       "geoip" => {
-        "db_update_frequency" => 1,
+        "db_path" => geoip_path,
         "maxmind_license_key" => "invalid-test",
       },
     }) do
