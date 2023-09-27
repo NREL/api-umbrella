@@ -343,7 +343,7 @@ import "path"
         port: uint16 | *25
         starttls?: bool
         ssl?: bool
-        ssl_verify?: string
+        ssl_verify?: bool
         ssl_host?: string
         domain?: string
         authentication?: string
@@ -849,7 +849,7 @@ import "path"
   umask: string | *"0027"
 
   geoip: {
-    db_path?: string | *path.Join([db_dir, "geoip/GeoLite2-City.mmdb"])
+    db_path: string | *path.Join([db_dir, "geoip/GeoLite2-City.mmdb"])
     db_update_frequency: uint | false | *86400 // 24 hours
     db_update_age: uint | *79200 // 22 hours
     maxmind_license_key?: string | null
