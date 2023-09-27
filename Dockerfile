@@ -188,4 +188,4 @@ COPY --from=build --chown=0:0 --chmod=755 /app/build/work/stage/opt/api-umbrella
 EXPOSE 14001
 
 ENTRYPOINT ["/usr/local/bin/envoy"]
-CMD ["-c", "/etc/envoy/envoy.yaml"]
+CMD ["-c", "/etc/envoy/envoy.yaml", "--use-dynamic-base-id", "--base-id-path", "/var/run/envoy/base-id"]
