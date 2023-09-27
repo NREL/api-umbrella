@@ -107,7 +107,7 @@ local function write_templates()
     end
 
     if process then
-      local path_parts, path_match_err = ngx.re.match(template_path, [[^]] .. escape_regex(template_root .. "/") .. [[((.+?)([^/]+?))(?:\.(etlua))?$]], "jo")
+      local path_parts, path_match_err = ngx.re.match(template_path, [[^]] .. escape_regex(template_root .. "/") .. [[((.+?/)?([^/]+?))(?:\.(etlua))?$]], "jo")
       if not path_parts then
         print("path not matched: " .. template_path)
         os.exit(1)
@@ -115,7 +115,7 @@ local function write_templates()
         print("regex error: " .. path_match_err)
         os.exit(1)
       else
-        local install_dir = path_join(config["etc_dir"], path_parts[2])
+        local install_dir = path_join(config["etc_dir"], path_parts[2] or "")
         local install_path = path_join(config["etc_dir"], path_parts[1])
         local filename = path_parts[3]
         local template_ext = path_parts[4]
