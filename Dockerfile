@@ -200,7 +200,7 @@ FROM gcr.io/distroless/base-nossl-debian12:nonroot AS runtime-egress
 # Create the needed directories as the non-root user, and then switch back to
 # the defalt workdir.
 WORKDIR /etc/envoy
-WORKDIR /var/run/enovy
+WORKDIR /var/run/envoy
 WORKDIR /home/nonroot
 
 # Copy Envoy and our config wrapper binary in so that's all that's present in

@@ -48,7 +48,7 @@ return function(published_config)
   -- https://en.wikipedia.org/wiki/Pairing_function#Other_pairing_functions
   --
   -- Theoretically, this could be any string (we used to concatenate these
-  -- together), but our usage of the enovy-control-plane currently requires the
+  -- together), but our usage of the envoy-control-plane currently requires the
   -- special "snapshot_version" be an integer:
   -- https://github.com/feature-id/envoy-control-plane/blob/9cfe2fb253098932ce2403fc19963e278e57c68c/main.go#L268-L272
   -- The value also doesn't necessarily need to increment, it just needs to be
