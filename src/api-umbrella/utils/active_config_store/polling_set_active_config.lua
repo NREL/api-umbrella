@@ -22,12 +22,6 @@ return function(cache, callback)
   if last_fetched_version_err then
     ngx.log(ngx.ERR, "Error fetching last_fetched_version: ", last_fetched_version_err)
     return
-  elseif not last_fetched_version then
-    -- If the active config hasn't been set yet, then this means the first
-    -- fetch (triggered on demand by active_config_store.get) yet completed, so
-    -- return and wait for that to complete, since there's no need to poll for
-    -- a newer version with nothing stored yet.
-    return
   end
 
   -- If this set of worker processes hasn't been setup yet (initial boot or

@@ -649,7 +649,6 @@ local function update_control_plane(active_config, clusters, listeners, route_co
     write_control_plane_config_file("listener-" .. resource["name"] .. ".json", json_encode(resource))
   end
 
-
   write_control_plane_config_file("route-configuration.json", json_encode(route_configuration))
 
   -- Remove any files from the data directory that shouldn't be there any
