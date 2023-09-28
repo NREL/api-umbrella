@@ -45,3 +45,6 @@
 /tmp
 
 /src/api-umbrella/example-website/.hugo_build.lock
+
+# Added by cargo
+/target

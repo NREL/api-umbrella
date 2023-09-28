@@ -1,0 +1,16 @@
+[package]
+name = "api-umbrella-postgres"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+
+[[bin]]
+name = "envoy-config-wrapper"
+path = "src/api-umbrella/bin/envoy-config-wrapper.rs"
+
+[profile.release]
+panic = "abort"
+strip = true

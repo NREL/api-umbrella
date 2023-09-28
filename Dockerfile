@@ -178,13 +178,37 @@ EXPOSE 80 443
 CMD ["api-umbrella", "run"]
 
 ###
+# Build - envoy-config-wrapper
+###
+FROM rust:1-slim-bookworm AS envoy-config-wrapper-build
+
+# Use the musl target for static binaries that will work in the distroless
+# image.
+RUN rustup target add "$(arch)-unknown-linux-musl"
+
+COPY Cargo.toml ./
+COPY src/api-umbrella/bin/envoy-config-wrapper.rs ./src/api-umbrella/bin/
+
+RUN cargo build --release --target "$(arch)-unknown-linux-musl"
+
+###
 # Runtime - Egress Only
 # https://github.com/envoyproxy/envoy/blob/release/v1.27/ci/Dockerfile-envoy#L60-L69
 ###
 FROM gcr.io/distroless/base-nossl-debian12:nonroot AS runtime-egress
 
+# Create the needed directories as the non-root user, and then switch back to
+# the defalt workdir.
+WORKDIR /etc/envoy
+WORKDIR /var/run/enovy
+WORKDIR /home/nonroot
+
+# Copy Envoy and our config wrapper binary in so that's all that's present in
+# this distroless image.
+COPY --from=envoy-config-wrapper-build --chown=0:0 --chmod=755 ./target/*/release/envoy-config-wrapper /usr/local/bin/
 COPY --from=build --chown=0:0 --chmod=755 /app/build/work/stage/opt/api-umbrella/embedded/bin/envoy /usr/local/bin/
 
 EXPOSE 14001
 
-CMD ["/usr/local/bin/envoy", "-c", "/etc/envoy/envoy.yaml", "--use-dynamic-base-id", "--base-id-path", "/var/run/envoy/base-id"]
+ENTRYPOINT ["/usr/local/bin/envoy-config-wrapper"]
+CMD ["-c", "/etc/envoy/envoy.yaml", "--use-dynamic-base-id", "--base-id-path", "/var/run/envoy/base-id"]
