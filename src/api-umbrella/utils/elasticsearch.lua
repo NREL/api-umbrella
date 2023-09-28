@@ -56,7 +56,7 @@ function _M.query(path, options)
   end
 
   local connect_ok, connect_err = httpc:connect({
-    scheme = "http",
+    scheme = server["scheme"],
     host = server["host"],
     port = server["port"],
   })
