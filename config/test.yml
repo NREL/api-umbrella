@@ -7,6 +7,8 @@ analytics:
   timezone: America/Denver
 static_site:
   port: 13013
+  listen:
+    port: 13013
 nginx:
   # We default the number of workers to the number of CPU cores, but keep this
   # hard-coded for test purposes so we have a more stable baseline and ensure
@@ -44,8 +46,12 @@ envoy_control_plane:
     port: 13008
 api_server:
   port: 13010
+  listen:
+    port: 13010
 web:
   port: 13012
+  listen:
+    port: 13012
   admin:
     auth_strategies:
       facebook:
