@@ -20,7 +20,9 @@ local chown = unistd.chown
 local readfile = pl_utils.readfile
 local writefile = pl_utils.writefile
 
-local function prepare()
+local _M = {}
+
+function _M.prepare()
   local dirs = {
     config["db_dir"],
     config["log_dir"],
@@ -331,11 +333,13 @@ local function activate_services()
   end
 end
 
-return function()
-  prepare()
+function _M.all_steps()
+  _M.prepare()
   generate_self_signed_cert()
   write_templates()
   write_static_site_key()
   set_permissions()
   activate_services()
 end
+
+return _M

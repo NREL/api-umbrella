@@ -88,7 +88,7 @@ end
 
 function _M.write_config_files(args)
   local write_config_files = require "api-umbrella.cli.write_config_files"
-  write_config_files(args)
+  write_config_files.all_steps(args)
 end
 
 function _M.cloud_foundry_generate_config()

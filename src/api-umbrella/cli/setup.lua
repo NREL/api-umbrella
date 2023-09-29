@@ -71,6 +71,7 @@ end
 
 return function()
   permission_check()
-  write_config_files()
+  write_config_files.prepare()
   ensure_geoip_db()
+  write_config_files.all_steps()
 end
