@@ -256,6 +256,12 @@ http {
         real_ip_recursive <%- host["real_ip_recursive"] %>;
       <% end %>
 
+      <% if host["default"] then %>
+        location = /api-umbrella/v1/direct-router-health {
+          content_by_lua_file '<%- config["_src_root_dir"] %>/src/api-umbrella/http-api/health.lua';
+        }
+      <% end %>
+
       location / {
         include ./gatekeeper.conf;
       }
