@@ -16,7 +16,16 @@ local function perform_download(config, unzip_dir, download_path)
   -- Download file
   ngx.log(ngx.NOTICE, "Downloading new file (" .. download_path .. ")")
   local download_url = "https://download.maxmind.com/app/geoip_download?edition_id=GeoLite2-City&suffix=tar.gz&license_key=" .. escape_uri(config["geoip"]["maxmind_license_key"])
-  local _, curl_err = shell_blocking_capture_combined({ "curl", "--silent", "--show-error", "--fail", "--location", "--retry", "3", "--output", download_path, download_url })
+
+  local options = {}
+  if config["http_proxy"] or config["https_proxy"] then
+    options["env"] = {
+      http_proxy = config["http_proxy"],
+      https_proxy = config["https_proxy"],
+    }
+  end
+
+  local _, curl_err = shell_blocking_capture_combined({ "curl", "--silent", "--show-error", "--fail", "--location", "--retry", "3", "--output", download_path, download_url }, options)
   if curl_err then
     return false, curl_err
   end

@@ -51,6 +51,8 @@ if not cache then
   return nil
 end
 
+_M.cache = cache
+
 function _M.get()
   local active_config, err = cache:get("active_config", nil, fetch_compressed_active_config)
   if err then

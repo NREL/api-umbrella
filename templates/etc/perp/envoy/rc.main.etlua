@@ -35,10 +35,15 @@ if [ "${1}" = "start" ]; then
     fi
   fi
 
-  exec runtool "${run_args[@]}" envoy \
-    --config-path "<%- config['etc_dir'] %>/envoy/envoy.yaml" \
-    --use-dynamic-base-id \
-    --base-id-path "<%- config['run_dir'] %>/envoy/base-id"
+  extra_cli_args="<%- config['envoy']['cli_args'] or '' %>"
+  envoy_args=(
+    "--config-path" "<%- config['etc_dir'] %>/envoy/envoy.yaml"
+    "--use-dynamic-base-id"
+    "--base-id-path" "<%- config['run_dir'] %>/envoy/base-id"
+    "${extra_cli_args[@]}"
+  )
+
+  exec runtool "${run_args[@]}" envoy "${envoy_args[@]}"
 fi
 
 exit 0

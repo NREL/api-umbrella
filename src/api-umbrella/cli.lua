@@ -86,6 +86,11 @@ function _M.dump_config(args)
   dump_config(args)
 end
 
+function _M.write_config_files(args)
+  local write_config_files = require "api-umbrella.cli.write_config_files"
+  write_config_files.all_steps(args)
+end
+
 function _M.cloud_foundry_generate_config()
   local cloud_foundry_generate_config = require "api-umbrella.cli.cloud_foundry_generate_config"
   cloud_foundry_generate_config()
@@ -157,6 +162,10 @@ health_command:option("--wait-timeout")
 parser:command("dump-config")
   :description("Dump the full runtime configuration after parsing and loading files.")
   :action(_M.dump_config)
+
+parser:command("write-config-files")
+  :description("Write any config files and parsed templates after parsing config and loading files.")
+  :action(_M.write_config_files)
 
 parser:command("cloud-foundry-generate-config")
   :description("For cloud foundry environments: Generate the api-umbrella.yml file from VCAP_SERVICES")

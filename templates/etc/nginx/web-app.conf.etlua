@@ -36,9 +36,10 @@ http {
     lua_code_cache off;
   <% end %>
 
-  # FIXME: Detect path/make configurable.
-  lua_ssl_trusted_certificate /etc/ssl/certs/ca-certificates.crt;
-  lua_ssl_verify_depth 5;
+  <% if config["nginx"]["_lua_ssl_trusted_certificate"] then %>
+    lua_ssl_trusted_certificate <%- config["nginx"]["_lua_ssl_trusted_certificate"] %>;
+    lua_ssl_verify_depth <%- config["nginx"]["lua_ssl_verify_depth"] %>;
+  <% end %>
 
   lua_package_path '<%- config["_src_root_dir"] %>/src/api-umbrella/web-app/?.lua;<%- config["_package_path"] %>';
   lua_package_cpath '<%- config["_package_cpath"] %>';
@@ -70,7 +71,7 @@ http {
   init_worker_by_lua_file '<%- config["_src_root_dir"] %>/src/api-umbrella/web-app/hooks/init_worker.lua';
 
   server {
-    listen <%- config["web"]["host"] %>:<%- config["web"]["port"] %> so_keepalive=<%- config["web"]["listen_so_keepalive"] %><% if config["web"]["listen_backlog"] then %> backlog=<%- config["web"]["listen_backlog"] %><% end %>;
+    listen <%- config["web"]["listen"]["host"] %>:<%- config["web"]["listen"]["port"] %> so_keepalive=<%- config["web"]["listen_so_keepalive"] %><% if config["web"]["listen_backlog"] then %> backlog=<%- config["web"]["listen_backlog"] %><% end %>;
 
     set $x_api_umbrella_request_id $http_x_api_umbrella_request_id;
 

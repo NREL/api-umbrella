@@ -15,8 +15,9 @@ import "path"
   "_src_root_dir": string @tag(src_root_dir)
   "_runtime_config_path": string | *path.Join([run_dir, "runtime_config.json"]) @tag(runtime_config_path)
 
-  #service_name: "router" | "web"
+  #service_name: "egress" | "router" | "web"
   _default_services: [...#service_name] & [
+    "egress",
     "router",
     "web",
   ]
@@ -67,7 +68,7 @@ import "path"
     variables_hash_max_size: uint | *2048
     server_names_hash_bucket_size?: uint
     lua_ssl_trusted_certificate?: string
-    lua_ssl_verify_depth: uint | *1
+    lua_ssl_verify_depth: uint | *5
     shared_dicts: {
       active_config: {
         size: string | *"3m"
@@ -148,11 +149,44 @@ import "path"
   }
 
   envoy: {
+    #scheme: "http" | "https"
+    scheme: #scheme | *"http"
     host: string | *"127.0.0.1"
     port: uint16 | *14000
+    listen: {
+      host: string | *"127.0.0.1"
+      port: uint16 | *14000
+    }
     admin: {
       host: string | *"127.0.0.1"
       port: uint16 | *14001
+      listen: {
+        host: string | *"127.0.0.1"
+        port: uint16 | *14001
+      }
+    }
+    http_proxy: {
+      enabled: bool | *false
+      host: string | *"127.0.0.1"
+      port: uint16 | *14002
+      listen: {
+        host: string | *"127.0.0.1"
+        port: uint16 | *14002
+      }
+      allowed_domains: [...string] | *[]
+    }
+    smtp_proxy: {
+      enabled: bool | *false
+      host: string | *"127.0.0.1"
+      port: uint16 | *14003
+      listen: {
+        host: string | *"127.0.0.1"
+        port: uint16 | *14003
+      }
+      endpoint: {
+        host?: string
+        port?: uint16
+      }
     }
     // Allow additional/all ciphers for API backends that may not support the
     // default set.
@@ -167,16 +201,44 @@ import "path"
       "P-384",
       "P-521",
     ]
+    tls_certificate: {
+      certificate_chain?: string
+      private_key?: string
+      domain?: string
+    }
+    global_downstream_max_connections: uint16 | *32768
+    cli_args?: string
+  }
+
+  envoy_control_plane: {
+    host: string | *"127.0.0.1"
+    port: uint16 | *14007
+    listen: {
+      host: string | *"127.0.0.1"
+      port: uint16 | *14007
+    }
+    metrics_listen: {
+      host: string | *"127.0.0.1"
+      port: uint16 | *14008
+    }
   }
 
   api_server: {
     host: string | *"127.0.0.1"
     port: uint16 | *14010
+    listen: {
+      host: string | *"127.0.0.1"
+      port: uint16 | *14010
+    }
   }
 
   web: {
     host: string | *"127.0.0.1"
     port: uint16 | *14012
+    listen: {
+      host: string | *"127.0.0.1"
+      port: uint16 | *14012
+    }
     request_timeout: uint | *30
     workers: uint | "auto" | *2
     worker_connections: uint | *8192
@@ -287,7 +349,10 @@ import "path"
       smtp_settings: {
         address: string | *"127.0.0.1"
         port: uint16 | *25
+        starttls?: bool
         ssl?: bool
+        ssl_verify?: bool
+        ssl_host?: string
         domain?: string
         authentication?: string
         user_name?: string
@@ -309,6 +374,10 @@ import "path"
   static_site: {
     host: string | *"127.0.0.1"
     port: uint16 | *14013
+    listen: {
+      host: string | *"127.0.0.1"
+      port: uint16 | *14013
+    }
     build_dir: string | *path.Join([_embedded_root_dir, "app/build/dist/example-website"])
   }
 
@@ -792,7 +861,7 @@ import "path"
   umask: string | *"0027"
 
   geoip: {
-    db_path?: string | *path.Join([db_dir, "geoip/GeoLite2-City.mmdb"])
+    db_path: string | *path.Join([db_dir, "geoip/GeoLite2-City.mmdb"])
     db_update_frequency: uint | false | *86400 // 24 hours
     db_update_age: uint | *79200 // 22 hours
     maxmind_license_key?: string | null
@@ -805,7 +874,10 @@ import "path"
 
   contact_url?: string
 
-  version?: string
+  http_proxy?: string
+  https_proxy?: string
+
+  version?: uint16
 
   "_test_config": {
     default_null_override_hash: _ | *null

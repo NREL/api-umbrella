@@ -64,6 +64,7 @@ http {
   <% if config["strip_server_header"] then %>
     more_clear_headers Server;
   <% end %>
+  more_clear_headers x-envoy-upstream-service-time;
 
   lua_package_path '<%- config["_package_path"] %>';
   lua_package_cpath '<%- config["_package_cpath"] %>';
@@ -85,8 +86,8 @@ http {
   lua_shared_dict locks <%- config["nginx"]["shared_dicts"]["locks"]["size"] %>;
   lua_shared_dict rate_limit_counters <%- config["nginx"]["shared_dicts"]["rate_limit_counters"]["size"] %>;
   lua_shared_dict rate_limit_exceeded <%- config["nginx"]["shared_dicts"]["rate_limit_exceeded"]["size"] %>;
-  <% if config["nginx"]["lua_ssl_trusted_certificate"] then %>
-    lua_ssl_trusted_certificate <%- config["nginx"]["lua_ssl_trusted_certificate"] %>;
+  <% if config["nginx"]["_lua_ssl_trusted_certificate"] then %>
+    lua_ssl_trusted_certificate <%- config["nginx"]["_lua_ssl_trusted_certificate"] %>;
     lua_ssl_verify_depth <%- config["nginx"]["lua_ssl_verify_depth"] %>;
   <% end %>
 
@@ -197,7 +198,7 @@ http {
   }
 
   server {
-    listen <%- config["api_server"]["host"] %>:<%- config["api_server"]["port"] %> so_keepalive=<%- config["nginx"]["listen_so_keepalive"] %><% if config["nginx"]["listen_backlog"] then %> backlog=<%- config["nginx"]["listen_backlog"] %><% end %>;
+    listen <%- config["api_server"]["listen"]["host"] %>:<%- config["api_server"]["listen"]["port"] %> so_keepalive=<%- config["nginx"]["listen_so_keepalive"] %><% if config["nginx"]["listen_backlog"] then %> backlog=<%- config["nginx"]["listen_backlog"] %><% end %>;
 
     set $x_api_umbrella_request_id $http_x_api_umbrella_request_id;
 
@@ -255,6 +256,12 @@ http {
         real_ip_recursive <%- host["real_ip_recursive"] %>;
       <% end %>
 
+      <% if host["default"] then %>
+        location = /api-umbrella/v1/direct-router-health {
+          content_by_lua_file '<%- config["_src_root_dir"] %>/src/api-umbrella/http-api/health.lua';
+        }
+      <% end %>
+
       location / {
         include ./gatekeeper.conf;
       }
@@ -263,7 +270,7 @@ http {
 
   <% if not config["_development_env?"] then %>
     server {
-      listen <%- config["static_site"]["host"] %>:<%- config["static_site"]["port"] %> so_keepalive=<%- config["nginx"]["listen_so_keepalive"] %><% if config["nginx"]["listen_backlog"] then %> backlog=<%- config["nginx"]["listen_backlog"] %><% end %>;
+      listen <%- config["static_site"]["listen"]["host"] %>:<%- config["static_site"]["listen"]["port"] %> so_keepalive=<%- config["nginx"]["listen_so_keepalive"] %><% if config["nginx"]["listen_backlog"] then %> backlog=<%- config["nginx"]["listen_backlog"] %><% end %>;
 
       set $x_api_umbrella_request_id $http_x_api_umbrella_request_id;
       root <%- config["static_site"]["build_dir"] %>;

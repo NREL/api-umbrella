@@ -14,6 +14,7 @@ module ApiUmbrellaTestHelpers
 
     @@incrementing_unique_number = 0
     @@incrementing_unique_ip_addr = IPAddr.new("127.0.0.1")
+    @@file_config_version = 1
     @@current_override_config = {}
     mattr_reader :api_user
     mattr_reader :api_key
@@ -283,21 +284,20 @@ module ApiUmbrellaTestHelpers
       end
     end
 
-    def override_config(config)
+    def override_config(config, options = {})
       self.config_lock.synchronize do
         original_config = @@current_override_config.deep_dup
-        original_config["version"] ||= SecureRandom.uuid
 
         begin
-          override_config_set(config)
+          override_config_set(config, options)
           yield
         ensure
-          override_config_set(original_config)
+          override_config_set(original_config, options)
         end
       end
     end
 
-    def override_config_set(config)
+    def override_config_set(config, options = {})
       self.config_set_lock.synchronize do
         if(self.class.test_order == :parallel)
           raise "`override_config_set` cannot be called with `parallelize_me!` in the same class. Since overriding config affects the global state, it cannot be used with parallel tests."
@@ -306,12 +306,15 @@ module ApiUmbrellaTestHelpers
         previous_override_config = @@current_override_config.deep_dup
 
         config = config.deep_stringify_keys
-        config["version"] = SecureRandom.uuid
+
+        @@file_config_version += 1
+        config["version"] ||= @@file_config_version
+
         ApiUmbrellaTestHelpers::Process.instance.write_test_config(config)
 
         self.api_umbrella_process.reload
         @@current_override_config = config.deep_dup
-        Timeout.timeout(50) do
+        Timeout.timeout(options.fetch(:timeout, 50)) do
           self.api_umbrella_process.wait_for_config_version("file_config_version", config["version"], config)
         rescue MultiJson::ParseError => e
           # If the configuration changes involve changes to the
@@ -321,7 +324,16 @@ module ApiUmbrellaTestHelpers
           # since the "state" and "health" endpoints may temporarily go
           # missing. So in these cases, retry and wait for the configuration
           # publishing to take effect again.
-          if(previous_override_config.dig("nginx", "shared_dicts", "active_config") || @@current_override_config.dig("nginx", "shared_dicts", "active_config"))
+          #
+          # Same goes for changing the communication scheme between http and and
+          # https for the Trafficserver to Envoy communication. But this isn't a
+          # change we normally expect to happen live, so we'll retry.
+          if(
+            previous_override_config.dig("nginx", "shared_dicts", "active_config") ||
+            @@current_override_config.dig("nginx", "shared_dicts", "active_config")
+            previous_override_config.dig("envoy", "scheme") ||
+            @@current_override_config.dig("envoy", "scheme")
+          )
             sleep 0.1
             retry
           else
@@ -341,13 +353,29 @@ module ApiUmbrellaTestHelpers
           previous_override_config.dig("nginx", "proxy_send_timeout") ||
           @@current_override_config.dig("nginx", "proxy_send_timeout")
         )
-          self.api_umbrella_process.restart_trafficserver
+          self.api_umbrella_process.restart_services(["trafficserver"], options)
+        end
+
+        if (
+          previous_override_config.dig("envoy", "scheme") ||
+          @@current_override_config.dig("envoy", "scheme")
+        )
+          self.api_umbrella_process.restart_services(["envoy", "trafficserver"], options)
+        end
+
+        if (
+          previous_override_config["http_proxy"] ||
+          @@current_override_config["http_proxy"] ||
+          previous_override_config["https_proxy"] ||
+          @@current_override_config["https_proxy"]
+        )
+          self.api_umbrella_process.restart_services(["rsyslog"], options)
         end
       end
     end
 
-    def override_config_reset
-      override_config_set({})
+    def override_config_reset(options = {})
+      override_config_set({}, options)
     end
 
     def to_unique_id(name)

@@ -137,6 +137,14 @@ function _M.userinfo(self, strategy_name, options)
   end
 
   local httpc = http.new()
+
+  if config["http_proxy"] or config["https_proxy"] then
+    httpc:set_proxy_options({
+      http_proxy = config["http_proxy"],
+      https_proxy = config["https_proxy"],
+    })
+  end
+
   local token, err = get_token(httpc, self.params["code"], strategy_name, options)
   if not token then
     return nil, err

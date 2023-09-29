@@ -10,6 +10,7 @@ local getpwuid = require("posix.pwd").getpwuid
 local host_normalize = require "api-umbrella.utils.host_normalize"
 local invert_table = require "api-umbrella.utils.invert_table"
 local is_empty = require "api-umbrella.utils.is_empty"
+local isfile = require("pl.path").isfile
 local json_decode = require("cjson").decode
 local json_encode = require "api-umbrella.utils.json_encode"
 local mkdir_p = require "api-umbrella.utils.mkdir_p"
@@ -127,6 +128,30 @@ local function process_website_backends(config)
   config["_website_backends"] = combined_website_backends
   config["website_backends"] = nil
   config["internal_website_backends"] = nil
+end
+
+local function ssl_trusted_certificate_path(config)
+  if config["nginx"]["lua_ssl_trusted_certificate"] then
+    return config["nginx"]["lua_ssl_trusted_certificate"]
+  end
+
+  -- Look for the certificate file in various places based on
+  -- https://go.dev/src/crypto/x509/root_linux.go
+  local paths = {
+    "/etc/ssl/certs/ca-certificates.crt", --  Debian/Ubuntu/Gentoo etc.
+    "/etc/pki/tls/certs/ca-bundle.crt", -- Fedora/RHEL 6
+    "/etc/ssl/ca-bundle.pem", -- OpenSUSE
+    "/etc/pki/tls/cacert.pem", -- OpenELEC
+    "/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem", -- CentOS/RHEL 7
+    "/etc/ssl/cert.pem", -- Alpine Linux
+  }
+  for _, path in ipairs(paths) do
+    if isfile(path) then
+      return path
+    end
+  end
+
+  return nil
 end
 
 -- After all the primary config is read from files and combined, perform
@@ -397,6 +422,8 @@ local function set_computed_config(config)
     end
   end
 
+  config["nginx"]["_lua_ssl_trusted_certificate"] = ssl_trusted_certificate_path(config)
+
   deep_merge_overwrite_arrays(config, {
     _package_path = package.path,
     _package_cpath = package.cpath,
@@ -413,6 +440,7 @@ local function set_computed_config(config)
       ["_template_version_v2?"] = (config["elasticsearch"]["template_version"] == 2),
       ["_api_version_lte_2?"] = (config["elasticsearch"]["api_version"] <= 2),
     },
+    ["_service_egress_enabled?"] = array_includes(config["services"], "egress"),
     ["_service_elasticsearch_aws_signing_proxy_enabled?"] = array_includes(config["services"], "elasticsearch_aws_signing_proxy"),
     ["_service_router_enabled?"] = array_includes(config["services"], "router"),
     ["_service_web_enabled?"] = array_includes(config["services"], "web"),

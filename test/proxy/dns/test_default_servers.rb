@@ -61,7 +61,8 @@ class Test::Proxy::Dns::TestDefaultServers < Minitest::Test
       {
         :frontend_host => "127.0.0.1",
         :backend_host => "www.google.com",
-        :servers => [{ :host => "www.google.com", :port => 80 }],
+        :backend_protocol => "https",
+        :servers => [{ :host => "www.google.com", :port => 443 }],
         :url_matches => [{ :frontend_prefix => "/#{unique_test_id}/valid-external-hostname/", :backend_prefix => "/" }],
       },
     ]) do

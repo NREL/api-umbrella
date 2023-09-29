@@ -10,7 +10,7 @@ return function(published_config)
     website_backends = combined_config["website_backends"],
     db_version = combined_config["db_version"],
     file_version = combined_config["file_version"],
-    version = combined_config["version"],
+    envoy_version = combined_config["envoy_version"],
   }
 
   parse_api_backends(active_config["api_backends"])

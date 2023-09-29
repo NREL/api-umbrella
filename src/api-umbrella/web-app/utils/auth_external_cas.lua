@@ -87,6 +87,14 @@ function _M.userinfo(self, strategy_name)
   end
 
   local httpc = http.new()
+
+  if config["http_proxy"] or config["https_proxy"] then
+    httpc:set_proxy_options({
+      http_proxy = config["http_proxy"],
+      https_proxy = config["https_proxy"],
+    })
+  end
+
   local res, err = httpc:request_uri(cas_url_root(options) .. options["service_validate_url"], {
     query = {
       service = service_url(strategy_name),

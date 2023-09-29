@@ -66,6 +66,11 @@ function _M.needs_config_refresh()
 end
 
 function _M.config_refresh_complete()
+  if not _M.is_latest() then
+    ngx.log(ngx.NOTICE, "Skipping setting 'worker_group_needs_config_refresh' in 'jobs' shared dict since worker group is no longer the latest")
+    return
+  end
+
   local set_ok, set_err, set_forcible = shared_dict_retry_set(jobs_dict, "worker_group_needs_config_refresh", false)
   if not set_ok then
     ngx.log(ngx.ERR, "failed to set 'worker_group_needs_config_refresh' in 'jobs' shared dict: ", set_err)

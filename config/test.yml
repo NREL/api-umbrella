@@ -7,6 +7,8 @@ analytics:
   timezone: America/Denver
 static_site:
   port: 13013
+  listen:
+    port: 13013
 nginx:
   # We default the number of workers to the number of CPU cores, but keep this
   # hard-coded for test purposes so we have a more stable baseline and ensure
@@ -20,12 +22,36 @@ trafficserver:
   port: 13009
 envoy:
   port: 13000
+  listen:
+    port: 13000
   admin:
     port: 13001
+    listen:
+      port: 13001
+  http_proxy:
+    port: 13002
+    listen:
+      port: 13002
+  smtp_proxy:
+    port: 13003
+    listen:
+      port: 13003
+  # Flush logs more frequently in test.
+  cli_args: "--file-flush-interval-msec 500"
+envoy_control_plane:
+  port: 13007
+  listen:
+    port: 13007
+  metrics_listen:
+    port: 13008
 api_server:
   port: 13010
+  listen:
+    port: 13010
 web:
   port: 13012
+  listen:
+    port: 13012
   admin:
     auth_strategies:
       facebook:

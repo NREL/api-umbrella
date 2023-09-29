@@ -22,12 +22,6 @@ return function(cache, callback)
   if last_fetched_version_err then
     ngx.log(ngx.ERR, "Error fetching last_fetched_version: ", last_fetched_version_err)
     return
-  elseif not last_fetched_version then
-    -- If the active config hasn't been set yet, then this means the first
-    -- fetch (triggered on demand by active_config_store.get) yet completed, so
-    -- return and wait for that to complete, since there's no need to poll for
-    -- a newer version with nothing stored yet.
-    return
   end
 
   -- If this set of worker processes hasn't been setup yet (initial boot or
@@ -47,6 +41,15 @@ return function(cache, callback)
     local previous_active_config_value, previous_get_err = active_config_dict:get(namespaced_key)
     if previous_get_err then
       ngx.log(ngx.ERR, "Error fetching previous active_config: ", previous_get_err)
+    end
+
+    -- We originally bailed if this wasn't part of the latest worker group (see
+    -- above), but it's possible between the time this method started and the
+    -- time we got here that this has changed, so do another sanity check before
+    -- setting the active config.
+    local is_latest = worker_group_is_latest()
+    if not is_latest then
+      return
     end
 
     local set_ok, set_err = cache:set(key, nil, new_active_config_value)

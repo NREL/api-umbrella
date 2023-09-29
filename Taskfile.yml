@@ -48,6 +48,18 @@ tasks:
     generates:
       - ./build/work/stamp/deps/envoy
 
+  deps:envoy-control-plane:
+    deps:
+      - build-deps:crane
+    cmds:
+      - ./tasks/deps/envoy-control-plane
+    sources:
+      - ./build/work/stamp/build-deps/crane
+      - ./tasks/deps/envoy-control-plane
+      - ./tasks/helpers.sh
+    generates:
+      - ./build/work/stamp/deps/envoy-control-plane
+
   deps:luarocks:
     deps:
       - deps:openresty
@@ -103,6 +115,7 @@ tasks:
     cmds:
       - task: deps:cue
       - task: deps:envoy
+      - task: deps:envoy-control-plane
       - task: deps:luarocks
       - task: deps:openresty
       - task: deps:perp

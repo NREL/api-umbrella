@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+set -e -u -x
+source ./tasks/helpers.sh
+
+envoy_control_plane_version="1.2.0"
+envoy_control_plane_hash="7add91783b597da5302aa2eb03f9e589227b9406be5f0ace087eaa62f3f5ddc2"
+if [ "$TARGETARCH" == "arm64" ]; then
+  envoy_control_plane_hash="6aec5ed0f25b22c781eeeb1901b19d524a4b4c6eb20695b5069ee7d412d1be8b"
+fi
+
+task_working_dir
+download "https://github.com/GUI/envoy-control-plane/releases/download/v${envoy_control_plane_version}/envoy-control-plane-v${envoy_control_plane_version}-linux-${TARGETARCH}.tar.gz" "sha256" "$envoy_control_plane_hash"
+extract_download "envoy-control-plane-v${envoy_control_plane_version}-linux-${TARGETARCH}.tar.gz"
+
+install -D -m 755 "envoy-control-plane" "$STAGE_EMBEDDED_DIR/bin/envoy-control-plane"
+
+stamp

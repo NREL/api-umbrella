@@ -1,4 +1,6 @@
+local deepcopy = require("pl.tablex").deepcopy
 local file_config = require("api-umbrella.utils.load_config")()
+local getfiles = require("pl.dir").getfiles
 local http = require "resty.http"
 local json_decode = require("cjson").decode
 local json_encode = require "api-umbrella.utils.json_encode"
@@ -8,26 +10,92 @@ local writefile = require("pl.utils").writefile
 local re_find = ngx.re.find
 local sleep = ngx.sleep
 
+local control_plane_data_dir = path_join(file_config["run_dir"], "envoy-control-plane/data")
+local control_plane_data_tmp_dir = path_join(file_config["run_dir"], "envoy-control-plane/tmp")
+local control_plane_expected_paths = {}
+
+local dns_resolver_config = {
+  name = "envoy.network.dns_resolver.cares",
+  typed_config = {
+    ["@type"] = "type.googleapis.com/envoy.extensions.network.dns_resolver.cares.v3.CaresDnsResolverConfig",
+    resolvers = file_config["dns_resolver"]["_nameservers_envoy"],
+    dns_resolver_options = {
+      no_default_search_domain = true,
+    },
+  },
+}
+
+local dns_lookup_family = "V4_PREFERRED"
+if not file_config["dns_resolver"]["allow_ipv6"] then
+  dns_lookup_family = "V4_ONLY"
+end
+
+local dns_cache_config = {
+  name = "dynamic_forward_proxy_cache_config",
+  typed_dns_resolver_config = dns_resolver_config,
+  dns_lookup_family = dns_lookup_family,
+}
+
+local base_access_log = {
+  name = "envoy.access_loggers.file",
+  typed_config = {
+    log_format = {
+      json_format = {
+        time = "%START_TIME%",
+        ip = "%REQ(X-FORWARDED-FOR)%",
+        method = "%REQ(:METHOD)%",
+        scheme = "%REQ(:SCHEME)%",
+        uri = "%REQ(X-ENVOY-ORIGINAL-PATH?:PATH)%",
+        proto = "%PROTOCOL%",
+        status = "%RESPONSE_CODE%",
+        user_agent = "%REQ(USER-AGENT)%",
+        id = "%REQ(X-API-UMBRELLA-REQUEST-ID?X-REQUEST-ID)%",
+        cache = "%REQ(X-CACHE)%",
+        host = "%REQ(:AUTHORITY)%",
+        resp_size = "%BYTES_SENT%",
+        req_size = "%BYTES_RECEIVED%",
+        duration = "%DURATION%",
+        req_dur = "%REQUEST_DURATION%",
+        req_tx_dur = "%REQUEST_TX_DURATION%",
+        resp_dur = "%RESPONSE_DURATION%",
+        resp_tx_dur = "%RESPONSE_TX_DURATION%",
+        resp_flags = "%RESPONSE_FLAGS%",
+        resp_detail = "%RESPONSE_CODE_DETAILS%",
+        con_details = "%CONNECTION_TERMINATION_DETAILS%",
+        up_attempts = "%UPSTREAM_REQUEST_ATTEMPT_COUNT%",
+        up_addr = "%UPSTREAM_REMOTE_ADDRESS%",
+        up_proto = "%UPSTREAM_PROTOCOL%",
+        up_tls_ver = "%UPSTREAM_TLS_VERSION%",
+        up_fail = "%UPSTREAM_TRANSPORT_FAILURE_REASON%",
+        up_dur = "%RESP(X-ENVOY-UPSTREAM-SERVICE-TIME)%",
+      },
+      omit_empty_values = true,
+    },
+  },
+}
+
+if file_config["log"]["destination"] == "console" then
+  base_access_log["typed_config"]["@type"] = "type.googleapis.com/envoy.extensions.access_loggers.stream.v3.StdoutAccessLog"
+else
+  base_access_log["typed_config"]["@type"] = "type.googleapis.com/envoy.extensions.access_loggers.file.v3.FileAccessLog"
+end
+
 local function build_cluster_resource(cluster_name, options)
   local resource = {
     ["@type"] = "type.googleapis.com/envoy.config.cluster.v3.Cluster",
     name = cluster_name,
     type = "STRICT_DNS",
     wait_for_warm_on_init = false,
-    typed_dns_resolver_config = {
-      name = "envoy.network.dns_resolver.cares",
-      typed_config = {
-        ["@type"] = "type.googleapis.com/envoy.extensions.network.dns_resolver.cares.v3.CaresDnsResolverConfig",
-        resolvers = file_config["dns_resolver"]["_nameservers_envoy"],
-      },
-    },
-    dns_lookup_family = "V4_PREFERRED",
+    typed_dns_resolver_config = dns_resolver_config,
+    dns_lookup_family = dns_lookup_family,
     respect_dns_ttl = true,
     ignore_health_on_host_removal = true,
     load_assignment = {
       cluster_name = cluster_name,
       endpoints = {
-        lb_endpoints = {},
+        {
+          lb_endpoints = {},
+        },
       },
     },
     connect_timeout = file_config["envoy"]["_connect_timeout"],
@@ -39,10 +107,6 @@ local function build_cluster_resource(cluster_name, options)
       },
     },
   }
-
-  if not file_config["dns_resolver"]["allow_ipv6"] then
-    resource["dns_lookup_family"] = "V4_ONLY"
-  end
 
   -- Use the "negative_ttl" time as Envoy's DNS refresh rate. Since we have
   -- "respect_dns_ttl" enabled, successful DNS requests will use that refresh
@@ -137,7 +201,7 @@ local function build_cluster_resource(cluster_name, options)
       if any_servers_ipv6 and any_servers_hostname and server["_host_type"] == "ipv6" then
         ngx.log(ngx.WARN, "API backend '" .. resource["name"] .. "' has a mixture of IPv6 and non-IPv6 servers. This configuration is not yet supported. Ignoring IPv6 servers.")
       else
-        table.insert(resource["load_assignment"]["endpoints"]["lb_endpoints"], {
+        table.insert(resource["load_assignment"]["endpoints"][1]["lb_endpoints"], {
           endpoint = {
             address = {
               socket_address = {
@@ -175,13 +239,15 @@ local function build_virtual_host_resource(options)
     name = options["domain"],
     domains = { options["domain"] },
     routes = {
-      match = {
-        prefix = "/",
-      },
-      route = {
-        cluster = options["cluster"],
-        host_rewrite_header = "x-api-umbrella-backend-host",
-        timeout = file_config["envoy"]["_route_timeout"],
+      {
+        match = {
+          prefix = "/",
+        },
+        route = {
+          cluster = options["cluster"],
+          host_rewrite_header = "x-api-umbrella-backend-host",
+          timeout = file_config["envoy"]["_route_timeout"],
+        },
       },
     },
     retry_policy = {
@@ -196,106 +262,287 @@ local function build_virtual_host_resource(options)
   return virtual_host
 end
 
-local function build_cds(config_version)
-  local cds = {
-    version_info = config_version,
-    resources = {},
-  }
+local function build_listener()
+  local access_log = deepcopy(base_access_log)
+  access_log["typed_config"]["log_format"]["json_format"]["listener"] = "router"
+  if file_config["log"]["destination"] ~= "console" then
+    access_log["typed_config"]["path"] = path_join(file_config["log_dir"], "envoy/access.log")
+  end
 
-  return cds
-end
+  local listener = {
+    ["@type"] = "type.googleapis.com/envoy.config.listener.v3.Listener",
+    name = "router",
+    address = {
+      socket_address = {
+        address = file_config["envoy"]["listen"]["host"],
+        port_value = file_config["envoy"]["listen"]["port"],
+      },
+    },
+    filter_chains = {
+      {
+        filters = {
+          {
+            name = "envoy.http_connection_manager",
+            typed_config = {
+              ["@type"] = "type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager",
+              stat_prefix = "router",
+              common_http_protocol_options = {
+                max_headers_count = 200,
+                idle_timeout = "120s",
+              },
+              generate_request_id = false,
+              server_header_transformation = "PASS_THROUGH",
+              http_filters = {
+                {
+                  name = "envoy.filters.http.router",
+                  typed_config = {
+                    ["@type"] = "type.googleapis.com/envoy.extensions.filters.http.router.v3.Router",
+                  },
+                },
+              },
+              rds = {
+                route_config_name = "api-umbrella-route-configuration",
+                config_source = {
+                  resource_api_version = "V3",
+                  ads = {},
+                },
+              },
+              stream_idle_timeout = file_config["envoy"]["_stream_idle_timeout"],
+              access_log = {
+                access_log,
+              },
 
-local function build_lds(config_version, rds_path)
-  local access_log = {
-    name = "envoy.access_loggers.file",
-    typed_config = {
-      log_format = {
-        json_format = {
-          time = "%START_TIME%",
-          ip = "%REQ(X-FORWARDED-FOR)%",
-          method = "%REQ(:METHOD)%",
-          uri = "%REQ(X-ENVOY-ORIGINAL-PATH?:PATH)%",
-          proto = "%PROTOCOL%",
-          status = "%RESPONSE_CODE%",
-          user_agent = "%REQ(USER-AGENT)%",
-          id = "%REQ(X-API-UMBRELLA-REQUEST-ID)%",
-          cache = "%REQ(X-CACHE)%",
-          host = "%REQ(:AUTHORITY)%",
-          resp_size = "%BYTES_SENT%",
-          req_size = "%BYTES_RECEIVED%",
-          duration = "%DURATION%",
-          req_duration = "%REQUEST_DURATION%",
-          resp_duration = "%RESPONSE_DURATION%",
-          resp_flags = "%RESPONSE_FLAGS%",
-          resp_detail = "%RESPONSE_CODE_DETAILS%",
-          con_details = "%CONNECTION_TERMINATION_DETAILS%",
-          up_attempts = "%UPSTREAM_REQUEST_ATTEMPT_COUNT%",
-          up_host = "%UPSTREAM_HOST%",
-          up_fail = "%UPSTREAM_TRANSPORT_FAILURE_REASON%",
+              -- Enable this option, since Envoy is sitting behind other
+              -- proxies.
+              -- https://www.envoyproxy.io/docs/envoy/latest/configuration/best_practices/level_two#best-practices-level2
+              -- https://www.envoyproxy.io/docs/envoy/latest/api-v3/extensions/filters/network/http_connection_manager/v3/http_connection_manager.proto#envoy-v3-api-field-extensions-filters-network-http-connection-manager-v3-httpconnectionmanager-stream-error-on-invalid-http-message
+              stream_error_on_invalid_http_message = true,
+            },
+          },
         },
-        omit_empty_values = true,
       },
     },
   }
 
-  if file_config["log"]["destination"] == "console" then
-    access_log["typed_config"]["@type"] = "type.googleapis.com/envoy.extensions.access_loggers.stream.v3.StdoutAccessLog"
-  else
-    access_log["typed_config"]["@type"] = "type.googleapis.com/envoy.extensions.access_loggers.file.v3.FileAccessLog"
-    access_log["typed_config"]["path"] = path_join(file_config["log_dir"], "envoy/access.log")
-  end
-
-  local lds = {
-    version_info = config_version,
-    resources = {
-      {
-        ["@type"] = "type.googleapis.com/envoy.config.listener.v3.Listener",
-        name = "listener",
-        address = {
-          socket_address = {
-            address = file_config["envoy"]["host"],
-            port_value = file_config["envoy"]["port"],
+  if file_config["envoy"]["scheme"] == "https" then
+    listener["filter_chains"][1]["transport_socket"] = {
+      name = "envoy.transport_sockets.tls",
+      typed_config = {
+        ["@type"] = "type.googleapis.com/envoy.extensions.transport_sockets.tls.v3.DownstreamTlsContext",
+        common_tls_context = {
+          tls_certificates = {
+            {
+              certificate_chain = {
+                inline_string = file_config["envoy"]["tls_certificate"]["certificate_chain"],
+              },
+              private_key = {
+                inline_string = file_config["envoy"]["tls_certificate"]["private_key"],
+              },
+            },
           },
         },
-        filter_chains = {
-          {
-            filters = {
-              {
-                name = "envoy.http_connection_manager",
-                typed_config = {
-                  ["@type"] = "type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager",
-                  stat_prefix = "router",
-                  common_http_protocol_options = {
-                    max_headers_count = 200,
-                    idle_timeout = "120s",
-                  },
-                  generate_request_id = false,
-                  server_header_transformation = "PASS_THROUGH",
-                  http_filters = {
-                    {
-                      name = "envoy.filters.http.router",
-                      typed_config = {
-                        ["@type"] = "type.googleapis.com/envoy.extensions.filters.http.router.v3.Router",
-                      },
-                    },
-                  },
-                  rds = {
-                    config_source = {
-                      path_config_source = {
-                        path = rds_path,
-                      },
-                      resource_api_version = "V3",
-                    },
-                  },
-                  stream_idle_timeout = file_config["envoy"]["_stream_idle_timeout"],
-                  access_log = access_log,
+      },
+    }
+  end
 
-                  -- Enable this option, since Envoy is sitting behind other
-                  -- proxies.
-                  -- https://www.envoyproxy.io/docs/envoy/latest/configuration/best_practices/level_two#best-practices-level2
-                  -- https://www.envoyproxy.io/docs/envoy/latest/api-v3/extensions/filters/network/http_connection_manager/v3/http_connection_manager.proto#envoy-v3-api-field-extensions-filters-network-http-connection-manager-v3-httpconnectionmanager-stream-error-on-invalid-http-message
-                  stream_error_on_invalid_http_message = true,
+  return listener
+end
+
+local function build_route_configuration()
+  local route_configuration = {
+    ["@type"] = "type.googleapis.com/envoy.config.route.v3.RouteConfiguration",
+    name = "api-umbrella-route-configuration",
+    virtual_hosts = {},
+    request_headers_to_remove = {
+      "x-envoy-expected-rq-timeout-ms",
+      "x-envoy-internal",
+
+      -- Note: This backend host header isn't necessary for backends to
+      -- receive and ideally we'd strip it. However, removing it breaks our
+      -- ability to use it in the "host_rewrite_header" option. So we will
+      -- pass it along to API backends unless Envoy allows for better
+      -- ordering of this in the future.
+      -- "x-api-umbrella-backend-host",
+    },
+    response_headers_to_add = {
+      {
+        append_action = "OVERWRITE_IF_EXISTS_OR_ADD",
+        header = {
+          key = "x-api-umbrella-backend-resolved-host",
+          value = "%UPSTREAM_REMOTE_ADDRESS%",
+        },
+      },
+      {
+        append_action = "OVERWRITE_IF_EXISTS_OR_ADD",
+        header = {
+          key = "x-api-umbrella-backend-response-code-details",
+          value = "%RESPONSE_CODE_DETAILS%",
+        },
+      },
+      {
+        append_action = "OVERWRITE_IF_EXISTS_OR_ADD",
+        header = {
+          key = "x-api-umbrella-backend-response-flags",
+          value = "%RESPONSE_FLAGS%",
+        },
+      },
+    },
+  }
+
+  return route_configuration
+end
+
+local function populate_backend_resources(active_config, clusters, route_configuration)
+  for _, api_backend in ipairs(active_config["api_backends"]) do
+    local cluster_resource = build_cluster_resource("api-backend-cluster-" .. api_backend["id"], {
+      api_backend = api_backend,
+    })
+    table.insert(clusters, cluster_resource)
+
+    local virtual_host_resource = build_virtual_host_resource({
+      domain = "api-backend-" .. api_backend["id"],
+      cluster = cluster_resource["name"],
+    })
+    table.insert(route_configuration["virtual_hosts"], virtual_host_resource)
+  end
+
+  for _, website_backend in ipairs(active_config["website_backends"]) do
+    local cluster_resource = build_cluster_resource("website-backend-cluster-" .. website_backend["id"], {
+      website_backend = website_backend,
+    })
+    table.insert(clusters, cluster_resource)
+
+    local virtual_host_resource = build_virtual_host_resource({
+      domain = "website-backend-" .. website_backend["id"],
+      cluster = cluster_resource["name"],
+    })
+    table.insert(route_configuration["virtual_hosts"], virtual_host_resource)
+  end
+end
+
+local function build_http_proxy_cluster()
+  local cluster = {
+    ["@type"] = "type.googleapis.com/envoy.config.cluster.v3.Cluster",
+    name = "http-proxy",
+    lb_policy = "CLUSTER_PROVIDED",
+    cluster_type = {
+      name = "envoy.clusters.dynamic_forward_proxy",
+      typed_config = {
+        ["@type"] = "type.googleapis.com/envoy.extensions.clusters.dynamic_forward_proxy.v3.ClusterConfig",
+        dns_cache_config = dns_cache_config,
+      },
+    },
+  }
+
+  return cluster
+end
+
+local function build_http_proxy_listener()
+  local access_log = deepcopy(base_access_log)
+  access_log["typed_config"]["log_format"]["json_format"]["listener"] = "http-proxy"
+  if file_config["log"]["destination"] ~= "console" then
+    access_log["typed_config"]["path"] = path_join(file_config["log_dir"], "envoy/http_proxy_access.log")
+  end
+
+  local permissions = {}
+
+  for _, allowed_domain in ipairs(file_config["envoy"]["http_proxy"]["allowed_domains"]) do
+    table.insert(permissions, {
+      header = {
+        name = ":authority",
+        string_match = {
+          exact = allowed_domain,
+        },
+      },
+    })
+  end
+
+  local listener = {
+    ["@type"] = "type.googleapis.com/envoy.config.listener.v3.Listener",
+    name = "http-proxy",
+    address = {
+      socket_address = {
+        address = file_config["envoy"]["http_proxy"]["listen"]["host"],
+        port_value = file_config["envoy"]["http_proxy"]["listen"]["port"],
+      },
+    },
+    filter_chains = {
+      {
+        filters = {
+          {
+            name = "envoy.filters.network.http_connection_manager",
+            typed_config = {
+              ["@type"] = "type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager",
+              stat_prefix = "http-proxy",
+              route_config = {
+                name = "local_route",
+                virtual_hosts = {
+                  {
+                    name = "local_service",
+                    domains = {"*"},
+                    routes = {
+                      {
+                        match = {
+                          connect_matcher = {},
+                        },
+                        route = {
+                          cluster = "http-proxy",
+                          upgrade_configs = {
+                            { upgrade_type = "CONNECT" },
+                          },
+                        },
+                      },
+                      {
+                        match = {
+                          prefix = "/",
+                        },
+                        route = {
+                          cluster = "http-proxy",
+                        },
+                      },
+                    },
+                  }
                 },
+              },
+              http_filters = {
+                {
+                  name = "envoy.filters.http.rbac",
+                  typed_config = {
+                    ["@type"] = "type.googleapis.com/envoy.extensions.filters.http.rbac.v3.RBAC",
+                    rules = {
+                      action = "ALLOW",
+                      policies = {
+                        policy = {
+                          permissions = permissions,
+                          principals = {
+                            {
+                              any = true,
+                            },
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+                {
+                  name = "envoy.filters.http.dynamic_forward_proxy",
+                  typed_config = {
+                    ["@type"] = "type.googleapis.com/envoy.extensions.filters.http.dynamic_forward_proxy.v3.FilterConfig",
+                    dns_cache_config = dns_cache_config,
+                  },
+                },
+                {
+                  name = "envoy.filters.http.router",
+                  typed_config = {
+                    ["@type"] = "type.googleapis.com/envoy.extensions.filters.http.router.v3.Router",
+                  },
+                },
+              },
+              http2_protocol_options = {
+                allow_connect = true,
+              },
+              access_log = {
+                access_log,
               },
             },
           },
@@ -304,87 +551,123 @@ local function build_lds(config_version, rds_path)
     },
   }
 
-  return lds
+  return listener
 end
 
-local function build_rds(config_version)
-  local rds = {
-    version_info = config_version,
-    resources = {
-      ["@type"] = "type.googleapis.com/envoy.config.route.v3.RouteConfiguration",
-      virtual_hosts = {},
-      request_headers_to_remove = {
-        "x-envoy-expected-rq-timeout-ms",
-        "x-envoy-internal",
-
-        -- Note: This backend host header isn't necessary for backends to
-        -- receive and ideally we'd strip it. However, removing it breaks our
-        -- ability to use it in the "host_rewrite_header" option. So we will
-        -- pass it along to API backends unless Envoy allows for better
-        -- ordering of this in the future.
-        -- "x-api-umbrella-backend-host",
-      },
-      response_headers_to_remove = {
-        "x-envoy-upstream-service-time",
-      },
-      response_headers_to_add = {
+local function build_smtp_proxy_cluster()
+  local cluster_name = "smtp-proxy"
+  local cluster = {
+    ["@type"] = "type.googleapis.com/envoy.config.cluster.v3.Cluster",
+    name = cluster_name,
+    type = "LOGICAL_DNS",
+    wait_for_warm_on_init = false,
+    typed_dns_resolver_config = dns_resolver_config,
+    dns_lookup_family = dns_lookup_family,
+    load_assignment = {
+      cluster_name = cluster_name,
+      endpoints = {
         {
-          append_action = "OVERWRITE_IF_EXISTS_OR_ADD",
-          header = {
-            key = "x-api-umbrella-backend-resolved-host",
-            value = "%UPSTREAM_HOST%",
-          },
-        },
-        {
-          append_action = "OVERWRITE_IF_EXISTS_OR_ADD",
-          header = {
-            key = "x-api-umbrella-backend-response-code-details",
-            value = "%RESPONSE_CODE_DETAILS%",
-          },
-        },
-        {
-          append_action = "OVERWRITE_IF_EXISTS_OR_ADD",
-          header = {
-            key = "x-api-umbrella-backend-response-flags",
-            value = "%RESPONSE_FLAGS%",
+          lb_endpoints = {
+            {
+              endpoint = {
+                address = {
+                  socket_address = {
+                    address = file_config["envoy"]["smtp_proxy"]["endpoint"]["host"],
+                    port_value = file_config["envoy"]["smtp_proxy"]["endpoint"]["port"],
+                  },
+                },
+              },
+            }
           },
         },
       },
     },
   }
 
-  return rds
+  return cluster
 end
 
-local function populate_backend_resources(active_config, cds, rds)
-  for _, api_backend in ipairs(active_config["api_backends"]) do
-    local cluster_resource = build_cluster_resource("api-backend-cluster-" .. api_backend["id"], {
-      api_backend = api_backend,
-    })
-    table.insert(cds["resources"], cluster_resource)
-
-    local virtual_host_resource = build_virtual_host_resource({
-      domain = "api-backend-" .. api_backend["id"],
-      cluster = cluster_resource["name"],
-    })
-    table.insert(rds["resources"]["virtual_hosts"], virtual_host_resource)
+local function build_smtp_proxy_listener()
+  local access_log = deepcopy(base_access_log)
+  access_log["typed_config"]["log_format"]["json_format"]["listener"] = "smtp-proxy"
+  if file_config["log"]["destination"] ~= "console" then
+    access_log["typed_config"]["path"] = path_join(file_config["log_dir"], "envoy/smtp_proxy_access.log")
   end
 
-  for _, website_backend in ipairs(active_config["website_backends"]) do
-    local cluster_resource = build_cluster_resource("website-backend-cluster-" .. website_backend["id"], {
-      website_backend = website_backend,
-    })
-    table.insert(cds["resources"], cluster_resource)
+  local listener = {
+    ["@type"] = "type.googleapis.com/envoy.config.listener.v3.Listener",
+    name = "smtp-proxy",
+    address = {
+      socket_address = {
+        address = file_config["envoy"]["smtp_proxy"]["listen"]["host"],
+        port_value = file_config["envoy"]["smtp_proxy"]["listen"]["port"],
+      },
+    },
+    filter_chains = {
+      {
+        filters = {
+          {
+            name = "envoy.filters.network.tcp_proxy",
+            typed_config = {
+              ["@type"] = "type.googleapis.com/envoy.extensions.filters.network.tcp_proxy.v3.TcpProxy",
+              stat_prefix = "smtp-proxy",
+              cluster = "smtp-proxy",
+              access_log = {
+                access_log,
+              },
+            },
+          },
+        },
+      },
+    },
+  }
 
-    local virtual_host_resource = build_virtual_host_resource({
-      domain = "website-backend-" .. website_backend["id"],
-      cluster = cluster_resource["name"],
-    })
-    table.insert(rds["resources"]["virtual_hosts"], virtual_host_resource)
-  end
+  return listener
 end
 
-local function wait_for_live_config(config_version, cds)
+local function write_control_plane_config_file(filename, contents)
+  -- Writ the file and move into place atomically, so there's no possibility of
+  -- a partially written file being picked up.
+  local tmp_path = path_join(control_plane_data_tmp_dir, filename)
+  local path = path_join(control_plane_data_dir, filename)
+  writefile(tmp_path, contents)
+  os.rename(tmp_path, path)
+
+  -- Keep track of the known config file paths.
+  control_plane_expected_paths[path] = true
+end
+
+local function update_control_plane(active_config, clusters, listeners, route_configuration)
+  control_plane_expected_paths = {}
+  control_plane_expected_paths[path_join(control_plane_data_dir, "snapshot_version")] = true
+
+  for _, resource in ipairs(clusters) do
+    write_control_plane_config_file("cluster-" .. resource["name"] .. ".json", json_encode(resource))
+  end
+
+  for _, resource in ipairs(listeners) do
+    write_control_plane_config_file("listener-" .. resource["name"] .. ".json", json_encode(resource))
+  end
+
+  write_control_plane_config_file("route-configuration.json", json_encode(route_configuration))
+
+  -- Remove any files from the data directory that shouldn't be there any
+  -- longer (eg, from old cluster files).
+  local data_paths = getfiles(control_plane_data_dir)
+  if data_paths then
+    for _, data_path in ipairs(data_paths) do
+      if not control_plane_expected_paths[data_path] then
+        os.remove(data_path)
+      end
+    end
+  end
+
+  -- Write the special "snapshot_version" file last which is what will actually
+  -- trigger this new config version getting applied.
+  write_control_plane_config_file("snapshot_version", active_config["envoy_version"])
+end
+
+local function wait_for_live_config(envoy_version, clusters)
   local httpc = http.new()
   local connect_ok, connect_err = httpc:connect({
     scheme = "http",
@@ -420,7 +703,7 @@ local function wait_for_live_config(config_version, cds)
 
       local stats = json_decode(stats_body)
       for _, stat in ipairs(stats["stats"]) do
-        if stat["value"] == config_version then
+        if stat["value"] == "v" .. (envoy_version or "") then
           versions_ready = true
         else
           versions_ready = false
@@ -446,12 +729,12 @@ local function wait_for_live_config(config_version, cds)
         return nil, "envoy admin read body error: " .. (clusters_body_err or "")
       end
 
-      local clusters = json_decode(clusters_body)
+      local live_clusters = json_decode(clusters_body)
       local initialized_cluster_names = {}
-      for _, cluster in ipairs(clusters["cluster_statuses"]) do
+      for _, cluster in ipairs(live_clusters["cluster_statuses"]) do
         initialized_cluster_names[cluster["name"]] = true
       end
-      for _, cluster in ipairs(cds["resources"]) do
+      for _, cluster in ipairs(clusters) do
         if not initialized_cluster_names[cluster["name"]] then
           clusters_ready = false
           ready_err = "cluster not initialized: " .. cluster["name"]
@@ -477,30 +760,30 @@ local function wait_for_live_config(config_version, cds)
   end
 
   if not ready then
-    return nil, "envoy admin timed out waiting for configuration to be live. Waiting for: " .. (config_version or "") .. ", " .. (ready_err or "")
+    return nil, "envoy admin timed out waiting for configuration to be live. Waiting for: " .. (envoy_version or "") .. ", " .. (ready_err or "")
   end
 end
 
 return function(active_config)
-  local cds_path = path_join(file_config["run_dir"], "envoy/cds.json")
-  local lds_path = path_join(file_config["run_dir"], "envoy/lds.json")
-  local rds_path = path_join(file_config["run_dir"], "envoy/rds.json")
+  local clusters = {}
 
-  local cds = build_cds(active_config["version"])
-  local lds = build_lds(active_config["version"], rds_path)
-  local rds = build_rds(active_config["version"])
+  local listeners = {
+    build_listener(),
+  }
+  local route_configuration = build_route_configuration()
+  populate_backend_resources(active_config, clusters, route_configuration)
 
-  populate_backend_resources(active_config, cds, rds)
+  if file_config["envoy"]["http_proxy"]["enabled"] then
+    table.insert(clusters, build_http_proxy_cluster())
+    table.insert(listeners, build_http_proxy_listener())
+  end
 
-  writefile(cds_path .. ".tmp", json_encode(cds))
-  writefile(lds_path .. ".tmp", json_encode(lds))
-  writefile(rds_path .. ".tmp", json_encode(rds))
+  if file_config["envoy"]["smtp_proxy"]["enabled"] then
+    table.insert(clusters, build_smtp_proxy_cluster())
+    table.insert(listeners, build_smtp_proxy_listener())
+  end
 
-  -- Push live in order described here:
-  -- https://www.envoyproxy.io/docs/envoy/v1.21.1/api-docs/xds_protocol.html#eventual-consistency-considerations
-  os.rename(cds_path .. ".tmp", cds_path)
-  os.rename(lds_path .. ".tmp", lds_path)
-  os.rename(rds_path .. ".tmp", rds_path)
+  update_control_plane(active_config, clusters, listeners, route_configuration)
 
-  wait_for_live_config(active_config["version"], cds)
+  wait_for_live_config(active_config["envoy_version"], clusters)
 end
