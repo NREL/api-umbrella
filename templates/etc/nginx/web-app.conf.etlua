@@ -71,7 +71,7 @@ http {
   init_worker_by_lua_file '<%- config["_src_root_dir"] %>/src/api-umbrella/web-app/hooks/init_worker.lua';
 
   server {
-    listen <%- config["web"]["host"] %>:<%- config["web"]["port"] %> so_keepalive=<%- config["web"]["listen_so_keepalive"] %><% if config["web"]["listen_backlog"] then %> backlog=<%- config["web"]["listen_backlog"] %><% end %>;
+    listen <%- config["web"]["listen"]["host"] %>:<%- config["web"]["listen"]["port"] %> so_keepalive=<%- config["web"]["listen_so_keepalive"] %><% if config["web"]["listen_backlog"] then %> backlog=<%- config["web"]["listen_backlog"] %><% end %>;
 
     set $x_api_umbrella_request_id $http_x_api_umbrella_request_id;
 

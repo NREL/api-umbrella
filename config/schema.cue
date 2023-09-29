@@ -226,11 +226,19 @@ import "path"
   api_server: {
     host: string | *"127.0.0.1"
     port: uint16 | *14010
+    listen: {
+      host: string | *"127.0.0.1"
+      port: uint16 | *14010
+    }
   }
 
   web: {
     host: string | *"127.0.0.1"
     port: uint16 | *14012
+    listen: {
+      host: string | *"127.0.0.1"
+      port: uint16 | *14012
+    }
     request_timeout: uint | *30
     workers: uint | "auto" | *2
     worker_connections: uint | *8192
@@ -366,6 +374,10 @@ import "path"
   static_site: {
     host: string | *"127.0.0.1"
     port: uint16 | *14013
+    listen: {
+      host: string | *"127.0.0.1"
+      port: uint16 | *14013
+    }
     build_dir: string | *path.Join([_embedded_root_dir, "app/build/dist/example-website"])
   }
 

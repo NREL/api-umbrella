@@ -198,7 +198,7 @@ http {
   }
 
   server {
-    listen <%- config["api_server"]["host"] %>:<%- config["api_server"]["port"] %> so_keepalive=<%- config["nginx"]["listen_so_keepalive"] %><% if config["nginx"]["listen_backlog"] then %> backlog=<%- config["nginx"]["listen_backlog"] %><% end %>;
+    listen <%- config["api_server"]["listen"]["host"] %>:<%- config["api_server"]["listen"]["port"] %> so_keepalive=<%- config["nginx"]["listen_so_keepalive"] %><% if config["nginx"]["listen_backlog"] then %> backlog=<%- config["nginx"]["listen_backlog"] %><% end %>;
 
     set $x_api_umbrella_request_id $http_x_api_umbrella_request_id;
 
@@ -264,7 +264,7 @@ http {
 
   <% if not config["_development_env?"] then %>
     server {
-      listen <%- config["static_site"]["host"] %>:<%- config["static_site"]["port"] %> so_keepalive=<%- config["nginx"]["listen_so_keepalive"] %><% if config["nginx"]["listen_backlog"] then %> backlog=<%- config["nginx"]["listen_backlog"] %><% end %>;
+      listen <%- config["static_site"]["listen"]["host"] %>:<%- config["static_site"]["listen"]["port"] %> so_keepalive=<%- config["nginx"]["listen_so_keepalive"] %><% if config["nginx"]["listen_backlog"] then %> backlog=<%- config["nginx"]["listen_backlog"] %><% end %>;
 
       set $x_api_umbrella_request_id $http_x_api_umbrella_request_id;
       root <%- config["static_site"]["build_dir"] %>;
