@@ -369,7 +369,7 @@ local function build_route_configuration()
         append_action = "OVERWRITE_IF_EXISTS_OR_ADD",
         header = {
           key = "x-api-umbrella-backend-resolved-host",
-          value = "%UPSTREAM_HOST%",
+          value = "%UPSTREAM_REMOTE_ADDRESS%",
         },
       },
       {
