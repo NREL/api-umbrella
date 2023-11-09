@@ -3,7 +3,7 @@ source "https://rubygems.org"
 ruby "~> 3.1"
 
 # Task runner
-gem "thor", "~> 1.2.1"
+gem "thor", "~> 1.3.0"
 
 # Tests
 gem "minitest", "~> 5.20.0"
@@ -22,7 +22,7 @@ gem "minitest-ci", "~> 3.4.0"
 
 # Ruby lint/style checker
 gem "rubocop", "~> 1.4", :require => false
-gem "rubocop-minitest", "~> 0.31.0", :require => false
+gem "rubocop-minitest", "~> 0.33.0", :require => false
 
 # Running background processes
 gem "childprocess"
@@ -35,10 +35,10 @@ gem "multi_json", "~> 1.15.0"
 gem "oj", "~> 3.10"
 
 # Database libraries
-gem "activerecord", "~> 7.0.2", :require => "active_record"
+gem "activerecord", "~> 7.1.1", :require => "active_record"
 gem "pg", "~> 1.5.3"
 gem "elasticsearch", "~> 7.13.3"
-gem "active_attr", "~> 0.15.0"
+gem "active_attr", "~> 0.16.0"
 
 # Factories for test database data
 gem "factory_bot", "~> 6.3.0"
@@ -61,7 +61,7 @@ gem "capybara-screenshot", "~> 1.0.22"
 gem "nokogiri", "~> 1.14"
 
 # Useful additions
-gem "activesupport", "~> 7.0.4"
+gem "activesupport", "~> 7.1.1"
 
 # Generating fake strings and data.
 gem "faker", "~> 3.0"

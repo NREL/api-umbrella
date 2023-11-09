@@ -1,19 +1,16 @@
-diff --git a/lrexlib-pcre2-2.9.1-1.rockspec b/lrexlib-pcre2-2.9.1-1.rockspec
+diff --git a/lrexlib-pcre2-2.9.2-1.rockspec b/lrexlib-pcre2-2.9.2-1.rockspec
 index ea788041..9ca5fbf9 100644
---- a/lrexlib-pcre2-2.9.1-1.rockspec
-+++ b/lrexlib-pcre2-2.9.1-1.rockspec
-@@ -13,12 +13,14 @@ build = {
-       },
-       libraries = {
-         "pcre2-8",
-+        "luajit-5.1",
-       },
-       incdirs = {
-         "$(PCRE2_INCDIR)",
+--- a/lrexlib-pcre2-2.9.2-1.rockspec
++++ b/lrexlib-pcre2-2.9.2-1.rockspec
+@@ -32,9 +32,11 @@ build = {
        },
        libdirs = {
          "$(PCRE2_LIBDIR)",
 +        "$(STAGE_EMBEDDED_LIBDIR)",
+       },
+       libraries = {
+         "pcre2-8",
++        "luajit-5.1",
        },
      },
    },

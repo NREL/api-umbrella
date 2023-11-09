@@ -4,14 +4,14 @@
 set -e -u -x
 source ./tasks/helpers.sh
 
-nodejs_version="18.18.0"
-nodejs_hash="3008408e9098f2462f7b1a0f6a48b8a46079beb1c92b6ec43b04713265c96978"
+nodejs_version="20.9.0"
+nodejs_hash="9033989810bf86220ae46b1381bdcdc6c83a0294869ba2ad39e1061f1e69217a"
 
 download_arch="$TARGETARCH"
 if [ "$TARGETARCH" == "amd64" ]; then
   download_arch="x64"
 elif [ "$TARGETARCH" == "arm64" ]; then
-  nodejs_hash="e2931643cc3ee37375ae5c6dc2028ff526948a227d9fd5d481316240de6e58a5"
+  nodejs_hash="ced3ecece4b7c3a664bca3d9e34a0e3b9a31078525283a6fdb7ea2de8ca5683b"
 fi
 
 task_working_dir

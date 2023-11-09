@@ -2,8 +2,8 @@
 
 ngx_http_geoip2_module_version="3.4"
 ngx_http_geoip2_module_hash="82d4beef48c260c3568eb0ae56451c95"
-openresty_version="1.21.4.2"
-openresty_hash="f333850c8451795bc92ec050d59b9673"
+openresty_version="1.21.4.3"
+openresty_hash="9bb434e21a71d891b233fc1636186060"
 
 set -e -u -x
 source ./tasks/helpers.sh

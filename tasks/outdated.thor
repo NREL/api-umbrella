@@ -17,6 +17,9 @@ class Outdated < Thor
     "envoy" => {
       :git => "https://github.com/envoyproxy/envoy.git",
     },
+    "envoy_control_plane" => {
+      :git => "https://github.com/GUI/envoy-control-plane.git",
+    },
     "glauth" => {
       :git => "https://github.com/glauth/glauth.git",
     },
@@ -45,7 +48,7 @@ class Outdated < Thor
     },
     "nodejs" => {
       :git => "https://github.com/nodejs/node.git",
-      :constraint => "~> 18.12",
+      :constraint => "~> 20.9",
     },
     "openresty" => {
       :git => "https://github.com/openresty/openresty.git",
