@@ -7,6 +7,7 @@ local migrate_username = os.getenv("DB_USERNAME") or config["postgresql"]["migra
 local migrate_password = os.getenv("DB_PASSWORD") or config["postgresql"]["migrations"]["password"]
 config["postgresql"]["username"] = migrate_username
 config["postgresql"]["password"] = migrate_password
+config["postgresql"]["timeout"] = 24 * 60 * 60 * 1000
 
 local db = require("lapis.db")
 local migrations = require("lapis.db.migrations")

@@ -125,16 +125,17 @@ function _M.index(self)
     where = {
       api_user_policy.authorized_query_scope(self.current_admin),
     },
-    search_joins = {
-      "LEFT JOIN api_users_roles ON api_users.id = api_users_roles.api_user_id",
-    },
     search_fields = {
-      "first_name",
-      "last_name",
-      "email",
+      db.raw([[
+        (
+          coalesce(first_name, '') || ' ' ||
+          coalesce(last_name, '') || ' ' ||
+          coalesce(email, '') || ' ' ||
+          coalesce(registration_source, '') || ' ' ||
+          coalesce(jsonb_object_keys_as_string(cached_api_role_ids), '')
+        )
+      ]]),
       { name = "api_key_prefix", prefix_length = api_key_prefixer.API_KEY_PREFIX_LENGTH },
-      "registration_source",
-      db.raw("api_users_roles.api_role_id"),
     },
     order_fields = {
       "email",

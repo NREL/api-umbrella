@@ -38,6 +38,20 @@ COMMENT ON SCHEMA audit IS 'Out-of-table audit/history logging tables and trigge
 
 
 --
+-- Name: pg_trgm; Type: EXTENSION; Schema: -; Owner: -
+--
+
+CREATE EXTENSION IF NOT EXISTS pg_trgm WITH SCHEMA api_umbrella;
+
+
+--
+-- Name: EXTENSION pg_trgm; Type: COMMENT; Schema: -; Owner: -
+--
+
+-- COMMENT ON EXTENSION pg_trgm IS 'text similarity measurement and index searching based on trigrams';
+
+
+--
 -- Name: pgcrypto; Type: EXTENSION; Schema: -; Owner: -
 --
 
@@ -69,6 +83,22 @@ $$;
 
 
 --
+-- Name: api_users_cache_api_role_ids_trigger(); Type: FUNCTION; Schema: api_umbrella; Owner: -
+--
+
+CREATE FUNCTION api_umbrella.api_users_cache_api_role_ids_trigger() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+      BEGIN
+        NEW.cached_api_role_ids := (SELECT jsonb_object_agg(api_role_id, true)
+              FROM api_users_roles WHERE api_user_id = NEW.id);
+
+        return NEW;
+      END
+      $$;
+
+
+--
 -- Name: api_users_increment_version(); Type: FUNCTION; Schema: api_umbrella; Owner: -
 --
 
@@ -89,6 +119,37 @@ CREATE FUNCTION api_umbrella.api_users_increment_version() RETURNS trigger
 
         return NEW;
       END;
+      $$;
+
+
+--
+-- Name: api_users_roles_cache_api_role_ids_trigger(); Type: FUNCTION; Schema: api_umbrella; Owner: -
+--
+
+CREATE FUNCTION api_umbrella.api_users_roles_cache_api_role_ids_trigger() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+      BEGIN
+        CASE TG_OP
+        WHEN 'INSERT' THEN
+          UPDATE api_users SET updated_at = updated_at WHERE id IN (
+            SELECT api_user_id FROM new_table
+          );
+        WHEN 'DELETE' THEN
+          UPDATE api_users SET updated_at = updated_at WHERE id IN (
+            SELECT api_user_id FROM old_table
+          );
+        WHEN 'TRUNCATE' THEN
+          UPDATE api_users SET updated_at = updated_at WHERE cached_api_role_ids IS NOT NULL;
+        ELSE
+          UPDATE api_users SET updated_at = updated_at WHERE id IN (
+            SELECT api_user_id FROM new_table
+            UNION ALL
+            SELECT api_user_id FROM old_table
+          );
+        END CASE;
+        return NULL;
+      END
       $$;
 
 
@@ -129,6 +190,17 @@ CREATE FUNCTION api_umbrella.distributed_rate_limit_counters_increment_version()
         NEW.version := nextval('distributed_rate_limit_counters_version_seq');
         return NEW;
       END;
+      $$;
+
+
+--
+-- Name: jsonb_object_keys_as_string(jsonb); Type: FUNCTION; Schema: api_umbrella; Owner: -
+--
+
+CREATE FUNCTION api_umbrella.jsonb_object_keys_as_string(p_input jsonb) RETURNS text
+    LANGUAGE sql IMMUTABLE STRICT PARALLEL SAFE
+    AS $$
+        SELECT string_agg(v, ' ') FROM jsonb_object_keys(p_input) AS t(v)
       $$;
 
 
@@ -1021,23 +1093,8 @@ CREATE TABLE api_umbrella.api_users (
     created_by_username character varying(255) NOT NULL,
     updated_at timestamp with time zone NOT NULL,
     updated_by_id uuid NOT NULL,
-    updated_by_username character varying(255) NOT NULL
-);
-
-
---
--- Name: api_users_roles; Type: TABLE; Schema: api_umbrella; Owner: -
---
-
-CREATE TABLE api_umbrella.api_users_roles (
-    api_user_id uuid NOT NULL,
-    api_role_id character varying(255) NOT NULL,
-    created_at timestamp with time zone NOT NULL,
-    created_by_id uuid NOT NULL,
-    created_by_username character varying(255) NOT NULL,
-    updated_at timestamp with time zone NOT NULL,
-    updated_by_id uuid NOT NULL,
-    updated_by_username character varying(255) NOT NULL
+    updated_by_username character varying(255) NOT NULL,
+    cached_api_role_ids jsonb
 );
 
 
@@ -1087,11 +1144,25 @@ CREATE VIEW api_umbrella.api_users_flattened AS
                     r.response_headers
                    FROM api_umbrella.rate_limits r
                   WHERE (r.api_user_settings_id = s.id)) r2)) AS settings,
-    ( SELECT jsonb_object_agg(ar.api_role_id, true) AS jsonb_object_agg
-           FROM api_umbrella.api_users_roles ar
-          WHERE (ar.api_user_id = u.id)) AS roles
+    u.cached_api_role_ids AS roles
    FROM (api_umbrella.api_users u
      LEFT JOIN api_umbrella.api_user_settings s ON ((u.id = s.api_user_id)));
+
+
+--
+-- Name: api_users_roles; Type: TABLE; Schema: api_umbrella; Owner: -
+--
+
+CREATE TABLE api_umbrella.api_users_roles (
+    api_user_id uuid NOT NULL,
+    api_role_id character varying(255) NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    created_by_id uuid NOT NULL,
+    created_by_username character varying(255) NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    updated_by_id uuid NOT NULL,
+    updated_by_username character varying(255) NOT NULL
+);
 
 
 --
@@ -1890,6 +1961,13 @@ CREATE UNIQUE INDEX api_users_api_key_prefix_idx ON api_umbrella.api_users USING
 
 
 --
+-- Name: api_users_api_key_prefix_search_idx; Type: INDEX; Schema: api_umbrella; Owner: -
+--
+
+CREATE INDEX api_users_api_key_prefix_search_idx ON api_umbrella.api_users USING gin (api_key_prefix api_umbrella.gin_trgm_ops);
+
+
+--
 -- Name: api_users_created_at_idx; Type: INDEX; Schema: api_umbrella; Owner: -
 --
 
@@ -1901,6 +1979,13 @@ CREATE INDEX api_users_created_at_idx ON api_umbrella.api_users USING btree (cre
 --
 
 CREATE UNIQUE INDEX api_users_roles_api_user_id_api_role_id_idx ON api_umbrella.api_users_roles USING btree (api_user_id, api_role_id);
+
+
+--
+-- Name: api_users_search_idx; Type: INDEX; Schema: api_umbrella; Owner: -
+--
+
+CREATE INDEX api_users_search_idx ON api_umbrella.api_users USING gin (((((((((((COALESCE(first_name, ''::character varying))::text || ' '::text) || (COALESCE(last_name, ''::character varying))::text) || ' '::text) || (COALESCE(email, ''::character varying))::text) || ' '::text) || (COALESCE(registration_source, ''::character varying))::text) || ' '::text) || COALESCE(api_umbrella.jsonb_object_keys_as_string(cached_api_role_ids), ''::text))) api_umbrella.gin_trgm_ops);
 
 
 --
@@ -2135,10 +2220,45 @@ CREATE TRIGGER api_user_settings_stamp_record BEFORE INSERT OR DELETE OR UPDATE 
 
 
 --
+-- Name: api_users api_users_cache_api_role_ids_trigger; Type: TRIGGER; Schema: api_umbrella; Owner: -
+--
+
+CREATE TRIGGER api_users_cache_api_role_ids_trigger BEFORE INSERT OR UPDATE ON api_umbrella.api_users FOR EACH ROW EXECUTE FUNCTION api_umbrella.api_users_cache_api_role_ids_trigger();
+
+
+--
 -- Name: api_users api_users_increment_version_trigger; Type: TRIGGER; Schema: api_umbrella; Owner: -
 --
 
 CREATE TRIGGER api_users_increment_version_trigger BEFORE INSERT OR UPDATE ON api_umbrella.api_users FOR EACH ROW EXECUTE FUNCTION api_umbrella.api_users_increment_version();
+
+
+--
+-- Name: api_users_roles api_users_roles_cache_api_role_ids_delete_trigger; Type: TRIGGER; Schema: api_umbrella; Owner: -
+--
+
+CREATE TRIGGER api_users_roles_cache_api_role_ids_delete_trigger AFTER DELETE ON api_umbrella.api_users_roles REFERENCING OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE FUNCTION api_umbrella.api_users_roles_cache_api_role_ids_trigger();
+
+
+--
+-- Name: api_users_roles api_users_roles_cache_api_role_ids_insert_trigger; Type: TRIGGER; Schema: api_umbrella; Owner: -
+--
+
+CREATE TRIGGER api_users_roles_cache_api_role_ids_insert_trigger AFTER INSERT ON api_umbrella.api_users_roles REFERENCING NEW TABLE AS new_table FOR EACH STATEMENT EXECUTE FUNCTION api_umbrella.api_users_roles_cache_api_role_ids_trigger();
+
+
+--
+-- Name: api_users_roles api_users_roles_cache_api_role_ids_truncate_trigger; Type: TRIGGER; Schema: api_umbrella; Owner: -
+--
+
+CREATE TRIGGER api_users_roles_cache_api_role_ids_truncate_trigger AFTER TRUNCATE ON api_umbrella.api_users_roles FOR EACH STATEMENT EXECUTE FUNCTION api_umbrella.api_users_roles_cache_api_role_ids_trigger();
+
+
+--
+-- Name: api_users_roles api_users_roles_cache_api_role_ids_update_trigger; Type: TRIGGER; Schema: api_umbrella; Owner: -
+--
+
+CREATE TRIGGER api_users_roles_cache_api_role_ids_update_trigger AFTER UPDATE ON api_umbrella.api_users_roles REFERENCING OLD TABLE AS old_table NEW TABLE AS new_table FOR EACH STATEMENT EXECUTE FUNCTION api_umbrella.api_users_roles_cache_api_role_ids_trigger();
 
 
 --
@@ -2681,3 +2801,4 @@ INSERT INTO api_umbrella.lapis_migrations (name) VALUES ('1647916501');
 INSERT INTO api_umbrella.lapis_migrations (name) VALUES ('1651280172');
 INSERT INTO api_umbrella.lapis_migrations (name) VALUES ('1699559596');
 INSERT INTO api_umbrella.lapis_migrations (name) VALUES ('1699559696');
+INSERT INTO api_umbrella.lapis_migrations (name) VALUES ('1699650325');

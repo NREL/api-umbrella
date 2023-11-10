@@ -1312,4 +1312,161 @@ return {
     db.query(grants_sql)
     db.query("COMMIT")
   end,
+
+  [1699650325] = function()
+    db.query("BEGIN")
+
+    -- Store the associated role IDS directly on the api_users table to make for
+    -- easier search indexing and to optimize the flattened SQL view.
+    db.query("ALTER TABLE api_users ADD COLUMN cached_api_role_ids jsonb")
+    db.query([[
+      CREATE FUNCTION api_users_cache_api_role_ids_trigger()
+      RETURNS trigger
+      LANGUAGE plpgsql
+      AS $$
+      BEGIN
+        NEW.cached_api_role_ids := (SELECT jsonb_object_agg(api_role_id, true)
+              FROM api_users_roles WHERE api_user_id = NEW.id);
+
+        return NEW;
+      END
+      $$;
+    ]])
+    db.query([[
+      CREATE TRIGGER api_users_cache_api_role_ids_trigger BEFORE INSERT OR UPDATE
+      ON api_users
+      FOR EACH ROW
+      EXECUTE FUNCTION api_users_cache_api_role_ids_trigger()
+    ]])
+    db.query("SET LOCAL audit.application_user_id = ?", "00000000-0000-0000-0000-000000000000")
+    db.query("SET LOCAL audit.application_user_name = ?", "migrations")
+    db.query("UPDATE api_users SET updated_at = updated_at; SELECT 1 FROM api_users")
+
+    -- Keep the cached roles in sync when the join table is modified directly
+    -- without touching the user.
+    db.query([[
+      CREATE FUNCTION api_users_roles_cache_api_role_ids_trigger()
+      RETURNS trigger
+      LANGUAGE plpgsql
+      AS $$
+      BEGIN
+        CASE TG_OP
+        WHEN 'INSERT' THEN
+          UPDATE api_users SET updated_at = updated_at WHERE id IN (
+            SELECT api_user_id FROM new_table
+          );
+        WHEN 'DELETE' THEN
+          UPDATE api_users SET updated_at = updated_at WHERE id IN (
+            SELECT api_user_id FROM old_table
+          );
+        WHEN 'TRUNCATE' THEN
+          UPDATE api_users SET updated_at = updated_at WHERE cached_api_role_ids IS NOT NULL;
+        ELSE
+          UPDATE api_users SET updated_at = updated_at WHERE id IN (
+            SELECT api_user_id FROM new_table
+            UNION ALL
+            SELECT api_user_id FROM old_table
+          );
+        END CASE;
+        return NULL;
+      END
+      $$;
+    ]])
+    db.query([[
+      CREATE TRIGGER api_users_roles_cache_api_role_ids_insert_trigger AFTER INSERT
+      ON api_users_roles
+      REFERENCING NEW TABLE AS new_table
+      FOR EACH STATEMENT
+      EXECUTE FUNCTION api_users_roles_cache_api_role_ids_trigger();
+      CREATE TRIGGER api_users_roles_cache_api_role_ids_update_trigger AFTER UPDATE
+      ON api_users_roles
+      REFERENCING NEW TABLE AS new_table OLD TABLE AS old_table
+      FOR EACH STATEMENT
+      EXECUTE FUNCTION api_users_roles_cache_api_role_ids_trigger();
+      CREATE TRIGGER api_users_roles_cache_api_role_ids_delete_trigger AFTER DELETE
+      ON api_users_roles
+      REFERENCING OLD TABLE AS old_table
+      FOR EACH STATEMENT
+      EXECUTE FUNCTION api_users_roles_cache_api_role_ids_trigger();
+      CREATE TRIGGER api_users_roles_cache_api_role_ids_truncate_trigger AFTER TRUNCATE
+      ON api_users_roles
+      FOR EACH STATEMENT
+      EXECUTE FUNCTION api_users_roles_cache_api_role_ids_trigger();
+    ]])
+
+    -- Recreate the view now using the cached roles rather than needing an extra
+    -- subquery.
+    db.query([[
+      DROP VIEW api_users_flattened;
+      CREATE VIEW api_users_flattened AS
+        SELECT
+          u.id,
+          u.api_key_prefix,
+          u.api_key_hash,
+          u.email,
+          u.email_verified,
+          u.registration_source,
+          u.throttle_by_ip,
+          extract(epoch from u.disabled_at)::int AS disabled_at,
+          extract(epoch from u.created_at)::int AS created_at,
+          jsonb_build_object(
+            'allowed_ips', s.allowed_ips,
+            'allowed_referers', s.allowed_referers,
+            'rate_limit_mode', s.rate_limit_mode,
+            'rate_limits', (
+              SELECT jsonb_agg(r2.*)
+              FROM (
+                SELECT
+                  r.duration,
+                  r.limit_by,
+                  r.limit_to,
+                  r.distributed,
+                  r.response_headers
+                FROM rate_limits AS r
+                WHERE r.api_user_settings_id = s.id
+              ) AS r2
+            )
+          ) AS settings,
+          cached_api_role_ids AS roles
+        FROM api_users AS u
+          LEFT JOIN api_user_settings AS s ON u.id = s.api_user_id;
+    ]])
+
+    -- Create an immutable function that can store the object structure of the
+    -- roles (optimized for the SQL view and querying), and extract the keys for
+    -- searching.
+    db.query([[
+      CREATE FUNCTION jsonb_object_keys_as_string(p_input jsonb)
+      RETURNS text
+      IMMUTABLE
+      RETURNS NULL ON NULL INPUT
+      PARALLEL SAFE
+      LANGUAGE sql
+      AS $$
+        SELECT string_agg(v, ' ') FROM jsonb_object_keys(p_input) AS t(v)
+      $$;
+    ]])
+
+    -- Enable pg_trgm for supporting indexes for LIKE queries.
+    db.query("CREATE EXTENSION IF NOT EXISTS pg_trgm")
+
+    -- Create the main index used in the admin for searching over users.
+    db.query([[
+      CREATE INDEX api_users_search_idx ON api_users USING gin ((
+        coalesce(first_name, '') || ' ' ||
+        coalesce(last_name, '') || ' ' ||
+        coalesce(email, '') || ' ' ||
+        coalesce(registration_source, '') || ' ' ||
+        coalesce(jsonb_object_keys_as_string(cached_api_role_ids), '')
+      ) gin_trgm_ops)
+    ]])
+
+    -- The admin also does a separate, special prefix query for the API key.
+    db.query("CREATE INDEX api_users_api_key_prefix_search_idx ON api_users USING gin (api_key_prefix gin_trgm_ops)")
+
+    db.query("ANALYZE api_users")
+
+    db.query(grants_sql)
+    db.query("COMMIT")
+  end,
 }

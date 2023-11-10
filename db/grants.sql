@@ -1,4 +1,4 @@
-CREATE FUNCTION pg_temp.ensure_schema_owner(schema_name TEXT, role_name TEXT) RETURNS void AS $$
+CREATE OR REPLACE FUNCTION pg_temp.ensure_schema_owner(schema_name TEXT, role_name TEXT) RETURNS void AS $$
   DECLARE
     r record;
   BEGIN

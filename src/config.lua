@@ -16,6 +16,7 @@ lapis_config(app_env, {
     ssl = config["postgresql"]["ssl"],
     ssl_verify = config["postgresql"]["ssl_verify"],
     ssl_required = config["postgresql"]["ssl_required"],
+    timeout = config["postgresql"]["timeout"],
   },
 
   -- Increase number of parsed POST arguments, for compatibility with some of
