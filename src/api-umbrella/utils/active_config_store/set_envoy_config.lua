@@ -12,6 +12,7 @@ local sleep = ngx.sleep
 
 local control_plane_data_dir = path_join(file_config["run_dir"], "envoy-control-plane/data")
 local control_plane_data_tmp_dir = path_join(file_config["run_dir"], "envoy-control-plane/tmp")
+local control_plane_data_watched_dir = path_join(file_config["run_dir"], "envoy-control-plane/watched")
 local control_plane_expected_paths = {}
 
 local dns_resolver_config = {
@@ -625,11 +626,15 @@ local function build_smtp_proxy_listener()
   return listener
 end
 
-local function write_control_plane_config_file(filename, contents)
+local function write_control_plane_config_file(filename, contents, data_dir)
+  if data_dir == nil then
+    data_dir = control_plane_data_dir
+  end
+
   -- Writ the file and move into place atomically, so there's no possibility of
   -- a partially written file being picked up.
   local tmp_path = path_join(control_plane_data_tmp_dir, filename)
-  local path = path_join(control_plane_data_dir, filename)
+  local path = path_join(data_dir, filename)
   writefile(tmp_path, contents)
   os.rename(tmp_path, path)
 
@@ -665,6 +670,12 @@ local function update_control_plane(active_config, clusters, listeners, route_co
   -- Write the special "snapshot_version" file last which is what will actually
   -- trigger this new config version getting applied.
   write_control_plane_config_file("snapshot_version", active_config["envoy_version"])
+
+  -- Write a copy into the watched directory to trigger a full reload of all
+  -- the config files. We don't just watch the main data directory to prevent
+  -- lots of duplicative watch events being triggered and piling up when many
+  -- config files are being written at once (eg, at startup).
+  write_control_plane_config_file("snapshot_version", active_config["envoy_version"], control_plane_data_watched_dir)
 end
 
 local function wait_for_live_config(envoy_version, clusters)

@@ -18,7 +18,7 @@ if [ "${1}" = "start" ]; then
     run_args+=("-u" "$api_umbrella_user")
   fi
 
-  dirs=("$data_dir" "$dir/tmp")
+  dirs=("$data_dir" "$dir/tmp" "$dir/watched")
   mkdir -p "${dirs[@]}"
   chmod 750 "${dirs[@]}"
   if [ -n "$api_umbrella_user" ]; then
@@ -30,7 +30,7 @@ if [ "${1}" = "start" ]; then
     -metricsServerAddr "<%- config['envoy_control_plane']['metrics_listen']['host'] %>:<%- config['envoy_control_plane']['metrics_listen']['port'] %>" \
     -ads \
     -nodeID "api-umbrella-node-id" \
-    -watch "$data_dir" \
+    -watch "$dir/watched" \
     "$data_dir"
 fi
 
