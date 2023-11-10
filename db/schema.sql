@@ -1095,25 +1095,6 @@ CREATE VIEW api_umbrella.api_users_flattened AS
 
 
 --
--- Name: api_users_flattened_temp; Type: VIEW; Schema: api_umbrella; Owner: -
---
-
-CREATE VIEW api_umbrella.api_users_flattened_temp AS
- SELECT api_users_flattened.id,
-    api_users_flattened.api_key_prefix,
-    api_users_flattened.api_key_hash,
-    api_users_flattened.email,
-    api_users_flattened.email_verified,
-    api_users_flattened.registration_source,
-    api_users_flattened.throttle_by_ip,
-    api_users_flattened.disabled_at,
-    api_users_flattened.created_at,
-    api_users_flattened.settings,
-    api_users_flattened.roles
-   FROM api_umbrella.api_users_flattened;
-
-
---
 -- Name: api_users_version_seq; Type: SEQUENCE; Schema: api_umbrella; Owner: -
 --
 
@@ -1148,30 +1129,6 @@ CREATE UNLOGGED TABLE api_umbrella.distributed_rate_limit_counters (
     value bigint NOT NULL,
     expires_at timestamp with time zone NOT NULL
 );
-
-
---
--- Name: distributed_rate_limit_counters_temp; Type: VIEW; Schema: api_umbrella; Owner: -
---
-
-CREATE VIEW api_umbrella.distributed_rate_limit_counters_temp AS
- SELECT distributed_rate_limit_counters.id,
-    distributed_rate_limit_counters.version,
-    distributed_rate_limit_counters.value,
-    distributed_rate_limit_counters.expires_at
-   FROM api_umbrella.distributed_rate_limit_counters;
-
-
---
--- Name: distributed_rate_limit_counters_temp_version_seq; Type: SEQUENCE; Schema: api_umbrella; Owner: -
---
-
-CREATE SEQUENCE api_umbrella.distributed_rate_limit_counters_temp_version_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
 
 
 --
@@ -2723,3 +2680,4 @@ INSERT INTO api_umbrella.lapis_migrations (name) VALUES ('1645733075');
 INSERT INTO api_umbrella.lapis_migrations (name) VALUES ('1647916501');
 INSERT INTO api_umbrella.lapis_migrations (name) VALUES ('1651280172');
 INSERT INTO api_umbrella.lapis_migrations (name) VALUES ('1699559596');
+INSERT INTO api_umbrella.lapis_migrations (name) VALUES ('1699559696');

@@ -1302,15 +1302,14 @@ return {
     db.query("COMMIT")
   end,
 
-  -- TODO: Enable to finish _temp cleanup.
-  -- [1699559696] = function()
-  --   db.query("BEGIN")
+  [1699559696] = function()
+    db.query("BEGIN")
 
-  --   db.query("DROP VIEW distributed_rate_limit_counters_temp")
-  --   db.query("DROP SEQUENCE distributed_rate_limit_counters_temp_version_seq")
-  --   db.query("DROP VIEW api_users_flattened_temp")
+    db.query("DROP VIEW distributed_rate_limit_counters_temp")
+    db.query("DROP SEQUENCE distributed_rate_limit_counters_temp_version_seq")
+    db.query("DROP VIEW api_users_flattened_temp")
 
-  --   db.query(grants_sql)
-  --   db.query("COMMIT")
-  -- end,
+    db.query(grants_sql)
+    db.query("COMMIT")
+  end,
 }
