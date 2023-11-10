@@ -54,12 +54,9 @@ local function fetch_user(api_key_prefix, api_key)
   -- Allow for retries to deal with sporadic database connection issues.
   -- Ideally this shouldn't be necessary, but enable while we're debugging some
   -- sporadic connection issues.
-  --
-  -- TODO: Replace with `api_users_flattened` once we're done testing different
-  -- approaches in parallel.
   local result, err
   for i = 1, 5 do
-    result, err = query("SELECT * FROM api_users_flattened_temp WHERE api_key_prefix = :api_key_prefix", { api_key_prefix = api_key_prefix })
+    result, err = query("SELECT * FROM api_users_flattened WHERE api_key_prefix = :api_key_prefix", { api_key_prefix = api_key_prefix })
     if not result then
       ngx.log(ngx.ERR, "failed to fetch user from database, attempt " .. i .. ": ", err)
       sleep(0.1)

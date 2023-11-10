@@ -331,8 +331,7 @@ function _M.distributed_push()
     local period_start_time = tonumber(key_parts[5])
     local expires_at = ceil(period_start_time + duration * 2 + 1)
 
-    -- TODO: Remove "_temp" once done testing new rate limiting strategy in parallel.
-    local result, err = pg_utils_query("INSERT INTO distributed_rate_limit_counters_temp(id, value, expires_at) VALUES(:id, :value, to_timestamp(:expires_at)) ON CONFLICT (id) DO UPDATE SET value = distributed_rate_limit_counters_temp.value + EXCLUDED.value", {
+    local result, err = pg_utils_query("INSERT INTO distributed_rate_limit_counters(id, value, expires_at) VALUES(:id, :value, to_timestamp(:expires_at)) ON CONFLICT (id) DO UPDATE SET value = distributed_rate_limit_counters.value + EXCLUDED.value", {
       id = key,
       value = count,
       expires_at = expires_at,
@@ -372,8 +371,7 @@ function _M.distributed_pull()
   -- cycle and start over with negative values. Since the data in this table
   -- expires, there shouldn't be any duplicate version numbers by the time the
   -- sequence cycles.
-  -- TODO: Remove "_temp" once done testing new rate limiting strategy in parallel.
-  local results, err = pg_utils_query("SELECT id, version, value, extract(epoch FROM expires_at) AS expires_at FROM distributed_rate_limit_counters_temp WHERE version > LEAST(:version, (SELECT last_value - 1 FROM distributed_rate_limit_counters_temp_version_seq)) AND expires_at >= now() ORDER BY version DESC", { version = last_fetched_version }, { quiet = true })
+  local results, err = pg_utils_query("SELECT id, version, value, extract(epoch FROM expires_at) AS expires_at FROM distributed_rate_limit_counters WHERE version > LEAST(:version, (SELECT last_value - 1 FROM distributed_rate_limit_counters_version_seq)) AND expires_at >= now() ORDER BY version DESC", { version = last_fetched_version }, { quiet = true })
   if not results then
     ngx.log(ngx.ERR, "failed to fetch rate limits from database: ", err)
     return nil

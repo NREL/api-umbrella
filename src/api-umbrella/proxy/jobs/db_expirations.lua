@@ -9,8 +9,7 @@ local function do_run()
   local queries = {
     "DELETE FROM analytics_cache WHERE expires_at IS NOT NULL AND expires_at < now()",
     "DELETE FROM cache WHERE expires_at IS NOT NULL AND expires_at < now()",
-    -- TODO: Remove "_temp" once done testing new rate limiting strategy in parallel.
-    "DELETE FROM distributed_rate_limit_counters_temp WHERE expires_at < now()",
+    "DELETE FROM distributed_rate_limit_counters WHERE expires_at < now()",
     "DELETE FROM sessions WHERE expires_at < now()",
   }
   for _, query in ipairs(queries) do

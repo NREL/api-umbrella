@@ -337,8 +337,7 @@ class Test::Proxy::RateLimits::TestDistributedRateLimits < Minitest::Test
       begin
         # Alter the sequence so that the next value is near the boundary for
         # bigints.
-        # TODO: Remove "_temp" once done testing new rate limiting strategy in parallel.
-        DistributedRateLimitCounter.connection.execute("ALTER SEQUENCE distributed_rate_limit_counters_temp_version_seq RESTART WITH #{sequence_start_val}")
+        DistributedRateLimitCounter.connection.execute("ALTER SEQUENCE distributed_rate_limit_counters_version_seq RESTART WITH #{sequence_start_val}")
 
         # Manually set the distributed count to insert a single record.
         set_distributed_count(20, options)
@@ -393,8 +392,7 @@ class Test::Proxy::RateLimits::TestDistributedRateLimits < Minitest::Test
         assert_equal(99, counter.value)
       ensure
         # Restore default sequence settings.
-        # TODO: Remove "_temp" once done testing new rate limiting strategy in parallel.
-        DistributedRateLimitCounter.connection.execute("ALTER SEQUENCE distributed_rate_limit_counters_temp_version_seq RESTART WITH -9223372036854775807")
+        DistributedRateLimitCounter.connection.execute("ALTER SEQUENCE distributed_rate_limit_counters_version_seq RESTART WITH -9223372036854775807")
       end
     end
   end
@@ -435,8 +433,7 @@ class Test::Proxy::RateLimits::TestDistributedRateLimits < Minitest::Test
     key = "k|#{format("%g", duration_sec)}|#{host}|#{options.fetch(:api_user).api_key_prefix}|#{period_start_time}"
     expires_at = Time.at((period_start_time + (duration_sec * 2) + 60).ceil).utc
 
-    # TODO: Remove "_temp" once done testing new rate limiting strategy in parallel.
-    DistributedRateLimitCounter.connection.execute("INSERT INTO distributed_rate_limit_counters_temp(id, value, expires_at) VALUES(#{DistributedRateLimitCounter.connection.quote(key)}, #{DistributedRateLimitCounter.connection.quote(count)}, #{DistributedRateLimitCounter.connection.quote(expires_at)}) ON CONFLICT (id) DO UPDATE SET value = EXCLUDED.value")
+    DistributedRateLimitCounter.connection.execute("INSERT INTO distributed_rate_limit_counters(id, value, expires_at) VALUES(#{DistributedRateLimitCounter.connection.quote(key)}, #{DistributedRateLimitCounter.connection.quote(count)}, #{DistributedRateLimitCounter.connection.quote(expires_at)}) ON CONFLICT (id) DO UPDATE SET value = EXCLUDED.value")
   end
 
   def assert_distributed_count(expected_count, options = {})

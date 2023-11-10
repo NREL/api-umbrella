@@ -3,6 +3,9 @@ local json_encode = require "api-umbrella.utils.json_encode"
 local path_join = require "api-umbrella.utils.path_join"
 local readfile = require("pl.utils").readfile
 
+local grants_sql_path = path_join(os.getenv("API_UMBRELLA_SRC_ROOT"), "db/grants.sql")
+local grants_sql = readfile(grants_sql_path, true)
+
 return {
   [1498350289] = function()
     db.query("START TRANSACTION")
@@ -1090,7 +1093,7 @@ return {
   end,
 
   [1635022846] = function()
-    -- TODO: Drop and replace `api_users_flattened` view once we're done
+    -- Done (1699559596): Drop and replace `api_users_flattened` view once we're done
     -- testing two different stacks in parallel. But for now, keep the old view
     -- as-is so we can test this new one separately.
     db.query([[
@@ -1180,7 +1183,7 @@ return {
   [1651280172] = function()
     db.query("BEGIN")
 
-    -- TODO: Drop column altogether and remove from api_users_flattened view
+    -- Done (1699559596): Drop column altogether and remove from api_users_flattened view
     -- once we're not testing the two different rate limiting approaches in
     -- parallel. But keep for now while some systems still use the accuracy
     -- approach.
@@ -1188,7 +1191,7 @@ return {
 
     db.query("ALTER TABLE distributed_rate_limit_counters SET UNLOGGED")
 
-    -- TODO: Drop this "temp" version of the table once we're done testing two
+    -- Done (1699559596): Drop this "temp" version of the table once we're done testing two
     -- different rate limit approaches in parallel. But we're keeping a
     -- separate table for testing the new rate limit implementation so there's
     -- not mixup between the different key types.
@@ -1217,4 +1220,97 @@ return {
 
     db.query("COMMIT")
   end,
+
+  [1699559596] = function()
+    db.query("BEGIN")
+
+    -- Make the temp version the live version, removing the unused "accuracy"
+    -- references. But still maintain the temp version for rollout purposes.
+    db.query([[
+      DROP VIEW api_users_flattened;
+      CREATE VIEW api_users_flattened AS
+        SELECT
+          u.id,
+          u.api_key_prefix,
+          u.api_key_hash,
+          u.email,
+          u.email_verified,
+          u.registration_source,
+          u.throttle_by_ip,
+          extract(epoch from u.disabled_at)::int AS disabled_at,
+          extract(epoch from u.created_at)::int AS created_at,
+          jsonb_build_object(
+            'allowed_ips', s.allowed_ips,
+            'allowed_referers', s.allowed_referers,
+            'rate_limit_mode', s.rate_limit_mode,
+            'rate_limits', (
+              SELECT jsonb_agg(r2.*)
+              FROM (
+                SELECT
+                  r.duration,
+                  r.limit_by,
+                  r.limit_to,
+                  r.distributed,
+                  r.response_headers
+                FROM rate_limits AS r
+                WHERE r.api_user_settings_id = s.id
+              ) AS r2
+            )
+          ) AS settings,
+          (
+            SELECT jsonb_object_agg(ar.api_role_id, true)
+            FROM api_users_roles AS ar WHERE ar.api_user_id = u.id
+          ) AS roles
+        FROM api_users AS u
+          LEFT JOIN api_user_settings AS s ON u.id = s.api_user_id;
+
+      DROP VIEW api_users_flattened_temp;
+      CREATE VIEW api_users_flattened_temp AS
+        SELECT * FROM api_users_flattened;
+    ]])
+
+    -- Drop unused column (from 1651280172)
+    db.query("ALTER TABLE rate_limits DROP COLUMN accuracy")
+
+    -- Make "temp" versions the live versions (from 1651280172)
+    db.query("DROP TABLE distributed_rate_limit_counters")
+    db.query("ALTER TABLE distributed_rate_limit_counters_temp RENAME TO distributed_rate_limit_counters")
+    db.query("ALTER TABLE distributed_rate_limit_counters RENAME CONSTRAINT distributed_rate_limit_counters_temp_pkey TO distributed_rate_limit_counters_pkey")
+    db.query("ALTER INDEX distributed_rate_limit_counters_temp_expires_at_idx RENAME TO distributed_rate_limit_counters_expires_at_idx")
+    db.query("ALTER INDEX distributed_rate_limit_counters_temp_version_expires_at_idx RENAME TO distributed_rate_limit_counters_version_expires_at_idx")
+    db.query("ALTER INDEX distributed_rate_limit_counters_temp_version_idx RENAME TO distributed_rate_limit_counters_version_idx")
+    db.query("DROP SEQUENCE distributed_rate_limit_counters_version_seq")
+    db.query("ALTER SEQUENCE distributed_rate_limit_counters_temp_version_seq RENAME TO distributed_rate_limit_counters_version_seq")
+    db.query("CREATE SEQUENCE distributed_rate_limit_counters_temp_version_seq");
+    db.query([[
+      CREATE OR REPLACE FUNCTION distributed_rate_limit_counters_increment_version()
+      RETURNS TRIGGER AS $$
+      BEGIN
+        NEW.version := nextval('distributed_rate_limit_counters_version_seq');
+        return NEW;
+      END;
+      $$ LANGUAGE plpgsql;
+    ]])
+    db.query("DROP TRIGGER distributed_rate_limit_counters_temp_increment_version_trigger ON distributed_rate_limit_counters")
+    db.query("DROP FUNCTION distributed_rate_limit_counters_temp_increment_version")
+    db.query("CREATE TRIGGER distributed_rate_limit_counters_increment_version_trigger BEFORE INSERT OR UPDATE ON distributed_rate_limit_counters FOR EACH ROW EXECUTE PROCEDURE distributed_rate_limit_counters_increment_version()")
+
+    -- Maintain a "_temp" version for compatibility with rollout.
+    db.query("CREATE VIEW distributed_rate_limit_counters_temp AS SELECT * FROM distributed_rate_limit_counters")
+
+    db.query(grants_sql)
+    db.query("COMMIT")
+  end,
+
+  -- TODO: Enable to finish _temp cleanup.
+  -- [1699559696] = function()
+  --   db.query("BEGIN")
+
+  --   db.query("DROP VIEW distributed_rate_limit_counters_temp")
+  --   db.query("DROP SEQUENCE distributed_rate_limit_counters_temp_version_seq")
+  --   db.query("DROP VIEW api_users_flattened_temp")
+
+  --   db.query(grants_sql)
+  --   db.query("COMMIT")
+  -- end,
 }
