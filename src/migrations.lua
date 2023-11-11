@@ -1340,7 +1340,7 @@ return {
     ]])
     db.query("SET LOCAL audit.application_user_id = ?", "00000000-0000-0000-0000-000000000000")
     db.query("SET LOCAL audit.application_user_name = ?", "migrations")
-    db.query("UPDATE api_users SET updated_at = updated_at; SELECT 1 FROM api_users")
+    db.query("UPDATE api_users SET updated_at = updated_at WHERE id IN (SELECT DISTINCT api_user_id FROM api_users_roles)")
 
     -- Keep the cached roles in sync when the join table is modified directly
     -- without touching the user.
