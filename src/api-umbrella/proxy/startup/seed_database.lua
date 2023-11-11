@@ -125,6 +125,7 @@ local function seed_api_keys()
 
     local roles = user["roles"]
     user["roles"] = nil
+    user["cached_api_role_ids"] = nil
 
     local settings_data = user["settings"]
     user["settings"] = nil
