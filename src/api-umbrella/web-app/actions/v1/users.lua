@@ -17,12 +17,14 @@ local is_array = require "api-umbrella.utils.is_array"
 local is_email = require "api-umbrella.utils.is_email"
 local is_empty = require "api-umbrella.utils.is_empty"
 local is_hash = require "api-umbrella.utils.is_hash"
+local json_encode = require "api-umbrella.utils.json_encode"
 local json_response = require "api-umbrella.web-app.utils.json_response"
 local known_domains = require "api-umbrella.web-app.utils.known_domains"
 local parse_post_for_pseudo_ie_cors = require "api-umbrella.web-app.utils.parse_post_for_pseudo_ie_cors"
 local require_admin = require "api-umbrella.web-app.utils.require_admin"
 local respond_to = require "api-umbrella.web-app.utils.respond_to"
 local startswith = require("pl.stringx").startswith
+local t = require("api-umbrella.web-app.utils.gettext").gettext
 local validation_ext = require "api-umbrella.web-app.utils.validation_ext"
 local wrapped_json_params = require "api-umbrella.web-app.utils.wrapped_json_params"
 
@@ -193,6 +195,18 @@ function _M.create(self)
     user_params["email_verified"] = true
   else
     user_params["email_verified"] = false
+  end
+
+  if not self.current_admin and request_headers["referer"] and (not request_headers["user-agent"] or not request_headers["origin"]) then
+    ngx.log(ngx.WARN, "Missing `User-Agent` or `Origin`: " .. json_encode(request_headers) .. "; " .. json_encode(user_params))
+    return coroutine.yield("error", {
+      {
+        code = "UNEXPECTED_ERROR",
+        field = "email",
+        field_label = "email",
+        message = t("An unexpected error occurred during signup. Please try again or contact us for assistance."),
+      },
+    })
   end
 
   local api_user = assert(ApiUser:authorized_create(user_params))

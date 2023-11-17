@@ -744,6 +744,58 @@ class Test::Apis::V1::Users::TestCreate < Minitest::Test
     assert_response_code(422, response)
   end
 
+  def test_rejects_empty_user_agent_for_non_admins
+    attributes = FactoryBot.attributes_for(:api_user)
+    response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(non_admin_key_creator_api_key).deep_merge({
+      :headers => {
+        "Content-Type" => "application/json",
+        "Referer" => "https://localhost/signup/",
+        "User-Agent" => "",
+      },
+      :body => MultiJson.dump(:user => attributes),
+    }))
+    assert_response_code(422, response)
+  end
+
+  def test_accepts_empty_user_agent_for_admins
+    attributes = FactoryBot.attributes_for(:api_user)
+    response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(admin_token).deep_merge({
+      :headers => {
+        "Content-Type" => "application/json",
+        "Referer" => "https://localhost/signup/",
+        "User-Agent" => "",
+      },
+      :body => MultiJson.dump(:user => attributes),
+    }))
+    assert_response_code(201, response)
+  end
+
+  def test_rejects_empty_origin_for_non_admins
+    attributes = FactoryBot.attributes_for(:api_user)
+    response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(non_admin_key_creator_api_key).deep_merge({
+      :headers => {
+        "Content-Type" => "application/json",
+        "Referer" => "https://localhost/signup/",
+        "Origin" => "",
+      },
+      :body => MultiJson.dump(:user => attributes),
+    }))
+    assert_response_code(422, response)
+  end
+
+  def test_accepts_empty_origin_for_admins
+    attributes = FactoryBot.attributes_for(:api_user)
+    response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(admin_token).deep_merge({
+      :headers => {
+        "Content-Type" => "application/json",
+        "Referer" => "https://localhost/signup/",
+        "Origin" => "",
+      },
+      :body => MultiJson.dump(:user => attributes),
+    }))
+    assert_response_code(201, response)
+  end
+
   private
 
   def non_admin_key_creator_api_key
