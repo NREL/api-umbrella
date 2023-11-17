@@ -89,6 +89,13 @@
   resolved "https://registry.yarnpkg.com/@ungap/structured-clone/-/structured-clone-1.2.0.tgz#756641adb587851b5ccb3e095daf27ae581c8406"
   integrity sha512-zuVdFrMJiuCDQUMCzQaD6KL28MjnqqN8XnAqiEq9PNm/hCPTSGfrXCOfwj1ow4LFb/tNymJPwsNbVePc1xFqrQ==
 
+a11y-dialog@^7.3.0:
+  version "7.5.3"
+  resolved "https://registry.yarnpkg.com/a11y-dialog/-/a11y-dialog-7.5.3.tgz#ceed4b3832d60b0123e29878d13a0ec5c2e7bcab"
+  integrity sha512-ssx2j2FIgxhycE+liCKRam/S7F2TJyDJd8FwaoDS3vq5+yVTSg4dJAQPJr1abJLOlNmsjl5iAGE0VIp0x7gikg==
+  dependencies:
+    focusable-selectors "^0.4.0"
+
 acorn-jsx@^5.3.2:
   version "5.3.2"
   resolved "https://registry.yarnpkg.com/acorn-jsx/-/acorn-jsx-5.3.2.tgz#7ed5bb55908b3b2f1bc55c6af1653bada7f07937"
@@ -590,6 +597,11 @@ flatted@^3.2.9:
   version "3.2.9"
   resolved "https://registry.yarnpkg.com/flatted/-/flatted-3.2.9.tgz#7eb4c67ca1ba34232ca9d2d93e9886e611ad7daf"
   integrity sha512-36yxDn5H7OFZQla0/jFJmbIKTdZAQHngCedGxiMmpNfEZM0sdEeT+WczLQrjK6D7o2aiyLYDnkw0R3JK0Qv1RQ==
+
+focusable-selectors@^0.4.0:
+  version "0.4.0"
+  resolved "https://registry.yarnpkg.com/focusable-selectors/-/focusable-selectors-0.4.0.tgz#c93092bfe65c7cf7ef52aed82fb6f8df31072459"
+  integrity sha512-tc/236hUU3xemsRLu1RKhRQ5UWHjRM9iJTli1zdac43h7b1biRSgG0mILM0qrcsKaGCHcOPJ6NKbk12ouKHLpw==
 
 for-each@^0.3.3:
   version "0.3.3"

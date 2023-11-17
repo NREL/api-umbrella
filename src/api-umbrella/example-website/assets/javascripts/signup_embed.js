@@ -1,37 +1,63 @@
-import Modal from "bootstrap/js/src/modal";
-import escapeHtml from "escape-html";
-import serialize from "form-serialize";
-import "whatwg-fetch";
-import "promise-polyfill/src/polyfill";
 // eslint-disable-next-line import/no-unresolved
 import * as params from "@params";
+import A11yDialog from "a11y-dialog";
+import escapeHtml from "escape-html";
+import serialize from "form-serialize";
 
-const style = document.createElement("link");
-style.rel = "stylesheet";
-style.type = "text/css";
-style.href = params.stylesheetPath;
-(
-  document.getElementsByTagName("head")[0] ||
-  document.getElementsByTagName("body")[0]
-).appendChild(style);
+const styleEl = document.createElement("link");
+styleEl.rel = "stylesheet";
+styleEl.type = "text/css";
+styleEl.href = params.stylesheetPath;
+
+function insertLink(root, options) {
+  const link = document.createElement("link");
+  link.rel = options.rel;
+  link.href = options.href;
+  if (options.as) {
+    link.as = options.as;
+  }
+  root.appendChild(link);
+}
 
 const webSiteRoot = params.webSiteRoot.replace(/\/$/, "");
 
-const defaults = {
+const defaultOptions = {
   containerSelector: "#api_umbrella_signup",
   apiUrlRoot: `${webSiteRoot}/api-umbrella`,
   contactUrl: `${webSiteRoot}/contact/`,
   exampleApiUrl: `${webSiteRoot}/example.json?api_key={{api_key}}`,
   signupConfirmationMessage: "",
   sendWelcomeEmail: true,
-  websiteInput: false,
-  termsCheckbox: true,
+  showIntroText: false,
+  showRequiredAsteriskExplainText: true,
+  showFirstNameInput: true,
+  showLastNameInput: true,
+  showUseDescriptionInput: true,
+  showWebsiteInput: false,
+  showTermsInput: true,
   termsUrl: `${webSiteRoot}/terms/`,
   verifyEmail: false,
 };
+
+const embedOptions = window.apiUmbrellaSignupOptions || {};
+
+// Handle legacy option names.
+if (
+  embedOptions.showWebsiteInput === undefined &&
+  embedOptions.websiteInput !== undefined
+) {
+  embedOptions.showWebsiteInput = embedOptions.websiteInput;
+}
+if (
+  embedOptions.showTermsInput === undefined &&
+  embedOptions.termsCheckbox !== undefined
+) {
+  embedOptions.showTermsInput = embedOptions.termsCheckbox;
+}
+
 const options = {
-  ...defaults,
-  ...(window.apiUmbrellaSignupOptions || {}),
+  ...defaultOptions,
+  ...embedOptions,
 };
 
 if (!options.apiKey) {
@@ -44,65 +70,88 @@ if (!options.registrationSource) {
   alert("apiUmbrellaSignupOptions.registrationSource must be set");
 }
 
-let signupFormTemplate = `
-  <p>Sign up for an application programming interface (API) key to access and use web services.</p>
-  <p class="required-fields"><abbr title="Required" class="required"><span class="abbr-required">*</span></abbr> Required fields</p>
-  <form id="api_umbrella_signup_form" novalidate>
-    <div class="row mb-3">
-      <label class="col-sm-4 col-form-label text-end" for="user_first_name"><abbr title="Required" class="required"><span class="abbr-required">*</span></abbr> First Name</label>
-      <div class="col-sm-8">
-        <input class="form-control" id="user_first_name" aria-describedby="user_first_name_feedback" name="user[first_name]" size="50" type="text" required />
-        <div id="user_first_name_feedback" class="invalid-feedback">Fill out this field.</div>
-      </div>
-    </div>
-    <div class="row mb-3">
-      <label class="col-sm-4 col-form-label text-end" for="user_last_name"><abbr title="Required" class="required"><span class="abbr-required">*</span></abbr> Last Name</label>
-      <div class="col-sm-8">
-        <input class="form-control" id="user_last_name" aria-describedby="user_last_name_feedback"  name="user[last_name]" size="50" type="text" required />
-        <div id="user_last_name_feedback" class="invalid-feedback">Fill out this field.</div>
-      </div>
-    </div>
-    <div class="row mb-3">
-      <label class="col-sm-4 col-form-label text-end" for="user_email"><abbr title="Required" class="required"><span class="abbr-required">*</span></abbr> Email</label>
-      <div class="col-sm-8">
-        <input class="form-control" id="user_email" aria-describedby="user_email_feedback" name="user[email]" size="50" type="email" required />
-        <div id="user_email_feedback" class="invalid-feedback">Enter an email address.</div>
-      </div>
-    </div>
-`;
+let signupFormTemplate = "";
 
-if (options.websiteInput) {
+if (options.showIntroText) {
   signupFormTemplate += `
-    <div class="row mb-3">
-      <label class="col-sm-4 col-form-label text-end" for="user_website">Website<br />(optional)</label>
-      <div class="col-sm-8">
-        <input class="form-control" id="user_website" aria-describedby="user_website_feedback" name="user[website]" size="50" type="url" placeholder="http://" />
-        <div id="user_website_feedback" class="invalid-feedback">Enter a URL.</div>
-      </div>
-    </div>
+    <p>Sign up for an application programming interface (API) key to access and use web services.</p>
+  `;
+}
+
+if (options.showRequiredAsteriskExplainText) {
+  signupFormTemplate += `
+    <p class="required-fields">Required fields are marked with an asterisk (<abbr title="required" class="required">*</abbr>).</p>
   `;
 }
 
 signupFormTemplate += `
-  <div class="row mb-3">
-    <label class="col-sm-4 col-form-label text-end" for="user_use_description">How will you use the APIs?<br />(optional)</label>
-    <div class="col-sm-8">
-      <textarea class="form-control" cols="40" id="user_use_description" name="user[use_description]" rows="3"></textarea>
+  <form id="api_umbrella_signup_form" novalidate>
+`;
+
+if (options.showFirstNameInput) {
+  signupFormTemplate += `
+    <div class="form-group first-name-form-group">
+      <label class="form-label" for="user_first_name">First Name <abbr title="required" class="required">*</abbr></label>
+      <input class="form-control" id="user_first_name" aria-describedby="user_first_name_feedback" name="user[first_name]" size="50" type="text" required />
+      <div id="user_first_name_feedback" class="invalid-feedback">Fill out this field.</div>
     </div>
+  `;
+} else {
+  signupFormTemplate += `<input type="hidden" name="user[first_name]" value="${escapeHtml(
+    options.registrationSource
+  )} User" />`;
+}
+
+if (options.showLastNameInput) {
+  signupFormTemplate += `
+    <div class="form-group last-name-form-group">
+      <label class="form-label" for="user_last_name">Last Name <abbr title="required" class="required">*</abbr></label>
+      <input class="form-control" id="user_last_name" aria-describedby="user_last_name_feedback"  name="user[last_name]" size="50" type="text" required />
+      <div id="user_last_name_feedback" class="invalid-feedback">Fill out this field.</div>
+    </div>
+  `;
+} else {
+  signupFormTemplate += `<input type="hidden" name="user[last_name]" value="${escapeHtml(
+    options.registrationSource
+  )} User" />`;
+}
+
+signupFormTemplate += `
+  <div class="form-group email-form-group">
+    <label class="form-label" for="user_email">Email <abbr title="required" class="required">*</abbr></label>
+    <input class="form-control" id="user_email" aria-describedby="user_email_feedback" name="user[email]" size="50" type="email" required />
+    <div id="user_email_feedback" class="invalid-feedback">Enter an email address.</div>
   </div>
 `;
 
-if (options.termsCheckbox) {
+if (options.showWebsiteInput) {
   signupFormTemplate += `
-    <div class="row mb-3">
-      <div class="col-sm-8 offset-sm-4">
-        <div class="form-check">
-          <input id="user_terms_and_conditions" aria-describedby="user_terms_and_conditions_feedback" name="user[terms_and_conditions]" type="checkbox" class="form-check-input" value="true" required />
-          <label class="form-check-label" for="user_terms_and_conditions">I have read and agree to the <a href="${escapeHtml(
-            options.termsUrl,
-          )}" onclick="window.open(this.href, &#x27;api_umbrella_terms&#x27;, &#x27;height=500,width=790,menubar=no,toolbar=no,location=no,personalbar=no,status=no,resizable=yes,scrollbars=yes&#x27;); return false;" title="Opens new window to terms and conditions">terms and conditions</a>.</label>
-          <div id="user_terms_and_conditions_feedback" class="invalid-feedback">You must agree to the terms and conditions to signup.</div>
-        </div>
+    <div class="form-group website-form-group">
+      <label class="form-label" for="user_website">Website (optional)</label>
+      <input class="form-control" id="user_website" aria-describedby="user_website_feedback" name="user[website]" size="50" type="url" placeholder="https://" />
+      <div id="user_website_feedback" class="invalid-feedback">Enter a URL.</div>
+    </div>
+  `;
+}
+
+if (options.showUseDescriptionInput) {
+  signupFormTemplate += `
+    <div class="form-group use-description-form-group">
+      <label class="form-label" for="user_use_description">How will you use the APIs? (optional)</label>
+      <textarea class="form-control" cols="40" id="user_use_description" name="user[use_description]" rows="2"></textarea>
+    </div>
+  `;
+}
+
+if (options.showTermsInput) {
+  signupFormTemplate += `
+    <div class="form-group terms-form-group">
+      <div class="form-check">
+        <input id="user_terms_and_conditions" aria-describedby="user_terms_and_conditions_feedback" name="user[terms_and_conditions]" type="checkbox" class="form-check-input" value="true" required />
+        <label class="form-check-label" for="user_terms_and_conditions">I have read and agree to the <a href="${escapeHtml(
+          options.termsUrl
+        )}" onclick="window.open(this.href, &#x27;api_umbrella_terms&#x27;, &#x27;height=500,width=790,menubar=no,toolbar=no,location=no,personalbar=no,status=no,resizable=yes,scrollbars=yes&#x27;); return false;" title="Opens new window to terms and conditions">terms and conditions</a>.</label>
+        <div id="user_terms_and_conditions_feedback" class="invalid-feedback">You must agree to the terms and conditions to signup.</div>
       </div>
     </div>
   `;
@@ -111,40 +160,89 @@ if (options.termsCheckbox) {
 }
 
 signupFormTemplate += `
-    <div class="row mb-3">
-      <div class="col-sm-8 offset-sm-4">
-        <input type="hidden" name="user[registration_source]" value="${escapeHtml(
-          options.registrationSource,
-        )}" />
-        <button type="submit" class="btn btn-lg btn-primary" data-loading-text="Loading...">Signup</button>
-      </div>
-    </div>
-
-    <div class="modal alert-modal" tabindex="-1" aria-hidden="true">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-body">
-            <button type="button" class="btn-close float-end" data-bs-dismiss="modal" aria-label="Close"></button>
-            <div class="alert-modal-message"></div>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-primary" data-bs-dismiss="modal">OK</button>
-          </div>
-        </div>
-      </div>
+    <div class="submit">
+      <input type="hidden" name="user[registration_source]" value="${escapeHtml(
+        options.registrationSource
+      )}" />
+      <button type="submit" class="btn btn-lg btn-primary" data-loading-text="Loading...">Signup</button>
     </div>
   </form>
 `;
 
+const modalTemplate = `
+  <div id="alert_modal" class="dialog-container" aria-describedby="alert_modal_message" aria-hidden="true">
+    <div class="modal-backdrop show" data-a11y-dialog-hide></div>
+    <div role="document" class="modal show d-block">
+      <div class="modal-dialog">
+        <div class="modal-content" autofocus>
+          <div class="modal-body">
+            <button type="button" class="btn-close float-end" aria-label="Close" data-a11y-dialog-hide></button>
+            <div id="alert_modal_message"></div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary" data-a11y-dialog-hide>OK</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+`;
+
 const containerEl = document.querySelector(options.containerSelector);
-containerEl.classList.add("api-umbrella-embed");
-containerEl.innerHTML = signupFormTemplate;
+const containerShadowRootEl = containerEl.attachShadow({ mode: "open" });
 
-const modalEl = containerEl.querySelector(".alert-modal");
-const modalMessageEl = modalEl.querySelector(".alert-modal-message");
-const modal = new Modal(modalEl);
+// Compute how big the font size is wherever the container is being injected
+// and then compare that to the root font size, so we can fix `rem` units with
+// the help of https://github.com/GUI/postcss-relative-rem
+const rootFontSize = parseFloat(
+  window
+    .getComputedStyle(document.documentElement)
+    .getPropertyValue("font-size")
+);
+const containerFontSize = parseFloat(
+  window.getComputedStyle(containerEl).getPropertyValue("font-size")
+);
+const remRelativeBaseSize = `${containerFontSize / rootFontSize}rem`;
 
-const formEl = containerEl.querySelector("form");
+const containerStyleRootEl = document.createElement("div");
+containerStyleRootEl.className = "app-style-root";
+containerStyleRootEl.innerHTML = signupFormTemplate;
+containerStyleRootEl.style.setProperty(
+  "--api-umbrella-rem-relative-base",
+  remRelativeBaseSize
+);
+containerShadowRootEl.appendChild(containerStyleRootEl);
+
+const bodyContainerEl = document.createElement("div");
+bodyContainerEl.id = "api-umbrella-signup-embed-body-container";
+const bodyContainerShadowRootEl = bodyContainerEl.attachShadow({
+  mode: "open",
+});
+const bodyContainerStyleRootEl = document.createElement("div");
+bodyContainerStyleRootEl.className = "app-style-root";
+bodyContainerStyleRootEl.innerHTML = modalTemplate;
+bodyContainerStyleRootEl.style.setProperty(
+  "--api-umbrella-rem-relative-base",
+  remRelativeBaseSize
+);
+bodyContainerShadowRootEl.appendChild(bodyContainerStyleRootEl);
+document.body.appendChild(bodyContainerEl);
+
+insertLink(containerShadowRootEl, {
+  rel: "stylesheet",
+  href: params.stylesheetPath,
+});
+
+insertLink(bodyContainerShadowRootEl, {
+  rel: "stylesheet",
+  href: params.stylesheetPath,
+});
+
+const modalEl = bodyContainerShadowRootEl.getElementById("alert_modal");
+const modalMessageEl = modalEl.querySelector("#alert_modal_message");
+const modal = new A11yDialog(modalEl);
+
+const formEl = containerShadowRootEl.querySelector("form");
 formEl.addEventListener("submit", (event) => {
   event.preventDefault();
 
@@ -177,16 +275,14 @@ formEl.addEventListener("submit", (event) => {
     formData.user.terms_and_conditions = true;
   }
 
-  return fetch(
-    `${options.apiUrlRoot}/v1/users.json?api_key=${options.apiKey}`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(formData),
+  return fetch(`${options.apiUrlRoot}/v1/users.json`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-Api-Key": options.apiKey,
     },
-  )
+    body: JSON.stringify(formData),
+  })
     .then((response) => {
       const contentType = response.headers.get("Content-Type");
       if (!contentType || !contentType.includes("application/json")) {
@@ -209,37 +305,37 @@ formEl.addEventListener("submit", (event) => {
       let confirmationTemplate = "";
       if (data.options.verify_email) {
         confirmationTemplate += `
-        <p>Your API key for <strong>${escapeHtml(
-          user.email,
-        )}</strong> has been e-mailed to you. You can use your API key to begin making web service requests immediately.</p>
-        <p>If you don't receive your API Key via e-mail within a few minutes, please <a href="${escapeHtml(
-          data.options.contact_url,
-        )}">contact us</a>.</p>
-      `;
+          <p>Your API key for <strong>${escapeHtml(
+            user.email
+          )}</strong> has been e-mailed to you. You can use your API key to begin making web service requests immediately.</p>
+          <p>If you don't receive your API Key via e-mail within a few minutes, please <a href="${escapeHtml(
+            data.options.contact_url
+          )}">contact us</a>.</p>
+        `;
       } else {
         confirmationTemplate += `
-        <p>Your API key for <strong>${escapeHtml(user.email)}</strong> is:</p>
-        <pre class="signup-key"><code>${escapeHtml(user.api_key)}</code></pre>
-        <p>You can start using this key to make web service requests. Simply pass your key in the URL when making a web request. Here's an example:</p>
-        <pre class="signup-example"><a href="${escapeHtml(
-          data.options.example_api_url,
-        )}">${data.options.example_api_url_formatted_html}</a></pre>
-      `;
+          <p>Your API key for <strong>${escapeHtml(user.email)}</strong> is:</p>
+          <pre class="signup-key"><code>${escapeHtml(user.api_key)}</code></pre>
+          <p>You can start using this key to make web service requests. Simply pass your key in the URL when making a web request. Here's an example:</p>
+          <pre class="signup-example"><a href="${escapeHtml(
+            data.options.example_api_url
+          )}">${data.options.example_api_url_formatted_html}</a></pre>
+        `;
       }
 
       confirmationTemplate += `
-      ${options.signupConfirmationMessage}
-      <div class="signup-footer">
-        <p>For additional support, please <a href="${escapeHtml(
-          data.options.contact_url,
-        )}">contact us</a>. When contacting us, please tell us what API you're accessing and provide the following account details so we can quickly find you:</p>
-        Account Email: ${escapeHtml(user.email)}<br>
-        Account ID: ${escapeHtml(user.id)}
-      </div>
-    `;
+        ${options.signupConfirmationMessage}
+        <div class="signup-footer">
+          <p>For additional support, please <a href="${escapeHtml(
+            data.options.contact_url
+          )}">contact us</a>. When contacting us, please tell us what API you're accessing and provide the following account details so we can quickly find you:</p>
+          Account Email: ${escapeHtml(user.email)}<br>
+          Account ID: ${escapeHtml(user.id)}
+        </div>
+      `;
 
-      containerEl.innerHTML = confirmationTemplate;
-      containerEl.scrollIntoView();
+      containerStyleRootEl.innerHTML = confirmationTemplate;
+      containerStyleRootEl.scrollIntoView();
     })
     .catch((error) => {
       const messages = [];
@@ -270,7 +366,7 @@ formEl.addEventListener("submit", (event) => {
       }
 
       modalMessageEl.innerHTML = `API key signup unexpectedly failed.${messageStr}<br>Please try again or <a href="${escapeHtml(
-        options.issuesUrl,
+        options.issuesUrl
       )}">file an issue</a> for assistance.`;
       modal.show();
     })
