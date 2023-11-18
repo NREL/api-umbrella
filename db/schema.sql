@@ -1094,7 +1094,14 @@ CREATE TABLE api_umbrella.api_users (
     updated_at timestamp with time zone NOT NULL,
     updated_by_id uuid NOT NULL,
     updated_by_username character varying(255) NOT NULL,
-    cached_api_role_ids jsonb
+    cached_api_role_ids jsonb,
+    registration_key_creator_api_user_id uuid,
+    registration_recaptcha_v2_success boolean,
+    registration_recaptcha_v2_error_codes character varying(50)[],
+    registration_recaptcha_v3_success boolean,
+    registration_recaptcha_v3_score numeric(2,1),
+    registration_recaptcha_v3_action character varying(255),
+    registration_recaptcha_v3_error_codes character varying(50)[]
 );
 
 
@@ -2754,6 +2761,14 @@ ALTER TABLE ONLY api_umbrella.api_user_settings
 
 
 --
+-- Name: api_users api_users_registration_key_creator_api_user_id_fkey; Type: FK CONSTRAINT; Schema: api_umbrella; Owner: -
+--
+
+ALTER TABLE ONLY api_umbrella.api_users
+    ADD CONSTRAINT api_users_registration_key_creator_api_user_id_fkey FOREIGN KEY (registration_key_creator_api_user_id) REFERENCES api_umbrella.api_users(id) ON DELETE RESTRICT;
+
+
+--
 -- Name: api_users_roles api_users_roles_api_role_id_fkey; Type: FK CONSTRAINT; Schema: api_umbrella; Owner: -
 --
 
@@ -2802,3 +2817,4 @@ INSERT INTO api_umbrella.lapis_migrations (name) VALUES ('1651280172');
 INSERT INTO api_umbrella.lapis_migrations (name) VALUES ('1699559596');
 INSERT INTO api_umbrella.lapis_migrations (name) VALUES ('1699559696');
 INSERT INTO api_umbrella.lapis_migrations (name) VALUES ('1699650325');
+INSERT INTO api_umbrella.lapis_migrations (name) VALUES ('1700281762');

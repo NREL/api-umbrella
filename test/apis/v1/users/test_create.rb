@@ -218,12 +218,14 @@ class Test::Apis::V1::Users::TestCreate < Minitest::Test
     assert_equal("foo", data["user"]["registration_user_agent"])
     assert_equal("http://example.com/foo", data["user"]["registration_referer"])
     assert_equal("http://example.com", data["user"]["registration_origin"])
+    assert_equal(@@api_user.id, data["user"]["registration_key_creator_api_user_id"])
 
     user = ApiUser.find(data["user"]["id"])
     assert_equal(IPAddr.new("1.2.3.4"), user.registration_ip)
     assert_equal("foo", user.registration_user_agent)
     assert_equal("http://example.com/foo", user.registration_referer)
     assert_equal("http://example.com", user.registration_origin)
+    assert_equal(@@api_user.id, user.registration_key_creator_api_user_id)
   end
 
   def test_captures_does_not_return_requester_details_as_non_admin
@@ -245,12 +247,14 @@ class Test::Apis::V1::Users::TestCreate < Minitest::Test
     assert_nil(data["user"]["registration_user_agent"])
     assert_nil(data["user"]["registration_referer"])
     assert_nil(data["user"]["registration_origin"])
+    assert_nil(data["user"]["registration_key_creator_api_user_id"])
 
     user = ApiUser.find(data["user"]["id"])
     assert_equal(IPAddr.new("1.2.3.4"), user.registration_ip)
     assert_equal("foo", user.registration_user_agent)
     assert_equal("http://example.com/foo", user.registration_referer)
     assert_equal("http://example.com", user.registration_origin)
+    assert_equal(@non_admin_key_creator_api_user.id, user.registration_key_creator_api_user_id)
   end
 
   def test_registration_ip_x_forwarded_last_trusted
@@ -799,11 +803,11 @@ class Test::Apis::V1::Users::TestCreate < Minitest::Test
   private
 
   def non_admin_key_creator_api_key
-    user = FactoryBot.create(:api_user, {
+    @non_admin_key_creator_api_user = FactoryBot.create(:api_user, {
       :roles => ["api-umbrella-key-creator"],
     })
 
-    { :headers => { "X-Api-Key" => user.api_key } }
+    { :headers => { "X-Api-Key" => @non_admin_key_creator_api_user.api_key } }
   end
 
   def active_count

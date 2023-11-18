@@ -369,6 +369,8 @@ import "path"
     default_host?: string
     send_notify_email?: bool
     admin_notify_email?: string
+    recaptcha_v2_secret_key?: string
+    recaptcha_v3_secret_key?: string
   }
 
   static_site: {
@@ -379,6 +381,7 @@ import "path"
       port: uint16 | *14013
     }
     build_dir: string | *path.Join([_embedded_root_dir, "app/build/dist/example-website"])
+    api_key?: string
   }
 
   router: {

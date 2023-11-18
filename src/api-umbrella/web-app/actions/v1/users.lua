@@ -13,10 +13,12 @@ local deep_merge_overwrite_arrays = require "api-umbrella.utils.deep_merge_overw
 local deepcopy = require("pl.tablex").deepcopy
 local escape_html = require("lapis.html").escape
 local flatten_headers = require "api-umbrella.utils.flatten_headers"
+local http = require "resty.http"
 local is_array = require "api-umbrella.utils.is_array"
 local is_email = require "api-umbrella.utils.is_email"
 local is_empty = require "api-umbrella.utils.is_empty"
 local is_hash = require "api-umbrella.utils.is_hash"
+local json_decode = require("cjson").decode
 local json_encode = require "api-umbrella.utils.json_encode"
 local json_response = require "api-umbrella.web-app.utils.json_response"
 local known_domains = require "api-umbrella.web-app.utils.known_domains"
@@ -122,6 +124,60 @@ local function send_welcome_email(api_user, options)
   end
 end
 
+local function verify_recaptcha(secret, response)
+  local httpc = http.new()
+  local connect_ok, connect_err = httpc:connect({
+    scheme = "https",
+    host = "www.google.com",
+  })
+  if not connect_ok then
+    httpc:close()
+    return nil, "recaptcha connect error: " .. (connect_err or "")
+  end
+
+  local ssl_ok, ssl_err = httpc:ssl_handshake(nil, "www.google.com", true)
+  if not ssl_ok then
+    httpc:close()
+    return nil, "recaptcha ssl handshake error: " .. (ssl_err or "")
+  end
+
+  local res, err = httpc:request({
+    method = "POST",
+    path = "/recaptcha/api/siteverify",
+    headers = {
+      ["Content-Type"] = "application/x-www-form-urlencoded",
+    },
+    body = ngx.encode_args({
+      secret = secret,
+      response = response,
+      remoteip = ngx.var.remote_addr,
+    })
+  })
+  if err then
+    httpc:close()
+    return nil, "recaptcha request error: " .. (err or "")
+  end
+
+  local body, body_err = res:read_body()
+  if body_err then
+    httpc:close()
+    return nil, "recaptcha read body error: " .. (body_err or "")
+  end
+
+  local keepalive_ok, keepalive_err = httpc:set_keepalive()
+  if not keepalive_ok then
+    httpc:close()
+    return nil, "recaptcha keepalive error: " .. (keepalive_err or "")
+  end
+
+  if res.status ~= 200 then
+    return nil, "Unsuccessful response: " .. (body or "")
+  end
+
+  local data = json_decode(body)
+  return data
+end
+
 function _M.index(self)
   return datatables.index(self, ApiUser, {
     where = {
@@ -185,6 +241,7 @@ function _M.create(self)
   else
     user_params["registration_source"] = "api"
   end
+  user_params["registration_key_creator_api_user_id"] = request_headers["x-api-user-id"]
 
   -- If email verification is enabled, then create the record and mark its
   -- email_verified field as true. Since the API key won't be part of the API
@@ -195,6 +252,28 @@ function _M.create(self)
     user_params["email_verified"] = true
   else
     user_params["email_verified"] = false
+  end
+
+  if config["web"]["recaptcha_v2_secret_key"] and self.params["g-recaptcha-response-v2"] then
+    local result, recaptcha_err = verify_recaptcha(config["web"]["recaptcha_v2_secret_key"], self.params["g-recaptcha-response-v2"])
+    if result and not recaptcha_err then
+      user_params["registration_recaptcha_v2_success"] = result["success"]
+      user_params["registration_recaptcha_v2_error_codes"] = result["error-codes"]
+    elseif recaptcha_err then
+      ngx.log(ngx.WARN, "reCAPTCHA v2 error: ", recaptcha_err)
+    end
+  end
+
+  if config["web"]["recaptcha_v3_secret_key"] and self.params["g-recaptcha-response-v3"] then
+    local result, recaptcha_err = verify_recaptcha(config["web"]["recaptcha_v3_secret_key"], self.params["g-recaptcha-response-v3"])
+    if result and not recaptcha_err then
+      user_params["registration_recaptcha_v3_success"] = result["success"]
+      user_params["registration_recaptcha_v3_score"] = result["score"]
+      user_params["registration_recaptcha_v3_action"] = result["action"]
+      user_params["registration_recaptcha_v3_error_codes"] = result["error-codes"]
+    elseif recaptcha_err then
+      ngx.log(ngx.WARN, "reCAPTCHA v2 error: ", recaptcha_err)
+    end
   end
 
   if not self.current_admin and request_headers["referer"] and (not request_headers["user-agent"] or not request_headers["origin"]) then
