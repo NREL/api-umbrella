@@ -38,6 +38,7 @@ class Test::Apis::V1::Users::TestShow < Minitest::Test
       "metadata",
       "metadata_yaml_string",
       "registration_ip",
+      "registration_key_creator_api_user_id",
       "registration_origin",
       "registration_referer",
       "registration_source",

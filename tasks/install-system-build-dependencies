@@ -70,19 +70,11 @@ if [ "${INSTALL_TEST_DEPENDENCIES:-}" == "true" ]; then
       rm "/tmp/chromedriver.zip"
     else
       # For ARM platforms, Chrome stable doesn't exist, so use Chromium
-      # instead. chromedriver also doesn't exist, so use Electron's ARM builds
       # instead.
-      CHROMIUM_VERSION="115.*"
-      CHROMEDRIVER_VERSION="25.6.0"
-      printf "Package: chromium*\nPin: version %s\nPin-Priority: 999\n" "$CHROMIUM_VERSION" > /etc/apt/preferences.d/chromium
       apt-get update
-      apt-get -y --no-install-recommends install chromium curl unzip
+      apt-get -y --no-install-recommends install chromium chromium-driver curl unzip
       chromium --version
-
-      curl -fsSL -o "/tmp/chromedriver-v${CHROMEDRIVER_VERSION}-linux.zip" "https://github.com/electron/electron/releases/download/v${CHROMEDRIVER_VERSION}/chromedriver-v${CHROMEDRIVER_VERSION}-linux-${TARGETARCH}.zip"
-      unzip -o -d /usr/local/bin "/tmp/chromedriver-v${CHROMEDRIVER_VERSION}-linux.zip" chromedriver
       chromedriver --version
-      rm "/tmp/chromedriver-v${CHROMEDRIVER_VERSION}-linux.zip"
     fi
   fi
 fi

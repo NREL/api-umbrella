@@ -209,6 +209,7 @@ const modalTemplate = `
 const containerEl = document.querySelector(options.containerSelector);
 containerEl.textContent = "";
 const containerContentEl = document.createElement("div");
+containerContentEl.className = "api-umbrella-signup-embed-content-container";
 containerEl.appendChild(containerContentEl);
 const containerShadowRootEl = containerContentEl.attachShadow({ mode: "open" });
 
@@ -217,12 +218,14 @@ const containerShadowRootEl = containerContentEl.attachShadow({ mode: "open" });
 let recaptchaV2El;
 if (options.recaptchaV2SiteKey) {
   recaptchaV2El = document.createElement("div");
+  recaptchaV2El.className = "api-umbrella-signup-embed-recaptcha-v2";
   recaptchaV2El.style = "visibility: hidden;";
   containerEl.appendChild(recaptchaV2El);
 }
 let recaptchaV3El;
 if (options.recaptchaV3SiteKey) {
   recaptchaV3El = document.createElement("div");
+  recaptchaV3El.className = "api-umbrella-signup-embed-recaptcha-v3";
   recaptchaV3El.style = "visibility: hidden;";
   containerEl.appendChild(recaptchaV3El);
 }

@@ -260,7 +260,7 @@ function _M.create(self)
       user_params["registration_recaptcha_v2_success"] = result["success"]
       user_params["registration_recaptcha_v2_error_codes"] = result["error-codes"]
     elseif recaptcha_err then
-      ngx.log(ngx.WARN, "reCAPTCHA v2 error: ", recaptcha_err)
+      ngx.log(ngx.ERR, "reCAPTCHA v2 error: ", recaptcha_err)
     end
   end
 
@@ -272,7 +272,7 @@ function _M.create(self)
       user_params["registration_recaptcha_v3_action"] = result["action"]
       user_params["registration_recaptcha_v3_error_codes"] = result["error-codes"]
     elseif recaptcha_err then
-      ngx.log(ngx.WARN, "reCAPTCHA v2 error: ", recaptcha_err)
+      ngx.log(ngx.ERR, "reCAPTCHA v2 error: ", recaptcha_err)
     end
   end
 

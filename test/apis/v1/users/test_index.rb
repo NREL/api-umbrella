@@ -25,6 +25,7 @@ class Test::Apis::V1::Users::TestIndex < Minitest::Test
         "foo" => "bar",
       },
       :registration_ip => "127.0.0.10",
+      :registration_key_creator_api_user_id => api_user.id,
       :registration_origin => "http://example.com",
       :registration_referer => "http://example.com/foo",
       :registration_source => "test",
@@ -68,6 +69,7 @@ class Test::Apis::V1::Users::TestIndex < Minitest::Test
     assert_equal({ "foo" => "bar" }, record_data.fetch("metadata"))
     assert_equal("foo: bar", record_data.fetch("metadata_yaml_string"))
     assert_equal("127.0.0.10", record_data.fetch("registration_ip"))
+    assert_equal(api_user.id, record_data.fetch("registration_key_creator_api_user_id"))
     assert_equal("http://example.com", record_data.fetch("registration_origin"))
     assert_equal("http://example.com/foo", record_data.fetch("registration_referer"))
     assert_equal("test", record_data.fetch("registration_source"))
@@ -124,6 +126,7 @@ class Test::Apis::V1::Users::TestIndex < Minitest::Test
     assert_equal(false, record_data.fetch("email_verified"))
     assert_equal(true, record_data.fetch("enabled"))
     assert_nil(record_data.fetch("registration_ip"))
+    assert_nil(record_data.fetch("registration_key_creator_api_user_id"))
     assert_nil(record_data.fetch("registration_origin"))
     assert_nil(record_data.fetch("registration_referer"))
     assert_nil(record_data.fetch("registration_source"))
@@ -285,6 +288,7 @@ class Test::Apis::V1::Users::TestIndex < Minitest::Test
       "metadata",
       "metadata_yaml_string",
       "registration_ip",
+      "registration_key_creator_api_user_id",
       "registration_origin",
       "registration_referer",
       "registration_source",

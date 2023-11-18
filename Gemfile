@@ -41,7 +41,7 @@ gem "elasticsearch", "~> 7.13.3"
 gem "active_attr", "~> 0.16.0"
 
 # Factories for test database data
-gem "factory_bot", "~> 6.3.0"
+gem "factory_bot", "~> 6.4.0"
 
 # Programmatically generate Rails session cookies.
 gem "rails_compatible_cookies_utils", "~> 0.1.0"
@@ -51,11 +51,13 @@ gem "addressable", "~> 2.8.0"
 
 # Browser/JavaScript integration tests
 gem "capybara", "~> 3.32"
-gem "selenium-webdriver", "~> 3.141"
-gem "capybara-chromedriver-logger", "~> 0.3.0"
+gem "selenium-webdriver", "~> 4.15"
 
 # Take screenshots on capybara test failures
 gem "capybara-screenshot", "~> 1.0.22"
+
+# Adds support for `assert_text` for shadow DOM tests.
+gem "capybara-shadowdom", "~> 0.3.0"
 
 # HTML or XML parsing
 gem "nokogiri", "~> 1.14"

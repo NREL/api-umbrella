@@ -1,4 +1,5 @@
 require "capybara/minitest"
+require "capybara/shadowdom"
 require "capybara-screenshot/minitest"
 require "open3"
 require "support/api_umbrella_test_helpers/admin_auth"
@@ -30,44 +31,57 @@ def capybara_register_driver(driver_name, options = {})
       :args => service_args,
     }))
 
-    driver_options = Selenium::WebDriver::Chrome::Options.new
-    driver_options.args << "--headless"
+    driver_options = Selenium::WebDriver::Chrome::Options.new.tap do |opts|
+      opts.add_argument "--headless"
 
-    # Allow connections to our self-signed SSL localhost test server.
-    driver_options.args << "--allow-insecure-localhost"
+      # Allow connections to our self-signed SSL localhost test server.
+      opts.add_argument "--allow-insecure-localhost"
 
-    # Use /tmp instead of /dev/shm for Docker environments where /dev/shm is
-    # too small:
-    # https://github.com/GoogleChrome/puppeteer/blob/v1.10.0/docs/troubleshooting.md#tips
-    driver_options.args << "--disable-dev-shm-usage"
+      # Use /tmp instead of /dev/shm for Docker environments where /dev/shm is
+      # too small:
+      # https://github.com/GoogleChrome/puppeteer/blob/v1.10.0/docs/troubleshooting.md#tips
+      opts.add_argument "--disable-dev-shm-usage"
 
-    # Use a static user agent for some session tests.
-    driver_options.args << "--user-agent=#{ApiUmbrellaTestHelpers::AdminAuth::STATIC_USER_AGENT}"
+      # Use a static user agent for some session tests.
+      opts.add_argument "--user-agent=#{ApiUmbrellaTestHelpers::AdminAuth::STATIC_USER_AGENT}"
 
-    # Allow for usage in Docker.
-    driver_options.args << "--disable-setuid-sandbox"
-    driver_options.args << "--no-sandbox"
+      # Allow for usage in Docker.
+      opts.add_argument "--disable-setuid-sandbox"
+      opts.add_argument "--no-sandbox"
 
-    # Set the Accept-Language header used in tests.
-    if options[:lang]
-      driver_options.args << "--accept-lang=#{options[:lang]}"
+      # Set the Accept-Language header used in tests.
+      if options[:lang]
+        opts.add_argument "--accept-lang=#{options[:lang]}"
+      end
+
+      # Set download path for Chrome >= 77
+      opts.add_preference(:download, :default_directory => ApiUmbrellaTestHelpers::Downloads::DOWNLOADS_ROOT)
+
+      # Enable web socket support for BiDi LogInspector support below.
+      opts.web_socket_url = true
     end
 
-    # Set download path for Chrome >= 77
-    driver_options.add_preference(:download, :default_directory => ApiUmbrellaTestHelpers::Downloads::DOWNLOADS_ROOT)
+    driver = Capybara::Selenium::Driver.new(app, browser: :chrome, options: driver_options, service: service)
+    driver.resize_window_to(driver.current_window_handle, 1024, 4000)
 
-    capabilities = Capybara::Chromedriver::Logger.build_capabilities(
-      :chromeOptions => {
-        :args => ["headless"],
-      },
-    )
+    # Keep track of console log output so we can error if JavaScript errors are
+    # encountered.
+    #
+    # Like https://github.com/dbalatero/capybara-chromedriver-logger, but without
+    # Selenium 4 issues
+    # (https://github.com/dbalatero/capybara-chromedriver-logger/issues/34), and
+    # compatible with GeckoDriver.
+    log_inspector = Selenium::WebDriver::BiDi::LogInspector.new(driver.browser)
+    log_inspector.on_log do |log|
+      # Store the logs on a global (this might not be ideal, but Thread.current
+      # doesn't seem to work and this does).
+      $selenium_logs ||= [] # rubocop:disable Style/GlobalVars
+      $selenium_logs << log # rubocop:disable Style/GlobalVars
 
-    driver = Capybara::Selenium::Driver.new(app,
-      :browser => :chrome,
-      :service => service,
-      :options => driver_options,
-      :desired_capabilities => capabilities)
-    driver.resize_window_to(driver.current_window_handle, 1200, 4000)
+      # Print out any console output (regardless of log level) to the screen for
+      # better awareness and debugging.
+      warn "#{Rainbow("JavaScript [#{log.fetch("level")}]:").color(:yellow).bright} #{log.fetch("text")}\n    #{Rainbow(log.inspect).color(:silver)}"
+    end
 
     # Set download path for Chrome < 77
     driver.browser.download_path = ApiUmbrellaTestHelpers::Downloads::DOWNLOADS_ROOT
@@ -76,6 +90,14 @@ def capybara_register_driver(driver_name, options = {})
   end
 
   Capybara::Screenshot.register_driver(driver_name) do |driver, path|
+    # Chrome doesn't support Selenium's `full_page: true` option for
+    # `save_screenshot`, so manually resize the page to the content.
+    width = driver.execute_script("return Math.max(document.body.scrollWidth, document.body.offsetWidth, document.documentElement.clientWidth, document.documentElement.scrollWidth, document.documentElement.offsetWidth);") + 100
+    width = 1024 if width < 1024
+    height = driver.execute_script("return Math.max(document.body.scrollHeight, document.body.offsetHeight, document.documentElement.clientHeight, document.documentElement.scrollHeight, document.documentElement.offsetHeight);") + 100
+    height = 768 if height < 768
+    driver.resize_window_to(driver.current_window_handle, width, height)
+
     driver.browser.save_screenshot(path)
   end
 end
@@ -104,17 +126,6 @@ Capybara.default_set_options = { :clear => :backspace }
 
 Capybara::Screenshot.prune_strategy = :keep_last_run
 
-Capybara::Chromedriver::Logger.raise_js_errors = true
-Capybara::Chromedriver::Logger.filters = [
-  # Ignore warnings about the self-signed localhost cert.
-  /127.0.0.1.*This site does not have a valid SSL certificate/,
-
-  # Ignore expected ajax request failures.
-  /127.0.0.1.*the server responded with a status of 401/,
-  /127.0.0.1.*the server responded with a status of 403/,
-  /127.0.0.1.*the server responded with a status of 422/,
-]
-
 module Minitest
   module Capybara
     class Test < Minitest::Test
@@ -123,6 +134,13 @@ module Minitest
       include ApiUmbrellaTestHelpers::CapybaraCodemirror
       include ApiUmbrellaTestHelpers::CapybaraCustomBootstrapInputs
       include ApiUmbrellaTestHelpers::CapybaraSelectize
+
+      def setup
+        super
+
+        # Reset logs
+        $selenium_logs = [] # rubocop:disable Style/GlobalVars
+      end
 
       def teardown
         super
@@ -134,9 +152,13 @@ module Minitest
         # tests that may have changed the driver).
         ::Capybara.use_default_driver
 
-        # Inspect console logs/errors after each test and raise errors if
-        # JavaScript errors were encountered.
-        ::Capybara::Chromedriver::Logger::TestHooks.after_example!
+        # Inspect the gathered logs and fail if there are any error level logs.
+        error_logs = $selenium_logs.filter { |log| log.fetch("level") == "error" } # rubocop:disable Style/GlobalVars
+        # Fail tests if JavaScript errors were generated during the tests.
+        assert_equal([], error_logs) # rubocop:disable Minitest/AssertionInLifecycleHook
+
+        # Reset logs
+        $selenium_logs = [] # rubocop:disable Style/GlobalVars
       end
     end
   end
