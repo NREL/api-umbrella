@@ -126,6 +126,14 @@ end
 
 local function verify_recaptcha(secret, response)
   local httpc = http.new()
+
+  if config["http_proxy"] or config["https_proxy"] then
+    httpc:set_proxy_options({
+      http_proxy = config["http_proxy"],
+      https_proxy = config["https_proxy"],
+    })
+  end
+
   local connect_ok, connect_err = httpc:connect({
     scheme = "https",
     host = "www.google.com",
