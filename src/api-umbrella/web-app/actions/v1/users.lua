@@ -257,7 +257,12 @@ function _M.create(self)
   if config["web"]["recaptcha_v2_secret_key"] and self.params["g-recaptcha-response-v2"] then
     local result, recaptcha_err = verify_recaptcha(config["web"]["recaptcha_v2_secret_key"], self.params["g-recaptcha-response-v2"])
     if result and not recaptcha_err then
+      if not known_domains.is_allowed_domain(result["hostname"]) then
+        ngx.log(ngx.WARN, "reCAPTCHA v2 disallowed domain: ", result["hostname"])
+      end
+
       user_params["registration_recaptcha_v2_success"] = result["success"]
+      user_params["registration_recaptcha_v2_hostname"] = result["hostname"]
       user_params["registration_recaptcha_v2_error_codes"] = result["error-codes"]
     elseif recaptcha_err then
       ngx.log(ngx.ERR, "reCAPTCHA v2 error: ", recaptcha_err)
@@ -267,7 +272,12 @@ function _M.create(self)
   if config["web"]["recaptcha_v3_secret_key"] and self.params["g-recaptcha-response-v3"] then
     local result, recaptcha_err = verify_recaptcha(config["web"]["recaptcha_v3_secret_key"], self.params["g-recaptcha-response-v3"])
     if result and not recaptcha_err then
+      if not known_domains.is_allowed_domain(result["hostname"]) then
+        ngx.log(ngx.WARN, "reCAPTCHA v3 disallowed domain: ", result["hostname"])
+      end
+
       user_params["registration_recaptcha_v3_success"] = result["success"]
+      user_params["registration_recaptcha_v3_hostname"] = result["hostname"]
       user_params["registration_recaptcha_v3_score"] = result["score"]
       user_params["registration_recaptcha_v3_action"] = result["action"]
       user_params["registration_recaptcha_v3_error_codes"] = result["error-codes"]

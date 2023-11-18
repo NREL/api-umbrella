@@ -80,8 +80,10 @@ if (!options.registrationSource) {
 }
 
 let signupFormTemplate = "";
+let recaptchaV2Enabled = !!options.recaptchaV2SiteKey;
 let recaptchaV2WidgetId;
 let recaptchaV2Response;
+let recaptchaV3Enabled = !!options.recaptchaV3SiteKey;
 let recaptchaV3WidgetId;
 let recaptchaV3Response;
 
@@ -181,7 +183,7 @@ signupFormTemplate += `
   </div>
 `;
 
-if (options.recaptchaV2SiteKey || options.recaptchaV3SiteKey) {
+if (recaptchaV2Enabled || recaptchaV3Enabled) {
   signupFormTemplate += `<div class="recaptcha-notice">This site is protected by reCAPTCHA and the Google <a href="https://policies.google.com/privacy">Privacy Policy</a> and <a href="https://policies.google.com/terms">Terms of Service</a> apply.</div>`;
 }
 
@@ -216,14 +218,14 @@ const containerShadowRootEl = containerContentEl.attachShadow({ mode: "open" });
 // The recaptcha elements need to exist outside of the shadow DOM for recaptcha
 // compatibility.
 let recaptchaV2El;
-if (options.recaptchaV2SiteKey) {
+if (recaptchaV2Enabled) {
   recaptchaV2El = document.createElement("div");
   recaptchaV2El.className = "api-umbrella-signup-embed-recaptcha-v2";
   recaptchaV2El.style = "visibility: hidden;";
   containerEl.appendChild(recaptchaV2El);
 }
 let recaptchaV3El;
-if (options.recaptchaV3SiteKey) {
+if (recaptchaV3Enabled) {
   recaptchaV3El = document.createElement("div");
   recaptchaV3El.className = "api-umbrella-signup-embed-recaptcha-v3";
   recaptchaV3El.style = "visibility: hidden;";
@@ -307,11 +309,11 @@ function submitFetch() {
     formData.user.terms_and_conditions = true;
   }
 
-  if (options.recaptchaV2SiteKey) {
+  if (recaptchaV2Enabled) {
     formData["g-recaptcha-response-v2"] = recaptchaV2Response;
   }
 
-  if (options.recaptchaV3SiteKey) {
+  if (recaptchaV3Enabled) {
     formData["g-recaptcha-response-v3"] = recaptchaV3Response;
   }
 
@@ -418,46 +420,55 @@ function submitFetch() {
     });
 }
 
+function recaptchaCallback() {
+  if (recaptchaV2Enabled) {
+    recaptchaV2Response = window.grecaptcha.getResponse(recaptchaV2WidgetId);
+  }
+
+  if (recaptchaV3Enabled) {
+    recaptchaV3Response = window.grecaptcha.getResponse(recaptchaV3WidgetId);
+  }
+
+  if (
+    ((recaptchaV2Enabled && recaptchaV2Response) || !recaptchaV2Enabled) &&
+    ((recaptchaV3Enabled && recaptchaV3Response) || !recaptchaV3Enabled)
+  ) {
+    submitFetch();
+  }
+}
+
 window.apiUmbrellaRecaptchaLoadCallback =
   function apiUmbrellaRecaptchaLoadCallback() {
-    if (options.recaptchaV2SiteKey) {
+    if (recaptchaV2Enabled) {
       recaptchaV2WidgetId = window.grecaptcha.render(recaptchaV2El, {
         sitekey: options.recaptchaV2SiteKey,
         size: "invisible",
         isolated: true,
-        callback: () => {
-          recaptchaV2Response =
-            window.grecaptcha.getResponse(recaptchaV2WidgetId);
-          if (
-            (options.recaptchaV3SiteKey && recaptchaV3Response) ||
-            !options.recaptchaV3SiteKey
-          ) {
-            submitFetch();
-          }
+        callback: recaptchaCallback,
+        "error-callback": () => {
+          recaptchaV2Enabled = false;
+          // eslint-disable-next-line no-console
+          console.error("recaptcha v2 render error");
         },
       });
     }
 
-    if (options.recaptchaV3SiteKey) {
+    if (recaptchaV3Enabled) {
       recaptchaV3WidgetId = window.grecaptcha.render(recaptchaV3El, {
         sitekey: options.recaptchaV3SiteKey,
         size: "invisible",
         isolated: true,
-        callback: () => {
-          recaptchaV3Response =
-            window.grecaptcha.getResponse(recaptchaV3WidgetId);
-          if (
-            (options.recaptchaV2SiteKey && recaptchaV2Response) ||
-            !options.recaptchaV2SiteKey
-          ) {
-            submitFetch();
-          }
+        callback: recaptchaCallback,
+        "error-callback": () => {
+          recaptchaV3Enabled = false;
+          // eslint-disable-next-line no-console
+          console.error("recaptcha v3 render error");
         },
       });
     }
   };
 
-if (options.recaptchaV2SiteKey || options.recaptchaV3SiteKey) {
+if (recaptchaV2Enabled || recaptchaV3Enabled) {
   insertScript(document.body, {
     src: `https://www.google.com/recaptcha/api.js?render=explicit&onload=apiUmbrellaRecaptchaLoadCallback`,
     type: "text/javascript",
@@ -474,20 +485,44 @@ formEl.addEventListener("submit", (event) => {
     return false;
   }
 
-  if (options.recaptchaV2SiteKey || options.recaptchaV3SiteKey) {
+  if (recaptchaV2Enabled || recaptchaV3Enabled) {
     try {
-      if (options.recaptchaV2SiteKey) {
+      if (recaptchaV2Enabled) {
         recaptchaV2Response = null;
-        window.grecaptcha.execute(recaptchaV2WidgetId);
+        window.grecaptcha
+          .execute(recaptchaV2WidgetId)
+          .then(() => {
+            if (!recaptchaV2Enabled) {
+              recaptchaCallback();
+            }
+          })
+          .catch((e) => {
+            // eslint-disable-next-line no-console
+            console.error("recaptcha v2 execute catch: ", e);
+            recaptchaV2Enabled = false;
+            recaptchaCallback();
+          });
       }
 
-      if (options.recaptchaV3SiteKey) {
+      if (recaptchaV3Enabled) {
         recaptchaV3Response = null;
-        window.grecaptcha.execute(recaptchaV3WidgetId);
+        window.grecaptcha
+          .execute(recaptchaV3WidgetId, { action: "signup" })
+          .then(() => {
+            if (!recaptchaV3Enabled) {
+              recaptchaCallback();
+            }
+          })
+          .catch((e) => {
+            // eslint-disable-next-line no-console
+            console.error("recaptcha v3 execute catch: ", e);
+            recaptchaV3Enabled = false;
+            recaptchaCallback();
+          });
       }
     } catch (e) {
       // eslint-disable-next-line no-console
-      console.error(e);
+      console.error("recaptcha error: ", e);
       // eslint-disable-next-line no-alert
       alert(
         "Unexpected error occurred while validating CAPTCHA. Please try again or contact us for assistance",

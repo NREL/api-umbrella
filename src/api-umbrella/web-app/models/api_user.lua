@@ -337,6 +337,9 @@ ApiUser = model_ext.new_class("api_users", {
     validate_field(errors, data, "registration_recaptcha_v2_success", t("CAPTCHA success"), {
       { validation_ext.db_null_optional.boolean, t("is not a boolean") },
     })
+    validate_field(errors, data, "registration_recaptcha_v2_hostname", t("CAPTCHA hostname"), {
+      { validation_ext.db_null_optional.string:maxlen(255), string.format(t("is too long (maximum is %d characters)"), 255) },
+    })
     validate_field(errors, data, "registration_recaptcha_v2_error_codes", t("CAPTCHA error codes"), {
       { validation_ext.db_null_optional.array_table, t("is not an array") },
       { validation_ext.db_null_optional.array_strings, t("must be an array of strings") },
@@ -344,6 +347,9 @@ ApiUser = model_ext.new_class("api_users", {
     })
     validate_field(errors, data, "registration_recaptcha_v3_success", t("CAPTCHA success"), {
       { validation_ext.db_null_optional.boolean, t("is not a boolean") },
+    })
+    validate_field(errors, data, "registration_recaptcha_v3_hostname", t("CAPTCHA hostname"), {
+      { validation_ext.db_null_optional.string:maxlen(255), string.format(t("is too long (maximum is %d characters)"), 255) },
     })
     validate_field(errors, data, "registration_recaptcha_v3_score", t("CAPTCHA score"), {
       { validation_ext.db_null_optional.number, t("is not a number") },

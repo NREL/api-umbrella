@@ -1484,4 +1484,15 @@ return {
     db.query(grants_sql)
     db.query("COMMIT")
   end,
+
+  [1700346585] = function()
+    db.query("BEGIN")
+
+    db.query("ALTER TABLE api_users ADD COLUMN registration_recaptcha_v2_hostname varchar(255)")
+    db.query("ALTER TABLE api_users ADD COLUMN registration_recaptcha_v3_hostname varchar(255)")
+
+    db.query(grants_sql)
+    db.query("COMMIT")
+  end,
+
 }
