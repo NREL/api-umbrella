@@ -83,6 +83,7 @@ let signupFormTemplate = "";
 let recaptchaV2Enabled = !!options.recaptchaV2SiteKey;
 let recaptchaV2WidgetId;
 let recaptchaV2Response;
+let recaptchaV2SubmitButtonTimeout;
 let recaptchaV3Enabled = !!options.recaptchaV3SiteKey;
 let recaptchaV3WidgetId;
 let recaptchaV3Response;
@@ -284,14 +285,25 @@ const modalMessageEl = modalEl.querySelector("#alert_modal_message");
 const modal = new A11yDialog(modalEl);
 
 const formEl = containerShadowRootEl.querySelector("form");
-function submitFetch() {
-  const submitButtonEl = formEl.querySelector("button[type=submit]");
-  const submitButtonOrig = submitButtonEl.innerHTML;
-  setTimeout(() => {
+const submitButtonEl = formEl.querySelector("button[type=submit]");
+
+function disableSubmitButton() {
+  if (!submitButtonEl.disabled) {
+    submitButtonEl.dataset.origInnerHTML = submitButtonEl.innerHTML;
     submitButtonEl.disabled = true;
     submitButtonEl.innerText = "Loading...";
-  }, 0);
+  }
+}
 
+function enableSubmitButton() {
+  if (submitButtonEl.disabled) {
+    submitButtonEl.disabled = false;
+    submitButtonEl.innerHTML = submitButtonEl.dataset.origInnerHTML;
+    delete submitButtonEl.dataset.origInnerHTML;
+  }
+}
+
+function submitFetch() {
   const formData = {
     ...serialize(formEl, { hash: true }),
     options: {
@@ -414,15 +426,24 @@ function submitFetch() {
       )}">file an issue</a> for assistance.`;
       modal.show();
     })
-    .finally(() => {
-      submitButtonEl.disabled = false;
-      submitButtonEl.innerHTML = submitButtonOrig;
-    });
+    .finally(enableSubmitButton);
 }
 
 function recaptchaCallback() {
   if (recaptchaV2Enabled) {
     recaptchaV2Response = window.grecaptcha.getResponse(recaptchaV2WidgetId);
+
+    // If the possible captcha prompt was solved, then we can disable out
+    // submit button timeout workaround and disable the submit button again
+    // until the actual submission finishes.
+    if (recaptchaV2Response) {
+      if (recaptchaV2SubmitButtonTimeout) {
+        clearTimeout(recaptchaV2SubmitButtonTimeout);
+        recaptchaV2SubmitButtonTimeout = null;
+      }
+
+      disableSubmitButton();
+    }
   }
 
   if (recaptchaV3Enabled) {
@@ -446,6 +467,8 @@ window.apiUmbrellaRecaptchaLoadCallback =
         isolated: true,
         callback: recaptchaCallback,
         "error-callback": () => {
+          // TODO: Make error fatal (rather than disabling), once we want to
+          // start enforcing recaptcha use.
           recaptchaV2Enabled = false;
           // eslint-disable-next-line no-console
           console.error("recaptcha v2 render error");
@@ -460,6 +483,8 @@ window.apiUmbrellaRecaptchaLoadCallback =
         isolated: true,
         callback: recaptchaCallback,
         "error-callback": () => {
+          // TODO: Make error fatal (rather than disabling), once we want to
+          // start enforcing recaptcha use.
           recaptchaV3Enabled = false;
           // eslint-disable-next-line no-console
           console.error("recaptcha v3 render error");
@@ -479,19 +504,48 @@ if (recaptchaV2Enabled || recaptchaV3Enabled) {
 
 formEl.addEventListener("submit", (event) => {
   event.preventDefault();
+  disableSubmitButton();
 
   if (!formEl.checkValidity()) {
     formEl.classList.add("was-validated");
+    enableSubmitButton();
     return false;
+  }
+
+  // If recaptcha never loaded (eg, due to CSP), disable for now until we
+  // complete the required rollout.
+  //
+  // TODO: Make error fatal (rather than disabling), once we want to start
+  // enforcing recaptcha use.
+  if (!window.grecaptcha || !window.grecaptcha.execute) {
+    recaptchaV2Enabled = false;
+    recaptchaV3Enabled = false;
   }
 
   if (recaptchaV2Enabled || recaptchaV3Enabled) {
     try {
       if (recaptchaV2Enabled) {
+        // Re-enable the submit button after a period of time in case the user
+        // is prompted with the captcha solve screen and chooses to close it.
+        // This is a bit of a workaround but since recpatcha doesn't support a
+        // close event, this will at least ensure the button gets re-enabled
+        // without messing with more complicated DOM monitoring solutions.
+        //
+        // https://stackoverflow.com/a/44984658
+        // https://stackoverflow.com/a/47949586
+        recaptchaV2SubmitButtonTimeout = setTimeout(enableSubmitButton, 3000);
+
         recaptchaV2Response = null;
         window.grecaptcha
           .execute(recaptchaV2WidgetId)
           .then(() => {
+            // I don't think this should be possible, but if `error-callback`
+            // was called between `execute` and `then`, make sure we still call
+            // our normal callback (which handles the situation of recaptcha
+            // being disabled).
+            //
+            // TODO: Remove once we start enforcing recaptcha, in which case we
+            // won't need to submit if `error-callback` was called.
             if (!recaptchaV2Enabled) {
               recaptchaCallback();
             }
@@ -509,6 +563,13 @@ formEl.addEventListener("submit", (event) => {
         window.grecaptcha
           .execute(recaptchaV3WidgetId, { action: "signup" })
           .then(() => {
+            // I don't think this should be possible, but if `error-callback`
+            // was called between `execute` and `then`, make sure we still call
+            // our normal callback (which handles the situation of recaptcha
+            // being disabled).
+            //
+            // TODO: Remove once we start enforcing recaptcha, in which case we
+            // won't need to submit if `error-callback` was called.
             if (!recaptchaV3Enabled) {
               recaptchaCallback();
             }
@@ -527,6 +588,7 @@ formEl.addEventListener("submit", (event) => {
       alert(
         "Unexpected error occurred while validating CAPTCHA. Please try again or contact us for assistance",
       );
+      enableSubmitButton();
     }
   } else {
     submitFetch();
