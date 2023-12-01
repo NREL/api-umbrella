@@ -356,19 +356,17 @@ module ApiUmbrellaTestHelpers
           self.api_umbrella_process.restart_services(["trafficserver"], options)
         end
 
-        if (
-          previous_override_config.dig("envoy", "scheme") ||
-          @@current_override_config.dig("envoy", "scheme")
-        )
+        if previous_override_config.dig("envoy", "scheme") ||
+            @@current_override_config.dig("envoy", "scheme")
+
           self.api_umbrella_process.restart_services(["envoy", "trafficserver"], options)
         end
 
-        if (
-          previous_override_config["http_proxy"] ||
-          @@current_override_config["http_proxy"] ||
-          previous_override_config["https_proxy"] ||
-          @@current_override_config["https_proxy"]
-        )
+        if previous_override_config["http_proxy"] ||
+            @@current_override_config["http_proxy"] ||
+            previous_override_config["https_proxy"] ||
+            @@current_override_config["https_proxy"]
+
           self.api_umbrella_process.restart_services(["rsyslog"], options)
         end
       end
