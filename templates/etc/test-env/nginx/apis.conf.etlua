@@ -775,6 +775,25 @@ server {
     }
   }
 
+  location = /recaptcha/api/siteverify/set-mock {
+    content_by_lua_block {
+      local cjson = require "cjson"
+      ngx.req.read_body()
+      local body = ngx.req.get_body_data()
+      ngx.shared.test_data:set("recaptcha_mock", body)
+    }
+  }
+
+  location = /recaptcha/api/siteverify {
+    content_by_lua_block {
+      local cjson = require "cjson"
+      local mock = cjson.decode(ngx.shared.test_data:get("recaptcha_mock"))
+      ngx.status = mock["status"]
+      ngx.print(mock["body"])
+      ngx.exit(ngx.HTTP_OK)
+    }
+  }
+
   location = / {
     echo -n "Test Home Page";
   }

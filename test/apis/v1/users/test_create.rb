@@ -785,6 +785,13 @@ class Test::Apis::V1::Users::TestCreate < Minitest::Test
       :body => MultiJson.dump(:user => attributes),
     }))
     assert_response_code(422, response)
+    data = MultiJson.load(response.body)
+    assert_equal({
+      "errors" => [{
+        "code" => "UNEXPECTED_ERROR",
+        "message" => "An unexpected error occurred during signup. Please try again or contact us for assistance.",
+      }],
+    }, data)
   end
 
   def test_accepts_empty_origin_for_admins

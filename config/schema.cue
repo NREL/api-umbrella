@@ -369,8 +369,17 @@ import "path"
     default_host?: string
     send_notify_email?: bool
     admin_notify_email?: string
+    #scheme: "http" | "https"
+    recaptcha_scheme: #scheme | *"https"
+    recaptcha_host: string | *"www.google.com"
+    recaptcha_port: uint16 | *443
     recaptcha_v2_secret_key?: string
+    recaptcha_v2_required: bool | *false
+    recaptcha_v2_required_origin_regex?: string
     recaptcha_v3_secret_key?: string
+    recaptcha_v3_required: bool | *false
+    recaptcha_v3_required_score: float | *0.9
+    recaptcha_v3_required_origin_regex?: string
   }
 
   static_site: {

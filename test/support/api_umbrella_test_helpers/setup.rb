@@ -297,6 +297,19 @@ module ApiUmbrellaTestHelpers
       end
     end
 
+    def override_config_merge(config, options = {})
+      self.config_lock.synchronize do
+        original_config = @@current_override_config.deep_dup
+
+        begin
+          override_config_set(original_config.deep_stringify_keys.deep_merge(config.deep_stringify_keys), options)
+          yield
+        ensure
+          override_config_set(original_config, options)
+        end
+      end
+    end
+
     def override_config_set(config, options = {})
       self.config_set_lock.synchronize do
         if(self.class.test_order == :parallel)
