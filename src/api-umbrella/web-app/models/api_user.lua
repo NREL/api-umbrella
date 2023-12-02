@@ -11,6 +11,7 @@ local hmac = require "api-umbrella.utils.hmac"
 local is_array = require "api-umbrella.utils.is_array"
 local is_hash = require "api-umbrella.utils.is_hash"
 local json_array_fields = require "api-umbrella.web-app.utils.json_array_fields"
+local json_encode = require "api-umbrella.utils.json_encode"
 local json_null_default = require "api-umbrella.web-app.utils.json_null_default"
 local lyaml = require "lyaml"
 local model_ext = require "api-umbrella.web-app.utils.model_ext"
@@ -381,6 +382,22 @@ ApiUser = model_ext.new_class("api_users", {
       model_ext.add_error(errors, "metadata_yaml_string", t("Metadata"), data["_metadata_yaml_string_parse_error"])
     end
 
+    if data["registration_options"] and not is_hash(data["registration_options"]) and data["registration_options"] ~= db_null then
+      model_ext.add_error(errors, "registration_options", t("Registration options"), t("unexpected type (must be a hash)"))
+    end
+
+    if data["registration_options"] and is_hash(data["registration_options"]) and data["registration_options"] ~= db_null and string.len(json_encode(data["registration_options"])) > 4000 then
+      model_ext.add_error(errors, "registration_options", t("Registration options"), t("is too long"))
+    end
+
+    if data["registration_input_options"] and not is_hash(data["registration_input_options"]) and data["registration_input_options"] ~= db_null then
+      model_ext.add_error(errors, "registration_input_options", t("Registration input options"), t("unexpected type (must be a hash)"))
+    end
+
+    if data["registration_input_options"] and is_hash(data["registration_input_options"]) and data["registration_input_options"] ~= db_null and string.len(json_encode(data["registration_input_options"])) > 4000 then
+      model_ext.add_error(errors, "registration_input_options", t("Registration input options"), t("is too long"))
+    end
+
     return errors
   end,
 
@@ -395,6 +412,14 @@ ApiUser = model_ext.new_class("api_users", {
 
     if is_array(values["registration_recaptcha_v3_error_codes"]) and values["registration_recaptcha_v3_error_codes"] ~= db_null then
       values["registration_recaptcha_v3_error_codes"] = db_raw(pg_encode_array(values["registration_recaptcha_v3_error_codes"]))
+    end
+
+    if is_hash(values["registration_options"]) and values["registration_options"] ~= db_null then
+      values["registration_options"] = db_raw(pg_encode_json(values["registration_options"]))
+    end
+
+    if is_hash(values["registration_input_options"]) and values["registration_input_options"] ~= db_null then
+      values["registration_input_options"] = db_raw(pg_encode_json(values["registration_input_options"]))
     end
   end,
 

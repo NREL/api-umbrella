@@ -1495,4 +1495,13 @@ return {
     db.query("COMMIT")
   end,
 
+  [1701483732] = function()
+    db.query("BEGIN")
+
+    db.query("ALTER TABLE api_users ADD COLUMN registration_options jsonb")
+    db.query("ALTER TABLE api_users ADD COLUMN registration_input_options jsonb")
+
+    db.query(grants_sql)
+    db.query("COMMIT")
+  end,
 }

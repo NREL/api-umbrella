@@ -299,6 +299,12 @@ function _M.create(self)
     user_params["registration_source"] = "api"
   end
   user_params["registration_key_creator_api_user_id"] = request_headers["x-api-user-id"]
+  if not is_empty(options) then
+    user_params["registration_options"] = options
+  end
+  if not is_empty(self.params["options"]) then
+    user_params["registration_input_options"] = self.params["options"]
+  end
 
   -- If email verification is enabled, then create the record and mark its
   -- email_verified field as true. Since the API key won't be part of the API

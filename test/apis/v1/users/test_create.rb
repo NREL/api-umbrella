@@ -807,6 +807,129 @@ class Test::Apis::V1::Users::TestCreate < Minitest::Test
     assert_response_code(201, response)
   end
 
+  def test_registration_options_not_set
+    response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(non_admin_key_creator_api_key).deep_merge({
+      :headers => { "Content-Type" => "application/json" },
+      :body => MultiJson.dump({
+        :user => FactoryBot.attributes_for(:api_user),
+      }),
+    }))
+    assert_response_code(201, response)
+
+    data = MultiJson.load(response.body)
+    user = ApiUser.find(data["user"]["id"])
+    assert_equal({
+      "contact_url" => "https://localhost/contact/",
+      "site_name" => "API Umbrella",
+    }, user.registration_options)
+    assert_nil(user.registration_input_options)
+  end
+
+  def test_registration_options_empty
+    response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(non_admin_key_creator_api_key).deep_merge({
+      :headers => { "Content-Type" => "application/json" },
+      :body => MultiJson.dump({
+        :user => FactoryBot.attributes_for(:api_user),
+        :options => {},
+      }),
+    }))
+    assert_response_code(201, response)
+
+    data = MultiJson.load(response.body)
+    user = ApiUser.find(data["user"]["id"])
+    assert_equal({
+      "contact_url" => "https://localhost/contact/",
+      "site_name" => "API Umbrella",
+    }, user.registration_options)
+    assert_nil(user.registration_input_options)
+  end
+
+  def test_registration_options_set
+    response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(non_admin_key_creator_api_key).deep_merge({
+      :headers => { "Content-Type" => "application/json" },
+      :body => MultiJson.dump({
+        :user => FactoryBot.attributes_for(:api_user),
+        :options => {
+          :foo => "bar",
+          :send_welcome_email => true,
+          :contact_url => "example@#{unique_test_hostname}",
+          :email_from_address => "example@127.0.0.1",
+        },
+      }),
+    }))
+    assert_response_code(201, response)
+
+    data = MultiJson.load(response.body)
+    user = ApiUser.find(data["user"]["id"])
+    assert_equal({
+      "foo" => "bar",
+      "send_welcome_email" => true,
+      "contact_url" => "https://localhost/contact/",
+      "email_from_address" => "example@127.0.0.1",
+      "site_name" => "API Umbrella",
+    }, user.registration_options)
+    assert_equal({
+      "foo" => "bar",
+      "send_welcome_email" => true,
+      "contact_url" => "example@#{unique_test_hostname}",
+      "email_from_address" => "example@127.0.0.1",
+    }, user.registration_input_options)
+  end
+
+  def test_registration_options_below_length_limit
+    response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(non_admin_key_creator_api_key).deep_merge({
+      :headers => { "Content-Type" => "application/json" },
+      :body => MultiJson.dump({
+        :user => FactoryBot.attributes_for(:api_user),
+        :options => {
+          :foo => "a" * 3900,
+        },
+      }),
+    }))
+    assert_response_code(201, response)
+
+    data = MultiJson.load(response.body)
+    user = ApiUser.find(data["user"]["id"])
+    assert_equal({
+      "foo" => "a" * 3900,
+      "contact_url" => "https://localhost/contact/",
+      "site_name" => "API Umbrella",
+    }, user.registration_options)
+    assert_equal({
+      "foo" => "a" * 3900,
+    }, user.registration_input_options)
+  end
+
+  def test_registration_options_too_long
+    response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(non_admin_key_creator_api_key).deep_merge({
+      :headers => { "Content-Type" => "application/json" },
+      :body => MultiJson.dump({
+        :user => FactoryBot.attributes_for(:api_user),
+        :options => {
+          :foo => "a" * 4000,
+        },
+      }),
+    }))
+    assert_response_code(422, response)
+    data = MultiJson.load(response.body)
+    assert_equal({
+      "errors" => [
+        {
+          "code" => "INVALID_INPUT",
+          "field" => "registration_options",
+          "message" => "is too long",
+          "full_message" => "Registration options: is too long",
+        },
+        {
+          "code" => "INVALID_INPUT",
+          "field" => "registration_input_options",
+          "message" => "is too long",
+          "full_message" => "Registration input options: is too long",
+        },
+      ],
+    }, data)
+  end
+
   private
 
   def non_admin_key_creator_api_key

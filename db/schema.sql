@@ -1103,7 +1103,9 @@ CREATE TABLE api_umbrella.api_users (
     registration_recaptcha_v3_action character varying(255),
     registration_recaptcha_v3_error_codes character varying(50)[],
     registration_recaptcha_v2_hostname character varying(255),
-    registration_recaptcha_v3_hostname character varying(255)
+    registration_recaptcha_v3_hostname character varying(255),
+    registration_options jsonb,
+    registration_input_options jsonb
 );
 
 
@@ -2821,3 +2823,4 @@ INSERT INTO api_umbrella.lapis_migrations (name) VALUES ('1699559696');
 INSERT INTO api_umbrella.lapis_migrations (name) VALUES ('1699650325');
 INSERT INTO api_umbrella.lapis_migrations (name) VALUES ('1700281762');
 INSERT INTO api_umbrella.lapis_migrations (name) VALUES ('1700346585');
+INSERT INTO api_umbrella.lapis_migrations (name) VALUES ('1701483732');
