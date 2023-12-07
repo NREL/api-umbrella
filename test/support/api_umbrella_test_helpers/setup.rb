@@ -354,6 +354,43 @@ module ApiUmbrellaTestHelpers
           end
         end
 
+        # If trying to test what would happen to output to the "console" output
+        # (instead of log files), we need to be a little careful for a few
+        # reasons and cleanup and restart extra things, since this is not a
+        # change we would normally expect to happen without a full restart.
+        if previous_override_config.dig("log", "destination") ||
+            @@current_override_config.dig("log", "destination") ||
+
+            # These log files are symlinked to stdout or stderr by the perp init
+            # scripts, so when switching between these log destinations, we need
+            # to make sure to clean these up when testing different approaches,
+            # since otherwise it might leave symlinked files in place when
+            # switching back to file output, which would lead to the output going
+            # to unexpected places.
+            FileUtils.rm_f(File.join($config["log_dir"], "elasticsearch-aws-signing-proxy/access.log"))
+          FileUtils.rm_f(File.join($config["log_dir"], "nginx-web-app/access.log"))
+          FileUtils.rm_f(File.join($config["log_dir"], "nginx/access.log"))
+          FileUtils.rm_f(File.join($config["log_dir"], "rsyslog/elasticsearch_error.log"))
+          FileUtils.rm_f(File.join($config["log_dir"], "trafficserver/access.log"))
+          FileUtils.rm_f(File.join($config["log_dir"], "trafficserver/diags.log"))
+          FileUtils.rm_f(File.join($config["log_dir"], "trafficserver/manager.log"))
+          FileUtils.rm_f(File.join($config["log_dir"], "trafficserver/traffic.out"))
+
+          # Do a full restart of the affected services to ensure they pick up
+          # these changes. However, note that this may still not be a great
+          # test of console output, since perp will continue to output "stdout"
+          # and "stderr" of the processes to the "current" log file. That's not
+          # how it would behave if things were more fully restarted, but I
+          # think it suffices for testing the differences in the test
+          # environment for now.
+          self.api_umbrella_process.restart_services([
+            "trafficserver",
+            "rsyslog",
+            "nginx",
+            "nginx-web-app",
+          ], options)
+        end
+
         # Restart trafficserver when changing the configuration settings that
         # require a full trafficserver restart.
         if(

@@ -7,6 +7,7 @@ class Test::Processes::TestRsyslog < Minitest::Test
   def setup
     super
     setup_server
+    @elasticsearch_error_log_path = File.join($config["log_dir"], "rsyslog/elasticsearch_error.log")
   end
 
   # To make sure rsyslog doesn't leak memory while logging requests:
@@ -48,6 +49,46 @@ class Test::Processes::TestRsyslog < Minitest::Test
     assert_equal(warmed_error_log_size, final_error_log_size)
   end
 
+  def test_elasticsearch_error_log
+    FileUtils.rm_f(@elasticsearch_error_log_path)
+
+    make_elasticsearch_config_invalid do
+      response = Typhoeus.get("http://127.0.0.1:9080/api/hello", http_options)
+      assert_response_code(200, response)
+
+      Timeout.timeout(30) do
+        loop do
+          break if elasticsearch_error_log_size > 0
+        end
+      end
+
+      # Expect the failed message in the log file.
+      log = File.read(@elasticsearch_error_log_path)
+      assert_match("strict_dynamic_mapping_exception", log)
+    end
+  end
+
+  def test_elasticsearch_error_log_to_console
+    override_config({
+      "log" => {
+        "destination" => "console",
+      },
+    }) do
+      make_elasticsearch_config_invalid do
+        log_tail = LogTail.new("rsyslog/current")
+
+        response = Typhoeus.get("http://127.0.0.1:9080/api/hello", http_options)
+        assert_response_code(200, response)
+
+        # Expect the failed message in the "current" log file, which is
+        # actually what would be outputting to the real console if things were
+        # started in this console mode.
+        log = log_tail.read_until(/strict_dynamic_mapping_exception/, timeout: 30)
+        assert_match("strict_dynamic_mapping_exception", log)
+      end
+    end
+  end
+
   private
 
   def make_requests(count)
@@ -85,11 +126,31 @@ class Test::Processes::TestRsyslog < Minitest::Test
 
   def elasticsearch_error_log_size
     size = 0
-    path = File.join($config["log_dir"], "rsyslog/elasticsearch_error.log")
-    if(File.exist?(path))
-      size = File.size(path)
+    if(File.exist?(@elasticsearch_error_log_path))
+      size = File.size(@elasticsearch_error_log_path)
     end
 
     size
+  end
+
+  def make_elasticsearch_config_invalid
+    # Make a temporary change to the rsyslog configuration to make the output
+    # invalid.
+    conf_path = File.join($config["etc_dir"], "rsyslog.conf")
+    content = File.read(conf_path)
+    FileUtils.mv(conf_path, "#{conf_path}.bak")
+
+    # Trigger elasticsearch logging errors by using an invalid template.
+    content.gsub!(/^template\(name="elasticsearch-json-record".*$/, 'template(name="elasticsearch-json-record" type="string" string="{\"msgnum\":\"x%msg:F,58:2%\"}")')
+
+    # Write the new temp config file and restart rsyslog.
+    File.write(conf_path, content)
+    api_umbrella_process.perp_restart("rsyslog")
+
+    yield
+  ensure
+    # Restore the original config file and restart.
+    FileUtils.mv("#{conf_path}.bak", conf_path)
+    api_umbrella_process.perp_restart("rsyslog")
   end
 end
