@@ -14,23 +14,6 @@ def capybara_register_driver(driver_name, options = {})
     root_dir = File.join(ApiUmbrellaTestHelpers::Process::TEST_RUN_ROOT, "capybara")
     FileUtils.mkdir_p(root_dir)
 
-    service_options = {}
-    service_args = [
-      "--log_path=#{File.join(root_dir, "#{driver_name}.log")}",
-      "--verbose",
-    ]
-
-    output, status = Open3.capture2e("which", "chromedriver")
-    if status.success?
-      service_options[:path] = output.strip
-    else
-      raise "chromedriver not found: #{output}"
-    end
-
-    service = Selenium::WebDriver::Service.chrome(**service_options.merge({
-      :args => service_args,
-    }))
-
     driver_options = Selenium::WebDriver::Chrome::Options.new.tap do |opts|
       opts.add_argument "--headless=new"
 
@@ -46,7 +29,6 @@ def capybara_register_driver(driver_name, options = {})
       opts.add_argument "--user-agent=#{ApiUmbrellaTestHelpers::AdminAuth::STATIC_USER_AGENT}"
 
       # Allow for usage in Docker.
-      opts.add_argument "--disable-setuid-sandbox"
       opts.add_argument "--no-sandbox"
 
       # Set the Accept-Language header used in tests.
@@ -59,6 +41,13 @@ def capybara_register_driver(driver_name, options = {})
 
       # Enable web socket support for BiDi LogInspector support below.
       opts.web_socket_url = true
+    end
+
+    service = Selenium::WebDriver::Chrome::Service.new.tap do |opts|
+      opts.args = [
+        "--log_path=#{File.join(root_dir, "#{driver_name}.log")}",
+        "--verbose",
+      ]
     end
 
     driver = Capybara::Selenium::Driver.new(app, browser: :chrome, options: driver_options, service: service)
@@ -83,9 +72,6 @@ def capybara_register_driver(driver_name, options = {})
       warn "#{Rainbow("JavaScript [#{log.fetch("level")}]:").color(:yellow).bright} #{log.fetch("text")}\n    #{Rainbow(log.inspect).color(:silver)}"
     end
 
-    # Set download path for Chrome < 77
-    driver.browser.download_path = ApiUmbrellaTestHelpers::Downloads::DOWNLOADS_ROOT
-
     driver
   end
 
@@ -102,8 +88,8 @@ def capybara_register_driver(driver_name, options = {})
   end
 end
 
-capybara_register_driver(:selenium_chrome_headless)
-Capybara.default_driver = :selenium_chrome_headless
+capybara_register_driver(:selenium_chromium_headless)
+Capybara.default_driver = :selenium_chromium_headless
 Capybara.default_max_wait_time = 5
 Capybara.run_server = false
 Capybara.app_host = "https://127.0.0.1:9081"

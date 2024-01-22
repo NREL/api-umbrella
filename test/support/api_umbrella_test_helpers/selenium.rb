@@ -36,7 +36,7 @@ module ApiUmbrellaTestHelpers
     end
 
     def selenium_use_language_driver(language)
-      driver_name = :"selenium_chrome_headless_language_#{language}"
+      driver_name = :"selenium_chromium_headless_language_#{language}"
       unless Capybara.drivers[driver_name]
         capybara_register_driver(driver_name, {
           :lang => language,
