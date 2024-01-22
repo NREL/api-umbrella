@@ -6,7 +6,7 @@ ruby "~> 3.1"
 gem "thor", "~> 1.3.0"
 
 # Tests
-gem "minitest", "~> 5.20.0"
+gem "minitest", "~> 5.21.2"
 
 # CLI helper for running tests
 gem "minitest-sprint", "~> 1.2.0"
@@ -22,7 +22,7 @@ gem "minitest-ci", "~> 3.4.0"
 
 # Ruby lint/style checker
 gem "rubocop", "~> 1.4", :require => false
-gem "rubocop-minitest", "~> 0.33.0", :require => false
+gem "rubocop-minitest", "~> 0.34.5", :require => false
 
 # Running background processes
 gem "childprocess"

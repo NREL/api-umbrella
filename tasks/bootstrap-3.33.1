@@ -5,10 +5,10 @@ root_dir="$(cd "$(dirname "$(dirname "${BASH_SOURCE[0]}")")" && pwd)"
 # shellcheck source=tasks/helpers.sh
 source "$root_dir/tasks/helpers.sh"
 
-task_version="3.32.0"
-task_hash="e9dbb7acbd5c1676b3c49a85a0244208de827cc6ca368e10c2f48c4184b57ccf"
+task_version="3.33.1"
+task_hash="c15f5f754d835d17835dca66e65aaf3cc859d0c3aaf0334bd338d8a31adc55bc"
 if [ "$TARGETARCH" == "arm64" ]; then
-  task_hash="be4db4fa6c7b3cb986fb5517435d64f6ea954c0495e7b51a9914bd82c4bc27e6"
+  task_hash="a99a8e18c7c7733488713a3ce37b18cfaeea34faa4acd010f7707f5409a5bacc"
 fi
 
 task_working_dir

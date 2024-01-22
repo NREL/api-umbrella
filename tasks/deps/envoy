@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-envoy_version="1.28.0"
+envoy_version="1.29.0"
 
 set -e -u -x
 source ./tasks/helpers.sh
