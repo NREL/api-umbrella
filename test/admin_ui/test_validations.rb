@@ -54,9 +54,12 @@ class Test::AdminUi::TestValidations < Minitest::Capybara::Test
     refute_selector(".has-error")
     refute_selector(".invalid-feedback")
 
-    id = find_field("E-mail")[:id]
-    page.execute_script("document.getElementById('#{id}').focus(); document.getElementById('#{id}').blur()")
+    field = find_field("E-mail")
+    field.click
+    refute_selector(".has-error")
+    refute_selector(".invalid-feedback")
 
+    field.send_keys :tab
     assert_selector(".has-error", :count => 1)
     assert_selector(".invalid-feedback", :count => 1)
   end
