@@ -32,7 +32,7 @@ def capybara_register_driver(driver_name, options = {})
     }))
 
     driver_options = Selenium::WebDriver::Chrome::Options.new.tap do |opts|
-      opts.add_argument "--headless"
+      opts.add_argument "--headless=new"
 
       # Allow connections to our self-signed SSL localhost test server.
       opts.add_argument "--allow-insecure-localhost"
