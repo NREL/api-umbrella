@@ -18,7 +18,8 @@ class Test::Apis::V1::AdminPermissions::TestIndex < Minitest::Test
       "Analytics",
       "API Users - View",
       "API Users - Manage",
-      "Admin Accounts - View & Manage",
+      "Admin Accounts - View",
+      "Admin Accounts - Manage",
       "API Backend Configuration - View & Manage",
       "API Backend Configuration - Publish",
     ], permission_names)

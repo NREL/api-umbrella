@@ -42,9 +42,9 @@ class Test::AdminUi::TestPermissionsNavigation < Minitest::Capybara::Test
     ])
   end
 
-  def test_admin_manage_permitted
+  def test_admin_view_permitted
     admin = FactoryBot.create(:limited_admin, :groups => [
-      FactoryBot.create(:google_admin_group, :admin_manage_permission),
+      FactoryBot.create(:google_admin_group, :admin_view_permission),
     ])
     admin_login(admin)
 
@@ -58,6 +58,28 @@ class Test::AdminUi::TestPermissionsNavigation < Minitest::Capybara::Test
       "Permissions Management",
       "API Scopes",
       "Admin Groups",
+    ])
+  end
+
+  def test_admin_view_forbidden
+    admin = FactoryBot.create(:limited_admin, :groups => [
+      FactoryBot.create(:google_admin_group, :permission_ids => []),
+    ])
+    admin_login(admin)
+
+    assert_nav([
+      "API Umbrella",
+    ])
+  end
+
+  def test_admin_manage_permitted
+    admin = FactoryBot.create(:limited_admin, :groups => [
+      FactoryBot.create(:google_admin_group, :admin_manage_permission),
+    ])
+    admin_login(admin)
+
+    assert_nav([
+      "API Umbrella",
     ])
   end
 

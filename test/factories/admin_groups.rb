@@ -7,6 +7,7 @@ FactoryBot.define do
         "analytics",
         "user_view",
         "user_manage",
+        "admin_view",
         "admin_manage",
         "backend_manage",
         "backend_publish",
@@ -29,8 +30,16 @@ FactoryBot.define do
       permission_ids { ["user_view", "user_manage"] }
     end
 
+    trait :admin_view_permission do
+      permission_ids { ["admin_view"] }
+    end
+
     trait :admin_manage_permission do
       permission_ids { ["admin_manage"] }
+    end
+
+    trait :admin_view_and_manage_permission do
+      permission_ids { ["admin_view", "admin_manage"] }
     end
 
     trait :backend_manage_permission do

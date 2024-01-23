@@ -14,7 +14,7 @@ function _M.authorized_query_scope(current_admin, permission_id)
   end
 
   if not permission_id then
-    permission_id = "admin_manage"
+    permission_id = "admin_view"
   end
 
   local api_scope_ids = current_admin:nested_api_scope_ids_with_permission(permission_id)
@@ -46,7 +46,7 @@ function _M.authorized_query_scope(current_admin, permission_id)
   end
 end
 
-function _M.is_authorized_modify(current_admin, data, permission_id)
+function _M.is_authorized_show(current_admin, data, permission_id)
   assert(current_admin)
   assert(data)
 
@@ -59,7 +59,7 @@ function _M.is_authorized_modify(current_admin, data, permission_id)
   end
 
   if not permission_id then
-    permission_id = "admin_manage"
+    permission_id = "admin_view"
   end
 
   local all_groups_allowed = false
@@ -84,7 +84,11 @@ function _M.is_authorized_modify(current_admin, data, permission_id)
 end
 
 function _M.authorize_modify(current_admin, data, permission_id)
-  local allowed = _M.is_authorized_modify(current_admin, data, permission_id)
+  if not permission_id then
+    permission_id = "admin_manage"
+  end
+
+  local allowed = _M.is_authorized_show(current_admin, data, permission_id)
   if allowed then
     return true
   else
@@ -94,11 +98,11 @@ end
 
 function _M.authorize_show(current_admin, data, permission_id)
   -- Allow admins to always view their own record, even if they don't have the
-  -- admin_manage privilege (so they can view their admin token).
+  -- admin_view privilege (so they can view their admin token).
   --
   -- TODO: An admin should also be able to update their own password if using
   -- local password authentication, but that is not yet implemented.
-  local allowed =  _M.is_authorized_modify(current_admin, data, permission_id) or (current_admin.id and data["id"] and current_admin.id == data["id"])
+  local allowed =  _M.is_authorized_show(current_admin, data, permission_id) or (current_admin.id and data["id"] and current_admin.id == data["id"])
   if allowed then
     return true
   else

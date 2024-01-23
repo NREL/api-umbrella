@@ -46,7 +46,8 @@ class Test::AdminUi::TestAdminGroups < Minitest::Capybara::Test
     assert_checked_field("Analytics", :visible => :all)
     assert_checked_field("API Users - View", :visible => :all)
     assert_checked_field("API Users - Manage", :visible => :all)
-    assert_checked_field("Admin Accounts - View & Manage", :visible => :all)
+    assert_checked_field("Admin Accounts - View", :visible => :all)
+    assert_checked_field("Admin Accounts - Manage", :visible => :all)
     assert_checked_field("API Backend Configuration - View & Manage", :visible => :all)
     assert_checked_field("API Backend Configuration - Publish", :visible => :all)
 
@@ -65,6 +66,7 @@ class Test::AdminUi::TestAdminGroups < Minitest::Capybara::Test
       "analytics",
       "user_view",
       "user_manage",
+      "admin_view",
       "admin_manage",
       "backend_manage",
     ].sort, admin_group.permission_ids.sort)

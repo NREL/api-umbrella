@@ -13,7 +13,7 @@ function _M.authorized_query_scope(current_admin, permission_id)
   end
 
   if not permission_id then
-    permission_id = "admin_manage"
+    permission_id = "admin_view"
   end
 
   local api_scope_ids = current_admin:nested_api_scope_ids_with_permission(permission_id)
@@ -40,7 +40,7 @@ function _M.authorize_show(current_admin, data, permission_id)
   end
 
   if not permission_id then
-    permission_id = "admin_manage"
+    permission_id = "admin_view"
   end
 
   local any_scopes_allowed = false
@@ -59,6 +59,12 @@ function _M.authorize_show(current_admin, data, permission_id)
   end
 end
 
-_M.authorize_modify = _M.authorize_show
+function _M.authorize_modify(current_admin, data, permission_id)
+  if not permission_id then
+    permission_id = "admin_manage"
+  end
+
+  _M.authorize_show(current_admin, data, permission_id)
+end
 
 return _M

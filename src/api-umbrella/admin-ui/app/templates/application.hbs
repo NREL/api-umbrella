@@ -17,14 +17,14 @@
             </div>
           </li>
         {{/if}}
-        {{#if (or this.currentAdmin.permissions.user_view this.currentAdmin.permissions.admin_manage)}}
+        {{#if (or this.currentAdmin.permissions.user_view this.currentAdmin.permissions.admin_view)}}
           <li class="nav-item dropdown nav-users">
             <a href="#" class="nav-link dropdown-toggle" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">{{t "Users"}}</a>
             <div class="dropdown-menu">
               {{#if this.currentAdmin.permissions.user_view}}
                 <LinkTo @route="api_users" class="dropdown-item"><FaIcon @icon="user" @fixedWidth={{true}} /> {{t "API Users"}}</LinkTo>
               {{/if}}
-              {{#if this.currentAdmin.permissions.admin_manage}}
+              {{#if this.currentAdmin.permissions.admin_view}}
                 <LinkTo @route="admins" class="dropdown-item"><FaIcon @icon="user" @fixedWidth={{true}} /> {{t "Admin Accounts"}}</LinkTo>
                 <div class="dropdown-divider"></div>
                 <div role="presentation" class="dropdown-header">{{t "Permissions Management"}}</div>

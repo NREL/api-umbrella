@@ -58,6 +58,7 @@ class Test::Apis::Admin::TestAuth < Minitest::Test
 
     assert_equal([
       "admin_manage",
+      "admin_view",
       "analytics",
       "backend_manage",
       "backend_publish",
@@ -83,6 +84,7 @@ class Test::Apis::Admin::TestAuth < Minitest::Test
   def test_limited_admin_permissions
     permissions = [
       "admin_manage",
+      "admin_view",
       "analytics",
       "backend_manage",
       "backend_publish",

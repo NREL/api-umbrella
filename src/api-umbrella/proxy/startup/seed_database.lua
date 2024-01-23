@@ -298,19 +298,24 @@ local function seed_admin_permissions()
       display_order = 3,
     },
     {
-      id = "admin_manage",
-      name = "Admin Accounts - View & Manage",
+      id = "admin_view",
+      name = "Admin Accounts - View",
       display_order = 4,
+    },
+    {
+      id = "admin_manage",
+      name = "Admin Accounts - Manage",
+      display_order = 5,
     },
     {
       id = "backend_manage",
       name = "API Backend Configuration - View & Manage",
-      display_order = 5,
+      display_order = 6,
     },
     {
       id = "backend_publish",
       name = "API Backend Configuration - Publish",
-      display_order = 6,
+      display_order = 7,
     },
   }
 

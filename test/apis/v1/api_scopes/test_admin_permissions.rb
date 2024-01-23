@@ -10,9 +10,14 @@ class Test::Apis::V1::ApiScopes::TestAdminPermissions < Minitest::Test
     setup_server
   end
 
-  def test_default_permissions
+  def test_default_admin_view_permissions
     factory = :google_api_scope
-    assert_default_admin_permissions(factory, :required_permissions => ["admin_manage"])
+    assert_default_admin_permissions(factory, :required_permissions => ["admin_view"])
+  end
+
+  def test_default_admin_manage_permissions
+    factory = :google_api_scope
+    assert_default_admin_permissions(factory, :required_permissions => ["admin_view", "admin_manage"])
   end
 
   def test_forbids_updating_permitted_scopes_with_unpermitted_values
@@ -68,9 +73,16 @@ class Test::Apis::V1::ApiScopes::TestAdminPermissions < Minitest::Test
   def assert_admin_permitted(factory, admin)
     assert_admin_permitted_index(factory, admin)
     assert_admin_permitted_show(factory, admin)
-    assert_admin_permitted_create(factory, admin)
-    assert_admin_permitted_update(factory, admin)
-    assert_admin_permitted_destroy(factory, admin)
+    permission_ids = admin.groups.map { |group| group.permission_ids }.flatten.uniq
+    if permission_ids.include?("admin_view") && !permission_ids.include?("admin_manage")
+      assert_admin_forbidden_create(factory, admin)
+      assert_admin_forbidden_update(factory, admin)
+      assert_admin_forbidden_destroy(factory, admin)
+    else
+      assert_admin_permitted_create(factory, admin)
+      assert_admin_permitted_update(factory, admin)
+      assert_admin_permitted_destroy(factory, admin)
+    end
   end
 
   def assert_admin_forbidden(factory, admin)

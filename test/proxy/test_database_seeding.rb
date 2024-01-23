@@ -65,12 +65,13 @@ class Test::Proxy::TestDatabaseSeeding < Minitest::Test
 
   def test_admin_permission_records
     permissions = AdminPermission.all
-    assert_equal(6, permissions.length)
+    assert_equal(7, permissions.length)
 
     assert_equal([
       "analytics",
       "user_view",
       "user_manage",
+      "admin_view",
       "admin_manage",
       "backend_manage",
       "backend_publish",
@@ -80,7 +81,8 @@ class Test::Proxy::TestDatabaseSeeding < Minitest::Test
       "Analytics",
       "API Users - View",
       "API Users - Manage",
-      "Admin Accounts - View & Manage",
+      "Admin Accounts - View",
+      "Admin Accounts - Manage",
       "API Backend Configuration - View & Manage",
       "API Backend Configuration - Publish",
     ].sort, permissions.map { |p| p.name }.sort)

@@ -1,7 +1,19 @@
 module ApiUmbrellaTestHelpers
   module AdminPermissions
     def assert_default_admin_permissions(factory, options)
+      # Define what all of the permissions would be except for the required one
+      # so we can test to ensure no other permissions grant privileges except
+      # the required ones.
       options[:except_required_permissions] = AdminPermission.pluck(:id) - options[:required_permissions]
+
+      # One exception is if the only required permission is admin_view, then
+      # when testing users without permissions, we don't want to include the
+      # admin_manage permission, since admin_manage also grants permissions to
+      # some actions admin_view normally would. We don't expect a user to have
+      # admin_manage without admin_view, so this should be okay.
+      if options[:required_permissions] == ["admin_view"]
+        options[:except_required_permissions] -= ["admin_manage"]
+      end
 
       assert_as_superuser(factory, options)
       assert_as_localhost_prefix_full_admin(factory, options)
