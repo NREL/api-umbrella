@@ -3,7 +3,7 @@
 
   <form {{on "submit" this.submitForm}}>
     <FieldsFor @model={{this.model}} @style="horizontal" as |f|>
-      <fieldset class="form-horizontal condensed">
+      <fieldset class="form-horizontal condensed" disabled={{this.isDisabled}}>
         {{f.text-field "name" label="Name"}}
         {{f.text-field "host" label="Host"}}
         {{f.text-field "pathPrefix" label="Path Prefix"}}
@@ -39,7 +39,9 @@
 
       <div class="row">
         <div class="col-sm-6">
-          <button type="submit" class="btn btn-lg btn-primary save-button"><span class="btn-label">Save</span><span class="btn-loading-label"><FaIcon @icon="sync-alt" @spin={{true}} />Saving...</span></button>
+          {{#unless this.isDisabled}}
+            <button type="submit" class="btn btn-lg btn-primary save-button"><span class="btn-label">Save</span><span class="btn-loading-label"><FaIcon @icon="sync-alt" @spin={{true}} />Saving...</span></button>
+          {{/unless}}
         </div>
         <div class="col-sm-6 record-details">
           {{#if this.model.id}}
@@ -49,9 +51,11 @@
         </div>
       </div>
       {{#if this.model.id}}
-        <div class="form-extra-actions">
-          <a href="#" class="remove-action" {{action "delete"}}><FaIcon @icon="times" />Delete API Scope</a>
-        </div>
+        {{#unless this.isDisabled}}
+          <div class="form-extra-actions">
+            <a href="#" class="remove-action" {{action "delete"}}><FaIcon @icon="times" />Delete API Scope</a>
+          </div>
+        {{/unless}}
       {{/if}}
     </FieldsFor>
   </form>

@@ -3,7 +3,7 @@
 
   <form {{on "submit" this.submitForm}}>
     <FieldsFor @model={{this.model}} @style="horizontal" as |f|>
-      <fieldset class="form-horizontal condensed">
+      <fieldset class="form-horizontal condensed" disabled={{this.isDisabled}}>
         {{f.text-field "name" label="Group Name"}}
         {{f.checkboxes-field "apiScopeIds" label="Scopes" options=this.apiScopeOptions}}
         {{f.checkboxes-field "permissionIds" label="Permissions" options=this.permissionOptions}}
@@ -25,7 +25,9 @@
 
       <div class="row">
         <div class="col-sm-6">
-          <button type="submit" class="btn btn-lg btn-primary save-button"><span class="btn-label">Save</span><span class="btn-loading-label"><FaIcon @icon="sync-alt" @spin={{true}} />Saving...</span></button>
+          {{#unless this.isDisabled}}
+            <button type="submit" class="btn btn-lg btn-primary save-button"><span class="btn-label">Save</span><span class="btn-loading-label"><FaIcon @icon="sync-alt" @spin={{true}} />Saving...</span></button>
+          {{/unless}}
         </div>
         <div class="col-sm-6 record-details">
           {{#if this.model.id}}
@@ -35,9 +37,11 @@
         </div>
       </div>
       {{#if this.model.id}}
-        <div class="form-extra-actions">
-          <a href="#" class="remove-action" {{action "delete"}}><FaIcon @icon="times" />Delete Admin Group</a>
-        </div>
+        {{#unless this.isDisabled}}
+          <div class="form-extra-actions">
+            <a href="#" class="remove-action" {{action "delete"}}><FaIcon @icon="times" />Delete Admin Group</a>
+          </div>
+        {{/unless}}
       {{/if}}
     </FieldsFor>
   </form>

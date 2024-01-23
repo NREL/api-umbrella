@@ -1,6 +1,7 @@
 // eslint-disable-next-line ember/no-classic-components
 import Component from '@ember/component';
 import { action, computed } from '@ember/object';
+import { reads } from '@ember/object/computed';
 import { inject } from '@ember/service';
 // eslint-disable-next-line ember/no-mixins
 import Save from 'api-umbrella-admin-ui/mixins/save';
@@ -24,10 +25,12 @@ export default class RecordForm extends Component.extend(Save) {
     { id: false, name: 'Disabled' },
   ];
 
-  @computed('session.data.authenticated.admin')
+  @reads('session.data.authenticated.admin')
+  currentAdmin;
+
+  @computed('currentAdmin.permissions.user_manage')
   get isDisabled() {
-    const currentAdmin = this.session.data.authenticated.admin;
-    return !currentAdmin.permissions.user_manage;
+    return !this.currentAdmin.permissions.user_manage;
   }
 
   @action

@@ -374,14 +374,6 @@ class Test::Apis::V1::Users::TestPermissions < Minitest::Test
     refute_equal(attributes["first_name"], record.first_name)
   end
 
-  def assert_admin_permitted_destroy(api_key, admin)
-    record = FactoryBot.create(:api_user)
-    initial_count = active_count
-    response = Typhoeus.delete("https://127.0.0.1:9081/api-umbrella/v1/users/#{record.id}.json", http_options(api_key, admin))
-    assert_response_code(204, response)
-    assert_equal(-1, active_count - initial_count)
-  end
-
   def assert_no_destroy(api_key, admin)
     record = FactoryBot.create(:api_user)
     initial_count = active_count

@@ -112,14 +112,14 @@ class Test::Apis::V1::AdminGroups::TestAdminPermissions < Minitest::Test
     assert_admin_permitted_index(factory, admin)
     assert_admin_permitted_show(factory, admin)
     permission_ids = admin.groups.map { |group| group.permission_ids }.flatten.uniq
-    if permission_ids.include?("admin_view") && !permission_ids.include?("admin_manage")
-      assert_admin_forbidden_create(factory, admin)
-      assert_admin_forbidden_update(factory, admin)
-      assert_admin_forbidden_destroy(factory, admin)
-    else
+    if admin.superuser? || permission_ids.include?("admin_manage")
       assert_admin_permitted_create(factory, admin)
       assert_admin_permitted_update(factory, admin)
       assert_admin_permitted_destroy(factory, admin)
+    else
+      assert_admin_forbidden_create(factory, admin)
+      assert_admin_forbidden_update(factory, admin)
+      assert_admin_forbidden_destroy(factory, admin)
     end
   end
 

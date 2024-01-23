@@ -54,8 +54,8 @@
         </fieldset>
       {{/if}}
 
-      {{#if this.currentAdmin.permissions.admin_manage}}
-        <fieldset class="form-horizontal condensed">
+      {{#if (or this.currentAdmin.permissions.admin_manage this.currentAdmin.permissions.admin_view)}}
+        <fieldset class="form-horizontal condensed" disabled={{this.isDisabled}}>
           <legend>Permissions</legend>
 
           {{f.checkboxes-field "groupIds" label=(t "Groups") options=this.groupOptions}}

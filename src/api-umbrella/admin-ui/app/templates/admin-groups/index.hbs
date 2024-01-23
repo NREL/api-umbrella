@@ -1,7 +1,9 @@
 <h1>Admin Groups</h1>
 
-<div class="button-actions button-actions-down">
-  <LinkTo @route="admin_groups.new" class="btn btn-primary"><FaIcon @icon="plus" /> Add New Admin Group</LinkTo>
-</div>
+{{#if this.currentAdmin.permissions.admin_manage}}
+  <div class="button-actions button-actions-down">
+    <LinkTo @route="admin_groups.new" class="btn btn-primary"><FaIcon @icon="plus" /> Add New Admin Group</LinkTo>
+  </div>
+{{/if}}
 
 <AdminGroups::IndexTable />

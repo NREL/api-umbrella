@@ -270,20 +270,47 @@ class Test::Apis::V1::Admins::TestAdminPermissions < Minitest::Test
     assert_equal(0, active_count - initial_count)
   end
 
+  def test_notes_only_visible_to_admin_managers_and_superusers
+    record = FactoryBot.create(:google_admin, :notes => "Private notes")
+
+    superuser_admin = FactoryBot.create(:admin)
+    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/admins/#{record.id}.json", http_options.deep_merge(admin_token(superuser_admin)))
+    assert_response_code(200, response)
+    data = MultiJson.load(response.body)
+    assert_equal("Private notes", data.fetch("admin").fetch("notes"))
+
+    manager_admin = FactoryBot.create(:limited_admin, :groups => [
+      FactoryBot.create(:google_admin_group, :admin_view_and_manage_permission),
+    ])
+    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/admins/#{record.id}.json", http_options.deep_merge(admin_token(manager_admin)))
+    assert_response_code(200, response)
+    data = MultiJson.load(response.body)
+    assert_equal("Private notes", data.fetch("admin").fetch("notes"))
+
+    viewer_admin = FactoryBot.create(:limited_admin, :groups => [
+      FactoryBot.create(:google_admin_group, :admin_view_permission),
+    ])
+    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/admins/#{record.id}.json", http_options.deep_merge(admin_token(viewer_admin)))
+    assert_response_code(200, response)
+    data = MultiJson.load(response.body)
+    refute_includes(data.fetch("admin").keys, "notes")
+    refute_includes("Private notes", response.body)
+  end
+
   private
 
   def assert_admin_permitted(factory, admin)
     assert_admin_permitted_index(factory, admin)
     assert_admin_permitted_show(factory, admin)
     permission_ids = admin.groups.map { |group| group.permission_ids }.flatten.uniq
-    if permission_ids.include?("admin_view") && !permission_ids.include?("admin_manage")
-      assert_admin_forbidden_create(factory, admin)
-      assert_admin_forbidden_update(factory, admin)
-      assert_admin_forbidden_destroy(factory, admin)
-    else
+    if admin.superuser? || permission_ids.include?("admin_manage")
       assert_admin_permitted_create(factory, admin)
       assert_admin_permitted_update(factory, admin)
       assert_admin_permitted_destroy(factory, admin)
+    else
+      assert_admin_forbidden_create(factory, admin)
+      assert_admin_forbidden_update(factory, admin)
+      assert_admin_forbidden_destroy(factory, admin)
     end
   end
 

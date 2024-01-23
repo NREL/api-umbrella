@@ -14,6 +14,9 @@ module ApiUmbrellaTestHelpers
       if options[:required_permissions] == ["admin_view"]
         options[:except_required_permissions] -= ["admin_manage"]
       end
+      if options[:required_permissions] == ["user_view"]
+        options[:except_required_permissions] -= ["user_manage"]
+      end
 
       assert_as_superuser(factory, options)
       assert_as_localhost_prefix_full_admin(factory, options)
@@ -68,7 +71,11 @@ module ApiUmbrellaTestHelpers
           ApiScope.find_or_create_by_instance!(FactoryBot.build(:localhost_root_api_scope, :path_prefix => "/z")),
         ]),
       ])
-      assert_admin_forbidden(factory, admin)
+      if options[:scopes_irrelevant]
+        assert_admin_permitted(factory, admin)
+      else
+        assert_admin_forbidden(factory, admin)
+      end
     end
 
     def assert_as_google_prefix_full_admin(factory, options)
@@ -119,7 +126,11 @@ module ApiUmbrellaTestHelpers
           ApiScope.find_or_create_by_instance!(FactoryBot.build(:google_api_scope, :path_prefix => "/googlez")),
         ]),
       ])
-      assert_admin_forbidden(factory, admin)
+      if options[:scopes_irrelevant]
+        assert_admin_permitted(factory, admin)
+      else
+        assert_admin_forbidden(factory, admin)
+      end
     end
 
     def assert_as_localhost_incomplete_host_full_admin(factory, options)
@@ -128,7 +139,11 @@ module ApiUmbrellaTestHelpers
           ApiScope.find_or_create_by_instance!(FactoryBot.build(:localhost_root_api_scope, :host => "localhos")),
         ]),
       ])
-      assert_admin_forbidden(factory, admin)
+      if options[:scopes_irrelevant]
+        assert_admin_permitted(factory, admin)
+      else
+        assert_admin_forbidden(factory, admin)
+      end
     end
 
     def assert_as_localhost_trailing_host_full_admin(factory, options)
@@ -137,7 +152,11 @@ module ApiUmbrellaTestHelpers
           ApiScope.find_or_create_by_instance!(FactoryBot.build(:localhost_root_api_scope, :host => "localhostz")),
         ]),
       ])
-      assert_admin_forbidden(factory, admin)
+      if options[:scopes_irrelevant]
+        assert_admin_permitted(factory, admin)
+      else
+        assert_admin_forbidden(factory, admin)
+      end
     end
 
     def assert_as_google_incomplete_host_full_admin(factory, options)
@@ -146,7 +165,11 @@ module ApiUmbrellaTestHelpers
           ApiScope.find_or_create_by_instance!(FactoryBot.build(:google_api_scope, :host => "localhos")),
         ]),
       ])
-      assert_admin_forbidden(factory, admin)
+      if options[:scopes_irrelevant]
+        assert_admin_permitted(factory, admin)
+      else
+        assert_admin_forbidden(factory, admin)
+      end
     end
 
     def assert_as_google_trailing_host_full_admin(factory, options)
@@ -155,7 +178,11 @@ module ApiUmbrellaTestHelpers
           ApiScope.find_or_create_by_instance!(FactoryBot.build(:google_api_scope, :host => "localhostz")),
         ]),
       ])
-      assert_admin_forbidden(factory, admin)
+      if options[:scopes_irrelevant]
+        assert_admin_permitted(factory, admin)
+      else
+        assert_admin_forbidden(factory, admin)
+      end
     end
 
     def assert_overlapping_scopes_as_localhost_and_google_full_admin(factory, options)
@@ -210,7 +237,11 @@ module ApiUmbrellaTestHelpers
           ApiScope.find_or_create_by_instance!(FactoryBot.build(:yahoo_api_scope)),
         ]),
       ])
-      assert_admin_forbidden(factory, admin)
+      if options[:scopes_irrelevant]
+        assert_admin_permitted(factory, admin)
+      else
+        assert_admin_forbidden(factory, admin)
+      end
     end
   end
 end

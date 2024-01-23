@@ -246,7 +246,6 @@ Admin = model_ext.new_class("admins", {
       username = json_null_default(self.username),
       email = json_null_default(self.email),
       name = json_null_default(self.name),
-      notes = json_null_default(self.notes),
       superuser = json_null_default(self.superuser),
       current_sign_in_provider = json_null_default(self.current_sign_in_provider),
       last_sign_in_provider = json_null_default(self.last_sign_in_provider),
@@ -275,7 +274,12 @@ Admin = model_ext.new_class("admins", {
       version = 1,
     }
 
-    if ngx.ctx.current_admin and ngx.ctx.current_admin.id == self.id then
+    local current_admin = ngx.ctx.current_admin
+    if current_admin and current_admin:allows_permission("admin_manage") then
+      data["notes"] = json_null_default(self.notes)
+    end
+
+    if current_admin and current_admin.id == self.id then
       data["authentication_token"] = self:authentication_token_decrypted()
     end
 
