@@ -1,4 +1,5 @@
 local ApiScope = require "api-umbrella.web-app.models.api_scope"
+local admin_group_policy = require "api-umbrella.web-app.policies.admin_group_policy"
 local admin_policy = require "api-umbrella.web-app.policies.admin_policy"
 local api_backend_policy = require "api-umbrella.web-app.policies.api_backend_policy"
 local bcrypt = require "bcrypt"
@@ -99,6 +100,14 @@ Admin = model_ext.new_class("admins", {
       foreign_key = "admin_id",
       association_foreign_key = "admin_group_id",
       order = "name",
+      transform_sql = function(sql)
+        local scope_sql = admin_group_policy.authorized_query_scope(ngx.ctx.current_admin)
+        if scope_sql then
+          return string.gsub(sql, " WHERE ", " WHERE " .. scope_sql .. " AND ", 1)
+        else
+          return sql
+        end
+      end,
     }),
   },
 

@@ -28,6 +28,28 @@ function _M.authorized_query_scope(current_admin, permission_id)
     -- scopes exist, and another, using an anti-join, to filter out any admin
     -- records that have any unauthorized API scopes (which ensures we only
     -- match admin records where *all* the API scopes are authorized).
+    local and_sql
+    if permission_id == "admin_view" then
+      and_sql = [[
+        AND EXISTS (
+          SELECT 1
+          FROM admin_groups_admins
+            INNER JOIN admin_groups_api_scopes ON admin_groups_admins.admin_group_id = admin_groups_api_scopes.admin_group_id
+          WHERE admins.id = admin_groups_admins.admin_id
+            AND admin_groups_api_scopes.api_scope_id IN ?
+        )
+      ]]
+    else
+      and_sql = [[
+        AND NOT EXISTS (
+          SELECT 1
+          FROM admin_groups_admins
+            INNER JOIN admin_groups_api_scopes ON admin_groups_admins.admin_group_id = admin_groups_api_scopes.admin_group_id
+          WHERE admins.id = admin_groups_admins.admin_id
+            AND admin_groups_api_scopes.api_scope_id IN ? NOT EQUAL TRUE
+        )
+      ]]
+    end
     return db.interpolate_query([[
       EXISTS (
         SELECT 1
@@ -35,14 +57,7 @@ function _M.authorized_query_scope(current_admin, permission_id)
           INNER JOIN admin_groups_api_scopes ON admin_groups_admins.admin_group_id = admin_groups_api_scopes.admin_group_id
         WHERE admins.id = admin_groups_admins.admin_id
       )
-      AND NOT EXISTS (
-        SELECT 1
-        FROM admin_groups_admins
-          INNER JOIN admin_groups_api_scopes ON admin_groups_admins.admin_group_id = admin_groups_api_scopes.admin_group_id
-        WHERE admins.id = admin_groups_admins.admin_id
-          AND admin_groups_api_scopes.api_scope_id IN ? IS NOT TRUE
-      )
-    ]], db.list(api_scope_ids))
+    ]] .. and_sql, db.list(api_scope_ids))
   end
 end
 
@@ -62,24 +77,25 @@ function _M.is_authorized_show(current_admin, data, permission_id)
     permission_id = "admin_view"
   end
 
+  local any_groups_allowed = false
   local all_groups_allowed = false
   if not is_empty(data["group_ids"]) then
     local authorized_api_scopes = invert_table(current_admin:nested_api_scope_ids_with_permission(permission_id))
     local api_scope_ids = AdminGroup.api_scope_ids_for_admin_group_ids(data["group_ids"])
+    all_groups_allowed = true
     for _, api_scope_id in ipairs(api_scope_ids) do
       if authorized_api_scopes[api_scope_id] then
-        all_groups_allowed = true
+        any_groups_allowed = true
       else
         all_groups_allowed = false
-        break
       end
     end
   end
 
-  if all_groups_allowed then
-    return true
+  if permission_id == "admin_view" then
+    return any_groups_allowed
   else
-    return false
+    return all_groups_allowed
   end
 end
 

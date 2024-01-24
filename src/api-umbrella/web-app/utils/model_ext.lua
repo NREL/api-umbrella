@@ -415,6 +415,10 @@ local function get_join_records(model_name, options, ids, include_foreign_key_id
     " WHERE " .. join_table .. "." .. foreign_key .. " IN ?" ..
     order_by
 
+  if options["transform_sql"] then
+    sql = options["transform_sql"](sql)
+  end
+
   local fields = table_name .. ".*"
   if include_foreign_key_id then
     fields = fields .. ", " .. join_table .. "." .. foreign_key .. " AS _foreign_key_id"
