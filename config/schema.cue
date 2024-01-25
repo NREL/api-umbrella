@@ -884,7 +884,8 @@ import "path"
   override_public_http_proto?: "http" | "https"
   override_public_https_proto?: "http" | "https"
 
-  contact_url?: string
+  contact_url: string | *"/contact/"
+  admin_contact_url: string | *"/contact/"
 
   http_proxy?: string
   https_proxy?: string

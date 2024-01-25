@@ -4,6 +4,8 @@
   <div class="button-actions button-actions-down">
     <LinkTo @route="admins.new" class="btn btn-primary"><FaIcon @icon="plus" /> Add New Admin</LinkTo>
   </div>
+{{else}}
+  <div class="alert alert-primary"><a href="{{this.session.data.authenticated.admin_contact_url}}">Contact us</a> to make adminstrator changes.</div>
 {{/if}}
 
 <Admins::IndexTable />

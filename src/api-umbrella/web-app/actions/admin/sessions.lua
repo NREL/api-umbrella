@@ -208,6 +208,7 @@ function _M.auth(self)
     response["authenticated"] = true
     response["analytics_timezone"] = json_null_default(config["analytics"]["timezone"])
     response["username_is_email"] = json_null_default(config["web"]["admin"]["username_is_email"])
+    response["admin_contact_url"] = json_null_default(config["admin_contact_url"])
     response["local_auth_enabled"] = json_null_default(local_auth_enabled)
     response["password_length_min"] = json_null_default(config["web"]["admin"]["password_length_min"])
     response["api_umbrella_version"] = json_null_default(API_UMBRELLA_VERSION)
