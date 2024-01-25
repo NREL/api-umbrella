@@ -288,6 +288,7 @@ local function set_computed_config(config)
   end
   if #config["dns_resolver"]["_nameservers_nginx"] > 0 then
     config["dns_resolver"]["_nameservers_nginx"] = table.concat(config["dns_resolver"]["_nameservers_nginx"], " ")
+    config["dns_resolver"]["_nameservers_trafficserver"] = config["dns_resolver"]["_nameservers_nginx"]
   else
     config["dns_resolver"]["_nameservers_nginx"] = nil
   end

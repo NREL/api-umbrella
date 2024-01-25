@@ -171,6 +171,27 @@ CONFIG proxy.config.http.response_server_enabled INT 0
 # that each host gets cached separately.
 CONFIG proxy.config.url_remap.pristine_host_hdr INT 1
 
+# Set the DNS nameservers used to potentially resolve a remote envoy layer.
+CONFIG proxy.config.dns.resolv_conf STRING NULL
+<% if config["dns_resolver"]["_nameservers_trafficserver"] then %>
+CONFIG proxy.config.dns.nameservers STRING <%= config["dns_resolver"]["_nameservers_trafficserver"] %>
+<% end %>
+
+<% if config["dns_resolver"]["allow_ipv6"] then %>
+CONFIG proxy.config.hostdb.ip_resolve STRING ipv4;ipv6;only
+<% else %>
+CONFIG proxy.config.hostdb.ip_resolve STRING ipv4;only
+<% end %>
+
+# Allow old DNS results to be used while new ones are fetched in the
+# background. Since we're only resolving the possible remote envoy host at this
+# layer, this just helps things remain up even if DNS goes down temporarily.
+CONFIG proxy.config.hostdb.serve_stale_for INT 5184000 # 60 days
+
+# For hosts that don't exist, remember the invalid DNS responses, since we
+# assume the Envoy resolution really shouldn't fail.
+CONFIG proxy.config.hostdb.fail.timeout INT 5184000 # 60 days
+
 # Use more standard round-robin for DNS results (rather than sticky).
 CONFIG proxy.config.hostdb.strict_round_robin INT 1
 
@@ -178,6 +199,11 @@ CONFIG proxy.config.hostdb.strict_round_robin INT 1
 # keepalive hangups.
 CONFIG proxy.config.net.sock_option_flag_in INT 3
 CONFIG proxy.config.net.sock_option_flag_out INT 3
+
+# Keepalive connections to backend Envoy server. Retain some idle connections
+# open to improve performance.
+CONFIG proxy.config.http.keep_alive_no_activity_timeout_out INT <%= config["router"]["api_backends"]["keepalive_idle_timeout"] %>
+CONFIG proxy.config.http.per_server.connection.min INT <%= config["router"]["api_backends"]["keepalive_connections"] %>
 
 <% if config["envoy"]["scheme"] == "https" then %>
 CONFIG proxy.config.ssl.client.verify.server.properties STRING ALL
