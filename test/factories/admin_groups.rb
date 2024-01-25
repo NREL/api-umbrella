@@ -55,14 +55,17 @@ FactoryBot.define do
     end
 
     factory :google_admin_group do
+      sequence(:name) { |n| "Google Admin Group #{n}" }
       api_scopes { [ApiScope.find_or_create_by_instance!(FactoryBot.build(:google_api_scope))] }
     end
 
     factory :yahoo_admin_group do
+      sequence(:name) { |n| "Yahoo Admin Group #{n}" }
       api_scopes { [ApiScope.find_or_create_by_instance!(FactoryBot.build(:yahoo_api_scope))] }
     end
 
     factory :google_and_yahoo_multi_scope_admin_group do
+      sequence(:name) { |n| "Google & Yahoo Admin Group #{n}" }
       api_scopes do
         [
           ApiScope.find_or_create_by_instance!(FactoryBot.build(:google_api_scope)),

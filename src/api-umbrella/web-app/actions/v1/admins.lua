@@ -63,7 +63,9 @@ function _M.index(self)
       "created_at",
       "updated_at",
     },
-    preload = { "groups" },
+    preload = {
+      "authorized_groups",
+    },
     csv_filename = "admins",
   })
 end

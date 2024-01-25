@@ -69,12 +69,12 @@ function _M.is_authorized_show(current_admin, data, permission_id)
     return true
   end
 
-  if data["superuser"] and data["superuser"] ~= false then
-    return false
-  end
-
   if not permission_id then
     permission_id = "admin_view"
+  end
+
+  if data["superuser"] and data["superuser"] ~= false and permission_id ~= "admin_view" then
+    return false
   end
 
   local any_groups_allowed = false

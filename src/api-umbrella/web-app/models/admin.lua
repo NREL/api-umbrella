@@ -100,6 +100,12 @@ Admin = model_ext.new_class("admins", {
       foreign_key = "admin_id",
       association_foreign_key = "admin_group_id",
       order = "name",
+    }),
+    model_ext.has_and_belongs_to_many("authorized_groups", "AdminGroup", {
+      join_table = "admin_groups_admins",
+      foreign_key = "admin_id",
+      association_foreign_key = "admin_group_id",
+      order = "name",
       transform_sql = function(sql)
         local scope_sql = admin_group_policy.authorized_query_scope(ngx.ctx.current_admin)
         if scope_sql then
@@ -178,26 +184,26 @@ Admin = model_ext.new_class("admins", {
     return decrypted
   end,
 
-  group_ids = function(self)
-    local group_ids = {}
-    local groups = self:get_groups()
+  authorized_group_ids = function(self)
+    local authorized_group_ids = {}
+    local groups = self:get_authorized_groups()
     for _, group in ipairs(groups) do
-      table.insert(group_ids, group.id)
+      table.insert(authorized_group_ids, group.id)
     end
 
-    return group_ids
+    return authorized_group_ids
   end,
 
-  group_names = function(self)
-    local group_names = {}
-    for _, group in ipairs(self:get_groups()) do
-      table.insert(group_names, group.name)
+  authorized_group_names = function(self)
+    local authorized_group_names = {}
+    for _, group in ipairs(self:get_authorized_groups()) do
+      table.insert(authorized_group_names, group.name)
     end
     if self.superuser then
-      table.insert(group_names, t("Superuser"))
+      table.insert(authorized_group_names, t("Superuser"))
     end
 
-    return group_names
+    return authorized_group_names
   end,
 
   group_permission_ids = function(self)
@@ -240,9 +246,9 @@ Admin = model_ext.new_class("admins", {
     return false
   end,
 
-  groups_as_json = function(self)
+  authorized_groups_as_json = function(self)
     local admin_groups = {}
-    for _, admin_group in ipairs(self:get_groups()) do
+    for _, admin_group in ipairs(self:get_authorized_groups()) do
       table.insert(admin_groups, admin_group:embedded_json())
     end
 
@@ -276,9 +282,9 @@ Admin = model_ext.new_class("admins", {
       updater = {
         username = json_null_default(self.updated_by_username),
       },
-      groups = json_null_default(self:groups_as_json()),
-      group_ids = json_null_default(self:group_ids()),
-      group_names = json_null_default(self:group_names()),
+      groups = json_null_default(self:authorized_groups_as_json()),
+      group_ids = json_null_default(self:authorized_group_ids()),
+      group_names = json_null_default(self:authorized_group_names()),
       deleted_at = json_null,
       version = 1,
     }
@@ -313,7 +319,7 @@ Admin = model_ext.new_class("admins", {
   as_csv = function(self)
     return {
       json_null_default(self.username),
-      json_null_default(table.concat(self:group_names(), "\n")),
+      json_null_default(table.concat(self:authorized_group_names(), "\n")),
       json_null_default(time.postgres_to_iso8601(self.current_sign_in_at)),
       json_null_default(time.postgres_to_iso8601(self.created_at)),
     }

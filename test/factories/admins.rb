@@ -24,6 +24,12 @@ FactoryBot.define do
         end
       end
 
+      factory :yahoo_admin do
+        groups do
+          [FactoryBot.create(:yahoo_admin_group)]
+        end
+      end
+
       factory :google_and_yahoo_multi_group_admin do
         groups do
           [
