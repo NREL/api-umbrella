@@ -46,7 +46,7 @@ class Test::Apis::V1::AdminGroups::TestUpdateEmbeddedArrayFields < Minitest::Tes
 
     attributes = admin_group.serializable_hash
     attributes["api_scope_ids"] = [api_scope2.id]
-    attributes["permission_ids"] = ["admin_manage"]
+    attributes["permission_ids"] = ["admin_view"]
     response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/admin_groups/#{admin_group.id}.json", http_options.deep_merge(admin_token).deep_merge({
       :headers => { "Content-Type" => "application/json" },
       :body => MultiJson.dump(:admin_group => attributes),
@@ -55,7 +55,7 @@ class Test::Apis::V1::AdminGroups::TestUpdateEmbeddedArrayFields < Minitest::Tes
 
     admin_group.reload
     assert_equal([api_scope2.id], admin_group.api_scope_ids)
-    assert_equal(["admin_manage"], admin_group.permission_ids)
+    assert_equal(["admin_view"], admin_group.permission_ids)
   end
 
   def test_removes_single_value

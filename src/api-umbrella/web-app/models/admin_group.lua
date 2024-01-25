@@ -1,6 +1,8 @@
 local admin_group_policy = require "api-umbrella.web-app.policies.admin_group_policy"
 local cjson = require "cjson"
 local db = require "lapis.db"
+local invert_table = require "api-umbrella.utils.invert_table"
+local is_array = require "api-umbrella.utils.is_array"
 local is_empty = require "api-umbrella.utils.is_empty"
 local json_array_fields = require "api-umbrella.web-app.utils.json_array_fields"
 local json_null_default = require "api-umbrella.web-app.utils.json_null_default"
@@ -9,6 +11,7 @@ local t = require("api-umbrella.web-app.utils.gettext").gettext
 local time = require "api-umbrella.utils.time"
 local validation_ext = require "api-umbrella.web-app.utils.validation_ext"
 
+local db_null = db.NULL
 local json_null = cjson.null
 local validate_field = model_ext.validate_field
 local validate_uniqueness = model_ext.validate_uniqueness
@@ -214,6 +217,19 @@ AdminGroup = model_ext.new_class("admin_groups", {
       { validation_ext.non_null_table:minlen(1), t("can't be blank") },
     }, { error_field = "permissions" })
     validate_uniqueness(errors, data, "name", t("Name"), AdminGroup, { "name" })
+
+    if data["permission_ids"] ~= db_null and is_array(data["permission_ids"]) then
+      local permissions = invert_table(data["permission_ids"])
+
+      if permissions["user_manage"] and not permissions["user_view"] then
+        model_ext.add_error(errors, "permission_ids", t("Permissions"), t("user_view permission must be included if user_manage is enabled"))
+      end
+
+      if permissions["admin_manage"] and not permissions["admin_view"] then
+        model_ext.add_error(errors, "permission_ids", t("Permissions"), t("admin_view permission must be included if admin_manage is enabled"))
+      end
+    end
+
     return errors
   end,
 
