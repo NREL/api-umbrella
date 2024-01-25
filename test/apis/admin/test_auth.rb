@@ -31,6 +31,7 @@ class Test::Apis::Admin::TestAuth < Minitest::Test
 
     assert_equal([
       "admin",
+      "admin_contact_url",
       "analytics_timezone",
       "api_key",
       "api_umbrella_version",
@@ -42,6 +43,7 @@ class Test::Apis::Admin::TestAuth < Minitest::Test
     ].sort, data.keys.sort)
 
     assert_kind_of(Hash, data["admin"])
+    assert_kind_of(String, data["admin_contact_url"])
     assert_kind_of(String, data["analytics_timezone"])
     assert_kind_of(String, data["api_key"])
     assert_kind_of(String, data["api_umbrella_version"])
