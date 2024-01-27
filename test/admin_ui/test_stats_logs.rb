@@ -258,7 +258,7 @@ class Test::AdminUi::TestStatsLogs < Minitest::Capybara::Test
       "Request: URL Path",
       "Request: URL Scheme",
       "Request: URL Query String",
-      ($config["elasticsearch"]["template_version"] < 2 ? "Request: Full URL & Query String" : nil),
+      ($config["opensearch"]["template_version"] < 2 ? "Request: Full URL & Query String" : nil),
       "Request: HTTP Method",
       "Request: IP Address",
       "Request: IP Country",

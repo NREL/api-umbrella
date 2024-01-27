@@ -72,14 +72,14 @@ class Test::Proxy::Envoy::TestHttpProxy < Minitest::Test
     end
   end
 
-  def test_elasticsearch_requests_use_proxy
+  def test_opensearch_requests_use_proxy
     override_config({
       "http_proxy" => "http://127.0.0.1:13002",
       "https_proxy" => "http://127.0.0.1:13002",
       "envoy" => {
         "http_proxy" => {
           "enabled" => true,
-          "allowed_domains" => ["elasticsearch:9200"],
+          "allowed_domains" => ["opensearch:9200"],
         },
       },
     }) do
@@ -95,7 +95,7 @@ class Test::Proxy::Envoy::TestHttpProxy < Minitest::Test
       log_output = log_tail.read_until(%r{"uri":"/_bulk"})
       log = MultiJson.load(log_output.scan(%r{^.*"uri":"/_bulk".*$}).last)
       assert_equal("/_bulk", log.fetch("uri"))
-      assert_equal("elasticsearch:9200", log.fetch("host"))
+      assert_equal("opensearch:9200", log.fetch("host"))
       assert_equal("http", log.fetch("scheme"))
       assert_equal("POST", log.fetch("method"))
       assert_equal(200, log.fetch("status"))
@@ -132,7 +132,7 @@ class Test::Proxy::Envoy::TestHttpProxy < Minitest::Test
       log_output = log_tail.read_until(%r{"uri":"/_msearch"})
       log = MultiJson.load(log_output.scan(%r{^.*"uri":"/_msearch".*$}).last)
       assert_equal("/_msearch", log.fetch("uri"))
-      assert_equal("elasticsearch:9200", log.fetch("host"))
+      assert_equal("opensearch:9200", log.fetch("host"))
       assert_equal("http", log.fetch("scheme"))
       assert_equal("POST", log.fetch("method"))
       assert_equal(200, log.fetch("status"))
@@ -153,7 +153,7 @@ class Test::Proxy::Envoy::TestHttpProxy < Minitest::Test
         "http_proxy" => {
           "enabled" => true,
           "allowed_domains" => [
-            "elasticsearch:9200",
+            "opensearch:9200",
             "download.maxmind.com:443",
           ],
         },

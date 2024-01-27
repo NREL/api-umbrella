@@ -84,13 +84,14 @@ module ApiUmbrellaTestHelpers
     def setup_server
       self.setup_lock.synchronize do
         unless self.setup_complete
-          require "typhoeus/adapters/faraday"
-          client = Elasticsearch::Client.new({
-            :hosts => $config["elasticsearch"]["hosts"],
+          require "faraday/typhoeus"
+          client = OpenSearch::Client.new({
+            :adapter => :typhoeus,
+            :hosts => $config["opensearch"]["hosts"],
           })
           LogItem.client = client
 
-          # Wipe elasticsearch indices before beginning.
+          # Wipe opensearch indices before beginning.
           #
           # Note, that we don't want to wipe the current day's index that is
           # setup as part of the API Umbrella startup. So we're only clearing
@@ -359,18 +360,18 @@ module ApiUmbrellaTestHelpers
         # reasons and cleanup and restart extra things, since this is not a
         # change we would normally expect to happen without a full restart.
         if previous_override_config.dig("log", "destination") ||
-            @@current_override_config.dig("log", "destination") ||
+          @@current_override_config.dig("log", "destination") ||
 
-            # These log files are symlinked to stdout or stderr by the perp init
-            # scripts, so when switching between these log destinations, we need
-            # to make sure to clean these up when testing different approaches,
-            # since otherwise it might leave symlinked files in place when
-            # switching back to file output, which would lead to the output going
-            # to unexpected places.
-            FileUtils.rm_f(File.join($config["log_dir"], "elasticsearch-aws-signing-proxy/access.log"))
+          # These log files are symlinked to stdout or stderr by the perp init
+          # scripts, so when switching between these log destinations, we need
+          # to make sure to clean these up when testing different approaches,
+          # since otherwise it might leave symlinked files in place when
+          # switching back to file output, which would lead to the output going
+          # to unexpected places.
+          FileUtils.rm_f(File.join($config["log_dir"], "opensearch-aws-signing-proxy/access.log"))
           FileUtils.rm_f(File.join($config["log_dir"], "nginx-web-app/access.log"))
           FileUtils.rm_f(File.join($config["log_dir"], "nginx/access.log"))
-          FileUtils.rm_f(File.join($config["log_dir"], "rsyslog/elasticsearch_error.log"))
+          FileUtils.rm_f(File.join($config["log_dir"], "rsyslog/opensearch_error.log"))
           FileUtils.rm_f(File.join($config["log_dir"], "trafficserver/access.log"))
           FileUtils.rm_f(File.join($config["log_dir"], "trafficserver/diags.log"))
           FileUtils.rm_f(File.join($config["log_dir"], "trafficserver/manager.log"))

@@ -3,17 +3,17 @@ local etlua_render = require("etlua").render
 local json_decode = require("cjson").decode
 local xpcall_error_handler = require "api-umbrella.utils.xpcall_error_handler"
 
-local elasticsearch_templates
+local opensearch_templates
 
-local path = os.getenv("API_UMBRELLA_SRC_ROOT") .. "/config/elasticsearch_templates_v" .. config["elasticsearch"]["template_version"]
-if config["elasticsearch"]["api_version"] >= 7 then
+local path = os.getenv("API_UMBRELLA_SRC_ROOT") .. "/config/opensearch_templates_v" .. config["opensearch"]["template_version"]
+if config["opensearch"]["api_version"] >= 7 then
   path = path .. "_es7.json.etlua"
-elseif config["elasticsearch"]["api_version"] >= 5 then
+elseif config["opensearch"]["api_version"] >= 5 then
   path = path .. "_es5.json.etlua"
-elseif config["elasticsearch"]["api_version"] >= 2 then
+elseif config["opensearch"]["api_version"] >= 2 then
   path = path .. "_es2.json.etlua"
 else
-  error("Unsupported version of elasticsearch: " .. (config["elasticsearch"]["api_version"] or ""))
+  error("Unsupported version of opensearch: " .. (config["opensearch"]["api_version"] or ""))
 end
 
 local f, err = io.open(path, "rb")
@@ -30,12 +30,12 @@ else
 
     local ok, data = xpcall(json_decode, xpcall_error_handler, content)
     if ok then
-      elasticsearch_templates = data
+      opensearch_templates = data
 
       -- In the test environment, disable replicas and reduce shards to speed
       -- things up.
       if config["app_env"] == "test" then
-        for _, template in ipairs(elasticsearch_templates) do
+        for _, template in ipairs(opensearch_templates) do
           if not template["template"]["settings"] then
             template["template"]["settings"] = {}
           end
@@ -55,4 +55,4 @@ else
   f:close()
 end
 
-return elasticsearch_templates
+return opensearch_templates

@@ -370,7 +370,7 @@ function _M.logs(self)
       for _, hit in ipairs(hits) do
         local row = hit["_source"]
         ngx.say(csv.row_to_csv({
-          time.elasticsearch_to_csv(row["request_at"]) or null,
+          time.opensearch_to_csv(row["request_at"]) or null,
           row["request_method"] or null,
           row["request_host"] or null,
           sanitized_full_url(row) or null,
@@ -453,7 +453,7 @@ function _M.users(self)
   end
 
   -- If we're sorting by hits or last request date, then we can perform the
-  -- sorting directly in the elasticsearch query. Otherwise, for user-based
+  -- sorting directly in the opensearch query. Otherwise, for user-based
   -- field, we'll need to defer sorting until we have all the results in the
   -- app.
   local order_fields = datatables.parse_order(self)
@@ -491,7 +491,7 @@ function _M.users(self)
   local total_count = #buckets
 
   -- If we were sorting by one of the facet fields, then the sorting has
-  -- already been done by elasticsearch. We can improve the performance by
+  -- already been done by opensearch. We can improve the performance by
   -- going ahead and truncating the results to the specified page.
   if order then
     buckets = table_sub(buckets, 1, tonumber(limit))

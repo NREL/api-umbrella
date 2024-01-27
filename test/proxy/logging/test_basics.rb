@@ -75,7 +75,7 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
       "user_registration_source",
     ]
 
-    if($config["elasticsearch"]["template_version"] >= 2)
+    if($config["opensearch"]["template_version"] >= 2)
       expected_fields += [
         "request_url_hierarchy_level0",
         "request_url_hierarchy_level1",
@@ -93,12 +93,7 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
 
     mapping_options = {
       :index => hit["_index"],
-      :include_type_name => false,
     }
-    if $config["elasticsearch"]["api_version"] < 7
-      mapping_options[:include_type_name] = true
-      mapping_options[:type] = hit["_type"]
-    end
     mapping = LogItem.client.indices.get_mapping(mapping_options)
     expected_mapping_fields = expected_fields + [
       "gatekeeper_denied_code",
@@ -108,7 +103,7 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
       "response_content_encoding",
       "response_transfer_encoding",
     ]
-    if($config["elasticsearch"]["template_version"] >= 2)
+    if($config["opensearch"]["template_version"] >= 2)
       expected_mapping_fields += [
         "api_backend_response_flags",
         "imported",
@@ -119,11 +114,7 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
         "response_custom3",
       ]
     end
-    if $config["elasticsearch"]["api_version"] < 7
-      properties = mapping[hit["_index"]]["mappings"][hit["_type"]]["properties"]
-    else
-      properties = mapping[hit["_index"]]["mappings"]["properties"]
-    end
+    properties = mapping[hit["_index"]]["mappings"]["properties"]
     assert_equal(expected_mapping_fields.sort, properties.keys.sort)
 
     assert_kind_of(String, record["api_backend_id"])
@@ -147,7 +138,7 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
     assert_equal("http", record["request_scheme"])
     assert_kind_of(Numeric, record["request_size"])
     assert_equal("url1=#{param_url1}&url2=#{param_url2}&url3=#{param_url3}", record["request_url_query"])
-    if($config["elasticsearch"]["template_version"] < 2)
+    if($config["opensearch"]["template_version"] < 2)
       assert_equal(url, record.fetch("request_url"))
       assert_equal([
         "0/127.0.0.1:9080/",
@@ -300,36 +291,13 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
 
     mapping_options = {
       :index => hit["_index"],
-      :include_type_name => false,
     }
-    if $config["elasticsearch"]["api_version"] < 7
-      mapping_options[:include_type_name] = true
-      mapping_options[:type] = hit["_type"]
-    end
     result = LogItem.client.indices.get_mapping(mapping_options)
 
-    if $config["elasticsearch"]["api_version"] < 7
-      property = result[hit["_index"]]["mappings"][hit["_type"]]["properties"]["request_at"]
-    else
-      property = result[hit["_index"]]["mappings"]["properties"]["request_at"]
-    end
-    if($config["elasticsearch"]["api_version"] >= 5)
-      assert_equal({
-        "type" => "date",
-      }, property)
-    elsif($config["elasticsearch"]["api_version"] >= 2 && $config["elasticsearch"]["api_version"] < 5)
-      assert_equal({
-        "type" => "date",
-        "format" => "strict_date_optional_time||epoch_millis",
-      }, property)
-    elsif($config["elasticsearch"]["api_version"] == 1)
-      assert_equal({
-        "type" => "date",
-        "format" => "dateOptionalTime",
-      }, property)
-    else
-      flunk("Unknown elasticsearch version: #{$config["elasticsearch"]["api_version"].inspect}")
-    end
+    property = result[hit["_index"]]["mappings"]["properties"]["request_at"]
+    assert_equal({
+      "type" => "date",
+    }, property)
   end
 
   def test_logs_requests_that_time_out
@@ -584,7 +552,7 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
       assert_equal("CLOSE", record["request_connection"])
       assert_equal("BASIC-AUTH-USERNAME-EXAMPLE", record["request_basic_auth_username"])
       assert_equal("APPLICATION/X-WWW-FORM-URLENCODED", record["request_content_type"])
-      if($config["elasticsearch"]["template_version"] < 2)
+      if($config["opensearch"]["template_version"] < 2)
         assert_equal([
           "0/foobar.example/",
           "1/foobar.example/#{unique_test_id}/",

@@ -5,33 +5,33 @@ local req_set_header = ngx.req.set_header
 
 local config = require("api-umbrella.utils.load_config")()
 
-local username = config["elasticsearch"]["aws_signing_proxy"]["username"]
+local username = config["opensearch"]["aws_signing_proxy"]["username"]
 if not username then
-  ngx_say("elasticsearch.aws_signing_proxy.username must be configured in /etc/api-umbrella/api-umbrella.yml")
+  ngx_say("opensearch.aws_signing_proxy.username must be configured in /etc/api-umbrella/api-umbrella.yml")
   return ngx_exit(ngx.HTTP_INTERNAL_SERVER_ERROR)
 end
 
-local password = config["elasticsearch"]["aws_signing_proxy"]["password"]
+local password = config["opensearch"]["aws_signing_proxy"]["password"]
 if not password then
-  ngx_say("elasticsearch.aws_signing_proxy.password must be configured in /etc/api-umbrella/api-umbrella.yml")
+  ngx_say("opensearch.aws_signing_proxy.password must be configured in /etc/api-umbrella/api-umbrella.yml")
   return ngx_exit(ngx.HTTP_INTERNAL_SERVER_ERROR)
 end
 
-local aws_region = config["elasticsearch"]["aws_signing_proxy"]["aws_region"]
+local aws_region = config["opensearch"]["aws_signing_proxy"]["aws_region"]
 if not aws_region then
-  ngx_say("elasticsearch.aws_signing_proxy.aws_region must be configured in /etc/api-umbrella/api-umbrella.yml")
+  ngx_say("opensearch.aws_signing_proxy.aws_region must be configured in /etc/api-umbrella/api-umbrella.yml")
   return ngx_exit(ngx.HTTP_INTERNAL_SERVER_ERROR)
 end
 
-local aws_access_key_id = config["elasticsearch"]["aws_signing_proxy"]["aws_access_key_id"]
+local aws_access_key_id = config["opensearch"]["aws_signing_proxy"]["aws_access_key_id"]
 if not aws_access_key_id then
-  ngx_say("elasticsearch.aws_signing_proxy.aws_access_key_id must be configured in /etc/api-umbrella/api-umbrella.yml")
+  ngx_say("opensearch.aws_signing_proxy.aws_access_key_id must be configured in /etc/api-umbrella/api-umbrella.yml")
   return ngx_exit(ngx.HTTP_INTERNAL_SERVER_ERROR)
 end
 
-local aws_secret_access_key = config["elasticsearch"]["aws_signing_proxy"]["aws_secret_access_key"]
+local aws_secret_access_key = config["opensearch"]["aws_signing_proxy"]["aws_secret_access_key"]
 if not aws_secret_access_key then
-  ngx_say("elasticsearch.aws_signing_proxy.aws_access_key_id must be configured in /etc/api-umbrella/api-umbrella.yml")
+  ngx_say("opensearch.aws_signing_proxy.aws_access_key_id must be configured in /etc/api-umbrella/api-umbrella.yml")
   return ngx_exit(ngx.HTTP_INTERNAL_SERVER_ERROR)
 end
 
@@ -46,7 +46,7 @@ if remote_username ~= username or remote_password ~= password then
   return ngx_exit(ngx.HTTP_FORBIDDEN)
 end
 
-local host = config["elasticsearch"]["aws_signing_proxy"]["aws_host"]
+local host = config["opensearch"]["aws_signing_proxy"]["aws_host"]
 req_set_header("Host", host)
 
 local signing = require "api-umbrella.utils.aws_signing_v4"

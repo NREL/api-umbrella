@@ -30,7 +30,7 @@ if [ "${1}" = "start" ]; then
       chown "$api_umbrella_user":"$api_umbrella_group" /dev/stderr
     fi
 
-    ln -sf /dev/stderr "<%- config['log_dir'] %>/rsyslog/elasticsearch_error.log"
+    ln -sf /dev/stderr "<%- config['log_dir'] %>/rsyslog/opensearch_error.log"
   fi
 
   exec \

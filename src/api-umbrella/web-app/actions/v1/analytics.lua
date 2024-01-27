@@ -51,7 +51,7 @@ local function drilldown_results(raw_results, search)
     local buckets = raw_results["aggregations"]["drilldown"]["buckets"]
     for _, bucket in ipairs(buckets) do
       local path
-      if config["elasticsearch"]["template_version"] < 2 then
+      if config["opensearch"]["template_version"] < 2 then
         local parts = split(bucket["key"], "/", "jo", nil, 2)
         path = parts[2]
       else
@@ -90,7 +90,7 @@ local function drilldown_hits_over_time(raw_results, search)
     for _, bucket in ipairs(path_buckets) do
       local id
       local label
-      if config["elasticsearch"]["template_version"] < 2 then
+      if config["opensearch"]["template_version"] < 2 then
         id = bucket["key"]
         label = split(bucket["key"], "/", "jo", nil, 2)[2]
       else

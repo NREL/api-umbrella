@@ -1,4 +1,0 @@
-elasticsearch:
-  api_version: 2
-  hosts:
-    - "http://127.0.0.1:9200"

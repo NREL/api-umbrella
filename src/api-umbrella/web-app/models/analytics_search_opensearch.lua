@@ -3,11 +3,11 @@ local add_error = require("api-umbrella.web-app.utils.model_ext").add_error
 local cjson = require "cjson.safe"
 local config = require("api-umbrella.utils.load_config")()
 local deepcopy = require("pl.tablex").deepcopy
-local elasticsearch = require "api-umbrella.utils.elasticsearch"
 local escape_regex = require "api-umbrella.utils.escape_regex"
 local icu_date = require "icu-date-ffi"
 local is_empty = require "api-umbrella.utils.is_empty"
 local json_encode = require "api-umbrella.utils.json_encode"
+local opensearch = require "api-umbrella.utils.opensearch"
 local path_join = require "api-umbrella.utils.path_join"
 local re_split = require("ngx.re").split
 local startswith = require("pl.stringx").startswith
@@ -15,7 +15,7 @@ local t = require("api-umbrella.web-app.utils.gettext").gettext
 local validation_ext = require "api-umbrella.web-app.utils.validation_ext"
 local xpcall_error_handler = require "api-umbrella.utils.xpcall_error_handler"
 
-local elasticsearch_query = elasticsearch.query
+local opensearch_query = opensearch.query
 
 local date_utc = icu_date.new({
   zone_id = "UTC"
@@ -51,7 +51,7 @@ local function index_names(start_time, end_time)
   --
   -- The following test can reproduce this problem (it will break without this
   -- format() call):
-  -- env ELASTICSEARCH_TEST_API_VERSION=5 ELASTICSEARCH_TEST_TEMPLATE_VERSION=2 ELASTICSEARCH_TEST_INDEX_PARTITION=daily bundle exec minitest test/apis/admin/stats/test_search.rb -n test_bins_results_by_day_with_time_zone_support
+  -- env OPENSEARCH_TEST_API_VERSION=5 OPENSEARCH_TEST_TEMPLATE_VERSION=2 OPENSEARCH_TEST_INDEX_PARTITION=daily bundle exec minitest test/apis/admin/stats/test_search.rb -n test_bins_results_by_day_with_time_zone_support
   date_utc:format(format_iso8601)
   date_utc:set_time_zone_id("UTC")
   local end_time_millis = date_utc:get_millis()
@@ -61,7 +61,7 @@ local function index_names(start_time, end_time)
   -- necessary.
   date_utc:format(format_iso8601)
   date_utc:set_time_zone_id("UTC")
-  if config["elasticsearch"]["index_partition"] == "monthly" then
+  if config["opensearch"]["index_partition"] == "monthly" then
     date_utc:set(icu_date.fields.DAY_OF_MONTH, 1)
   end
   date_utc:set(icu_date.fields.HOUR_OF_DAY, 0)
@@ -71,10 +71,10 @@ local function index_names(start_time, end_time)
 
   local names = {}
   while date_utc:get_millis() <= end_time_millis do
-    table.insert(names, config["elasticsearch"]["index_name_prefix"] .. "-logs-" .. date_utc:format(elasticsearch.partition_date_format))
-    if config["elasticsearch"]["index_partition"] == "monthly" then
+    table.insert(names, config["opensearch"]["index_name_prefix"] .. "-logs-" .. date_utc:format(opensearch.partition_date_format))
+    if config["opensearch"]["index_partition"] == "monthly" then
       date_utc:add(icu_date.fields.MONTH, 1)
-    elseif config["elasticsearch"]["index_partition"] == "daily" then
+    elseif config["opensearch"]["index_partition"] == "daily" then
       date_utc:add(icu_date.fields.DATE, 1)
     end
   end
@@ -234,7 +234,7 @@ function _M.new()
     },
   }
 
-  if config["elasticsearch"]["api_version"] >= 7 then
+  if config["opensearch"]["api_version"] >= 7 then
     self.body["track_total_hits"] = true
   end
 
@@ -389,10 +389,6 @@ function _M:aggregate_by_interval()
       },
     },
   }
-
-  if config["elasticsearch"]["api_version"] < 2 then
-    self.body["aggregations"]["hits_over_time"]["date_histogram"]["pre_zone_adjust_large_interval"] = true
-  end
 end
 
 function _M:aggregate_by_interval_for_summary()
@@ -515,7 +511,7 @@ function _M:aggregate_by_drilldown(prefix, size)
     },
   }
 
-  if config["elasticsearch"]["template_version"] < 2 then
+  if config["opensearch"]["template_version"] < 2 then
     table.insert(self.body["query"]["bool"]["filter"]["bool"]["must"], {
       prefix = {
         request_hierarchy = self.drilldown_prefix,
@@ -567,7 +563,7 @@ function _M:aggregate_by_drilldown_over_time()
     },
   }
 
-  if config["elasticsearch"]["template_version"] < 2 then
+  if config["opensearch"]["template_version"] < 2 then
     self.body["aggregations"]["top_path_hits_over_time"]["terms"]["field"] = "request_hierarchy"
     self.body["aggregations"]["top_path_hits_over_time"]["terms"]["include"] = escape_regex(self.drilldown_prefix) .. ".*"
   else
@@ -586,11 +582,6 @@ function _M:aggregate_by_drilldown_over_time()
       },
     },
   }
-
-  if config["elasticsearch"]["api_version"] < 2 then
-    self.body["aggregations"]["top_path_hits_over_time"]["aggregations"]["drilldown_over_time"]["date_histogram"]["pre_zone_adjust_large_interval"] = true
-    self.body["aggregations"]["hits_over_time"]["date_histogram"]["pre_zone_adjust_large_interval"] = true
-  end
 end
 
 function _M:aggregate_by_user_stats(order)
@@ -714,15 +705,15 @@ function _M:fetch_results(options)
   local body_json
   local err
   if self.query["scroll"] then
-    -- The default URL length limit for Elasticsearch is 4096 bytes, but reduce
+    -- The default URL length limit for OpenSearch is 4096 bytes, but reduce
     -- the limit before truncating to the wildcard index name so there's still
     -- room for other query params.
     if string.len(header["index"]) > 3700 then
-      header["index"] = config["elasticsearch"]["index_name_prefix"] .. "-logs-*"
+      header["index"] = config["opensearch"]["index_name_prefix"] .. "-logs-*"
     end
 
     local res
-    res, err = elasticsearch_query("/" .. header["index"] .. "/_search", {
+    res, err = opensearch_query("/" .. header["index"] .. "/_search", {
       method = "POST",
       query = self.query,
       body = body,
@@ -732,7 +723,7 @@ function _M:fetch_results(options)
     end
   else
     local res
-    res, err = elasticsearch_query("/_msearch", {
+    res, err = opensearch_query("/_msearch", {
       method = "POST",
       headers = {
         ["Content-Type"] = "application/x-ndjson",
@@ -749,7 +740,7 @@ function _M:fetch_results(options)
   end
 
   if err or not body_json then
-    ngx.log(ngx.ERR, "failed to query elasticsearch: ", err)
+    ngx.log(ngx.ERR, "failed to query opensearch: ", err)
     ngx.ctx.error_status = 500
     return coroutine.yield("error", {
       _render = {
@@ -764,11 +755,7 @@ function _M:fetch_results(options)
   end
 
   if body_json and body_json["hits"] and body_json["hits"]["total"] then
-    if config["elasticsearch"]["api_version"] >= 7 then
-      body_json["hits"]["_total_value"] = body_json["hits"]["total"]["value"]
-    else
-      body_json["hits"]["_total_value"] = body_json["hits"]["total"]
-    end
+    body_json["hits"]["_total_value"] = body_json["hits"]["total"]["value"]
   end
 
   return body_json
@@ -778,10 +765,6 @@ function _M:fetch_results_bulk(callback)
   self.query["scroll"] = "10m"
 
   self.body["sort"] = { "_doc" }
-  if config["elasticsearch"]["api_version"] < 2 then
-    self.body["sort"] = nil
-    self.query["search_type"] = "scan"
-  end
 
   local raw_results = self:fetch_results()
   callback(raw_results["hits"]["hits"])
@@ -789,7 +772,7 @@ function _M:fetch_results_bulk(callback)
   local scroll_id
   while true do
     scroll_id = raw_results["_scroll_id"]
-    local res, err = elasticsearch_query("/_search/scroll", {
+    local res, err = opensearch_query("/_search/scroll", {
       method = "GET",
       body = {
         scroll = self.query["scroll"],
@@ -797,7 +780,7 @@ function _M:fetch_results_bulk(callback)
       },
     })
     if err then
-      ngx.log(ngx.ERR, "failed to query elasticsearch: ", err)
+      ngx.log(ngx.ERR, "failed to query opensearch: ", err)
       ngx.ctx.error_status = 500
       return coroutine.yield("error", {
         _render = {
@@ -819,14 +802,14 @@ function _M:fetch_results_bulk(callback)
     callback(raw_results["hits"]["hits"])
   end
 
-  local _, err = elasticsearch_query("/_search/scroll", {
+  local _, err = opensearch_query("/_search/scroll", {
     method = "DELETE",
     body = {
       scroll_id = { scroll_id },
     },
   })
   if err then
-    ngx.log(ngx.ERR, "elasticsearch scroll clear failed: ", err)
+    ngx.log(ngx.ERR, "opensearch scroll clear failed: ", err)
   end
 end
 
@@ -845,7 +828,7 @@ local function cache_interval_results_process_batch(self, cache_ids, batch)
     local expires_at = batch_elem["expires_at"]
 
     if not exist["cache_exists"] then
-      -- Perform the real Elasticsearch query for uncached queries and cache
+      -- Perform the real OpenSearch query for uncached queries and cache
       -- the result.
       local results = self:fetch_results({
         override_header = id_data["header"],
@@ -936,10 +919,10 @@ function _M:cache_interval_results(expires_at)
       body = self:query_body(),
 
       -- Include the version information in the cache key, so that if the
-      -- underlying Elasticsearch database is upgraded, new data will be
+      -- underlying OpenSearch database is upgraded, new data will be
       -- fetched.
-      api_version = config["elasticsearch"]["api_version"],
-      template_version = config["elasticsearch"]["template_version"],
+      api_version = config["opensearch"]["api_version"],
+      template_version = config["opensearch"]["template_version"],
     }
     table.insert(batch, {
       cache_id_data = cache_id_data,

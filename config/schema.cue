@@ -452,13 +452,12 @@ import "path"
     }
   }
 
-  elasticsearch: {
+  opensearch: {
     hosts: [...string] | *[
-      "http://elasticsearch:9200",
+      "http://opensearch:9200",
     ]
     index_name_prefix: string | *"api-umbrella"
     index_partition: string | *"daily"
-    index_mapping_type: string | *"log"
     api_version: uint | *7
     template_version: uint | *2
     aws_signing_proxy: {
@@ -472,14 +471,14 @@ import "path"
     }
   }
 
-  #analytics_output_name: "elasticsearch"
+  #analytics_output_name: "opensearch"
   analytics: {
-    adapter: #analytics_output_name | *"elasticsearch"
+    adapter: #analytics_output_name | *"opensearch"
     timezone: string | *"UTC"
     log_request_url_query_params_separately: bool | *false
 
     _default_outputs:  [...#analytics_output_name] & [
-      "elasticsearch"
+      "opensearch"
     ]
     outputs: [...#analytics_output_name] | *_default_outputs
   }

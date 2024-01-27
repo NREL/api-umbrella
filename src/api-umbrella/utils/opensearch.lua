@@ -6,16 +6,16 @@ local json_decode = require("cjson").decode
 local json_encode = require "api-umbrella.utils.json_encode"
 
 local encode_base64 = ngx.encode_base64
-local server = config["elasticsearch"]["_first_server"]
+local server = config["opensearch"]["_first_server"]
 
 local _M = {}
 
-if config["elasticsearch"]["index_partition"] == "monthly" then
+if config["opensearch"]["index_partition"] == "monthly" then
   _M.partition_date_format = icu_date.formats.pattern("yyyy-MM")
-elseif config["elasticsearch"]["index_partition"] == "daily" then
+elseif config["opensearch"]["index_partition"] == "daily" then
   _M.partition_date_format = icu_date.formats.pattern("yyyy-MM-dd")
 else
-  error("Unknown elasticsearch.index_partition configuration value")
+  error("Unknown opensearch.index_partition configuration value")
 end
 
 function _M.query(path, options)
@@ -64,26 +64,26 @@ function _M.query(path, options)
   })
   if not connect_ok then
     httpc:close()
-    return nil, "elasticsearch connect error: " .. (connect_err or "")
+    return nil, "opensearch connect error: " .. (connect_err or "")
   end
 
   local res, err = httpc:request(options)
   if err then
     httpc:close()
-    return nil, "elasticsearch request error: " .. (err or "")
+    return nil, "opensearch request error: " .. (err or "")
   end
 
   local body, body_err = res:read_body()
   if body_err then
     httpc:close()
-    return nil, "elasticsearch read body error: " .. (body_err or "")
+    return nil, "opensearch read body error: " .. (body_err or "")
   end
   res["body"] = body
 
   local keepalive_ok, keepalive_err = httpc:set_keepalive()
   if not keepalive_ok then
     httpc:close()
-    return nil, "elasticsearch keepalive error: " .. (keepalive_err or "")
+    return nil, "opensearch keepalive error: " .. (keepalive_err or "")
   end
 
   if res.status >= 300 and res.status ~= 404 then

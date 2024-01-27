@@ -1,14 +1,14 @@
 # Ensure we have only valid UTF-8 characters in the log message (otherwise
-# ElasticSearch is unhappy).
+# OpenSearch is unhappy).
 action(name="analytics-utf8fix" type="mmutf8fix")
 
 # Parse the JSON data out of the @cee-enhanced logs.
 action(name="analytics-jsonparse" type="mmjsonparse")
 
-<% if config["analytics"]["_output_elasticsearch?"] then %>
-  # Define the ElasticSearch-based output.
+<% if config["analytics"]["_output_opensearch?"] then %>
+  # Define the OpenSearch-based output.
   # This aliases some of the logged fields to different names for backwards
-  # compatibility with the ElasticSearch data.
+  # compatibility with the OpenSearch data.
   if($!raw!api_backend_id != "") then {
     set $!usr!es!api_backend_id = $!raw!api_backend_id;
   }
@@ -18,7 +18,7 @@ action(name="analytics-jsonparse" type="mmjsonparse")
   if($!raw!legacy_api_key != "") then {
     set $!usr!es!api_key = $!raw!legacy_api_key;
   }
-  <% if config["elasticsearch"]["_template_version_v2?"] then %>
+  <% if config["opensearch"]["_template_version_v2?"] then %>
     if($!raw!api_backend_resolved_host != "") then {
       set $!usr!es!api_backend_resolved_host = $!raw!api_backend_resolved_host;
     }
@@ -50,12 +50,12 @@ action(name="analytics-jsonparse" type="mmjsonparse")
   if($!raw!request_content_type != "") then {
     set $!usr!es!request_content_type = $!raw!request_content_type;
   }
-  <% if config["elasticsearch"]["_template_version_v1?"] then %>
+  <% if config["opensearch"]["_template_version_v1?"] then %>
     if($!raw!request_url_hierarchy != "") then {
       set $!usr!es!request_hierarchy = $!raw!request_url_hierarchy;
     }
   <% end %>
-  <% if config["elasticsearch"]["_template_version_v2?"] then %>
+  <% if config["opensearch"]["_template_version_v2?"] then %>
     if($!raw!request_url_hierarchy_level0 != "") then {
       set $!usr!es!request_url_hierarchy_level0 = $!raw!request_url_hierarchy_level0;
     }
@@ -111,7 +111,7 @@ action(name="analytics-jsonparse" type="mmjsonparse")
   if($!raw!request_size != "") then {
     set $!usr!es!request_size = $!raw!request_size;
   }
-  <% if config["elasticsearch"]["_template_version_v1?"] then %>
+  <% if config["opensearch"]["_template_version_v1?"] then %>
     if($!raw!legacy_request_url != "") then {
       set $!usr!es!request_url = $!raw!legacy_request_url;
     }
@@ -134,7 +134,7 @@ action(name="analytics-jsonparse" type="mmjsonparse")
   if($!raw!response_cache != "") then {
     set $!usr!es!response_cache = $!raw!response_cache;
   }
-  <% if config["elasticsearch"]["_template_version_v2?"] then %>
+  <% if config["opensearch"]["_template_version_v2?"] then %>
     if($!raw!response_cache_flags != "") then {
       set $!usr!es!response_cache_flags = $!raw!response_cache_flags;
     }
@@ -148,7 +148,7 @@ action(name="analytics-jsonparse" type="mmjsonparse")
   if($!raw!response_content_type != "") then {
     set $!usr!es!response_content_type = $!raw!response_content_type;
   }
-  <% if config["elasticsearch"]["_template_version_v2?"] then %>
+  <% if config["opensearch"]["_template_version_v2?"] then %>
     if($!raw!response_custom1 != "") then {
       set $!usr!es!response_custom1 = $!raw!response_custom1;
     }
@@ -184,40 +184,40 @@ action(name="analytics-jsonparse" type="mmjsonparse")
     set $!usr!es!user_registration_source = $!raw!legacy_user_registration_source;
   }
 
-  # Output to ElasticSearch.
+  # Output to OpenSearch.
   # A disk-assisted memory queue is used for buffering.
   action(
-    name="analytics-output-elasticsearch"
+    name="analytics-output-opensearch"
     type="omelasticsearch"
-    server="<%- config["elasticsearch"]["_first_server"]["host"] %>"
-    serverport="<%- config["elasticsearch"]["_first_server"]["port"] %>"
-    <% if config["elasticsearch"]["_first_server"]["_https?"] then %>
+    server="<%- config["opensearch"]["_first_server"]["host"] %>"
+    serverport="<%- config["opensearch"]["_first_server"]["port"] %>"
+    <% if config["opensearch"]["_first_server"]["_https?"] then %>
       usehttps="on"
     <% end %>
-    <% if config["elasticsearch"]["_first_server"]["user"] then %>
-      uid="<%- config["elasticsearch"]["_first_server"]["user"] %>"
+    <% if config["opensearch"]["_first_server"]["user"] then %>
+      uid="<%- config["opensearch"]["_first_server"]["user"] %>"
     <% end %>
-    <% if config["elasticsearch"]["_first_server"]["password"] then %>
-      pwd="<%- config["elasticsearch"]["_first_server"]["password"] %>"
+    <% if config["opensearch"]["_first_server"]["password"] then %>
+      pwd="<%- config["opensearch"]["_first_server"]["password"] %>"
     <% end %>
-    searchIndex="elasticsearch-index"
+    searchIndex="opensearch-index"
     dynSearchIndex="on"
-    searchType="<%- config["elasticsearch"]["index_mapping_type"] %>"
-    template="elasticsearch-json-record"
+    searchType=""
+    template="opensearch-json-record"
 
     # Enable bulk indexing, so batches of records are sent as a single HTTP
     # request.
     bulkmode="on"
-    bulkId="elasticsearch-id"
+    bulkId="opensearch-id"
     dynBulkId="on"
 
-    errorfile="<%- config["log_dir"] %>/rsyslog/elasticsearch_error.log"
+    errorfile="<%- config["log_dir"] %>/rsyslog/opensearch_error.log"
 
     # Allow bulk indexing of batches *up to* this size.
     #
-    # Note that as long as Elasticsearch is keeping up and data isn't being
+    # Note that as long as OpenSearch is keeping up and data isn't being
     # queued by rsyslog, then rsyslog will send data as quickly as it can to
-    # Elasticsearch (so the batch sizes might be much smaller). See
+    # OpenSearch (so the batch sizes might be much smaller). See
     # http://www.gossamer-threads.com/lists/rsyslog/users/17550
     queue.dequeuebatchsize="5000"
 
@@ -228,7 +228,7 @@ action(name="analytics-jsonparse" type="mmjsonparse")
     # Set a filename, so the queue is disk assisted. This allows for offloading
     # the data from the memory queue to disk if the queue becomes bigger than
     # expected.
-    queue.filename="queue-elasticsearch"
+    queue.filename="queue-opensearch"
 
     # Set thresholds for when the memory queue is too big and should use the
     # disk (note the disk queue size is not bounded by the queue.size, that only
@@ -244,8 +244,8 @@ action(name="analytics-jsonparse" type="mmjsonparse")
     # Persist data to disk on graceful shutdowns.
     queue.saveonshutdown="on"
 
-    # If Elasticsearch is inaccessible, retry on this interval (in seconds)
-    # indefinitely (so we don't stop logging to Elasticsearch in case it goes
+    # If OpenSearch is inaccessible, retry on this interval (in seconds)
+    # indefinitely (so we don't stop logging to OpenSearch in case it goes
     # down for a longer period of time).
     action.resumeInterval="30"
     action.resumeRetryCount="-1"

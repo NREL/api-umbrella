@@ -12,19 +12,19 @@ module(load="mmutf8fix")
 <% if config["log"]["destination"] == "console" then %>
   module(load="omstdout")
 <% end %>
-<% if config["analytics"]["_output_elasticsearch?"] then %>
+<% if config["analytics"]["_output_opensearch?"] then %>
   module(load="omelasticsearch")
 <% end %>
 
-# Define templates for ElasticSearch output.
-<% if config["elasticsearch"]["_index_partition_monthly?"] then %>
-  template(name="elasticsearch-index" type="string" string="<%- config["elasticsearch"]["index_name_prefix"] %>-logs-write-%timereported:1:7:date-rfc3339,date-utc%")
+# Define templates for OpenSearch output.
+<% if config["opensearch"]["_index_partition_monthly?"] then %>
+  template(name="opensearch-index" type="string" string="<%- config["opensearch"]["index_name_prefix"] %>-logs-write-%timereported:1:7:date-rfc3339,date-utc%")
 <% end %>
-<% if config["elasticsearch"]["_index_partition_daily?"] then %>
-  template(name="elasticsearch-index" type="string" string="<%- config["elasticsearch"]["index_name_prefix"] %>-logs-write-%timereported:1:10:date-rfc3339,date-utc%")
+<% if config["opensearch"]["_index_partition_daily?"] then %>
+  template(name="opensearch-index" type="string" string="<%- config["opensearch"]["index_name_prefix"] %>-logs-write-%timereported:1:10:date-rfc3339,date-utc%")
 <% end %>
-template(name="elasticsearch-id" type="subtree" subtree="$!raw!id")
-template(name="elasticsearch-json-record" type="subtree" subtree="$!usr!es")
+template(name="opensearch-id" type="subtree" subtree="$!raw!id")
+template(name="opensearch-json-record" type="subtree" subtree="$!usr!es")
 template(name="all-json-record" type="list") {
   property(name="$!raw") constant(value="\n")
 }

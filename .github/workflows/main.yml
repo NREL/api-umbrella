@@ -10,7 +10,6 @@ env:
   IMAGE_NAME: nrel/api-umbrella
   DOCKER_BUILDKIT: 1
   TESTS_GLOB: "test/**/test_*.rb"
-  ELASTICSEARCH_TESTS_GLOB: "test/admin_ui/**/test_stats_*.rb test/admin_ui/**/test_stats_*.rb test/apis/admin/stats/**/test_*.rb test/apis/v0/test_analytics.rb test/apis/v1/analytics/**/test_*.rb test/proxy/logging/**/test_*.rb"
 
 jobs:
   build:
@@ -152,8 +151,8 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-      elasticsearch:
-        image: opensearchproject/opensearch:1.3.8
+      opensearch:
+        image: public.ecr.aws/opensearchproject/opensearch:2.0.1
         env:
           OPENSEARCH_JAVA_OPTS: "-Xms32m -Xmx512m"
           DISABLE_INSTALL_DEMO_CONFIG: "true"
@@ -230,171 +229,10 @@ jobs:
           name: test-artifacts-matrix-${{ matrix.ci_node_index }}
           path: test/tmp/artifacts/
 
-  test_elasticsearch_v6:
-    needs: [build]
-    runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres:12
-        env:
-          POSTGRES_PASSWORD: dev_password
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-      elasticsearch:
-        image: docker.elastic.co/elasticsearch/elasticsearch-oss:6.8.18
-        env:
-          ES_JAVA_OPTS: "-Xms32m -Xmx256m"
-          discovery.type: single-node
-          cluster.routing.allocation.disk.threshold_enabled: "false"
-        options: >-
-          --health-cmd "curl -fsS http://localhost:9200/_cluster/health"
-          --health-interval 10s
-          --health-timeout 90s
-          --health-retries 5
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: dev-env container metadata
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          flavor: |
-            suffix=-dev-env
-
-      - name: Pull
-        run: docker pull "$DOCKER_IMAGE_CACHE_FROM"
-        env:
-          DOCKER_IMAGE_CACHE_FROM: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }}
-
-      - name: Test
-        run: |
-          shopt -s globstar
-          tests=(${{ env.ELASTICSEARCH_TESTS_GLOB }})
-          docker run --rm \
-            --network "${{ job.services.postgres.network }}" \
-            -v "$(pwd)/test/tmp/artifacts:/app/test/tmp/artifacts" \
-            -e ELASTICSEARCH_TEST_API_VERSION=6 \
-            -e ELASTICSEARCH_TEST_TEMPLATE_VERSION=2 \
-            -e CI=true \
-            -e TESTS="${tests[*]}" \
-            -e MAXMIND_LICENSE_KEY="${MAXMIND_LICENSE_KEY}" \
-            "$DOCKER_IMAGE_CACHE_FROM" \
-            make test
-        env:
-          DOCKER_IMAGE_CACHE_FROM: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }}
-          MAXMIND_LICENSE_KEY: ${{ secrets.MAXMIND_LICENSE_KEY }}
-
-      - name: Artifact permissions
-        if: ${{ always() }}
-        run: sudo chmod -R a+rwX test test/tmp/artifacts
-
-      - name: Dump docker logs
-        if: ${{ always() }}
-        uses: jwalton/gh-docker-logs@v2
-        with:
-          dest: test/tmp/artifacts/docker-logs
-
-      - name: Compress artifacts
-        if: ${{ always() }}
-        run: gzip -r ./test/tmp/artifacts/log ./test/tmp/artifacts/docker-logs
-
-      - name: Archive artifacts
-        if: ${{ always() }}
-        uses: actions/upload-artifact@v3
-        with:
-          name: test-artifacts-elasticsearch-v6
-          path: test/tmp/artifacts/
-
-  test_elasticsearch_v7_daily:
-    needs: [build]
-    runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres:12
-        env:
-          POSTGRES_PASSWORD: dev_password
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-      elasticsearch:
-        image: docker.elastic.co/elasticsearch/elasticsearch-oss:7.10.2
-        env:
-          ES_JAVA_OPTS: "-Xms32m -Xmx256m"
-          discovery.type: single-node
-          cluster.routing.allocation.disk.threshold_enabled: "false"
-        options: >-
-          --health-cmd "curl -fsS http://localhost:9200/_cluster/health"
-          --health-interval 10s
-          --health-timeout 90s
-          --health-retries 5
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: dev-env container metadata
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          flavor: |
-            suffix=-dev-env
-
-      - name: Pull
-        run: docker pull "$DOCKER_IMAGE_CACHE_FROM"
-        env:
-          DOCKER_IMAGE_CACHE_FROM: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }}
-
-      - name: Test
-        run: |
-          shopt -s globstar
-          tests=(${{ env.ELASTICSEARCH_TESTS_GLOB }})
-          docker run --rm \
-            --network "${{ job.services.postgres.network }}" \
-            -v "$(pwd)/test/tmp/artifacts:/app/test/tmp/artifacts" \
-            -e ELASTICSEARCH_TEST_API_VERSION=7 \
-            -e ELASTICSEARCH_TEST_TEMPLATE_VERSION=2 \
-            -e ELASTICSEARCH_TEST_INDEX_PARTITION=daily \
-            -e CI=true \
-            -e TESTS="${tests[*]}" \
-            -e MAXMIND_LICENSE_KEY="${MAXMIND_LICENSE_KEY}" \
-            "$DOCKER_IMAGE_CACHE_FROM" \
-            make test
-        env:
-          DOCKER_IMAGE_CACHE_FROM: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }}
-          MAXMIND_LICENSE_KEY: ${{ secrets.MAXMIND_LICENSE_KEY }}
-
-      - name: Artifact permissions
-        if: ${{ always() }}
-        run: sudo chmod -R a+rwX test/tmp/artifacts
-
-      - name: Dump docker logs
-        if: ${{ always() }}
-        uses: jwalton/gh-docker-logs@v2
-        with:
-          dest: test/tmp/artifacts/docker-logs
-
-      - name: Compress artifacts
-        if: ${{ always() }}
-        run: gzip -r ./test/tmp/artifacts/log ./test/tmp/artifacts/docker-logs
-
-      - name: Archive artifacts
-        if: ${{ always() }}
-        uses: actions/upload-artifact@v3
-        with:
-          name: test-artifacts-elasticsearch-v7-daily
-          path: test/tmp/artifacts/
-
   publish-test-results:
     runs-on: ubuntu-latest
     needs:
       - test
-      - test_elasticsearch_v6
-      - test_elasticsearch_v7_daily
     permissions:
       checks: write
     if: always()

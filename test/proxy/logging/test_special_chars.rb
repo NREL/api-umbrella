@@ -72,7 +72,7 @@ class Test::Proxy::Logging::TestSpecialChars < Minitest::Test
 
     # URL
     assert_equal("/api/hello/#{url_encoded}/#{base64ed}/#{expected_raw_in_url_path}/", record["request_path"])
-    if $config["elasticsearch"]["template_version"] < 2
+    if $config["opensearch"]["template_version"] < 2
       assert_equal([
         "0/127.0.0.1:9080/",
         "1/127.0.0.1:9080/api/",
@@ -137,7 +137,7 @@ class Test::Proxy::Logging::TestSpecialChars < Minitest::Test
 
     # URL
     assert_equal("/api/hello/#{url_encoded}/#{base64ed}/#{expected_raw_in_url_path}/#{expected_raw_utf8_in_url_path}/", record["request_path"])
-    if $config["elasticsearch"]["template_version"] < 2
+    if $config["opensearch"]["template_version"] < 2
       assert_equal([
         "0/127.0.0.1:9080/",
         "1/127.0.0.1:9080/api/",
@@ -186,7 +186,7 @@ class Test::Proxy::Logging::TestSpecialChars < Minitest::Test
 
     # URL
     assert_equal("/api/hello/#{url_encoded}/", record["request_path"])
-    if $config["elasticsearch"]["template_version"] < 2
+    if $config["opensearch"]["template_version"] < 2
       assert_equal([
         "0/127.0.0.1:9080/",
         "1/127.0.0.1:9080/api/",
@@ -229,7 +229,7 @@ class Test::Proxy::Logging::TestSpecialChars < Minitest::Test
 
     # URL
     assert_equal("/api/hello/#{as_is}/", record["request_path"])
-    if $config["elasticsearch"]["template_version"] < 2
+    if $config["opensearch"]["template_version"] < 2
       assert_equal([
         "0/127.0.0.1:9080/",
         "1/127.0.0.1:9080/api/",

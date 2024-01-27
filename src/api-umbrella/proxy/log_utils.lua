@@ -73,7 +73,7 @@ end
 -- To make drill-downs queries easier, split up how the path is stored.
 --
 -- We store this in slightly different, but similar fashions for SQL storage
--- versus ElasticSearch storage.
+-- versus OpenSearch storage.
 --
 -- A request like this:
 --
@@ -85,14 +85,14 @@ end
 -- request_url_hierarchy_level2 = /api/foo/
 -- request_url_hierarchy_level3 = /api/foo/bar.json
 --
--- And gets indexed as this array for ElasticSearch storage:
+-- And gets indexed as this array for OpenSearch storage:
 --
 -- 0/example.com/
 -- 1/example.com/api/
 -- 2/example.com/api/foo/
 -- 3/example.com/api/foo/bar.json
 --
--- This is similar to ElasticSearch's built-in path_hierarchy tokenizer, but
+-- This is similar to OpenSearch's built-in path_hierarchy tokenizer, but
 -- prefixes each token with a depth counter, so we can more easily and
 -- efficiently facet on specific levels (for example, a regex query of "^0/"
 -- would return all the totals for each domain).
@@ -117,7 +117,7 @@ function _M.set_url_hierarchy(data)
   -- prevent us from having to have unlimited depths for flattened SQL storage.
   local path_parts = split(cleaned_path, "/", true, 6)
 
-  -- Setup top-level host hierarchy for ElasticSearch storage.
+  -- Setup top-level host hierarchy for OpenSearch storage.
   data["request_url_hierarchy"] = {}
   local host_level = data["request_url_host"]
   if #path_parts > 0 then
@@ -147,7 +147,7 @@ function _M.set_url_hierarchy(data)
     -- Store in the request_url_path_level(1-6) fields for SQL storage.
     data["request_url_hierarchy_level" .. index] = path_level
 
-    -- Store as an array for ElasticSearch storage.
+    -- Store as an array for OpenSearch storage.
     path_tree = path_tree .. path_level
     local path_token = index .. "/" .. data["request_url_host"] .. path_tree
     table.insert(data["request_url_hierarchy"], path_token)

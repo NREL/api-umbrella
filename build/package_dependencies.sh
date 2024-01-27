@@ -34,10 +34,6 @@ if [[ "$ID_NORMALIZED" == "rhel" ]]; then
     # TrafficServer
     libxml2
 
-    # ElasticSearch
-    java-1.8.0-openjdk-headless
-    which
-
     # rsyslog omelasticsearch
     libcurl
 

@@ -136,10 +136,10 @@ class Test::Apis::V1::Analytics::TestDrilldown < Minitest::Test
     # ensure that the filtering and terms aggregations are both matching
     # based on prefix only.
     log = FactoryBot.create(:log_item, :request_host => "0", :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
-    if($config["elasticsearch"]["template_version"] < 2)
+    if($config["opensearch"]["template_version"] < 2)
       assert_equal(["0/0/", "1/0/hello"], log.serializable_hash.fetch("request_hierarchy"))
     end
-    if($config["elasticsearch"]["template_version"] < 2)
+    if($config["opensearch"]["template_version"] < 2)
       log = FactoryBot.create(:log_item, :request_hierarchy => ["foo/0/", "foo/0/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
       assert_equal(["foo/0/", "foo/0/hello"], log.serializable_hash.fetch("request_hierarchy"))
     end
@@ -191,11 +191,11 @@ class Test::Apis::V1::Analytics::TestDrilldown < Minitest::Test
     # behavior in version 2 (but in real practice, the app has always assumed
     # the values are equal).
     logs = FactoryBot.create_list(:log_item, 2, :request_host => ".", :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
-    if($config["elasticsearch"]["template_version"] < 2)
+    if($config["opensearch"]["template_version"] < 2)
       assert_equal(["0/./", "1/./hello"], logs[0].serializable_hash.fetch("request_hierarchy"))
     end
     log = FactoryBot.create(:log_item, :request_host => ".com", :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
-    if($config["elasticsearch"]["template_version"] < 2)
+    if($config["opensearch"]["template_version"] < 2)
       assert_equal(["0/.com/", "1/.com/hello"], log.serializable_hash.fetch("request_hierarchy"))
     end
     FactoryBot.create(:log_item, :request_host => "xcom", :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
@@ -214,7 +214,7 @@ class Test::Apis::V1::Analytics::TestDrilldown < Minitest::Test
 
     assert_response_code(200, response)
     data = MultiJson.load(response.body)
-    if($config["elasticsearch"]["template_version"] < 2)
+    if($config["opensearch"]["template_version"] < 2)
       assert_equal(2, data["results"].length)
     else
       assert_equal(1, data["results"].length)
@@ -226,7 +226,7 @@ class Test::Apis::V1::Analytics::TestDrilldown < Minitest::Test
       "descendent_prefix" => "1/./",
       "hits" => 2,
     }, data["results"][0])
-    if($config["elasticsearch"]["template_version"] < 2)
+    if($config["opensearch"]["template_version"] < 2)
       assert_equal({
         "depth" => 0,
         "path" => ".com/",
@@ -238,13 +238,13 @@ class Test::Apis::V1::Analytics::TestDrilldown < Minitest::Test
     assert_equal([
       { "id" => "date", "label" => "Date", "type" => "datetime" },
       { "id" => "0/./", "label" => "./", "type" => "number" },
-      $config["elasticsearch"]["template_version"] < 2 ? { "id" => "0/.com/", "label" => ".com/", "type" => "number" } : nil,
+      $config["opensearch"]["template_version"] < 2 ? { "id" => "0/.com/", "label" => ".com/", "type" => "number" } : nil,
     ].compact, data["hits_over_time"]["cols"])
     assert_equal(6, data["hits_over_time"]["rows"].length)
     assert_equal({ "c" => [
       { "v" => 1421218800000, "f" => "Wed, Jan 14, 2015" },
       { "v" => 2, "f" => "2" },
-      $config["elasticsearch"]["template_version"] < 2 ? { "v" => 1, "f" => "1" } : nil,
+      $config["opensearch"]["template_version"] < 2 ? { "v" => 1, "f" => "1" } : nil,
     ].compact }, data["hits_over_time"]["rows"][1])
 
     # Check for a more proper "1/." prefix (the correct depth to have a
@@ -261,7 +261,7 @@ class Test::Apis::V1::Analytics::TestDrilldown < Minitest::Test
 
     assert_response_code(200, response)
     data = MultiJson.load(response.body)
-    if($config["elasticsearch"]["template_version"] < 2)
+    if($config["opensearch"]["template_version"] < 2)
       assert_equal(2, data["results"].length)
     else
       assert_equal(1, data["results"].length)
@@ -273,7 +273,7 @@ class Test::Apis::V1::Analytics::TestDrilldown < Minitest::Test
       "descendent_prefix" => "2/./hello",
       "hits" => 2,
     }, data["results"][0])
-    if($config["elasticsearch"]["template_version"] < 2)
+    if($config["opensearch"]["template_version"] < 2)
       assert_equal({
         "depth" => 1,
         "path" => ".com/hello",
@@ -285,13 +285,13 @@ class Test::Apis::V1::Analytics::TestDrilldown < Minitest::Test
     assert_equal([
       { "id" => "date", "label" => "Date", "type" => "datetime" },
       { "id" => "1/./hello", "label" => "./hello", "type" => "number" },
-      $config["elasticsearch"]["template_version"] < 2 ? { "id" => "1/.com/hello", "label" => ".com/hello", "type" => "number" } : nil,
+      $config["opensearch"]["template_version"] < 2 ? { "id" => "1/.com/hello", "label" => ".com/hello", "type" => "number" } : nil,
     ].compact, data["hits_over_time"]["cols"])
     assert_equal(6, data["hits_over_time"]["rows"].length)
     assert_equal({ "c" => [
       { "v" => 1421218800000, "f" => "Wed, Jan 14, 2015" },
       { "v" => 2, "f" => "2" },
-      $config["elasticsearch"]["template_version"] < 2 ? { "v" => 1, "f" => "1" } : nil,
+      $config["opensearch"]["template_version"] < 2 ? { "v" => 1, "f" => "1" } : nil,
     ].compact }, data["hits_over_time"]["rows"][1])
 
     # Check for a more proper "1/./" prefix (the correct depth to have a

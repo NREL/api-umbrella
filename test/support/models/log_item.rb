@@ -71,7 +71,6 @@ class LogItem
     bulk_request = []
     opts = {
       :index => "_all",
-      :type => $config["elasticsearch"]["index_mapping_type"],
       :sort => "_doc",
       :scroll => "2m",
       :size => 1000,
@@ -81,10 +80,6 @@ class LogItem
         },
       },
     }
-    if($config["elasticsearch"]["api_version"] < 2)
-      opts.delete(:sort)
-      opts[:search_type] = "scan"
-    end
     result = self.client.search(opts)
     loop do
       hits = result["hits"]["hits"]
@@ -115,14 +110,14 @@ class LogItem
     cleaned_path.gsub!(%r{^/}, "")
     path_parts = cleaned_path.split("/", 6)
 
-    if $config["elasticsearch"]["template_version"] < 2
+    if $config["opensearch"]["template_version"] < 2
       hash["request_url"] = "#{hash.fetch("request_scheme")}://#{hash.fetch("request_host")}#{hash.fetch("request_path")}"
       if hash["request_query"]
         hash["request_url"] << "?#{hash.fetch("request_query")}"
       end
     end
 
-    if !hash["request_hierarchy"] || $config["elasticsearch"]["template_version"] >= 2
+    if !hash["request_hierarchy"] || $config["opensearch"]["template_version"] >= 2
       hash["request_hierarchy"] = []
       host_level = hash["request_host"]
       if !path_parts.empty?
@@ -145,7 +140,7 @@ class LogItem
       end
     end
 
-    if($config["elasticsearch"]["template_version"] >= 2)
+    if($config["opensearch"]["template_version"] >= 2)
       hash.delete("request_hierarchy")
       hash.delete("request_query")
     end
@@ -159,7 +154,7 @@ class LogItem
       index_time = Time.at(index_time / 1000.0).utc
     end
 
-    partition_date_format = case $config.fetch("elasticsearch").fetch("index_partition")
+    partition_date_format = case $config.fetch("opensearch").fetch("index_partition")
     when "monthly"
       "%Y-%m"
     when "daily"
@@ -167,8 +162,8 @@ class LogItem
     end
     partition = index_time.utc.strftime(partition_date_format)
 
-    prefix = "#{$config.fetch("elasticsearch").fetch("index_name_prefix")}-logs"
-    index_name = "#{prefix}-v#{$config["elasticsearch"]["template_version"]}-#{partition}"
+    prefix = "#{$config.fetch("opensearch").fetch("index_name_prefix")}-logs"
+    index_name = "#{prefix}-v#{$config["opensearch"]["template_version"]}-#{partition}"
     index_name_read = "#{prefix}-#{partition}"
     index_name_write = "#{prefix}-write-#{partition}"
 
@@ -182,7 +177,7 @@ class LogItem
                 index_name_write => {},
               },
             })
-          rescue Elasticsearch::Transport::Transport::Errors::BadRequest => e
+          rescue OpenSearch::Transport::Transport::Errors::BadRequest => e
             unless e.message.include?("index_already_exists_exception")
               raise e
             end
@@ -195,7 +190,6 @@ class LogItem
 
     self.client.index({
       :index => index_name,
-      :type => $config["elasticsearch"]["index_mapping_type"],
       :id => self._id,
       :body => self.serializable_hash.except("_id"),
     })

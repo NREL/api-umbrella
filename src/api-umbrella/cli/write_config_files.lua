@@ -205,8 +205,8 @@ local function set_permissions()
     chown(config["var_dir"], nil, group)
     chown(config["etc_dir"], nil, group)
     chown(path_join(config["db_dir"], "geoip"), nil, group)
-    chown(path_join(config["etc_dir"], "elasticsearch"), nil, group)
     chown(path_join(config["etc_dir"], "nginx"), nil, group)
+    chown(path_join(config["etc_dir"], "opensearch"), nil, group)
     chown(path_join(config["etc_dir"], "perp"), nil, group)
     chown(path_join(config["etc_dir"], "trafficserver"), nil, group)
 
@@ -241,8 +241,8 @@ local function activate_services()
   available_services = invert_table(available_services)
 
   local active_services = {}
-  if config["_service_elasticsearch_aws_signing_proxy_enabled?"] then
-    active_services["elasticsearch-aws-signing-proxy"] = 1
+  if config["_service_opensearch_aws_signing_proxy_enabled?"] then
+    active_services["opensearch-aws-signing-proxy"] = 1
   end
   if config["_service_router_enabled?"] then
     if config["geoip"]["_auto_updater_enabled"] then

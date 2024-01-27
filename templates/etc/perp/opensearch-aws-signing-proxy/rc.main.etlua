@@ -14,11 +14,11 @@ if [ "${1}" = "start" ]; then
       chown "$api_umbrella_user":"$api_umbrella_group" /dev/stdout
     fi
 
-    ln -sf /dev/stdout "<%- config['log_dir'] %>/elasticsearch-aws-signing-proxy/access.log"
+    ln -sf /dev/stdout "<%- config['log_dir'] %>/opensearch-aws-signing-proxy/access.log"
   fi
 
   run_args=("-e" "rc.env" "-c" "<%- config['_src_root_dir'] %>")
-  exec runtool "${run_args[@]}" nginx -p "<%- config['_src_root_dir'] %>/" -c "<%- config['etc_dir'] %>/nginx/elasticsearch-aws-signing-proxy.conf"
+  exec runtool "${run_args[@]}" nginx -p "<%- config['_src_root_dir'] %>/" -c "<%- config['etc_dir'] %>/nginx/opensearch-aws-signing-proxy.conf"
 fi
 
 exit 0

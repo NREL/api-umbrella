@@ -7,7 +7,7 @@ class Test::Processes::TestRsyslog < Minitest::Test
   def setup
     super
     setup_server
-    @elasticsearch_error_log_path = File.join($config["log_dir"], "rsyslog/elasticsearch_error.log")
+    @opensearch_error_log_path = File.join($config["log_dir"], "rsyslog/opensearch_error.log")
   end
 
   # To make sure rsyslog doesn't leak memory while logging requests:
@@ -17,7 +17,7 @@ class Test::Processes::TestRsyslog < Minitest::Test
     # stabilize its memory use.
     make_requests(2_000)
     warmed_memory_use = memory_use
-    warmed_error_log_size = elasticsearch_error_log_size
+    warmed_error_log_size = opensearch_error_log_size
 
     # Validate that the rsyslog process isn't using more than 100MB initially.
     # If it is, then this is probably the best indicator that there's a memory
@@ -28,7 +28,7 @@ class Test::Processes::TestRsyslog < Minitest::Test
     # Make more requests.
     make_requests(10_000)
     final_memory_use = memory_use
-    final_error_log_size = elasticsearch_error_log_size
+    final_error_log_size = opensearch_error_log_size
 
     # Compare the memory use before and after making requests. Note that this
     # is a very loose test (allowing 15MB of growth), since there can be a
@@ -44,37 +44,37 @@ class Test::Processes::TestRsyslog < Minitest::Test
     rss_diff = final_memory_use.fetch(:rss) - warmed_memory_use.fetch(:rss)
     assert_operator(rss_diff, :<=, 15_000)
 
-    # Ensure nothing was generated in the elasticsearch error log file, since
+    # Ensure nothing was generated in the opensearch error log file, since
     # the specific leak in v8.28.0 was triggered by generated error data.
     assert_equal(warmed_error_log_size, final_error_log_size)
   end
 
-  def test_elasticsearch_error_log
-    FileUtils.rm_f(@elasticsearch_error_log_path)
+  def test_opensearch_error_log
+    FileUtils.rm_f(@opensearch_error_log_path)
 
-    make_elasticsearch_config_invalid do
+    make_opensearch_config_invalid do
       response = Typhoeus.get("http://127.0.0.1:9080/api/hello", http_options)
       assert_response_code(200, response)
 
       Timeout.timeout(30) do
         loop do
-          break if elasticsearch_error_log_size > 0
+          break if opensearch_error_log_size > 0
         end
       end
 
       # Expect the failed message in the log file.
-      log = File.read(@elasticsearch_error_log_path)
+      log = File.read(@opensearch_error_log_path)
       assert_match("strict_dynamic_mapping_exception", log)
     end
   end
 
-  def test_elasticsearch_error_log_to_console
+  def test_opensearch_error_log_to_console
     override_config({
       "log" => {
         "destination" => "console",
       },
     }) do
-      make_elasticsearch_config_invalid do
+      make_opensearch_config_invalid do
         log_tail = LogTail.new("rsyslog/current")
 
         response = Typhoeus.get("http://127.0.0.1:9080/api/hello", http_options)
@@ -124,24 +124,24 @@ class Test::Processes::TestRsyslog < Minitest::Test
     memory
   end
 
-  def elasticsearch_error_log_size
+  def opensearch_error_log_size
     size = 0
-    if(File.exist?(@elasticsearch_error_log_path))
-      size = File.size(@elasticsearch_error_log_path)
+    if(File.exist?(@opensearch_error_log_path))
+      size = File.size(@opensearch_error_log_path)
     end
 
     size
   end
 
-  def make_elasticsearch_config_invalid
+  def make_opensearch_config_invalid
     # Make a temporary change to the rsyslog configuration to make the output
     # invalid.
     conf_path = File.join($config["etc_dir"], "rsyslog.conf")
     content = File.read(conf_path)
     FileUtils.mv(conf_path, "#{conf_path}.bak")
 
-    # Trigger elasticsearch logging errors by using an invalid template.
-    content.gsub!(/^template\(name="elasticsearch-json-record".*$/, 'template(name="elasticsearch-json-record" type="string" string="{\"msgnum\":\"x%msg:F,58:2%\"}")')
+    # Trigger opensearch logging errors by using an invalid template.
+    content.gsub!(/^template\(name="opensearch-json-record".*$/, 'template(name="opensearch-json-record" type="string" string="{\"msgnum\":\"x%msg:F,58:2%\"}")')
 
     # Write the new temp config file and restart rsyslog.
     File.write(conf_path, content)

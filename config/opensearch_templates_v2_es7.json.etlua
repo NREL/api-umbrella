@@ -1,8 +1,8 @@
 [
   {
-    "id": "<%- config["elasticsearch"]["index_name_prefix"] %>-log-v2-template",
+    "id": "<%- config["opensearch"]["index_name_prefix"] %>-log-v2-template",
     "template": {
-      "template": "<%- config["elasticsearch"]["index_name_prefix"] %>-logs-v2-*",
+      "template": "<%- config["opensearch"]["index_name_prefix"] %>-logs-v2-*",
       "settings": {
         "index": {
           "number_of_shards": 1,
