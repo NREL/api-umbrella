@@ -125,8 +125,8 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
     assert_equal("via_upstream", record["api_backend_response_code_details"])
     assert_equal("text/plain; q=0.5, text/html", record["request_accept"])
     assert_equal("compress, gzip", record["request_accept_encoding"])
-    assert_kind_of(Numeric, record["request_at"])
-    assert_match(/\A\d{13}\z/, record["request_at"].to_s)
+    assert_kind_of(Numeric, record["@timestamp"])
+    assert_match(/\A\d{13}\z/, record["@timestamp"].to_s)
     assert_equal("basic-auth-username-example", record["request_basic_auth_username"])
     assert_equal("close", record["request_connection"])
     assert_equal("application/x-www-form-urlencoded", record["request_content_type"])
@@ -284,7 +284,7 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
     assert_logged_url(url, record)
   end
 
-  def test_logs_request_at_as_date
+  def test_logs_timestamp_as_date
     response = Typhoeus.get("http://127.0.0.1:9080/api/hello", log_http_options)
     assert_response_code(200, response)
 
@@ -295,7 +295,7 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
     }
     result = LogItem.client.indices.get_mapping(mapping_options)
 
-    property = result[hit["_index"]]["mappings"]["properties"]["request_at"]
+    property = result[hit["_index"]]["mappings"]["properties"]["@timestamp"]
     assert_equal({
       "type" => "date",
     }, property)

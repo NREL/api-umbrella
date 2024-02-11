@@ -22,8 +22,8 @@ else
     if ok then
       opensearch_templates = data
 
-      -- In the test environment, disable replicas and reduce shards to speed
-      -- things up.
+      -- In the test environment, disable replicas, reduce shards, and
+      -- increasing refresh interval to speed things up.
       if config["app_env"] == "test" then
         for _, template in pairs(opensearch_templates) do
           if not template["template"]["settings"] then
@@ -33,6 +33,7 @@ else
             template["template"]["settings"]["index"] = {}
           end
 
+          template["template"]["settings"]["index"]["refresh_interval"] = "50ms"
           template["template"]["settings"]["index"]["number_of_shards"] = 1
           template["template"]["settings"]["index"]["number_of_replicas"] = 0
         end

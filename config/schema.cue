@@ -421,6 +421,14 @@ import "path"
   fluent_bit: {
     host: string | *"127.0.0.1"
     port: uint16 | *14014
+    service: {
+      flush: float | *1
+      storage_max_chunks_up: uint | *32
+      storage_backlog_mem_limit: string | *"16M"
+    }
+    outputs: {
+      storage_total_limit_size: string | *"128M"
+    }
   }
 
   log: {

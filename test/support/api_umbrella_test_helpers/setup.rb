@@ -93,12 +93,10 @@ module ApiUmbrellaTestHelpers
 
           # Wipe opensearch indices before beginning.
           #
-          # Note, that we don't want to wipe the current day's index that is
-          # setup as part of the API Umbrella startup. So we're only clearing
-          # these older indices for previous dates, which we'll assume our test
-          # suite will work with. We completely delete the indices here (rather
-          # than relying on LogItem.clean_indices!), so that we're sure each
-          # test gets fresh index template and mappings setup.
+          # We completely delete the indices here (rather than relying on
+          # LogItem.clean_indices!), so that we're sure each test gets fresh
+          # index template and mappings setup.
+          client.perform_request "DELETE", "_data_stream/api-umbrella-test-*"
           client.indices.delete :index => "api-umbrella-test-*"
 
           self.setup_complete = true

@@ -294,8 +294,6 @@ function _M.normalized_data(data)
     request_ip = lowercase_truncate(data["request_ip"], 45),
     request_ip_city = truncate(data["request_ip_city"], 200),
     request_ip_country = uppercase_truncate(data["request_ip_country"], 2),
-    request_ip_lat = tonumber(data["request_ip_lat"]),
-    request_ip_lon = tonumber(data["request_ip_lon"]),
     request_ip_region = uppercase_truncate(data["request_ip_region"], 2),
     request_method = uppercase_truncate(data["request_method"], 10),
     request_origin = truncate(data["request_origin"], 200),

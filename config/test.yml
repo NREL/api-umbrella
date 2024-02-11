@@ -93,6 +93,8 @@ router:
     refresh_local_cache_interval: 0
 fluent_bit:
   port: 13014
+  service:
+    flush: 0.1
 geoip:
   db_update_frequency: false
 postgresql:

@@ -93,13 +93,13 @@ local function build_log_data()
   set_computed_url_fields(data, ngx_ctx)
   set_computed_user_agent_fields(data)
 
-  return normalized_data(data)
+  return data
 end
 
 local function log_request()
   -- Build the log message and send to Fluent Bit for processing.
   local data = build_log_data()
-  local message = json_encode(data)
+  local message = json_encode(normalized_data(data))
   local _, err = send_message(message)
   if err then
     ngx.log(ngx.ERR, "failed to log message: ", err)

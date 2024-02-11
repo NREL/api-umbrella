@@ -1,42 +1,46 @@
 service:
   log_level: info
+  # How often to flush inputs to the outputs.
+  flush: <%- json_encode(config["fluent_bit"]["service"]["flush"]) %>
   storage.path: /tmp/fluentbit
   storage.sync: normal
   storage.checksum: off
-  storage.max_chunks_up: 256
-  storage.backlog.mem_limit: 5M
+  # max_chunks_up * 2MB corresponds to roughly the maximum memory use before
+  # things are buffered to disk for `storage.type: filesystem` inputs.
+  storage.max_chunks_up: <%- json_encode(config["fluent_bit"]["service"]["storage_max_chunks_up"]) %>
+  # Determine how many MB of data can be read from disk in the event fluent-bit
+  # is restarted.
+  storage.backlog.mem_limit: <%- json_encode(config["fluent_bit"]["service"]["storage_backlog_mem_limit"]) %>
 
 pipeline:
   inputs:
     - name: tcp
+      tag: all
       listen: <%- json_encode(config["fluent_bit"]["host"]) %>
       port: <%- json_encode(config["fluent_bit"]["port"]) %>
       format: json
-      tag: logs
-      # mem_buf_limit: 500M
-      # storage.type: filesystem
-      # storage.pause_on_chunks_overlimit: on
+      storage.type: filesystem
 
     - name: fluentbit_metrics
-      scrape_interval: 10
       tag: internal_metrics
+      scrape_interval: 60
+      scrape_on_start: true
 
   filters:
     - name: rewrite_tag
-      match: logs
-      rule: "$gatekeeper_denied_code ^. denied_logs false"
+      match: all
+      rule: "$gatekeeper_denied_code ^. denied false"
 
   outputs:
+    # Print what we would log to stdout for extra redundancy.
     - name: stdout
-      # match: logs denied_logs
       match: "*"
       json_date_key: false
       format: json_lines
 
+    # Send API logs to OpenSearch analytics DB.
     - name: opensearch
-      match: logs
-      # aws_auth: on
-      # aws_region: us-west-2
+      match_regex: "^(all|denied)$"
       host: <%- json_encode(config["opensearch"]["_first_server"]["host"]) %>
       port: <%- json_encode(config["opensearch"]["_first_server"]["port"]) %>
       tls: <%- config["opensearch"]["_first_server"]["_https?"] and "on" or "off" %>
@@ -46,38 +50,28 @@ pipeline:
       <% if config["opensearch"]["_first_server"]["password"] then %>
       http_passwd: <%- json_encode(config["opensearch"]["_first_server"]["password"]) %>"
       <% end %>
-      index: <%- json_encode(config["opensearch"]["index_name_prefix"] .. "-logs-v" .. config["opensearch"]["template_version"] .. "-all") %>
-      suppress_type_name: on
-      id_key: request_id
-      # workers: 6
-      compress: gzip
-      trace_error: on
-      # storage.total_limit_size: 4GB
-      # generate_id: on
-      # buffer_size: false
-
-    - name: opensearch
-      match: denied_logs
       # aws_auth: on
       # aws_region: us-west-2
-      host: <%- json_encode(config["opensearch"]["_first_server"]["host"]) %>
-      port: <%- json_encode(config["opensearch"]["_first_server"]["port"]) %>
-      tls: <%- config["opensearch"]["_first_server"]["_https?"] and "on" or "off" %>
-      <% if config["opensearch"]["_first_server"]["user"] then %>
-      http_user: <%- json_encode(config["opensearch"]["_first_server"]["user"]) %>
-      <% end %>
-      <% if config["opensearch"]["_first_server"]["password"] then %>
-      http_passwd: <%- json_encode(config["opensearch"]["_first_server"]["password"]) %>"
-      <% end %>
-      index: <%- json_encode(config["opensearch"]["index_name_prefix"] .. "-logs-v" .. config["opensearch"]["template_version"] .. "-denied") %>
+      index: <%- json_encode(config["opensearch"]["index_name_prefix"] .. "-logs-v" .. config["opensearch"]["template_version"] .. "-$TAG") %>
+      # Data streams require "create" operations.
+      write_operation: create
+      # _type field is no longer accepted for OpenSearch.
       suppress_type_name: on
+      # Retry failed requests in the event the server is temporarily down.
+      retry_limit: 30
+      # Use our request ID for the document ID to help reduce the possibility
+      # of duplicate data when retries are attempted (note that duplicate data
+      # can still occur if the data stream index is rotated).
       id_key: request_id
-      # workers: 6
-      compress: gzip
+      # Ensure the record is passed through without adding any extra metadata.
+      logstash_format: off
+      include_tag_key: off
+      # Limit the on-disk buffer size.
+      storage.total_limit_size: <%- json_encode(config["fluent_bit"]["outputs"]["storage_total_limit_size"]) %>
+      # Read and report errors, increasing buffer size so more complete errors
+      # can be read in.
       trace_error: on
-      # storage.total_limit_size: 4GB
-      # generate_id: on
-      # buffer_size: false
+      buffer_size: 16KB
 
     # - name: s3
     #   match: logs denied_logs

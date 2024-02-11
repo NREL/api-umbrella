@@ -64,8 +64,9 @@ module ApiUmbrellaTestHelpers
     end
 
     def assert_logs_base_fields(record, user = nil)
-      assert_kind_of(Numeric, record["request_at"])
-      assert_match(/\A\d{13}\z/, record["request_at"].to_s)
+      assert_kind_of(Numeric, record.fetch("@timestamp"))
+      assert_match(/\A\d{13}\z/, record.fetch("@timestamp").to_s)
+      assert_match(/\A[a-z0-9]{20}\z/, record.fetch("request_id"))
       assert_equal("127.0.0.1:9080", record["request_host"])
       assert_match(/\A\d+\.\d+\.\d+\.\d+\z/, record["request_ip"])
       assert_equal("GET", record["request_method"])
