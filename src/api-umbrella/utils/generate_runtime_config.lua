@@ -431,13 +431,8 @@ local function set_computed_config(config)
     },
     opensearch = {
       _first_server = config["opensearch"]["_servers"][1],
-      ["_index_partition_monthly?"] = (config["opensearch"]["index_partition"] == "monthly"),
-      ["_index_partition_daily?"] = (config["opensearch"]["index_partition"] == "daily"),
-      ["_template_version_v1?"] = (config["opensearch"]["template_version"] == 1),
-      ["_template_version_v2?"] = (config["opensearch"]["template_version"] == 2),
     },
     ["_service_egress_enabled?"] = array_includes(config["services"], "egress"),
-    ["_service_opensearch_aws_signing_proxy_enabled?"] = array_includes(config["services"], "opensearch_aws_signing_proxy"),
     ["_service_router_enabled?"] = array_includes(config["services"], "router"),
     ["_service_web_enabled?"] = array_includes(config["services"], "web"),
     router = {

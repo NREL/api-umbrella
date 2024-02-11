@@ -35,8 +35,6 @@ if [ "${1}" = "start" ]; then
 
   exec \
     runtool ${run_args[@]+"${run_args[@]}"} \
-    rsyslogd \
-      -n \
-      -f "<%- config['etc_dir'] %>/rsyslog.conf" \
-      -i "<%- config['run_dir'] %>/rsyslogd.pid"
+    fluent-bit \
+      --config "<%- config['etc_dir'] %>/fluent-bit/fluent-bit.yaml"
 fi

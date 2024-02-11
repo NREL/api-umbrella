@@ -1,6 +1,5 @@
 local config = require("api-umbrella.utils.load_config")()
 local http = require "resty.http"
-local icu_date = require "icu-date-ffi"
 local is_empty = require "api-umbrella.utils.is_empty"
 local json_decode = require("cjson").decode
 local json_encode = require "api-umbrella.utils.json_encode"
@@ -9,14 +8,6 @@ local encode_base64 = ngx.encode_base64
 local server = config["opensearch"]["_first_server"]
 
 local _M = {}
-
-if config["opensearch"]["index_partition"] == "monthly" then
-  _M.partition_date_format = icu_date.formats.pattern("yyyy-MM")
-elseif config["opensearch"]["index_partition"] == "daily" then
-  _M.partition_date_format = icu_date.formats.pattern("yyyy-MM-dd")
-else
-  error("Unknown opensearch.index_partition configuration value")
-end
 
 function _M.query(path, options)
   local httpc = http.new()

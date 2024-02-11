@@ -99,7 +99,7 @@ module ApiUmbrellaTestHelpers
           # suite will work with. We completely delete the indices here (rather
           # than relying on LogItem.clean_indices!), so that we're sure each
           # test gets fresh index template and mappings setup.
-          client.indices.delete :index => "api-umbrella*-2013-*,api-umbrella*-2014-*,api-umbrella*-2015-*"
+          client.indices.delete :index => "api-umbrella-test-*"
 
           self.setup_complete = true
         end
@@ -368,7 +368,6 @@ module ApiUmbrellaTestHelpers
           # since otherwise it might leave symlinked files in place when
           # switching back to file output, which would lead to the output going
           # to unexpected places.
-          FileUtils.rm_f(File.join($config["log_dir"], "opensearch-aws-signing-proxy/access.log"))
           FileUtils.rm_f(File.join($config["log_dir"], "nginx-web-app/access.log"))
           FileUtils.rm_f(File.join($config["log_dir"], "nginx/access.log"))
           FileUtils.rm_f(File.join($config["log_dir"], "rsyslog/opensearch_error.log"))

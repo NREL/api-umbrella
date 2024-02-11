@@ -20,6 +20,9 @@ class Outdated < Thor
     "envoy_control_plane" => {
       :git => "https://github.com/GUI/envoy-control-plane.git",
     },
+    "fluent-bit" => {
+      :git => "https://github.com/fluent/fluent-bit.git",
+    },
     "glauth" => {
       :git => "https://github.com/glauth/glauth.git",
     },
@@ -55,9 +58,6 @@ class Outdated < Thor
     },
     "perp" => {
       :http => "http://b0llix.net/perp/site.cgi?page=download",
-    },
-    "rsyslog" => {
-      :git => "https://github.com/rsyslog/rsyslog.git",
     },
     "shellcheck" => {
       :git => "https://github.com/koalaman/shellcheck.git",

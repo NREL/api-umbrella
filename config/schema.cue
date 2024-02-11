@@ -418,7 +418,7 @@ import "path"
     match_x_forwarded_host?: bool
   }
 
-  rsyslog: {
+  fluent_bit: {
     host: string | *"127.0.0.1"
     port: uint16 | *14014
   }
@@ -457,18 +457,7 @@ import "path"
       "http://opensearch:9200",
     ]
     index_name_prefix: string | *"api-umbrella"
-    index_partition: string | *"daily"
-    api_version: uint | *7
-    template_version: uint | *2
-    aws_signing_proxy: {
-      host: string | *"127.0.0.1"
-      port: uint16 | *14017
-      workers: uint | "auto" | *1
-      worker_connections: uint | *8192
-      listen_so_keepalive: string | *"on"
-      listen_backlog?: uint
-      error_log_level: string | *"notice"
-    }
+    template_version: uint | *3
   }
 
   #analytics_output_name: "opensearch"

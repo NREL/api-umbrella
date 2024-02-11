@@ -241,16 +241,13 @@ local function activate_services()
   available_services = invert_table(available_services)
 
   local active_services = {}
-  if config["_service_opensearch_aws_signing_proxy_enabled?"] then
-    active_services["opensearch-aws-signing-proxy"] = 1
-  end
   if config["_service_router_enabled?"] then
     if config["geoip"]["_auto_updater_enabled"] then
       active_services["geoip-auto-updater"] = 1
     end
     active_services["envoy-control-plane"] = 1
+    active_services["fluent-bit"] = 1
     active_services["nginx"] = 1
-    active_services["rsyslog"] = 1
     active_services["trafficserver"] = 1
   end
   if config["_service_egress_enabled?"] then

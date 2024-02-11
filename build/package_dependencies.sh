@@ -34,9 +34,6 @@ if [[ "$ID_NORMALIZED" == "rhel" ]]; then
     # TrafficServer
     libxml2
 
-    # rsyslog omelasticsearch
-    libcurl
-
     # init.d script helpers
     initscripts
 
@@ -190,13 +187,6 @@ elif [[ "$ID_NORMALIZED" == "debian" ]]; then
     libunwind8
     libxml2
 
-    # rsyslog
-    libestr0
-    libfastjson4
-
-    # rsyslog omelasticsearch
-    "libcurl$libcurl_version"
-
     # init.d script helpers
     sysvinit-utils
     lsb-base
@@ -274,10 +264,6 @@ elif [[ "$ID_NORMALIZED" == "debian" ]]; then
     # lua-psl
     libpsl-dev
 
-    # rsyslog
-    libestr-dev
-    libfastjson-dev
-
     # ngx_http_geoip2_module
     libmaxminddb-dev
 
@@ -285,6 +271,11 @@ elif [[ "$ID_NORMALIZED" == "debian" ]]; then
     libhwloc-dev
     libjemalloc-dev
     libunwind-dev
+
+    # Fluent Bit
+    bison
+    cmake
+    flex
   )
   test_runtime_dependencies=(
     unbound

@@ -1,12 +1,13 @@
-[
-  {
-    "id": "<%- config["opensearch"]["index_name_prefix"] %>-log-v2-template",
+{
+  "<%- config["opensearch"]["index_name_prefix"] %>-log-v3-template": {
+    "index_patterns": [
+      "<%- config["opensearch"]["index_name_prefix"] %>-logs-v3-*"
+    ],
+    "data_stream": {},
     "template": {
-      "template": "<%- config["opensearch"]["index_name_prefix"] %>-logs-v2-*",
       "settings": {
         "index": {
-          "number_of_shards": 1,
-          "codec": "best_compression"
+          "refresh_interval": "10s"
         },
         "analysis": {
           "normalizer": {
@@ -28,6 +29,9 @@
       "mappings": {
         "dynamic": "strict",
         "properties": {
+          "@timestamp": {
+            "type": "date"
+          },
           "api_backend_id": {
             "type": "keyword",
             "normalizer": "lowercase_normalizer"
@@ -66,9 +70,6 @@
             "type": "keyword",
             "normalizer": "lowercase_normalizer"
           },
-          "request_at": {
-            "type": "date"
-          },
           "request_basic_auth_username": {
             "type": "keyword",
             "normalizer": "lowercase_normalizer"
@@ -85,12 +86,16 @@
             "type": "keyword",
             "normalizer": "lowercase_normalizer"
           },
+          "request_id": {
+            "type": "keyword"
+          },
           "request_ip": {
             "type": "keyword",
             "normalizer": "lowercase_normalizer"
           },
           "request_ip_city": {
-            "type": "keyword"
+            "type": "keyword",
+            "normalizer": "lowercase_normalizer"
           },
           "request_ip_country": {
             "type": "keyword",
@@ -233,4 +238,4 @@
       }
     }
   }
-]
+}

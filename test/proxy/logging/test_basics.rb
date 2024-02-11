@@ -38,18 +38,19 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
     hit = result[:hit]
 
     expected_fields = [
+      "@timestamp",
       "api_backend_id",
-      "api_backend_url_match_id",
-      "api_key",
       "api_backend_resolved_host",
       "api_backend_response_code_details",
+      "api_backend_url_match_id",
+      "api_key",
       "request_accept",
       "request_accept_encoding",
-      "request_at",
       "request_basic_auth_username",
       "request_connection",
       "request_content_type",
       "request_host",
+      "request_id",
       "request_ip",
       "request_method",
       "request_origin",

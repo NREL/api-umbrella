@@ -1,5 +1,3 @@
-local config = require("api-umbrella.utils.load_config")()
-local icu_date = require "icu-date-ffi"
 local interval_lock = require "api-umbrella.utils.interval_lock"
 local opensearch = require "api-umbrella.utils.opensearch"
 local opensearch_templates = require "api-umbrella.proxy.opensearch_templates_data"
@@ -44,10 +42,10 @@ function _M.create_templates()
   if created then return end
 
   if opensearch_templates then
-    for _, template in ipairs(opensearch_templates) do
-      local _, err = opensearch_query("/_template/" .. template["id"], {
+    for template_id, template in pairs(opensearch_templates) do
+      local _, err = opensearch_query("/_index_template/" .. template_id, {
         method = "PUT",
-        body = template["template"],
+        body = template,
       })
       if err then
         ngx.log(ngx.ERR, "failed to update opensearch template: ", err)
@@ -61,69 +59,10 @@ function _M.create_templates()
   end
 end
 
-function _M.create_aliases()
-  local date = icu_date.new({ zone_id = "UTC" })
-  local today = date:format(opensearch.partition_date_format)
-
-  date:add(icu_date.fields.DATE, 1)
-  local tomorrow = date:format(opensearch.partition_date_format)
-
-  local aliases = {
-    {
-      alias = config["opensearch"]["index_name_prefix"] .. "-logs-" .. today,
-      index = config["opensearch"]["index_name_prefix"] .. "-logs-v" .. config["opensearch"]["template_version"] .. "-" .. today,
-    },
-    {
-      alias = config["opensearch"]["index_name_prefix"] .. "-logs-write-" .. today,
-      index = config["opensearch"]["index_name_prefix"] .. "-logs-v" .. config["opensearch"]["template_version"] .. "-" .. today,
-    },
-  }
-
-  -- Create the aliases needed for the next day if we're at the end of the
-  -- month.
-  if tomorrow ~= today then
-    table.insert(aliases, {
-      alias = config["opensearch"]["index_name_prefix"] .. "-logs-" .. tomorrow,
-      index = config["opensearch"]["index_name_prefix"] .. "-logs-v" .. config["opensearch"]["template_version"] .. "-" .. tomorrow,
-    })
-    table.insert(aliases, {
-      alias = config["opensearch"]["index_name_prefix"] .. "-logs-write-" .. tomorrow,
-      index = config["opensearch"]["index_name_prefix"] .. "-logs-v" .. config["opensearch"]["template_version"] .. "-" .. tomorrow,
-    })
-  end
-
-  for _, alias in ipairs(aliases) do
-    -- Only create aliases if they don't already exist.
-    local exists_res, exists_err = opensearch_query("/_alias/" .. alias["alias"], {
-      method = "HEAD",
-    })
-    if exists_err then
-      ngx.log(ngx.ERR, "failed to check opensearch index alias: ", exists_err)
-    elseif exists_res.status == 404 then
-      -- Make sure the index exists.
-      local _, create_err = opensearch_query("/" .. alias["index"], {
-        method = "PUT",
-      })
-      if create_err then
-        ngx.log(ngx.ERR, "failed to create opensearch index: ", create_err)
-      end
-
-      -- Create the alias for the index.
-      local _, alias_err = opensearch_query("/" .. alias["index"] .. "/_alias/" .. alias["alias"], {
-        method = "PUT",
-      })
-      if alias_err then
-        ngx.log(ngx.ERR, "failed to create opensearch index alias: ", alias_err)
-      end
-    end
-  end
-end
-
 local function setup()
   local _, err = _M.wait_for_opensearch()
   if not err then
     _M.create_templates()
-    _M.create_aliases()
   else
     ngx.log(ngx.ERR, "timed out waiting for eleasticsearch before setup, rerunning...")
     sleep(5)

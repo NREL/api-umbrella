@@ -31,8 +31,8 @@ RUN make deps:openresty && make clean:dev
 COPY tasks/deps/trafficserver /app/tasks/deps/
 RUN make deps:trafficserver && make clean:dev
 
-COPY tasks/deps/rsyslog /app/tasks/deps/
-RUN make deps:rsyslog && make clean:dev
+COPY tasks/deps/fluent-bit /app/tasks/deps/
+RUN make deps:fluent-bit && make clean:dev
 
 COPY src/api-umbrella-git-1.rockspec src/luarocks.lock /app/src/
 COPY tasks/deps/luarocks /app/tasks/deps/

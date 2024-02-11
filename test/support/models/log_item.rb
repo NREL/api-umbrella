@@ -2,8 +2,6 @@ class LogItem
   include ActiveAttr::Model
 
   mattr_accessor :client
-  mattr_reader(:setup_indices) { Concurrent::Hash.new }
-  mattr_reader(:setup_indices_lock) { Monitor.new }
 
   attribute :_id
   attribute :api_backend_id
@@ -154,39 +152,8 @@ class LogItem
       index_time = Time.at(index_time / 1000.0).utc
     end
 
-    partition_date_format = case $config.fetch("opensearch").fetch("index_partition")
-    when "monthly"
-      "%Y-%m"
-    when "daily"
-      "%Y-%m-%d"
-    end
-    partition = index_time.utc.strftime(partition_date_format)
-
     prefix = "#{$config.fetch("opensearch").fetch("index_name_prefix")}-logs"
-    index_name = "#{prefix}-v#{$config["opensearch"]["template_version"]}-#{partition}"
-    index_name_read = "#{prefix}-#{partition}"
-    index_name_write = "#{prefix}-write-#{partition}"
-
-    unless self.setup_indices[index_name]
-      self.setup_indices_lock.synchronize do
-        unless self.setup_indices[index_name]
-          begin
-            self.client.indices.create(:index => index_name, :body => {
-              :aliases => {
-                index_name_read => {},
-                index_name_write => {},
-              },
-            })
-          rescue OpenSearch::Transport::Transport::Errors::BadRequest => e
-            unless e.message.include?("index_already_exists_exception")
-              raise e
-            end
-          end
-
-          self.setup_indices[index_name] = true
-        end
-      end
-    end
+    index_name = "#{prefix}-v#{$config["opensearch"]["template_version"]}-all"
 
     self.client.index({
       :index => index_name,

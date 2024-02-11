@@ -1,10 +1,10 @@
 local active_config_exists = require("api-umbrella.proxy.stores.active_config_store").exists
 local config = require("api-umbrella.utils.load_config")()
 local http = require "resty.http"
-local icu_date = require "icu-date-ffi"
 local json_encode = require "api-umbrella.utils.json_encode"
 local opensearch = require "api-umbrella.utils.opensearch"
 
+local jobs_dict = ngx.shared.jobs
 local opensearch_query = opensearch.query
 local ngx_var = ngx.var
 
@@ -45,18 +45,9 @@ local function status_response(quick)
     response["details"]["analytics_db"] = opensearch_health["status"]
 
     -- Check to see if the OpenSearch index aliases have been setup.
-    local date = icu_date.new({ zone_id = "UTC" })
-    local today = date:format(opensearch.partition_date_format)
-    local alias = config["opensearch"]["index_name_prefix"] .. "-logs-" .. today
-    local index = config["opensearch"]["index_name_prefix"] .. "-logs-v" .. config["opensearch"]["template_version"] .. "-" .. today
-    res, err = opensearch_query("/" .. index .. "/_alias/" .. alias)
-    if err then
-      ngx.log(ngx.ERR, "failed to fetch opensearch alias details: ", err)
-    elseif res.body_json then
-      local opensearch_alias = res.body_json
-      if not opensearch_alias["error"] then
-        response["details"]["analytics_db_setup"] = "green"
-      end
+    local created = jobs_dict:get("opensearch_templates_created")
+    if created then
+      response["details"]["analytics_db_setup"] = "green"
     end
   end
 
