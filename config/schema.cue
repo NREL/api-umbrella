@@ -466,6 +466,17 @@ import "path"
     ]
     index_name_prefix: string | *"api-umbrella"
     template_version: uint | *3
+    template: {
+      index: {
+        refresh_interval: string | *"10s"
+        number_of_shards: uint | *3
+        number_of_replicas: uint | *2
+      }
+      translog: {
+        durability: string | *"async"
+        sync_interval: string | *"10s"
+      }
+    }
   }
 
   #analytics_output_name: "opensearch"

@@ -36,7 +36,7 @@ class Test::Processes::TestRpaths < Minitest::Test
     # expect.
     assert_operator(bins.length, :>, 0)
     [
-      "/embedded/sbin/rsyslogd",
+      "/embedded/bin/fluent-bit",
       "/embedded/openresty/nginx/sbin/nginx",
       "/embedded/libexec/trafficserver/header_rewrite.so",
       # LuaRock

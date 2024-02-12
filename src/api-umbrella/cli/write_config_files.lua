@@ -126,7 +126,7 @@ local function write_templates()
 
         if template_ext == "etlua" then
           local render_ok, render_err
-          render_ok, content, render_err = xpcall(etlua_render, xpcall_error_handler, content, { config = config, json_encode = json_encode })
+          render_ok, content, render_err = xpcall(etlua_render, xpcall_error_handler, content, { config = config, json_encode = json_encode, path_join = path_join })
           if not render_ok or render_err then
             print("template compile error in " .. template_path ..": " .. (render_err or content))
             os.exit(1)

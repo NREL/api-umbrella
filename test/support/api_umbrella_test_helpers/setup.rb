@@ -358,7 +358,7 @@ module ApiUmbrellaTestHelpers
         # reasons and cleanup and restart extra things, since this is not a
         # change we would normally expect to happen without a full restart.
         if previous_override_config.dig("log", "destination") ||
-          @@current_override_config.dig("log", "destination") ||
+            @@current_override_config.dig("log", "destination")
 
           # These log files are symlinked to stdout or stderr by the perp init
           # scripts, so when switching between these log destinations, we need
@@ -368,7 +368,6 @@ module ApiUmbrellaTestHelpers
           # to unexpected places.
           FileUtils.rm_f(File.join($config["log_dir"], "nginx-web-app/access.log"))
           FileUtils.rm_f(File.join($config["log_dir"], "nginx/access.log"))
-          FileUtils.rm_f(File.join($config["log_dir"], "rsyslog/opensearch_error.log"))
           FileUtils.rm_f(File.join($config["log_dir"], "trafficserver/access.log"))
           FileUtils.rm_f(File.join($config["log_dir"], "trafficserver/diags.log"))
           FileUtils.rm_f(File.join($config["log_dir"], "trafficserver/manager.log"))
@@ -382,10 +381,10 @@ module ApiUmbrellaTestHelpers
           # think it suffices for testing the differences in the test
           # environment for now.
           self.api_umbrella_process.restart_services([
-            "trafficserver",
-            "rsyslog",
+            "fluent-bit",
             "nginx",
             "nginx-web-app",
+            "trafficserver",
           ], options)
         end
 
@@ -415,7 +414,7 @@ module ApiUmbrellaTestHelpers
             previous_override_config["https_proxy"] ||
             @@current_override_config["https_proxy"]
 
-          self.api_umbrella_process.restart_services(["rsyslog"], options)
+          self.api_umbrella_process.restart_services(["fluent-bit"], options)
         end
       end
     end

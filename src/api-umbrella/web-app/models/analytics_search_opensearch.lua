@@ -39,44 +39,31 @@ local UPPERCASE_FIELDS = {
 local _M = {}
 _M.__index = _M
 
-local function index_names(start_time, end_time)
-  assert(start_time)
-  assert(end_time)
+local function index_names(start_time, end_time, body)
+  local names = {
+    config["opensearch"]["index_name_prefix"] .. "-logs-v" .. config["opensearch"]["template_version"] .."-allowed",
+    config["opensearch"]["index_name_prefix"] .. "-logs-v" .. config["opensearch"]["template_version"] .."-errored",
+  }
 
-  date_utc:parse(format_iso8601, end_time)
-  -- TODO: For some reason, set_time_zone_id doesn't work properly if format()
-  -- isn't called first, when changing between time zones. Need to debug why
-  -- this isn't working as expected with icu-date, but in the meantime, this
-  -- workaround seems to make set_time_zone_id work as expected.
-  --
-  -- The following test can reproduce this problem (it will break without this
-  -- format() call):
-  -- env OPENSEARCH_TEST_API_VERSION=5 OPENSEARCH_TEST_TEMPLATE_VERSION=2 OPENSEARCH_TEST_INDEX_PARTITION=daily bundle exec minitest test/apis/admin/stats/test_search.rb -n test_bins_results_by_day_with_time_zone_support
-  date_utc:format(format_iso8601)
-  date_utc:set_time_zone_id("UTC")
-  local end_time_millis = date_utc:get_millis()
+  local exclude_denied = false
+  local filters = body["query"]["bool"]["filter"]["bool"]["must"]
+  for _, filter in ipairs(filters) do
+    if filter["bool"] and filter["bool"]["must"] then
+      local sub_filters = filter["bool"]["must"]
+      for _, sub_filter in ipairs(sub_filters) do
+        if sub_filter["bool"] and sub_filter["bool"]["must_not"] and sub_filter["bool"]["must_not"]["exists"] and sub_filter["bool"]["must_not"]["exists"]["field"] == "gatekeeper_denied_code" then
+          exclude_denied = true
+          break
+        end
+      end
 
-  date_utc:parse(format_iso8601, start_time)
-  -- TODO: See above about why this format() call is here, but shouldn't be
-  -- necessary.
-  date_utc:format(format_iso8601)
-  date_utc:set_time_zone_id("UTC")
-  if config["opensearch"]["index_partition"] == "monthly" then
-    date_utc:set(icu_date.fields.DAY_OF_MONTH, 1)
-  end
-  date_utc:set(icu_date.fields.HOUR_OF_DAY, 0)
-  date_utc:set(icu_date.fields.MINUTE, 0)
-  date_utc:set(icu_date.fields.SECOND, 0)
-  date_utc:set(icu_date.fields.MILLISECOND, 0)
-
-  local names = {}
-  while date_utc:get_millis() <= end_time_millis do
-    table.insert(names, config["opensearch"]["index_name_prefix"] .. "-logs-" .. date_utc:format(opensearch.partition_date_format))
-    if config["opensearch"]["index_partition"] == "monthly" then
-      date_utc:add(icu_date.fields.MONTH, 1)
-    elseif config["opensearch"]["index_partition"] == "daily" then
-      date_utc:add(icu_date.fields.DATE, 1)
+      if exclude_denied then
+        break
+      end
     end
+  end
+  if not exclude_denied then
+    table.insert(names, config["opensearch"]["index_name_prefix"] .. "-logs-v" .. config["opensearch"]["template_version"] .."-denied")
   end
 
   return names
@@ -92,11 +79,6 @@ local function parse_query_builder(query)
       local field = rule["field"]
       local value = rule["value"]
 
-      local es_field = field
-      if field == "request_id" then
-        es_field = "_id"
-      end
-
       if not CASE_SENSITIVE_FIELDS[field] and type(value) == "string" then
         if UPPERCASE_FIELDS[field] then
           value = string.upper(value)
@@ -108,31 +90,31 @@ local function parse_query_builder(query)
       if operator == "equal" or operator == "not_equal" then
         filter = {
           term = {
-            [es_field] = value,
+            [field] = value,
           },
         }
       elseif operator == "begins_with" or operator == "not_begins_with" then
         filter = {
           prefix = {
-            [es_field] = value,
+            [field] = value,
           },
         }
       elseif operator == "contains" or operator == "not_contains" then
         filter = {
           regexp = {
-            [es_field] = ".*" .. escape_regex(value) .. ".*",
+            [field] = ".*" .. escape_regex(value) .. ".*",
           },
         }
       elseif operator == "is_null" or operator == "is_not_null" then
         filter = {
           exists = {
-            field = es_field,
+            field = field,
           },
         }
       elseif operator == "less" then
         filter = {
           range = {
-            [es_field] = {
+            [field] = {
               lt = tonumber(value),
             },
           },
@@ -140,7 +122,7 @@ local function parse_query_builder(query)
       elseif operator == "less_or_equal" then
         filter = {
           range = {
-            [es_field] = {
+            [field] = {
               lte = tonumber(value),
             },
           },
@@ -148,7 +130,7 @@ local function parse_query_builder(query)
       elseif operator == "greater" then
         filter = {
           range = {
-            [es_field] = {
+            [field] = {
               gt = tonumber(value),
             },
           },
@@ -156,7 +138,7 @@ local function parse_query_builder(query)
       elseif operator == "greater_or_equal" then
         filter = {
           range = {
-            [es_field] = {
+            [field] = {
               gte = tonumber(value),
             },
           },
@@ -164,7 +146,7 @@ local function parse_query_builder(query)
       elseif operator == "between" then
         filter = {
           range = {
-            [es_field] = {
+            [field] = {
               gte = tonumber(value[1]),
               lte = tonumber(value[2]),
             },
@@ -226,17 +208,14 @@ function _M.new()
         },
       },
       sort = {
-        { request_at = "desc" },
+        { ["@timestamp"] = "desc" },
       },
       aggregations = {},
       size = 0,
+      track_total_hits = true,
       timeout = "90s",
     },
   }
-
-  if config["opensearch"]["api_version"] >= 7 then
-    self.body["track_total_hits"] = true
-  end
 
   return setmetatable(self, _M)
 end
@@ -379,7 +358,7 @@ end
 function _M:aggregate_by_interval()
   self.body["aggregations"]["hits_over_time"] = {
     date_histogram = {
-      field = "request_at",
+      field = "@timestamp",
       interval = self.interval,
       time_zone = config["analytics"]["timezone"],
       min_doc_count = 0,
@@ -550,7 +529,7 @@ function _M:aggregate_by_drilldown_over_time()
     aggregations = {
       drilldown_over_time = {
         date_histogram = {
-          field = "request_at",
+          field = "@timestamp",
           interval = self.interval,
           time_zone = config["analytics"]["timezone"],
           min_doc_count = 0,
@@ -572,7 +551,7 @@ function _M:aggregate_by_drilldown_over_time()
 
   self.body["aggregations"]["hits_over_time"] = {
     date_histogram = {
-      field = "request_at",
+      field = "@timestamp",
       interval = self.interval,
       time_zone = config["analytics"]["timezone"],
       min_doc_count = 0,
@@ -593,7 +572,7 @@ function _M:aggregate_by_user_stats(order)
     aggregations = {
       last_request_at = {
         max = {
-          field = "request_at",
+          field = "@timestamp",
         },
       },
     },
@@ -637,7 +616,7 @@ end
 
 function _M:query_header()
   local header = deepcopy(self.query)
-  header["index"] = table.concat(index_names(self.start_time, self.end_time), ",")
+  header["index"] = table.concat(index_names(self.start_time, self.end_time, self.body), ",")
 
   return header
 end
@@ -647,7 +626,7 @@ function _M:query_body()
 
   table.insert(body["query"]["bool"]["filter"]["bool"]["must"], {
     range = {
-      request_at = {
+      ["@timestamp"] = {
         from = assert(self.start_time),
         to = assert(self.end_time),
       },
@@ -921,7 +900,6 @@ function _M:cache_interval_results(expires_at)
       -- Include the version information in the cache key, so that if the
       -- underlying OpenSearch database is upgraded, new data will be
       -- fetched.
-      api_version = config["opensearch"]["api_version"],
       template_version = config["opensearch"]["template_version"],
     }
     table.insert(batch, {

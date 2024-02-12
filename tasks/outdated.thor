@@ -20,7 +20,7 @@ class Outdated < Thor
     "envoy_control_plane" => {
       :git => "https://github.com/GUI/envoy-control-plane.git",
     },
-    "fluent-bit" => {
+    "fluent_bit" => {
       :git => "https://github.com/fluent/fluent-bit.git",
     },
     "glauth" => {

@@ -66,38 +66,15 @@ class LogItem
     # While not the most efficient way to bulk delete things, we don't want to
     # completely drop the index, since that might remove mappings that only get
     # created on API Umbrella startup.
-    bulk_request = []
-    opts = {
+    self.client.delete_by_query({
       :index => "_all",
-      :sort => "_doc",
-      :scroll => "2m",
-      :size => 1000,
+      :refresh => true,
       :body => {
         :query => {
           :match_all => {},
         },
       },
-    }
-    result = self.client.search(opts)
-    loop do
-      hits = result["hits"]["hits"]
-      break if hits.empty?
-
-      hits.each do |hit|
-        bulk_request << { :delete => { :_index => hit["_index"], :_type => hit["_type"], :_id => hit["_id"] } }
-      end
-
-      result = self.client.scroll(:scroll_id => result["_scroll_id"], :scroll => "2m")
-    end
-
-    self.client.clear_scroll(:scroll_id => result["_scroll_id"])
-
-    # Perform the bulk delete of all records in this index.
-    unless bulk_request.empty?
-      self.client.bulk :body => bulk_request
-    end
-
-    self.refresh_indices!
+    })
   end
 
   def serializable_hash
@@ -143,17 +120,21 @@ class LogItem
       hash.delete("request_query")
     end
 
+    hash["request_id"] = self._id
+    hash["@timestamp"] = hash.delete("request_at")
+
     hash
   end
 
   def save
-    index_time = self.request_at
-    if(index_time.kind_of?(Integer))
-      index_time = Time.at(index_time / 1000.0).utc
+    prefix = "#{$config.fetch("opensearch").fetch("index_name_prefix")}-logs-v#{$config["opensearch"]["template_version"]}"
+    if !self.gatekeeper_denied_code.nil?
+      index_name = "#{prefix}-denied"
+    elsif self.response_status.to_s =~ /^[4-9]/
+      index_name = "#{prefix}-errored"
+    else
+      index_name = "#{prefix}-allowed"
     end
-
-    prefix = "#{$config.fetch("opensearch").fetch("index_name_prefix")}-logs"
-    index_name = "#{prefix}-v#{$config["opensearch"]["template_version"]}-all"
 
     self.client.index({
       :index => index_name,

@@ -3,11 +3,11 @@
 set -e -u -x
 
 # Clean files that may be left over if container doesn't shut down cleanly.
-rm -f /opt/api-umbrella/var/run/rsyslogd.pid /tmp/.s.PGSQL.*
+rm -f /tmp/.s.PGSQL.*
 
-# Clean files that are tailed by rsyslog when using console output to prevent
+# Clean files that are tailed by fluent-bit when using console output to prevent
 # lots of output from previous logs on startup.
-rm -f /var/log/api-umbrella/trafficserver/access.log /var/log/api-umbrella/trafficserver/diags.log /var/log/api-umbrella/trafficserver/error.log /var/log/api-umbrella/trafficserver/manager.log /var/log/api-umbrella/trafficserver/traffic.out
+rm -f /var/log/api-umbrella/trafficserver/error.log
 
 make
 api-umbrella run

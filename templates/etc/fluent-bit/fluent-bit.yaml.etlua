@@ -2,7 +2,7 @@ service:
   log_level: info
   # How often to flush inputs to the outputs.
   flush: <%- json_encode(config["fluent_bit"]["service"]["flush"]) %>
-  storage.path: /tmp/fluentbit
+  storage.path: <%- json_encode(path_join(config["db_dir"], "fluent-bit")) %>
   storage.sync: normal
   storage.checksum: off
   # max_chunks_up * 2MB corresponds to roughly the maximum memory use before
@@ -14,33 +14,50 @@ service:
 
 pipeline:
   inputs:
-    - name: tcp
-      tag: all
-      listen: <%- json_encode(config["fluent_bit"]["host"]) %>
-      port: <%- json_encode(config["fluent_bit"]["port"]) %>
-      format: json
-      storage.type: filesystem
-
     - name: fluentbit_metrics
       tag: internal_metrics
       scrape_interval: 60
       scrape_on_start: true
 
+    - name: tcp
+      tag: analytics.allowed
+      listen: <%- json_encode(config["fluent_bit"]["host"]) %>
+      port: <%- json_encode(config["fluent_bit"]["port"]) %>
+      format: json
+      storage.type: filesystem
+
+    <% if config["log"]["destination"] == "console" then %>
+    # Workaround for error.log currently being hard-coded to output to a file
+    # that won't work if symlinked to /dev/stdout (it insists on rolling the file
+    # since it doesn't think it can write to it).
+    #
+    # This workaround should no longer be needed once Trafficserver 10 is
+    # released and things can be configured to output to stdout/stderr directly:
+    # https://github.com/apache/trafficserver/pull/7937
+    - name: tail
+      tag: trafficserver
+      path: <%- json_encode(path_join(config["log_dir"], "trafficserver/error.log")) %>
+      refresh_interval: 5
+    <% end %>
+
   filters:
     - name: rewrite_tag
-      match: all
-      rule: "$gatekeeper_denied_code ^. denied false"
+      match: analytics.allowed
+      rule: "$gatekeeper_denied_code ^. analytics.denied false"
+
+    - name: rewrite_tag
+      match: analytics.allowed
+      rule: "$response_status ^[4-9] analytics.errored false"
 
   outputs:
     # Print what we would log to stdout for extra redundancy.
     - name: stdout
       match: "*"
-      json_date_key: false
-      format: json_lines
+      format: msgpack
 
-    # Send API logs to OpenSearch analytics DB.
+    # Send API analytics to OpenSearch analytics DB.
     - name: opensearch
-      match_regex: "^(all|denied)$"
+      match: "analytics.*"
       host: <%- json_encode(config["opensearch"]["_first_server"]["host"]) %>
       port: <%- json_encode(config["opensearch"]["_first_server"]["port"]) %>
       tls: <%- config["opensearch"]["_first_server"]["_https?"] and "on" or "off" %>
@@ -52,7 +69,7 @@ pipeline:
       <% end %>
       # aws_auth: on
       # aws_region: us-west-2
-      index: <%- json_encode(config["opensearch"]["index_name_prefix"] .. "-logs-v" .. config["opensearch"]["template_version"] .. "-$TAG") %>
+      index: <%- json_encode(config["opensearch"]["index_name_prefix"] .. "-logs-v" .. config["opensearch"]["template_version"] .. "-$TAG[1]") %>
       # Data streams require "create" operations.
       write_operation: create
       # _type field is no longer accepted for OpenSearch.
@@ -79,7 +96,7 @@ pipeline:
     #   upload_chunk_size: 30M
     #   total_file_size: 250M
     #   upload_timeout: 60m
-    #   s3_key_format: "/$TAG/%Y/%m/%d/%Y-%m-%dT%H:%M:%SZ-$UUID.gz
+    #   s3_key_format: "/$TAG[1]/%Y/%m/%d/%Y-%m-%dT%H:%M:%SZ-$UUID.gz
     #   send_content_md5: true
     #   auto_retry_requests: true
     #   preserve_data_ordering: true

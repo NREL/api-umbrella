@@ -104,6 +104,13 @@ postgresql:
     password: dev_password
 opensearch:
   index_name_prefix: "api-umbrella-test"
+  template:
+    index:
+      # In the test environment, disable replicas, reduce shards, and
+      # increasing refresh interval to speed things up.
+      refresh_interval: 50ms
+      number_of_shards: 1
+      number_of_replicas: 0
 unbound:
   port: 13100
   control_port: 13101

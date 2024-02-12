@@ -426,19 +426,9 @@ module ApiUmbrellaTestHelpers
 
     def static_test_config
       unless @static_test_config
-        opensearch_test_api_version = nil
-        if ENV["OPENSEARCH_TEST_API_VERSION"]
-          opensearch_test_api_version = ENV.fetch("OPENSEARCH_TEST_API_VERSION").to_i
-        end
-
         opensearch_test_template_version = nil
         if ENV["OPENSEARCH_TEST_TEMPLATE_VERSION"]
           opensearch_test_template_version = ENV.fetch("OPENSEARCH_TEST_TEMPLATE_VERSION").to_i
-        end
-
-        opensearch_test_index_partition = nil
-        if ENV["OPENSEARCH_TEST_INDEX_PARTITION"]
-          opensearch_test_index_partition = ENV.fetch("OPENSEARCH_TEST_INDEX_PARTITION")
         end
 
         static = YAML.safe_load_file(TEST_CONFIG_PATH)
@@ -456,24 +446,10 @@ module ApiUmbrellaTestHelpers
           static["user"] = "api-umbrella"
           static["group"] = "api-umbrella"
         end
-        if opensearch_test_api_version
-          static.deep_merge!({
-            "opensearch" => {
-              "api_version" => opensearch_test_api_version,
-            },
-          })
-        end
         if opensearch_test_template_version
           static.deep_merge!({
             "opensearch" => {
               "template_version" => opensearch_test_template_version,
-            },
-          })
-        end
-        if opensearch_test_index_partition
-          static.deep_merge!({
-            "opensearch" => {
-              "index_partition" => opensearch_test_index_partition,
             },
           })
         end

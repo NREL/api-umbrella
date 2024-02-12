@@ -142,7 +142,6 @@ if [[ "$ID_NORMALIZED" == "rhel" ]]; then
     )
   fi
 elif [[ "$ID_NORMALIZED" == "debian" ]]; then
-  libcurl_version=4
   libffi_version=8
   libldap_version="2.5-0"
 

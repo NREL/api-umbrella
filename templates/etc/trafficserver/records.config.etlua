@@ -64,7 +64,7 @@ CONFIG proxy.config.output.logfile.rolling_enabled INT 0
   # released and things can be configured to output to stdout/stderr directly:
   # https://github.com/apache/trafficserver/pull/7937
   CONFIG proxy.config.log.auto_delete_rolled_files INT 1
-  CONFIG proxy.config.log.max_space_mb_for_logs INT 200
+  CONFIG proxy.config.log.max_space_mb_for_logs INT 30
   CONFIG proxy.config.log.max_space_mb_headroom INT 20
 
   CONFIG proxy.config.log.rolling_enabled INT 2

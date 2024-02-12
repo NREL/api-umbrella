@@ -452,7 +452,7 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
   end
 
   # Try to log a long version of all inputs to ensure the overall log message
-  # doesn't exceed rsyslog's buffer size.
+  # doesn't exceed fluent-bit's buffer size.
   def test_long_url_and_request_headers_and_response_headers
     # Setup a backend to accept wildcard hosts so we can test a long hostname.
     prepend_api_backends([
@@ -492,7 +492,7 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
       assert_equal("long=#{long_value}"[0, 4000], record["request_url_query"])
 
       # Ensure the long header values got truncated so we're not susceptible to
-      # exceeding rsyslog's message buffers and we're also not storing an
+      # exceeding fluent-bit's message buffers and we're also not storing an
       # unexpected amount of data for values users can pass in.
       assert_equal(200, record["request_accept"].length, record["request_accept"])
       assert_equal(200, record["request_accept_encoding"].length, record["request_accept_encoding"])

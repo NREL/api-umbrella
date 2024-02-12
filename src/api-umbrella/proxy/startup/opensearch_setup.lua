@@ -1,12 +1,12 @@
 local interval_lock = require "api-umbrella.utils.interval_lock"
 local opensearch = require "api-umbrella.utils.opensearch"
 local opensearch_templates = require "api-umbrella.proxy.opensearch_templates_data"
+local shared_dict_retry_set = require("api-umbrella.utils.shared_dict_retry").set
 
-local opensearch_query = opensearch.query
 local jobs_dict = ngx.shared.jobs
+local opensearch_query = opensearch.query
 local sleep = ngx.sleep
-
-local delay = 3600  -- in seconds
+local timer_at = ngx.timer.at
 
 local _M = {}
 
@@ -53,25 +53,35 @@ function _M.create_templates()
     end
   end
 
-  local set_ok, set_err = jobs_dict:safe_set("opensearch_templates_created", true)
+  local set_ok, set_err, set_forcible = shared_dict_retry_set(jobs_dict, "opensearch_templates_created", true)
   if not set_ok then
-    ngx.log(ngx.ERR, "failed to set 'opensearch_templates_created' in 'active_config' shared dict: ", set_err)
+    ngx.log(ngx.ERR, "failed to set 'opensearch_templates_created' in 'jobs' shared dict: ", set_err)
+  elseif set_forcible then
+    ngx.log(ngx.WARN, "forcibly set 'opensearch_templates_created' in 'jobs' shared dict (shared dict may be too small)")
   end
 end
 
 local function setup()
   local _, err = _M.wait_for_opensearch()
-  if not err then
-    _M.create_templates()
-  else
-    ngx.log(ngx.ERR, "timed out waiting for eleasticsearch before setup, rerunning...")
+  if err then
+    ngx.log(ngx.ERR, "timed out waiting for opensearch before setup, rerunning...")
     sleep(5)
-    setup()
+    return setup()
   end
+
+  _M.create_templates()
+end
+
+function _M.setup_once()
+  interval_lock.mutex_exec("opensearch_index_setup", setup)
 end
 
 function _M.spawn()
-  interval_lock.repeat_with_mutex('opensearch_index_setup', delay, setup)
+  local ok, err = timer_at(0, _M.setup_once)
+  if not ok then
+    ngx.log(ngx.ERR, "failed to create timer: ", err)
+    return
+  end
 end
 
 return _M

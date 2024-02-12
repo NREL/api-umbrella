@@ -16,7 +16,7 @@ if [ "${1}" = "start" ]; then
     run_args+=("-u" "$api_umbrella_user")
   fi
 
-  dirs=("<%- config['db_dir'] %>/rsyslog")
+  dirs=("<%- path_join(config['db_dir'], 'fluent-bit') %>")
   mkdir -p "${dirs[@]}"
   chmod 750 "${dirs[@]}"
   if [ -n "$api_umbrella_user" ]; then
@@ -29,8 +29,6 @@ if [ "${1}" = "start" ]; then
       chown "$api_umbrella_user":"$api_umbrella_group" /dev/stdout
       chown "$api_umbrella_user":"$api_umbrella_group" /dev/stderr
     fi
-
-    ln -sf /dev/stderr "<%- config['log_dir'] %>/rsyslog/opensearch_error.log"
   fi
 
   exec \

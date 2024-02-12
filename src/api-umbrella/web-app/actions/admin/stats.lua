@@ -370,7 +370,7 @@ function _M.logs(self)
       for _, hit in ipairs(hits) do
         local row = hit["_source"]
         ngx.say(csv.row_to_csv({
-          time.opensearch_to_csv(row["request_at"]) or null,
+          time.opensearch_to_csv(row["@timestamp"]) or null,
           row["request_method"] or null,
           row["request_host"] or null,
           sanitized_full_url(row) or null,
@@ -409,7 +409,7 @@ function _M.logs(self)
           row["api_backend_resolved_host"] or null,
           row["api_backend_response_code_details"] or null,
           row["api_backend_response_flags"] or null,
-          hit["_id"] or null,
+          hit["request_id"] or null,
         }))
       end
       ngx.flush(true)
@@ -431,7 +431,8 @@ function _M.logs(self)
       row["_type"] = nil
       row["_score"] = nil
       row["_index"] = nil
-      row["request_id"] = hit["_id"]
+      row["request_at"] = hit["@timestamp"]
+      row["@timestamp"] = nil
       row["request_url"] = sanitized_url_path_and_query(row)
       row["request_url_query"] = strip_api_key_from_query(row["request_url_query"])
       if row["request_query"] then

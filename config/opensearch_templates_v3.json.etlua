@@ -6,9 +6,8 @@
     "data_stream": {},
     "template": {
       "settings": {
-        "index": {
-          "refresh_interval": "10s"
-        },
+        "index": <%- json_encode(config["opensearch"]["template"]["index"]) %>,
+        "translog": <%- json_encode(config["opensearch"]["template"]["translog"]) %>,
         "analysis": {
           "normalizer": {
             "lowercase_normalizer": {
@@ -20,10 +19,6 @@
               "filter": ["uppercase"]
             }
           }
-        },
-        "translog": {
-          "durability": "async",
-          "sync_interval": "10s"
         }
       },
       "mappings": {
