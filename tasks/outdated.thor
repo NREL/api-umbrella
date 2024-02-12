@@ -208,6 +208,13 @@ class Outdated < Thor
     def tag_to_semver(name, tag)
       tag.downcase!
 
+      case name
+      when "fluent_bit"
+        unless tag.start_with?("v")
+          return nil
+        end
+      end
+
       # Remove prefixes containing the project name.
       tag.gsub!(/^#{name}[-_]/i, "")
       tag.gsub!(/^#{name.tr("_", "-")}[-_]/i, "")
@@ -222,7 +229,7 @@ class Outdated < Thor
       tag.gsub!(/^[vr](\d)/, '\1')
 
       # Project-specific normalizations.
-      case(name)
+      case name
       when "postgresql"
         tag.gsub!(/^rel_?/, "")
         tag.tr!("_", ".")
@@ -267,14 +274,14 @@ class Outdated < Thor
         versions[name][:wanted_version] = latest_commit[0, 7]
       elsif(options[:git])
         tags = `git ls-remote --tags #{options[:git]}`.lines
-        tags.map! { |tag| tag_to_semver(name, tag.match(%r{refs/tags/(.+)$})[1]) }
+        tags.map! { |tag| tag_to_semver(name, tag.match(%r{refs/tags/(.+)$})[1]) }.compact
       elsif(options[:luarock])
         tags = luarocks_manifest.fetch("repository").fetch(options[:luarock]).keys
         tags.map! { |tag| luarock_version_to_semver(tag) }
       elsif(options[:http])
         content = Net::HTTP.get_response(URI.parse(options[:http])).body
         tags = content.scan(/#{name}-[\d.]+.tar/)
-        tags.map! { |f| tag_to_semver(name, File.basename(f, ".tar")) }
+        tags.map! { |f| tag_to_semver(name, File.basename(f, ".tar")) }.compact
       end
 
       tags.compact!

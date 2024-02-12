@@ -226,7 +226,7 @@ class Test::Apis::Admin::Stats::TestSearch < Minitest::Test
         {
           "c" => [
             { "f" => "Mon, Jan 17, 2000", "v" => 948092400000 },
-            { "f" => "0", "v" => 0 }
+            { "f" => "0", "v" => 0 },
           ],
         },
         {

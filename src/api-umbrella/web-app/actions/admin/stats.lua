@@ -193,10 +193,10 @@ local function fetch_city_locations(buckets, country, region)
   })
 
   local data = {}
-  local city_names = {}
+  local proper_city_names = {}
   for _, city in ipairs(cities) do
     if city.city then
-      city_names[string.lower(city.city)] = city.city
+      proper_city_names[string.lower(city.city)] = city.city
       data[city.city] = {
         lat = city.lat,
         lon = city.lon,
@@ -205,7 +205,7 @@ local function fetch_city_locations(buckets, country, region)
   end
 
   for _, bucket in ipairs(buckets) do
-    local city_name = city_names[bucket["key"]]
+    local city_name = proper_city_names[bucket["key"]]
     if city_name then
       bucket["key"] = city_name
     end
