@@ -150,7 +150,7 @@ cmake \
   -DFLB_PROCESSOR_ATTRIBUTES="Off" \
   -DFLB_PROCESSOR_LABELS="Off" \
   ../
-make
-make install
+make -j"$NPROC"
+make install DESTDIR="$STAGE_DIR"
 
 stamp

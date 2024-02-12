@@ -176,7 +176,7 @@ local function fetch_city_locations(buckets, country, region)
 
   local city_names = {}
   for _, bucket in ipairs(buckets) do
-    table.insert(city_names, bucket["key"])
+    table.insert(city_names, string.lower(bucket["key"]))
   end
 
   local conditions = {}
@@ -185,7 +185,7 @@ local function fetch_city_locations(buckets, country, region)
     table.insert(conditions, "region = " .. db.escape_literal(region))
   end
   if not is_empty(city_names) then
-    table.insert(conditions, "city IN " .. db.escape_literal(db.list(city_names)))
+    table.insert(conditions, "lower(city) IN " .. db.escape_literal(db.list(city_names)))
   end
 
   local cities = AnalyticsCity:select("WHERE " .. table.concat(conditions, " AND "), {
@@ -193,12 +193,21 @@ local function fetch_city_locations(buckets, country, region)
   })
 
   local data = {}
+  local city_names = {}
   for _, city in ipairs(cities) do
     if city.city then
+      city_names[string.lower(city.city)] = city.city
       data[city.city] = {
         lat = city.lat,
         lon = city.lon,
       }
+    end
+  end
+
+  for _, bucket in ipairs(buckets) do
+    local city_name = city_names[bucket["key"]]
+    if city_name then
+      bucket["key"] = city_name
     end
   end
 
@@ -431,7 +440,7 @@ function _M.logs(self)
       row["_type"] = nil
       row["_score"] = nil
       row["_index"] = nil
-      row["request_at"] = hit["@timestamp"]
+      row["request_at"] = row["@timestamp"]
       row["@timestamp"] = nil
       row["request_url"] = sanitized_url_path_and_query(row)
       row["request_url_query"] = strip_api_key_from_query(row["request_url_query"])

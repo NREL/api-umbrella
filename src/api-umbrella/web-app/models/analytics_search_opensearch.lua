@@ -17,9 +17,6 @@ local xpcall_error_handler = require "api-umbrella.utils.xpcall_error_handler"
 
 local opensearch_query = opensearch.query
 
-local date_utc = icu_date.new({
-  zone_id = "UTC"
-})
 local date_tz = icu_date.new({
   zone_id = config["analytics"]["timezone"],
 })
@@ -39,34 +36,57 @@ local UPPERCASE_FIELDS = {
 local _M = {}
 _M.__index = _M
 
-local function index_names(start_time, end_time, body)
-  local names = {
-    config["opensearch"]["index_name_prefix"] .. "-logs-v" .. config["opensearch"]["template_version"] .."-allowed",
-    config["opensearch"]["index_name_prefix"] .. "-logs-v" .. config["opensearch"]["template_version"] .."-errored",
-  }
+local function index_names(body)
+  local names = {}
 
+  local only_denied = false
   local exclude_denied = false
   local filters = body["query"]["bool"]["filter"]["bool"]["must"]
   for _, filter in ipairs(filters) do
     if filter["bool"] and filter["bool"]["must"] then
       local sub_filters = filter["bool"]["must"]
       for _, sub_filter in ipairs(sub_filters) do
+        if sub_filter["exists"] and sub_filter["exists"]["field"] == "gatekeeper_denied_code" then
+          only_denied = true
+          break
+        end
+
+        if sub_filter["term"] and sub_filter["term"]["gatekeeper_denied_code"] then
+          only_denied = true
+          break
+        end
+
         if sub_filter["bool"] and sub_filter["bool"]["must_not"] and sub_filter["bool"]["must_not"]["exists"] and sub_filter["bool"]["must_not"]["exists"]["field"] == "gatekeeper_denied_code" then
           exclude_denied = true
           break
         end
       end
 
-      if exclude_denied then
+      if only_denied or exclude_denied then
         break
       end
     end
   end
+
+  if not only_denied then
+    table.insert(names, config["opensearch"]["index_name_prefix"] .. "-logs-v" .. config["opensearch"]["template_version"] .."-allowed")
+    table.insert(names, config["opensearch"]["index_name_prefix"] .. "-logs-v" .. config["opensearch"]["template_version"] .."-errored")
+  end
+
   if not exclude_denied then
     table.insert(names, config["opensearch"]["index_name_prefix"] .. "-logs-v" .. config["opensearch"]["template_version"] .."-denied")
   end
 
   return names
+end
+
+local function translate_db_field_name(field)
+  local db_field = field
+  if field == "request_at" then
+    db_field = "@timestamp"
+  end
+
+  return db_field
 end
 
 local function parse_query_builder(query)
@@ -78,6 +98,7 @@ local function parse_query_builder(query)
       local operator = rule["operator"]
       local field = rule["field"]
       local value = rule["value"]
+      local db_field = translate_db_field_name(field)
 
       if not CASE_SENSITIVE_FIELDS[field] and type(value) == "string" then
         if UPPERCASE_FIELDS[field] then
@@ -90,31 +111,31 @@ local function parse_query_builder(query)
       if operator == "equal" or operator == "not_equal" then
         filter = {
           term = {
-            [field] = value,
+            [db_field] = value,
           },
         }
       elseif operator == "begins_with" or operator == "not_begins_with" then
         filter = {
           prefix = {
-            [field] = value,
+            [db_field] = value,
           },
         }
       elseif operator == "contains" or operator == "not_contains" then
         filter = {
           regexp = {
-            [field] = ".*" .. escape_regex(value) .. ".*",
+            [db_field] = ".*" .. escape_regex(value) .. ".*",
           },
         }
       elseif operator == "is_null" or operator == "is_not_null" then
         filter = {
           exists = {
-            field = field,
+            field = db_field,
           },
         }
       elseif operator == "less" then
         filter = {
           range = {
-            [field] = {
+            [db_field] = {
               lt = tonumber(value),
             },
           },
@@ -122,7 +143,7 @@ local function parse_query_builder(query)
       elseif operator == "less_or_equal" then
         filter = {
           range = {
-            [field] = {
+            [db_field] = {
               lte = tonumber(value),
             },
           },
@@ -130,7 +151,7 @@ local function parse_query_builder(query)
       elseif operator == "greater" then
         filter = {
           range = {
-            [field] = {
+            [db_field] = {
               gt = tonumber(value),
             },
           },
@@ -138,7 +159,7 @@ local function parse_query_builder(query)
       elseif operator == "greater_or_equal" then
         filter = {
           range = {
-            [field] = {
+            [db_field] = {
               gte = tonumber(value),
             },
           },
@@ -146,7 +167,7 @@ local function parse_query_builder(query)
       elseif operator == "between" then
         filter = {
           range = {
-            [field] = {
+            [db_field] = {
               gte = tonumber(value[1]),
               lte = tonumber(value[2]),
             },
@@ -224,10 +245,10 @@ function _M:set_sort(order_fields)
   if not is_empty(order_fields) then
     self.body["sort"] = {}
     for _, order_field in ipairs(order_fields) do
-      local column_name = order_field[1]
+      local db_field = translate_db_field_name(order_field[1])
       local dir = order_field[2]
-      if not is_empty(column_name) and not is_empty(dir) then
-        table.insert(self.body["sort"], { [column_name] = string.lower(dir) })
+      if not is_empty(db_field) and not is_empty(dir) then
+        table.insert(self.body["sort"], { [db_field] = string.lower(dir) })
       end
     end
   end
@@ -616,7 +637,7 @@ end
 
 function _M:query_header()
   local header = deepcopy(self.query)
-  header["index"] = table.concat(index_names(self.start_time, self.end_time, self.body), ",")
+  header["index"] = table.concat(index_names(self.body), ",")
 
   return header
 end

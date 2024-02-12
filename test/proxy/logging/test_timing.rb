@@ -25,6 +25,6 @@ class Test::Proxy::Logging::TestTiming < Minitest::Test
     local_response_time = request_end - request_start
     assert_operator(local_response_time, :>=, 2.5)
 
-    assert_in_delta(request_end.strftime("%s%L").to_i, record["request_at"], 500)
+    assert_in_delta(request_end.strftime("%s%L").to_i, record.fetch("@timestamp"), 500)
   end
 end
