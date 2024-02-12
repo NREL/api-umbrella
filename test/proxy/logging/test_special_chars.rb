@@ -128,14 +128,32 @@ class Test::Proxy::Logging::TestSpecialChars < Minitest::Test
     record = wait_for_log(response)[:hit_source]
 
     log = log_tail.read.encode("UTF-8", invalid: :replace)
-    assert_match("invalid UTF-8 bytes found, skipping bytes", log)
+    # Fluent Bit's UTF-8 handling appears to be different on x86_64 versus
+    # ARM64. I believe related to this open issue:
+    # https://github.com/fluent/fluent-bit/issues/7995
+    #
+    # So on ARM64, it complains about UTF-8, which I think is more expected
+    # since we are sending in invalid encoded data. But on x86-64 systems, this
+    # doesn't appear to happen. I think we're okay with either behavior,
+    # really, we mainly just want to make sure things don't crash when
+    # encountering this type of weird input.
+    if RUBY_PLATFORM.start_with?("x86_64")
+      refute_match("invalid UTF-8 bytes found, skipping bytes", log)
+    else
+      assert_match("invalid UTF-8 bytes found, skipping bytes", log)
+    end
 
     # Since the encoding of this string wasn't actually a valid UTF-8 string,
     # we test situations where it's sent as the raw ISO-8859-1 value, as well
     # as the UTF-8 replacement character.
     expected_raw_in_url_path = url_encoded.downcase
     expected_raw_in_url_query = url_encoded
-    expected_raw_in_header = ""
+    # See above for differences in platform.
+    if RUBY_PLATFORM.start_with?("x86_64")
+      expected_raw_in_header = "£"
+    else
+      expected_raw_in_header = ""
+    end
     expected_raw_utf8_in_url_path = "%ef%bf%bd"
     expected_raw_utf8_in_url_query = "%EF%BF%BD"
     expected_raw_utf8_in_header = Base64.decode64("77+9").force_encoding("utf-8")

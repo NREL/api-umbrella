@@ -92,16 +92,23 @@ class Test::Proxy::Envoy::TestHttpProxy < Minitest::Test
       record = wait_for_log(response)[:hit_source]
       assert_equal("/api/hello", record["request_path"])
 
-      log_output = log_tail.read_until(%r{"uri":"/_bulk"})
-      log = MultiJson.load(log_output.scan(%r{^.*"uri":"/_bulk".*$}).last)
-      assert_equal("/_bulk", log.fetch("uri"))
+      # Fluent Bit establishes a CONNECT tunnel for its proxying, so the only
+      # thing being logged in the HTTP access log is the initial CONNECT
+      # request. So we won't actually see the /_bulk requests being sent over
+      # this tunnel. Also send a SIGHUP to fluent-bit, since otherwise it seems
+      # like it can take a while for this CONNECT request to be flushed to the
+      # logs (probably since it's a persistent tunnel).
+      api_umbrella_process.perp_signal("fluent-bit", "hup")
+      log_output = log_tail.read_until(%r{"user_agent":"Fluent-Bit"})
+      log = MultiJson.load(log_output.scan(%r{^.*"user_agent":"Fluent-Bit".*$}).last)
+      assert_nil(log["uri"])
       assert_equal("opensearch:9200", log.fetch("host"))
       assert_equal("http", log.fetch("scheme"))
-      assert_equal("POST", log.fetch("method"))
+      assert_equal("CONNECT", log.fetch("method"))
       assert_equal(200, log.fetch("status"))
       assert_match(/\A[0-9a-f.:]+:9200\z/, log.fetch("up_addr"))
       assert_nil(log["up_tls_ver"])
-      assert_nil(log["user_agent"])
+      assert_equal("Fluent-Bit", log.fetch("user_agent"))
 
       response = Typhoeus.get("https://127.0.0.1:9081/admin/stats/logs.json", http_options.deep_merge(admin_session).deep_merge({
         :params => {

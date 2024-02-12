@@ -11,6 +11,8 @@ service:
   # Determine how many MB of data can be read from disk in the event fluent-bit
   # is restarted.
   storage.backlog.mem_limit: <%- json_encode(config["fluent_bit"]["service"]["storage_backlog_mem_limit"]) %>
+  # Enable hot reloading for some testing scenarios.
+  hot_reload: on
 
 pipeline:
   inputs:
