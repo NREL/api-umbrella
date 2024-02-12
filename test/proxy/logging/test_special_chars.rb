@@ -107,6 +107,8 @@ class Test::Proxy::Logging::TestSpecialChars < Minitest::Test
   end
 
   def test_invalid_utf8_encoding_in_url_path_url_params_headers
+    log_tail = LogTail.new("fluent-bit/current")
+
     # Test various encodings of the ISO-8859-1 pound symbol: £ (but since this
     # is the ISO-8859-1 version, it's not valid UTF-8).
     url_encoded = "%A3"
@@ -125,12 +127,15 @@ class Test::Proxy::Logging::TestSpecialChars < Minitest::Test
 
     record = wait_for_log(response)[:hit_source]
 
+    log = log_tail.read.encode("UTF-8", invalid: :replace)
+    assert_match("invalid UTF-8 bytes found, skipping bytes", log)
+
     # Since the encoding of this string wasn't actually a valid UTF-8 string,
     # we test situations where it's sent as the raw ISO-8859-1 value, as well
     # as the UTF-8 replacement character.
     expected_raw_in_url_path = url_encoded.downcase
     expected_raw_in_url_query = url_encoded
-    expected_raw_in_header = " "
+    expected_raw_in_header = ""
     expected_raw_utf8_in_url_path = "%ef%bf%bd"
     expected_raw_utf8_in_url_query = "%EF%BF%BD"
     expected_raw_utf8_in_header = Base64.decode64("77+9").force_encoding("utf-8")
