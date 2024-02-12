@@ -99,6 +99,9 @@ class Test::Processes::TestFluentBit < Minitest::Test
   # Test the temporary workaround for trafficserver's error.log not being able
   # to direct to stderr. Can probably remove once we're on TrafficServer 10+.
   def test_trafficserver_error_log_to_console
+    error_log_path = File.join($config["log_dir"], "trafficserver/error.log")
+    FileUtils.rm_f(error_log_path)
+
     override_config({
       "log" => {
         "destination" => "console",
@@ -109,10 +112,12 @@ class Test::Processes::TestFluentBit < Minitest::Test
       # Not obvious how to actually trigger content to the error.log, so
       # manually append some content to simulate this.
       error_content = SecureRandom.uuid
-      File.write(File.join($config["log_dir"], "trafficserver/error.log"), "#{error_content}\n", mode: "a+")
+      File.write(error_log_path, "#{error_content}\n", mode: "a+")
 
       log = log_tail.read_until(/#{error_content}/, timeout: 30)
       assert_match(/trafficserver:.*{"log"=>"#{error_content}"}/, log)
+    ensure
+      FileUtils.rm_f(error_log_path)
     end
   end
 
