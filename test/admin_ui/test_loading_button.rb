@@ -61,6 +61,8 @@ class Test::AdminUi::TestLoadingButton < Minitest::Capybara::Test
       visit "/admin/#/config/publish"
       assert_loading_button("Publish", "Publishing...")
       assert_text("Successfully published the configuration")
+      page.execute_script("window.PNotifyRemoveAll()")
+      refute_text("Successfully published the configuration")
 
       # Verify that after the first publish, the button gets reset and can be
       # used again.
@@ -72,6 +74,8 @@ class Test::AdminUi::TestLoadingButton < Minitest::Capybara::Test
       find("nav a", :text => /Publish Changes/).click
       assert_loading_button("Publish", "Publishing...")
       assert_text("Successfully published the configuration")
+      page.execute_script("window.PNotifyRemoveAll()")
+      refute_text("Successfully published the configuration")
     end
   end
 
