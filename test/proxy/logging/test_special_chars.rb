@@ -150,7 +150,7 @@ class Test::Proxy::Logging::TestSpecialChars < Minitest::Test
     expected_raw_in_url_query = url_encoded
     # See above for differences in platform.
     if RUBY_PLATFORM.start_with?("x86_64")
-      expected_raw_in_header = "£"
+      expected_raw_in_header = "\uE0A3"
     else
       expected_raw_in_header = ""
     end
