@@ -88,6 +88,8 @@ module ApiUmbrellaTestHelpers
           client = OpenSearch::Client.new({
             :adapter => :typhoeus,
             :hosts => $config["opensearch"]["hosts"],
+            :retry_on_failure => 5,
+            :retry_on_status => [503],
           })
           LogItem.client = client
 
