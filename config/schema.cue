@@ -440,7 +440,7 @@ import "path"
       }
 
       s3: {
-        enabled: bool | *true
+        enabled: bool | *false
         region?: string
         bucket?: string
         s3_key_format: string | *"/$TAG[1]/%Y/%m/%d/%Y%m%dT%H%M%SZ-$UUID.jsonl.gz"
