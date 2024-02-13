@@ -57,6 +57,7 @@ pipeline:
       match: "*"
       format: msgpack
 
+    <% if config["fluent_bit"]["outputs"]["opensearch"]["enabled"] then %>
     # Send API analytics to OpenSearch analytics DB.
     - name: opensearch
       match: "analytics.*"
@@ -69,15 +70,17 @@ pipeline:
       <% if config["opensearch"]["_first_server"]["password"] then %>
       http_passwd: <%- json_encode(config["opensearch"]["_first_server"]["password"]) %>"
       <% end %>
-      # aws_auth: on
-      # aws_region: us-west-2
+      <% if config["fluent_bit"]["outputs"]["opensearch"]["aws_auth"] then %>
+      aws_auth: <%- json_encode(config["fluent_bit"]["outputs"]["opensearch"]["aws_auth"]) %>
+      aws_region: <%- json_encode(config["fluent_bit"]["outputs"]["opensearch"]["aws_region"]) %>
+      <% end %>
       index: <%- json_encode(config["opensearch"]["index_name_prefix"] .. "-logs-v" .. config["opensearch"]["template_version"] .. "-$TAG[1]") %>
       # Data streams require "create" operations.
       write_operation: create
       # _type field is no longer accepted for OpenSearch.
       suppress_type_name: on
       # Retry failed requests in the event the server is temporarily down.
-      retry_limit: 30
+      retry_limit: <%- json_encode(config["fluent_bit"]["outputs"]["opensearch"]["retry_limit"]) %>
       # Use our request ID for the document ID to help reduce the possibility
       # of duplicate data when retries are attempted (note that duplicate data
       # can still occur if the data stream index is rotated).
@@ -86,23 +89,43 @@ pipeline:
       logstash_format: off
       include_tag_key: off
       # Limit the on-disk buffer size.
-      storage.total_limit_size: <%- json_encode(config["fluent_bit"]["outputs"]["storage_total_limit_size"]) %>
+      storage.total_limit_size: <%- json_encode(config["fluent_bit"]["outputs"]["opensearch"]["storage_total_limit_size"]) %>
       # Read and report errors, increasing buffer size so more complete errors
       # can be read in.
-      trace_error: on
-      buffer_size: 16KB
+      trace_error: <%- json_encode(config["fluent_bit"]["outputs"]["opensearch"]["trace_error"]) %>
+      buffer_size: <%- json_encode(config["fluent_bit"]["outputs"]["opensearch"]["buffer_size"]) %>
+    <% end %>
 
-    # - name: s3
-    #   match: logs denied_logs
-    #   compression: on
-    #   upload_chunk_size: 30M
-    #   total_file_size: 250M
-    #   upload_timeout: 60m
-    #   s3_key_format: "/$TAG[1]/%Y/%m/%d/%Y-%m-%dT%H:%M:%SZ-$UUID.gz
-    #   send_content_md5: true
-    #   auto_retry_requests: true
-    #   preserve_data_ordering: true
-    #   retry_limit: 5
-
-
-
+    <% if config["fluent_bit"]["outputs"]["s3"]["enabled"] then %>
+    - name: s3
+      match: "analytics.*"
+      store_dir: <%- json_encode(path_join(config["tmp_dir"], "fluent-bit/s3")) %>
+      region: <%- json_encode(config["fluent_bit"]["outputs"]["s3"]["region"]) %>
+      bucket: <%- json_encode(config["fluent_bit"]["outputs"]["s3"]["bucket"]) %>
+      s3_key_format: <%- json_encode(config["fluent_bit"]["outputs"]["s3"]["s3_key_format"]) %>
+      storage_class: <%- json_encode(config["fluent_bit"]["outputs"]["s3"]["storage_class"]) %>
+      # Only store the original data and the timestamp already embedded in it.
+      json_date_key: false
+      # Use multipart uploads to upload in smaller chunks.
+      use_put_object: false
+      # gzip the contents.
+      compression: <%- json_encode(config["fluent_bit"]["outputs"]["s3"]["compression"]) %>
+      # Build local chunks up to this size (before compression) before
+      # uploading a chunk.
+      upload_chunk_size: <%- json_encode(config["fluent_bit"]["outputs"]["s3"]["upload_chunk_size"]) %>
+      # Limit amount of local buffered files.
+      store_dir_limit_size: <%- json_encode(config["fluent_bit"]["outputs"]["s3"]["store_dir_limit_size"]) %>
+      # Rollover to new files when the files reach this size.
+      total_file_size: <%- json_encode(config["fluent_bit"]["outputs"]["s3"]["total_file_size"]) %>
+      # Always create a new file at least this often (if it hasn't reached
+      # total_file_size).
+      upload_timeout: <%- json_encode(config["fluent_bit"]["outputs"]["s3"]["upload_timeout"]) %>
+      # Include MD5 checksum, necessary if Object Lock is in use.
+      send_content_md5: <%- json_encode(config["fluent_bit"]["outputs"]["s3"]["send_content_md5"]) %>
+      # Set Content-Type of uploaded files.
+      content_type: <%- json_encode(config["fluent_bit"]["outputs"]["s3"]["content_type"]) %>
+      # Retry failed requests, trying to maintain order.
+      auto_retry_requests: <%- json_encode(config["fluent_bit"]["outputs"]["s3"]["auto_retry_requests"]) %>
+      retry_limit: <%- json_encode(config["fluent_bit"]["outputs"]["s3"]["retry_limit"]) %>
+      preserve_data_ordering: <%- json_encode(config["fluent_bit"]["outputs"]["s3"]["preserve_data_ordering"]) %>
+    <% end %>

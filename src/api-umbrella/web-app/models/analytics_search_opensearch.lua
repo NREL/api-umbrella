@@ -37,7 +37,11 @@ local _M = {}
 _M.__index = _M
 
 local function index_names(body)
-  local names = {}
+  local names = {
+    -- For backward compatibility with indices created before the split to
+    -- separate ones for allowed/denied/errored.
+    config["opensearch"]["index_name_prefix"] .. "-logs-v" .. config["opensearch"]["template_version"] .."-all"
+  }
 
   local only_denied = false
   local exclude_denied = false

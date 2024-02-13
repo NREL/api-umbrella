@@ -426,8 +426,36 @@ import "path"
       storage_max_chunks_up: uint | *32
       storage_backlog_mem_limit: string | *"16M"
     }
+    aws_access_key_id?: string
+    aws_secret_access_key?: string
     outputs: {
-      storage_total_limit_size: string | *"128M"
+      opensearch: {
+        enabled: bool | *true
+        aws_auth: bool | *false
+        aws_region?: string
+        retry_limit: uint | *30
+        storage_total_limit_size: string | *"128M"
+        trace_error: bool | *true
+        buffer_size: string | *"64KB"
+      }
+
+      s3: {
+        enabled: bool | *true
+        region?: string
+        bucket?: string
+        s3_key_format: string | *"/$TAG[1]/%Y/%m/%d/%Y%m%dT%H%M%SZ-$UUID.jsonl.gz"
+        storage_class: string | *"STANDARD"
+        compression: string | *"gzip"
+        upload_chunk_size: string | *"30M"
+        store_dir_limit_size: string | *"300M"
+        total_file_size: string | *"250M"
+        upload_timeout: string | *"60m"
+        send_content_md5: bool | *true
+        content_type: string | *"application/gzip"
+        auto_retry_requests: bool | *true
+        preserve_data_ordering: bool | *true
+        retry_limit: uint | *5
+      }
     }
   }
 
