@@ -5,7 +5,7 @@ export default class BaseController extends Controller {
   interval = 'day';
   prefix = '0/';
   region = 'world';
-  date_range = '30d';
+  date_range = '14d';
   start_at = '';
   end_at = '';
   query = JSON.stringify({

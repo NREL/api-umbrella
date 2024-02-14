@@ -544,7 +544,7 @@ export default class QueryForm extends Component {
         // "end_at" take precedence), so reset it back to the default value
         // (defined in app/controllers/stats/base.js), so it's hidden from the
         // URL.
-        date_range: '30d',
+        date_range: '14d',
       });
     }
   }
