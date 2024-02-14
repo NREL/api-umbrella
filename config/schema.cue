@@ -424,6 +424,7 @@ import "path"
     host: string | *"127.0.0.1"
     port: uint16 | *14014
     service: {
+      log_level: string | *"info"
       flush: float | *1
       storage_max_chunks_up: uint | *32
       storage_backlog_mem_limit: string | *"16M"
@@ -927,6 +928,7 @@ import "path"
 
   http_proxy?: string
   https_proxy?: string
+  no_proxy?: string
 
   version?: uint16
 

@@ -1,5 +1,5 @@
 service:
-  log_level: info
+  log_level: <%- json_encode(config["fluent_bit"]["service"]["log_level"]) %>
   # How often to flush inputs to the outputs.
   flush: <%- json_encode(config["fluent_bit"]["service"]["flush"]) %>
   storage.path: <%- json_encode(path_join(config["db_dir"], "fluent-bit")) %>
