@@ -499,7 +499,7 @@ import "path"
     template_version: uint | *3
     template: {
       index: {
-        refresh_interval: string | *"10s"
+        refresh_interval: string | *"5s"
         number_of_shards: uint | *3
         number_of_replicas: uint | *2
       }
