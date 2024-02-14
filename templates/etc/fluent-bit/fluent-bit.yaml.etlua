@@ -70,9 +70,10 @@ pipeline:
       <% if config["opensearch"]["_first_server"]["password"] then %>
       http_passwd: <%- json_encode(config["opensearch"]["_first_server"]["password"]) %>"
       <% end %>
-      <% if config["fluent_bit"]["outputs"]["opensearch"]["aws_auth"] then %>
+      <% if config["fluent_bit"]["outputs"]["opensearch"]["aws_auth"] == "on" then %>
       aws_auth: <%- json_encode(config["fluent_bit"]["outputs"]["opensearch"]["aws_auth"]) %>
       aws_region: <%- json_encode(config["fluent_bit"]["outputs"]["opensearch"]["aws_region"]) %>
+      aws_service_name: <%- json_encode(config["fluent_bit"]["outputs"]["opensearch"]["aws_service_name"]) %>
       <% end %>
       index: <%- json_encode(config["opensearch"]["index_name_prefix"] .. "-logs-v" .. config["opensearch"]["template_version"] .. "-$TAG[1]") %>
       # Data streams require "create" operations.

@@ -419,6 +419,8 @@ import "path"
   }
 
   fluent_bit: {
+    #on_off_bool: "on" | "off"
+
     host: string | *"127.0.0.1"
     port: uint16 | *14014
     service: {
@@ -431,11 +433,12 @@ import "path"
     outputs: {
       opensearch: {
         enabled: bool | *true
-        aws_auth: bool | *false
+        aws_auth: #on_off_bool | *"off"
         aws_region?: string
+        aws_service_name: string | *"es"
         retry_limit: uint | *30
         storage_total_limit_size: string | *"128M"
-        trace_error: bool | *true
+        trace_error: #on_off_bool | *"on"
         buffer_size: string | *"64KB"
       }
 
