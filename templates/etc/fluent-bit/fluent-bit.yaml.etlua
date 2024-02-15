@@ -46,10 +46,20 @@ pipeline:
     - name: rewrite_tag
       match: analytics.allowed
       rule: "$gatekeeper_denied_code ^. analytics.denied false"
+      emitter_storage.type: filesystem
+
+    - name: type_converter
+      match: analytics.allowed
+      uint_key: response_status response_status_str string
 
     - name: rewrite_tag
       match: analytics.allowed
-      rule: "$response_status ^[4-9] analytics.errored false"
+      rule: "$response_status_str ^[4-9] analytics.errored false"
+      emitter_storage.type: filesystem
+
+    - name: modify
+      match: "analytics.*"
+      remove: response_status_str
 
   outputs:
     # Print what we would log to stdout for extra redundancy.
