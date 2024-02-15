@@ -402,8 +402,8 @@ function _M:aggregate_by_interval_for_summary()
     unique_user_ids = {
       terms = {
         field = "user_id",
-        size = 100000000,
-        shard_size = 100000000 * 4,
+        size = config["opensearch"]["max_buckets"],
+        shard_size = config["opensearch"]["max_buckets"] * 4,
       },
     },
     response_time_average = {
@@ -440,7 +440,7 @@ function _M:aggregate_by_cardinality(field)
   self.body["aggregations"]["unique_" .. field] = {
     cardinality = {
       field = field,
-      precision_threshold = 100,
+      precision_threshold = 3000,
     },
   }
 end
@@ -451,8 +451,31 @@ function _M:aggregate_by_users(size)
 end
 
 function _M:aggregate_by_request_ip(size)
-  self:aggregate_by_term("request_ip", size)
-  self:aggregate_by_cardinality("request_ip")
+  self.body["aggregations"]["top_request_ip"] = {
+    terms = {
+      field = "request_ip",
+      size = size,
+      shard_size = size * 4,
+    },
+  }
+
+  -- TODO: Getting unique IP counts currently not performing well and causing
+  -- timeouts. Might need to look into mapper-murmur3 field for this. See
+  -- https://github.com/opensearch-project/OpenSearch/issues/2820
+  -- In the meantime, perform sampling to at least return something.
+  self.body["aggregations"]["sampled_ips"] = {
+    sampler = {
+      shard_size = 1000000,
+    },
+    aggregations = {
+      unique_request_ip = {
+        cardinality = {
+          field = "request_ip",
+          precision_threshold = 3000,
+        },
+      },
+    },
+  }
 end
 
 function _M:aggregate_by_response_time_average()
@@ -506,7 +529,7 @@ function _M:aggregate_by_drilldown(prefix, size)
   end
 
   if not size then
-    size = 100000000
+    size = config["opensearch"]["max_buckets"]
   end
 
   self.body["aggregations"]["drilldown"] = {
@@ -592,7 +615,7 @@ function _M:aggregate_by_user_stats(order)
   self.body["aggregations"]["user_stats"] = {
     terms = {
       field = "user_id",
-      size = 100000000,
+      size = config["opensearch"]["max_buckets"],
     },
     aggregations = {
       last_request_at = {

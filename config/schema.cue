@@ -509,6 +509,7 @@ import "path"
         sync_interval: string | *"10s"
       }
     }
+    max_buckets: uint | *10000
   }
 
   #analytics_output_name: "opensearch"

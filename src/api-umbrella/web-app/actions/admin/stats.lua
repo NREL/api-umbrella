@@ -286,6 +286,19 @@ function _M.search(self)
   search:aggregate_by_response_time_average()
 
   local results = search:fetch_results()
+
+  -- Optimization: Every request should have an IP, so we don't need to perform
+  -- extra aggregations to look for total counts and missing values, since we
+  -- can assume the total count matches the overall hit count, and the missing
+  -- IPs are zero. But we'll fake the structure needed for `aggregation_result`
+  -- below.
+  results["aggregations"]["value_count_request_ip"] = {
+    value = results["hits"]["_total_value"],
+  }
+  results["aggregations"]["missing_request_ip"] = {
+    doc_count = 0,
+  }
+
   local response = {
     stats = {
       total_hits = results["hits"]["_total_value"],
@@ -302,7 +315,7 @@ function _M.search(self)
 
   if results["aggregations"] then
     response["stats"]["total_users"] = results["aggregations"]["unique_user_email"]["value"]
-    response["stats"]["total_ips"] = results["aggregations"]["unique_request_ip"]["value"]
+    response["stats"]["total_ips"] = results["aggregations"]["sampled_ips"]["unique_request_ip"]["value"]
     response["stats"]["average_response_time"] = results["aggregations"]["response_time_average"]["value"]
   end
 
