@@ -1,7 +1,7 @@
 {
-  "<%- config["opensearch"]["index_name_prefix"] %>-log-v3-template": {
+  "<%- config["opensearch"]["index_name_prefix"] %>-logs-v4-template": {
     "index_patterns": [
-      "<%- config["opensearch"]["index_name_prefix"] %>-logs-v3-*"
+      "<%- config["opensearch"]["index_name_prefix"] %>-logs-v4-*"
     ],
     "data_stream": {},
     "template": {
@@ -86,7 +86,12 @@
           },
           "request_ip": {
             "type": "keyword",
-            "normalizer": "lowercase_normalizer"
+            "normalizer": "lowercase_normalizer",
+            "fields": {
+              "hash": {
+                "type": "murmur3"
+              }
+            }
           },
           "request_ip_city": {
             "type": "keyword",
@@ -219,11 +224,21 @@
           },
           "user_id": {
             "type": "keyword",
-            "normalizer": "lowercase_normalizer"
+            "normalizer": "lowercase_normalizer",
+            "fields": {
+              "hash": {
+                "type": "murmur3"
+              }
+            }
           },
           "user_email": {
             "type": "keyword",
-            "normalizer": "lowercase_normalizer"
+            "normalizer": "lowercase_normalizer",
+            "fields": {
+              "hash": {
+                "type": "murmur3"
+              }
+            }
           },
           "user_registration_source": {
             "type": "keyword",

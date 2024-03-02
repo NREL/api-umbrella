@@ -293,4 +293,18 @@ class Test::Proxy::Logging::TestSpecialChars < Minitest::Test
     assert_equal("/api/hello/extra//slash/some\\backslash/encoded%5Cbackslash/encoded%2Fslash", record["request_path"])
     assert_equal("&forward_slash=/slash&encoded_forward_slash=%2F&back_slash=\\&encoded_back_slash=%5C", record["request_url_query"])
   end
+
+  def test_invalid_quotes
+    response = Typhoeus.get("http://127.0.0.1:9080/api/hello", log_http_options.deep_merge({
+      :headers => {
+        "User-Agent" => Base64.decode64("eyJ1c2VyX2FnZW50IjogImZvbyDAp8CiIGJhciJ9"),
+        "Referer" => Base64.decode64("eyJ1c2VyX2FnZW50IjogImZvbyDAp8CiIGJhciJ9"),
+      },
+    }))
+    assert_response_code(200, response)
+
+    record = wait_for_log(response)[:hit_source]
+    assert_equal("{\"user_agent\": \"foo ?? bar\"}", record["request_referer"])
+    assert_equal("{\"user_agent\": \"foo ?? bar\"}", record["request_user_agent"])
+  end
 end

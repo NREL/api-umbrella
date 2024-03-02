@@ -689,19 +689,19 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
     }))
     assert_response_code(403, response)
     hit = wait_for_log(response).fetch(:hit)
-    assert_match(/\A\.ds-api-umbrella-test-logs-v3-denied-\d+\z/, hit.fetch("_index"))
+    assert_match(/\A\.ds-api-umbrella-test-logs-v#{$config["opensearch"]["template_version"]}-denied-\d+\z/, hit.fetch("_index"))
     assert_equal(403, hit.fetch("_source").fetch("response_status"))
 
     response = Typhoeus.get("http://127.0.0.1:9080/api/unknown-path-404", log_http_options)
     assert_response_code(404, response)
     hit = wait_for_log(response).fetch(:hit)
-    assert_match(/\A\.ds-api-umbrella-test-logs-v3-errored-\d+\z/, hit.fetch("_index"))
+    assert_match(/\A\.ds-api-umbrella-test-logs-v#{$config["opensearch"]["template_version"]}-errored-\d+\z/, hit.fetch("_index"))
     assert_equal(404, hit.fetch("_source").fetch("response_status"))
 
     response = Typhoeus.get("http://127.0.0.1:9080/api/hello", log_http_options)
     assert_response_code(200, response)
     hit = wait_for_log(response).fetch(:hit)
-    assert_match(/\A\.ds-api-umbrella-test-logs-v3-allowed-\d+\z/, hit.fetch("_index"))
+    assert_match(/\A\.ds-api-umbrella-test-logs-v#{$config["opensearch"]["template_version"]}-allowed-\d+\z/, hit.fetch("_index"))
     assert_equal(200, hit.fetch("_source").fetch("response_status"))
   end
 

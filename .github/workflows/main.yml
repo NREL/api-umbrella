@@ -141,31 +141,6 @@ jobs:
   test:
     needs: [build]
     runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres:12
-        env:
-          POSTGRES_PASSWORD: dev_password
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-      opensearch:
-        image: public.ecr.aws/opensearchproject/opensearch:2.0.1
-        env:
-          OPENSEARCH_JAVA_OPTS: "-Xms32m -Xmx512m"
-          DISABLE_INSTALL_DEMO_CONFIG: "true"
-          DISABLE_SECURITY_PLUGIN: "true"
-          DISABLE_SECURITY_DASHBOARDS_PLUGIN: "true"
-          DISABLE_PERFORMANCE_ANALYZER_AGENT_CLI: "true"
-          discovery.type: single-node
-          cluster.routing.allocation.disk.threshold_enabled: "false"
-        options: >-
-          --health-cmd "curl -fsS http://localhost:9200/_cluster/health"
-          --health-interval 10s
-          --health-timeout 90s
-          --health-retries 10
     strategy:
       fail-fast: false
       matrix:
@@ -193,16 +168,16 @@ jobs:
           chmod +x /usr/local/bin/split_tests
 
           tests=$(split_tests --glob "${{ env.TESTS_GLOB }}" --split-total=${CI_NODE_TOTAL} --split-index=${CI_NODE_INDEX})
-          docker run --rm \
-            --network "${{ job.services.postgres.network }}" \
-            -v "$(pwd)/test/tmp/artifacts:/app/test/tmp/artifacts" \
-            -e CI=true \
+          docker compose run \
+            --rm \
             -e TESTS="${tests}" \
             -e MAXMIND_LICENSE_KEY="${MAXMIND_LICENSE_KEY}" \
-            "$DOCKER_IMAGE_CACHE_FROM" \
+            app \
             make test
         env:
-          DOCKER_IMAGE_CACHE_FROM: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }}
+          COMPOSE_FILE: docker-compose.ci.yml
+          TEST_IMAGE_REPO: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          TEST_IMAGE_TAG: ${{ steps.meta.outputs.version }}
           SPLIT_TEST_VERSION: v0.3.0
           CI_NODE_TOTAL: ${{ matrix.ci_node_total }}
           CI_NODE_INDEX: ${{ matrix.ci_node_index }}

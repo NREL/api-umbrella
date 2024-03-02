@@ -497,7 +497,7 @@ import "path"
       "http://opensearch:9200",
     ]
     index_name_prefix: string | *"api-umbrella"
-    template_version: uint | *3
+    template_version: uint | *4
     template: {
       index: {
         refresh_interval: string | *"5s"

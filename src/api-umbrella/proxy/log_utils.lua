@@ -51,6 +51,16 @@ local function uppercase_truncate(value, max_length)
   return string.upper(truncate_string(value, max_length))
 end
 
+local function sanitize_request_header(value)
+  local cleaned_value, _, gsub_err = re_gsub(value, "\xC0\xA2", "??", "jo")
+  if gsub_err then
+    ngx.log(ngx.ERR, "regex error: ", gsub_err)
+    return value
+  end
+
+  return cleaned_value
+end
+
 local function remove_envoy_empty_header_value(value)
   if value and value == "-" then
     return nil
@@ -286,20 +296,20 @@ function _M.normalized_data(data)
     api_backend_response_flags = remove_envoy_empty_header_value(truncate(data["api_backend_response_flags"], 20)),
     gatekeeper_denied_code = lowercase_truncate(data["gatekeeper_denied_code"], 50),
     request_id = lowercase_truncate(data["request_id"], 20),
-    request_accept = truncate(data["request_accept"], 200),
-    request_accept_encoding = truncate(data["request_accept_encoding"], 200),
+    request_accept = sanitize_request_header(truncate(data["request_accept"], 200)),
+    request_accept_encoding = sanitize_request_header(truncate(data["request_accept_encoding"], 200)),
     request_basic_auth_username = truncate(data["request_basic_auth_username"], 200),
-    request_connection = truncate(data["request_connection"], 200),
-    request_content_type = truncate(data["request_content_type"], 200),
+    request_connection = sanitize_request_header(truncate(data["request_connection"], 200)),
+    request_content_type = sanitize_request_header(truncate(data["request_content_type"], 200)),
     request_ip = lowercase_truncate(data["request_ip"], 45),
     request_ip_city = truncate(data["request_ip_city"], 200),
     request_ip_country = uppercase_truncate(data["request_ip_country"], 2),
     request_ip_region = uppercase_truncate(data["request_ip_region"], 2),
     request_method = uppercase_truncate(data["request_method"], 10),
-    request_origin = truncate(data["request_origin"], 200),
-    request_referer = truncate(data["request_referer"], 200),
+    request_origin = sanitize_request_header(truncate(data["request_origin"], 200)),
+    request_referer = sanitize_request_header(truncate(data["request_referer"], 200)),
     request_size = tonumber(data["request_size"]),
-    request_host = lowercase_truncate(data["request_url_host"], 200),
+    request_host = sanitize_request_header(lowercase_truncate(data["request_url_host"], 200)),
     request_path = truncate(data["request_url_path"], 4000),
     request_url_hierarchy_level0 = truncate(data["request_url_hierarchy_level0"], 200),
     request_url_hierarchy_level1 = truncate(data["request_url_hierarchy_level1"], 200),
@@ -310,7 +320,7 @@ function _M.normalized_data(data)
     request_url_hierarchy_level6 = truncate(data["request_url_hierarchy_level6"], 200),
     request_url_query = truncate(data["request_url_query"], 4000),
     request_scheme = lowercase_truncate(data["request_url_scheme"], 10),
-    request_user_agent = truncate(data["request_user_agent"], 400),
+    request_user_agent = sanitize_request_header(truncate(data["request_user_agent"], 400)),
     request_user_agent_family = truncate(data["request_user_agent_family"], 100),
     request_user_agent_type = truncate(data["request_user_agent_type"], 100),
     response_age = tonumber(data["response_age"]),

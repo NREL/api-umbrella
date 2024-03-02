@@ -33,7 +33,9 @@ services:
     ports:
       - "14011:5432"
   opensearch:
-    image: public.ecr.aws/opensearchproject/opensearch:2.11.1
+    build:
+      context: .
+      dockerfile: Dockerfile-opensearch
     environment:
       OPENSEARCH_JAVA_OPTS: "-Xms32m -Xmx256m"
       DISABLE_INSTALL_DEMO_CONFIG: "true"
