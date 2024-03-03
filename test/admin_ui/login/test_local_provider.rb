@@ -198,6 +198,7 @@ class Test::AdminUi::Login::TestLocalProvider < Minitest::Capybara::Test
     fill_in "Confirm New Password", :with => "password234567"
     click_button "Save"
     assert_text("Successfully saved the admin")
+    page.execute_script("window.PNotifyRemoveAll()")
     @admin.reload
     assert(@admin.password_hash)
     refute_equal(original_password_hash, @admin.password_hash)

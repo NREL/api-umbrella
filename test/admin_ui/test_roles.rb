@@ -72,6 +72,7 @@ class Test::AdminUi::TestRoles < Minitest::Capybara::Test
     click_button("Save")
 
     assert_text("Successfully saved the user")
+    page.execute_script("window.PNotifyRemoveAll()")
 
     user = ApiUser.find_by!(:email => "#{unique_test_id}@example.com")
     assert_equal(["test-new-user-role"], user.roles)

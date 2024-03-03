@@ -25,6 +25,7 @@ class Test::AdminUi::TestConfigPublishSubmit < Minitest::Capybara::Test
     visit "/admin/#/config/publish"
     click_button("Publish")
     assert_text("Successfully published the configuration")
+    page.execute_script("window.PNotifyRemoveAll()")
 
     assert_text("Published configuration is up to date")
     active_config = PublishedConfig.active_config
