@@ -436,10 +436,10 @@ function _M:aggregate_by_term(field, size)
   }
 end
 
-function _M:aggregate_by_cardinality(field)
-  self.body["aggregations"]["unique_" .. field] = {
+function _M:aggregate_by_cardinality(field_name, field)
+  self.body["aggregations"]["unique_" .. field_name] = {
     cardinality = {
-      field = field,
+      field = field or field_name,
       precision_threshold = 3000,
     },
   }
@@ -447,7 +447,7 @@ end
 
 function _M:aggregate_by_users(size)
   self:aggregate_by_term("user_email", size)
-  self:aggregate_by_cardinality("user_email.hash")
+  self:aggregate_by_cardinality("user_email", "user_email.hash")
 end
 
 function _M:aggregate_by_request_ip(size)
