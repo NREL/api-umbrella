@@ -447,7 +447,7 @@ end
 
 function _M:aggregate_by_users(size)
   self:aggregate_by_term("user_email", size)
-  self:aggregate_by_cardinality("user_email")
+  self:aggregate_by_cardinality("user_email.hash")
 end
 
 function _M:aggregate_by_request_ip(size)
@@ -470,7 +470,7 @@ function _M:aggregate_by_request_ip(size)
     aggregations = {
       unique_request_ip = {
         cardinality = {
-          field = "request_ip",
+          field = "request_ip.hash",
           precision_threshold = 3000,
         },
       },
