@@ -489,7 +489,10 @@ local function build_http_proxy_listener()
                         route = {
                           cluster = "http-proxy",
                           upgrade_configs = {
-                            { upgrade_type = "CONNECT" },
+                            {
+                              upgrade_type = "CONNECT",
+                              connect_config = {},
+                            },
                           },
                         },
                       },
