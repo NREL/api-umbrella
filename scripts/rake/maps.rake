@@ -68,9 +68,8 @@ namespace :maps do
         end
       end
 
-      countries_in_map = []
-      sovereignties["features"].each do |feature|
-        countries_in_map << feature["properties"]["iso_a2"]
+      countries_in_map = sovereignties["features"].map do |feature|
+        feature["properties"]["iso_a2"]
       end
 
       # Compare the countries in the map to MaxMind's ISO3166 data to make sure
