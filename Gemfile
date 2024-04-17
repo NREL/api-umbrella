@@ -17,6 +17,9 @@ gem "minitest-reporters", "~> 1.6.0"
 # For an "after_all" callback.
 gem "minitest-hooks", "~> 1.5.0"
 
+# Retry certain flaky tests.
+gem "minitest-retry", "~> 0.2.2"
+
 # Test metadata for CI environment.
 gem "minitest-ci", "~> 3.4.0"
 
