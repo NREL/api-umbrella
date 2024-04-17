@@ -91,8 +91,10 @@ router:
     # 1-2 seconds, but to make testing easier, force immediate refreshes in the
     # test environment.
     refresh_local_cache_interval: 0
-rsyslog:
+fluent_bit:
   port: 13014
+  service:
+    flush: 0.1
 geoip:
   db_update_frequency: false
 postgresql:
@@ -100,6 +102,15 @@ postgresql:
   password: dev_password
   migrations:
     password: dev_password
+opensearch:
+  index_name_prefix: "api-umbrella-test"
+  template:
+    index:
+      # In the test environment, disable replicas, reduce shards, and
+      # increasing refresh interval to speed things up.
+      refresh_interval: 50ms
+      number_of_shards: 1
+      number_of_replicas: 0
 unbound:
   port: 13100
   control_port: 13101

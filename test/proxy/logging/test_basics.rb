@@ -38,18 +38,19 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
     hit = result[:hit]
 
     expected_fields = [
+      "@timestamp",
       "api_backend_id",
-      "api_backend_url_match_id",
-      "api_key",
       "api_backend_resolved_host",
       "api_backend_response_code_details",
+      "api_backend_url_match_id",
+      "api_key",
       "request_accept",
       "request_accept_encoding",
-      "request_at",
       "request_basic_auth_username",
       "request_connection",
       "request_content_type",
       "request_host",
+      "request_id",
       "request_ip",
       "request_method",
       "request_origin",
@@ -75,7 +76,7 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
       "user_registration_source",
     ]
 
-    if($config["elasticsearch"]["template_version"] >= 2)
+    if($config["opensearch"]["template_version"] >= 2)
       expected_fields += [
         "request_url_hierarchy_level0",
         "request_url_hierarchy_level1",
@@ -93,12 +94,7 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
 
     mapping_options = {
       :index => hit["_index"],
-      :include_type_name => false,
     }
-    if $config["elasticsearch"]["api_version"] < 7
-      mapping_options[:include_type_name] = true
-      mapping_options[:type] = hit["_type"]
-    end
     mapping = LogItem.client.indices.get_mapping(mapping_options)
     expected_mapping_fields = expected_fields + [
       "gatekeeper_denied_code",
@@ -108,7 +104,7 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
       "response_content_encoding",
       "response_transfer_encoding",
     ]
-    if($config["elasticsearch"]["template_version"] >= 2)
+    if($config["opensearch"]["template_version"] >= 2)
       expected_mapping_fields += [
         "api_backend_response_flags",
         "imported",
@@ -119,11 +115,7 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
         "response_custom3",
       ]
     end
-    if $config["elasticsearch"]["api_version"] < 7
-      properties = mapping[hit["_index"]]["mappings"][hit["_type"]]["properties"]
-    else
-      properties = mapping[hit["_index"]]["mappings"]["properties"]
-    end
+    properties = mapping[hit["_index"]]["mappings"]["properties"]
     assert_equal(expected_mapping_fields.sort, properties.keys.sort)
 
     assert_kind_of(String, record["api_backend_id"])
@@ -133,8 +125,8 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
     assert_equal("via_upstream", record["api_backend_response_code_details"])
     assert_equal("text/plain; q=0.5, text/html", record["request_accept"])
     assert_equal("compress, gzip", record["request_accept_encoding"])
-    assert_kind_of(Numeric, record["request_at"])
-    assert_match(/\A\d{13}\z/, record["request_at"].to_s)
+    assert_kind_of(Numeric, record["@timestamp"])
+    assert_match(/\A\d{13}\z/, record["@timestamp"].to_s)
     assert_equal("basic-auth-username-example", record["request_basic_auth_username"])
     assert_equal("close", record["request_connection"])
     assert_equal("application/x-www-form-urlencoded", record["request_content_type"])
@@ -147,7 +139,7 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
     assert_equal("http", record["request_scheme"])
     assert_kind_of(Numeric, record["request_size"])
     assert_equal("url1=#{param_url1}&url2=#{param_url2}&url3=#{param_url3}", record["request_url_query"])
-    if($config["elasticsearch"]["template_version"] < 2)
+    if($config["opensearch"]["template_version"] < 2)
       assert_equal(url, record.fetch("request_url"))
       assert_equal([
         "0/127.0.0.1:9080/",
@@ -292,7 +284,7 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
     assert_logged_url(url, record)
   end
 
-  def test_logs_request_at_as_date
+  def test_logs_timestamp_as_date
     response = Typhoeus.get("http://127.0.0.1:9080/api/hello", log_http_options)
     assert_response_code(200, response)
 
@@ -300,36 +292,13 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
 
     mapping_options = {
       :index => hit["_index"],
-      :include_type_name => false,
     }
-    if $config["elasticsearch"]["api_version"] < 7
-      mapping_options[:include_type_name] = true
-      mapping_options[:type] = hit["_type"]
-    end
     result = LogItem.client.indices.get_mapping(mapping_options)
 
-    if $config["elasticsearch"]["api_version"] < 7
-      property = result[hit["_index"]]["mappings"][hit["_type"]]["properties"]["request_at"]
-    else
-      property = result[hit["_index"]]["mappings"]["properties"]["request_at"]
-    end
-    if($config["elasticsearch"]["api_version"] >= 5)
-      assert_equal({
-        "type" => "date",
-      }, property)
-    elsif($config["elasticsearch"]["api_version"] >= 2 && $config["elasticsearch"]["api_version"] < 5)
-      assert_equal({
-        "type" => "date",
-        "format" => "strict_date_optional_time||epoch_millis",
-      }, property)
-    elsif($config["elasticsearch"]["api_version"] == 1)
-      assert_equal({
-        "type" => "date",
-        "format" => "dateOptionalTime",
-      }, property)
-    else
-      flunk("Unknown elasticsearch version: #{$config["elasticsearch"]["api_version"].inspect}")
-    end
+    property = result[hit["_index"]]["mappings"]["properties"]["@timestamp"]
+    assert_equal({
+      "type" => "date",
+    }, property)
   end
 
   def test_logs_requests_that_time_out
@@ -483,7 +452,7 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
   end
 
   # Try to log a long version of all inputs to ensure the overall log message
-  # doesn't exceed rsyslog's buffer size.
+  # doesn't exceed fluent-bit's buffer size.
   def test_long_url_and_request_headers_and_response_headers
     # Setup a backend to accept wildcard hosts so we can test a long hostname.
     prepend_api_backends([
@@ -523,7 +492,7 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
       assert_equal("long=#{long_value}"[0, 4000], record["request_url_query"])
 
       # Ensure the long header values got truncated so we're not susceptible to
-      # exceeding rsyslog's message buffers and we're also not storing an
+      # exceeding fluent-bit's message buffers and we're also not storing an
       # unexpected amount of data for values users can pass in.
       assert_equal(200, record["request_accept"].length, record["request_accept"])
       assert_equal(200, record["request_accept_encoding"].length, record["request_accept_encoding"])
@@ -584,7 +553,7 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
       assert_equal("CLOSE", record["request_connection"])
       assert_equal("BASIC-AUTH-USERNAME-EXAMPLE", record["request_basic_auth_username"])
       assert_equal("APPLICATION/X-WWW-FORM-URLENCODED", record["request_content_type"])
-      if($config["elasticsearch"]["template_version"] < 2)
+      if($config["opensearch"]["template_version"] < 2)
         assert_equal([
           "0/foobar.example/",
           "1/foobar.example/#{unique_test_id}/",
@@ -710,6 +679,30 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
 
     record = wait_for_log(response).fetch(:hit_source)
     assert_equal(unique_test_id, record.fetch("response_server"))
+  end
+
+  def test_logs_to_different_data_streams
+    response = Typhoeus.get("http://127.0.0.1:9080/api/hello", log_http_options.deep_merge({
+      :headers => {
+        "X-Api-Key" => "INVALID_KEY",
+      },
+    }))
+    assert_response_code(403, response)
+    hit = wait_for_log(response).fetch(:hit)
+    assert_match(/\A\.ds-api-umbrella-test-logs-v#{$config["opensearch"]["template_version"]}-denied-\d+\z/, hit.fetch("_index"))
+    assert_equal(403, hit.fetch("_source").fetch("response_status"))
+
+    response = Typhoeus.get("http://127.0.0.1:9080/api/unknown-path-404", log_http_options)
+    assert_response_code(404, response)
+    hit = wait_for_log(response).fetch(:hit)
+    assert_match(/\A\.ds-api-umbrella-test-logs-v#{$config["opensearch"]["template_version"]}-errored-\d+\z/, hit.fetch("_index"))
+    assert_equal(404, hit.fetch("_source").fetch("response_status"))
+
+    response = Typhoeus.get("http://127.0.0.1:9080/api/hello", log_http_options)
+    assert_response_code(200, response)
+    hit = wait_for_log(response).fetch(:hit)
+    assert_match(/\A\.ds-api-umbrella-test-logs-v#{$config["opensearch"]["template_version"]}-allowed-\d+\z/, hit.fetch("_index"))
+    assert_equal(200, hit.fetch("_source").fetch("response_status"))
   end
 
   private

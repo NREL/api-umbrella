@@ -3,11 +3,11 @@ local add_error = require("api-umbrella.web-app.utils.model_ext").add_error
 local cjson = require "cjson.safe"
 local config = require("api-umbrella.utils.load_config")()
 local deepcopy = require("pl.tablex").deepcopy
-local elasticsearch = require "api-umbrella.utils.elasticsearch"
 local escape_regex = require "api-umbrella.utils.escape_regex"
 local icu_date = require "icu-date-ffi"
 local is_empty = require "api-umbrella.utils.is_empty"
 local json_encode = require "api-umbrella.utils.json_encode"
+local opensearch = require "api-umbrella.utils.opensearch"
 local path_join = require "api-umbrella.utils.path_join"
 local re_split = require("ngx.re").split
 local startswith = require("pl.stringx").startswith
@@ -15,11 +15,8 @@ local t = require("api-umbrella.web-app.utils.gettext").gettext
 local validation_ext = require "api-umbrella.web-app.utils.validation_ext"
 local xpcall_error_handler = require "api-umbrella.utils.xpcall_error_handler"
 
-local elasticsearch_query = elasticsearch.query
+local opensearch_query = opensearch.query
 
-local date_utc = icu_date.new({
-  zone_id = "UTC"
-})
 local date_tz = icu_date.new({
   zone_id = config["analytics"]["timezone"],
 })
@@ -39,47 +36,61 @@ local UPPERCASE_FIELDS = {
 local _M = {}
 _M.__index = _M
 
-local function index_names(start_time, end_time)
-  assert(start_time)
-  assert(end_time)
+local function index_names(body)
+  local names = {
+    -- For backward compatibility with indices created before the split to
+    -- separate ones for allowed/denied/errored.
+    config["opensearch"]["index_name_prefix"] .. "-logs-v" .. config["opensearch"]["template_version"] .."-all"
+  }
 
-  date_utc:parse(format_iso8601, end_time)
-  -- TODO: For some reason, set_time_zone_id doesn't work properly if format()
-  -- isn't called first, when changing between time zones. Need to debug why
-  -- this isn't working as expected with icu-date, but in the meantime, this
-  -- workaround seems to make set_time_zone_id work as expected.
-  --
-  -- The following test can reproduce this problem (it will break without this
-  -- format() call):
-  -- env ELASTICSEARCH_TEST_API_VERSION=5 ELASTICSEARCH_TEST_TEMPLATE_VERSION=2 ELASTICSEARCH_TEST_INDEX_PARTITION=daily bundle exec minitest test/apis/admin/stats/test_search.rb -n test_bins_results_by_day_with_time_zone_support
-  date_utc:format(format_iso8601)
-  date_utc:set_time_zone_id("UTC")
-  local end_time_millis = date_utc:get_millis()
+  local only_denied = false
+  local exclude_denied = false
+  local filters = body["query"]["bool"]["filter"]["bool"]["must"]
+  for _, filter in ipairs(filters) do
+    if filter["bool"] and filter["bool"]["must"] then
+      local sub_filters = filter["bool"]["must"]
+      for _, sub_filter in ipairs(sub_filters) do
+        if sub_filter["exists"] and sub_filter["exists"]["field"] == "gatekeeper_denied_code" then
+          only_denied = true
+          break
+        end
 
-  date_utc:parse(format_iso8601, start_time)
-  -- TODO: See above about why this format() call is here, but shouldn't be
-  -- necessary.
-  date_utc:format(format_iso8601)
-  date_utc:set_time_zone_id("UTC")
-  if config["elasticsearch"]["index_partition"] == "monthly" then
-    date_utc:set(icu_date.fields.DAY_OF_MONTH, 1)
-  end
-  date_utc:set(icu_date.fields.HOUR_OF_DAY, 0)
-  date_utc:set(icu_date.fields.MINUTE, 0)
-  date_utc:set(icu_date.fields.SECOND, 0)
-  date_utc:set(icu_date.fields.MILLISECOND, 0)
+        if sub_filter["term"] and sub_filter["term"]["gatekeeper_denied_code"] then
+          only_denied = true
+          break
+        end
 
-  local names = {}
-  while date_utc:get_millis() <= end_time_millis do
-    table.insert(names, config["elasticsearch"]["index_name_prefix"] .. "-logs-" .. date_utc:format(elasticsearch.partition_date_format))
-    if config["elasticsearch"]["index_partition"] == "monthly" then
-      date_utc:add(icu_date.fields.MONTH, 1)
-    elseif config["elasticsearch"]["index_partition"] == "daily" then
-      date_utc:add(icu_date.fields.DATE, 1)
+        if sub_filter["bool"] and sub_filter["bool"]["must_not"] and sub_filter["bool"]["must_not"]["exists"] and sub_filter["bool"]["must_not"]["exists"]["field"] == "gatekeeper_denied_code" then
+          exclude_denied = true
+          break
+        end
+      end
+
+      if only_denied or exclude_denied then
+        break
+      end
     end
   end
 
+  if not only_denied then
+    table.insert(names, config["opensearch"]["index_name_prefix"] .. "-logs-v" .. config["opensearch"]["template_version"] .."-allowed")
+    table.insert(names, config["opensearch"]["index_name_prefix"] .. "-logs-v" .. config["opensearch"]["template_version"] .."-errored")
+  end
+
+  if not exclude_denied then
+    table.insert(names, config["opensearch"]["index_name_prefix"] .. "-logs-v" .. config["opensearch"]["template_version"] .."-denied")
+  end
+
   return names
+end
+
+local function translate_db_field_name(field)
+  local db_field = field
+  if field == "request_at" then
+    db_field = "@timestamp"
+  end
+
+  return db_field
 end
 
 local function parse_query_builder(query)
@@ -91,11 +102,7 @@ local function parse_query_builder(query)
       local operator = rule["operator"]
       local field = rule["field"]
       local value = rule["value"]
-
-      local es_field = field
-      if field == "request_id" then
-        es_field = "_id"
-      end
+      local db_field = translate_db_field_name(field)
 
       if not CASE_SENSITIVE_FIELDS[field] and type(value) == "string" then
         if UPPERCASE_FIELDS[field] then
@@ -108,31 +115,31 @@ local function parse_query_builder(query)
       if operator == "equal" or operator == "not_equal" then
         filter = {
           term = {
-            [es_field] = value,
+            [db_field] = value,
           },
         }
       elseif operator == "begins_with" or operator == "not_begins_with" then
         filter = {
           prefix = {
-            [es_field] = value,
+            [db_field] = value,
           },
         }
       elseif operator == "contains" or operator == "not_contains" then
         filter = {
           regexp = {
-            [es_field] = ".*" .. escape_regex(value) .. ".*",
+            [db_field] = ".*" .. escape_regex(value) .. ".*",
           },
         }
       elseif operator == "is_null" or operator == "is_not_null" then
         filter = {
           exists = {
-            field = es_field,
+            field = db_field,
           },
         }
       elseif operator == "less" then
         filter = {
           range = {
-            [es_field] = {
+            [db_field] = {
               lt = tonumber(value),
             },
           },
@@ -140,7 +147,7 @@ local function parse_query_builder(query)
       elseif operator == "less_or_equal" then
         filter = {
           range = {
-            [es_field] = {
+            [db_field] = {
               lte = tonumber(value),
             },
           },
@@ -148,7 +155,7 @@ local function parse_query_builder(query)
       elseif operator == "greater" then
         filter = {
           range = {
-            [es_field] = {
+            [db_field] = {
               gt = tonumber(value),
             },
           },
@@ -156,7 +163,7 @@ local function parse_query_builder(query)
       elseif operator == "greater_or_equal" then
         filter = {
           range = {
-            [es_field] = {
+            [db_field] = {
               gte = tonumber(value),
             },
           },
@@ -164,7 +171,7 @@ local function parse_query_builder(query)
       elseif operator == "between" then
         filter = {
           range = {
-            [es_field] = {
+            [db_field] = {
               gte = tonumber(value[1]),
               lte = tonumber(value[2]),
             },
@@ -226,17 +233,14 @@ function _M.new()
         },
       },
       sort = {
-        { request_at = "desc" },
+        { ["@timestamp"] = "desc" },
       },
       aggregations = {},
       size = 0,
+      track_total_hits = true,
       timeout = "90s",
     },
   }
-
-  if config["elasticsearch"]["api_version"] >= 7 then
-    self.body["track_total_hits"] = true
-  end
 
   return setmetatable(self, _M)
 end
@@ -245,10 +249,10 @@ function _M:set_sort(order_fields)
   if not is_empty(order_fields) then
     self.body["sort"] = {}
     for _, order_field in ipairs(order_fields) do
-      local column_name = order_field[1]
+      local db_field = translate_db_field_name(order_field[1])
       local dir = order_field[2]
-      if not is_empty(column_name) and not is_empty(dir) then
-        table.insert(self.body["sort"], { [column_name] = string.lower(dir) })
+      if not is_empty(db_field) and not is_empty(dir) then
+        table.insert(self.body["sort"], { [db_field] = string.lower(dir) })
       end
     end
   end
@@ -379,7 +383,7 @@ end
 function _M:aggregate_by_interval()
   self.body["aggregations"]["hits_over_time"] = {
     date_histogram = {
-      field = "request_at",
+      field = "@timestamp",
       interval = self.interval,
       time_zone = config["analytics"]["timezone"],
       min_doc_count = 0,
@@ -389,10 +393,6 @@ function _M:aggregate_by_interval()
       },
     },
   }
-
-  if config["elasticsearch"]["api_version"] < 2 then
-    self.body["aggregations"]["hits_over_time"]["date_histogram"]["pre_zone_adjust_large_interval"] = true
-  end
 end
 
 function _M:aggregate_by_interval_for_summary()
@@ -402,8 +402,8 @@ function _M:aggregate_by_interval_for_summary()
     unique_user_ids = {
       terms = {
         field = "user_id",
-        size = 100000000,
-        shard_size = 100000000 * 4,
+        size = config["opensearch"]["max_buckets"],
+        shard_size = config["opensearch"]["max_buckets"] * 4,
       },
     },
     response_time_average = {
@@ -436,23 +436,46 @@ function _M:aggregate_by_term(field, size)
   }
 end
 
-function _M:aggregate_by_cardinality(field)
-  self.body["aggregations"]["unique_" .. field] = {
+function _M:aggregate_by_cardinality(field_name, field)
+  self.body["aggregations"]["unique_" .. field_name] = {
     cardinality = {
-      field = field,
-      precision_threshold = 100,
+      field = field or field_name,
+      precision_threshold = 3000,
     },
   }
 end
 
 function _M:aggregate_by_users(size)
   self:aggregate_by_term("user_email", size)
-  self:aggregate_by_cardinality("user_email")
+  self:aggregate_by_cardinality("user_email", "user_email.hash")
 end
 
 function _M:aggregate_by_request_ip(size)
-  self:aggregate_by_term("request_ip", size)
-  self:aggregate_by_cardinality("request_ip")
+  self.body["aggregations"]["top_request_ip"] = {
+    terms = {
+      field = "request_ip",
+      size = size,
+      shard_size = size * 4,
+    },
+  }
+
+  -- TODO: Getting unique IP counts currently not performing well and causing
+  -- timeouts. Might need to look into mapper-murmur3 field for this. See
+  -- https://github.com/opensearch-project/OpenSearch/issues/2820
+  -- In the meantime, perform sampling to at least return something.
+  self.body["aggregations"]["sampled_ips"] = {
+    sampler = {
+      shard_size = 1000000,
+    },
+    aggregations = {
+      unique_request_ip = {
+        cardinality = {
+          field = "request_ip.hash",
+          precision_threshold = 3000,
+        },
+      },
+    },
+  }
 end
 
 function _M:aggregate_by_response_time_average()
@@ -506,7 +529,7 @@ function _M:aggregate_by_drilldown(prefix, size)
   end
 
   if not size then
-    size = 100000000
+    size = config["opensearch"]["max_buckets"]
   end
 
   self.body["aggregations"]["drilldown"] = {
@@ -515,7 +538,7 @@ function _M:aggregate_by_drilldown(prefix, size)
     },
   }
 
-  if config["elasticsearch"]["template_version"] < 2 then
+  if config["opensearch"]["template_version"] < 2 then
     table.insert(self.body["query"]["bool"]["filter"]["bool"]["must"], {
       prefix = {
         request_hierarchy = self.drilldown_prefix,
@@ -554,7 +577,7 @@ function _M:aggregate_by_drilldown_over_time()
     aggregations = {
       drilldown_over_time = {
         date_histogram = {
-          field = "request_at",
+          field = "@timestamp",
           interval = self.interval,
           time_zone = config["analytics"]["timezone"],
           min_doc_count = 0,
@@ -567,7 +590,7 @@ function _M:aggregate_by_drilldown_over_time()
     },
   }
 
-  if config["elasticsearch"]["template_version"] < 2 then
+  if config["opensearch"]["template_version"] < 2 then
     self.body["aggregations"]["top_path_hits_over_time"]["terms"]["field"] = "request_hierarchy"
     self.body["aggregations"]["top_path_hits_over_time"]["terms"]["include"] = escape_regex(self.drilldown_prefix) .. ".*"
   else
@@ -576,7 +599,7 @@ function _M:aggregate_by_drilldown_over_time()
 
   self.body["aggregations"]["hits_over_time"] = {
     date_histogram = {
-      field = "request_at",
+      field = "@timestamp",
       interval = self.interval,
       time_zone = config["analytics"]["timezone"],
       min_doc_count = 0,
@@ -586,23 +609,18 @@ function _M:aggregate_by_drilldown_over_time()
       },
     },
   }
-
-  if config["elasticsearch"]["api_version"] < 2 then
-    self.body["aggregations"]["top_path_hits_over_time"]["aggregations"]["drilldown_over_time"]["date_histogram"]["pre_zone_adjust_large_interval"] = true
-    self.body["aggregations"]["hits_over_time"]["date_histogram"]["pre_zone_adjust_large_interval"] = true
-  end
 end
 
 function _M:aggregate_by_user_stats(order)
   self.body["aggregations"]["user_stats"] = {
     terms = {
       field = "user_id",
-      size = 100000000,
+      size = config["opensearch"]["max_buckets"],
     },
     aggregations = {
       last_request_at = {
         max = {
-          field = "request_at",
+          field = "@timestamp",
         },
       },
     },
@@ -646,7 +664,7 @@ end
 
 function _M:query_header()
   local header = deepcopy(self.query)
-  header["index"] = table.concat(index_names(self.start_time, self.end_time), ",")
+  header["index"] = table.concat(index_names(self.body), ",")
 
   return header
 end
@@ -656,7 +674,7 @@ function _M:query_body()
 
   table.insert(body["query"]["bool"]["filter"]["bool"]["must"], {
     range = {
-      request_at = {
+      ["@timestamp"] = {
         from = assert(self.start_time),
         to = assert(self.end_time),
       },
@@ -714,15 +732,15 @@ function _M:fetch_results(options)
   local body_json
   local err
   if self.query["scroll"] then
-    -- The default URL length limit for Elasticsearch is 4096 bytes, but reduce
+    -- The default URL length limit for OpenSearch is 4096 bytes, but reduce
     -- the limit before truncating to the wildcard index name so there's still
     -- room for other query params.
     if string.len(header["index"]) > 3700 then
-      header["index"] = config["elasticsearch"]["index_name_prefix"] .. "-logs-*"
+      header["index"] = config["opensearch"]["index_name_prefix"] .. "-logs-*"
     end
 
     local res
-    res, err = elasticsearch_query("/" .. header["index"] .. "/_search", {
+    res, err = opensearch_query("/" .. header["index"] .. "/_search", {
       method = "POST",
       query = self.query,
       body = body,
@@ -732,7 +750,7 @@ function _M:fetch_results(options)
     end
   else
     local res
-    res, err = elasticsearch_query("/_msearch", {
+    res, err = opensearch_query("/_msearch", {
       method = "POST",
       headers = {
         ["Content-Type"] = "application/x-ndjson",
@@ -749,7 +767,7 @@ function _M:fetch_results(options)
   end
 
   if err or not body_json then
-    ngx.log(ngx.ERR, "failed to query elasticsearch: ", err)
+    ngx.log(ngx.ERR, "failed to query opensearch: ", err)
     ngx.ctx.error_status = 500
     return coroutine.yield("error", {
       _render = {
@@ -764,11 +782,7 @@ function _M:fetch_results(options)
   end
 
   if body_json and body_json["hits"] and body_json["hits"]["total"] then
-    if config["elasticsearch"]["api_version"] >= 7 then
-      body_json["hits"]["_total_value"] = body_json["hits"]["total"]["value"]
-    else
-      body_json["hits"]["_total_value"] = body_json["hits"]["total"]
-    end
+    body_json["hits"]["_total_value"] = body_json["hits"]["total"]["value"]
   end
 
   return body_json
@@ -778,10 +792,6 @@ function _M:fetch_results_bulk(callback)
   self.query["scroll"] = "10m"
 
   self.body["sort"] = { "_doc" }
-  if config["elasticsearch"]["api_version"] < 2 then
-    self.body["sort"] = nil
-    self.query["search_type"] = "scan"
-  end
 
   local raw_results = self:fetch_results()
   callback(raw_results["hits"]["hits"])
@@ -789,7 +799,7 @@ function _M:fetch_results_bulk(callback)
   local scroll_id
   while true do
     scroll_id = raw_results["_scroll_id"]
-    local res, err = elasticsearch_query("/_search/scroll", {
+    local res, err = opensearch_query("/_search/scroll", {
       method = "GET",
       body = {
         scroll = self.query["scroll"],
@@ -797,7 +807,7 @@ function _M:fetch_results_bulk(callback)
       },
     })
     if err then
-      ngx.log(ngx.ERR, "failed to query elasticsearch: ", err)
+      ngx.log(ngx.ERR, "failed to query opensearch: ", err)
       ngx.ctx.error_status = 500
       return coroutine.yield("error", {
         _render = {
@@ -819,14 +829,14 @@ function _M:fetch_results_bulk(callback)
     callback(raw_results["hits"]["hits"])
   end
 
-  local _, err = elasticsearch_query("/_search/scroll", {
+  local _, err = opensearch_query("/_search/scroll", {
     method = "DELETE",
     body = {
       scroll_id = { scroll_id },
     },
   })
   if err then
-    ngx.log(ngx.ERR, "elasticsearch scroll clear failed: ", err)
+    ngx.log(ngx.ERR, "opensearch scroll clear failed: ", err)
   end
 end
 
@@ -845,7 +855,7 @@ local function cache_interval_results_process_batch(self, cache_ids, batch)
     local expires_at = batch_elem["expires_at"]
 
     if not exist["cache_exists"] then
-      -- Perform the real Elasticsearch query for uncached queries and cache
+      -- Perform the real OpenSearch query for uncached queries and cache
       -- the result.
       local results = self:fetch_results({
         override_header = id_data["header"],
@@ -936,10 +946,9 @@ function _M:cache_interval_results(expires_at)
       body = self:query_body(),
 
       -- Include the version information in the cache key, so that if the
-      -- underlying Elasticsearch database is upgraded, new data will be
+      -- underlying OpenSearch database is upgraded, new data will be
       -- fetched.
-      api_version = config["elasticsearch"]["api_version"],
-      template_version = config["elasticsearch"]["template_version"],
+      template_version = config["opensearch"]["template_version"],
     }
     table.insert(batch, {
       cache_id_data = cache_id_data,

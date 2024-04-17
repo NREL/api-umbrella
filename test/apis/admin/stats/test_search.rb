@@ -198,7 +198,44 @@ class Test::Apis::Admin::Stats::TestSearch < Minitest::Test
     assert_response_code(200, response)
     data = MultiJson.load(response.body)
     assert_equal({
-      "hits_over_time" => [],
+      "hits_over_time" => [
+        {
+          "c" => [
+            { "f" => "Thu, Jan 13, 2000", "v" => 947746800000 },
+            { "f" => "0", "v" => 0 },
+          ],
+        },
+        {
+          "c" => [
+            { "f" => "Fri, Jan 14, 2000", "v" => 947833200000 },
+            { "f" => "0", "v" => 0 },
+          ],
+        },
+        {
+          "c" => [
+            { "f" => "Sat, Jan 15, 2000", "v" => 947919600000 },
+            { "f" => "0", "v" => 0 },
+          ],
+        },
+        {
+          "c" => [
+            { "f" => "Sun, Jan 16, 2000", "v" => 948006000000 },
+            { "f" => "0", "v" => 0 },
+          ],
+        },
+        {
+          "c" => [
+            { "f" => "Mon, Jan 17, 2000", "v" => 948092400000 },
+            { "f" => "0", "v" => 0 },
+          ],
+        },
+        {
+          "c" => [
+            { "f" => "Tue, Jan 18, 2000", "v" => 948178800000 },
+            { "f" => "0", "v" => 0 },
+          ],
+        },
+      ],
       "stats" => {
         "total_users" => 0,
         "total_ips" => 0,

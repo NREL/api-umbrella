@@ -1,0 +1,41 @@
+version: "3"
+services:
+  app:
+    image: "${TEST_IMAGE_REPO}:${TEST_IMAGE_TAG}"
+    volumes:
+      - ./test/tmp/artifacts:/app/test/tmp/artifacts
+    environment:
+      CI: "true"
+    depends_on:
+      - postgres
+      - opensearch
+  postgres:
+    image: postgres:12
+    environment:
+      POSTGRES_PASSWORD: dev_password
+    healthcheck:
+      test: ["CMD", "pg_isready"]
+      interval: 10s
+      timeout: 5s
+      start_period: 30s
+      start_interval: 2s
+      retries: 3
+  opensearch:
+    build:
+      context: .
+      dockerfile: Dockerfile-opensearch
+    environment:
+      OPENSEARCH_JAVA_OPTS: "-Xms32m -Xmx256m"
+      DISABLE_INSTALL_DEMO_CONFIG: "true"
+      DISABLE_SECURITY_PLUGIN: "true"
+      DISABLE_SECURITY_DASHBOARDS_PLUGIN: "true"
+      DISABLE_PERFORMANCE_ANALYZER_AGENT_CLI: "true"
+      discovery.type: single-node
+      cluster.routing.allocation.disk.threshold_enabled: "false"
+    healthcheck:
+      test: ["CMD", "curl -fsS http://localhost:9200/_cluster/health"]
+      interval: 10s
+      timeout: 5s
+      start_period: 90s
+      start_interval: 2s
+      retries: 3

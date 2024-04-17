@@ -19,10 +19,10 @@ module ApiUmbrellaTestHelpers
       # local time.
       page.execute_script("timekeeper.travel(Date.UTC(2015, 0, 24, 3, 0))")
 
-      # Defaults to last 30 days.
+      # Defaults to last 14 days.
       visit "/admin/##{fragment_path}"
-      assert_download_csv_link_date_range("2014-12-25", "2015-01-23")
-      assert_date_range_picker_date_range("Last 30 Days", "2014-12-25", "2015-01-23")
+      assert_download_csv_link_date_range("2015-01-10", "2015-01-23")
+      assert_date_range_picker_date_range("Last 14 Days", "2015-01-10", "2015-01-23")
       assert_current_admin_url(fragment_path, nil)
 
       # Direct link to last 7 days.
@@ -60,6 +60,12 @@ module ApiUmbrellaTestHelpers
       change_date_picker("Last 30 Days")
       assert_download_csv_link_date_range("2014-12-25", "2015-01-23")
       assert_date_range_picker_date_range("Last 30 Days", "2014-12-25", "2015-01-23")
+      assert_current_admin_url(fragment_path, { "date_range" => "30d" })
+
+      # Change to last 14 days in UI.
+      change_date_picker("Last 14 Days")
+      assert_download_csv_link_date_range("2015-01-10", "2015-01-23")
+      assert_date_range_picker_date_range("Last 14 Days", "2015-01-10", "2015-01-23")
       assert_current_admin_url(fragment_path, nil)
 
       # Change to a custom range in UI.

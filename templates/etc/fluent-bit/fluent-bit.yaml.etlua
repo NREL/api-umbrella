@@ -1,0 +1,142 @@
+service:
+  log_level: <%- json_encode(config["fluent_bit"]["service"]["log_level"]) %>
+  # How often to flush inputs to the outputs.
+  flush: <%- json_encode(config["fluent_bit"]["service"]["flush"]) %>
+  storage.path: <%- json_encode(path_join(config["db_dir"], "fluent-bit")) %>
+  storage.sync: normal
+  storage.checksum: off
+  # max_chunks_up * 2MB corresponds to roughly the maximum memory use before
+  # things are buffered to disk for `storage.type: filesystem` inputs.
+  storage.max_chunks_up: <%- json_encode(config["fluent_bit"]["service"]["storage_max_chunks_up"]) %>
+  # Determine how many MB of data can be read from disk in the event fluent-bit
+  # is restarted.
+  storage.backlog.mem_limit: <%- json_encode(config["fluent_bit"]["service"]["storage_backlog_mem_limit"]) %>
+  # Enable hot reloading for some testing scenarios.
+  hot_reload: on
+
+pipeline:
+  inputs:
+    - name: fluentbit_metrics
+      tag: internal_metrics
+      scrape_interval: 60
+      scrape_on_start: true
+
+    - name: tcp
+      tag: analytics.allowed
+      listen: <%- json_encode(config["fluent_bit"]["host"]) %>
+      port: <%- json_encode(config["fluent_bit"]["port"]) %>
+      format: json
+      storage.type: filesystem
+
+    <% if config["log"]["destination"] == "console" then %>
+    # Workaround for error.log currently being hard-coded to output to a file
+    # that won't work if symlinked to /dev/stdout (it insists on rolling the file
+    # since it doesn't think it can write to it).
+    #
+    # This workaround should no longer be needed once Trafficserver 10 is
+    # released and things can be configured to output to stdout/stderr directly:
+    # https://github.com/apache/trafficserver/pull/7937
+    - name: tail
+      tag: trafficserver
+      path: <%- json_encode(path_join(config["log_dir"], "trafficserver/error.log")) %>
+      refresh_interval: 5
+    <% end %>
+
+  filters:
+    - name: rewrite_tag
+      match: analytics.allowed
+      rule: "$gatekeeper_denied_code ^. analytics.denied false"
+      emitter_storage.type: filesystem
+
+    - name: type_converter
+      match: analytics.allowed
+      uint_key: response_status response_status_str string
+
+    - name: rewrite_tag
+      match: analytics.allowed
+      rule: "$response_status_str ^[4-9] analytics.errored false"
+      emitter_storage.type: filesystem
+
+    - name: modify
+      match: "analytics.*"
+      remove: response_status_str
+
+  outputs:
+    # Print what we would log to stdout for extra redundancy.
+    - name: stdout
+      match: "*"
+      format: msgpack
+
+    <% if config["fluent_bit"]["outputs"]["opensearch"]["enabled"] then %>
+    # Send API analytics to OpenSearch analytics DB.
+    - name: opensearch
+      match: "analytics.*"
+      host: <%- json_encode(config["opensearch"]["_first_server"]["host"]) %>
+      port: <%- json_encode(config["opensearch"]["_first_server"]["port"]) %>
+      tls: <%- config["opensearch"]["_first_server"]["_https?"] and "on" or "off" %>
+      <% if config["opensearch"]["_first_server"]["user"] then %>
+      http_user: <%- json_encode(config["opensearch"]["_first_server"]["user"]) %>
+      <% end %>
+      <% if config["opensearch"]["_first_server"]["password"] then %>
+      http_passwd: <%- json_encode(config["opensearch"]["_first_server"]["password"]) %>"
+      <% end %>
+      <% if config["fluent_bit"]["outputs"]["opensearch"]["aws_auth"] == "on" then %>
+      aws_auth: <%- json_encode(config["fluent_bit"]["outputs"]["opensearch"]["aws_auth"]) %>
+      aws_region: <%- json_encode(config["fluent_bit"]["outputs"]["opensearch"]["aws_region"]) %>
+      aws_service_name: <%- json_encode(config["fluent_bit"]["outputs"]["opensearch"]["aws_service_name"]) %>
+      <% end %>
+      index: <%- json_encode(config["opensearch"]["index_name_prefix"] .. "-logs-v" .. config["opensearch"]["template_version"] .. "-$TAG[1]") %>
+      # Data streams require "create" operations.
+      write_operation: create
+      # _type field is no longer accepted for OpenSearch.
+      suppress_type_name: on
+      # Retry failed requests in the event the server is temporarily down.
+      retry_limit: <%- json_encode(config["fluent_bit"]["outputs"]["opensearch"]["retry_limit"]) %>
+      # Use our request ID for the document ID to help reduce the possibility
+      # of duplicate data when retries are attempted (note that duplicate data
+      # can still occur if the data stream index is rotated).
+      id_key: request_id
+      # Ensure the record is passed through without adding any extra metadata.
+      logstash_format: off
+      include_tag_key: off
+      # Limit the on-disk buffer size.
+      storage.total_limit_size: <%- json_encode(config["fluent_bit"]["outputs"]["opensearch"]["storage_total_limit_size"]) %>
+      # Read and report errors, increasing buffer size so more complete errors
+      # can be read in.
+      trace_error: <%- json_encode(config["fluent_bit"]["outputs"]["opensearch"]["trace_error"]) %>
+      buffer_size: <%- json_encode(config["fluent_bit"]["outputs"]["opensearch"]["buffer_size"]) %>
+    <% end %>
+
+    <% if config["fluent_bit"]["outputs"]["s3"]["enabled"] then %>
+    - name: s3
+      match: "analytics.*"
+      store_dir: <%- json_encode(path_join(config["tmp_dir"], "fluent-bit/s3")) %>
+      region: <%- json_encode(config["fluent_bit"]["outputs"]["s3"]["region"]) %>
+      bucket: <%- json_encode(config["fluent_bit"]["outputs"]["s3"]["bucket"]) %>
+      s3_key_format: <%- json_encode(config["fluent_bit"]["outputs"]["s3"]["s3_key_format"]) %>
+      storage_class: <%- json_encode(config["fluent_bit"]["outputs"]["s3"]["storage_class"]) %>
+      # Only store the original data and the timestamp already embedded in it.
+      json_date_key: false
+      # Use multipart uploads to upload in smaller chunks.
+      use_put_object: false
+      # gzip the contents.
+      compression: <%- json_encode(config["fluent_bit"]["outputs"]["s3"]["compression"]) %>
+      # Build local chunks up to this size (before compression) before
+      # uploading a chunk.
+      upload_chunk_size: <%- json_encode(config["fluent_bit"]["outputs"]["s3"]["upload_chunk_size"]) %>
+      # Limit amount of local buffered files.
+      store_dir_limit_size: <%- json_encode(config["fluent_bit"]["outputs"]["s3"]["store_dir_limit_size"]) %>
+      # Rollover to new files when the files reach this size.
+      total_file_size: <%- json_encode(config["fluent_bit"]["outputs"]["s3"]["total_file_size"]) %>
+      # Always create a new file at least this often (if it hasn't reached
+      # total_file_size).
+      upload_timeout: <%- json_encode(config["fluent_bit"]["outputs"]["s3"]["upload_timeout"]) %>
+      # Include MD5 checksum, necessary if Object Lock is in use.
+      send_content_md5: <%- json_encode(config["fluent_bit"]["outputs"]["s3"]["send_content_md5"]) %>
+      # Set Content-Type of uploaded files.
+      content_type: <%- json_encode(config["fluent_bit"]["outputs"]["s3"]["content_type"]) %>
+      # Retry failed requests, trying to maintain order.
+      auto_retry_requests: <%- json_encode(config["fluent_bit"]["outputs"]["s3"]["auto_retry_requests"]) %>
+      retry_limit: <%- json_encode(config["fluent_bit"]["outputs"]["s3"]["retry_limit"]) %>
+      preserve_data_ordering: <%- json_encode(config["fluent_bit"]["outputs"]["s3"]["preserve_data_ordering"]) %>
+    <% end %>

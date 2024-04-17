@@ -72,6 +72,7 @@ class Test::AdminUi::TestRoles < Minitest::Capybara::Test
     click_button("Save")
 
     assert_text("Successfully saved the user")
+    page.execute_script("window.PNotifyRemoveAll()")
 
     user = ApiUser.find_by!(:email => "#{unique_test_id}@example.com")
     assert_equal(["test-new-user-role"], user.roles)
@@ -80,13 +81,22 @@ class Test::AdminUi::TestRoles < Minitest::Capybara::Test
     assert_text("Add API")
 
     find("legend button", :text => /Global Request Settings/).click
+    refute_text("test-new-user-role")
     find(".selectize-input").click
     assert_text("test-new-user-role")
 
     find("legend button", :text => /Sub-URL Request Settings/).click
     find("button", :text => /Add URL Settings/).click
+    refute_text("test-new-user-role")
     find(".modal-content .selectize-input").click
-    assert_text("test-new-user-role")
+    begin
+      assert_text("test-new-user-role")
+    rescue
+      # For some reason this specific test seems to fail in CI environment (but
+      # not locally), so add in an extra retry.
+      sleep 3
+      retry
+    end
   end
 
   def test_removes_user_roles

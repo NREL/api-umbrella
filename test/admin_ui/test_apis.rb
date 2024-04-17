@@ -218,6 +218,7 @@ class Test::AdminUi::TestApis < Minitest::Capybara::Test
 
     click_button("Save")
     assert_text("Successfully saved")
+    page.execute_script("window.PNotifyRemoveAll()")
 
     api = ApiBackend.order(:created_at => :desc).first
     visit "/admin/#/apis/#{api.id}/edit"
@@ -378,6 +379,7 @@ class Test::AdminUi::TestApis < Minitest::Capybara::Test
     # Save the API.
     click_button("Save")
     assert_text("Successfully saved")
+    page.execute_script("window.PNotifyRemoveAll()")
 
     # Edit again.
     click_link api.name
@@ -410,6 +412,7 @@ class Test::AdminUi::TestApis < Minitest::Capybara::Test
     # Save the API.
     click_button("Save")
     assert_text("Successfully saved")
+    page.execute_script("window.PNotifyRemoveAll()")
 
     # Edit again.
     click_link api.name

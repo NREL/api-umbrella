@@ -40,11 +40,7 @@ module ApiUmbrellaTestHelpers
             })
 
             if(result && result["hits"] && result["hits"]["total"])
-              if $config["elasticsearch"]["api_version"] >= 7
-                total = result["hits"]["total"]["value"]
-              else
-                total = result["hits"]["total"]
-              end
+              total = result["hits"]["total"]["value"]
 
               if total >= 1
                 if total > 1
@@ -68,8 +64,9 @@ module ApiUmbrellaTestHelpers
     end
 
     def assert_logs_base_fields(record, user = nil)
-      assert_kind_of(Numeric, record["request_at"])
-      assert_match(/\A\d{13}\z/, record["request_at"].to_s)
+      assert_kind_of(Numeric, record.fetch("@timestamp"))
+      assert_match(/\A\d{13}\z/, record.fetch("@timestamp").to_s)
+      assert_match(/\A[a-z0-9]{20}\z/, record.fetch("request_id"))
       assert_equal("127.0.0.1:9080", record["request_host"])
       assert_match(/\A\d+\.\d+\.\d+\.\d+\z/, record["request_ip"])
       assert_equal("GET", record["request_method"])
@@ -77,7 +74,7 @@ module ApiUmbrellaTestHelpers
       assert_operator(record["request_path"].length, :>=, 1)
       assert_equal("http", record["request_scheme"])
       assert_kind_of(Numeric, record["request_size"])
-      if($config["elasticsearch"]["template_version"] < 2)
+      if($config["opensearch"]["template_version"] < 2)
         assert_kind_of(String, record["request_url"])
         assert_equal(true, record["request_url"].start_with?("http://127.0.0.1:9080/"), record["request_url"])
         assert_kind_of(Array, record["request_hierarchy"])
@@ -101,7 +98,7 @@ module ApiUmbrellaTestHelpers
       logged_url = "#{record["request_scheme"]}://#{record["request_host"]}#{record["request_path"]}"
       logged_url += "?#{record["request_url_query"]}" if(record["request_url_query"])
       assert_equal(expected_url, logged_url)
-      if($config["elasticsearch"]["template_version"] < 2)
+      if($config["opensearch"]["template_version"] < 2)
         assert_equal(expected_url, record.fetch("request_url"))
       else
         refute(record.key?("request_url"))

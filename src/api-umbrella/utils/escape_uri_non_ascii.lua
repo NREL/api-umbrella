@@ -8,8 +8,8 @@ end
 return function(string)
   -- URL encode any non-ascii sequences found.
   --
-  -- This is used in the logging so we send valid JSON to ElasticSearch (JSON
-  -- must be in UTF-8 and ElasticSearch refuses to process any JSON containing
+  -- This is used in the logging so we send valid JSON to OpenSearch (JSON
+  -- must be in UTF-8 and OpenSearch refuses to process any JSON containing
   -- non-UTF-8 characters). Ideally, we would probably want to only replace
   -- non-UTF-8 sequences with their URL encoded version, but this is the
   -- simpler, quicker approach.

@@ -1,11 +1,11 @@
 local active_config_exists = require("api-umbrella.proxy.stores.active_config_store").exists
 local config = require("api-umbrella.utils.load_config")()
-local elasticsearch = require "api-umbrella.utils.elasticsearch"
 local http = require "resty.http"
-local icu_date = require "icu-date-ffi"
 local json_encode = require "api-umbrella.utils.json_encode"
+local opensearch = require "api-umbrella.utils.opensearch"
 
-local elasticsearch_query = elasticsearch.query
+local jobs_dict = ngx.shared.jobs
+local opensearch_query = opensearch.query
 local ngx_var = ngx.var
 
 local function status_response(quick)
@@ -36,27 +36,18 @@ local function status_response(quick)
   local httpc = http.new()
   httpc:set_timeout(3000)
 
-  -- Check the health of the ElasticSearch cluster
-  local res, err = elasticsearch_query("/_cluster/health")
+  -- Check the health of the OpenSearch cluster
+  local res, err = opensearch_query("/_cluster/health")
   if err then
-    ngx.log(ngx.ERR, "failed to fetch cluster health from elasticsearch: ", err)
+    ngx.log(ngx.ERR, "failed to fetch cluster health from opensearch: ", err)
   elseif res.body_json then
-    local elasticsearch_health = res.body_json
-    response["details"]["analytics_db"] = elasticsearch_health["status"]
+    local opensearch_health = res.body_json
+    response["details"]["analytics_db"] = opensearch_health["status"]
 
-    -- Check to see if the ElasticSearch index aliases have been setup.
-    local date = icu_date.new({ zone_id = "UTC" })
-    local today = date:format(elasticsearch.partition_date_format)
-    local alias = config["elasticsearch"]["index_name_prefix"] .. "-logs-" .. today
-    local index = config["elasticsearch"]["index_name_prefix"] .. "-logs-v" .. config["elasticsearch"]["template_version"] .. "-" .. today
-    res, err = elasticsearch_query("/" .. index .. "/_alias/" .. alias)
-    if err then
-      ngx.log(ngx.ERR, "failed to fetch elasticsearch alias details: ", err)
-    elseif res.body_json then
-      local elasticsearch_alias = res.body_json
-      if not elasticsearch_alias["error"] then
-        response["details"]["analytics_db_setup"] = "green"
-      end
+    -- Check to see if the OpenSearch index aliases have been setup.
+    local created = jobs_dict:get("opensearch_templates_created")
+    if created then
+      response["details"]["analytics_db_setup"] = "green"
     end
   end
 
@@ -69,9 +60,9 @@ local function status_response(quick)
 
   -- If everything looks good on the components, then mark our overall status a green.
   --
-  -- Note: We accept ElasticSearch being in yellow status as long as the aliases
+  -- Note: We accept OpenSearch being in yellow status as long as the aliases
   -- are setup, since on very first alias creation (but prior to indexing any
-  -- content), ElasticSearch seems to get stuck in the yellow status, even though
+  -- content), OpenSearch seems to get stuck in the yellow status, even though
   -- everything appears operational (but then it becomes green once content
   -- starts indexing).
   if response["details"]["apis_config"] == "green" and (response["details"]["analytics_db"] == "yellow" or response["details"]["analytics_db"] == "green") and response["details"]["analytics_db_setup"] == "green" and response["details"]["web_app"] == "green" then

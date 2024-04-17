@@ -72,7 +72,7 @@ class Test::Proxy::Logging::TestSpecialChars < Minitest::Test
 
     # URL
     assert_equal("/api/hello/#{url_encoded}/#{base64ed}/#{expected_raw_in_url_path}/", record["request_path"])
-    if $config["elasticsearch"]["template_version"] < 2
+    if $config["opensearch"]["template_version"] < 2
       assert_equal([
         "0/127.0.0.1:9080/",
         "1/127.0.0.1:9080/api/",
@@ -107,6 +107,8 @@ class Test::Proxy::Logging::TestSpecialChars < Minitest::Test
   end
 
   def test_invalid_utf8_encoding_in_url_path_url_params_headers
+    log_tail = LogTail.new("fluent-bit/current")
+
     # Test various encodings of the ISO-8859-1 pound symbol: £ (but since this
     # is the ISO-8859-1 version, it's not valid UTF-8).
     url_encoded = "%A3"
@@ -125,19 +127,40 @@ class Test::Proxy::Logging::TestSpecialChars < Minitest::Test
 
     record = wait_for_log(response)[:hit_source]
 
+    log = log_tail.read.encode("UTF-8", invalid: :replace)
+    # Fluent Bit's UTF-8 handling appears to be different on x86_64 versus
+    # ARM64. I believe related to this open issue:
+    # https://github.com/fluent/fluent-bit/issues/7995
+    #
+    # So on ARM64, it complains about UTF-8, which I think is more expected
+    # since we are sending in invalid encoded data. But on x86-64 systems, this
+    # doesn't appear to happen. I think we're okay with either behavior,
+    # really, we mainly just want to make sure things don't crash when
+    # encountering this type of weird input.
+    if RUBY_PLATFORM.start_with?("x86_64")
+      refute_match("invalid UTF-8 bytes found, skipping bytes", log)
+    else
+      assert_match("invalid UTF-8 bytes found, skipping bytes", log)
+    end
+
     # Since the encoding of this string wasn't actually a valid UTF-8 string,
     # we test situations where it's sent as the raw ISO-8859-1 value, as well
     # as the UTF-8 replacement character.
     expected_raw_in_url_path = url_encoded.downcase
     expected_raw_in_url_query = url_encoded
-    expected_raw_in_header = " "
+    # See above for differences in platform.
+    if RUBY_PLATFORM.start_with?("x86_64")
+      expected_raw_in_header = "\uE0A3"
+    else
+      expected_raw_in_header = ""
+    end
     expected_raw_utf8_in_url_path = "%ef%bf%bd"
     expected_raw_utf8_in_url_query = "%EF%BF%BD"
     expected_raw_utf8_in_header = Base64.decode64("77+9").force_encoding("utf-8")
 
     # URL
     assert_equal("/api/hello/#{url_encoded}/#{base64ed}/#{expected_raw_in_url_path}/#{expected_raw_utf8_in_url_path}/", record["request_path"])
-    if $config["elasticsearch"]["template_version"] < 2
+    if $config["opensearch"]["template_version"] < 2
       assert_equal([
         "0/127.0.0.1:9080/",
         "1/127.0.0.1:9080/api/",
@@ -186,7 +209,7 @@ class Test::Proxy::Logging::TestSpecialChars < Minitest::Test
 
     # URL
     assert_equal("/api/hello/#{url_encoded}/", record["request_path"])
-    if $config["elasticsearch"]["template_version"] < 2
+    if $config["opensearch"]["template_version"] < 2
       assert_equal([
         "0/127.0.0.1:9080/",
         "1/127.0.0.1:9080/api/",
@@ -229,7 +252,7 @@ class Test::Proxy::Logging::TestSpecialChars < Minitest::Test
 
     # URL
     assert_equal("/api/hello/#{as_is}/", record["request_path"])
-    if $config["elasticsearch"]["template_version"] < 2
+    if $config["opensearch"]["template_version"] < 2
       assert_equal([
         "0/127.0.0.1:9080/",
         "1/127.0.0.1:9080/api/",
@@ -269,5 +292,25 @@ class Test::Proxy::Logging::TestSpecialChars < Minitest::Test
     record = wait_for_log(response)[:hit_source]
     assert_equal("/api/hello/extra//slash/some\\backslash/encoded%5Cbackslash/encoded%2Fslash", record["request_path"])
     assert_equal("&forward_slash=/slash&encoded_forward_slash=%2F&back_slash=\\&encoded_back_slash=%5C", record["request_url_query"])
+  end
+
+  def test_invalid_quotes
+    response = Typhoeus.get("http://127.0.0.1:9080/api/hello", log_http_options.deep_merge({
+      :headers => {
+        "User-Agent" => Base64.decode64("eyJ1c2VyX2FnZW50IjogImZvbyDAp8CiIGJhciJ9"),
+        "Referer" => Base64.decode64("eyJ1c2VyX2FnZW50IjogImZvbyDAp8CiIGJhciJ9"),
+      },
+    }))
+    assert_response_code(200, response)
+
+    record = wait_for_log(response)[:hit_source]
+    # CI returns a slightly different response than local dev for some reason.
+    if record["request_referer"].include?("foo ?? ")
+      assert_equal("{\"user_agent\": \"foo ?? bar\"}", record["request_referer"])
+      assert_equal("{\"user_agent\": \"foo ?? bar\"}", record["request_user_agent"])
+    else
+      assert_equal("{\"user_agent\": \"foo \xC0\xA7?? bar\"}", record["request_referer"])
+      assert_equal("{\"user_agent\": \"foo \xC0\xA7?? bar\"}", record["request_user_agent"])
+    end
   end
 end

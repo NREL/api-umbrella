@@ -418,9 +418,49 @@ import "path"
     match_x_forwarded_host?: bool
   }
 
-  rsyslog: {
+  fluent_bit: {
+    #on_off_bool: "on" | "off"
+
     host: string | *"127.0.0.1"
     port: uint16 | *14014
+    service: {
+      log_level: string | *"info"
+      flush: float | *1
+      storage_max_chunks_up: uint | *32
+      storage_backlog_mem_limit: string | *"16M"
+    }
+    aws_access_key_id?: string
+    aws_secret_access_key?: string
+    outputs: {
+      opensearch: {
+        enabled: bool | *true
+        aws_auth: #on_off_bool | *"off"
+        aws_region?: string
+        aws_service_name: string | *"es"
+        retry_limit: uint | *30
+        storage_total_limit_size: string | *"128M"
+        trace_error: #on_off_bool | *"on"
+        buffer_size: string | *"64KB"
+      }
+
+      s3: {
+        enabled: bool | *false
+        region?: string
+        bucket?: string
+        s3_key_format: string | *"/$TAG[1]/%Y/%m/%d/%Y%m%dT%H%M%SZ-$UUID.jsonl.gz"
+        storage_class: string | *"STANDARD"
+        compression: string | *"gzip"
+        upload_chunk_size: string | *"30M"
+        store_dir_limit_size: string | *"300M"
+        total_file_size: string | *"250M"
+        upload_timeout: string | *"60m"
+        send_content_md5: bool | *true
+        content_type: string | *"application/gzip"
+        auto_retry_requests: bool | *true
+        preserve_data_ordering: bool | *true
+        retry_limit: uint | *5
+      }
+    }
   }
 
   log: {
@@ -452,34 +492,34 @@ import "path"
     }
   }
 
-  elasticsearch: {
+  opensearch: {
     hosts: [...string] | *[
-      "http://elasticsearch:9200",
+      "http://opensearch:9200",
     ]
     index_name_prefix: string | *"api-umbrella"
-    index_partition: string | *"daily"
-    index_mapping_type: string | *"log"
-    api_version: uint | *7
-    template_version: uint | *2
-    aws_signing_proxy: {
-      host: string | *"127.0.0.1"
-      port: uint16 | *14017
-      workers: uint | "auto" | *1
-      worker_connections: uint | *8192
-      listen_so_keepalive: string | *"on"
-      listen_backlog?: uint
-      error_log_level: string | *"notice"
+    template_version: uint | *4
+    template: {
+      index: {
+        refresh_interval: string | *"5s"
+        number_of_shards: uint | *3
+        number_of_replicas: uint | *2
+      }
+      translog: {
+        durability: string | *"async"
+        sync_interval: string | *"10s"
+      }
     }
+    max_buckets: uint | *10000
   }
 
-  #analytics_output_name: "elasticsearch"
+  #analytics_output_name: "opensearch"
   analytics: {
-    adapter: #analytics_output_name | *"elasticsearch"
+    adapter: #analytics_output_name | *"opensearch"
     timezone: string | *"UTC"
     log_request_url_query_params_separately: bool | *false
 
     _default_outputs:  [...#analytics_output_name] & [
-      "elasticsearch"
+      "opensearch"
     ]
     outputs: [...#analytics_output_name] | *_default_outputs
   }
@@ -889,6 +929,7 @@ import "path"
 
   http_proxy?: string
   https_proxy?: string
+  no_proxy?: string
 
   version?: uint16
 

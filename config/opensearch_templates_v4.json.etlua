@@ -1,13 +1,13 @@
-[
-  {
-    "id": "<%- config["elasticsearch"]["index_name_prefix"] %>-log-v2-template",
+{
+  "<%- config["opensearch"]["index_name_prefix"] %>-logs-v4-template": {
+    "index_patterns": [
+      "<%- config["opensearch"]["index_name_prefix"] %>-logs-v4-*"
+    ],
+    "data_stream": {},
     "template": {
-      "template": "<%- config["elasticsearch"]["index_name_prefix"] %>-logs-v2-*",
       "settings": {
-        "index": {
-          "number_of_shards": 1,
-          "codec": "best_compression"
-        },
+        "index": <%- json_encode(config["opensearch"]["template"]["index"]) %>,
+        "translog": <%- json_encode(config["opensearch"]["template"]["translog"]) %>,
         "analysis": {
           "normalizer": {
             "lowercase_normalizer": {
@@ -19,15 +19,14 @@
               "filter": ["uppercase"]
             }
           }
-        },
-        "translog": {
-          "durability": "async",
-          "sync_interval": "10s"
         }
       },
       "mappings": {
         "dynamic": "strict",
         "properties": {
+          "@timestamp": {
+            "type": "date"
+          },
           "api_backend_id": {
             "type": "keyword",
             "normalizer": "lowercase_normalizer"
@@ -66,9 +65,6 @@
             "type": "keyword",
             "normalizer": "lowercase_normalizer"
           },
-          "request_at": {
-            "type": "date"
-          },
           "request_basic_auth_username": {
             "type": "keyword",
             "normalizer": "lowercase_normalizer"
@@ -85,12 +81,21 @@
             "type": "keyword",
             "normalizer": "lowercase_normalizer"
           },
+          "request_id": {
+            "type": "keyword"
+          },
           "request_ip": {
             "type": "keyword",
-            "normalizer": "lowercase_normalizer"
+            "normalizer": "lowercase_normalizer",
+            "fields": {
+              "hash": {
+                "type": "murmur3"
+              }
+            }
           },
           "request_ip_city": {
-            "type": "keyword"
+            "type": "keyword",
+            "normalizer": "lowercase_normalizer"
           },
           "request_ip_country": {
             "type": "keyword",
@@ -219,11 +224,21 @@
           },
           "user_id": {
             "type": "keyword",
-            "normalizer": "lowercase_normalizer"
+            "normalizer": "lowercase_normalizer",
+            "fields": {
+              "hash": {
+                "type": "murmur3"
+              }
+            }
           },
           "user_email": {
             "type": "keyword",
-            "normalizer": "lowercase_normalizer"
+            "normalizer": "lowercase_normalizer",
+            "fields": {
+              "hash": {
+                "type": "murmur3"
+              }
+            }
           },
           "user_registration_source": {
             "type": "keyword",
@@ -233,4 +248,4 @@
       }
     }
   }
-]
+}

@@ -30,7 +30,7 @@ local function generate_organization_summary(start_time, end_time, recent_start_
   search:set_interval("month")
   search:filter_exclude_imported()
   search:aggregate_by_interval_for_summary()
-  search:aggregate_by_cardinality("user_id")
+  search:aggregate_by_cardinality("user_id", "user_id.hash")
   search:aggregate_by_response_time_average()
   if config["web"]["analytics_v0_summary_filter"] then
     search:set_search_query_string(config["web"]["analytics_v0_summary_filter"])

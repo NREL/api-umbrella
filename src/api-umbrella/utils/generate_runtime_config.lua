@@ -305,12 +305,12 @@ local function set_computed_config(config)
     config["dns_resolver"]["_nameservers_nginx"] = config["dns_resolver"]["_nameservers_nginx"] .. " ipv6=off"
   end
 
-  config["elasticsearch"]["_servers"] = {}
-  if config["elasticsearch"]["hosts"] then
-    for _, elasticsearch_url in ipairs(config["elasticsearch"]["hosts"]) do
-      local parsed, parse_err = url_parse(elasticsearch_url)
+  config["opensearch"]["_servers"] = {}
+  if config["opensearch"]["hosts"] then
+    for _, opensearch_url in ipairs(config["opensearch"]["hosts"]) do
+      local parsed, parse_err = url_parse(opensearch_url)
       if not parsed or parse_err then
-        ngx.log(ngx.WARN, "WARNING: Failed to parse: " .. (elasticsearch_url or "") .. " " .. (parse_err or ""))
+        ngx.log(ngx.WARN, "WARNING: Failed to parse: " .. (opensearch_url or "") .. " " .. (parse_err or ""))
       else
         parsed["port"] = tonumber(parsed["port"])
         if not parsed["port"] then
@@ -325,13 +325,9 @@ local function set_computed_config(config)
           parsed["_https?"] = true
         end
 
-        table.insert(config["elasticsearch"]["_servers"], parsed)
+        table.insert(config["opensearch"]["_servers"], parsed)
       end
     end
-  end
-
-  if config["elasticsearch"]["api_version"] >= 7 then
-    config["elasticsearch"]["index_mapping_type"] = "_doc"
   end
 
   if not config["analytics"]["outputs"] then
@@ -431,18 +427,12 @@ local function set_computed_config(config)
     ["_test_env?"] = (config["app_env"] == "test"),
     ["_development_env?"] = (config["app_env"] == "development"),
     analytics = {
-      ["_output_elasticsearch?"] = array_includes(config["analytics"]["outputs"], "elasticsearch"),
+      ["_output_opensearch?"] = array_includes(config["analytics"]["outputs"], "opensearch"),
     },
-    elasticsearch = {
-      _first_server = config["elasticsearch"]["_servers"][1],
-      ["_index_partition_monthly?"] = (config["elasticsearch"]["index_partition"] == "monthly"),
-      ["_index_partition_daily?"] = (config["elasticsearch"]["index_partition"] == "daily"),
-      ["_template_version_v1?"] = (config["elasticsearch"]["template_version"] == 1),
-      ["_template_version_v2?"] = (config["elasticsearch"]["template_version"] == 2),
-      ["_api_version_lte_2?"] = (config["elasticsearch"]["api_version"] <= 2),
+    opensearch = {
+      _first_server = config["opensearch"]["_servers"][1],
     },
     ["_service_egress_enabled?"] = array_includes(config["services"], "egress"),
-    ["_service_elasticsearch_aws_signing_proxy_enabled?"] = array_includes(config["services"], "elasticsearch_aws_signing_proxy"),
     ["_service_router_enabled?"] = array_includes(config["services"], "router"),
     ["_service_web_enabled?"] = array_includes(config["services"], "web"),
     router = {

@@ -128,7 +128,7 @@ function _M.iso8601_ms_to_csv(string)
   return date:format(format_csv)
 end
 
-function _M.elasticsearch_to_csv(value)
+function _M.opensearch_to_csv(value)
   if not value then
     return nil
   end

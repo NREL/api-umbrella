@@ -60,6 +60,15 @@ tasks:
     generates:
       - ./build/work/stamp/deps/envoy-control-plane
 
+  deps:fluent-bit:
+    cmds:
+      - ./tasks/deps/fluent-bit
+    sources:
+      - ./tasks/deps/fluent-bit
+      - ./tasks/helpers.sh
+    generates:
+      - ./build/work/stamp/deps/fluent-bit
+
   deps:luarocks:
     deps:
       - deps:openresty
@@ -90,15 +99,6 @@ tasks:
     generates:
       - ./build/work/stamp/deps/perp
 
-  deps:rsyslog:
-    cmds:
-      - ./tasks/deps/rsyslog
-    sources:
-      - ./tasks/deps/rsyslog
-      - ./tasks/helpers.sh
-    generates:
-      - ./build/work/stamp/deps/rsyslog
-
   deps:trafficserver:
     deps:
       - deps:openresty
@@ -116,10 +116,10 @@ tasks:
       - task: deps:cue
       - task: deps:envoy
       - task: deps:envoy-control-plane
+      - task: deps:fluent-bit
       - task: deps:luarocks
       - task: deps:openresty
       - task: deps:perp
-      - task: deps:rsyslog
       - task: deps:trafficserver
 
   build-deps:crane:

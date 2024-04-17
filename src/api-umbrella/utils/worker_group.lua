@@ -37,11 +37,11 @@ function _M.init()
     ngx.log(ngx.WARN, "forcibly set 'worker_group_needs_config_refresh' in 'jobs' shared dict (shared dict may be too small)")
   end
 
-  set_ok, set_err, set_forcible = shared_dict_retry_set(jobs_dict, "elasticsearch_templates_created", false)
+  set_ok, set_err, set_forcible = shared_dict_retry_set(jobs_dict, "opensearch_templates_created", false)
   if not set_ok then
-    ngx.log(ngx.ERR, "failed to set 'elasticsearch_templates_created' in 'jobs' shared dict: ", set_err)
+    ngx.log(ngx.ERR, "failed to set 'opensearch_templates_created' in 'jobs' shared dict: ", set_err)
   elseif set_forcible then
-    ngx.log(ngx.WARN, "forcibly set 'elasticsearch_templates_created' in 'jobs' shared dict (shared dict may be too small)")
+    ngx.log(ngx.WARN, "forcibly set 'opensearch_templates_created' in 'jobs' shared dict (shared dict may be too small)")
   end
 end
 

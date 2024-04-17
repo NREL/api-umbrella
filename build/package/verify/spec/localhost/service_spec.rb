@@ -214,11 +214,11 @@ describe "api-umbrella" do
     expect(command_result.exit_status).to eql(0)
     output = command_result.stdout
     [
-      "elasticsearch",
       "geoip-auto-updater",
       "mongod",
       "mora",
       "nginx",
+      "opensearch",
       "rsyslog",
       "trafficserver",
       "web-delayed-job",
@@ -233,7 +233,7 @@ describe "api-umbrella" do
   it "does not contain unexpected errors in logs" do
     logs = Dir.glob("/opt/api-umbrella/var/log/*/current")
     expect(logs).to eql([
-      "/opt/api-umbrella/var/log/elasticsearch/current",
+      "/opt/api-umbrella/var/log/opensearch/current",
       "/opt/api-umbrella/var/log/geoip-auto-updater/current",
       "/opt/api-umbrella/var/log/mongod/current",
       "/opt/api-umbrella/var/log/mora/current",

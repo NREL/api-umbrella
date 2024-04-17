@@ -58,13 +58,13 @@ CONFIG proxy.config.output.logfile.rolling_enabled INT 0
   # If outputting to stdout, the error.log file can't be symlinked to
   # stdout/stderr, so we still need to output to a log file, but enable
   # Trafficserver's log rotation so these don't grow very big. We'll then use
-  # rsyslog to tail these files and output to stdout for us.
+  # fluent-bit to tail these files and output to stdout for us.
   #
   # This workaround should no longer be needed once Trafficserver 10 is
   # released and things can be configured to output to stdout/stderr directly:
   # https://github.com/apache/trafficserver/pull/7937
   CONFIG proxy.config.log.auto_delete_rolled_files INT 1
-  CONFIG proxy.config.log.max_space_mb_for_logs INT 200
+  CONFIG proxy.config.log.max_space_mb_for_logs INT 30
   CONFIG proxy.config.log.max_space_mb_headroom INT 20
 
   CONFIG proxy.config.log.rolling_enabled INT 2

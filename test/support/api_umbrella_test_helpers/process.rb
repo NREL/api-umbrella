@@ -426,19 +426,9 @@ module ApiUmbrellaTestHelpers
 
     def static_test_config
       unless @static_test_config
-        elasticsearch_test_api_version = nil
-        if ENV["ELASTICSEARCH_TEST_API_VERSION"]
-          elasticsearch_test_api_version = ENV.fetch("ELASTICSEARCH_TEST_API_VERSION").to_i
-        end
-
-        elasticsearch_test_template_version = nil
-        if ENV["ELASTICSEARCH_TEST_TEMPLATE_VERSION"]
-          elasticsearch_test_template_version = ENV.fetch("ELASTICSEARCH_TEST_TEMPLATE_VERSION").to_i
-        end
-
-        elasticsearch_test_index_partition = nil
-        if ENV["ELASTICSEARCH_TEST_INDEX_PARTITION"]
-          elasticsearch_test_index_partition = ENV.fetch("ELASTICSEARCH_TEST_INDEX_PARTITION")
+        opensearch_test_template_version = nil
+        if ENV["OPENSEARCH_TEST_TEMPLATE_VERSION"]
+          opensearch_test_template_version = ENV.fetch("OPENSEARCH_TEST_TEMPLATE_VERSION").to_i
         end
 
         static = YAML.safe_load_file(TEST_CONFIG_PATH)
@@ -456,24 +446,10 @@ module ApiUmbrellaTestHelpers
           static["user"] = "api-umbrella"
           static["group"] = "api-umbrella"
         end
-        if elasticsearch_test_api_version
+        if opensearch_test_template_version
           static.deep_merge!({
-            "elasticsearch" => {
-              "api_version" => elasticsearch_test_api_version,
-            },
-          })
-        end
-        if elasticsearch_test_template_version
-          static.deep_merge!({
-            "elasticsearch" => {
-              "template_version" => elasticsearch_test_template_version,
-            },
-          })
-        end
-        if elasticsearch_test_index_partition
-          static.deep_merge!({
-            "elasticsearch" => {
-              "index_partition" => elasticsearch_test_index_partition,
+            "opensearch" => {
+              "template_version" => opensearch_test_template_version,
             },
           })
         end

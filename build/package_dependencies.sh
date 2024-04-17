@@ -34,13 +34,6 @@ if [[ "$ID_NORMALIZED" == "rhel" ]]; then
     # TrafficServer
     libxml2
 
-    # ElasticSearch
-    java-1.8.0-openjdk-headless
-    which
-
-    # rsyslog omelasticsearch
-    libcurl
-
     # init.d script helpers
     initscripts
 
@@ -149,7 +142,6 @@ if [[ "$ID_NORMALIZED" == "rhel" ]]; then
     )
   fi
 elif [[ "$ID_NORMALIZED" == "debian" ]]; then
-  libcurl_version=4
   libffi_version=8
   libldap_version="2.5-0"
 
@@ -193,13 +185,6 @@ elif [[ "$ID_NORMALIZED" == "debian" ]]; then
     libjemalloc2
     libunwind8
     libxml2
-
-    # rsyslog
-    libestr0
-    libfastjson4
-
-    # rsyslog omelasticsearch
-    "libcurl$libcurl_version"
 
     # init.d script helpers
     sysvinit-utils
@@ -278,10 +263,6 @@ elif [[ "$ID_NORMALIZED" == "debian" ]]; then
     # lua-psl
     libpsl-dev
 
-    # rsyslog
-    libestr-dev
-    libfastjson-dev
-
     # ngx_http_geoip2_module
     libmaxminddb-dev
 
@@ -289,6 +270,11 @@ elif [[ "$ID_NORMALIZED" == "debian" ]]; then
     libhwloc-dev
     libjemalloc-dev
     libunwind-dev
+
+    # Fluent Bit
+    bison
+    cmake
+    flex
   )
   test_runtime_dependencies=(
     unbound

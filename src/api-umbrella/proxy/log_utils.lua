@@ -1,7 +1,5 @@
 local config = require("api-umbrella.utils.load_config")()
 local escape_uri_non_ascii = require "api-umbrella.utils.escape_uri_non_ascii"
-local icu_date = require "icu-date-ffi"
-local json_encode = require "api-umbrella.utils.json_encode"
 local logger = require "resty.logger.socket"
 local pg_utils = require "api-umbrella.utils.pg_utils"
 local plutils = require "pl.utils"
@@ -9,22 +7,13 @@ local round = require "api-umbrella.utils.round"
 local shared_dict_retry_set = require("api-umbrella.utils.shared_dict_retry").set
 local user_agent_parser = require "api-umbrella.proxy.user_agent_parser"
 
+local logger_init = logger.init
+local logger_initted = logger.initted
+local logger_log = logger.log
 local re_gsub = ngx.re.gsub
 local split = plutils.split
+local string_len = string.len
 local timer_at = ngx.timer.at
-
-local syslog_facility = 16 -- local0
-local syslog_severity = 6 -- info
-local syslog_priority = (syslog_facility * 8) + syslog_severity
-local syslog_version = 1
-
-local ZONE_OFFSET = icu_date.fields.ZONE_OFFSET
-local DST_OFFSET = icu_date.fields.DST_OFFSET
-local DAY_OF_WEEK = icu_date.fields.DAY_OF_WEEK
--- Setup the date object in the analytics timezone, and set the first day of
--- the week to Mondays for ISO week calculations.
-local date = icu_date.new({ zone_id = config["analytics"]["timezone"] })
-date:set_attribute(icu_date.attributes.FIRST_DAY_OF_WEEK, 2)
 
 local geocode_city_cache_dict = ngx.shared.geocode_city_cache
 
@@ -62,6 +51,16 @@ local function uppercase_truncate(value, max_length)
   return string.upper(truncate_string(value, max_length))
 end
 
+local function sanitize_request_header(value)
+  local cleaned_value, _, gsub_err = re_gsub(value, "\xC0\xA2", "??", "jo")
+  if gsub_err then
+    ngx.log(ngx.ERR, "regex error: ", gsub_err)
+    return value
+  end
+
+  return cleaned_value
+end
+
 local function remove_envoy_empty_header_value(value)
   if value and value == "-" then
     return nil
@@ -73,7 +72,7 @@ end
 -- To make drill-downs queries easier, split up how the path is stored.
 --
 -- We store this in slightly different, but similar fashions for SQL storage
--- versus ElasticSearch storage.
+-- versus OpenSearch storage.
 --
 -- A request like this:
 --
@@ -85,14 +84,14 @@ end
 -- request_url_hierarchy_level2 = /api/foo/
 -- request_url_hierarchy_level3 = /api/foo/bar.json
 --
--- And gets indexed as this array for ElasticSearch storage:
+-- And gets indexed as this array for OpenSearch storage:
 --
 -- 0/example.com/
 -- 1/example.com/api/
 -- 2/example.com/api/foo/
 -- 3/example.com/api/foo/bar.json
 --
--- This is similar to ElasticSearch's built-in path_hierarchy tokenizer, but
+-- This is similar to OpenSearch's built-in path_hierarchy tokenizer, but
 -- prefixes each token with a depth counter, so we can more easily and
 -- efficiently facet on specific levels (for example, a regex query of "^0/"
 -- would return all the totals for each domain).
@@ -117,16 +116,13 @@ function _M.set_url_hierarchy(data)
   -- prevent us from having to have unlimited depths for flattened SQL storage.
   local path_parts = split(cleaned_path, "/", true, 6)
 
-  -- Setup top-level host hierarchy for ElasticSearch storage.
-  data["request_url_hierarchy"] = {}
+  -- Setup top-level host hierarchy for OpenSearch storage.
   local host_level = data["request_url_host"]
   if #path_parts > 0 then
     host_level = host_level .. "/"
   end
   data["request_url_hierarchy_level0"] = host_level
-  table.insert(data["request_url_hierarchy"], "0/" .. host_level)
 
-  local path_tree = "/"
   for index, _ in ipairs(path_parts) do
     local path_level = path_parts[index]
 
@@ -144,13 +140,8 @@ function _M.set_url_hierarchy(data)
       path_level = path_level .. "/"
     end
 
-    -- Store in the request_url_path_level(1-6) fields for SQL storage.
+    -- Store in the request_url_path_level(1-6) fields.
     data["request_url_hierarchy_level" .. index] = path_level
-
-    -- Store as an array for ElasticSearch storage.
-    path_tree = path_tree .. path_level
-    local path_token = index .. "/" .. data["request_url_host"] .. path_tree
-    table.insert(data["request_url_hierarchy"], path_token)
   end
 end
 
@@ -262,29 +253,6 @@ function _M.set_request_ip_geo_fields(data, ngx_var)
   end
 end
 
-function _M.set_computed_timestamp_fields(data)
-  -- Generate a string of current timestamp in the analytics timezone.
-  --
-  -- Note that we use os.date instead of icu-date's "format" function, since in
-  -- some microbenchmarks, this approach is faster.
-  date:set_millis(data["timestamp_utc"])
-  local tz_offset = date:get(ZONE_OFFSET) + date:get(DST_OFFSET)
-  local tz_time = os.date("!%Y-%m-%d %H:%M:00", (date:get_millis() + tz_offset) / 1000)
-
-  -- Determine the first day in the ISO week (the most recent Monday).
-  date:set(DAY_OF_WEEK, 2)
-  local week_tz_offset = date:get(ZONE_OFFSET) + date:get(DST_OFFSET)
-  local tz_week = os.date("!%Y-%m-%d", (date:get_millis() + week_tz_offset) / 1000)
-
-  data["timestamp_tz_offset"] = tz_offset
-  data["timestamp_tz_year"] = string.sub(tz_time, 1, 4) .. "-01-01" -- YYYY-01-01
-  data["timestamp_tz_month"] = string.sub(tz_time, 1, 7) .. "-01" -- YYYY-MM-01
-  data["timestamp_tz_week"] = tz_week -- YYYY-MM-DD of first day in ISO week.
-  data["timestamp_tz_date"] = string.sub(tz_time, 1, 10) -- YYYY-MM-DD
-  data["timestamp_tz_hour"] = string.sub(tz_time, 1, 13) .. ":00:00" -- YYYY-MM-DD HH:00:00
-  data["timestamp_tz_minute"] = tz_time -- YYYY-MM-DD HH:MM:00
-end
-
 function _M.set_computed_url_fields(data, ngx_ctx)
   data["request_url_host"] = lowercase_truncate(data["request_url_host"], 200)
 
@@ -304,11 +272,6 @@ function _M.set_computed_url_fields(data, ngx_ctx)
   -- reflect the original URL (and not after any internal rewriting).
   if parts[2] then
     data["request_url_query"] = escape_uri_non_ascii(parts[2])
-  end
-
-  data["legacy_request_url"] = data["request_url_scheme"] .. "://" .. data["request_url_host"] .. data["request_url_path"]
-  if data["request_url_query"] then
-    data["legacy_request_url"] = data["legacy_request_url"] .. "?" .. data["request_url_query"]
   end
 
   _M.set_url_hierarchy(data)
@@ -331,26 +294,23 @@ function _M.normalized_data(data)
     api_backend_resolved_host = remove_envoy_empty_header_value(lowercase_truncate(data["api_backend_resolved_host"], 200)),
     api_backend_response_code_details = remove_envoy_empty_header_value(truncate(data["api_backend_response_code_details"], 100)),
     api_backend_response_flags = remove_envoy_empty_header_value(truncate(data["api_backend_response_flags"], 20)),
-    denied_reason = lowercase_truncate(data["denied_reason"], 50),
-    id = lowercase_truncate(data["id"], 20),
-    request_accept = truncate(data["request_accept"], 200),
-    request_accept_encoding = truncate(data["request_accept_encoding"], 200),
+    gatekeeper_denied_code = lowercase_truncate(data["gatekeeper_denied_code"], 50),
+    request_id = lowercase_truncate(data["request_id"], 20),
+    request_accept = sanitize_request_header(truncate(data["request_accept"], 200)),
+    request_accept_encoding = sanitize_request_header(truncate(data["request_accept_encoding"], 200)),
     request_basic_auth_username = truncate(data["request_basic_auth_username"], 200),
-    request_connection = truncate(data["request_connection"], 200),
-    request_content_type = truncate(data["request_content_type"], 200),
+    request_connection = sanitize_request_header(truncate(data["request_connection"], 200)),
+    request_content_type = sanitize_request_header(truncate(data["request_content_type"], 200)),
     request_ip = lowercase_truncate(data["request_ip"], 45),
     request_ip_city = truncate(data["request_ip_city"], 200),
     request_ip_country = uppercase_truncate(data["request_ip_country"], 2),
-    request_ip_lat = tonumber(data["request_ip_lat"]),
-    request_ip_lon = tonumber(data["request_ip_lon"]),
     request_ip_region = uppercase_truncate(data["request_ip_region"], 2),
     request_method = uppercase_truncate(data["request_method"], 10),
-    request_origin = truncate(data["request_origin"], 200),
-    request_referer = truncate(data["request_referer"], 200),
+    request_origin = sanitize_request_header(truncate(data["request_origin"], 200)),
+    request_referer = sanitize_request_header(truncate(data["request_referer"], 200)),
     request_size = tonumber(data["request_size"]),
-    request_url_hierarchy = data["request_url_hierarchy"],
-    request_url_host = lowercase_truncate(data["request_url_host"], 200),
-    request_url_path = truncate(data["request_url_path"], 4000),
+    request_host = sanitize_request_header(lowercase_truncate(data["request_url_host"], 200)),
+    request_path = truncate(data["request_url_path"], 4000),
     request_url_hierarchy_level0 = truncate(data["request_url_hierarchy_level0"], 200),
     request_url_hierarchy_level1 = truncate(data["request_url_hierarchy_level1"], 200),
     request_url_hierarchy_level2 = truncate(data["request_url_hierarchy_level2"], 200),
@@ -358,10 +318,9 @@ function _M.normalized_data(data)
     request_url_hierarchy_level4 = truncate(data["request_url_hierarchy_level4"], 200),
     request_url_hierarchy_level5 = truncate(data["request_url_hierarchy_level5"], 200),
     request_url_hierarchy_level6 = truncate(data["request_url_hierarchy_level6"], 200),
-    request_url_port = tonumber(data["request_url_port"]),
     request_url_query = truncate(data["request_url_query"], 4000),
-    request_url_scheme = lowercase_truncate(data["request_url_scheme"], 10),
-    request_user_agent = truncate(data["request_user_agent"], 400),
+    request_scheme = lowercase_truncate(data["request_url_scheme"], 10),
+    request_user_agent = sanitize_request_header(truncate(data["request_user_agent"], 400)),
     request_user_agent_family = truncate(data["request_user_agent_family"], 100),
     request_user_agent_type = truncate(data["request_user_agent_type"], 100),
     response_age = tonumber(data["response_age"]),
@@ -377,72 +336,42 @@ function _M.normalized_data(data)
     response_size = tonumber(data["response_size"]),
     response_status = tonumber(data["response_status"]),
     response_transfer_encoding = truncate(data["response_transfer_encoding"], 200),
-    timer_response = tonumber(data["timer_response"]),
-    timestamp_tz_date = uppercase_truncate(data["timestamp_tz_date"], 20),
-    timestamp_tz_hour = uppercase_truncate(data["timestamp_tz_hour"], 20),
-    timestamp_tz_minute = uppercase_truncate(data["timestamp_tz_minute"], 20),
-    timestamp_tz_month = uppercase_truncate(data["timestamp_tz_month"], 20),
-    timestamp_tz_offset = tonumber(data["timestamp_tz_offset"]),
-    timestamp_tz_week = uppercase_truncate(data["timestamp_tz_week"], 20),
-    timestamp_tz_year = uppercase_truncate(data["timestamp_tz_year"], 20),
-    timestamp_utc = tonumber(data["timestamp_utc"]),
+    response_time = tonumber(data["timer_response"]),
+    ["@timestamp"] = tonumber(data["timestamp_utc"]),
     user_id = lowercase_truncate(data["user_id"], 36),
 
     -- Deprecated
-    legacy_api_key = truncate(data["legacy_api_key"], 40),
-    legacy_request_url = truncate(data["legacy_request_url"], 8000),
-    legacy_user_email = truncate(data["legacy_user_email"], 200),
-    legacy_user_registration_source = truncate(data["legacy_user_registration_source"], 200),
+    api_key = truncate(data["legacy_api_key"], 40),
+    user_email = truncate(data["legacy_user_email"], 200),
+    user_registration_source = truncate(data["legacy_user_registration_source"], 200),
   }
-
-  if normalized["request_url_hierarchy"] then
-    for index, path in ipairs(normalized["request_url_hierarchy"]) do
-      normalized["request_url_hierarchy"][index] = truncate(path, 400)
-    end
-  end
 
   return normalized
 end
 
-function _M.build_syslog_message(data)
-  local syslog_message = "<" .. syslog_priority .. ">"
-    .. syslog_version
-    .. " " .. os.date("!%Y-%m-%dT%TZ", data["timestamp_utc"] / 1000) -- timestamp
-    .. " -" -- hostname
-    .. " api-umbrella" -- app-name
-    .. " -" -- procid
-    .. " -" -- msgid
-    .. " -" -- structured-data
-    .. " @cee:" -- CEE-enhanced logging for rsyslog to parse JSON
-    .. json_encode({ raw = data }) -- JSON data
-    .. "\n"
-
-  return syslog_message
-end
-
-function _M.send_syslog_message(syslog_message)
-  -- Check the syslog message length to ensure it doesn't exceed the configured
-  -- rsyslog maxMessageSize value.
+function _M.send_message(message)
+  -- Check the message length to ensure it doesn't exceed the configured
+  -- Fluent Bit Buffer_Size.
   --
   -- In general, this shouldn't be possible, since URLs can't exceed 8KB, and
   -- we truncate the various headers that users can control for logging
   -- purposes. However, this provides an extra sanity check to ensure this
   -- doesn't unexpectedly pop up (eg, if we add additional headers we forget to
   -- truncate).
-  local syslog_message_length = string.len(syslog_message)
-  if syslog_message_length > 32000 then
-    ngx.log(ngx.ERR, "request syslog message longer than expected - analytics logging may fail: ", syslog_message_length)
+  local message_length = string_len(message)
+  if message_length > 32000 then
+    ngx.log(ngx.ERR, "request message longer than expected - analytics logging may fail: ", message_length)
   end
 
   -- Init the resty logger socket.
-  if not logger.initted() then
-    local ok, err = logger.init{
-      host = config["rsyslog"]["host"],
-      port = config["rsyslog"]["port"],
+  if not logger_initted() then
+    local ok, err = logger_init({
+      host = config["fluent_bit"]["host"],
+      port = config["fluent_bit"]["port"],
       flush_limit = 4096, -- 4KB
       drop_limit = 10485760, -- 10MB
       periodic_flush = 0.1,
-    }
+    })
 
     if not ok then
       ngx.log(ngx.ERR, "failed to initialize the logger: ", err)
@@ -450,7 +379,7 @@ function _M.send_syslog_message(syslog_message)
     end
   end
 
-  return logger.log(syslog_message)
+  return logger_log(message)
 end
 
 return _M

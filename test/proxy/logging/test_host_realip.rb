@@ -1,4 +1,4 @@
-require_relative "../test_helper"
+require_relative "../../test_helper"
 
 class Test::Proxy::Logging::TestHostRealip < Minitest::Test
   include ApiUmbrellaTestHelpers::Setup

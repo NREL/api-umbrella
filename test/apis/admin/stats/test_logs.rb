@@ -30,7 +30,7 @@ class Test::Apis::Admin::Stats::TestLogs < Minitest::Test
     assert_equal(1, data["recordsTotal"], data)
     assert_equal("/with_api_key/?foo=bar", data["data"][0]["request_url"])
     assert_equal("foo=bar", data["data"][0]["request_url_query"])
-    if($config["elasticsearch"]["template_version"] < 2)
+    if($config["opensearch"]["template_version"] < 2)
       assert_equal({ "foo" => "bar" }, data["data"][0]["request_query"])
     end
     refute_match("my_secret_key", body)
@@ -57,7 +57,7 @@ class Test::Apis::Admin::Stats::TestLogs < Minitest::Test
     refute_match("my_secret_key", response.body)
   end
 
-  def test_downloading_csv_that_uses_scan_and_scroll_elasticsearch_query
+  def test_downloading_csv_that_uses_scan_and_scroll_opensearch_query
     FactoryBot.create_list(:log_item, 1505, :request_at => Time.parse("2015-01-16T06:06:28.816Z").utc, :request_user_agent => unique_test_id)
     LogItem.refresh_indices!
 

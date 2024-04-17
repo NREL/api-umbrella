@@ -126,7 +126,7 @@ local function write_templates()
 
         if template_ext == "etlua" then
           local render_ok, render_err
-          render_ok, content, render_err = xpcall(etlua_render, xpcall_error_handler, content, { config = config, json_encode = json_encode })
+          render_ok, content, render_err = xpcall(etlua_render, xpcall_error_handler, content, { config = config, json_encode = json_encode, path_join = path_join })
           if not render_ok or render_err then
             print("template compile error in " .. template_path ..": " .. (render_err or content))
             os.exit(1)
@@ -205,8 +205,8 @@ local function set_permissions()
     chown(config["var_dir"], nil, group)
     chown(config["etc_dir"], nil, group)
     chown(path_join(config["db_dir"], "geoip"), nil, group)
-    chown(path_join(config["etc_dir"], "elasticsearch"), nil, group)
     chown(path_join(config["etc_dir"], "nginx"), nil, group)
+    chown(path_join(config["etc_dir"], "opensearch"), nil, group)
     chown(path_join(config["etc_dir"], "perp"), nil, group)
     chown(path_join(config["etc_dir"], "trafficserver"), nil, group)
 
@@ -241,16 +241,13 @@ local function activate_services()
   available_services = invert_table(available_services)
 
   local active_services = {}
-  if config["_service_elasticsearch_aws_signing_proxy_enabled?"] then
-    active_services["elasticsearch-aws-signing-proxy"] = 1
-  end
   if config["_service_router_enabled?"] then
     if config["geoip"]["_auto_updater_enabled"] then
       active_services["geoip-auto-updater"] = 1
     end
     active_services["envoy-control-plane"] = 1
+    active_services["fluent-bit"] = 1
     active_services["nginx"] = 1
-    active_services["rsyslog"] = 1
     active_services["trafficserver"] = 1
   end
   if config["_service_egress_enabled?"] then

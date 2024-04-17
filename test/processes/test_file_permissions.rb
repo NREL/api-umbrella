@@ -49,7 +49,7 @@ class Test::Processes::TestFilePermissions < Minitest::Test
   end
 
   def test_etc_perp_disabled_service_dir
-    stat = File.stat(File.join($config["etc_dir"], "perp", "elasticsearch-aws-signing-proxy"))
+    stat = File.stat(File.join($config["etc_dir"], "perp", "geoip-auto-updater"))
     assert_equal("40750", stat.mode.to_s(8))
     assert_process_owner(stat)
     assert_group(stat)

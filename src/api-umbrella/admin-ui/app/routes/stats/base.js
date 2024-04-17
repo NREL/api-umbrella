@@ -32,12 +32,17 @@ export default class BaseRoute extends AuthenticatedRoute {
       },
       'yesterday': {
         label: 'Yesterday',
-        start_at: moment().tz(timezone).subtract(1, 'days'),
+        start_at: moment().tz(timezone).subtract(1, 'days').startOf('day'),
         end_at: moment().tz(timezone).subtract(1, 'days').endOf('day'),
       },
       '7d': {
         label: 'Last 7 Days',
-        start_at: moment().tz(timezone).subtract(6, 'days'),
+        start_at: moment().tz(timezone).subtract(6, 'days').startOf('day'),
+        end_at: moment().tz(timezone).endOf('day'),
+      },
+      '14d': {
+        label: 'Last 14 Days',
+        start_at: moment().tz(timezone).subtract(13, 'days').startOf('day'),
         end_at: moment().tz(timezone).endOf('day'),
       },
       '30d': {

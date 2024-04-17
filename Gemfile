@@ -6,7 +6,7 @@ ruby "~> 3.1"
 gem "thor", "~> 1.3.0"
 
 # Tests
-gem "minitest", "~> 5.21.2"
+gem "minitest", "~> 5.22.2"
 
 # CLI helper for running tests
 gem "minitest-sprint", "~> 1.2.0"
@@ -37,7 +37,8 @@ gem "oj", "~> 3.10"
 # Database libraries
 gem "activerecord", "~> 7.1.1", :require => "active_record"
 gem "pg", "~> 1.5.3"
-gem "elasticsearch", "~> 7.13.3"
+gem "opensearch-ruby", "~> 3.1.0"
+gem "faraday-typhoeus", "~> 1.1.0"
 gem "active_attr", "~> 0.16.0"
 
 # Factories for test database data

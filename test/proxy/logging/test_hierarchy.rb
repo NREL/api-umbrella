@@ -16,7 +16,7 @@ class Test::Proxy::Logging::TestHierarchy < Minitest::Test
 
     record = wait_for_log(response)[:hit_source]
 
-    if $config["elasticsearch"]["template_version"] < 2
+    if $config["opensearch"]["template_version"] < 2
       assert_equal([
         "0/127.0.0.1:9080/",
         "1/127.0.0.1:9080/api/",

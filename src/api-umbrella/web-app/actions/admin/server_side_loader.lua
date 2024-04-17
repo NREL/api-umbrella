@@ -23,8 +23,8 @@ function _M.loader(self)
   end
 
   local web_config = {
-    elasticsearch = {
-      template_version = config["elasticsearch"]["template_version"],
+    opensearch = {
+      template_version = config["opensearch"]["template_version"],
     },
     web = {
       admin = {

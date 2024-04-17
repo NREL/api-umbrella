@@ -176,7 +176,7 @@ local function fetch_city_locations(buckets, country, region)
 
   local city_names = {}
   for _, bucket in ipairs(buckets) do
-    table.insert(city_names, bucket["key"])
+    table.insert(city_names, string.lower(bucket["key"]))
   end
 
   local conditions = {}
@@ -185,7 +185,7 @@ local function fetch_city_locations(buckets, country, region)
     table.insert(conditions, "region = " .. db.escape_literal(region))
   end
   if not is_empty(city_names) then
-    table.insert(conditions, "city IN " .. db.escape_literal(db.list(city_names)))
+    table.insert(conditions, "lower(city) IN " .. db.escape_literal(db.list(city_names)))
   end
 
   local cities = AnalyticsCity:select("WHERE " .. table.concat(conditions, " AND "), {
@@ -193,12 +193,21 @@ local function fetch_city_locations(buckets, country, region)
   })
 
   local data = {}
+  local proper_city_names = {}
   for _, city in ipairs(cities) do
     if city.city then
+      proper_city_names[string.lower(city.city)] = city.city
       data[city.city] = {
         lat = city.lat,
         lon = city.lon,
       }
+    end
+  end
+
+  for _, bucket in ipairs(buckets) do
+    local city_name = proper_city_names[bucket["key"]]
+    if city_name then
+      bucket["key"] = city_name
     end
   end
 
@@ -277,6 +286,19 @@ function _M.search(self)
   search:aggregate_by_response_time_average()
 
   local results = search:fetch_results()
+
+  -- Optimization: Every request should have an IP, so we don't need to perform
+  -- extra aggregations to look for total counts and missing values, since we
+  -- can assume the total count matches the overall hit count, and the missing
+  -- IPs are zero. But we'll fake the structure needed for `aggregation_result`
+  -- below.
+  results["aggregations"]["value_count_request_ip"] = {
+    value = results["hits"]["_total_value"],
+  }
+  results["aggregations"]["missing_request_ip"] = {
+    doc_count = 0,
+  }
+
   local response = {
     stats = {
       total_hits = results["hits"]["_total_value"],
@@ -293,7 +315,7 @@ function _M.search(self)
 
   if results["aggregations"] then
     response["stats"]["total_users"] = results["aggregations"]["unique_user_email"]["value"]
-    response["stats"]["total_ips"] = results["aggregations"]["unique_request_ip"]["value"]
+    response["stats"]["total_ips"] = results["aggregations"]["sampled_ips"]["unique_request_ip"]["value"]
     response["stats"]["average_response_time"] = results["aggregations"]["response_time_average"]["value"]
   end
 
@@ -370,7 +392,7 @@ function _M.logs(self)
       for _, hit in ipairs(hits) do
         local row = hit["_source"]
         ngx.say(csv.row_to_csv({
-          time.elasticsearch_to_csv(row["request_at"]) or null,
+          time.opensearch_to_csv(row["@timestamp"]) or null,
           row["request_method"] or null,
           row["request_host"] or null,
           sanitized_full_url(row) or null,
@@ -409,7 +431,7 @@ function _M.logs(self)
           row["api_backend_resolved_host"] or null,
           row["api_backend_response_code_details"] or null,
           row["api_backend_response_flags"] or null,
-          hit["_id"] or null,
+          hit["request_id"] or null,
         }))
       end
       ngx.flush(true)
@@ -431,7 +453,8 @@ function _M.logs(self)
       row["_type"] = nil
       row["_score"] = nil
       row["_index"] = nil
-      row["request_id"] = hit["_id"]
+      row["request_at"] = row["@timestamp"]
+      row["@timestamp"] = nil
       row["request_url"] = sanitized_url_path_and_query(row)
       row["request_url_query"] = strip_api_key_from_query(row["request_url_query"])
       if row["request_query"] then
@@ -453,7 +476,7 @@ function _M.users(self)
   end
 
   -- If we're sorting by hits or last request date, then we can perform the
-  -- sorting directly in the elasticsearch query. Otherwise, for user-based
+  -- sorting directly in the opensearch query. Otherwise, for user-based
   -- field, we'll need to defer sorting until we have all the results in the
   -- app.
   local order_fields = datatables.parse_order(self)
@@ -491,7 +514,7 @@ function _M.users(self)
   local total_count = #buckets
 
   -- If we were sorting by one of the facet fields, then the sorting has
-  -- already been done by elasticsearch. We can improve the performance by
+  -- already been done by opensearch. We can improve the performance by
   -- going ahead and truncating the results to the specified page.
   if order then
     buckets = table_sub(buckets, 1, tonumber(limit))

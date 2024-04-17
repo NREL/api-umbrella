@@ -10,9 +10,9 @@ class Test < Thor
 
     args = []
     if ENV["CI"] == "true"
-      args += ["--ci-dir", "./test/tmp/artifacts/reports"]
+      args += ["--ci-dir", "/test/tmp/artifacts/reports"]
     end
 
-    exec "bundle", "exec", "minitest", *args, *tests
+    exec "bundle", "exec", "minitest", *(args + tests)
   end
 end
