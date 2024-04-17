@@ -321,6 +321,7 @@ import "path"
           token_signing_alg_values_expected: string | *"RS256"
           token_endpoint_auth_method: string | *"private_key_jwt"
           scope: string | *"openid email"
+          redirect_after_logout_with_id_token_hint: bool | *false
           authorization_params: {
             acr_values: string | *"http://idmanagement.gov/ns/assurance/loa/1"
           }

@@ -70,8 +70,9 @@ function _M.authenticate(self, strategy_name, callback)
   end
 
   -- When handling a logout, lua-resty-openidc doesn't currently append the
-  -- optional "state" param to the logout URL, which Login.gov requires. So
-  -- work around this by manually adding it.
+  -- optional "state" or "client_id" params to the logout URL, which Login.gov
+  -- requires (at least "client_id", previously I believe "state"). So work
+  -- around this by manually adding it.
   if ngx.var.uri == openidc_options["logout_path"] then
     -- Fetch the discovery information and see if the "end_session_endpoint"
     -- item is set.
@@ -87,19 +88,27 @@ function _M.authenticate(self, strategy_name, callback)
       self.session_cookie:save()
 
       -- Add the "state" param to the logout URL.
+      local extra_logout_args = {
+        state = self.session_cookie.data["openid_connect_state"]
+      }
+
+      -- Add the "client_id" param to the logout URL if id_token_hint won't be
+      -- used.
+      if openidc_options["redirect_after_logout_with_id_token_hint"] == false then
+        extra_logout_args["client_id"] = openidc_options["client_id"]
+      else
+        openidc_options["redirect_after_logout_with_id_token_hint"] = true
+      end
+
+      -- Construct a new logout URL, appending any of our additional query
+      -- params.
       local logout_uri = discovery["end_session_endpoint"]
       local separator = "?"
       if string.find(logout_uri, "?", 1, true) then
         separator = "&"
       end
-      logout_uri = logout_uri .. separator .. ngx.encode_args({ state = self.session_cookie.data["openid_connect_state"] })
-
+      logout_uri = logout_uri .. separator .. ngx.encode_args(extra_logout_args)
       openidc_options["redirect_after_logout_uri"] = logout_uri
-
-      -- This option needs to be explicitly enabled whenever
-      -- "redirect_after_logout_uri" is manually set for compatibility with the
-      -- default "end_session_endpoint" behavior.
-      openidc_options["redirect_after_logout_with_id_token_hint"] = true
     elseif not discovery or not discovery["ping_end_session_endpoint"] then
       -- lua-resty-openidc's default behavior is to render plain HTML response
       -- to the logout endpoint. So if we're not performing a RP-initiaited
