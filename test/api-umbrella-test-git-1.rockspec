@@ -8,7 +8,7 @@ source = {
 dependencies = {
   "luacheck ~> 1.1.2",
   "luaposix ~> 36.2.1",
-  "penlight ~> 1.13.1",
+  "penlight ~> 1.14.0",
   "shell-games ~> 1.1.0",
 }
 

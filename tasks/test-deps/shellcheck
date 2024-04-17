@@ -4,19 +4,19 @@
 set -e -u -x
 source ./tasks/helpers.sh
 
-shellcheck_version="0.9.0"
-shellcheck_hash="157fd8b2c18a257f3876e23015580ea63d27b12c4f13f87d625a180e8ca042e7501271d15edeb36e7b5780da73815b45386a33e063ab1c891d838f35c778a8ac"
+shellcheck_version="0.10.0"
+shellcheck_hash="6c881ab0698e4e6ea235245f22832860544f17ba386442fe7e9d629f8cbedf87"
 
 download_arch="$TARGETARCH"
 if [ "$TARGETARCH" == "amd64" ]; then
   download_arch="x86_64"
 elif [ "$TARGETARCH" == "arm64" ]; then
   download_arch="aarch64"
-  shellcheck_hash="3c11bc1901d470ba7f95334fcd4d8ea9c39c73ebb15655cd0cc478826279b02413409fa3f7b011c7ecdba98530953be54906b4a99b898b064c236f146f3ec749"
+  shellcheck_hash="324a7e89de8fa2aed0d0c28f3dab59cf84c6d74264022c00c22af665ed1a09bb"
 fi
 
 task_working_dir
-download "https://github.com/koalaman/shellcheck/releases/download/v$shellcheck_version/shellcheck-v$shellcheck_version.linux.${download_arch}.tar.xz" "sha512" "$shellcheck_hash"
+download "https://github.com/koalaman/shellcheck/releases/download/v$shellcheck_version/shellcheck-v$shellcheck_version.linux.${download_arch}.tar.xz" "sha256" "$shellcheck_hash"
 extract_download "shellcheck-v$shellcheck_version.linux.${download_arch}.tar.xz"
 
 install -D -m 755 "shellcheck-v$shellcheck_version/shellcheck" "$TEST_INSTALL_PREFIX/bin/shellcheck"

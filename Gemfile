@@ -22,7 +22,7 @@ gem "minitest-ci", "~> 3.4.0"
 
 # Ruby lint/style checker
 gem "rubocop", "~> 1.4", :require => false
-gem "rubocop-minitest", "~> 0.34.5", :require => false
+gem "rubocop-minitest", "~> 0.35.0", :require => false
 
 # Running background processes
 gem "childprocess"
@@ -37,7 +37,7 @@ gem "oj", "~> 3.10"
 # Database libraries
 gem "activerecord", "~> 7.1.1", :require => "active_record"
 gem "pg", "~> 1.5.3"
-gem "opensearch-ruby", "~> 3.1.0"
+gem "opensearch-ruby", "~> 3.2.0"
 gem "faraday-typhoeus", "~> 1.1.0"
 gem "active_attr", "~> 0.16.0"
 
@@ -91,4 +91,4 @@ gem "awesome_print", "~> 1.9.2"
 gem "ice_nine", "~> 0.11.2"
 
 # Testing SMTP directly.
-gem "net-smtp", "~> 0.4.0"
+gem "net-smtp", "~> 0.5.0"
