@@ -40,7 +40,7 @@ gem "oj", "~> 3.10"
 # Database libraries
 gem "activerecord", "~> 7.1.1", :require => "active_record"
 gem "pg", "~> 1.5.3"
-gem "opensearch-ruby", "~> 3.2.0"
+gem "opensearch-ruby", "~> 3.3.0"
 gem "faraday-typhoeus", "~> 1.1.0"
 gem "active_attr", "~> 0.16.0"
 

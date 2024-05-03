@@ -6,7 +6,7 @@ return {
       luacheck = "1.1.2-1",
       luafilesystem = "1.8.0-1",
       luaposix = "36.2.1-1",
-      penlight = "1.14.0-1",
+      penlight = "1.14.0-2",
       ["shell-games"] = "1.1.0-1"
    },
 }
