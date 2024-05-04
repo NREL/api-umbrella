@@ -11,7 +11,7 @@ class LogTail
     output = nil
     File.open(@path) do |file|
       file.seek(@pos)
-      output = file.read
+      output = file.read.encode("UTF-8", invalid: :replace)
       @pos = file.pos
     end
 
@@ -23,7 +23,7 @@ class LogTail
     begin
       Timeout.timeout(timeout) do
         loop do
-          output << self.read
+          output << self.read.encode("UTF-8", invalid: :replace)
           break if output.match(regex)
 
           sleep 0.1
