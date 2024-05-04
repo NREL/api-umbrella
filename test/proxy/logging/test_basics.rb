@@ -705,6 +705,83 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
     assert_equal(200, hit.fetch("_source").fetch("response_status"))
   end
 
+  def test_nil_values
+    response = Typhoeus.get("http://127.0.0.1:9080/api/hello/", log_http_options)
+    assert_response_code(200, response)
+
+    record = wait_for_log(response).fetch(:hit_source)
+    assert_nil(record["request_accept_encoding"])
+    assert_nil(record["request_connection"])
+    assert_nil(record["request_content_type"])
+    assert_nil(record["request_origin"])
+    assert_nil(record["request_referer"])
+
+    dynamic_fields = record.deep_dup
+    static_fields = dynamic_fields.slice!(
+      "@timestamp",
+      "api_backend_id",
+      "api_backend_url_match_id",
+      "request_id",
+      "request_size",
+      "response_age",
+      "response_size",
+      "response_time",
+    )
+    assert_equal({
+      "api_backend_resolved_host" => "127.0.0.1:9444",
+      "api_backend_response_code_details" => "via_upstream",
+      "api_key" => self.api_key,
+      "request_accept" => "*/*",
+      "request_host" => "127.0.0.1:9080",
+      "request_ip" => "127.0.0.1",
+      "request_method" => "GET",
+      "request_path" => "/api/hello/",
+      "request_scheme" => "http",
+      "request_url_hierarchy_level0" => "127.0.0.1:9080/",
+      "request_url_hierarchy_level1" => "api/",
+      "request_url_hierarchy_level2" => "hello",
+      "request_user_agent" => "test-proxy-logging-testbasics-test_nil_values",
+      "response_cache" => "MISS",
+      "response_cache_flags" => "cMsSf ",
+      "response_server" => "openresty",
+      "response_status" => 200,
+      "response_transfer_encoding" => "chunked",
+      "user_email" => self.api_user.email,
+      "user_id" => self.api_user.id,
+      "user_registration_source" => "seed",
+    }, static_fields)
+    dynamic_fields.each do |field, value|
+      case field
+      when "@timestamp"
+        assert_kind_of(Numeric, value)
+        assert_operator(value, :>=, (Time.now.to_i - (60 * 5)) * 1000)
+        assert_operator(value, :<=, (Time.now.to_i + (60 * 5)) * 1000)
+      when "api_backend_id", "api_backend_url_match_id"
+        assert_kind_of(String, value)
+        assert_match(/\A[0-9a-f-]{36}\z/, value)
+      when "request_id"
+        assert_kind_of(String, value)
+        assert_match(/\A[a-z0-9]{20}\z/, value)
+      when "request_size"
+        assert_kind_of(Numeric, value)
+        assert_operator(value, :>=, 100)
+        assert_operator(value, :<=, 500)
+      when "response_age"
+        assert_kind_of(Numeric, value)
+        assert_operator(value, :>=, 0)
+        assert_operator(value, :<=, 10)
+      when "response_size"
+        assert_kind_of(Numeric, value)
+        assert_operator(value, :>=, 100)
+        assert_operator(value, :<=, 500)
+      when "response_time"
+        assert_kind_of(Numeric, value)
+        assert_operator(value, :>=, 0)
+        assert_operator(value, :<=, 100)
+      end
+    end
+  end
+
   private
 
   def refute_log(response)
