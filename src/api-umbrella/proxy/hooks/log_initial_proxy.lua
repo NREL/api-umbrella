@@ -1,5 +1,4 @@
 local log_utils = require "api-umbrella.proxy.log_utils"
-local utf8_clean = require("lua-utf8").clean
 
 local ignore_request = log_utils.ignore_request
 local ngx_ctx = ngx.ctx
@@ -9,7 +8,7 @@ if ignore_request(ngx_ctx) then
 end
 
 local flatten_headers = require "api-umbrella.utils.flatten_headers"
-local json_encode = require "api-umbrella.utils.json_encode"
+local utf8_safe_json_encode = require "api-umbrella.utils.utf8_safe_json_encode"
 local xpcall_error_handler = require "api-umbrella.utils.xpcall_error_handler"
 
 local cache_new_city_geocode = log_utils.cache_new_city_geocode
@@ -100,21 +99,11 @@ end
 local function log_request()
   -- Build the log message and send to Fluent Bit for processing.
   local data = build_log_data()
-  local original_json = json_encode(normalized_data(data))
-  local message, was_valid_utf8 = utf8_clean(original_json)
-  if not was_valid_utf8 then
-    ngx.log(ngx.WARN, "log message contained invalid utf-8, original: ", original_json)
-    ngx.log(ngx.WARN, "log message contained invalid utf-8, cleaned: ", message)
-  elseif not message then
-    ngx.log(ngx.ERR, "failed to log message, message missing: ", original_json)
-  end
-
-  if message then
-    local _, err = send_message(message)
-    if err then
-      ngx.log(ngx.ERR, "failed to log message: ", err)
-      return
-    end
+  local message = utf8_safe_json_encode(normalized_data(data))
+  local _, err = send_message(message)
+  if err then
+    ngx.log(ngx.ERR, "failed to log message: ", err)
+    return
   end
 
   -- After logging, cache any new cities we see from GeoIP in our database.

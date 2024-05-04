@@ -173,9 +173,9 @@ class Test::Proxy::Logging::TestSpecialChars < Minitest::Test
     assert_equal(expected_raw_in_header, record["request_origin"])
     assert_equal(expected_raw_utf8_in_header, record["request_accept"])
 
-    log = log_tail.read_until(/log message contained invalid utf-8, cleaned/)
-    assert_match(/\[warn\].*log message contained invalid utf-8, original: \{/, log)
-    assert_match(/\[warn\].*log message contained invalid utf-8, cleaned: \{/, log)
+    log = log_tail.read_until(/json contained invalid utf-8, cleaned/)
+    assert_match(/\[warn\].*json contained invalid utf-8, original: \{/, log)
+    assert_match(/\[warn\].*json contained invalid utf-8, cleaned: \{/, log)
   end
 
   def test_encoded_strings_as_given
@@ -301,9 +301,9 @@ class Test::Proxy::Logging::TestSpecialChars < Minitest::Test
     record = wait_for_log(response)[:hit_source]
     assert_equal("{\"user_agent\": \"foo \uFFFD bar\"}", record["api_key"])
 
-    log = log_tail.read_until(/log message contained invalid utf-8, cleaned/)
-    assert_match(/\[warn\].*log message contained invalid utf-8, original: \{/, log)
-    assert_match(/\[warn\].*log message contained invalid utf-8, cleaned: \{/, log)
+    log = log_tail.read_until(/json contained invalid utf-8, cleaned/)
+    assert_match(/\[warn\].*json contained invalid utf-8, original: \{/, log)
+    assert_match(/\[warn\].*json contained invalid utf-8, cleaned: \{/, log)
   end
 
   def test_utf8_json_quoting
@@ -324,6 +324,6 @@ class Test::Proxy::Logging::TestSpecialChars < Minitest::Test
     assert_equal("\" \" \\u0022 %22 &#34; &#x22; \u201D", record["api_key"])
 
     log = log_tail.read
-    refute_match("log message contained invalid utf-8", log)
+    refute_match("json contained invalid utf-8", log)
   end
 end
