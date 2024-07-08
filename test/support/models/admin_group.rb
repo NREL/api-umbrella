@@ -14,6 +14,6 @@ class AdminGroup < ApplicationRecord
         :permissions => {},
       },
     })
-    super(options)
+    super
   end
 end
