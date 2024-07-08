@@ -3,12 +3,12 @@
 set -e -u -x
 source ./tasks/helpers.sh
 
-fluent_bit_version="3.0.3"
-fluent_bit_hash="2f3b82e8b7802fe92625009531592f12d500ff61a02ecf4cd27e0f138a6dc566"
+fluent_bit_version="3.0.7"
+fluent_bit_hash="9c9b94bcdcf1cd0a899b24e1d3e18c6269227512661631814c2ac820683e2ec8"
 
 task_working_dir
 download "https://github.com/fluent/fluent-bit/archive/refs/tags/v${fluent_bit_version}.tar.gz" "sha256" "$fluent_bit_hash"
-extract_download "670e4abb6d-v${fluent_bit_version}.tar.gz"
+extract_download "864631cfc8-v${fluent_bit_version}.tar.gz"
 
 cd "fluent-bit-${fluent_bit_version}/build"
 
