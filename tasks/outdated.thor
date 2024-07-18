@@ -59,6 +59,9 @@ class Outdated < Thor
     "perp" => {
       :http => "http://b0llix.net/perp/site.cgi?page=download",
     },
+    "pnpm" => {
+      :git => "https://github.com/pnpm/pnpm.git",
+    },
     "shellcheck" => {
       :git => "https://github.com/koalaman/shellcheck.git",
     },
@@ -68,9 +71,6 @@ class Outdated < Thor
     "trafficserver" => {
       :http => "https://archive.apache.org/dist/trafficserver/",
     },
-    "yarn" => {
-      :git => "https://github.com/yarnpkg/yarn.git",
-    },
   }.freeze
 
   class AdminUi < Thor
@@ -79,7 +79,7 @@ class Outdated < Thor
     desc "npm", "List outdated admin-ui NPM dependencies"
     def npm
       Dir.chdir(File.join(ENV.fetch("API_UMBRELLA_SRC_ROOT"), "src/api-umbrella/admin-ui")) do
-        system("yarn", "outdated", exception: false)
+        system("pnpm", "outdated", exception: false)
       end
     end
   end
@@ -110,7 +110,7 @@ class Outdated < Thor
     desc "npm", "List outdated web-app NPM dependencies"
     def npm
       Dir.chdir(File.join(ENV.fetch("API_UMBRELLA_SRC_ROOT"), "src/api-umbrella/web-app")) do
-        system("yarn", "outdated", exception: false)
+        system("pnpm", "outdated", exception: false)
       end
     end
   end
@@ -121,7 +121,7 @@ class Outdated < Thor
     desc "npm", "List outdated example-website NPM dependencies"
     def npm
       Dir.chdir(File.join(ENV.fetch("API_UMBRELLA_SRC_ROOT"), "src/api-umbrella/example-website")) do
-        system("yarn", "outdated", exception: false)
+        system("pnpm", "outdated", exception: false)
       end
     end
   end
