@@ -72,14 +72,14 @@ CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA public;
 CREATE FUNCTION api_umbrella.analytics_cache_extract_unique_user_ids() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
-BEGIN
-  IF (jsonb_typeof(NEW.data->'aggregations'->'hits_over_time'->'buckets'->0->'unique_user_ids'->'buckets') = 'array') THEN
-    NEW.unique_user_ids := (SELECT array_agg(DISTINCT bucket->>'key')::uuid[] FROM jsonb_array_elements(NEW.data->'aggregations'->'hits_over_time'->'buckets'->0->'unique_user_ids'->'buckets') AS bucket);
-  END IF;
+      BEGIN
+        IF (jsonb_typeof(NEW.data->'aggregations'->'unique_user_ids'->'buckets') = 'array') THEN
+          NEW.unique_user_ids := (SELECT array_agg(DISTINCT bucket->>'key')::uuid[] FROM jsonb_array_elements(NEW.data->'aggregations'->'unique_user_ids'->'buckets') AS bucket);
+        END IF;
 
-  RETURN NEW;
-END;
-$$;
+        RETURN NEW;
+      END;
+      $$;
 
 
 --
@@ -2824,3 +2824,4 @@ INSERT INTO api_umbrella.lapis_migrations (name) VALUES ('1699650325');
 INSERT INTO api_umbrella.lapis_migrations (name) VALUES ('1700281762');
 INSERT INTO api_umbrella.lapis_migrations (name) VALUES ('1700346585');
 INSERT INTO api_umbrella.lapis_migrations (name) VALUES ('1701483732');
+INSERT INTO api_umbrella.lapis_migrations (name) VALUES ('1721347955');

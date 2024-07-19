@@ -258,6 +258,10 @@ function _M:set_sort(order_fields)
   end
 end
 
+function _M:unset_sort()
+  self.body["sort"] = nil
+end
+
 function _M:set_start_time(start_time)
   local ok = xpcall(date_tz.parse, xpcall_error_handler, date_tz, format_date, start_time)
   if not ok then
@@ -395,21 +399,12 @@ function _M:aggregate_by_interval()
   }
 end
 
-function _M:aggregate_by_interval_for_summary()
-  self:aggregate_by_interval()
-
-  self.body["aggregations"]["hits_over_time"]["aggregations"] = {
-    unique_user_ids = {
-      terms = {
-        field = "user_id",
-        size = config["opensearch"]["max_buckets"],
-        shard_size = config["opensearch"]["max_buckets"] * 4,
-      },
-    },
-    response_time_average = {
-      avg = {
-        field = "response_time",
-      },
+function _M:aggregate_by_unique_user_ids()
+  self.body["aggregations"]["unique_user_ids"] = {
+    terms = {
+      field = "user_id",
+      size = config["opensearch"]["max_buckets"] - 5,
+      shard_size = config["opensearch"]["max_buckets"] * 4,
     },
   }
 end
@@ -861,16 +856,18 @@ local function cache_interval_results_process_batch(self, cache_ids, batch)
         override_header = id_data["header"],
         override_body = id_data["body"],
       })
-      AnalyticsCache:upsert(id_data, results, expires_at)
+      if results then
+        table.insert(cache_ids, exist["id"])
+        AnalyticsCache:upsert(id_data, results, expires_at)
+      end
     else
       if not update_expires_at_ids[expires_at] then
         update_expires_at_ids[expires_at] = {}
       end
 
+      table.insert(cache_ids, exist["id"])
       table.insert(update_expires_at_ids[expires_at], exist["id"])
     end
-
-    table.insert(cache_ids, exist["id"])
   end
 
   for expires_at, ids in pairs(update_expires_at_ids) do

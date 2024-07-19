@@ -28,9 +28,10 @@ local function generate_organization_summary(start_time, end_time, recent_start_
   search:set_start_time(start_time)
   search:set_end_time(end_time)
   search:set_interval("month")
+  search:unset_sort()
   search:filter_exclude_imported()
-  search:aggregate_by_interval_for_summary()
-  search:aggregate_by_cardinality("user_id", "user_id.hash")
+  search:aggregate_by_interval()
+  search:aggregate_by_unique_user_ids()
   search:aggregate_by_response_time_average()
   if config["web"]["analytics_v0_summary_filter"] then
     search:set_search_query_string(config["web"]["analytics_v0_summary_filter"])
@@ -69,12 +70,11 @@ local function generate_organization_summary(start_time, end_time, recent_start_
         ) AS unique_user_ids
       FROM (
         SELECT
-          substring(bucket->>'key_as_string' from 1 for :date_key_length) AS interval_date,
-          SUM((bucket->>'doc_count')::bigint) AS hit_count,
+          substring(data->'aggregations'->'hits_over_time'->'buckets'->0->>'key_as_string' from 1 for :date_key_length) AS interval_date,
+          SUM((data->'aggregations'->'hits_over_time'->'buckets'->0->>'doc_count')::bigint) AS hit_count,
           array_accum(unique_user_ids) AS user_ids,
-          ROUND(SUM(CASE WHEN bucket->'response_time_average'->>'value' IS NOT NULL AND bucket->>'doc_count' IS NOT NULL THEN (bucket->'response_time_average'->>'value')::numeric * (bucket->>'doc_count')::bigint END) / SUM(CASE WHEN bucket->'response_time_average'->>'value' IS NOT NULL AND bucket->>'doc_count' IS NOT NULL THEN (bucket->>'doc_count')::bigint END)) AS response_time_average
+          SUM(ROUND((data->'aggregations'->'response_time_average'->>'value')::numeric)) AS response_time_average
         FROM analytics_cache
-          CROSS JOIN LATERAL jsonb_array_elements(data->'aggregations'->'hits_over_time'->'buckets') AS bucket
         WHERE id IN :ids
         GROUP BY interval_date
         ORDER BY interval_date
@@ -96,8 +96,9 @@ local function generate_organization_summary(start_time, end_time, recent_start_
   }, { fatal = true })[1]["response"]
 
   search:set_start_time(recent_start_time)
+  search:set_end_time(end_time)
   search:set_interval("day")
-  search:aggregate_by_interval_for_summary()
+  search:aggregate_by_interval()
   expires_at = ngx.now() + 60 * 60 * 24 * 30 -- 30 days
   local recent_analytics_cache_ids = search:cache_interval_results(expires_at)
   local recent_response = pg_utils.query(aggregate_sql, {
