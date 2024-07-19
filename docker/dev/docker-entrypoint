@@ -43,6 +43,6 @@ mkdir -p /app/src/api-umbrella/admin-ui/tmp
 chmod 1777 /app/src/api-umbrella/admin-ui/tmp
 
 mkdir -p ~/.config/pnpm
-printf "update-notifier=false\nstore-dir=${PNPM_HOME}/store\n" > ~/.config/pnpm/rc
+printf "update-notifier=false\nstore-dir=%s/store\n" "$PNPM_HOME" > ~/.config/pnpm/rc
 
 exec "$@"

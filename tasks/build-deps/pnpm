@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+pnpm_version="9.5.0"
+
+set -e -u -x
+source ./tasks/helpers.sh
+
+env
+PATH="$DEV_PATH" PREFIX="$DEV_INSTALL_PREFIX" npm install -g "@pnpm/exe@${pnpm_version}"
+
+mkdir -p ~/.config/pnpm
+echo "update-notifier=false" > ~/.config/pnpm/rc
+
+# Workaround for PNPM_HOME not affecting things with some of our
+# development volume mounts: https://github.com/pnpm/pnpm/issues/7050
+echo "store-dir=${PNPM_HOME}/store" >> ~/.config/pnpm/rc
+
+stamp

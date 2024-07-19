@@ -2,7 +2,7 @@
   "scripts": {
     "lint:js": "eslint --ignore-path .gitignore .",
     "lint": "pnpm run lint:js",
-    "prettier:check": "prettier --ignore-path .gitignore --check ."
+    "prettier:check": "prettier --check ."
   },
   "dependencies": {
     "a11y-dialog": "^8.0.4",
