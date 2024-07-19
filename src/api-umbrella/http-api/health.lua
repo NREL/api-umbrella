@@ -13,6 +13,7 @@ local function status_response(quick)
     status = "red",
     details = {
       apis_config = "red",
+      cache_server = "red"
     },
   }
 
@@ -21,8 +22,22 @@ local function status_response(quick)
     response["details"]["apis_config"] = "green"
   end
 
+  local httpc = http.new()
+  httpc:set_timeout(3000)
+
+  local res, err = httpc:request_uri("http://127.0.0.1:" .. config["trafficserver"]["port"] .. "/_trafficserver-health/nocache/1", {
+    headers = {
+      ["Host"] = "api-umbrella-trafficserver-health.internal",
+    },
+  })
+  if err then
+    ngx.log(ngx.ERR, "failed to fetch web app: ", err)
+  elseif res.status == 200 then
+    response["details"]["cache_server"] = "green"
+  end
+
   if quick then
-    if response["details"]["apis_config"] == "green" then
+    if response["details"]["apis_config"] == "green" and response["details"]["cache_server"] == "green" then
       response["status"] = "green"
     end
 
@@ -33,11 +48,8 @@ local function status_response(quick)
   response["details"]["analytics_db_setup"] = "red"
   response["details"]["web_app"] = "red"
 
-  local httpc = http.new()
-  httpc:set_timeout(3000)
-
   -- Check the health of the OpenSearch cluster
-  local res, err = opensearch_query("/_cluster/health")
+  res, err = opensearch_query("/_cluster/health")
   if err then
     ngx.log(ngx.ERR, "failed to fetch cluster health from opensearch: ", err)
   elseif res.body_json then
@@ -65,9 +77,9 @@ local function status_response(quick)
   -- content), OpenSearch seems to get stuck in the yellow status, even though
   -- everything appears operational (but then it becomes green once content
   -- starts indexing).
-  if response["details"]["apis_config"] == "green" and (response["details"]["analytics_db"] == "yellow" or response["details"]["analytics_db"] == "green") and response["details"]["analytics_db_setup"] == "green" and response["details"]["web_app"] == "green" then
+  if response["details"]["apis_config"] == "green" and response["details"]["cache_server"] == "green" and (response["details"]["analytics_db"] == "yellow" or response["details"]["analytics_db"] == "green") and response["details"]["analytics_db_setup"] == "green" and response["details"]["web_app"] == "green" then
     response["status"] = "green"
-  elseif response["details"]["apis_config"] == "green" then
+  elseif response["details"]["apis_config"] == "green" and response["details"]["cache_server"] == "green" then
     response["status"] = "yellow"
   end
 

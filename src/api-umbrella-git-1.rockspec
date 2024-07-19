@@ -8,7 +8,7 @@ source = {
 dependencies = {
   "argparse ~> 0.7.1",
   "bcrypt ~> 2.3",
-  "dkjson ~> 2.7",
+  "dkjson ~> 2.8",
   "inspect ~> 3.1.3",
   "lapis ~> 1.16.0",
   "libcidr-ffi ~> 1.0.0",

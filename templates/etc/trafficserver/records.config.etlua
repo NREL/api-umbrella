@@ -205,6 +205,12 @@ CONFIG proxy.config.net.sock_option_flag_out INT 3
 CONFIG proxy.config.http.keep_alive_no_activity_timeout_out INT <%= config["router"]["api_backends"]["keepalive_idle_timeout"] %>
 CONFIG proxy.config.http.per_server.connection.min INT <%= config["router"]["api_backends"]["keepalive_connections"] %>
 
+# Since we're only connecting to our backend Envoy server, we can significantly
+# reduce connections TrafficServer tries to open by ignoring the Host for
+# session reuse (since Envoy will be responsible for actually connecting to the
+# backend servers).
+CONFIG proxy.config.http.server_session_sharing.match STRING ip
+
 <% if config["envoy"]["scheme"] == "https" then %>
 CONFIG proxy.config.ssl.client.verify.server.properties STRING ALL
 CONFIG proxy.config.ssl.client.verify.server.policy STRING ENFORCED

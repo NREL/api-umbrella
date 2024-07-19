@@ -51,6 +51,6 @@ class ApiBackend < ApplicationRecord
         :rewrites => {},
       },
     })
-    super(options)
+    super
   end
 end

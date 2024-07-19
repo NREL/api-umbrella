@@ -44,6 +44,6 @@ class Admin < ApplicationRecord
         :group_ids,
       ],
     })
-    super(options)
+    super
   end
 end

@@ -72,6 +72,6 @@ class ApiUser < ApplicationRecord
         },
       },
     })
-    super(options)
+    super
   end
 end

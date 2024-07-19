@@ -10,11 +10,11 @@ task_working_dir
 mkdir -p _persist
 cd _persist
 
-# Copy the npm/yarn config files into the working directory and perform the
+# Copy the npm/pnpm config files into the working directory and perform the
 # installation here (so we're not creating/modifying files in the source
 # directory).
 cp "$SOURCE_DIR/src/api-umbrella/example-website/package.json" ./
-cp "$SOURCE_DIR/src/api-umbrella/example-website/yarn.lock" ./
-PATH="$DEV_PATH" yarn install --frozen-lockfile
+cp "$SOURCE_DIR/src/api-umbrella/example-website/pnpm-lock.yaml" ./
+PATH="$DEV_PATH" pnpm install --frozen-lockfile
 
 stamp

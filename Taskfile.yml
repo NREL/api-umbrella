@@ -149,52 +149,51 @@ tasks:
     generates:
       - ./build/work/stamp/build-deps/nodejs
 
-  build-deps:yarn:
+  build-deps:pnpm:
     deps:
       - build-deps:nodejs
     cmds:
-      - ./tasks/build-deps/yarn
+      - ./tasks/build-deps/pnpm
     sources:
       - ./build/work/stamp/build-deps/nodejs
-      - ./tasks/build-deps/yarn
+      - ./tasks/build-deps/pnpm
       - ./tasks/helpers.sh
     generates:
-      - ./build/work/stamp/build-deps/yarn
+      - ./build/work/stamp/build-deps/pnpm
 
   build-deps:
     cmds:
       - task: build-deps:crane
       - task: build-deps:hugo
-      - task: build-deps:yarn
+      - task: build-deps:pnpm
 
-  app-deps:admin-ui:yarn:
+  app-deps:admin-ui:pnpm:
     deps:
-      - build-deps:yarn
+      - build-deps:pnpm
     cmds:
-      - ./tasks/app-deps/admin-ui/yarn
+      - ./tasks/app-deps/admin-ui/pnpm
     sources:
-      - ./build/work/stamp/build-deps/yarn
-      - ./src/api-umbrella/admin-ui/.yarnrc
+      - ./build/work/stamp/build-deps/pnpm
       - ./src/api-umbrella/admin-ui/package.json
-      - ./src/api-umbrella/admin-ui/yarn.lock
-      - ./tasks/app-deps/admin-ui/yarn
+      - ./src/api-umbrella/admin-ui/pnpm-lock.yaml
+      - ./tasks/app-deps/admin-ui/pnpm
       - ./tasks/helpers.sh
     generates:
-      - ./build/work/stamp/app-deps/admin-ui/yarn
+      - ./build/work/stamp/app-deps/admin-ui/pnpm
 
-  app-deps:example-website:yarn:
+  app-deps:example-website:pnpm:
     deps:
-      - build-deps:yarn
+      - build-deps:pnpm
     cmds:
-      - ./tasks/app-deps/example-website/yarn
+      - ./tasks/app-deps/example-website/pnpm
     sources:
-      - ./build/work/stamp/build-deps/yarn
+      - ./build/work/stamp/build-deps/pnpm
       - ./src/api-umbrella/example-website/package.json
-      - ./src/api-umbrella/example-website/yarn.lock
-      - ./tasks/app-deps/example-website/yarn
+      - ./src/api-umbrella/example-website/pnpm-lock.yaml
+      - ./tasks/app-deps/example-website/pnpm
       - ./tasks/helpers.sh
     generates:
-      - ./build/work/stamp/app-deps/example-website/yarn
+      - ./build/work/stamp/app-deps/example-website/pnpm
 
   app-deps:luarocks:
     deps:
@@ -211,34 +210,34 @@ tasks:
     generates:
       - ./build/work/stamp/app-deps/luarocks
 
-  app-deps:web-app:yarn:
+  app-deps:web-app:pnpm:
     deps:
-      - build-deps:yarn
+      - build-deps:pnpm
     cmds:
-      - ./tasks/app-deps/web-app/yarn
+      - ./tasks/app-deps/web-app/pnpm
     sources:
-      - ./build/work/stamp/build-deps/yarn
+      - ./build/work/stamp/build-deps/pnpm
       - ./src/api-umbrella/web-app/package.json
-      - ./src/api-umbrella/web-app/yarn.lock
-      - ./tasks/app-deps/web-app/yarn
+      - ./src/api-umbrella/web-app/pnpm-lock.yaml
+      - ./tasks/app-deps/web-app/pnpm
       - ./tasks/helpers.sh
     generates:
-      - ./build/work/stamp/app-deps/web-app/yarn
+      - ./build/work/stamp/app-deps/web-app/pnpm
 
   app-deps:
     cmds:
-      - task: app-deps:admin-ui:yarn
-      - task: app-deps:example-website:yarn
+      - task: app-deps:admin-ui:pnpm
+      - task: app-deps:example-website:pnpm
       - task: app-deps:luarocks
-      - task: app-deps:web-app:yarn
+      - task: app-deps:web-app:pnpm
 
   app:admin-ui:build:
     deps:
-      - app-deps:admin-ui:yarn
+      - app-deps:admin-ui:pnpm
     cmds:
       - ./tasks/app/admin-ui/build
     sources:
-      - ./build/work/stamp/app-deps/admin-ui/yarn
+      - ./build/work/stamp/app-deps/admin-ui/pnpm
       - ./src/api-umbrella/admin-ui/app/**/*.hbs
       - ./src/api-umbrella/admin-ui/app/**/*.html
       - ./src/api-umbrella/admin-ui/app/**/*.js
@@ -271,11 +270,11 @@ tasks:
 
   app:example-website:build:
     deps:
-      - app-deps:example-website:yarn
+      - app-deps:example-website:pnpm
     cmds:
       - ./tasks/app/example-website/build
     sources:
-      - ./build/work/stamp/app-deps/example-website/yarn
+      - ./build/work/stamp/app-deps/example-website/pnpm
       - ./src/api-umbrella/example-website/config.yaml
       - ./src/api-umbrella/example-website/assets/**/*
       - ./src/api-umbrella/example-website/content/**/*
@@ -287,11 +286,11 @@ tasks:
 
   app:locale:
     deps:
-      - app-deps:admin-ui:yarn
+      - app-deps:admin-ui:pnpm
     cmds:
       - ./tasks/app/locale
     sources:
-      - ./build/work/stamp/app-deps/admin-ui/yarn
+      - ./build/work/stamp/app-deps/admin-ui/pnpm
       - ./locale/*.po
       - ./tasks/app/locale
       - ./tasks/helpers.sh
@@ -301,11 +300,11 @@ tasks:
 
   app:web-app:precompile:
     deps:
-      - app-deps:web-app:yarn
+      - app-deps:web-app:pnpm
     cmds:
       - ./tasks/app/web-app/precompile
     sources:
-      - ./build/work/stamp/app-deps/web-app/yarn
+      - ./build/work/stamp/app-deps/web-app/pnpm
       - ./src/api-umbrella/web-app/assets/**/*.scss
       - ./src/api-umbrella/web-app/webpack.config.js
       - ./tasks/app/web-app/precompile
@@ -387,9 +386,9 @@ tasks:
 
   lint:js:
     deps:
-      - app-deps:admin-ui:yarn
-      - app-deps:example-website:yarn
-      - app-deps:web-app:yarn
+      - app-deps:admin-ui:pnpm
+      - app-deps:example-website:pnpm
+      - app-deps:web-app:pnpm
     cmds:
       - ./tasks/lint/js
 

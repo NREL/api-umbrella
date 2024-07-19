@@ -1504,4 +1504,24 @@ return {
     db.query(grants_sql)
     db.query("COMMIT")
   end,
+
+  [1721347955] = function()
+    db.query("BEGIN")
+
+    db.query([[
+      CREATE OR REPLACE FUNCTION analytics_cache_extract_unique_user_ids()
+      RETURNS TRIGGER AS $$
+      BEGIN
+        IF (jsonb_typeof(NEW.data->'aggregations'->'unique_user_ids'->'buckets') = 'array') THEN
+          NEW.unique_user_ids := (SELECT array_agg(DISTINCT bucket->>'key')::uuid[] FROM jsonb_array_elements(NEW.data->'aggregations'->'unique_user_ids'->'buckets') AS bucket);
+        END IF;
+
+        RETURN NEW;
+      END;
+      $$ LANGUAGE plpgsql;
+    ]])
+
+    db.query(grants_sql)
+    db.query("COMMIT")
+  end,
 }

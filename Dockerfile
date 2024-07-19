@@ -10,6 +10,8 @@ RUN ln -snf /build/.task /app/.task
 RUN ln -snf /build/build/work /app/build/work
 WORKDIR /app
 
+ENV PNPM_HOME=/usr/local/pnpm
+
 COPY build/package_dependencies.sh /app/build/package_dependencies.sh
 COPY tasks/helpers.sh tasks/install-system-build-dependencies /app/tasks/
 COPY tasks/helpers/detect_os_release.sh tasks/helpers/lua.sh /app/tasks/helpers/
@@ -48,17 +50,17 @@ RUN make deps && make clean:dev
 COPY tasks/build-deps /app/tasks/build-deps
 RUN make build-deps && make clean:dev
 
-COPY src/api-umbrella/example-website/package.json src/api-umbrella/example-website/yarn.lock /app/src/api-umbrella/example-website/
-COPY tasks/app-deps/example-website/yarn /app/tasks/app-deps/example-website/
-RUN make app-deps:example-website:yarn && make clean:dev
+COPY src/api-umbrella/example-website/package.json src/api-umbrella/example-website/pnpm-lock.yaml /app/src/api-umbrella/example-website/
+COPY tasks/app-deps/example-website/pnpm /app/tasks/app-deps/example-website/
+RUN make app-deps:example-website:pnpm && make clean:dev
 
-COPY src/api-umbrella/admin-ui/.yarnrc src/api-umbrella/admin-ui/package.json src/api-umbrella/admin-ui/yarn.lock /app/src/api-umbrella/admin-ui/
-COPY tasks/app-deps/admin-ui/yarn /app/tasks/app-deps/admin-ui/
-RUN make app-deps:admin-ui:yarn && make clean:dev
+COPY src/api-umbrella/admin-ui/package.json src/api-umbrella/admin-ui/pnpm-lock.yaml /app/src/api-umbrella/admin-ui/
+COPY tasks/app-deps/admin-ui/pnpm /app/tasks/app-deps/admin-ui/
+RUN make app-deps:admin-ui:pnpm && make clean:dev
 
-COPY src/api-umbrella/web-app/package.json src/api-umbrella/web-app/yarn.lock /app/src/api-umbrella/web-app/
-COPY tasks/app-deps/web-app/yarn /app/tasks/app-deps/web-app/
-RUN make app-deps:web-app:yarn && make clean:dev
+COPY src/api-umbrella/web-app/package.json src/api-umbrella/web-app/pnpm-lock.yaml /app/src/api-umbrella/web-app/
+COPY tasks/app-deps/web-app/pnpm /app/tasks/app-deps/web-app/
+RUN make app-deps:web-app:pnpm && make clean:dev
 
 COPY build/patches/lrexlib-pcre2.patch /app/build/patches/
 COPY tasks/app-deps/luarocks /app/tasks/app-deps/
@@ -102,6 +104,8 @@ RUN ln -snf /build/.task /app/.task
 RUN ln -snf /build/build/work /app/build/work
 WORKDIR /app
 
+ENV PNPM_HOME=/usr/local/pnpm
+
 COPY build/package_dependencies.sh /app/build/package_dependencies.sh
 COPY tasks/helpers.sh tasks/install-system-build-dependencies /app/tasks/
 COPY tasks/helpers/detect_os_release.sh tasks/helpers/lua.sh /app/tasks/helpers/
@@ -133,9 +137,9 @@ COPY build/package /app/build/package
 COPY scripts /app/scripts
 COPY test /app/test
 
-RUN ln -snf "/app/build/work/tasks/app-deps/admin-ui/yarn/_persist/node_modules" "/app/src/api-umbrella/admin-ui/node_modules"
-RUN ln -snf "/app/build/work/tasks/app-deps/example-website/yarn/_persist/node_modules" "/app/src/api-umbrella/example-website/node_modules"
-RUN ln -snf "/app/build/work/tasks/app-deps/web-app/yarn/_persist/node_modules" "/app/src/api-umbrella/web-app/node_modules"
+RUN ln -snf "/app/build/work/tasks/app-deps/admin-ui/pnpm/_persist/node_modules" "/app/src/api-umbrella/admin-ui/node_modules"
+RUN ln -snf "/app/build/work/tasks/app-deps/example-website/pnpm/_persist/node_modules" "/app/src/api-umbrella/example-website/node_modules"
+RUN ln -snf "/app/build/work/tasks/app-deps/web-app/pnpm/_persist/node_modules" "/app/src/api-umbrella/web-app/node_modules"
 
 ENV \
   PATH="/app/bin:/build/build/work/dev-env/sbin:/build/build/work/dev-env/bin:/build/build/work/test-env/sbin:/build/build/work/test-env/bin:/build/build/work/stage/opt/api-umbrella/sbin:/build/build/work/stage/opt/api-umbrella/bin:/build/build/work/stage/opt/api-umbrella/embedded/sbin:/build/build/work/stage/opt/api-umbrella/embedded/bin:${PATH}" \

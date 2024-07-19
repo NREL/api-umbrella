@@ -1,23 +1,23 @@
 {
   "scripts": {
     "lint:js": "eslint --ignore-path .gitignore .",
-    "lint": "yarn lint:js",
-    "prettier:check": "prettier --ignore-path .gitignore --check ."
+    "lint": "pnpm run lint:js",
+    "prettier:check": "prettier --check ."
   },
   "dependencies": {
-    "a11y-dialog": "^7.3.0",
-    "bootstrap": "^5.1.0",
+    "a11y-dialog": "^8.0.4",
+    "bootstrap": "^5.3.3",
     "escape-html": "^1.0.3",
     "form-serialize": "^0.7.2",
-    "promise-polyfill": "^8.2.0",
-    "whatwg-fetch": "^3.6.2"
+    "promise-polyfill": "^8.3.0",
+    "whatwg-fetch": "^3.6.20"
   },
   "devDependencies": {
-    "eslint": "^8.11.0",
+    "eslint": "^8.57.0",
     "eslint-config-airbnb-base": "^15.0.0",
-    "eslint-config-prettier": "^9.0.0",
-    "eslint-plugin-import": "^2.24.2",
-    "prettier": "^3.0.3",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-import": "^2.29.1",
+    "prettier": "^3.3.3",
     "prettier-plugin-go-template": "^0.0.15"
   }
 }
