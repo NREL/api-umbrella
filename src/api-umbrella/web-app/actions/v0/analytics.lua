@@ -11,12 +11,13 @@ local json_encode = require "api-umbrella.utils.json_encode"
 local json_response = require "api-umbrella.web-app.utils.json_response"
 local pg_utils = require "api-umbrella.utils.pg_utils"
 local respond_to = require "api-umbrella.web-app.utils.respond_to"
+local stable_object_hash = require "api-umbrella.utils.stable_object_hash"
 local time = require "api-umbrella.utils.time"
 
 local _M = {}
 
 local function generate_organization_summary(start_time, end_time, recent_start_time, filters)
-  local cache_id = "analytics_summary:organization:" .. start_time .. ":" .. end_time .. ":" .. recent_start_time .. ":" .. ngx.md5(json_encode(filters))
+  local cache_id = "analytics_summary:organization:" .. start_time .. ":" .. end_time .. ":" .. recent_start_time .. ":" .. stable_object_hash(filters)
   local cache = Cache:find(cache_id)
   if cache then
     ngx.log(ngx.NOTICE, "Using cached analytics response for " .. cache_id)
