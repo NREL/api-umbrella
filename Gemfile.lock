@@ -154,7 +154,7 @@ GEM
     rails_compatible_cookies_utils (0.1.2)
     rainbow (3.1.1)
     regexp_parser (2.9.2)
-    rexml (3.3.2)
+    rexml (3.3.3)
       strscan
     rubocop (1.65.0)
       json (~> 2.3)
