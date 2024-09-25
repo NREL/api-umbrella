@@ -23,17 +23,17 @@ Once you have API Umbrella up and running, there are a variety of things you can
 ## Features
 API Umbrella brings a range of features to simplify the lives of API creators and consumers. The primary features offered by API Umbrella are:
 
-1. **API Key Management:** Handles API key registration, usage, and validation across multiple services without requiring any code changes in the API.
+1. [**API Key Management:**](https://github.com/skhatib07/api-umbrella/edit/main/README.md#api-key-management) Handles API key registration, usage, and validation across multiple services without requiring any code changes in the API.
 
-2. **Rate Limiting:** Prevents abuse by controlling API usage on a per-user basis, ensuring API servers aren't overloaded.
+2. [**Rate Limiting:**](https://github.com/skhatib07/api-umbrella/edit/main/README.md#rate-limiting) Prevents abuse by controlling API usage on a per-user basis, ensuring API servers aren't overloaded.
 
-3. **Analytics & Reporting:** Provides detailed insights into API usage, performance monitoring, and flexible querying for traffic analysis.
+3. [**Analytics & Reporting:**](https://github.com/skhatib07/api-umbrella/edit/main/README.md#analytics--reporting) Provides detailed insights into API usage, performance monitoring, and flexible querying for traffic analysis.
 
-4. **Additional Security Layer:** Acts as a proxy layer above APIs to help scale services while managing access control.
+4. [**Additional Security Layer:**](https://github.com/skhatib07/api-umbrella/edit/main/README.md#additional-security-layer) Acts as a proxy layer above APIs to help scale services while managing access control.
 
-5. **Centralized API Access:** Offers a unified entry point for developers to manage and maintain multiple APIs across the platform.
+5. [**Centralized API Access:**](https://github.com/skhatib07/api-umbrella/edit/main/README.md#centralized-api-access) Offers a unified entry point for developers to manage and maintain multiple APIs across the platform.
 
-6. **Native Documentation Support:** Can host or link to API documentation, making it easy for developers to find and understand APIs.
+6. [**Native Documentation Support:**](https://github.com/skhatib07/api-umbrella/edit/main/README.md#native-documentation-support) Can host or link to API documentation, making it easy for developers to find and understand APIs.
 
 API Umbrella allows developers to focus on building APIs while it automates common tasks like access control, security, logging, and scaling​
 
