@@ -32,7 +32,7 @@ fpm_args+=("--verbose")
 fpm_args+=("--license" "MIT")
 fpm_args+=("--vendor" "National Renewable Energy Laboratory")
 fpm_args+=("--maintainer" "National Renewable Energy Laboratory")
-fpm_args+=("--url" "https://apiumbrella.io")
+fpm_args+=("--url" "https://github.com/NREL/api-umbrella")
 fpm_args+=("--version" "$version")
 fpm_args+=("--iteration" "$package_iteration")
 if [ "$package_type" == "rpm" ]; then
