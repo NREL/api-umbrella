@@ -2,10 +2,10 @@ diff --git a/configure b/configure
 index 0a4f09b..e7d0d0c 100755
 --- a/configure
 +++ b/configure
-@@ -1096,38 +1096,6 @@ _EOC_
+@@ -1164,38 +1164,6 @@ _EOC_
          }
          push @make_install_cmds, "cd $root_dir/build/$resty_cli_dir && "
-              . "$root_dir/build/install bin/* $target_dir";
+              . "\$(INSTALL) bin/* $target_dir";
 -
 -        if ($platform ne 'msys') {
 -            # patch the resty script:
