@@ -13,7 +13,7 @@
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-plugin-import": "^2.31.0",
     "mini-css-extract-plugin": "^2.9.2",
-    "sass": "^1.80.5",
+    "sass": "^1.80.6",
     "sass-loader": "^13.3.3",
     "webpack": "^5.96.1",
     "webpack-cli": "^5.1.4"
