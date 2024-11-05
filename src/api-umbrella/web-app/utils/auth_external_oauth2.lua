@@ -89,8 +89,8 @@ end
 function _M.authorize(self, strategy_name, url, params)
   local state = random_token(64)
   self:init_session_cookie()
-  self.session_cookie:start()
-  self.session_cookie.data["oauth2_state"] = state
+  self.session_cookie:open()
+  self.session_cookie:set("oauth2_state", state)
   self.session_cookie:save()
 
   local callback_url = build_url(auth_external_path(strategy_name, "/callback"))
@@ -119,17 +119,14 @@ function _M.userinfo(self, strategy_name, options)
   end
 
   self:init_session_cookie()
-  local _, _, open_err = self.session_cookie:start()
-  if open_err then
-    ngx.log(ngx.ERR, "session open error: ", open_err)
-  end
+  self.session_cookie:open()
+  local stored_state = self.session_cookie:get("oauth2_state")
 
-  if not self.session_cookie or not self.session_cookie.data or not self.session_cookie.data["oauth2_state"] then
+  if not stored_state then
     ngx.log(ngx.ERR, "oauth2 state not available")
     return nil, t("Cross-site request forgery detected")
   end
 
-  local stored_state = self.session_cookie.data["oauth2_state"]
   local state = self.params["state"]
   if state ~= stored_state then
     ngx.log(ngx.ERR, "oauth2 state does not match")

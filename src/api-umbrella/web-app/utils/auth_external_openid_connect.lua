@@ -43,8 +43,8 @@ function _M.authenticate(self, strategy_name, callback)
         -- Call the provider-specific callback logic, which should handle
         -- authorizing the API Umbrella session and redirecting as appropriate.
         callback({
-          id_token = session["data"]["id_token"],
-          user = session["data"]["user"],
+          id_token = session:get("id_token"),
+          user = session:get("user"),
         })
 
         -- This shouldn't get hit, since callback should perform it's own
@@ -82,14 +82,15 @@ function _M.authenticate(self, strategy_name, callback)
     end
     if discovery and discovery["end_session_endpoint"] then
       -- Generate the state parameter to send.
+      local openid_connect_state = random_token(64)
       self:init_session_cookie()
-      self.session_cookie:start()
-      self.session_cookie.data["openid_connect_state"] = random_token(64)
+      self.session_cookie:open()
+      self.session_cookie:set("openid_connect_state", openid_connect_state)
       self.session_cookie:save()
 
       -- Add the "state" param to the logout URL.
       local extra_logout_args = {
-        state = self.session_cookie.data["openid_connect_state"]
+        state = openid_connect_state,
       }
 
       -- Add the "client_id" param to the logout URL if id_token_hint won't be
