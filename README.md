@@ -13,12 +13,8 @@ API Umbrella is an open source API management platform for exposing web service 
   * **Standardize access:** All your APIs are can be accessed using the same API key credentials.
   * **Standardize documentation:** All your APIs are documented in a single place and in a similar fashion.
 
-## Download
-Follow the instructions available [here](https://api-umbrella.readthedocs.io/en/latest/getting-started.html#) to download and install API Umbrella. Follow the quick setup instructions on the download page to begin running API Umbrella.
-
 ## Getting Started
-
-Once you have API Umbrella up and running, there are a variety of things you can do to start using the platform. For a quick tutorial, see [getting started](https://api-umbrella.readthedocs.io/en/latest/getting-started.html#quick-tutorial).
+Follow the instructions available [here](https://api-umbrella.readthedocs.io/en/latest/getting-started.html#) to download and install API Umbrella. Follow the quick setup instructions on the download page to begin running API Umbrella.
 
 ## Features
 API Umbrella brings a range of features to simplify the lives of API creators and consumers. The primary features offered by API Umbrella are:
