@@ -24,7 +24,7 @@ dependencies = {
   "luajit-zstd ~> 0.2.3",
   "lualdap ~> 1.4.0",
   "luaposix ~> 36.2.1",
-  "luautf8 ~> 0.1.5",
+  "luautf8 ~> 0.1.6",
   "lustache ~> 1.3.1",
   "lyaml ~> 6.2.8",
   "penlight ~> 1.14.0",

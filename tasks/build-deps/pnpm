@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 
-pnpm_version="9.12.3"
+pnpm_version="10.1.0"
 
 set -e -u -x
 source ./tasks/helpers.sh
 
 env
-PATH="$DEV_PATH" PREFIX="$DEV_INSTALL_PREFIX" npm install -g "@pnpm/exe@${pnpm_version}"
+PATH="$DEV_PATH" PREFIX="$DEV_INSTALL_PREFIX" npm install -g --force "pnpm@${pnpm_version}"
 
 mkdir -p ~/.config/pnpm
 echo "update-notifier=false" > ~/.config/pnpm/rc

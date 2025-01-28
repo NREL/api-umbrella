@@ -15,7 +15,7 @@ export PREFIX=$(prefix)
 default: all
 
 # Download and locally install the "task" tool.
-task_version:=3.39.2
+task_version:=3.41.0
 $(source_dir)/tasks/bootstrap-$(task_version): ;
 $(work_dir)/stamp/bootstrap-$(task_version): $(source_dir)/tasks/bootstrap-$(task_version)
 	$(source_dir)/tasks/bootstrap-$(task_version)
