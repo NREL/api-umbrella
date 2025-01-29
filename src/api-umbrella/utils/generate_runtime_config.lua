@@ -390,7 +390,6 @@ local function set_computed_config(config)
   -- since we will allow long-running streaming responses..
   config["envoy"]["_route_timeout"] = "0s"
   config["trafficserver"]["_connect_attempts_timeout"] = math.min(5, config["nginx"]["proxy_connect_timeout"])
-  config["trafficserver"]["_post_connect_attempts_timeout"] = math.min(5, config["trafficserver"]["_connect_attempts_timeout"])
   config["trafficserver"]["_transaction_no_activity_timeout_out"] = config["nginx"]["proxy_read_timeout"]
   config["trafficserver"]["_transaction_no_activity_timeout_in"] = config["nginx"]["proxy_send_timeout"]
   config["nginx"]["_initial_proxy_connect_timeout"] = math.min(5, config["nginx"]["proxy_connect_timeout"])

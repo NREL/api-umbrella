@@ -36,7 +36,10 @@ if [ "${1}" = "start" ]; then
     ln -sf /dev/stderr "<%- config['log_dir'] %>/trafficserver/traffic.out"
   fi
 
-  exec runtool ${run_args[@]+"${run_args[@]}"} traffic_manager --nosyslog
+  # Disable freelist args to use jemalloc for memory management.
+  # https://github.com/apache/trafficserver/issues/9162#issuecomment-1292274810
+  # https://github.com/apache/trafficserver/issues/3354
+  exec runtool ${run_args[@]+"${run_args[@]}"} traffic_server --disable_freelist --disable_pfreelist
 fi
 
 exit 0

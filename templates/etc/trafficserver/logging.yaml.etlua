@@ -5,7 +5,9 @@ logging:
       # chi: Client: IP address of the client’s host.
       # caun: Client Request: Authentication User name
       # cqtn: Client Request: Client request timestamp
-      # cqtx: Client Request: HTTP client request text
+      # cqhm: Client Request: HTTP method
+      # pqu: Proxy Request: URL
+      # cqpv: Client Request: Request protocol and version
       # pssc: Proxy Response: HTTP response status code sent by Traffic Server proxy to the client.
       # pscl: Proxy Response: Content body length of the Traffic Server proxy response.
       #
@@ -44,7 +46,7 @@ logging:
       # csssc: Cached Proxy: Response HTTP response status code of the origin server response, as cached by Traffic Server.
       # cqtr: Client Request: TCP reused status of the connection between the client and Traffic Server proxy, indicating whether the request was delivered through an already established connection.
       # cquuc: Client Request: Canonical (prior to remapping) effective URL from client request.
-      format: '[%<cqtn>] "%<cqtx>" %<pssc> id=%<{X-Api-Umbrella-Request-ID}cqh> up_status=%<sssc> time=%<ttms> origin_time=%<stms> client_finish=%<cfsc> proxy_finish=%<pfsc> cache=%<crc> cache_sub=%<crsc> cache_hit=%<chm> cache_write=%<cwr> con_attempt=%<sca> '
+      format: '[%<cqtn>] "%<cqhm> %<pqu> %<cqpv>" %<pssc> id=%<{X-Api-Umbrella-Request-ID}cqh> up_status=%<sssc> time=%<ttms> origin_time=%<stms> client_finish=%<cfsc> proxy_finish=%<pfsc> cache=%<crc> cache_sub=%<crsc> cache_hit=%<chm> cache_write=%<cwr> con_attempt=%<sca> '
 
   logs:
     - mode: <%- (config["log"]["destination"] == "console") and "ascii_pipe" or "ascii" %>
