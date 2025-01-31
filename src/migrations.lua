@@ -1524,4 +1524,19 @@ return {
     db.query(grants_sql)
     db.query("COMMIT")
   end,
+
+  [1738353016] = function()
+    db.query("BEGIN")
+
+    db.query([[
+      CREATE OR REPLACE AGGREGATE array_accum (anycompatiblearray) (
+        sfunc = array_cat,
+        stype = anycompatiblearray,
+        initcond = '{}'
+      )
+    ]])
+
+    db.query(grants_sql)
+    db.query("COMMIT")
+  end,
 }
