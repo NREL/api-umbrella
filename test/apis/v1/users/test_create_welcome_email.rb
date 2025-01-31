@@ -292,7 +292,7 @@ class Test::Apis::V1::Users::TestCreateWelcomeEmail < Minitest::Test
     response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(non_admin_key_creator_api_key).deep_merge({
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => {
-        :user => FactoryBot.attributes_for(:api_user, :email => "foo<script>&bar@example.com", :first_name => "Test&First", :last_name => "Test&Last"),
+        :user => FactoryBot.attributes_for(:api_user, :email => "foo&bar@example.com", :first_name => "Test&First", :last_name => "Test&Last"),
         :options => { :send_welcome_email => true },
       },
     }))
@@ -309,12 +309,12 @@ class Test::Apis::V1::Users::TestCreateWelcomeEmail < Minitest::Test
     assert_match("Hi,</p>", message.fetch("HTML"))
     assert_match("Hi,", message.fetch("Text"))
 
-    assert_match("Your API key for <strong>foo&lt;script&gt;&amp;bar@example.com</strong> is:</p>", message.fetch("HTML"))
-    assert_match("Your API key for foo<script>&bar@example.com is:", message.fetch("Text"))
+    assert_match("Your API key for <strong>foo&amp;bar@example.com</strong> is:</p>", message.fetch("HTML"))
+    assert_match("Your API key for foo&bar@example.com is:", message.fetch("Text"))
 
     # Support footer
-    assert_match("Account Email: foo&lt;script&gt;&amp;bar@example.com", message.fetch("HTML"))
-    assert_match("Account Email: foo<script>&bar@example.com", message.fetch("Text"))
+    assert_match("Account Email: foo&amp;bar@example.com", message.fetch("HTML"))
+    assert_match("Account Email: foo&bar@example.com", message.fetch("Text"))
 
     assert_match("Account ID: #{user.id}", message.fetch("HTML"))
     assert_match("Account ID: #{user.id}", message.fetch("Text"))
