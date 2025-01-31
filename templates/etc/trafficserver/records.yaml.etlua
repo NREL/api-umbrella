@@ -53,9 +53,10 @@ records:
       warning: E
 
     # Enable for debug logging.
-    # debug:
-    #   enabled: 1
-    #   tags: ".*"
+    debug:
+      enabled: 1
+      # tags: ".*"
+      tags: "http_hdrs|http_tproxy|http_trans"
 
   error:
     logfile:
@@ -92,6 +93,11 @@ records:
     sock_option_flag_out: 3
 
   http:
+    # request_buffer_enabled: 0
+    # post_copy_size: 100M
+    # keep_alive_post_out: 0
+    # max_post_size: "1000000"
+
     server_ports: <%- json_encode(config["trafficserver"]["port"]) %>
 
     # Increase timeouts to match the timeouts in other pieces of the stack.
@@ -166,6 +172,8 @@ records:
     cache:
       # Don't perform caching when the request contains cookies.
       cache_responses_to_cookies: 0
+
+      post_method: 0
 
   cache:
     ram_cache:

@@ -155,7 +155,12 @@ server {
 
       local upload_size = 0
       local chunk_size = 4096
-      local form = upload:new(chunk_size)
+      local form, form_err = upload:new(chunk_size)
+      if not form then
+        ngx.log(ngx.ERR, "new upload failed: ", form_err)
+        ngx.exit(500)
+      end
+
       while true do
         local typ, res, err = form:read()
         if typ == "body" then

@@ -51,10 +51,14 @@ class Test::Apis::TestWebAppLargeBody < Minitest::Test
     assert_operator(body.bytesize, :>, 1 * 1024 * 1024) # 1MB
     assert_operator(body.bytesize, :<, 1.1 * 1024 * 1024) # 1.1MB
 
-    response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/users/#{user.id}.json", http_options.deep_merge(admin_token).deep_merge({
-      :headers => { "Content-Type" => "application/json" },
-      :body => body,
-    }))
+    response = nil
+    100.times do
+      response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users/#{user.id}.json", http_options.deep_merge(admin_token).deep_merge({
+        :headers => { "Content-Type" => "application/json" },
+        :body => body,
+      }))
+      ap response.code
+    end
     assert_response_code(413, response)
 
     user.reload
