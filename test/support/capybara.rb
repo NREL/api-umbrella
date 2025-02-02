@@ -39,7 +39,7 @@ def capybara_register_driver(driver_name, options = {})
       # Set download path for Chrome >= 77
       opts.add_preference(:download, :default_directory => ApiUmbrellaTestHelpers::Downloads::DOWNLOADS_ROOT)
 
-      # Enable web socket support for BiDi LogInspector support below.
+      # Enable web socket support for BiDi log support below.
       opts.web_socket_url = true
 
       # Do not auto-accept alerts/dialogs so that beforeUnload alerts can be
@@ -57,15 +57,14 @@ def capybara_register_driver(driver_name, options = {})
     driver = Capybara::Selenium::Driver.new(app, browser: :chrome, options: driver_options, service: service)
     driver.resize_window_to(driver.current_window_handle, 1024, 4000)
 
-    # Keep track of console log output so we can error if JavaScript errors are
-    # encountered.
+    # Keep track of console log output so we can warn/error depending on
+    # severity of JavaScript logs.
     #
     # Like https://github.com/dbalatero/capybara-chromedriver-logger, but without
     # Selenium 4 issues
     # (https://github.com/dbalatero/capybara-chromedriver-logger/issues/34), and
     # compatible with GeckoDriver.
-    log_inspector = Selenium::WebDriver::BiDi::LogInspector.new(driver.browser)
-    log_inspector.on_log do |log|
+    driver.browser.script.add_console_message_handler do |log|
       # Store the logs on a global (this might not be ideal, but Thread.current
       # doesn't seem to work and this does).
       $selenium_logs ||= [] # rubocop:disable Style/GlobalVars
@@ -73,7 +72,13 @@ def capybara_register_driver(driver_name, options = {})
 
       # Print out any console output (regardless of log level) to the screen for
       # better awareness and debugging.
-      warn "#{Rainbow("JavaScript [#{log.fetch("level")}]:").color(:yellow).bright} #{log.fetch("text")}\n    #{Rainbow(log.inspect).color(:silver)}"
+      warn "#{Rainbow("JavaScript [#{log.level}]:").color(:yellow).bright} #{log.text}\n    #{Rainbow(log.inspect).color(:silver)}"
+    end
+    # Throw immediate error if uncaught javascript error is encountered (not
+    # just a `console.error` that above would handle).
+    driver.browser.script.add_javascript_error_handler do |log|
+      warn "#{Rainbow("JavaScript [#{log.level}]:").color(:red).bright} #{log.text}\n    #{Rainbow(log.inspect).color(:silver)}"
+      raise "Uncaught JavaScript exception: #{log.text}"
     end
 
     driver
