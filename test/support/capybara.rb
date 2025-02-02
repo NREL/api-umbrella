@@ -141,7 +141,17 @@ module Minitest
         super
 
         # Clear the session and logout after each test.
-        ::Capybara.reset_sessions!
+        begin
+          ::Capybara.reset_sessions!
+        rescue
+          # Resetting may fail since it navigates away from the page, which may
+          # trigger an extra `onbeforeunload` alert warning. Since this is not
+          # automatically handled (due to `unhandled_prompt_behavior`), trigger
+          # the internal mechanism to dismiss these unload alerts, and then try
+          # resetting again.
+          ::Capybara.current_session.driver.send(:accept_unhandled_reset_alert)
+          retry
+        end
 
         # Ensure the default driver is used again for future tests (for any
         # tests that may have changed the driver).
