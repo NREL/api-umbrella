@@ -41,6 +41,10 @@ def capybara_register_driver(driver_name, options = {})
 
       # Enable web socket support for BiDi LogInspector support below.
       opts.web_socket_url = true
+
+      # Do not auto-accept alerts/dialogs so that beforeUnload alerts can be
+      # tested: https://issues.chromium.org/issues/351858989#comment28
+      opts.unhandled_prompt_behavior = "ignore"
     end
 
     service = Selenium::WebDriver::Chrome::Service.new.tap do |opts|
