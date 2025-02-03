@@ -51,7 +51,7 @@ class Outdated < Thor
     },
     "nodejs" => {
       :git => "https://github.com/nodejs/node.git",
-      :constraint => "~> 20.9",
+      :constraint => "~> 22.11",
     },
     "openresty" => {
       :git => "https://github.com/openresty/openresty.git",

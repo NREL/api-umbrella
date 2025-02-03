@@ -246,7 +246,7 @@ import "path"
     listen_backlog?: uint
     error_log_level: string | *"notice"
     api_user: {
-      email_regex: string | *"\\A[^@\\s]+@[^@\\s]+\\.[^@\\s]+\\z"
+      email_regex: string | *"\\A[^@<>\\s]+@[^@<>\\s]+\\.[^@<>\\s]+\\z"
       first_name_exclude_regex: string | *"(http|https|www|<|>|\\r|\\n)"
       last_name_exclude_regex: string | *"(http|https|www|<|>|\\r|\\n)"
       force_public_verify_email: bool | *false
@@ -256,7 +256,7 @@ import "path"
       username_is_email: bool | *true
       password_length_min: uint | *14
       password_length_max: uint | *72
-      email_regex: string | *"\\A[^@\\s]+@[^@\\s]+\\.[^@\\s]+\\z"
+      email_regex: string | *"\\A[^@<>\\s]+@[^@<>\\s]+\\.[^@<>\\s]+\\z"
       password_regex?: string
       login_header?: string
       login_footer?: string

@@ -1,6 +1,6 @@
 <head>
   {{ $options := (dict "includePaths" (slice "node_modules/bootstrap/scss")) }}
-  {{ $css := resources.Get "stylesheets/application.scss" | resources.ToCSS $options -}}
+  {{ $css := resources.Get "stylesheets/application.scss" | css.Sass $options -}}
   {{ $secureCSS := $css | resources.Fingerprint -}}
   <link
     rel="stylesheet"

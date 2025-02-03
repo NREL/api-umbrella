@@ -9,7 +9,7 @@ services:
       - postgres
       - opensearch
   postgres:
-    image: postgres:12
+    image: postgres:15.10-bookworm
     environment:
       POSTGRES_PASSWORD: dev_password
     healthcheck:

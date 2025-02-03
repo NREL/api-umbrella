@@ -31,13 +31,6 @@ COMMENT ON SCHEMA audit IS 'Out-of-table audit/history logging tables and trigge
 
 
 --
--- Name: public; Type: SCHEMA; Schema: -; Owner: -
---
-
--- *not* creating schema, since initdb creates it
-
-
---
 -- Name: pg_trgm; Type: EXTENSION; Schema: -; Owner: -
 --
 
@@ -628,12 +621,12 @@ COMMENT ON FUNCTION public.jsonb_minus("left" jsonb, "right" jsonb) IS 'Delete m
 
 
 --
--- Name: array_accum(anyarray); Type: AGGREGATE; Schema: api_umbrella; Owner: -
+-- Name: array_accum(anycompatiblearray); Type: AGGREGATE; Schema: api_umbrella; Owner: -
 --
 
-CREATE AGGREGATE api_umbrella.array_accum(anyarray) (
+CREATE AGGREGATE api_umbrella.array_accum(anycompatiblearray) (
     SFUNC = array_cat,
-    STYPE = anyarray,
+    STYPE = anycompatiblearray,
     INITCOND = '{}'
 );
 
@@ -2825,3 +2818,4 @@ INSERT INTO api_umbrella.lapis_migrations (name) VALUES ('1700281762');
 INSERT INTO api_umbrella.lapis_migrations (name) VALUES ('1700346585');
 INSERT INTO api_umbrella.lapis_migrations (name) VALUES ('1701483732');
 INSERT INTO api_umbrella.lapis_migrations (name) VALUES ('1721347955');
+INSERT INTO api_umbrella.lapis_migrations (name) VALUES ('1738353016');

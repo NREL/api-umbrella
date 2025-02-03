@@ -60,8 +60,8 @@ luarocks_install "./api-umbrella-git-1.rockspec" "git-1" "${extra_args[@]}"
 
 # lua-resty-logger-socket
 (
-  lua_resty_logger_socket_version="15cc1c256e55b8e68ec9b220b6883c227a763d4e"
-  lua_resty_logger_socket_hash="efe14697a8c4be612c011f54fce06191"
+  lua_resty_logger_socket_version="0b83fed17506a7f6a14c79847be717b89ef3e8b8"
+  lua_resty_logger_socket_hash="6e985fa91839ccb4cd1cfca5bcadb13f"
 
   mkdir -p ./lua-resty-logger-socket
   cd ./lua-resty-logger-socket

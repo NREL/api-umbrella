@@ -2,20 +2,20 @@
   "name": "api-umbrella-web-app",
   "version": "0.0.0",
   "dependencies": {
-    "@fortawesome/fontawesome-svg-core": "^6.6.0",
-    "@fortawesome/free-brands-svg-icons": "^6.6.0"
+    "@fortawesome/fontawesome-svg-core": "^6.7.2",
+    "@fortawesome/free-brands-svg-icons": "^6.7.2"
   },
   "devDependencies": {
     "bootstrap": "^4.6.2",
     "clean-webpack-plugin": "^4.0.0",
     "css-loader": "^6.11.0",
-    "eslint": "^8.57.0",
+    "eslint": "^8.57.1",
     "eslint-config-airbnb-base": "^15.0.0",
-    "eslint-plugin-import": "^2.29.1",
-    "mini-css-extract-plugin": "^2.9.0",
-    "sass": "^1.77.8",
+    "eslint-plugin-import": "^2.31.0",
+    "mini-css-extract-plugin": "^2.9.2",
+    "sass": "^1.83.4",
     "sass-loader": "^13.3.3",
-    "webpack": "^5.93.0",
+    "webpack": "^5.97.1",
     "webpack-cli": "^5.1.4"
   }
 }
