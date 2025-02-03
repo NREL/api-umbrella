@@ -62,7 +62,7 @@ COPY src/api-umbrella/web-app/package.json src/api-umbrella/web-app/pnpm-lock.ya
 COPY tasks/app-deps/web-app/pnpm /app/tasks/app-deps/web-app/
 RUN make app-deps:web-app:pnpm && make clean:dev
 
-COPY build/patches/lrexlib-pcre2.patch /app/build/patches/
+COPY build/patches/lrexlib-pcre2.patch build/patches/lua-resty-openssl.patch /app/build/patches/
 COPY tasks/app-deps/luarocks /app/tasks/app-deps/
 RUN make app-deps:luarocks && make clean:dev
 

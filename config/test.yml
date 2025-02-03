@@ -98,6 +98,8 @@ fluent_bit:
 geoip:
   db_update_frequency: false
 postgresql:
+  ssl: true
+  ssl_required: true
   database: api_umbrella_test
   password: dev_password
   migrations:

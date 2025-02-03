@@ -9,7 +9,9 @@ services:
       - postgres
       - opensearch
   postgres:
-    image: postgres:15.10-bookworm
+    build:
+      context: .
+      dockerfile: Dockerfile-postgres
     environment:
       POSTGRES_PASSWORD: dev_password
     healthcheck:

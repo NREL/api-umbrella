@@ -17,6 +17,13 @@ extra_args=(
 
 luarocks_install "./api-umbrella-git-1.rockspec" "git-1" "${extra_args[@]}"
 
+# Temporary workaround for lua-resty-openssl and OpenResty 1.27:
+# https://github.com/fffonion/lua-resty-openssl/pull/200
+(
+  cd "${APP_VENDOR_LUA_SHARE_DIR}/resty/openssl"
+  patch -p4 < "$SOURCE_DIR/build/patches/lua-resty-openssl.patch"
+)
+
 # lrexlib-pcre2
 (
   lrexlib_pcre2_version="2.9.2-1"
