@@ -1,0 +1,6 @@
+FROM public.ecr.aws/docker/library/postgres:15.10-bookworm
+COPY ./test/config/ssl_test.crt /var/lib/postgresql/server.crt
+COPY ./test/config/ssl_test.key /var/lib/postgresql/server.key
+RUN chown postgres /var/lib/postgresql/server.key /var/lib/postgresql/server.key && chmod 600 /var/lib/postgresql/server.key
+
+CMD ["postgres", "-c", "ssl=on", "-c", "ssl_cert_file=/var/lib/postgresql/server.crt", "-c", "ssl_key_file=/var/lib/postgresql/server.key"]
