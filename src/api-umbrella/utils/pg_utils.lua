@@ -7,6 +7,9 @@ local xpcall_error_handler = require "api-umbrella.utils.xpcall_error_handler"
 -- Preload modules that pgmoon may require at query() time.
 require "pgmoon.arrays"
 require "pgmoon.json"
+require "resty.openssl"
+require "resty.openssl.auxiliary.nginx"
+require "resty.openssl.auxiliary.nginx_c"
 
 local _encode_bytea = pgmoon.Postgres.encode_bytea
 local _escape_identifier = pgmoon.Postgres.escape_identifier
