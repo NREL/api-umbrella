@@ -64,7 +64,7 @@ gem "capybara-screenshot", "~> 1.0.22"
 gem "capybara-shadowdom", "~> 0.3.0"
 
 # HTML or XML parsing
-gem "nokogiri", "~> 1.14"
+gem "nokogiri", "~> 1.18"
 
 # Useful additions
 gem "activesupport", "~> 7.2.2"
