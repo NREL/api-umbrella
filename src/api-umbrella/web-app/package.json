@@ -6,7 +6,7 @@
     "@fortawesome/free-brands-svg-icons": "^6.7.2"
   },
   "devDependencies": {
-    "bootstrap": "^4.6.2",
+    "bootstrap": "^5.0.0",
     "clean-webpack-plugin": "^4.0.0",
     "css-loader": "^6.11.0",
     "eslint": "^8.57.1",
