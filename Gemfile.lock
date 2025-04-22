@@ -125,12 +125,12 @@ GEM
       timeout
     net-smtp (0.5.0)
       net-protocol
-    nokogiri (1.18.4)
+    nokogiri (1.18.8)
       mini_portile2 (~> 2.8.2)
       racc (~> 1.4)
-    nokogiri (1.18.4-aarch64-linux-gnu)
+    nokogiri (1.18.8-aarch64-linux-gnu)
       racc (~> 1.4)
-    nokogiri (1.18.4-x86_64-linux-gnu)
+    nokogiri (1.18.8-x86_64-linux-gnu)
       racc (~> 1.4)
     oj (3.16.9)
       bigdecimal (>= 3.0)
