@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+# renovate: datasource=github-release depName=envoyproxy/envoy
 envoy_version="1.33.0"
 
 set -e -u -x

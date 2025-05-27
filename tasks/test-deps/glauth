@@ -3,9 +3,12 @@
 set -e -u -x
 source ./tasks/helpers.sh
 
+# renovate: datasource=github-release-attachments depName=glauth/glauth
 glauth_version="2.3.2"
+# renovate: datasource=github-release-attachments depName=glauth/glauth version=2.3.2
 glauth_hash="effd05253d04b97469a18cbe83ff9847fb762f49013b63cb1771d916d44ec0f6"
 if [ "$TARGETARCH" == "arm64" ]; then
+  # renovate: datasource=github-release-attachments depName=glauth/glauth version=2.3.2
   glauth_hash="ab4870615922c098c096f0a002853f0017d3a35f413b1318bcb902a36dddeae9"
 fi
 

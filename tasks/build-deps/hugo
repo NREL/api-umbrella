@@ -3,9 +3,12 @@
 set -e -u -x
 source ./tasks/helpers.sh
 
+# renovate: datasource=github-release-attachments depName=gohugoio/hugo
 hugo_version="0.143.0"
+# renovate: datasource=github-release-attachments depName=gohugoio/hugo version=0.143.0
 hugo_hash="5088bc295316ff3ae1bb468365e88a48b4415ca38ba205e899d9447b24c0a4fe"
 if [ "$TARGETARCH" == "arm64" ]; then
+  # renovate: datasource=github-release-attachments depName=gohugoio/hugo version=0.143.0
   hugo_hash="df534187ee58b2caac077197a87a4434ed85fdd6de077cf3335162aeeaa4eb3b"
 fi
 

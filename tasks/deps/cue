@@ -3,9 +3,12 @@
 set -e -u -x
 source ./tasks/helpers.sh
 
+# renovate: datasource=github-release-attachments depName=cue-lang/cue
 cue_version="0.12.0"
+# renovate: datasource=github-release-attachments depName=cue-lang/cue version=0.12.0
 cue_hash="e55cd5abd98a592c110f87a7da9ef15bc72515200aecfe1bed04bf86311f5ba1"
 if [ "$TARGETARCH" == "arm64" ]; then
+  # renovate: datasource=github-release-attachments depName=cue-lang/cue version=0.12.0
   cue_hash="488012bb0e5c080e2a9694ef8765403dd1075a4ec373dda618efa2d37b47f14f"
 fi
 
