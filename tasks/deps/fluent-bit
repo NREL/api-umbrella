@@ -3,12 +3,12 @@
 set -e -u -x
 source ./tasks/helpers.sh
 
-fluent_bit_version="3.2.5"
-fluent_bit_hash="21570f78c59fa9a0fa1182bf90b8491d40e2f40f84bb11adf6e6ab03ef7dd1df"
+fluent_bit_version="4.0.2"
+fluent_bit_hash="aa0577ba7251081c8d5398b2a905b5b0585bb657ca13b39a5e12931437516f08"
 
 task_working_dir
 download "https://github.com/fluent/fluent-bit/archive/refs/tags/v${fluent_bit_version}.tar.gz" "sha256" "$fluent_bit_hash"
-extract_download "1cf14c9c4c-v${fluent_bit_version}.tar.gz"
+extract_download "v${fluent_bit_version}.tar.gz"
 
 cd "fluent-bit-${fluent_bit_version}/build"
 
@@ -18,6 +18,7 @@ cmake \
   -DFLB_EXAMPLES="Off" \
   -DFLB_HTTP_SERVER="On" \
   -DFLB_JEMALLOC="On" \
+  -DFLB_KAFKA="Off" \
   -DFLB_LUAJIT="Off" \
   -DFLB_PROXY_GO="Off" \
   -DFLB_RECORD_ACCESSOR="On" \

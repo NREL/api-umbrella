@@ -25,7 +25,7 @@ gem "minitest-ci", "~> 3.4.0"
 
 # Ruby lint/style checker
 gem "rubocop", "~> 1.4", :require => false
-gem "rubocop-minitest", "~> 0.36.0", :require => false
+gem "rubocop-minitest", "~> 0.38.0", :require => false
 
 # Running background processes
 gem "childprocess"

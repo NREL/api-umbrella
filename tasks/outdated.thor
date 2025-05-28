@@ -70,7 +70,7 @@ class Outdated < Thor
     },
     "openresty" => {
       :git => "https://github.com/openresty/openresty.git",
-      :download => "https://openresty.org/download/openresty-<%= version.fetch(:wanted_version) %>.tar.gz"
+      :download => "https://openresty.org/download/openresty-<%= version.fetch(:wanted_version) %>.tar.gz",
     },
     "perp" => {
       :http => "http://b0llix.net/perp/site.cgi?page=download",
@@ -189,7 +189,7 @@ class Outdated < Thor
 
         amd64_release = github_release.fetch("assets").detect do |asset|
           if !repo[:filename_matcher] || asset.fetch("name").match?(repo.fetch(:filename_matcher))
-            asset.fetch("name").match?(/#{repo[:github_release_name].to_s}.*linux.*(amd64|x86_64|x64)/i)
+            asset.fetch("name").match?(/#{repo[:github_release_name]}.*linux.*(amd64|x86_64|x64)/i)
           else
             false
           end
@@ -197,7 +197,7 @@ class Outdated < Thor
 
         arm64_release = github_release.fetch("assets").detect do |asset|
           if !repo[:filename_matcher] || asset.fetch("name").match?(repo.fetch(:filename_matcher))
-            asset.fetch("name").match?(/#{repo[:github_release_name].to_s}.*linux.*(arm64|aarch64)/i)
+            asset.fetch("name").match?(/#{repo[:github_release_name]}.*linux.*(arm64|aarch64)/i)
           else
             false
           end
