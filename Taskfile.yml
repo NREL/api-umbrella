@@ -428,6 +428,10 @@ tasks:
     cmds:
       - ./tasks/update/luarocks
 
+  update:packages:
+    cmds:
+      - ./tasks/helpers/test-bundle-exec thor outdated:update-packages
+
   update:test-deps:luarocks:
     cmds:
       - ./tasks/update/test-deps/luarocks
@@ -435,6 +439,10 @@ tasks:
   outdated:
     cmds:
       - ./tasks/helpers/test-bundle-exec thor outdated:all
+
+  outdated:packages:
+    cmds:
+      - ./tasks/helpers/test-bundle-exec thor outdated:packages
 
   test:
     cmds:

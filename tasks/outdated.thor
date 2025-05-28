@@ -1,18 +1,23 @@
 # vi: set ft=ruby :
 
+require "erb"
+require "fileutils"
 require "json"
 require "net/http"
 require "open3"
 require "rainbow"
+require "shellwords"
 require "uri"
 
 class Outdated < Thor
   REPOS = {
     "crane" => {
       :git => "https://github.com/google/go-containerregistry.git",
+      :github_release => "google/go-containerregistry",
     },
     "cue" => {
       :git => "https://github.com/cue-lang/cue.git",
+      :github_release => "cue-lang/cue",
     },
     "envoy" => {
       :git => "https://github.com/envoyproxy/envoy.git",
@@ -22,12 +27,16 @@ class Outdated < Thor
     },
     "fluent_bit" => {
       :git => "https://github.com/fluent/fluent-bit.git",
+      :download => "https://github.com/fluent/fluent-bit/archive/refs/tags/v<%= version.fetch(:wanted_version) %>.tar.gz",
     },
     "glauth" => {
       :git => "https://github.com/glauth/glauth.git",
+      :github_release => "glauth/glauth",
     },
     "hugo" => {
       :git => "https://github.com/gohugoio/hugo.git",
+      :github_release => "gohugoio/hugo",
+      :filename_matcher => /hugo_extended_\d.*\.tar\.gz/,
     },
     "lrexlib_pcre2" => {
       :luarock => "lrexlib-pcre2",
@@ -40,11 +49,15 @@ class Outdated < Thor
       :git => "https://github.com/cloudflare/lua-resty-logger-socket.git",
       :git_ref => "master",
     },
+    "lua_resty_openssl_aux_module" => {
+      :git => "https://github.com/fffonion/lua-resty-openssl-aux-module.git",
+    },
     "luarocks" => {
       :git => "https://github.com/keplerproject/luarocks.git",
     },
     "mailpit" => {
       :git => "https://github.com/axllent/mailpit.git",
+      :github_release => "axllent/mailpit",
     },
     "ngx_http_geoip2_module" => {
       :git => "https://github.com/leev/ngx_http_geoip2_module.git",
@@ -52,9 +65,12 @@ class Outdated < Thor
     "nodejs" => {
       :git => "https://github.com/nodejs/node.git",
       :constraint => "~> 22.11",
+      :checksums_download => "https://nodejs.org/download/release/v<%= version.fetch(:wanted_version) %>/SHASUMS256.txt",
+      :filename_matcher => /node.*\.tar\.xz/,
     },
     "openresty" => {
       :git => "https://github.com/openresty/openresty.git",
+      :download => "https://openresty.org/download/openresty-<%= version.fetch(:wanted_version) %>.tar.gz"
     },
     "perp" => {
       :http => "http://b0llix.net/perp/site.cgi?page=download",
@@ -64,12 +80,16 @@ class Outdated < Thor
     },
     "shellcheck" => {
       :git => "https://github.com/koalaman/shellcheck.git",
+      :github_release => "koalaman/shellcheck",
     },
     "task" => {
       :git => "https://github.com/go-task/task.git",
+      :github_release => "go-task/task",
+      :filename_matcher => /task.*\.tar\.gz/,
     },
     "trafficserver" => {
       :http => "https://archive.apache.org/dist/trafficserver/",
+      :constraint => "~> 9.1.0",
     },
   }.freeze
 
@@ -136,29 +156,135 @@ class Outdated < Thor
 
   desc "packages", "List outdated package dependencies"
   def packages
-    seen_names = []
-    versions = {}
-    versions_content = `git grep -hE "^\\s*\\w+_version=" tasks`.strip
-    versions_content.each_line do |line|
-      current_version_matches = line.match(/^\s*(.+?)_version=['"]([^'"]+)/)
-      if(!current_version_matches)
+    versions = find_package_versions
+    Outdated.print_versions(versions: versions)
+  end
+
+  desc "update-packages", "List outdated package dependencies"
+  def update_packages
+    versions = find_package_versions
+    versions.each do |name, version|
+      if version.fetch(:current_version) == version.fetch(:wanted_version)
         next
       end
 
-      name = current_version_matches[1].downcase
-      seen_names.push(name)
-      options = REPOS[name] || {}
-      current_version_string = current_version_matches[2]
+      repo = REPOS.fetch(name)
 
-      Outdated.add_version(versions: versions, name: name, current_version_string: current_version_string, options: options)
+      tmp_dir = Pathname.new("tmp/update-packages/#{name}/#{version.fetch(:wanted_version)}")
+      FileUtils.mkdir_p(tmp_dir)
+
+      amd64_hash = nil
+      arm64_hash = nil
+
+      if repo[:github_release]
+        release_json_path = tmp_dir.join("github_release.json")
+        unless release_json_path.exist?
+          system "curl", "-f", "-L", "-o", release_json_path.to_s, "https://api.github.com/repos/#{repo.fetch(:github_release)}/releases/tags/v#{version.fetch(:wanted_version)}", exception: true
+        end
+        github_release = JSON.parse(release_json_path.read)
+
+        checksums_release = github_release.fetch("assets").detect do |asset|
+          asset.fetch("name").match?(/(checksums|shasums)\.txt/i)
+        end&.fetch("browser_download_url")
+
+        amd64_release = github_release.fetch("assets").detect do |asset|
+          if !repo[:filename_matcher] || asset.fetch("name").match?(repo.fetch(:filename_matcher))
+            asset.fetch("name").match?(/#{repo[:github_release_name].to_s}.*linux.*(amd64|x86_64|x64)/i)
+          else
+            false
+          end
+        end&.fetch("browser_download_url")
+
+        arm64_release = github_release.fetch("assets").detect do |asset|
+          if !repo[:filename_matcher] || asset.fetch("name").match?(repo.fetch(:filename_matcher))
+            asset.fetch("name").match?(/#{repo[:github_release_name].to_s}.*linux.*(arm64|aarch64)/i)
+          else
+            false
+          end
+        end&.fetch("browser_download_url")
+      elsif repo[:checksums_download]
+        checksums_release = ERB.new(repo.fetch(:checksums_download)).result(binding)
+      elsif repo[:download]
+        source_release = ERB.new(repo.fetch(:download)).result(binding)
+      end
+
+      if checksums_release
+        checksums_path = tmp_dir.join(File.basename(checksums_release))
+        unless checksums_path.exist?
+          system "curl", "-f", "-L", "-o", checksums_path.to_s, checksums_release, exception: true
+        end
+
+        checksums_path.read.split("\n").each do |line|
+          if !repo[:filename_matcher] || line.match?(repo.fetch(:filename_matcher))
+            parts = line.split(/\s+/)
+            if line.match?(/linux.*(amd64|x86_64|x64)/i)
+              amd64_hash = parts.first
+            elsif line.match?(/linux.*(arm64|aarch64)/i)
+              arm64_hash = parts.first
+            end
+          end
+        end
+      else
+        if amd64_release
+          amd64_path = tmp_dir.join(File.basename(amd64_release))
+          unless amd64_path.exist?
+            system "curl", "-f", "-L", "-o", amd64_path.to_s, amd64_release, exception: true
+          end
+
+          amd64_hash = `openssl dgst -sha256 #{Shellwords.escape(amd64_path)}`.split(/\s+/).last
+        end
+
+        if arm64_release
+          arm64_path = tmp_dir.join(File.basename(arm64_release))
+          unless arm64_path.exist?
+            system "curl", "-f", "-L", "-o", arm64_path.to_s, arm64_release, exception: true
+          end
+
+          arm64_hash = `openssl dgst -sha256 #{Shellwords.escape(arm64_path)}`.split(/\s+/).last
+        end
+
+        if source_release
+          source_path = tmp_dir.join(File.basename(source_release))
+          unless source_path.exist?
+            system "curl", "-f", "-L", "-o", source_path.to_s, source_release, exception: true
+          end
+
+          source_hash = `openssl dgst -sha256 #{Shellwords.escape(source_path)}`.split(/\s+/).last
+        end
+      end
+
+      file_paths = `git grep -lP '^\\s*#{name}_version=' tasks`
+      file_paths.split.each do |file_path|
+        content = File.read(file_path)
+        content.gsub!(/^(\s*#{name}_version=['"])([^'"]+)/) do |match|
+          "#{Regexp.last_match(1)}#{version.fetch(:wanted_version)}"
+        end
+
+        match_index = 0
+        content.gsub!(/^(\s*#{name}_hash=['"])([^'"]+)/) do |match|
+          new_hash = Regexp.last_match(2)
+          if match_index == 0
+            new_hash = amd64_hash || source_hash
+          elsif match_index == 1
+            new_hash = arm64_hash
+          end
+          match_index += 1
+
+          "#{Regexp.last_match(1)}#{new_hash}"
+        end
+
+        File.write(file_path, content)
+
+        if name == "task" && file_path.start_with?("tasks/bootstrap-")
+          new_path = "tasks/bootstrap-#{version.fetch(:wanted_version)}"
+          system "git", "mv", file_path, new_path
+
+          makefile_in = File.read("Makefile.in")
+          makefile_in.gsub!(/^task_version:=.+/, "task_version:=#{version.fetch(:wanted_version)}")
+          File.write("Makefile.in", makefile_in)
+        end
+      end
     end
-
-    unused_repos = REPOS.keys - seen_names
-    if(unused_repos.any?)
-      warn Rainbow("\nWARNING: Unused repos defined in #{__FILE__}: #{unused_repos.sort.join(", ")}\n").yellow
-    end
-
-    Outdated.print_versions(versions: versions, luarock: true)
   end
 
   desc "all", "List outdated dependencies"
@@ -190,6 +316,34 @@ class Outdated < Thor
 
     puts "==== PACKAGES ===="
     packages
+  end
+
+  private
+
+  def find_package_versions
+    seen_names = []
+    versions = {}
+    versions_content = `git grep -hP '^\\s*\\w+_version=' tasks`.strip
+    versions_content.each_line do |line|
+      current_version_matches = line.match(/^\s*(.+?)_version=['"]([^'"]+)/)
+      if(!current_version_matches)
+        next
+      end
+
+      name = current_version_matches[1].downcase
+      seen_names.push(name)
+      options = REPOS[name] || {}
+      current_version_string = current_version_matches[2]
+
+      Outdated.add_version(versions: versions, name: name, current_version_string: current_version_string, options: options)
+    end
+
+    unused_repos = REPOS.keys - seen_names
+    if(unused_repos.any?)
+      warn Rainbow("\nWARNING: Unused repos defined in #{__FILE__}: #{unused_repos.sort.join(", ")}\n").yellow
+    end
+
+    versions
   end
 
   class << self

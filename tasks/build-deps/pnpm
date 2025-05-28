@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 
-# renovate: datasource=npm depName=pnpm
 pnpm_version="10.1.0"
 
 set -e -u -x

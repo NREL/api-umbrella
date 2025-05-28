@@ -3,9 +3,7 @@
 set -e -u -x
 source ./tasks/helpers.sh
 
-# renovate: datasource=github-release depName=fluent/fluent-bit
 fluent_bit_version="3.2.5"
-# renovate: datasource=github-release depName=fluent/fluent-bit version=3.2.5
 fluent_bit_hash="21570f78c59fa9a0fa1182bf90b8491d40e2f40f84bb11adf6e6ab03ef7dd1df"
 
 task_working_dir
