@@ -11,16 +11,14 @@ require "uri"
 
 class Outdated < Thor
   REPOS = {
-    "crane" => {
-      :git => "https://github.com/google/go-containerregistry.git",
-      :github_release => "google/go-containerregistry",
-    },
     "cue" => {
       :git => "https://github.com/cue-lang/cue.git",
       :github_release => "cue-lang/cue",
     },
     "envoy" => {
       :git => "https://github.com/envoyproxy/envoy.git",
+      :github_release => "envoyproxy/envoy",
+      :filename_matcher => /envoy-\d/,
     },
     "envoy_control_plane" => {
       :git => "https://github.com/GUI/envoy-control-plane.git",
@@ -197,7 +195,7 @@ class Outdated < Thor
 
         arm64_release = github_release.fetch("assets").detect do |asset|
           if !repo[:filename_matcher] || asset.fetch("name").match?(repo.fetch(:filename_matcher))
-            asset.fetch("name").match?(/#{repo[:github_release_name]}.*linux.*(arm64|aarch64)/i)
+            asset.fetch("name").match?(/#{repo[:github_release_name]}.*linux.*(arm64|aarch_?64)/i)
           else
             false
           end
@@ -219,7 +217,7 @@ class Outdated < Thor
             parts = line.split(/\s+/)
             if line.match?(/linux.*(amd64|x86_64|x64)/i)
               amd64_hash = parts.first
-            elsif line.match?(/linux.*(arm64|aarch64)/i)
+            elsif line.match?(/linux.*(arm64|aarch_?64)/i)
               arm64_hash = parts.first
             end
           end

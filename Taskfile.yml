@@ -37,24 +37,18 @@ tasks:
       - ./build/work/stamp/deps/cue
 
   deps:envoy:
-    deps:
-      - build-deps:crane
     cmds:
       - ./tasks/deps/envoy
     sources:
-      - ./build/work/stamp/build-deps/crane
       - ./tasks/deps/envoy
       - ./tasks/helpers.sh
     generates:
       - ./build/work/stamp/deps/envoy
 
   deps:envoy-control-plane:
-    deps:
-      - build-deps:crane
     cmds:
       - ./tasks/deps/envoy-control-plane
     sources:
-      - ./build/work/stamp/build-deps/crane
       - ./tasks/deps/envoy-control-plane
       - ./tasks/helpers.sh
     generates:
@@ -122,15 +116,6 @@ tasks:
       - task: deps:perp
       - task: deps:trafficserver
 
-  build-deps:crane:
-    cmds:
-      - ./tasks/build-deps/crane
-    sources:
-      - ./tasks/build-deps/crane
-      - ./tasks/helpers.sh
-    generates:
-      - ./build/work/stamp/build-deps/crane
-
   build-deps:hugo:
     cmds:
       - ./tasks/build-deps/hugo
@@ -163,7 +148,6 @@ tasks:
 
   build-deps:
     cmds:
-      - task: build-deps:crane
       - task: build-deps:hugo
       - task: build-deps:pnpm
 

@@ -1,22 +1,23 @@
 #!/usr/bin/env bash
 
-envoy_version="1.34.1"
-
 set -e -u -x
 source ./tasks/helpers.sh
 
-image="envoyproxy/envoy-distroless"
+envoy_version="1.34.1"
+envoy_hash="88264d651876a9ad28aa7e098e3df843570404cf60b6ce968c4496ca4a2b6e9d"
 
-task_working_dir
-
-if [ ! -f "_persist/downloads/envoy-${envoy_version}-${TARGETARCH}.tar" ]; then
-  mkdir -p _persist/downloads
-  PATH="$DEV_PATH" crane export --platform "linux/${TARGETARCH}" "${image}:v${envoy_version}" "_persist/downloads/envoy-${envoy_version}-${TARGETARCH}.tar"
+download_arch="$TARGETARCH"
+if [ "$TARGETARCH" == "amd64" ]; then
+  download_arch="x86_64"
+elif [ "$TARGETARCH" == "arm64" ]; then
+  download_arch="aarch_64"
+  envoy_hash="eeff4ac07750205e1d125b2f4cfc6c24d9e9c5f2c99374d0e2d0a0cf0aac79bb"
 fi
 
-tar -xof "_persist/downloads/envoy-${envoy_version}-${TARGETARCH}.tar" usr/local/bin/envoy
+task_working_dir
+download "https://github.com/envoyproxy/envoy/releases/download/v${envoy_version}/envoy-${envoy_version}-linux-${download_arch}" "sha256" "$envoy_hash"
 
-install -D -m 755 usr/local/bin/envoy "$STAGE_EMBEDDED_DIR/bin/envoy"
+install -D -m 755 "_persist/downloads/envoy-${envoy_version}-linux-${download_arch}" "$STAGE_EMBEDDED_DIR/bin/envoy"
 chrpath -d "$STAGE_EMBEDDED_DIR/bin/envoy"
 
 stamp
