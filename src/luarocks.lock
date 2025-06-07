@@ -12,7 +12,6 @@ return {
       ["libcidr-ffi"] = "1.0.0-1",
       loadkit = "1.1.0-1",
       lpeg = "1.1.0-2",
-      lua = "5.1-1",
       ["lua-cjson"] = "2.1.0.10-1",
       ["lua-resty-http"] = "0.17.2-0",
       ["lua-resty-jwt"] = "0.2.3-0",

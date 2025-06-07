@@ -52,6 +52,7 @@ class Outdated < Thor
     },
     "luarocks" => {
       :git => "https://github.com/keplerproject/luarocks.git",
+      :download => "https://luarocks.github.io/luarocks/releases/luarocks-<%= version.fetch(:wanted_version) %>.tar.gz",
     },
     "mailpit" => {
       :git => "https://github.com/axllent/mailpit.git",
