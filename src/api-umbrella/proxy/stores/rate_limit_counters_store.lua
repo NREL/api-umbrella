@@ -243,29 +243,17 @@ local function increment_all_limits(self, increment_by)
   local header_remaining
   local header_retry_after
 
-  local user = self.user
-  local settings = self.settings
-  local anonymous_rate_limit_behavior = settings["anonymous_rate_limit_behavior"]
-  local authenticated_rate_limit_behavior = settings["authenticated_rate_limit_behavior"]
-
   for rate_limit_index, rate_limit in ipairs(self.rate_limits) do
-    -- These two settings act to disable IP vs API key limits depending on
-    -- whether or not anonymous users are allowed. So skip processing if either
-    -- setting is forcing this limit to be disabled in the current request's
-    -- context.
-    local limit_by = rate_limit["limit_by"]
-    if not ((limit_by == "api_key" and not user and anonymous_rate_limit_behavior == "ip_only") or (limit_by == "ip" and user and authenticated_rate_limit_behavior == "api_key_only")) then
-      local limit_exceeded, limit_remaining, limit_retry_after = increment_limit(self, increment_by, rate_limit_index, rate_limit)
+    local limit_exceeded, limit_remaining, limit_retry_after = increment_limit(self, increment_by, rate_limit_index, rate_limit)
 
-      if rate_limit["response_headers"] or limit_exceeded then
-        header_remaining = limit_remaining
-        header_retry_after = limit_retry_after
-      end
+    if rate_limit["response_headers"] or limit_exceeded then
+      header_remaining = limit_remaining
+      header_retry_after = limit_retry_after
+    end
 
-      if limit_exceeded then
-        exceeded = true
-        break
-      end
+    if limit_exceeded then
+      exceeded = true
+      break
     end
   end
 
@@ -277,14 +265,28 @@ function _M.check(api, settings, user, remote_addr)
     return false
   end
 
+  local rate_limits = {}
+  local anonymous_rate_limit_behavior = settings["anonymous_rate_limit_behavior"]
+  local authenticated_rate_limit_behavior = settings["authenticated_rate_limit_behavior"]
+  for _, rate_limit in ipairs(settings["rate_limits"]) do
+    -- These two settings act to disable IP vs API key limits depending on
+    -- whether or not anonymous users are allowed. So skip processing if either
+    -- setting is forcing this limit to be disabled in the current request's
+    -- context.
+    local limit_by = rate_limit["limit_by"]
+    if not ((limit_by == "api_key" and not user and anonymous_rate_limit_behavior == "ip_only") or (limit_by == "ip" and user and authenticated_rate_limit_behavior == "api_key_only")) then
+      table.insert(rate_limits, rate_limit)
+    end
+  end
+
   local self = {
     api = api,
     settings = settings,
     user = user,
     current_time = now(),
     bucket_name = get_bucket_name(api, settings),
-    rate_limits = settings["rate_limits"],
-    rate_limit_keys = table_new(0, #settings["rate_limits"]),
+    rate_limits = rate_limits,
+    rate_limit_keys = table_new(0, #rate_limits),
     remote_addr = remote_addr,
   }
 

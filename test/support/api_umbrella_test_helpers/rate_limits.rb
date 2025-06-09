@@ -2,59 +2,60 @@ module ApiUmbrellaTestHelpers
   module RateLimits
     private
 
-    def assert_api_key_rate_limit(path, limit, options = {})
-      assert_allows_up_to_limit_and_then_rejects(path, limit, options)
-      assert_counts_api_keys_separately(path, limit, options)
-      assert_rate_limit_headers(path, limit, options)
+    def assert_api_key_rate_limit(path, limit, **options)
+      assert_allows_up_to_limit_and_then_rejects(path, limit, **options)
+      assert_counts_api_keys_separately(path, limit, **options)
+      assert_rate_limit_headers(path, limit, **options)
     end
 
-    def assert_ip_rate_limit(path, limit, options = {})
-      assert_allows_up_to_limit_and_then_rejects(path, limit, options)
-      assert_counts_ips_separately(path, limit, options)
-      assert_rate_limit_headers(path, limit, options)
+    def assert_ip_rate_limit(path, limit, **options)
+      assert_allows_up_to_limit_and_then_rejects(path, limit, **options)
+      assert_counts_ips_separately(path, limit, **options)
+      assert_rate_limit_headers(path, limit, **options)
     end
 
-    def assert_unlimited_rate_limit(path, limit, options = {})
+    def assert_unlimited_rate_limit(path, limit, **options)
       options[:no_response_headers] = true
-      assert_can_exceed_limit(path, limit, options)
-      assert_rate_limit_headers(path, limit, options)
+      assert_can_exceed_limit(path, limit, **options)
+      assert_rate_limit_headers(path, limit, **options)
     end
 
-    def assert_allows_up_to_limit_and_then_rejects(path, limit, options = {})
-      api_key = create_api_key(options)
-      ip = next_unique_ip_addr
-      assert_under_rate_limit(path, limit, :api_key => api_key, :ip => ip)
-      assert_over_rate_limit(path, 1, :api_key => api_key, :ip => ip)
+    def assert_allows_up_to_limit_and_then_rejects(path, limit, **options)
+      options[:api_key] ||= create_api_key(**extract_create_api_key_options(options))
+      options[:ip] ||= next_unique_ip_addr
+      assert_under_rate_limit(path, limit, **options)
+      assert_over_rate_limit(path, 1, **options)
     end
 
-    def assert_can_exceed_limit(path, limit, options)
-      api_key = create_api_key(options)
-      ip = next_unique_ip_addr
-      assert_under_rate_limit(path, limit, :api_key => api_key, :ip => ip)
-      assert_under_rate_limit(path, 1, :api_key => api_key, :ip => ip)
+    def assert_can_exceed_limit(path, limit, **options)
+      options[:api_key] ||= create_api_key(**extract_create_api_key_options(options))
+      options[:ip] ||= next_unique_ip_addr
+      assert_under_rate_limit(path, limit, **options)
+      assert_under_rate_limit(path, 1, **options)
     end
 
-    def assert_counts_api_keys_separately(path, limit, options = {})
-      api_key = create_api_key(options)
-      ip = next_unique_ip_addr
-      assert_under_rate_limit(path, limit, :api_key => api_key, :ip => ip)
-      assert_over_rate_limit(path, 1, :api_key => api_key, :ip => next_unique_ip_addr)
-      assert_under_rate_limit(path, 1, :api_key => create_api_key(options), :ip => ip)
+    def assert_counts_api_keys_separately(path, limit, **options)
+      options[:api_key] ||= create_api_key(**extract_create_api_key_options(options))
+      options[:ip] ||= next_unique_ip_addr
+      assert_under_rate_limit(path, limit, **options)
+      assert_over_rate_limit(path, 1, **options, ip: next_unique_ip_addr)
+      assert_under_rate_limit(path, 1, **options, api_key: create_api_key(**extract_create_api_key_options(options)))
     end
 
-    def assert_counts_ips_separately(path, limit, options = {})
-      api_key = create_api_key(options)
-      ip = next_unique_ip_addr
-      assert_under_rate_limit(path, limit, :api_key => api_key, :ip => ip)
-      assert_over_rate_limit(path, 1, :api_key => create_api_key(options), :ip => ip)
-      assert_under_rate_limit(path, 1, :api_key => api_key, :ip => next_unique_ip_addr)
+    def assert_counts_ips_separately(path, limit, **options)
+      options[:api_key] ||= create_api_key(**extract_create_api_key_options(options))
+      options[:ip] ||= next_unique_ip_addr
+      assert_under_rate_limit(path, limit, **options)
+      assert_over_rate_limit(path, 1, **options, api_key: create_api_key(**extract_create_api_key_options(options)))
+      assert_under_rate_limit(path, 1, **options, ip: next_unique_ip_addr)
     end
 
-    def assert_rate_limit_headers(path, limit, options = {})
-      api_key = create_api_key(options)
-      response = make_requests(path, 1, :api_key => api_key, :ip => next_unique_ip_addr).first
+    def assert_rate_limit_headers(path, limit, no_response_headers: false, **options)
+      options[:api_key] ||= create_api_key(**extract_create_api_key_options(options))
+      options[:ip] ||= next_unique_ip_addr
+      response = make_requests(path, 1, **extract_make_requests_options(options)).first
 
-      if(options[:no_response_headers])
+      if no_response_headers
         refute(response.headers["x-ratelimit-limit"])
         refute(response.headers["x-ratelimit-remaining"])
         refute(response.headers["retry-after"])
@@ -75,54 +76,59 @@ module ApiUmbrellaTestHelpers
       end
     end
 
-    def assert_under_rate_limit(path, count, options = {})
-      responses = make_requests(path, count, options)
+    def assert_under_rate_limit(path, count, **options)
+      responses = make_requests(path, count, **extract_make_requests_options(options))
       responses.each do |response|
         assert_response_code(200, response)
         assert_equal("Hello World", response.body)
       end
     end
 
-    def assert_over_rate_limit(path, count, options = {})
-      responses = make_requests(path, count, options)
+    def assert_over_rate_limit(path, count, **options)
+      responses = make_requests(path, count, **extract_make_requests_options(options))
       responses.each do |response|
         assert_response_code(429, response)
         assert_match("OVER_RATE_LIMIT", response.body)
       end
     end
 
-    def create_api_key(options)
+    def extract_create_api_key_options(options)
+      options.slice(:omit_api_key, :user_factory_overrides)
+    end
+
+    def create_api_key(omit_api_key: false, user_factory_overrides: {})
       api_key = nil
-      unless(options[:omit_api_key])
-        options[:user_factory_overrides] ||= {}
-        api_key = FactoryBot.create(:api_user, options[:user_factory_overrides]).api_key
+      unless omit_api_key
+        api_key = FactoryBot.create(:api_user, user_factory_overrides).api_key
       end
 
       api_key
     end
 
-    def make_requests(path, count, options = {})
+    def extract_make_requests_options(options)
+      options.slice(:max_concurrency, :api_key, :ip, :time, :http_options)
+    end
+
+    def make_requests(path, count, max_concurrency: nil, api_key: nil, ip: nil, time: nil, http_options: nil)
       hydra_options = {}
-      if options[:max_concurrency]
-        hydra_options[:max_concurrency] = options.delete(:max_concurrency)
+      if max_concurrency
+        hydra_options[:max_concurrency] = max_concurrency
       end
 
       http_opts = keyless_http_options.deep_merge({
         :headers => {},
       })
-      if(options[:api_user])
-        http_opts[:headers]["X-Api-Key"] = options[:api_user].api_key
-      elsif(options[:api_key])
-        http_opts[:headers]["X-Api-Key"] = options[:api_key]
+      if api_key
+        http_opts[:headers]["X-Api-Key"] = api_key
       end
-      if(options[:ip])
-        http_opts[:headers]["X-Forwarded-For"] = options[:ip]
+      if ip
+        http_opts[:headers]["X-Forwarded-For"] = ip
       end
-      if(options[:time])
-        http_opts[:headers]["X-Fake-Time"] = options[:time].strftime("%s.%L")
+      if time
+        http_opts[:headers]["X-Fake-Time"] = time.strftime("%s.%L")
       end
-      if(options[:http_options])
-        http_opts.deep_merge!(options[:http_options])
+      if http_options
+        http_opts.deep_merge!(http_options)
       end
 
       hydra = Typhoeus::Hydra.new(hydra_options)

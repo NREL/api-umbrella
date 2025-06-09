@@ -224,13 +224,11 @@ class Test::Proxy::RateLimits::TestApiLimits < Minitest::Test
   end
 
   def test_user_with_empty_rate_limits_array
-    assert_api_key_rate_limit("/#{unique_test_class_id}/lower/hello", 3, {
-      :user_factory_overrides => {
-        :settings => FactoryBot.build(:api_user_settings, {
-          :rate_limit_mode => nil,
-          :rate_limits => [],
-        }),
-      },
+    assert_api_key_rate_limit("/#{unique_test_class_id}/lower/hello", 3, user_factory_overrides: {
+      :settings => FactoryBot.build(:api_user_settings, {
+        :rate_limit_mode => nil,
+        :rate_limits => [],
+      }),
     })
   end
 

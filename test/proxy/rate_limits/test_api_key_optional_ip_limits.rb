@@ -74,7 +74,13 @@ class Test::Proxy::RateLimits::TestApiKeyOptionalIpLimits < Minitest::Test
   end
 
   def test_default_authenticated_behavior_api_key_ommitted
-    assert_ip_rate_limit("/#{unique_test_class_id}/no-keys-default/hello", 5, :omit_api_key => true)
+    assert_ip_rate_limit("/#{unique_test_class_id}/no-keys-default/hello", 5, omit_api_key: true)
+  end
+
+  def test_default_authenticated_behavior_api_key_provided_same_ip_as_anonymous
+    ip = next_unique_ip_addr
+    assert_allows_up_to_limit_and_then_rejects("/#{unique_test_class_id}/no-keys-default/hello", 5, ip: ip, omit_api_key: true)
+    assert_allows_up_to_limit_and_then_rejects("/#{unique_test_class_id}/no-keys-default/hello", 0, ip: ip)
   end
 
   def test_all_authenticated_behavior_api_key_provided
@@ -82,14 +88,26 @@ class Test::Proxy::RateLimits::TestApiKeyOptionalIpLimits < Minitest::Test
   end
 
   def test_all_authenticated_behavior_api_key_ommitted
-    assert_ip_rate_limit("/#{unique_test_class_id}/no-keys-authenticated-all/hello", 5, :omit_api_key => true)
+    assert_ip_rate_limit("/#{unique_test_class_id}/no-keys-authenticated-all/hello", 5, omit_api_key: true)
+  end
+
+  def test_all_authenticated_behavior_api_key_provided_same_ip_as_anonymous
+    ip = next_unique_ip_addr
+    assert_allows_up_to_limit_and_then_rejects("/#{unique_test_class_id}/no-keys-authenticated-all/hello", 5, ip: ip, omit_api_key: true)
+    assert_allows_up_to_limit_and_then_rejects("/#{unique_test_class_id}/no-keys-authenticated-all/hello", 0, ip: ip)
   end
 
   def test_api_key_only_authenticated_behavior_api_key_provided
-    assert_api_key_rate_limit("/#{unique_test_class_id}/no-keys-authenticated-api-key-only/hello", 7, :no_response_headers => true)
+    assert_api_key_rate_limit("/#{unique_test_class_id}/no-keys-authenticated-api-key-only/hello", 7, no_response_headers: true)
   end
 
   def test_api_key_only_authenticated_behavior_api_key_ommitted
-    assert_ip_rate_limit("/#{unique_test_class_id}/no-keys-authenticated-api-key-only/hello", 5, :omit_api_key => true)
+    assert_ip_rate_limit("/#{unique_test_class_id}/no-keys-authenticated-api-key-only/hello", 5, omit_api_key: true)
+  end
+
+  def test_api_key_only_authenticated_behavior_api_key_provided_same_ip_as_anonymous
+    ip = next_unique_ip_addr
+    assert_allows_up_to_limit_and_then_rejects("/#{unique_test_class_id}/no-keys-authenticated-api-key-only/hello", 5, ip: ip, omit_api_key: true)
+    assert_allows_up_to_limit_and_then_rejects("/#{unique_test_class_id}/no-keys-authenticated-api-key-only/hello", 7, ip: ip)
   end
 end

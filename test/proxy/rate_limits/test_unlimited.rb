@@ -40,12 +40,10 @@ class Test::Proxy::RateLimits::TestUnlimited < Minitest::Test
   end
 
   def test_user_with_settings_but_null_rate_limit_mode
-    assert_unlimited_rate_limit("/api/hello", 5, {
-      :user_factory_overrides => {
-        :settings => FactoryBot.build(:api_user_settings, {
-          :rate_limit_mode => nil,
-        }),
-      },
+    assert_unlimited_rate_limit("/api/hello", 5, user_factory_overrides: {
+      :settings => FactoryBot.build(:api_user_settings, {
+        :rate_limit_mode => nil,
+      }),
     })
   end
 end
