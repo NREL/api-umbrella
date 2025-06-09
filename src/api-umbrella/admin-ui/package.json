@@ -25,7 +25,7 @@
     "test:ember": "ember test"
   },
   "devDependencies": {
-    "@babel/eslint-parser": "^7.27.1",
+    "@babel/eslint-parser": "^7.27.5",
     "@babel/plugin-proposal-decorators": "^7.27.1",
     "@ember/jquery": "^2.0.0",
     "@ember/optional-features": "^2.2.0",
@@ -108,7 +108,7 @@
     "prettier": "^2.8.8",
     "qunit": "^2.24.1",
     "qunit-dom": "^2.0.0",
-    "sass": "^1.89.0",
+    "sass": "^1.89.1",
     "selectize": "~0.12.6",
     "stylelint": "^15.11.0",
     "stylelint-config-standard": "^32.0.0",
