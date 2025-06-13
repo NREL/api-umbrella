@@ -74,7 +74,13 @@ class Test::Proxy::RateLimits::TestApiKeyOptionalApiKeyLimits < Minitest::Test
   end
 
   def test_default_anonymous_behavior_api_key_ommitted
-    assert_ip_rate_limit("/#{unique_test_class_id}/no-keys-default/hello", 5, :omit_api_key => true)
+    assert_ip_rate_limit("/#{unique_test_class_id}/no-keys-default/hello", 5, omit_api_key: true)
+  end
+
+  def test_default_anonymous_behavior_api_key_provided_same_ip_as_anonymous
+    ip = next_unique_ip_addr
+    assert_allows_up_to_limit_and_then_rejects("/#{unique_test_class_id}/no-keys-default/hello", 5, ip: ip)
+    assert_allows_up_to_limit_and_then_rejects("/#{unique_test_class_id}/no-keys-default/hello", 2, ip: ip, omit_api_key: true)
   end
 
   def test_ip_fallback_anonymous_behavior_api_key_provided
@@ -82,7 +88,13 @@ class Test::Proxy::RateLimits::TestApiKeyOptionalApiKeyLimits < Minitest::Test
   end
 
   def test_ip_fallback_anonymous_behavior_api_key_ommitted
-    assert_ip_rate_limit("/#{unique_test_class_id}/no-keys-ip-fallback/hello", 5, :omit_api_key => true)
+    assert_ip_rate_limit("/#{unique_test_class_id}/no-keys-ip-fallback/hello", 5, omit_api_key: true)
+  end
+
+  def test_ip_fallback_anonymous_behavior_api_key_provided_same_ip_as_anonymous
+    ip = next_unique_ip_addr
+    assert_allows_up_to_limit_and_then_rejects("/#{unique_test_class_id}/no-keys-ip-fallback/hello", 5, ip: ip)
+    assert_allows_up_to_limit_and_then_rejects("/#{unique_test_class_id}/no-keys-ip-fallback/hello", 2, ip: ip, omit_api_key: true)
   end
 
   def test_ip_only_anonymous_behavior_api_key_provided
@@ -90,6 +102,12 @@ class Test::Proxy::RateLimits::TestApiKeyOptionalApiKeyLimits < Minitest::Test
   end
 
   def test_ip_only_anonymous_behavior_api_key_ommitted
-    assert_ip_rate_limit("/#{unique_test_class_id}/no-keys-ip-only/hello", 7, :omit_api_key => true, :no_response_headers => true)
+    assert_ip_rate_limit("/#{unique_test_class_id}/no-keys-ip-only/hello", 7, omit_api_key: true, no_response_headers: true)
+  end
+
+  def test_ip_only_anonymous_behavior_api_key_provided_same_ip_as_anonymous
+    ip = next_unique_ip_addr
+    assert_allows_up_to_limit_and_then_rejects("/#{unique_test_class_id}/no-keys-ip-only/hello", 5, ip: ip)
+    assert_allows_up_to_limit_and_then_rejects("/#{unique_test_class_id}/no-keys-ip-only/hello", 2, ip: ip, omit_api_key: true)
   end
 end

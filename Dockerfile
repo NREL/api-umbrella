@@ -40,7 +40,6 @@ COPY src/api-umbrella-git-1.rockspec src/luarocks.lock /app/src/
 COPY tasks/deps/luarocks /app/tasks/deps/
 RUN make deps:luarocks && make clean:dev
 
-COPY tasks/build-deps/crane /app/tasks/build-deps/
 COPY tasks/deps/envoy /app/tasks/deps/
 RUN make deps:envoy && make clean:dev
 

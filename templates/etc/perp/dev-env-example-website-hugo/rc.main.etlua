@@ -22,8 +22,7 @@ if [ "${1}" = "start" ]; then
       --port "<%- config['static_site']['port'] %>" \
       --logLevel info \
       --baseURL "https://localhost:<%- config['https_port'] %>/" \
-      --appendPort=false \
-      --debug
+      --appendPort=false
 fi
 
 exit 0

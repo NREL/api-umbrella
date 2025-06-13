@@ -158,7 +158,7 @@ module Minitest
         ::Capybara.use_default_driver
 
         # Inspect the gathered logs and fail if there are any error level logs.
-        error_logs = $selenium_logs.filter { |log| log.fetch("level") == "error" } # rubocop:disable Style/GlobalVars
+        error_logs = $selenium_logs.filter { |log| log.level == "error" } # rubocop:disable Style/GlobalVars
         # Fail tests if JavaScript errors were generated during the tests.
         assert_equal([], error_logs) # rubocop:disable Minitest/AssertionInLifecycleHook
 

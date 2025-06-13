@@ -1,6 +1,7 @@
 inherit_from: ../.rubocop.yml
 
-require: rubocop-minitest
+plugins:
+  - rubocop-minitest
 
 Minitest/AssertEmptyLiteral:
   Enabled: false

@@ -36,38 +36,32 @@ class Test::Proxy::RateLimits::TestUserLimits < Minitest::Test
   end
 
   def test_user_throttle_by_ip
-    assert_ip_rate_limit("/api/hello", 5, {
-      :user_factory_overrides => {
-        :throttle_by_ip => true,
-      },
+    assert_ip_rate_limit("/api/hello", 5, user_factory_overrides: {
+      :throttle_by_ip => true,
     })
   end
 
   def test_user_unlimited
-    assert_unlimited_rate_limit("/api/hello", 5, {
-      :user_factory_overrides => {
-        :settings => FactoryBot.build(:api_user_settings, {
-          :rate_limit_mode => "unlimited",
-        }),
-      },
+    assert_unlimited_rate_limit("/api/hello", 5, user_factory_overrides: {
+      :settings => FactoryBot.build(:api_user_settings, {
+        :rate_limit_mode => "unlimited",
+      }),
     })
   end
 
   def test_user_custom_limit
-    assert_api_key_rate_limit("/api/hello", 10, {
-      :user_factory_overrides => {
-        :settings => FactoryBot.build(:api_user_settings, {
-          :rate_limits => [
-            FactoryBot.build(:rate_limit, {
-              :duration => 60 * 60 * 1000, # 1 hour
-              :limit_by => "api_key",
-              :limit_to => 10,
-              :distributed => true,
-              :response_headers => true,
-            }),
-          ],
-        }),
-      },
+    assert_api_key_rate_limit("/api/hello", 10, user_factory_overrides: {
+      :settings => FactoryBot.build(:api_user_settings, {
+        :rate_limits => [
+          FactoryBot.build(:rate_limit, {
+            :duration => 60 * 60 * 1000, # 1 hour
+            :limit_by => "api_key",
+            :limit_to => 10,
+            :distributed => true,
+            :response_headers => true,
+          }),
+        ],
+      }),
     })
   end
 

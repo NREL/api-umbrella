@@ -41,7 +41,7 @@ class Test::Proxy::RateLimits::TestMultipleLimitsResponseHeadersSecond < Minites
   end
 
   def test_returns_limit_header_even_when_first_limit_is_exceeded
-    responses = make_requests("/api/hello", 15, :api_key => FactoryBot.create(:api_user).api_key, :max_concurrency => 1)
+    responses = make_requests("/api/hello", 15, api_key: FactoryBot.create(:api_user).api_key, max_concurrency: 1)
 
     response_codes = responses.map { |r| r.code }
     oks = response_codes.select { |c| c == 200 }.length

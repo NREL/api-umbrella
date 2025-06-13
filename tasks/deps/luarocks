@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 
-luarocks_version="3.11.1"
-luarocks_hash="db2988ee6424337571701f3ec7c8e221"
+luarocks_version="3.12.0"
+luarocks_hash="3d4c8acddf9b975e77da68cbf748d5baf483d0b6e9d703a844882db25dd61cdf"
 
 set -e -u -x
 source ./tasks/helpers.sh
 
 task_working_dir
-download "http://luarocks.org/releases/luarocks-$luarocks_version.tar.gz" "md5" "$luarocks_hash"
+download "https://luarocks.github.io/luarocks/releases/luarocks-$luarocks_version.tar.gz" "sha256" "$luarocks_hash"
 extract_download "luarocks-$luarocks_version.tar.gz"
 
 cd "luarocks-$luarocks_version"
