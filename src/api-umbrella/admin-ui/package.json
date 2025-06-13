@@ -32,6 +32,7 @@
     "@ember/render-modifiers": "^2.1.0",
     "@ember/string": "^3.1.1",
     "@ember/test-helpers": "^2.9.6",
+    "@embroider/macros": "~1.16.13",
     "@fortawesome/ember-fontawesome": "^1.0.3",
     "@fortawesome/fontawesome-svg-core": "^6.7.2",
     "@fortawesome/free-regular-svg-icons": "^6.7.2",
