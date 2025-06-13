@@ -25,6 +25,7 @@ class Outdated < Thor
     },
     "fluent_bit" => {
       :git => "https://github.com/fluent/fluent-bit.git",
+      :constraint => "~> 3.2.10",
       :download => "https://github.com/fluent/fluent-bit/archive/refs/tags/v<%= version.fetch(:wanted_version) %>.tar.gz",
     },
     "glauth" => {
@@ -89,6 +90,8 @@ class Outdated < Thor
     "trafficserver" => {
       :http => "https://archive.apache.org/dist/trafficserver/",
       :constraint => "~> 9.1.0",
+      :checksums_download => "https://archive.apache.org/dist/trafficserver/trafficserver-<%= version.fetch(:wanted_version) %>.tar.bz2.sha512",
+      :filename_matcher => /trafficserver.*\.tar\.bz2/,
     },
   }.freeze
 
@@ -174,6 +177,7 @@ class Outdated < Thor
 
       amd64_hash = nil
       arm64_hash = nil
+      source_hash = nil
 
       if repo[:github_release]
         release_json_path = tmp_dir.join("github_release.json")
@@ -220,6 +224,8 @@ class Outdated < Thor
               amd64_hash = parts.first
             elsif line.match?(/linux.*(arm64|aarch_?64)/i)
               arm64_hash = parts.first
+            else
+              source_hash = parts.first
             end
           end
         end
