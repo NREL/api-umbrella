@@ -3,10 +3,10 @@
 set -e -u -x
 source ./tasks/helpers.sh
 
-cue_version="0.13.1"
-cue_hash="74e84f705af23d521895acfcd782bd75457616b6ce9507525345c6941e295c1a"
+cue_version="0.13.2"
+cue_hash="a3a48787bdf5d4ffa8ce36d5a015e2badc5963eebb578fdefea3befc9e4befb9"
 if [ "$TARGETARCH" == "arm64" ]; then
-  cue_hash="33ac30f7183fe72c913981a97b6de0c7d9a49555155dcca0fb85345125ad75b7"
+  cue_hash="999e81961cf4f3d5eaeb886413d9e36dca064e7f0578f95029545bfccd1a6e7a"
 fi
 
 task_working_dir

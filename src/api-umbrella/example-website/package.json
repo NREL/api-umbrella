@@ -5,8 +5,8 @@
     "prettier:check": "prettier --check ."
   },
   "dependencies": {
-    "a11y-dialog": "^8.1.3",
-    "bootstrap": "^5.3.6",
+    "a11y-dialog": "^8.1.4",
+    "bootstrap": "^5.3.7",
     "escape-html": "^1.0.3",
     "form-serialize": "^0.7.2",
     "promise-polyfill": "^8.3.0",
@@ -15,9 +15,9 @@
   "devDependencies": {
     "eslint": "^8.57.1",
     "eslint-config-airbnb-base": "^15.0.0",
-    "eslint-config-prettier": "^9.1.0",
-    "eslint-plugin-import": "^2.31.0",
-    "prettier": "^3.5.3",
+    "eslint-config-prettier": "^9.1.2",
+    "eslint-plugin-import": "^2.32.0",
+    "prettier": "^3.6.2",
     "prettier-plugin-go-template": "^0.0.15"
   }
 }

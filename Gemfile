@@ -3,7 +3,7 @@ source "https://rubygems.org"
 ruby "~> 3.1"
 
 # Task runner
-gem "thor", "~> 1.3.0"
+gem "thor", "~> 1.4.0"
 
 # Tests
 gem "minitest", "~> 5.25.1"
@@ -34,7 +34,7 @@ gem "childprocess"
 gem "typhoeus", "~> 1.4.0"
 
 # JSON parsing
-gem "multi_json", "~> 1.15.0"
+gem "multi_json", "~> 1.17.0"
 gem "oj", "~> 3.10"
 
 # Database libraries

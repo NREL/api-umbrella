@@ -25,8 +25,8 @@
     "test:ember": "ember test"
   },
   "devDependencies": {
-    "@babel/eslint-parser": "^7.27.5",
-    "@babel/plugin-proposal-decorators": "^7.27.1",
+    "@babel/eslint-parser": "^7.28.0",
+    "@babel/plugin-proposal-decorators": "^7.28.0",
     "@ember/jquery": "^2.0.0",
     "@ember/optional-features": "^2.2.0",
     "@ember/render-modifiers": "^2.1.0",
@@ -86,10 +86,10 @@
     "ember-template-lint": "^5.13.0",
     "ember-truth-helpers": "^4.0.3",
     "eslint": "^8.57.1",
-    "eslint-config-prettier": "^8.10.0",
+    "eslint-config-prettier": "^8.10.2",
     "eslint-plugin-ember": "^11.12.0",
     "eslint-plugin-n": "^15.7.0",
-    "eslint-plugin-prettier": "^4.2.1",
+    "eslint-plugin-prettier": "^4.2.5",
     "eslint-plugin-qunit": "^7.3.4",
     "eslint-plugin-simple-import-sort": "^10.0.0",
     "html5sortable": "^0.13.3",
@@ -117,7 +117,7 @@
     "timekeeper": "^2.3.1",
     "tippy.js": "~6.3.7",
     "tracked-built-ins": "^3.4.0",
-    "webpack": "^5.99.9"
+    "webpack": "^5.100.2"
   },
   "engines": {
     "node": "14.* || 16.* || >= 18"
