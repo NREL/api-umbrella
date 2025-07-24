@@ -2,7 +2,7 @@ local config = require("api-umbrella.utils.load_config")()
 local int64 = require "api-umbrella.utils.int64"
 local is_empty = require "api-umbrella.utils.is_empty"
 local lrucache = require "resty.lrucache.pureffi"
-local pg_utils = require "api-umbrella.utils.pg_utils"
+local pg_utils_query = require("api-umbrella.utils.pg_utils").query
 local shared_dict_retry = require "api-umbrella.utils.shared_dict_retry"
 local split = require("pl.utils").split
 local table_clear = require "table.clear"
@@ -11,7 +11,6 @@ local table_new = require "table.new"
 
 local ceil = math.ceil
 local counters_dict = ngx.shared.rate_limit_counters
-local cursor = pg_utils.cursor
 local exceeded_dict = ngx.shared.rate_limit_exceeded
 local floor = math.floor
 local int64_min_value_string = int64.MIN_VALUE_STRING
@@ -19,7 +18,6 @@ local int64_to_string = int64.to_string
 local jobs_dict = ngx.shared.jobs
 local ngx_var = ngx.var
 local now = ngx.now
-local query = pg_utils.query
 local shared_dict_retry_incr = shared_dict_retry.incr
 local shared_dict_retry_set = shared_dict_retry.set
 
@@ -335,7 +333,7 @@ function _M.distributed_push()
     local period_start_time = tonumber(key_parts[5])
     local expires_at = ceil(period_start_time + duration * 2 + 1)
 
-    local result, err = query("INSERT INTO distributed_rate_limit_counters(id, value, expires_at) VALUES(:id, :value, to_timestamp(:expires_at)) ON CONFLICT (id) DO UPDATE SET value = distributed_rate_limit_counters.value + EXCLUDED.value", {
+    local result, err = pg_utils_query("INSERT INTO distributed_rate_limit_counters(id, value, expires_at) VALUES(:id, :value, to_timestamp(:expires_at)) ON CONFLICT (id) DO UPDATE SET value = distributed_rate_limit_counters.value + EXCLUDED.value", {
       id = key,
       value = count,
       expires_at = expires_at,
@@ -375,65 +373,57 @@ function _M.distributed_pull()
   -- cycle and start over with negative values. Since the data in this table
   -- expires, there shouldn't be any duplicate version numbers by the time the
   -- sequence cycles.
-  --
-  -- Loop over results in a cursor to prevent large batches of
-  -- changes/insertions from consuming lots of local memory.
-  local select_sql = "SELECT id, version, value, extract(epoch FROM expires_at) AS expires_at FROM distributed_rate_limit_counters WHERE version > LEAST(:version, (SELECT last_value - 1 FROM distributed_rate_limit_counters_version_seq)) AND expires_at >= now() ORDER BY version DESC"
-  local select_values = { version = last_fetched_version }
-  local new_last_fetched_version
-  local _, cursor_err = cursor(select_sql, select_values, 1000, { quiet = true }, function(results)
-    for _, row in ipairs(results) do
-      if not new_last_fetched_version then
-        new_last_fetched_version = int64_to_string(row["version"])
-      end
-
-      local key = row["id"]
-      local distributed_count = row["value"]
-      local local_count, local_count_err = counters_dict:get(key)
-      if not local_count then
-        if local_count_err then
-          ngx.log(ngx.ERR, "Error fetching rate limit counter: ", local_count_err)
-        end
-
-        local_count = 0
-      end
-
-      if distributed_count > local_count then
-        local ttl = ceil(row["expires_at"] - current_fetch_time)
-        if ttl < 0 then
-          ngx.log(ngx.ERR, "distributed_rate_limit_puller ttl unexpectedly less than 0 (key: " .. key .. " ttl: " .. ttl .. ")")
-          ttl = 60
-        end
-
-        local incr = distributed_count - local_count
-        local _, incr_err, incr_forcible = shared_dict_retry_incr(counters_dict, key, incr, 0, ttl)
-        if incr_err then
-          ngx.log(ngx.ERR, "failed to increment counters shared dict: ", incr_err)
-        elseif incr_forcible then
-          ngx.log(ngx.WARN, "forcibly set counter in 'rate_limit_counters' shared dict (shared dict may be too small)")
-        end
-      end
-    end
-  end)
-  if cursor_err then
-    ngx.log(ngx.ERR, "cursor error: ", cursor_err)
-    return
+  local results, err = pg_utils_query("SELECT id, version, value, extract(epoch FROM expires_at) AS expires_at FROM distributed_rate_limit_counters WHERE version > LEAST(:version, (SELECT last_value - 1 FROM distributed_rate_limit_counters_version_seq)) AND expires_at >= now() ORDER BY version DESC", { version = last_fetched_version }, { quiet = true })
+  if not results then
+    ngx.log(ngx.ERR, "failed to fetch rate limits from database: ", err)
+    return nil
   end
 
-  if new_last_fetched_version then
-    local set_ok, set_err, set_forcible = shared_dict_retry_set(jobs_dict, "rate_limit_counters_store_distributed_last_fetched_version", last_fetched_version)
-    if not set_ok then
-      ngx.log(ngx.ERR, "failed to set 'rate_limit_counters_store_distributed_last_fetched_version' in 'jobs' shared dict: ", set_err)
-    elseif set_forcible then
-      ngx.log(ngx.WARN, "forcibly set 'rate_limit_counters_store_distributed_last_fetched_version' in 'jobs' shared dict (shared dict may be too small)")
+  for index, row in ipairs(results) do
+    if index == 1 then
+      last_fetched_version = int64_to_string(row["version"])
     end
 
-    set_ok, set_err, set_forcible = shared_dict_retry_set(jobs_dict, "rate_limit_counters_store_distributed_last_pulled_at", current_fetch_time * 1000)
-    if not set_ok then
-      ngx.log(ngx.ERR, "failed to set 'rate_limit_counters_store_distributed_last_pulled_at' in 'jobs' shared dict: ", set_err)
-    elseif set_forcible then
-      ngx.log(ngx.WARN, "forcibly set 'rate_limit_counters_store_distributed_last_pulled_at' in 'jobs' shared dict (shared dict may be too small)")
+    local key = row["id"]
+    local distributed_count = row["value"]
+    local local_count, local_count_err = counters_dict:get(key)
+    if not local_count then
+      if local_count_err then
+        ngx.log(ngx.ERR, "Error fetching rate limit counter: ", local_count_err)
+      end
+
+      local_count = 0
     end
+
+    if distributed_count > local_count then
+      local ttl = ceil(row["expires_at"] - current_fetch_time)
+      if ttl < 0 then
+        ngx.log(ngx.ERR, "distributed_rate_limit_puller ttl unexpectedly less than 0 (key: " .. key .. " ttl: " .. ttl .. ")")
+        ttl = 60
+      end
+
+      local incr = distributed_count - local_count
+      local _, incr_err, incr_forcible = shared_dict_retry_incr(counters_dict, key, incr, 0, ttl)
+      if incr_err then
+        ngx.log(ngx.ERR, "failed to increment counters shared dict: ", incr_err)
+      elseif incr_forcible then
+        ngx.log(ngx.WARN, "forcibly set counter in 'rate_limit_counters' shared dict (shared dict may be too small)")
+      end
+    end
+  end
+
+  local set_ok, set_err, set_forcible = shared_dict_retry_set(jobs_dict, "rate_limit_counters_store_distributed_last_fetched_version", last_fetched_version)
+  if not set_ok then
+    ngx.log(ngx.ERR, "failed to set 'rate_limit_counters_store_distributed_last_fetched_version' in 'jobs' shared dict: ", set_err)
+  elseif set_forcible then
+    ngx.log(ngx.WARN, "forcibly set 'rate_limit_counters_store_distributed_last_fetched_version' in 'jobs' shared dict (shared dict may be too small)")
+  end
+
+  set_ok, set_err, set_forcible = shared_dict_retry_set(jobs_dict, "rate_limit_counters_store_distributed_last_pulled_at", current_fetch_time * 1000)
+  if not set_ok then
+    ngx.log(ngx.ERR, "failed to set 'rate_limit_counters_store_distributed_last_pulled_at' in 'jobs' shared dict: ", set_err)
+  elseif set_forcible then
+    ngx.log(ngx.WARN, "forcibly set 'rate_limit_counters_store_distributed_last_pulled_at' in 'jobs' shared dict (shared dict may be too small)")
   end
 end
 
