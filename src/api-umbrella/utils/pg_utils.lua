@@ -144,14 +144,10 @@ function _M.setup_type_casting(pg)
   pg:set_type_deserializer(1041, "array_string")
 end
 
-function _M.setup_socket_timeouts(pg, statement_timeout)
-  if not statement_timeout then
-    statement_timeout = config["postgresql"]["statement_timeout"]
-  end
-
-  -- Set socket timeouts based on the postgresql statement timeout, but defer
-  -- to the statement timeout for better cleanup.
-  local send_read_timeout = statement_timeout + 5000
+function _M.setup_socket_timeouts(pg)
+  -- We'll assume statement_timeout should take precedence, so set a much
+  -- longer socket timeout to work with any customized statement timeout.
+  local send_read_timeout = 10 * 60 * 1000 -- 10 minutes
 
   pg.sock:settimeouts(config["postgresql"]["connect_timeout"], send_read_timeout, send_read_timeout)
 end
@@ -224,13 +220,7 @@ function _M.query(query, values, options)
   end
 
   -- Allow custom timeouts to be specified for individual queries.
-  --
-  -- Note: Because the socket is actually shared, only longer timeout should
-  -- probably be passed in here, since otherwise, this timeout may still apply
-  -- on this same socket from other async queries happening.
   if options and options["statement_timeout"] then
-    _M.setup_socket_timeouts(pg, options["statement_timeout"])
-
     local timeout_result, timeout_err = pg:query("SET SESSION statement_timeout = " .. _M.escape_literal(options["statement_timeout"] .. "ms"))
     if not timeout_result then
       ngx.log(ngx.ERR, "postgresql query error: ", timeout_err)
@@ -277,8 +267,6 @@ function _M.query(query, values, options)
 
   -- If custom timeouts were specified, revert back to default timeouts.
   if options and options["statement_timeout"] then
-    _M.setup_socket_timeouts(pg)
-
     local timeout_result, timeout_err = pg:query("SET SESSION statement_timeout = " .. _M.escape_literal(config["postgresql"]["statement_timeout"] .. "ms"))
     if not timeout_result then
       ngx.log(ngx.ERR, "postgresql query error: ", timeout_err)
