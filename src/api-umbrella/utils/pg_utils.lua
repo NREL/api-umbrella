@@ -163,7 +163,7 @@ function _M.setup_session_vars(pg, application_name)
     "SET SESSION timezone = 'UTC'",
 
     -- Define statement timeout to prevent accidental long-running queries.
-    "SET SESSION statement_timeout = " .. _M.escape_literal(config["postgresql"]["statement_timeout"] .. "ms"),
+    -- "SET SESSION statement_timeout = " .. _M.escape_literal(config["postgresql"]["statement_timeout"] .. "ms"),
   }
   _M.query(table.concat(queries, "; "), nil, {
     pg = pg,
@@ -220,12 +220,12 @@ function _M.query(query, values, options)
   end
 
   -- Allow custom timeouts to be specified for individual queries.
-  if options and options["statement_timeout"] then
-    local timeout_result, timeout_err = pg:query("SET SESSION statement_timeout = " .. _M.escape_literal(options["statement_timeout"] .. "ms"))
-    if not timeout_result then
-      ngx.log(ngx.ERR, "postgresql query error: ", timeout_err)
-    end
-  end
+  -- if options and options["statement_timeout"] then
+  --   local timeout_result, timeout_err = pg:query("SET SESSION statement_timeout = " .. _M.escape_literal(options["statement_timeout"] .. "ms"))
+  --   if not timeout_result then
+  --     ngx.log(ngx.ERR, "postgresql query error: ", timeout_err)
+  --   end
+  -- end
 
   if values then
     local escaped_values = {}
@@ -266,12 +266,12 @@ function _M.query(query, values, options)
   end
 
   -- If custom timeouts were specified, revert back to default timeouts.
-  if options and options["statement_timeout"] then
-    local timeout_result, timeout_err = pg:query("SET SESSION statement_timeout = " .. _M.escape_literal(config["postgresql"]["statement_timeout"] .. "ms"))
-    if not timeout_result then
-      ngx.log(ngx.ERR, "postgresql query error: ", timeout_err)
-    end
-  end
+  -- if options and options["statement_timeout"] then
+  --   local timeout_result, timeout_err = pg:query("SET SESSION statement_timeout = " .. _M.escape_literal(config["postgresql"]["statement_timeout"] .. "ms"))
+  --   if not timeout_result then
+  --     ngx.log(ngx.ERR, "postgresql query error: ", timeout_err)
+  --   end
+  -- end
 
   if not options or not options["skip_keepalive"] then
     local keepalive_ok, keepalive_err = pg:keepalive()
