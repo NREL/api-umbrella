@@ -181,6 +181,13 @@ local function before_filter(self)
   self.res.headers["Cache-Control"] = "no-cache, max-age=0, must-revalidate, no-store"
   self.res.headers["Pragma"] = "no-cache"
 
+  -- Note that ngx.ctx.pgmoon will only be set after running the db.query, so
+  -- that's why we execute a dummy query once. If this issue gets addressed
+  -- there might be a better way to access the underlying pgmoon object from
+  -- Lapis: https://github.com/leafo/lapis/issues/565
+  db.query("SELECT 1")
+  pg_utils.setup_type_casting(ngx.ctx.pgmoon)
+
   -- Set session variables for the database connection (always use UTC and set
   -- an app name for auditing).
   --
@@ -188,15 +195,8 @@ local function before_filter(self)
   -- the socket is reused), but Lapi's "db" instance doesn't have a way to get
   -- the underlying pgmoon connection before executing a query (the connection
   -- is lazily established after the first query).
-  db.query("SET search_path = api_umbrella, public")
-  db.query("SET SESSION audit.application_name = 'api-umbrella-web-app'")
-  db.query("SET SESSION timezone = 'UTC'")
-
-  -- Note that ngx.ctx.pgmoon will only be set after running the db.query
-  -- above. If this issue gets addressed there might be a better way to access
-  -- the underlying pgmoon object from Lapis:
-  -- https://github.com/leafo/lapis/issues/565
-  pg_utils.setup_type_casting(ngx.ctx.pgmoon)
+  pg_utils.setup_socket_timeouts(ngx.ctx.pgmoon)
+  pg_utils.setup_session_vars(ngx.ctx.pgmoon, "api-umbrella-web-app")
 
   ngx.ctx.locale = http_headers.preferred_accept_language(ngx.var.http_accept_language, supported_languages)
   self.t = function(_, message)

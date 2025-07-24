@@ -487,6 +487,8 @@ import "path"
     ssl: bool | *false
     ssl_verify: bool | *false
     ssl_required: bool | *false
+    connect_timeout: uint | *5000
+    statement_timeout: uint | *30000
     migrations: {
       username: string | *"api_umbrella_owner"
       password?: string
