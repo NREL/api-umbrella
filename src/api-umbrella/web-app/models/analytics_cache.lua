@@ -33,7 +33,10 @@ AnalyticsCache.id_datas_exists = function(_, id_datas)
   ]]
   return pg_utils.query(sql, {
     id_datas = json_encode(id_datas),
-  }, { fatal = true })
+  }, {
+    fatal = true,
+    statement_timeout = 5 * 60 * 1000, -- 5 minutes
+  })
 end
 
 AnalyticsCache.upsert = function(_, id_data, data, expires_at)
@@ -41,14 +44,20 @@ AnalyticsCache.upsert = function(_, id_data, data, expires_at)
     id_data = json_encode(id_data),
     data = json_encode(data),
     expires_at = time.timestamp_to_iso8601(expires_at),
-  }, { fatal = true })[1]
+  }, {
+    fatal = true,
+    statement_timeout = 5 * 60 * 1000, -- 5 minutes
+  })[1]
 end
 
 AnalyticsCache.update_expires_at = function(_, ids, expires_at)
   return pg_utils.query("UPDATE analytics_cache SET expires_at = :expires_at WHERE id IN :ids", {
     ids = pg_utils.list(ids),
     expires_at = time.timestamp_to_iso8601(expires_at),
-  }, { fatal = true })
+  }, {
+    fatal = true,
+    statement_timeout = 5 * 60 * 1000, -- 5 minutes
+  })
 end
 
 return AnalyticsCache
