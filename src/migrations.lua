@@ -1539,4 +1539,16 @@ return {
     db.query(grants_sql)
     db.query("COMMIT")
   end,
+
+  [1753472899] = function()
+    db.query("BEGIN")
+
+    db.query([[
+      ALTER TABLE analytics_cities
+        ALTER COLUMN region TYPE varchar(3)
+    ]])
+
+    db.query(grants_sql)
+    db.query("COMMIT")
+  end,
 }

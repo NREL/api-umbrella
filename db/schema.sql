@@ -776,7 +776,7 @@ CREATE TABLE api_umbrella.analytics_cache (
 CREATE TABLE api_umbrella.analytics_cities (
     id integer NOT NULL,
     country character varying(2) NOT NULL,
-    region character varying(2),
+    region character varying(3),
     city character varying(200),
     location point NOT NULL,
     created_at timestamp with time zone DEFAULT transaction_timestamp() NOT NULL,
@@ -2819,3 +2819,4 @@ INSERT INTO api_umbrella.lapis_migrations (name) VALUES ('1700346585');
 INSERT INTO api_umbrella.lapis_migrations (name) VALUES ('1701483732');
 INSERT INTO api_umbrella.lapis_migrations (name) VALUES ('1721347955');
 INSERT INTO api_umbrella.lapis_migrations (name) VALUES ('1738353016');
+INSERT INTO api_umbrella.lapis_migrations (name) VALUES ('1753472899');

@@ -203,6 +203,25 @@ class Test::Proxy::Logging::TestIpGeocoding < Minitest::Test
     })
   end
 
+  def test_3_character_region_code
+    response = Typhoeus.get("http://127.0.0.1:9080/api/hello", log_http_options.deep_merge({
+      :headers => {
+        "X-Forwarded-For" => "81.2.69.142",
+      },
+    }))
+    assert_response_code(200, response)
+
+    record = wait_for_log(response)[:hit_source]
+    assert_geocode(record, {
+      :ip => "81.2.69.142",
+      :country => "GB",
+      :region => "ENG",
+      :city => "London",
+      :lat => 51.5142,
+      :lon => -0.0931,
+    })
+  end
+
   def test_custom_country_anonymous_proxy
     override_config({
       "geoip" => {
