@@ -4,6 +4,8 @@ local geoip_download_if_missing_or_old = require("api-umbrella.utils.geoip").dow
 local shell_blocking_capture_combined = require("shell-games").capture_combined
 local unistd = require "posix.unistd"
 
+local sleep = ngx.sleep
+
 local function permission_check()
   local effective_uid = unistd.geteuid()
   if config["user"] then
@@ -57,9 +59,20 @@ local function ensure_geoip_db()
   config["geoip"]["_enabled"] = false
   config["geoip"]["_auto_updater_enabled"] = false
 
-  local _, err = geoip_download_if_missing_or_old(config)
-  if err then
-    ngx.log(ngx.ERR, "geoip database download failed: ", err)
+  -- Try to wait for geoip to download, since there may be race conditions on
+  -- startup in downloading via http proxy that's also starting up.
+  local _
+  local geoip_err
+  local timeout_at = ngx.now() + 60
+  repeat
+    _, geoip_err = geoip_download_if_missing_or_old(config)
+    if geoip_err then
+      sleep(1)
+    end
+  until not geoip_err or ngx.now() > timeout_at
+
+  if geoip_err then
+    ngx.log(ngx.ERR, "geoip database download failed: ", geoip_err)
   else
     config["geoip"]["_enabled"] = true
 
