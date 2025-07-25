@@ -794,6 +794,10 @@ server {
     }
   }
 
+  location /geoip_download/ {
+    alias <%- config["_src_root_dir"] %>/test/support/geoip/download/;
+  }
+
   location = / {
     echo -n "Test Home Page";
   }

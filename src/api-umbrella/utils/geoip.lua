@@ -37,7 +37,13 @@ local function perform_download(config, unzip_dir, download_path)
 
   local download_url
   if not config["geoip"]["s3_cache"]["enabled"] then
-    download_url = "https://download.maxmind.com/app/geoip_download?edition_id=GeoLite2-City&suffix=tar.gz&license_key=" .. escape_uri(config["geoip"]["maxmind_license_key"])
+    download_url = config["geoip"]["city_download_url"]
+    if string.find(download_url, "?", nil, true) then
+      download_url = download_url .. "&"
+    else
+      download_url = download_url .. "?"
+    end
+    download_url = download_url .. "license_key=" .. escape_uri(config["geoip"]["maxmind_license_key"])
   else
     -- Download cached file from S3. Note this currently needs to be be managed
     -- by an external process. We could integrate the caching into the app

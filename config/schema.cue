@@ -920,6 +920,7 @@ import "path"
     db_update_frequency: uint | false | *86400 // 24 hours
     db_update_age: uint | *79200 // 22 hours
     maxmind_license_key?: string | null
+    city_download_url: string | *"https://download.maxmind.com/app/geoip_download?edition_id=GeoLite2-City&suffix=tar.gz"
     s3_cache: {
       enabled: bool | *false
       aws_access_key_id?: string
