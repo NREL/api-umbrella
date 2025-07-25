@@ -8,6 +8,9 @@ class Test::Proxy::Envoy::TestSmtpProxy < Minitest::Test
   def setup
     super
     setup_server
+    @ssl_context_params = {
+      ca_file: File.join(API_UMBRELLA_SRC_ROOT, "test/config/ssl_test.crt"),
+    }
   end
 
   def test_disabled_by_default
@@ -17,7 +20,7 @@ class Test::Proxy::Envoy::TestSmtpProxy < Minitest::Test
   end
 
   def test_direct_smtp_sanity_check
-    smtp = Net::SMTP.new("in-v3.mailjet.com", 80, starttls: :always)
+    smtp = Net::SMTP.new("127.0.0.1", $config["mailpit"]["smtp_port"], starttls: :always, ssl_context_params: @ssl_context_params, tls_hostname: "ssltest.example.com")
     smtp.open_timeout = 5
     smtp.start
     assert_equal(true, smtp.esmtp?)
@@ -31,8 +34,8 @@ class Test::Proxy::Envoy::TestSmtpProxy < Minitest::Test
         "smtp_proxy" => {
           "enabled" => true,
           "endpoint" => {
-            "host" => "in-v3.mailjet.com",
-            "port" => 80,
+            "host" => "127.0.0.1",
+            "port" => $config["mailpit"]["smtp_port"],
           },
         },
       },
@@ -41,7 +44,7 @@ class Test::Proxy::Envoy::TestSmtpProxy < Minitest::Test
       assert_equal(true, open)
 
       # Verify that without an explict TLS host, we get a certificate error.
-      smtp = Net::SMTP.new("127.0.0.1", 13003, starttls: :always)
+      smtp = Net::SMTP.new("127.0.0.1", 13003, starttls: :always, ssl_context_params: @ssl_context_params)
       smtp.open_timeout = 5
       error = assert_raises OpenSSL::SSL::SSLError do
         smtp.start
@@ -49,7 +52,7 @@ class Test::Proxy::Envoy::TestSmtpProxy < Minitest::Test
       assert_match("certificate verify failed (hostname mismatch)", error.message)
 
       # Verify normal connection to the expected underlying host.
-      smtp = Net::SMTP.new("127.0.0.1", 13003, starttls: :always, tls_hostname: "in-v3.mailjet.com")
+      smtp = Net::SMTP.new("127.0.0.1", 13003, starttls: :always, ssl_context_params: @ssl_context_params, tls_hostname: "ssltest.example.com")
       smtp.open_timeout = 5
       smtp.start
       assert_equal(true, smtp.esmtp?)
@@ -58,7 +61,7 @@ class Test::Proxy::Envoy::TestSmtpProxy < Minitest::Test
 
       # Verify that trying a different TLS host also results in a certificate
       # error.
-      smtp = Net::SMTP.new("127.0.0.1", 13003, starttls: :always, tls_hostname: "email.us-east-1.amazonaws.com")
+      smtp = Net::SMTP.new("127.0.0.1", 13003, starttls: :always, ssl_context_params: @ssl_context_params, tls_hostname: "email.us-east-1.amazonaws.com")
       smtp.open_timeout = 5
       error = assert_raises OpenSSL::SSL::SSLError do
         smtp.start
@@ -73,8 +76,8 @@ class Test::Proxy::Envoy::TestSmtpProxy < Minitest::Test
         "smtp_proxy" => {
           "enabled" => true,
           "endpoint" => {
-            "host" => "in-v3.mailjet.com",
-            "port" => 80,
+            "host" => "127.0.0.1",
+            "port" => $config["mailpit"]["smtp_port"],
           },
         },
       },
