@@ -17,6 +17,8 @@ local function update()
       ngx.log(ngx.NOTICE, "Reloaded api-umbrella")
     end
   end
+
+  return status, err
 end
 
 -- Try to wait for geoip to download on startup, since there may be race
