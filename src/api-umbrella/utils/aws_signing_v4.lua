@@ -28,7 +28,9 @@ local EXPECTING_BODY = {
   PATCH = true,
 }
 
-local _M = {}
+local _M = {
+  EMPTY_SHA256 = EMPTY_SHA256,
+}
 
 local function hmac(secret_key, value)
   assert(secret_key)

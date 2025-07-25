@@ -920,6 +920,13 @@ import "path"
     db_update_frequency: uint | false | *86400 // 24 hours
     db_update_age: uint | *79200 // 22 hours
     maxmind_license_key?: string | null
+    s3_cache: {
+      enabled: bool | *false
+      aws_access_key_id?: string
+      aws_secret_access_key?: string
+      region?: string
+      bucket?: string
+    }
   }
 
   override_public_http_port?: uint16

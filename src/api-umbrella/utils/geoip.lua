@@ -1,3 +1,4 @@
+local EMPTY_SHA256 = require("api-umbrella.utils.aws_signing_v4").EMPTY_SHA256
 local checksum_file_sha256 = require("api-umbrella.utils.checksum_file").sha256
 local dirname = require("posix.libgen").dirname
 local mkdir_p = require "api-umbrella.utils.mkdir_p"
@@ -15,7 +16,6 @@ local _M = {}
 local function perform_download(config, unzip_dir, download_path)
   -- Download file
   ngx.log(ngx.NOTICE, "Downloading new file (" .. download_path .. ")")
-  local download_url = "https://download.maxmind.com/app/geoip_download?edition_id=GeoLite2-City&suffix=tar.gz&license_key=" .. escape_uri(config["geoip"]["maxmind_license_key"])
 
   local options = {}
   if config["http_proxy"] or config["https_proxy"] then
@@ -25,7 +25,35 @@ local function perform_download(config, unzip_dir, download_path)
     }
   end
 
-  local _, curl_err = shell_blocking_capture_combined({ "curl", "--silent", "--show-error", "--fail", "--location", "--retry", "3", "--output", download_path, download_url }, options)
+  local curl_args = {
+    "curl",
+    "--silent",
+    "--show-error",
+    "--fail",
+    "--location",
+    "--retry", "3",
+    "--output", download_path,
+  }
+
+  local download_url
+  if not config["geoip"]["s3_cache"]["enabled"] then
+    download_url = "https://download.maxmind.com/app/geoip_download?edition_id=GeoLite2-City&suffix=tar.gz&license_key=" .. escape_uri(config["geoip"]["maxmind_license_key"])
+  else
+    -- Download cached file from S3. Note this currently needs to be be managed
+    -- by an external process. We could integrate the caching into the app
+    -- here, but all of this could really be cleaned up, so for now we'll just
+    -- rely on the external caching process.
+    table.insert(curl_args, "--aws-sigv4")
+    table.insert(curl_args, "aws:amz:" .. config["geoip"]["s3_cache"]["region"] .. ":s3")
+    table.insert(curl_args, "-H")
+    table.insert(curl_args, "X-Amz-Content-Sha256: " .. EMPTY_SHA256)
+    table.insert(curl_args, "--user")
+    table.insert(curl_args, config["geoip"]["s3_cache"]["aws_access_key_id"] .. ":" .. config["geoip"]["s3_cache"]["aws_secret_access_key"])
+    download_url = "https://s3." .. config["geoip"]["s3_cache"]["region"] .. ".amazonaws.com/" .. config["geoip"]["s3_cache"]["bucket"] .."/GeoLite2-City.tar.gz"
+  end
+  table.insert(curl_args, download_url)
+
+  local _, curl_err = shell_blocking_capture_combined(curl_args, options)
   if curl_err then
     return false, curl_err
   end
