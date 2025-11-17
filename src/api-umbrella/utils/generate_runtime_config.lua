@@ -561,7 +561,6 @@ local function parse_config()
     "export",
     "--out", "json",
     "--all-errors",
-    "--strict",
     "--inject", "src_root_dir=" .. src_root_dir,
     "--inject", "embedded_root_dir=" .. os.getenv("API_UMBRELLA_EMBEDDED_ROOT"),
   }

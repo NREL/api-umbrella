@@ -6,7 +6,7 @@
   },
   "dependencies": {
     "a11y-dialog": "^8.1.4",
-    "bootstrap": "^5.3.7",
+    "bootstrap": "^5.3.8",
     "escape-html": "^1.0.3",
     "form-serialize": "^0.7.2",
     "promise-polyfill": "^8.3.0",
