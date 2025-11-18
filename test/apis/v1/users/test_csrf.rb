@@ -3,6 +3,7 @@ require_relative "../../../test_helper"
 class Test::Apis::V1::Users::TestCsrf < Minitest::Test
   include ApiUmbrellaTestHelpers::CsrfChecks
   include ApiUmbrellaTestHelpers::Setup
+
   parallelize_me!
 
   def setup

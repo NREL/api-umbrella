@@ -4,6 +4,7 @@ class Test::Apis::V1::ApiScopes::TestValidations < Minitest::Test
   include ApiUmbrellaTestHelpers::AdminAuth
   include ApiUmbrellaTestHelpers::AdminPermissions
   include ApiUmbrellaTestHelpers::Setup
+
   parallelize_me!
 
   def setup

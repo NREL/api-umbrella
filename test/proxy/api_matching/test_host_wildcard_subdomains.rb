@@ -3,6 +3,7 @@ require_relative "../../test_helper"
 class Test::Proxy::ApiMatching::TestHostWildcardSubdomains < Minitest::Test
   include ApiUmbrellaTestHelpers::Setup
   include ApiUmbrellaTestHelpers::ApiMatching
+
   parallelize_me!
 
   def setup

@@ -3,6 +3,7 @@ require_relative "../../test_helper"
 class Test::Proxy::RequestRewriting::TestCookieStripping < Minitest::Test
   include ApiUmbrellaTestHelpers::AdminAuth
   include ApiUmbrellaTestHelpers::Setup
+
   parallelize_me!
 
   def setup

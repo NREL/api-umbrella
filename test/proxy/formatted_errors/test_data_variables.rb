@@ -3,6 +3,7 @@ require_relative "../../test_helper"
 class Test::Proxy::FormattedErrors::TestDataVariables < Minitest::Test
   include ApiUmbrellaTestHelpers::Setup
   include ApiUmbrellaTestHelpers::FormattedErrors
+
   parallelize_me!
 
   def setup

@@ -5,6 +5,7 @@ require_relative "../test_helper"
 # ensure that it actually does what we think it does.
 class Test::TestingSanityChecks::TestEmptyHttpHeaders < Minitest::Test
   include ApiUmbrellaTestHelpers::Setup
+
   parallelize_me!
 
   def setup

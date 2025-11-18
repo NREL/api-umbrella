@@ -3,6 +3,7 @@ require_relative "../test_helper"
 class Test::Proxy::TestLoadBalancing < Minitest::Test
   include ApiUmbrellaTestHelpers::Setup
   include ApiUmbrellaTestHelpers::LoadBalancing
+
   parallelize_me!
 
   def setup

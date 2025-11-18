@@ -3,6 +3,7 @@ require_relative "../../test_helper"
 class Test::Proxy::Logging::TestAnalyticsCustomFields < Minitest::Test
   include ApiUmbrellaTestHelpers::Setup
   include ApiUmbrellaTestHelpers::Logging
+
   parallelize_me!
 
   def setup

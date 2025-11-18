@@ -2,6 +2,7 @@ require_relative "../../../test_helper"
 
 class Test::Apis::V0::NginxStatus::TestDisabled < Minitest::Test
   include ApiUmbrellaTestHelpers::Setup
+
   parallelize_me!
 
   def setup
