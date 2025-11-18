@@ -298,6 +298,7 @@ local function build_listener()
                   name = "envoy.filters.http.router",
                   typed_config = {
                     ["@type"] = "type.googleapis.com/envoy.extensions.filters.http.router.v3.Router",
+                    suppress_envoy_headers = true,
                   },
                 },
               },
@@ -354,17 +355,14 @@ local function build_route_configuration()
     ["@type"] = "type.googleapis.com/envoy.config.route.v3.RouteConfiguration",
     name = "api-umbrella-route-configuration",
     virtual_hosts = {},
-    request_headers_to_remove = {
-      "x-envoy-expected-rq-timeout-ms",
-      "x-envoy-internal",
-
-      -- Note: This backend host header isn't necessary for backends to
-      -- receive and ideally we'd strip it. However, removing it breaks our
-      -- ability to use it in the "host_rewrite_header" option. So we will
-      -- pass it along to API backends unless Envoy allows for better
-      -- ordering of this in the future.
-      -- "x-api-umbrella-backend-host",
-    },
+    -- Note: This backend host header isn't necessary for backends to receive
+    -- and ideally we'd strip it. However, removing it breaks our ability to
+    -- use it in the "host_rewrite_header" option. So we will pass it along to
+    -- API backends unless Envoy allows for better ordering of this in the
+    -- future.
+    -- request_headers_to_remove = {
+    --   "x-api-umbrella-backend-host",
+    -- },
     response_headers_to_add = {
       {
         append_action = "OVERWRITE_IF_EXISTS_OR_ADD",
@@ -539,6 +537,7 @@ local function build_http_proxy_listener()
                   name = "envoy.filters.http.router",
                   typed_config = {
                     ["@type"] = "type.googleapis.com/envoy.extensions.filters.http.router.v3.Router",
+                    suppress_envoy_headers = true,
                   },
                 },
               },
