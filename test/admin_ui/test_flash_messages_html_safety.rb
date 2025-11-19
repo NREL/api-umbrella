@@ -43,6 +43,10 @@ class Test::AdminUi::TestFlashMessagesHtmlSafety < Minitest::Capybara::Test
   # Selenium tests may return "page.body" with some HTML entities already
   # un-encoded, which makes it trickier to verify the HTML escaping that's
   # going on.
+  #
+  # Newer versions of Chromium now seems to return things to Selenium escaped,
+  # somewhat reducing the need for this separate non-Selenium test, but we'll
+  # keep it as an extra sanity check.
   def test_raw_html
     data = MultiJson.dump({
       "id_token" => {
@@ -84,7 +88,7 @@ class Test::AdminUi::TestFlashMessagesHtmlSafety < Minitest::Capybara::Test
 
     mock_userinfo(data) do
       assert_login_forbidden("Sign in with Google", "not verified")
-      assert_match("The email address 'unverified@example.com' is not verified. Please <a href=\"https://example.com/contact/?q='&quot;><script>alert('hello')</script>\">contact us</a> for further assistance.", page.body)
+      assert_match("The email address 'unverified@example.com' is not verified. Please <a href=\"https://example.com/contact/?q='&quot;&gt;&lt;script&gt;alert('hello')&lt;/script&gt;\">contact us</a> for further assistance.", page.body)
     end
   end
 
@@ -98,7 +102,7 @@ class Test::AdminUi::TestFlashMessagesHtmlSafety < Minitest::Capybara::Test
 
     mock_userinfo(data) do
       assert_login_forbidden("Sign in with Google", "not verified")
-      assert_match("The email address ''\"&gt;&lt;script&gt;alert('hello')&lt;/script&gt;' is not verified. Please <a href=\"https://example.com/contact/?q='&quot;><script>alert('hello')</script>\">contact us</a> for further assistance.", page.body)
+      assert_match("The email address ''\"&gt;&lt;script&gt;alert('hello')&lt;/script&gt;' is not verified. Please <a href=\"https://example.com/contact/?q='&quot;&gt;&lt;script&gt;alert('hello')&lt;/script&gt;\">contact us</a> for further assistance.", page.body)
     end
   end
 
@@ -112,7 +116,7 @@ class Test::AdminUi::TestFlashMessagesHtmlSafety < Minitest::Capybara::Test
 
     mock_userinfo(data) do
       assert_login_forbidden("Sign in with Google", "not authorized")
-      assert_match("The account for 'noadmin@example.com' is not authorized to access the admin. Please <a href=\"https://example.com/contact/?q='&quot;><script>alert('hello')</script>\">contact us</a> for further assistance.", page.body)
+      assert_match("The account for 'noadmin@example.com' is not authorized to access the admin. Please <a href=\"https://example.com/contact/?q='&quot;&gt;&lt;script&gt;alert('hello')&lt;/script&gt;\">contact us</a> for further assistance.", page.body)
     end
   end
 
@@ -126,7 +130,7 @@ class Test::AdminUi::TestFlashMessagesHtmlSafety < Minitest::Capybara::Test
 
     mock_userinfo(data) do
       assert_login_forbidden("Sign in with Google", "not authorized")
-      assert_match("The account for ''\"&gt;&lt;script&gt;alert('hello')&lt;/script&gt;' is not authorized to access the admin. Please <a href=\"https://example.com/contact/?q='&quot;><script>alert('hello')</script>\">contact us</a> for further assistance.", page.body)
+      assert_match("The account for ''\"&gt;&lt;script&gt;alert('hello')&lt;/script&gt;' is not authorized to access the admin. Please <a href=\"https://example.com/contact/?q='&quot;&gt;&lt;script&gt;alert('hello')&lt;/script&gt;\">contact us</a> for further assistance.", page.body)
     end
   end
 
@@ -144,7 +148,7 @@ class Test::AdminUi::TestFlashMessagesHtmlSafety < Minitest::Capybara::Test
 
     mock_userinfo(data) do
       assert_login_forbidden("Sign in with MAX.gov", "must use multi-factor")
-      assert_match("You must use multi-factor authentication to sign in. Please try again, or <a href=\"https://example.com/contact/?q='&quot;><script>alert('hello')</script>\">contact us</a> for further assistance.", page.body)
+      assert_match("You must use multi-factor authentication to sign in. Please try again, or <a href=\"https://example.com/contact/?q='&quot;&gt;&lt;script&gt;alert('hello')&lt;/script&gt;\">contact us</a> for further assistance.", page.body)
     end
   end
 
