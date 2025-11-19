@@ -150,8 +150,12 @@ server {
 
   location = /upload {
     content_by_lua_block {
-      local cjson = require "cjson";
-      local upload = require "resty.upload";
+      local cjson = require "cjson"
+      local resty_sha256 = require "resty.sha256"
+      local str = require "resty.string"
+      local upload = require "resty.upload"
+
+      local sha256 = resty_sha256:new()
 
       local upload_size = 0
       local chunk_size = 4096
@@ -160,16 +164,59 @@ server {
         local typ, res, err = form:read()
         if typ == "body" then
           upload_size = upload_size + #res
+          sha256:update(res)
         elseif typ == "eof" then
           break
         end
       end
 
+      local digest = sha256:final()
+
       ngx.header["Content-Type"] = "application/json"
       ngx.print(cjson.encode({
+        method = ngx.var.request_method,
+        headers = ngx.req.get_headers(500),
         upload_size = upload_size,
+        upload_checksum = str.to_hex(digest),
       }))
     }
+  }
+
+  location = /read-body {
+    content_by_lua_block {
+      local cjson = require "cjson";
+      local resty_sha256 = require "resty.sha256"
+      local str = require "resty.string"
+
+      local sha256 = resty_sha256:new()
+
+      ngx.req.read_body()
+      local data = ngx.req.get_body_data()
+      if not data then
+        local file = ngx.req.get_body_file()
+        if file then
+          local f = io.open(file, "r")
+          data = f:read("*a")
+          f:close()
+        end
+      end
+
+      sha256:update(data)
+      local digest = sha256:final()
+
+      ngx.header["Content-Type"] = "application/json"
+      local response = cjson.encode({
+        method = ngx.var.request_method,
+        headers = ngx.req.get_headers(500),
+        body_size = #data,
+        body_checksum = str.to_hex(digest),
+      })
+      ngx.say(response)
+    }
+  }
+
+  location = /unread-body {
+    return 200 "{\"method\":\"$request_method\",\"http_content_length\":\"$http_content_length\"}";
   }
 
   location = /chunked {
