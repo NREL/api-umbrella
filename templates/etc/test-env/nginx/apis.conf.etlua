@@ -172,6 +172,7 @@ server {
 
       local digest = sha256:final()
 
+      ngx.status = ngx.var.http_x_expected_status or 200
       ngx.header["Content-Type"] = "application/json"
       ngx.print(cjson.encode({
         method = ngx.var.request_method,
@@ -204,6 +205,7 @@ server {
       sha256:update(data)
       local digest = sha256:final()
 
+      ngx.status = ngx.var.http_x_expected_status or 200
       ngx.header["Content-Type"] = "application/json"
       local response = cjson.encode({
         method = ngx.var.request_method,
@@ -215,7 +217,24 @@ server {
     }
   }
 
-  location = /unread-body {
+  location = /unread-body-200 {
+    default_type application/json;
+    return 200 "{\"method\":\"$request_method\",\"http_content_length\":\"$http_content_length\"}";
+  }
+
+  location = /unread-body-422 {
+    default_type application/json;
+    return 422 "{\"method\":\"$request_method\",\"http_content_length\":\"$http_content_length\"}";
+  }
+
+  location = /unread-body-500 {
+    default_type application/json;
+    return 500 "{\"method\":\"$request_method\",\"http_content_length\":\"$http_content_length\"}";
+  }
+
+  location = /max-body-size {
+    client_max_body_size 1m;
+    client_body_buffer_size 1m;
     return 200 "{\"method\":\"$request_method\",\"http_content_length\":\"$http_content_length\"}";
   }
 
