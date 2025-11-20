@@ -328,6 +328,7 @@ module ApiUmbrellaTestHelpers
 
         self.api_umbrella_process.reload
         @@current_override_config = config.deep_dup
+        already_restarted_services = []
         Timeout.timeout(options.fetch(:timeout, 50)) do
           self.api_umbrella_process.wait_for_config_version("file_config_version", config["version"], config)
         rescue MultiJson::ParseError => e
@@ -345,9 +346,18 @@ module ApiUmbrellaTestHelpers
           if(
             previous_override_config.dig("nginx", "shared_dicts", "active_config") ||
             @@current_override_config.dig("nginx", "shared_dicts", "active_config")
-            previous_override_config.dig("envoy", "scheme") ||
-            @@current_override_config.dig("envoy", "scheme")
           )
+            sleep 0.1
+            retry
+          elsif previous_override_config.dig("envoy", "scheme") || @@current_override_config.dig("envoy", "scheme")
+            # For http to https changes, we may also need to restart
+            # trafficserver earlier than the rest of the restarts below, since
+            # without this, the Traffic Server "reload" picks up the
+            # requirements for the new cert, but won't pick up the actual CA
+            # file changes until a full restart, leading to invalid cert errors
+            # for the health checks used during the reload until a full restart
+            # is performed.
+            already_restarted_services += self.api_umbrella_process.restart_services(["envoy", "trafficserver"] - already_restarted_services, options)
             sleep 0.1
             retry
           else
@@ -382,12 +392,12 @@ module ApiUmbrellaTestHelpers
           # how it would behave if things were more fully restarted, but I
           # think it suffices for testing the differences in the test
           # environment for now.
-          self.api_umbrella_process.restart_services([
+          already_restarted_services += self.api_umbrella_process.restart_services([
             "fluent-bit",
             "nginx",
             "nginx-web-app",
             "trafficserver",
-          ], options)
+          ] - already_restarted_services, options)
         end
 
         # Restart trafficserver when changing the configuration settings that
@@ -402,13 +412,12 @@ module ApiUmbrellaTestHelpers
           previous_override_config.dig("nginx", "proxy_send_timeout") ||
           @@current_override_config.dig("nginx", "proxy_send_timeout")
         )
-          self.api_umbrella_process.restart_services(["trafficserver"], options)
+          already_restarted_services += self.api_umbrella_process.restart_services(["trafficserver"] - already_restarted_services, options)
         end
 
         if previous_override_config.dig("envoy", "scheme") ||
             @@current_override_config.dig("envoy", "scheme")
-
-          self.api_umbrella_process.restart_services(["envoy", "trafficserver"], options)
+          already_restarted_services += self.api_umbrella_process.restart_services(["envoy", "trafficserver"] - already_restarted_services, options)
         end
 
         if previous_override_config["http_proxy"] ||
@@ -416,7 +425,7 @@ module ApiUmbrellaTestHelpers
             previous_override_config["https_proxy"] ||
             @@current_override_config["https_proxy"]
 
-          self.api_umbrella_process.restart_services(["fluent-bit"], options)
+          already_restarted_services += self.api_umbrella_process.restart_services(["fluent-bit"] - already_restarted_services, options)
         end
       end
     end
