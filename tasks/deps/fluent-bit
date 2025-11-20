@@ -3,10 +3,8 @@
 set -e -u -x
 source ./tasks/helpers.sh
 
-# Hold at 3.2 instead of 4.0 until we can solve testing issues in
-# `test/processes/test_fluent_bit.rb` encountered in 4.0.
-fluent_bit_version="3.2.10"
-fluent_bit_hash="f86ecbe208ae152841909a063f28ca250b8a6771c5e43dcb1786ef310f927904"
+fluent_bit_version="4.2.0"
+fluent_bit_hash="44fe0f52e89a63b213695748f99691d0a6247a4bd05065f1b517c798d9f89bcc"
 
 task_working_dir
 download "https://github.com/fluent/fluent-bit/archive/refs/tags/v${fluent_bit_version}.tar.gz" "sha256" "$fluent_bit_hash"

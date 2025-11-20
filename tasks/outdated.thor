@@ -25,7 +25,6 @@ class Outdated < Thor
     },
     "fluent_bit" => {
       :git => "https://github.com/fluent/fluent-bit.git",
-      :constraint => "~> 3.2.10",
       :download => "https://github.com/fluent/fluent-bit/archive/refs/tags/v<%= version.fetch(:wanted_version) %>.tar.gz",
     },
     "glauth" => {
