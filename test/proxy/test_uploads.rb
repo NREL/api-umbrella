@@ -263,12 +263,16 @@ class Test::Proxy::TestUploads < Minitest::Test
         when 502
           # For the 502 Bad Gateway errors (which aren't ideal for cancelled
           # requests, but we're validating the current Traffic Server
-          # behavior), validate that they are coming from Traffic Server, since
-          # that's the layer with this behavior.
+          # behavior), validate that they are coming from the front-most nginx
+          # layer. They actually originate with Traffic Server and were
+          # returned by Traffic Server in 9.1, but in newer versions, it seems
+          # like Traffic Server hangs up the reequest causing nginx to return
+          # the error instead.
+          # Related to https://github.com/apache/trafficserver/issues/10393
           assert_equal("text/html", response.headers["content-type"], error_message)
-          assert_match("Server Connection Closed", response.body, error_message)
-          assert_match("Description: The server requested closed the connection before", response.body, error_message)
-          assert_match(%r{http/1\.1 api-umbrella \(ApacheTrafficServer \[c[ M]sEf \]\)}, response.headers["via"], error_message)
+          assert_match("502 Bad Gateway", response.body, error_message)
+          assert_match("<center>openresty</center>", response.body, error_message)
+          assert_nil(response.headers["via"], error_message)
         else
           # For other successful responses, validate the HTTP method recieved
           # matches the expectations of the request.

@@ -88,7 +88,7 @@ class Outdated < Thor
     },
     "trafficserver" => {
       :http => "https://archive.apache.org/dist/trafficserver/",
-      :constraint => "~> 9.1.0",
+      :constraint => "~> 9.2.0",
       :checksums_download => "https://archive.apache.org/dist/trafficserver/trafficserver-<%= version.fetch(:wanted_version) %>.tar.bz2.sha512",
       :filename_matcher => /trafficserver.*\.tar\.bz2/,
     },
