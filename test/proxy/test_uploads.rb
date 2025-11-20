@@ -91,7 +91,7 @@ class Test::Proxy::TestUploads < Minitest::Test
 
               body_requests[key] = Array.new(per_group_request_count) do
                 # Randomize the exact body size a bit as an extra sanity check.
-                body = SecureRandom.random_bytes(5 * 1024 * 1024 + rand(-200..200)).freeze # 5MB
+                body = SecureRandom.random_bytes((5 * 1024 * 1024) + rand(-200..200)).freeze # 5MB
 
                 # Begin constructing the request using the HTTP method and
                 # include some headers that we can use to sanity check the
@@ -197,7 +197,7 @@ class Test::Proxy::TestUploads < Minitest::Test
         # to understand, so construct an extra debug message that can be
         # included with any failures.
         error_message = "Request in group failed\n\nGroup: #{group.inspect}\n\n#{response_error_message(response)}"
-        assert(response, error_message)
+        refute_nil(response, error_message)
 
         # Traffic Server seems to sporadically return 502 Bad Gateway errors
         # when the backend closes the connection while it's still being
@@ -211,7 +211,7 @@ class Test::Proxy::TestUploads < Minitest::Test
         # https://github.com/apache/trafficserver/issues/10393 While it happens
         # more readily in Traffic Server 9.2+, this parallelized test suite
         # seems to reveal it also occurred in 9.1, maybe just less frequently.
-        if response.code == 502 && (group.fetch(:read_status) == :unread || group.fetch(:read_status) == :unread_above_max_body_size)
+        if response.code == 502 && [:unread, :unread_above_max_body_size].include?(group.fetch(:read_status))
           group_warnings << "Improper (but acceptable) response code: #{response.code}"
           assert_response_code(502, response, error_message)
         else
