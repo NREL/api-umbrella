@@ -109,7 +109,7 @@
     "prettier": "^2.8.8",
     "qunit": "^2.24.2",
     "qunit-dom": "^2.0.0",
-    "sass": "^1.94.0",
+    "sass": "^1.94.2",
     "selectize": "~0.12.6",
     "stylelint": "^15.11.0",
     "stylelint-config-standard": "^32.0.0",
@@ -117,7 +117,7 @@
     "timekeeper": "^2.3.1",
     "tippy.js": "~6.3.7",
     "tracked-built-ins": "^3.4.0",
-    "webpack": "^5.102.1"
+    "webpack": "^5.103.0"
   },
   "engines": {
     "node": "14.* || 16.* || >= 18"

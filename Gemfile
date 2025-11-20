@@ -6,7 +6,7 @@ ruby "~> 3.1"
 gem "thor", "~> 1.4.0"
 
 # Tests
-gem "minitest", "~> 5.26.1"
+gem "minitest", "~> 5.26.2"
 
 # CLI helper for running tests
 gem "minitest-sprint", "~> 1.3.0"
