@@ -13,17 +13,20 @@ extract_download "trafficserver-$trafficserver_version.tar.bz2"
 
 cd "trafficserver-$trafficserver_version"
 
-PKG_CONFIG_PATH="$STAGE_EMBEDDED_DIR/openresty/luajit/lib/pkgconfig:${PKG_CONFIG_PATH:-}" \
 cmake -B build \
   -DCMAKE_INSTALL_PREFIX="$INSTALL_PREFIX_EMBEDDED" \
   -DENABLE_LUAJIT=ON \
+  -Dluajit_INCLUDE_DIRS="$STAGE_EMBEDDED_DIR/openresty/luajit/include/luajit-2.1" \
+  -Dluajit_LIBRARY_DIRS="$STAGE_EMBEDDED_DIR/openresty/luajit/lib" \
+  -Dluajit_LIBRARIES=luajit-5.1 \
+  -Dluajit_LINK_LIBRARIES=luajit-5.1 \
   -DENABLE_JEMALLOC=ON
 
 cmake --build build -j "$NPROC"
 
-cmake --install build
+cmake --install build --prefix="$STAGE_EMBEDDED_DIR"
 
-chrpath -d "$STAGE_EMBEDDED_DIR/lib/libswoc"*.so
+chrpath -d "$STAGE_EMBEDDED_DIR/lib/libswoc.so"
 chrpath -d "$STAGE_EMBEDDED_DIR/lib/libtsapi.so"
 chrpath -d "$STAGE_EMBEDDED_DIR/lib/libtscppapi.so"
 chrpath -d "$STAGE_EMBEDDED_DIR/lib/libyaml-cpp.so"
