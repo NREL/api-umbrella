@@ -1,1 +1,1 @@
-var/trafficserver <%- config["trafficserver"]["storage"]["size"] %>
+<%- path_join(config["var_dir"], "trafficserver") %> <%- config["trafficserver"]["storage"]["size"] %>

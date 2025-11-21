@@ -6,21 +6,6 @@ records:
     # will handle switching the user).
     user_id: "#-1"
 
-  # Specify where to find the TrafficServer binaries, plugins, etc. Our config
-  # files are in a non-default location by using TS_ROOT (this is done so that
-  # the config files can co-exist with the rest of the API Umbrella config
-  # files, and so that we can relocate the location for running tests).
-  # Therefore, we must explicitly point back to the original TrafficServer
-  # install directory. This could potentially be made cleaner without the use
-  # of TS_ROOT with the new proxy.config.config_dir setting
-  # (https://issues.apache.org/jira/browse/TS-3192), but I wasn't able to get
-  # that to quite work properly.
-  bin_path: <%- json_encode(path_join(config["_embedded_root_dir"], "bin")) %>
-  body_factory:
-    template_sets_dir: <%- json_encode(path_join(config["_embedded_root_dir"], "etc/trafficserver/body_factory")) %>
-  plugin:
-    plugin_dir: <%- json_encode(path_join(config["_embedded_root_dir"], "libexec/trafficserver")) %>
-
   output:
     logfile:
       name: <%- json_encode(config["log"]["destination"] == "console" and "stdout" or "traffic.out") %>
@@ -33,11 +18,6 @@ records:
   diags:
     logfile:
       filename: <%- json_encode(config["log"]["destination"] == "console" and "stdout" or "diags.log") %>
-
-      # Disable Trafficserver's own log file rotation for these files. We'll
-      # either output to stdout or rotate log files with logrotate (to be
-      # consistent with all the other API Umbrella components).
-      rolling_enabled: 0
 
     # Log all diagnostic output to stderr (instead of also shipping it to the
     # system-wide syslog).
@@ -53,19 +33,15 @@ records:
       warning: E
 
     # Enable for debug logging.
-    debug:
-      enabled: 1
-      # tags: ".*"
-      tags: "http_hdrs|http_tproxy|http_trans"
+    # debug:
+    #   enabled: 1
+    #   tags: ".*"
 
   error:
     logfile:
       filename: <%- json_encode(config["log"]["destination"] == "console" and "stderr" or "error.log") %>
 
   log:
-    # Log to the standard API Umbrella log directory location.
-    logfile_dir: <%- json_encode(path_join(config["log_dir"], "trafficserver")) %>
-
     # Allow longer lines in logging.
     ascii_buffer_size: 24576
     log_buffer_size: 24576
@@ -93,11 +69,6 @@ records:
     sock_option_flag_out: 3
 
   http:
-    # request_buffer_enabled: 0
-    # post_copy_size: 100M
-    # keep_alive_post_out: 0
-    # max_post_size: "1000000"
-
     server_ports: <%- json_encode(config["trafficserver"]["port"]) %>
 
     # Increase timeouts to match the timeouts in other pieces of the stack.
