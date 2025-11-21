@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-trafficserver_version="9.2.11"
-trafficserver_hash="39e7ec545f69d8d40704bd7c06a203bf383df2c757e0f0a90aa5862c861dc68bf70721651a134f272e0edca1a8e259bda3ee432c6e2a4b9850bf04fa76b95cf3"
+trafficserver_version="10.0.2"
+trafficserver_hash="5de65130d4c0997d619d0c1be6840aaffd3e17abd820d22b9294c4d78834eb71a58fed12f3166396c7169583850a8b42ed768e5af11e855c87b2fca8a10da7f3"
 
 set -e -u -x
 source ./tasks/helpers.sh
@@ -11,31 +11,22 @@ task_working_dir
 download "https://archive.apache.org/dist/trafficserver/trafficserver-$trafficserver_version.tar.bz2" "sha512" "$trafficserver_hash"
 extract_download "trafficserver-$trafficserver_version.tar.bz2"
 
-detect_os_release
-if [[ "$ID_NORMALIZED" == "rhel" && "$VERSION_ID" == "7" ]]; then
-  export CC=/opt/rh/devtoolset-7/root/usr/bin/gcc
-  export CXX=/opt/rh/devtoolset-7/root/usr/bin/g++
-elif [[ "$ID" == "debian" && "$VERSION_ID" == "9" ]]; then
-  export CC=clang-7
-  export CXX=clang++-7
-  export CXXFLAGS="-I/usr/lib/llvm-7/include/c++/v1 -stdlib=libc++"
-fi
-
 cd "trafficserver-$trafficserver_version"
 
-SPHINXBUILD=false ./configure \
-  --disable-tests \
-  --disable-silent-rules \
-  --disable-maintainer-mode \
-  --disable-dependency-tracking \
-  --prefix="$INSTALL_PREFIX_EMBEDDED" \
-  --with-jemalloc \
-  --with-luajit="$STAGE_EMBEDDED_DIR/openresty/luajit"
-make -j"$NPROC"
-make install DESTDIR="$STAGE_DIR"
-chrpath -d "$STAGE_EMBEDDED_DIR/lib/libtscore.so"
-chrpath -d "$STAGE_EMBEDDED_DIR/lib/libtscpputil.so"
-chrpath -d "$STAGE_EMBEDDED_DIR/lib/libtsmgmt.so"
+PKG_CONFIG_PATH="$STAGE_EMBEDDED_DIR/openresty/luajit/lib/pkgconfig:${PKG_CONFIG_PATH:-}" \
+cmake -B build \
+  -DCMAKE_INSTALL_PREFIX="$INSTALL_PREFIX_EMBEDDED" \
+  -DENABLE_LUAJIT=ON \
+  -DENABLE_JEMALLOC=ON
+
+cmake --build build -j "$NPROC"
+
+cmake --install build
+
+chrpath -d "$STAGE_EMBEDDED_DIR/lib/libswoc"*.so
+chrpath -d "$STAGE_EMBEDDED_DIR/lib/libtsapi.so"
+chrpath -d "$STAGE_EMBEDDED_DIR/lib/libtscppapi.so"
+chrpath -d "$STAGE_EMBEDDED_DIR/lib/libyaml-cpp.so"
 find "$STAGE_EMBEDDED_DIR/libexec/trafficserver/" -name "*.so" -exec chrpath -d {} \;
 find "$STAGE_EMBEDDED_DIR/bin/" -name "traffic_*" -exec chrpath -d {} \;
 

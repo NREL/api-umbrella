@@ -143,8 +143,18 @@ import "path"
     storage: {
       size: string | *"256M"
     }
-    embedded_server_config: {
-      records: [...string] | *[]
+    records: {
+      cache: {
+        ram_cache: {
+          size: string | *"-1"
+        }
+      }
+      net: {
+        connections_throttle: uint | *30000
+        max_requests_in: uint | *0
+        max_connections_in: uint | *30000
+        default_inactivity_timeout: uint | *86400
+      }
     }
   }
 
