@@ -380,10 +380,6 @@ module ApiUmbrellaTestHelpers
           # to unexpected places.
           FileUtils.rm_f(File.join($config["log_dir"], "nginx-web-app/access.log"))
           FileUtils.rm_f(File.join($config["log_dir"], "nginx/access.log"))
-          FileUtils.rm_f(File.join($config["log_dir"], "trafficserver/access.log"))
-          FileUtils.rm_f(File.join($config["log_dir"], "trafficserver/diags.log"))
-          FileUtils.rm_f(File.join($config["log_dir"], "trafficserver/manager.log"))
-          FileUtils.rm_f(File.join($config["log_dir"], "trafficserver/traffic.out"))
 
           # Do a full restart of the affected services to ensure they pick up
           # these changes. However, note that this may still not be a great

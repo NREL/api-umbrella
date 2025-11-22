@@ -13,6 +13,10 @@ extract_download "trafficserver-$trafficserver_version.tar.bz2"
 
 cd "trafficserver-$trafficserver_version"
 
+# Since we log directly to stderr/stdout, backport this patch:
+# https://github.com/apache/trafficserver/pull/12407
+patch -p1 < "$SOURCE_DIR/build/patches/trafficserver-stderr-logging.patch"
+
 cmake -B build \
   -DCMAKE_INSTALL_PREFIX="$INSTALL_PREFIX_EMBEDDED" \
   -DENABLE_LUAJIT=ON \

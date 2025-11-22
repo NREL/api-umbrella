@@ -1,0 +1,55 @@
+require_relative "../test_helper"
+
+class Test::Processes::TestTrafficserver < Minitest::Test
+  include ApiUmbrellaTestHelpers::Setup
+  include ApiUmbrellaTestHelpers::Logging
+
+  def setup
+    super
+    setup_server
+  end
+
+  def test_trafficserver_logging
+    # Default file-based logging.
+    access_log_tail = LogTail.new("trafficserver/access.log")
+
+    response = Typhoeus.get("http://127.0.0.1:9080/api/hello", http_options)
+
+    access_log = access_log_tail.read_until(response.headers["X-Api-Umbrella-Request-ID"], timeout: 30)
+    assert_match("200 id=#{response.headers["X-Api-Umbrella-Request-ID"]} up_status=200 time=", access_log)
+
+    log_glob = File.join($config["log_dir"], "trafficserver/*.{log,out,old}")
+    log_paths = Dir.glob(log_glob)
+    log_filenames = log_paths.map { |path| File.basename(path) }
+    assert_includes(log_filenames, "access.log")
+    assert_includes(log_filenames, "diags.log")
+    FileUtils.rm_f(log_paths)
+
+    # Check stdout/stderr based logging.
+    override_config({
+      "log" => {
+        "destination" => "console",
+      },
+    }) do
+      current_log_tail = LogTail.new("trafficserver/current")
+
+      response = Typhoeus.get("http://127.0.0.1:9080/api/hello", http_options)
+
+      current_log = current_log_tail.read_until(response.headers["X-Api-Umbrella-Request-ID"], timeout: 30)
+      assert_match("200 id=#{response.headers["X-Api-Umbrella-Request-ID"]} up_status=200 time=", current_log)
+
+      log_glob = File.join($config["log_dir"], "trafficserver/*.{log,out,old}")
+      assert_equal([], Dir.glob(log_glob))
+    end
+  end
+
+  def test_does_not_run_crashlog
+    output, status = run_shell("ps", "-e", "-o", "cmd")
+    if status != 0
+      raise "ps failed (status: #{status}): #{output}"
+    end
+
+    assert_match("traffic_server", output)
+    refute_match("traffic_crashlog", output)
+  end
+end

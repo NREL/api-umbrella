@@ -49,7 +49,6 @@ logging:
       format: '[%<cqtn>] "%<cqhm> %<pqu> %<cqpv>" %<pssc> id=%<{X-Api-Umbrella-Request-ID}cqh> up_status=%<sssc> time=%<ttms> origin_time=%<stms> client_finish=%<cfsc> proxy_finish=%<pfsc> cache=%<crc> cache_sub=%<crsc> cache_hit=%<chm> cache_write=%<cwr> con_attempt=%<sca> '
 
   logs:
-    - mode: <%- (config["log"]["destination"] == "console") and "ascii_pipe" or "ascii" %>
-      format: extended_custom
-      filename: access.log
+    - format: extended_custom
+      filename: <%- (config["log"]["destination"] == "console") and "stdout" or "access.log" %>
       rolling_enabled: 0
