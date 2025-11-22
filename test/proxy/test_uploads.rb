@@ -11,77 +11,80 @@ class Test::Proxy::TestUploads < Minitest::Test
   def test_no_multipart_post_request_body_size_limit
     file_size = 20 * 1024 * 1024 # 20MB
     with_file_of_size(file_size) do |file|
+      body = file.read
       response = Typhoeus.post("http://127.0.0.1:9080/api/upload", http_options.deep_merge({
-        :body => { :upload => file },
+        body: { upload: file },
       }))
 
       assert_response_code(200, response)
       data = MultiJson.load(response.body)
-      assert_equal(file_size, data["upload_size"])
+      assert_in_delta(file_size, data.fetch("headers").fetch("content-length").to_i, 400)
+      assert_equal(file_size, data.fetch("upload_size"))
+      assert_equal(Digest::SHA256.hexdigest(body), data.fetch("upload_checksum"))
     end
   end
 
   def test_no_post_request_body_size_limit
     file_size = 20 * 1024 * 1024 # 20MB
     with_file_of_size(file_size) do |file|
-      response = Typhoeus.post("http://127.0.0.1:9080/api/info/?post", http_options.deep_merge({
-        :body => file.read,
+      body = file.read
+      response = Typhoeus.post("http://127.0.0.1:9080/api/read-body?post", http_options.deep_merge({
+        body: body,
       }))
 
       assert_response_code(200, response)
       data = MultiJson.load(response.body)
       assert_equal(file_size, data.fetch("headers").fetch("content-length").to_i)
+      assert_equal(file_size, data.fetch("body_size"))
+      assert_equal(Digest::SHA256.hexdigest(body), data.fetch("body_checksum"))
     end
   end
 
   def test_no_put_request_body_size_limit
     file_size = 20 * 1024 * 1024 # 20MB
     with_file_of_size(file_size) do |file|
-      # 100.times do
-      1.times do
-      file.rewind
-      response = Typhoeus.put("http://127.0.0.1:9080/api/info/?put", http_options.deep_merge({
-        :body => file.read,
+      body = file.read
+      response = Typhoeus.put("http://127.0.0.1:9080/api/read-body?put", http_options.deep_merge({
+        body: body,
       }))
 
       assert_response_code(200, response)
       data = MultiJson.load(response.body)
       assert_equal(file_size, data.fetch("headers").fetch("content-length").to_i)
-      end
+      assert_equal(file_size, data.fetch("body_size"))
+      assert_equal(Digest::SHA256.hexdigest(body), data.fetch("body_checksum"))
     end
   end
 
   def test_no_patch_request_body_size_limit
     file_size = 20 * 1024 * 1024 # 20MB
     with_file_of_size(file_size) do |file|
-      # 100.times do
-      1.times do
-      file.rewind
-      response = Typhoeus.patch("http://127.0.0.1:9080/api/info/?patch", http_options.deep_merge({
-        :body => file.read,
+      body = file.read
+      response = Typhoeus.patch("http://127.0.0.1:9080/api/read-body?patch", http_options.deep_merge({
+        body: body,
       }))
 
       assert_response_code(200, response)
       data = MultiJson.load(response.body)
       assert_equal(file_size, data.fetch("headers").fetch("content-length").to_i)
-      end
+      assert_equal(file_size, data.fetch("body_size"))
+      assert_equal(Digest::SHA256.hexdigest(body), data.fetch("body_checksum"))
     end
   end
 
   def test_no_get_request_body_size_limit
     file_size = 20 * 1024 * 1024 # 20MB
     with_file_of_size(file_size) do |file|
-      # 100.times do
-      1.times do
-      file.rewind
-      response = Typhoeus.get("http://127.0.0.1:9080/api/info/?get", http_options.deep_merge({
-        :body => file.read,
+      body = file.read
+      response = Typhoeus.get("http://127.0.0.1:9080/api/read-body?get", http_options.deep_merge({
+        body: body,
       }))
 
       assert_response_code(200, response)
       data = MultiJson.load(response.body)
       assert_equal(file_size, data.fetch("headers").fetch("content-length").to_i)
-      end
+      assert_equal(file_size, data.fetch("body_size"))
+      assert_equal(Digest::SHA256.hexdigest(body), data.fetch("body_checksum"))
     end
   end
 
@@ -383,7 +386,6 @@ class Test::Proxy::TestUploads < Minitest::Test
   private
 
   def with_file_of_size(file_size)
-    file_size = 20 * 1024 * 1024 # 20MB
     file = Tempfile.new("large")
     chunk_size = 1024 * 1024
     chunks = file_size / chunk_size
