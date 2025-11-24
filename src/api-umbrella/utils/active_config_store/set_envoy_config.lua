@@ -99,6 +99,17 @@ local function build_cluster_resource(cluster_name, options)
         },
       },
     },
+    typed_extension_protocol_options = {
+      ["envoy.extensions.upstreams.http.v3.HttpProtocolOptions"] = {
+        ["@type"] = "type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions",
+        upstream_http_protocol_options = {
+          auto_sni = true,
+        },
+        common_http_protocol_options = {
+          idle_timeout = "1s",
+        },
+      },
+    },
     connect_timeout = file_config["envoy"]["_connect_timeout"],
     upstream_connection_options = {
       tcp_keepalive = {
@@ -289,7 +300,7 @@ local function build_listener()
               stat_prefix = "router",
               common_http_protocol_options = {
                 max_headers_count = 200,
-                idle_timeout = "120s",
+                idle_timeout = "15s",
               },
               generate_request_id = false,
               server_header_transformation = "PASS_THROUGH",

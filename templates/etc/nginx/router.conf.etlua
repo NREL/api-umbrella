@@ -194,7 +194,8 @@ http {
 
   upstream api_umbrella_trafficserver_backend {
     server <%- config["trafficserver"]["host"] %>:<%- config["trafficserver"]["port"] %>;
-    keepalive 10;
+    keepalive <%- config["nginx"]["upstream_keepalive_connections_per_worker"] %>;
+    keepalive_timeout <%- config["nginx"]["upstream_keepalive_idle_timeout"] %>s;
   }
 
   server {

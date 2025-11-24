@@ -31,9 +31,9 @@ records:
       warning: E
 
     # Enable for debug logging.
-    # debug:
-    #   enabled: 1
-    #   tags: ".*"
+    debug:
+      enabled: 1
+      tags: ".*"
 
   error:
     logfile:
@@ -122,10 +122,12 @@ records:
 
     # Keepalive connections to backend Envoy server. Retain some idle
     # connections open to improve performance.
-    keep_alive_no_activity_timeout_out: <%= json_encode(config["router"]["api_backends"]["keepalive_idle_timeout"]) %>
+    keep_alive_no_activity_timeout_out: 99 # <%= json_encode(config["router"]["api_backends"]["keepalive_idle_timeout"]) %>
+    # transaction_no_activity_timeout_out: 1
     per_server:
       connection:
-        min: <%= json_encode(config["router"]["api_backends"]["keepalive_connections"]) %>
+        min: 1 # <%= json_encode(config["router"]["api_backends"]["keepalive_connections"]) %>
+        match: ip
 
     # Since we're only connecting to our backend Envoy server, we can significantly
     # reduce connections TrafficServer tries to open by ignoring the Host for
@@ -133,6 +135,7 @@ records:
     # backend servers).
     server_session_sharing:
       match: ip
+      pool: global_locked
 
     # For read_while_writer configuration in the `cache` section.
     background_fill_active_timeout: 0
@@ -182,12 +185,12 @@ records:
     #   Requires enabling redirect following, which we don't want for other
     #   responses:
     #   https://lists.apache.org/thread.html/0eff5d9a53ef8fdf28be341f648c708bd651ad1208cddf71d532d78d@%3Cusers.trafficserver.apache.org%3E
-    max_doc_size: 0
-    enable_read_while_writer: 1
-    read_while_writer:
-      max_retries: 21
-    read_while_writer_retry:
-      delay: 50
+    # max_doc_size: 0
+    # enable_read_while_writer: 1
+    # read_while_writer:
+    #   max_retries: 21
+    # read_while_writer_retry:
+    #   delay: 50
 
   dns:
     # Set the DNS nameservers used to potentially resolve a remote envoy layer.
