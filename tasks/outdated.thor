@@ -11,6 +11,10 @@ require "uri"
 
 class Outdated < Thor
   REPOS = {
+    "caddy" => {
+      :git => "https://github.com/caddyserver/caddy.git",
+      :github_release => "caddyserver/caddy",
+    },
     "cue" => {
       :git => "https://github.com/cue-lang/cue.git",
       :github_release => "cue-lang/cue",

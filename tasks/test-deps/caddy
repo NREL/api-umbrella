@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+set -e -u -x
+source ./tasks/helpers.sh
+
+caddy_version="2.10.2"
+caddy_hash="747df7ee74de188485157a383633a1a963fd9233b71fbb4a69ddcbcc589ce4e2cc82dacf5dbbe136cb51d17e14c59daeb5d9bc92487610b0f3b93680b2646546"
+if [ "$TARGETARCH" == "arm64" ]; then
+  caddy_hash="6ce061a690312ab38367df3c5d5f89a2e4a263e7300d300d87356211bb81e79b15933e6d6203e03fbf26f15cc0311f264805f336147dbdd24938d84b57a4421c"
+fi
+
+task_working_dir
+download "https://github.com/caddyserver/caddy/releases/download/v${caddy_version}/caddy_${caddy_version}_linux_${TARGETARCH}.tar.gz" "sha512" "$caddy_hash"
+extract_download "caddy_${caddy_version}_linux_${TARGETARCH}.tar.gz"
+
+install -D -m 755 "caddy" "$TEST_INSTALL_PREFIX/bin/caddy"
+
+stamp

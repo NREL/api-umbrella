@@ -261,6 +261,7 @@ local function activate_services()
     active_services["dev-env-example-website-hugo"] = 1
   end
   if config["app_env"] == "test" then
+    active_services["test-env-caddy"] = 1
     active_services["test-env-glauth"] = 1
     active_services["test-env-mailpit"] = 1
     active_services["test-env-nginx"] = 1

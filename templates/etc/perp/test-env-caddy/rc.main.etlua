@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+set -e -u
+
+# Redirect stderr to stdout
+exec 2>&1
+
+umask "<%- config['umask'] %>"
+
+if [ "${1}" = "start" ]; then
+  echo "starting ${2}..."
+  api_umbrella_user="<%- config['user'] %>"
+
+  PATH="<%- config['_test_env_install_dir'] %>/sbin:<%- config['_test_env_install_dir'] %>/bin:$PATH"
+  run_args=("-e" "rc.env")
+  if [ -n "$api_umbrella_user" ]; then
+    run_args+=("-u" "$api_umbrella_user")
+  fi
+
+  exec runtool ${run_args[@]+"${run_args[@]}"} caddy run \
+    --config "<%- config['etc_dir'] %>/test-env/Caddyfile"
+fi
+
+exit 0

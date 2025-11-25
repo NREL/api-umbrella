@@ -923,6 +923,11 @@ import "path"
     port: uint16 | *13104
   }
 
+  caddy: {
+    http_port: uint16 | *13105
+    https_port: uint16 | *13106
+  }
+
   umask: string | *"0027"
 
   geoip: {
