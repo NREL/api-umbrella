@@ -18,7 +18,7 @@ gem "minitest-reporters", "~> 1.7.1"
 gem "minitest-hooks", "~> 1.5.0"
 
 # Retry certain flaky tests.
-gem "minitest-retry", "~> 0.2.2"
+gem "minitest-retry", "~> 0.3.0"
 
 # Test metadata for CI environment.
 gem "minitest-ci", "~> 3.4.0"
@@ -34,7 +34,7 @@ gem "childprocess"
 gem "typhoeus", "~> 1.5.0"
 
 # JSON parsing
-gem "multi_json", "~> 1.17.0"
+gem "multi_json", "~> 1.19.1"
 gem "oj", "~> 3.16"
 
 # Database libraries

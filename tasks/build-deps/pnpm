@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-pnpm_version="10.23.0"
+pnpm_version="10.26.2"
 
 set -e -u -x
 source ./tasks/helpers.sh
