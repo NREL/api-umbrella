@@ -146,6 +146,9 @@ import "path"
       size: string | *"256M"
     }
     records: {
+      http: {
+        keep_alive_no_activity_timeout_out: uint | *120
+      }
       cache: {
         ram_cache: {
           size: string | *"-1"
@@ -408,7 +411,6 @@ import "path"
 
   router: {
     api_backends: {
-      keepalive_connections: uint | *20
       keepalive_idle_timeout: uint | *120
     }
     trusted_proxies: [...string] | *[]

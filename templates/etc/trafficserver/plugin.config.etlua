@@ -11,8 +11,9 @@ header_rewrite.so "<%- config["etc_dir"] %>/trafficserver/header_rewrite.conf"
 # the same URL:  https://issues.apache.org/jira/browse/TS-3431
 cachekey.so --include-headers=Host,X-Api-Umbrella-Backend-Host,X-Api-Umbrella-Cache-Request-Method
 
-stats_over_http.so
-
 <% if config["_strip_response_cookies_regex"] then %>
   tslua.so "<%- config["etc_dir"] %>/trafficserver/strip_response_cookies.lua" "<%- config["etc_dir"] %>/trafficserver/strip_response_cookies_regex.txt"
 <% end %>
+
+# Provide endpoint for Traffic Server stats.
+stats_over_http.so
