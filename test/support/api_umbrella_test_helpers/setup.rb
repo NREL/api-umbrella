@@ -406,9 +406,11 @@ module ApiUmbrellaTestHelpers
           previous_override_config.dig("nginx", "proxy_read_timeout") ||
           @@current_override_config.dig("nginx", "proxy_read_timeout") ||
           previous_override_config.dig("nginx", "proxy_send_timeout") ||
-          @@current_override_config.dig("nginx", "proxy_send_timeout")
+          @@current_override_config.dig("nginx", "proxy_send_timeout") ||
+          previous_override_config.dig("trafficserver", "records", "http", "keep_alive_no_activity_timeout_out") ||
+          @@current_override_config.dig("trafficserver", "records", "http", "keep_alive_no_activity_timeout_out")
         )
-          already_restarted_services += self.api_umbrella_process.restart_services(["trafficserver"] - already_restarted_services, options)
+          already_restarted_services += self.api_umbrella_process.restart_services(["trafficserver", "envoy", "nginx"] - already_restarted_services, options)
         end
 
         if previous_override_config.dig("envoy", "scheme") ||

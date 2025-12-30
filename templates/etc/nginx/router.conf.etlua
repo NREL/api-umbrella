@@ -194,7 +194,8 @@ http {
 
   upstream api_umbrella_trafficserver_backend {
     server <%- config["trafficserver"]["host"] %>:<%- config["trafficserver"]["port"] %>;
-    keepalive 10;
+    keepalive <%- config["nginx"]["upstream_keepalive_connections_per_worker"] %>;
+    keepalive_timeout <%- config["nginx"]["upstream_keepalive_idle_timeout"] %>s;
   }
 
   server {
@@ -259,6 +260,20 @@ http {
       <% if host["default"] then %>
         location = /api-umbrella/v1/direct-router-health {
           content_by_lua_file '<%- config["_src_root_dir"] %>/src/api-umbrella/http-api/health.lua';
+        }
+      <% end %>
+
+      <% if config["_test_env?"] then %>
+        location = /_nginx_status {
+          add_header Content-Type application/json;
+          return 200 '{
+            "connection": $connection,
+            "connection_requests": $connection_requests,
+            "connections_active": $connections_active,
+            "connections_reading": $connections_reading,
+            "connections_waiting": $connections_waiting,
+            "connections_writing": $connections_writing
+          }';
         }
       <% end %>
 

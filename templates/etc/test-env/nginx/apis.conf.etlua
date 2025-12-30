@@ -135,7 +135,6 @@ server {
   location /connection-stats/ {
     content_by_lua_block {
       local cjson = require "cjson";
-      ngx.sleep(0.3)
       ngx.header["Content-Type"] = "application/json"
       ngx.say(cjson.encode({
         connection = tonumber(ngx.var.connection),

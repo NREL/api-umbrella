@@ -120,12 +120,9 @@ records:
     # Don't override the "Server" response header with the TrafficServer signature.
     response_server_enabled: 0
 
-    # Keepalive connections to backend Envoy server. Retain some idle
-    # connections open to improve performance.
-    keep_alive_no_activity_timeout_out: <%= json_encode(config["router"]["api_backends"]["keepalive_idle_timeout"]) %>
-    per_server:
-      connection:
-        min: <%= json_encode(config["router"]["api_backends"]["keepalive_connections"]) %>
+    # How long to keep idle keepalive connections to backend Envoy server
+    # around.
+    keep_alive_no_activity_timeout_out: <%- json_encode(config["trafficserver"]["records"]["http"]["keep_alive_no_activity_timeout_out"]) %>
 
     # Since we're only connecting to our backend Envoy server, we can significantly
     # reduce connections TrafficServer tries to open by ignoring the Host for
