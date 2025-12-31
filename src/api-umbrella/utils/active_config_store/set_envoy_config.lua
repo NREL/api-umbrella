@@ -91,10 +91,10 @@ local function build_cluster_resource(cluster_name, options)
         ["@type"] = "type.googleapis.com/envoy.extensions.clusters.dns.v3.DnsCluster",
         typed_dns_resolver_config = dns_resolver_config,
         respect_dns_ttl = true,
+        dns_lookup_family = dns_lookup_family,
       },
     },
     wait_for_warm_on_init = false,
-    dns_lookup_family = dns_lookup_family,
     ignore_health_on_host_removal = true,
     load_assignment = {
       cluster_name = cluster_name,
@@ -136,12 +136,16 @@ local function build_cluster_resource(cluster_name, options)
     },
   }
 
-  -- Use the "negative_ttl" time as Envoy's DNS refresh rate when failures
-  -- occur. Since we have "respect_dns_ttl" enabled, successful DNS requests
-  -- will use that refresh rate instead of this one. Since this is only used in
-  -- failure situations we can use this to provide a TTL for negative
-  -- responses.
+  -- Use the `negative_ttl` time as Envoy's DNS refresh rate.
+  --
+  -- Since we have `respect_dns_ttl` enabled, successful DNS requests will use
+  -- that refresh rate instead of this one. That means this setting is really
+  -- only used in failure situations. We configure `dns_refresh_rate` to
+  -- provide the TTL for successful, but negative responses (like NXDOMAIN
+  -- responses), while `dns_failure_refresh_rate` is used if the DNS servers
+  -- themselves are down/unresponsive.
   if file_config["dns_resolver"]["negative_ttl"] then
+    resource["cluster_type"]["typed_config"]["dns_refresh_rate"] = file_config["dns_resolver"]["negative_ttl"] .. "s"
     resource["cluster_type"]["typed_config"]["dns_failure_refresh_rate"] = {
       base_interval = file_config["dns_resolver"]["negative_ttl"] .. "s",
       max_interval = file_config["dns_resolver"]["negative_ttl"] .. "s",
