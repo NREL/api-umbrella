@@ -1,0 +1,231 @@
+records:
+  incoming_ip_to_bind: <%- json_encode(config["trafficserver"]["host"]) %>
+
+  # Disable extra crashlog reporter process.
+  crash_log_helper: null
+
+  admin:
+    # Use the special "#-1" value to keep running as the current user (perp
+    # will handle switching the user).
+    user_id: "#-1"
+
+  output:
+    logfile:
+      name: <%- json_encode(config["log"]["destination"] == "console" and "stderr" or "traffic.out") %>
+
+  diags:
+    logfile:
+      filename: <%- json_encode(config["log"]["destination"] == "console" and "stderr" or "diags.log") %>
+
+    # Log all diagnostic output to stderr (instead of also shipping it to the
+    # system-wide syslog).
+    output:
+      alert: E
+      debug: E
+      diag: E
+      emergency: E
+      error: E
+      fatal: E
+      note: E
+      status: E
+      warning: E
+
+    # Enable for debug logging.
+    # debug:
+    #   enabled: 1
+    #   tags: ".*"
+
+  error:
+    logfile:
+      filename: <%- json_encode(config["log"]["destination"] == "console" and "stderr" or "error.log") %>
+
+  log:
+    # Allow longer lines in logging.
+    ascii_buffer_size: 24576
+    log_buffer_size: 24576
+    max_line_size: 24576
+
+    # Disable Trafficserver's own log file rotation for these files. We'll
+    # either output to stdout or rotate log files with logrotate (to be
+    # consistent with all the other API Umbrella components).
+    rolling_enabled: 0
+
+  # Traffic Server uses this proxy_name in the Via response headers. By default,
+  # this is a hex-encoded IP address, but returning that information may not be
+  # desirable, so instead use a hard-coded name instead.
+  proxy_name: api-umbrella
+
+  net:
+    connections_throttle: <%- json_encode(config["trafficserver"]["records"]["net"]["connections_throttle"]) %>
+    max_requests_in: <%- json_encode(config["trafficserver"]["records"]["net"]["max_requests_in"]) %>
+    max_connections_in: <%- json_encode(config["trafficserver"]["records"]["net"]["max_connections_in"]) %>
+    default_inactivity_timeout: <%- json_encode(config["trafficserver"]["records"]["net"]["default_inactivity_timeout"]) %>
+
+    # Enable so_keepalive on the incoming and outgoing sockets to better detect
+    # keepalive hangups.
+    sock_option_flag_in: 3
+    sock_option_flag_out: 3
+
+  http:
+    server_ports: <%- json_encode(config["trafficserver"]["port"]) %>
+
+    # Increase timeouts to match the timeouts in other pieces of the stack.
+    connect_attempts_timeout: <%- json_encode(config["trafficserver"]["_connect_attempts_timeout"]) %>
+    transaction_no_activity_timeout_in: <%- json_encode(config["trafficserver"]["_transaction_no_activity_timeout_in"]) %>
+    transaction_no_activity_timeout_out: <%- json_encode(config["trafficserver"]["_transaction_no_activity_timeout_out"]) %>
+
+    # Disable other timeouts so that as long as the request is streaming back
+    # we don't close the connection and we defer to our other layers for
+    # timeouts.
+    transaction_active_timeout_in: 0
+    transaction_active_timeout_out: 0
+
+    # Disable retries, since we're only connecting to Envoy. Envoy will be
+    # responsible for retrying connections if the connection is never established.
+    connect_attempts_rr_retries: 0
+    connect_attempts_max_retries: 0
+    connect_attempts_max_retries_down_server: 0
+    connect:
+      down:
+        policy: 0
+
+    down_server:
+      # Don't consider the backend down, even if some requests timeout. We
+      # don't want some bad API requests to mark the entire backend as being
+      # down.
+      cache_time: 0
+
+    # Don't append IP information to X-Forwarded-For or Client-IP headers, since
+    # we've already dealt with those at the first nginx proxy layer.
+    insert_client_ip: 0
+    insert_squid_x_forwarded_for: 0
+
+    # Include information in the Via response indicating whether this was a
+    # cache hit or not.
+    insert_response_via_str: 2
+
+    # Do not include the Via headers on the requests to the backend servers.
+    # This is for two reasons:
+    # - It may disable gzip responses from underlying API backend servers by
+    #   default: https://community.akamai.com/community/web-performance/blog/2015/05/06/beware-the-via-header-disabled-compression-can-have-a-performance-impact
+    # - It prevents API Umbrella from making circular requests to itself as an
+    #   API backend (which is admittedly an edge-case, but we had some usage of
+    #   this): https://issues.apache.org/jira/browse/TS-2298
+    insert_request_via_str: 0
+
+    # Don't include the TrafficServer version number in the Via headers.
+    request_via_str: ApacheTrafficServer
+    response_via_str: ApacheTrafficServer
+
+    # Don't override the "Server" response header with the TrafficServer signature.
+    response_server_enabled: 0
+
+    # How long to keep idle keepalive connections to backend Envoy server
+    # around.
+    keep_alive_no_activity_timeout_out: <%- json_encode(config["trafficserver"]["records"]["http"]["keep_alive_no_activity_timeout_out"]) %>
+
+    # Since we're only connecting to our backend Envoy server, we can significantly
+    # reduce connections TrafficServer tries to open by ignoring the Host for
+    # session reuse (since Envoy will be responsible for actually connecting to the
+    # backend servers).
+    server_session_sharing:
+      match: ip
+
+    # For read_while_writer configuration in the `cache` section.
+    background_fill_active_timeout: 0
+    background_fill_completed_threshold: 0.0
+
+    cache:
+      # Don't perform caching when the request contains cookies.
+      cache_responses_to_cookies: 0
+
+      post_method: 0
+
+  cache:
+    ram_cache:
+      size: <%- json_encode(config["trafficserver"]["records"]["cache"]["ram_cache"]["size"]) %>
+
+    # Use read_while_writer to improve connection collapsing and prevent
+    # thundering herd scenarios for parallel requests to the same resource:
+    # https://docs.trafficserver.apache.org/en/10.0.x/admin-guide/configuration/cache-basics.en.html#reducing-origin-server-requests-avoiding-the-thundering-herd
+    #
+    # This is tuned to try and wait up to 2 seconds for the API response before
+    # making another request (this was the default in the old
+    # collapsed_connection plugin).
+    #
+    # Note that the retry delay is doubled on the 3rd retry onwards. So retries
+    # 1-2 will delay 50ms each, retries 3-21 will delay 100ms each (50*2 +
+    # 100*19 = 2000ms total wait).
+    #
+    # Note that read_while_writer helps for the most part, but there's still
+    # other edge-cases where some connections aren't collapsed. However, this
+    # is okay, since the current alternatives don't seem to be ideal for our
+    # uses, and read-while-writer does what we need. But for future references:
+    #
+    # - open_read_retry: For uncacheable responses, requests become serialized,
+    #   so this should only ever be turned on if you know the responses will be
+    #   cacheable (which we do not).
+    # - open_write_fail_action: Returning a stale copy could be appealing, but
+    #   that doesn't currently work, so the only options are to return errors
+    #   (which doesn't fit our use case). But if the stale handling gets
+    #   implemented, this could be worth revisiting:
+    #   https://issues.apache.org/jira/browse/TS-4774
+    #   https://issues.apache.org/jira/browse/TS-4238
+    #   https://issues.apache.org/jira/browse/TS-4237
+    # - collapsed_forwarding experimental plugin: Might cause blocking (not
+    #   entirely sure), but also seems to have some issues for our use-case:
+    #   Returns 303s to user:
+    #   https://lists.apache.org/thread.html/aa26070c52c907182bb104696bfd28d92147c0ba3082468487322b43@%3Cusers.trafficserver.apache.org%3E
+    #   Requires enabling redirect following, which we don't want for other
+    #   responses:
+    #   https://lists.apache.org/thread.html/0eff5d9a53ef8fdf28be341f648c708bd651ad1208cddf71d532d78d@%3Cusers.trafficserver.apache.org%3E
+    max_doc_size: 0
+    enable_read_while_writer: 1
+    read_while_writer:
+      max_retries: 21
+    read_while_writer_retry:
+      delay: 50
+
+  dns:
+    # Set the DNS nameservers used to potentially resolve a remote envoy layer.
+    resolv_conf: null
+
+    <% if config["dns_resolver"]["_nameservers_trafficserver"] then %>
+    nameservers: <%- json_encode(config["dns_resolver"]["_nameservers_trafficserver"]) %>
+    <% end %>
+
+  hostdb:
+    ip_resolve: <%- json_encode(config["dns_resolver"]["allow_ipv6"] and "ipv4;ipv6;only" or "ipv4;only") %>
+
+    # Allow old DNS results to be used while new ones are fetched in the
+    # background. Since we're only resolving the possible remote envoy host at
+    # this layer, this just helps things remain up even if DNS goes down
+    # temporarily.
+    serve_stale_for: 5184000 # 60 days
+
+    # For hosts that don't exist, remember the invalid DNS responses, since we
+    # assume the Envoy resolution really shouldn't fail.
+    fail:
+      timeout: 5184000 # 60 days
+
+    # Use more standard round-robin for DNS results (rather than sticky).
+    strict_round_robin: 1
+
+  url_remap:
+    # Retain the Host header we send to trafficserver for cache key purposes so
+    # that each host gets cached separately.
+    pristine_host_hdr: 1
+
+  <% if config["envoy"]["scheme"] == "https" then %>
+  ssl:
+    client:
+      verify:
+        server:
+          properties: ALL
+          policy: ENFORCED
+      CA:
+        cert:
+          path: <%- json_encode(path_join(config["etc_dir"], "/trafficserver")) %>
+          filename: ca_cert.pem
+      sni_policy: <%- json_encode("@" .. config["envoy"]["tls_certificate"]["domain"]) %>
+  <% end %>

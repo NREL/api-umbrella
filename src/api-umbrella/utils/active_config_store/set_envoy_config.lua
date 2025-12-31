@@ -85,17 +85,44 @@ local function build_cluster_resource(cluster_name, options)
   local resource = {
     ["@type"] = "type.googleapis.com/envoy.config.cluster.v3.Cluster",
     name = cluster_name,
-    type = "STRICT_DNS",
+    cluster_type = {
+      name = "envoy.clusters.strict_dns",
+      typed_config = {
+        ["@type"] = "type.googleapis.com/envoy.extensions.clusters.dns.v3.DnsCluster",
+        typed_dns_resolver_config = dns_resolver_config,
+        respect_dns_ttl = true,
+        dns_lookup_family = dns_lookup_family,
+      },
+    },
     wait_for_warm_on_init = false,
-    typed_dns_resolver_config = dns_resolver_config,
-    dns_lookup_family = dns_lookup_family,
-    respect_dns_ttl = true,
     ignore_health_on_host_removal = true,
     load_assignment = {
       cluster_name = cluster_name,
       endpoints = {
         {
           lb_endpoints = {},
+        },
+      },
+    },
+    typed_extension_protocol_options = {
+      ["envoy.extensions.upstreams.http.v3.HttpProtocolOptions"] = {
+        ["@type"] = "type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions",
+        -- Make all API backend requests over HTTP 1.1 (instead of HTTP 2 or
+        -- 3). Since our nginx layer already downgraded any proxied requests to
+        -- HTTP 1.1 (since nginx doesn't currently support proxying via other
+        -- versions), it seems simplest to stick with that approach (even
+        -- though Envoy could proxy using a different version).
+        explicit_http_config = {
+          http_protocol_options = {},
+        },
+        common_http_protocol_options = {
+          -- Idle timeout for keepalive connections to upstream servers (API
+          -- backends).
+          --
+          -- Since API backends can be remote, keepalive connections can be
+          -- important to improving performance by keeping pre-established
+          -- connections around.
+          idle_timeout = file_config["router"]["api_backends"]["keepalive_idle_timeout"] .. "s",
         },
       },
     },
@@ -109,19 +136,20 @@ local function build_cluster_resource(cluster_name, options)
     },
   }
 
-  -- Use the "negative_ttl" time as Envoy's DNS refresh rate. Since we have
-  -- "respect_dns_ttl" enabled, successful DNS requests will use that refresh
-  -- rate instead of this one. So effectively the "dns_refresh_rate" should
-  -- only be used in failure situations, so we can use this to provide a TTL
-  -- for negative responses.
+  -- Use the `negative_ttl` time as Envoy's DNS refresh rate.
   --
-  -- Envoy also supports the more explicit "dns_failure_refresh_rate" option,
-  -- but that includes an exponential backoff algorithm, with random jitter,
-  -- making it harder to test against. So to replicate how our "negative_ttl"
-  -- has worked under other DNS situations, we will use this "dns_refresh_rate"
-  -- (which doesn't do backoff or jitter).
+  -- Since we have `respect_dns_ttl` enabled, successful DNS requests will use
+  -- that refresh rate instead of this one. That means this setting is really
+  -- only used in failure situations. We configure `dns_refresh_rate` to
+  -- provide the TTL for successful, but negative responses (like NXDOMAIN
+  -- responses), while `dns_failure_refresh_rate` is used if the DNS servers
+  -- themselves are down/unresponsive.
   if file_config["dns_resolver"]["negative_ttl"] then
-    resource["dns_refresh_rate"] = file_config["dns_resolver"]["negative_ttl"] .. "s"
+    resource["cluster_type"]["typed_config"]["dns_refresh_rate"] = file_config["dns_resolver"]["negative_ttl"] .. "s"
+    resource["cluster_type"]["typed_config"]["dns_failure_refresh_rate"] = {
+      base_interval = file_config["dns_resolver"]["negative_ttl"] .. "s",
+      max_interval = file_config["dns_resolver"]["negative_ttl"] .. "s",
+    }
   end
 
   local servers
@@ -289,7 +317,17 @@ local function build_listener()
               stat_prefix = "router",
               common_http_protocol_options = {
                 max_headers_count = 200,
-                idle_timeout = "120s",
+                -- Idle timeout for keepalive connections to downstream server
+                -- (Traffic Server).
+                --
+                -- We will buffer Traffic Server's own idle timeout, since
+                -- Traffic Server should really be responsible for closing its
+                -- own connections, so this shouldn't necessarily kick in.
+                -- However, we will still add a timeout here since we've seen
+                -- cases where Traffic Server doesn't close idle connections as
+                -- expected (like if Traffic Server's
+                -- `http.per_server.connection.min` setting is set).
+                idle_timeout = file_config["trafficserver"]["records"]["http"]["keep_alive_no_activity_timeout_out"] + 5 .. "s"
               },
               generate_request_id = false,
               server_header_transformation = "PASS_THROUGH",
@@ -298,6 +336,7 @@ local function build_listener()
                   name = "envoy.filters.http.router",
                   typed_config = {
                     ["@type"] = "type.googleapis.com/envoy.extensions.filters.http.router.v3.Router",
+                    suppress_envoy_headers = true,
                   },
                 },
               },
@@ -354,17 +393,14 @@ local function build_route_configuration()
     ["@type"] = "type.googleapis.com/envoy.config.route.v3.RouteConfiguration",
     name = "api-umbrella-route-configuration",
     virtual_hosts = {},
-    request_headers_to_remove = {
-      "x-envoy-expected-rq-timeout-ms",
-      "x-envoy-internal",
-
-      -- Note: This backend host header isn't necessary for backends to
-      -- receive and ideally we'd strip it. However, removing it breaks our
-      -- ability to use it in the "host_rewrite_header" option. So we will
-      -- pass it along to API backends unless Envoy allows for better
-      -- ordering of this in the future.
-      -- "x-api-umbrella-backend-host",
-    },
+    -- Note: This backend host header isn't necessary for backends to receive
+    -- and ideally we'd strip it. However, removing it breaks our ability to
+    -- use it in the "host_rewrite_header" option. So we will pass it along to
+    -- API backends unless Envoy allows for better ordering of this in the
+    -- future.
+    -- request_headers_to_remove = {
+    --   "x-api-umbrella-backend-host",
+    -- },
     response_headers_to_add = {
       {
         append_action = "OVERWRITE_IF_EXISTS_OR_ADD",
@@ -539,6 +575,7 @@ local function build_http_proxy_listener()
                   name = "envoy.filters.http.router",
                   typed_config = {
                     ["@type"] = "type.googleapis.com/envoy.extensions.filters.http.router.v3.Router",
+                    suppress_envoy_headers = true,
                   },
                 },
               },

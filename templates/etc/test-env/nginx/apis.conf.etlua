@@ -135,7 +135,6 @@ server {
   location /connection-stats/ {
     content_by_lua_block {
       local cjson = require "cjson";
-      ngx.sleep(0.3)
       ngx.header["Content-Type"] = "application/json"
       ngx.say(cjson.encode({
         connection = tonumber(ngx.var.connection),
@@ -150,26 +149,97 @@ server {
 
   location = /upload {
     content_by_lua_block {
-      local cjson = require "cjson";
-      local upload = require "resty.upload";
+      local cjson = require "cjson"
+      local resty_sha256 = require "resty.sha256"
+      local str = require "resty.string"
+      local upload = require "resty.upload"
+
+      local sha256 = resty_sha256:new()
 
       local upload_size = 0
       local chunk_size = 4096
-      local form = upload:new(chunk_size)
+      local form, form_err = upload:new(chunk_size)
+      if not form then
+        ngx.log(ngx.ERR, "new upload failed: ", form_err)
+        ngx.exit(500)
+      end
+
       while true do
         local typ, res, err = form:read()
         if typ == "body" then
           upload_size = upload_size + #res
+          sha256:update(res)
         elseif typ == "eof" then
           break
         end
       end
 
+      local digest = sha256:final()
+
+      ngx.status = ngx.var.http_x_expected_status or 200
       ngx.header["Content-Type"] = "application/json"
       ngx.print(cjson.encode({
+        method = ngx.var.request_method,
+        headers = ngx.req.get_headers(500),
         upload_size = upload_size,
+        upload_checksum = str.to_hex(digest),
       }))
     }
+  }
+
+  location = /read-body {
+    content_by_lua_block {
+      local cjson = require "cjson";
+      local resty_sha256 = require "resty.sha256"
+      local str = require "resty.string"
+
+      local sha256 = resty_sha256:new()
+
+      ngx.req.read_body()
+      local data = ngx.req.get_body_data()
+      if not data then
+        local file = ngx.req.get_body_file()
+        if file then
+          local f = io.open(file, "r")
+          data = f:read("*a")
+          f:close()
+        end
+      end
+
+      sha256:update(data)
+      local digest = sha256:final()
+
+      ngx.status = ngx.var.http_x_expected_status or 200
+      ngx.header["Content-Type"] = "application/json"
+      local response = cjson.encode({
+        method = ngx.var.request_method,
+        headers = ngx.req.get_headers(500),
+        body_size = #data,
+        body_checksum = str.to_hex(digest),
+      })
+      ngx.say(response)
+    }
+  }
+
+  location = /unread-body-200 {
+    default_type application/json;
+    return 200 "{\"method\":\"$request_method\",\"http_content_length\":\"$http_content_length\"}";
+  }
+
+  location = /unread-body-422 {
+    default_type application/json;
+    return 422 "{\"method\":\"$request_method\",\"http_content_length\":\"$http_content_length\"}";
+  }
+
+  location = /unread-body-500 {
+    default_type application/json;
+    return 500 "{\"method\":\"$request_method\",\"http_content_length\":\"$http_content_length\"}";
+  }
+
+  location = /max-body-size {
+    client_max_body_size 1m;
+    client_body_buffer_size 1m;
+    return 200 "{\"method\":\"$request_method\",\"http_content_length\":\"$http_content_length\"}";
   }
 
   location = /chunked {
@@ -792,6 +862,10 @@ server {
       ngx.print(mock["body"])
       ngx.exit(ngx.HTTP_OK)
     }
+  }
+
+  location /geoip_download/ {
+    alias <%- config["_src_root_dir"] %>/test/support/geoip/download/;
   }
 
   location = / {

@@ -2,6 +2,7 @@ require_relative "../test_helper"
 
 class Test::Proxy::TestMultipleRequestHeaders < Minitest::Test
   include ApiUmbrellaTestHelpers::Setup
+
   parallelize_me!
 
   def setup

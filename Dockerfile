@@ -30,6 +30,7 @@ COPY build/patches/openresty* /app/build/patches/
 COPY tasks/deps/openresty /app/tasks/deps/
 RUN make deps:openresty && make clean:dev
 
+COPY build/patches/trafficserver* /app/build/patches/
 COPY tasks/deps/trafficserver /app/tasks/deps/
 RUN make deps:trafficserver && make clean:dev
 

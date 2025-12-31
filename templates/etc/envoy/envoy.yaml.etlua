@@ -13,9 +13,12 @@ typed_dns_resolver_config:
 static_resources:
   clusters:
     - name: api-umbrella-cluster
-      type: LOGICAL_DNS
-      dns_lookup_family: V4_PREFERRED
-      respect_dns_ttl: true
+      cluster_type:
+        name: envoy.clusters.logical_dns
+        typed_config:
+          "@type": type.googleapis.com/envoy.extensions.clusters.dns.v3.DnsCluster
+          respect_dns_ttl: true
+          dns_lookup_family: V4_PREFERRED
       ignore_health_on_host_removal: true
       load_assignment:
         cluster_name: api-umbrella-cluster

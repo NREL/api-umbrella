@@ -144,6 +144,35 @@ function _M.setup_type_casting(pg)
   pg:set_type_deserializer(1041, "array_string")
 end
 
+function _M.setup_socket_timeouts(pg)
+  -- We'll assume statement_timeout should take precedence, so set a much
+  -- longer socket timeout to work with any customized statement timeout.
+  local send_read_timeout = 10 * 60 * 1000 -- 10 minutes
+
+  pg.sock:settimeouts(config["postgresql"]["connect_timeout"], send_read_timeout, send_read_timeout)
+end
+
+function _M.setup_session_vars(pg, application_name)
+  local queries = {
+    "SET search_path = api_umbrella, public",
+
+    -- Set an application name for connection details.
+    "SET SESSION audit.application_name = " .. _M.escape_literal(application_name),
+
+    -- Always use UTC.
+    "SET SESSION timezone = 'UTC'",
+
+    -- Define statement timeout to prevent accidental long-running queries.
+    -- "SET SESSION statement_timeout = " .. _M.escape_literal(config["postgresql"]["statement_timeout"] .. "ms"),
+  }
+  _M.query(table.concat(queries, "; "), nil, {
+    pg = pg,
+    -- Skip keepalive, since this is called during `connect` itself, so we
+    -- don't want setup keepalive until the real query has been performed.
+    skip_keepalive = true,
+  })
+end
+
 function _M.connect()
   -- Try connecting a few times in case PostgreSQL is being restarted or
   -- starting up.
@@ -172,22 +201,8 @@ function _M.connect()
   -- The first time this socket is used (but not when reusing keepalive
   -- sockets), setup any session variables on the connection.
   if pg.sock:getreusedtimes() == 0 then
-    local queries = {
-      "SET search_path = api_umbrella, public",
-
-      -- Set an application name for connection details.
-      "SET SESSION audit.application_name = 'api-umbrella'",
-
-      -- Always use UTC.
-      "SET SESSION timezone = 'UTC'",
-    }
-    for _, query in ipairs(queries) do
-      ngx.log(ngx.NOTICE, query)
-      local query_result, query_err = pg:query(query)
-      if not query_result then
-        ngx.log(ngx.ERR, "postgresql query error: ", query_err)
-      end
-    end
+    _M.setup_socket_timeouts(pg)
+    _M.setup_session_vars(pg, "api-umbrella")
   end
 
   return pg
@@ -203,6 +218,14 @@ function _M.query(query, values, options)
   if not pg then
     return nil, "connection error"
   end
+
+  -- Allow custom timeouts to be specified for individual queries.
+  -- if options and options["statement_timeout"] then
+  --   local timeout_result, timeout_err = pg:query("SET SESSION statement_timeout = " .. _M.escape_literal(options["statement_timeout"] .. "ms"))
+  --   if not timeout_result then
+  --     ngx.log(ngx.ERR, "postgresql query error: ", timeout_err)
+  --   end
+  -- end
 
   if values then
     local escaped_values = {}
@@ -241,6 +264,14 @@ function _M.query(query, values, options)
     err = num_queries
     ngx.log(ngx.ERR, "postgresql query error: ", err)
   end
+
+  -- If custom timeouts were specified, revert back to default timeouts.
+  -- if options and options["statement_timeout"] then
+  --   local timeout_result, timeout_err = pg:query("SET SESSION statement_timeout = " .. _M.escape_literal(config["postgresql"]["statement_timeout"] .. "ms"))
+  --   if not timeout_result then
+  --     ngx.log(ngx.ERR, "postgresql query error: ", timeout_err)
+  --   end
+  -- end
 
   if not options or not options["skip_keepalive"] then
     local keepalive_ok, keepalive_err = pg:keepalive()

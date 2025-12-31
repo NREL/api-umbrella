@@ -1,11 +1,7 @@
 #!/usr/bin/env bash
 
-# Hold at 9.1.x until we can figure out this issue currently present in 9.2.2:
-# https://github.com/apache/trafficserver/issues/10393 This issue has been
-# reproducible by running the following test in a loop:
-# bundle exec minitest test/apis/test_web_app_large_body.rb -n test_limit_is_configurable
-trafficserver_version="9.1.4"
-trafficserver_hash="f18aca66e444470738f6031366edc45db26942917e3fe8cba9fbb3b28173e01e06991aa9846e459047365946738931b1910719574c9c2afee72e4dfb30eab617"
+trafficserver_version="10.1.0"
+trafficserver_hash="836cac33f6a54be2b62eaa881b333d16a6029177f3ce788fce3eec7d097843bbbd49bb9a748d6ec6592d86e6d425975f6a9b462401ab808e1e4f0726488eb2b8"
 
 set -e -u -x
 source ./tasks/helpers.sh
@@ -15,30 +11,29 @@ task_working_dir
 download "https://archive.apache.org/dist/trafficserver/trafficserver-$trafficserver_version.tar.bz2" "sha512" "$trafficserver_hash"
 extract_download "trafficserver-$trafficserver_version.tar.bz2"
 
-detect_os_release
-if [[ "$ID_NORMALIZED" == "rhel" && "$VERSION_ID" == "7" ]]; then
-  export CC=/opt/rh/devtoolset-7/root/usr/bin/gcc
-  export CXX=/opt/rh/devtoolset-7/root/usr/bin/g++
-elif [[ "$ID" == "debian" && "$VERSION_ID" == "9" ]]; then
-  export CC=clang-7
-  export CXX=clang++-7
-  export CXXFLAGS="-I/usr/lib/llvm-7/include/c++/v1 -stdlib=libc++"
-fi
-
 cd "trafficserver-$trafficserver_version"
 
-SPHINXBUILD=false ./configure \
-  --disable-tests \
-  --disable-silent-rules \
-  --disable-maintainer-mode \
-  --disable-dependency-tracking \
-  --prefix="$INSTALL_PREFIX_EMBEDDED" \
-  --with-jemalloc \
-  --with-luajit="$STAGE_EMBEDDED_DIR/openresty/luajit"
-make -j"$NPROC"
-make install DESTDIR="$STAGE_DIR"
-chrpath -d "$STAGE_EMBEDDED_DIR/lib/libtscore.so"
-chrpath -d "$STAGE_EMBEDDED_DIR/lib/libtsmgmt.so"
+# Since we log directly to stderr/stdout, backport this patch:
+# https://github.com/apache/trafficserver/pull/12407
+patch -p1 < "$SOURCE_DIR/build/patches/trafficserver-stderr-logging.patch"
+
+cmake -B build \
+  -DCMAKE_INSTALL_PREFIX="$INSTALL_PREFIX_EMBEDDED" \
+  -DENABLE_LUAJIT=ON \
+  -Dluajit_INCLUDE_DIRS="$STAGE_EMBEDDED_DIR/openresty/luajit/include/luajit-2.1" \
+  -Dluajit_LIBRARY_DIRS="$STAGE_EMBEDDED_DIR/openresty/luajit/lib" \
+  -Dluajit_LIBRARIES=luajit-5.1 \
+  -Dluajit_LINK_LIBRARIES=luajit-5.1 \
+  -DENABLE_JEMALLOC=ON
+
+cmake --build build -j "$NPROC"
+
+cmake --install build --prefix="$STAGE_EMBEDDED_DIR"
+
+chrpath -d "$STAGE_EMBEDDED_DIR/lib/libswoc.so"
+chrpath -d "$STAGE_EMBEDDED_DIR/lib/libtsapi.so"
+chrpath -d "$STAGE_EMBEDDED_DIR/lib/libtscppapi.so"
+chrpath -d "$STAGE_EMBEDDED_DIR/lib/libyaml-cpp.so"
 find "$STAGE_EMBEDDED_DIR/libexec/trafficserver/" -name "*.so" -exec chrpath -d {} \;
 find "$STAGE_EMBEDDED_DIR/bin/" -name "traffic_*" -exec chrpath -d {} \;
 

@@ -20,12 +20,12 @@ luarocks_install "./api-umbrella-git-1.rockspec" "git-1" "${extra_args[@]}"
 # lrexlib-pcre2
 (
   lrexlib_pcre2_version="2.9.2-1"
-  lrexlib_pcre2_hash="3e4ede8bc155da36ee1d142f09e9d404"
+  lrexlib_pcre2_hash="37e979f4899becf0b936482ee76b4e169c1763c03a2748d8a13ce1872a3a28a0"
 
   mkdir -p ./lrexlib-pcre2
   cd ./lrexlib-pcre2
 
-  download "https://luarocks.org/manifests/rrt/lrexlib-pcre2-$lrexlib_pcre2_version.rockspec" "md5" "$lrexlib_pcre2_hash"
+  download "https://luarocks.org/manifests/rrt/lrexlib-pcre2-$lrexlib_pcre2_version.rockspec" "sha256" "$lrexlib_pcre2_hash"
   pwd
   ls -lah
   find .
@@ -46,12 +46,12 @@ luarocks_install "./api-umbrella-git-1.rockspec" "git-1" "${extra_args[@]}"
 # lua-icu-date-ffi
 (
   lua_icu_date_ffi_version="fa74ff0890ea1d600d826258b6ea83d0d774d63f"
-  lua_icu_date_ffi_hash="53fecec4d7d38b6866f700236fe352b1"
+  lua_icu_date_ffi_hash="385bd61bfab281d5799c34f609b9e6865a74f16a773ab09189bbc16301d18c6a"
 
   mkdir -p ./lua-icu-date-ffi
   cd ./lua-icu-date-ffi
 
-  download "https://github.com/GUI/lua-icu-date-ffi/archive/$lua_icu_date_ffi_version.tar.gz" "md5" "$lua_icu_date_ffi_hash"
+  download "https://github.com/GUI/lua-icu-date-ffi/archive/$lua_icu_date_ffi_version.tar.gz" "sha256" "$lua_icu_date_ffi_hash"
   extract_download "$lua_icu_date_ffi_version.tar.gz"
 
   cd "lua-icu-date-ffi-$lua_icu_date_ffi_version"
@@ -61,12 +61,12 @@ luarocks_install "./api-umbrella-git-1.rockspec" "git-1" "${extra_args[@]}"
 # lua-resty-logger-socket
 (
   lua_resty_logger_socket_version="0b83fed17506a7f6a14c79847be717b89ef3e8b8"
-  lua_resty_logger_socket_hash="6e985fa91839ccb4cd1cfca5bcadb13f"
+  lua_resty_logger_socket_hash="a76f389d50aca476e4cf11aea0f09309cbfed968b91b5f382a18b89a3457f4e5"
 
   mkdir -p ./lua-resty-logger-socket
   cd ./lua-resty-logger-socket
 
-  download "https://github.com/cloudflare/lua-resty-logger-socket/archive/$lua_resty_logger_socket_version.tar.gz" "md5" "$lua_resty_logger_socket_hash"
+  download "https://github.com/cloudflare/lua-resty-logger-socket/archive/$lua_resty_logger_socket_version.tar.gz" "sha256" "$lua_resty_logger_socket_hash"
   extract_download "$lua_resty_logger_socket_version.tar.gz"
 
   install -D -m 644 "lua-resty-logger-socket-$lua_resty_logger_socket_version/lib/resty/logger/socket.lua" "$APP_VENDOR_LUA_SHARE_DIR/resty/logger/socket.lua"

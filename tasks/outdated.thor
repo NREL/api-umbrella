@@ -11,6 +11,10 @@ require "uri"
 
 class Outdated < Thor
   REPOS = {
+    "caddy" => {
+      :git => "https://github.com/caddyserver/caddy.git",
+      :github_release => "caddyserver/caddy",
+    },
     "cue" => {
       :git => "https://github.com/cue-lang/cue.git",
       :github_release => "cue-lang/cue",
@@ -22,10 +26,10 @@ class Outdated < Thor
     },
     "envoy_control_plane" => {
       :git => "https://github.com/GUI/envoy-control-plane.git",
+      :github_release => "GUI/envoy-control-plane",
     },
     "fluent_bit" => {
       :git => "https://github.com/fluent/fluent-bit.git",
-      :constraint => "~> 3.2.10",
       :download => "https://github.com/fluent/fluent-bit/archive/refs/tags/v<%= version.fetch(:wanted_version) %>.tar.gz",
     },
     "glauth" => {
@@ -89,7 +93,6 @@ class Outdated < Thor
     },
     "trafficserver" => {
       :http => "https://archive.apache.org/dist/trafficserver/",
-      :constraint => "~> 9.1.0",
       :checksums_download => "https://archive.apache.org/dist/trafficserver/trafficserver-<%= version.fetch(:wanted_version) %>.tar.bz2.sha512",
       :filename_matcher => /trafficserver.*\.tar\.bz2/,
     },

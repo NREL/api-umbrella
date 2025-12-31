@@ -28,20 +28,6 @@ pipeline:
       format: json
       storage.type: filesystem
 
-    <% if config["log"]["destination"] == "console" then %>
-    # Workaround for error.log currently being hard-coded to output to a file
-    # that won't work if symlinked to /dev/stdout (it insists on rolling the file
-    # since it doesn't think it can write to it).
-    #
-    # This workaround should no longer be needed once Trafficserver 10 is
-    # released and things can be configured to output to stdout/stderr directly:
-    # https://github.com/apache/trafficserver/pull/7937
-    - name: tail
-      tag: trafficserver
-      path: <%- json_encode(path_join(config["log_dir"], "trafficserver/error.log")) %>
-      refresh_interval: 5
-    <% end %>
-
   filters:
     - name: rewrite_tag
       match: analytics.allowed

@@ -64,7 +64,7 @@ class Test::Proxy::Dns::TestNegativeCaching < Minitest::Test
         :body => /no healthy upstream/,
       })
 
-      # The negative TTL caching begins after TrafficServer sees the first
+      # The negative TTL caching begins after Envoy sees the first
       # request and tries to resolve it. So start our timer after the first
       # request.
       start_time = Time.now.utc

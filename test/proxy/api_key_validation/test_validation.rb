@@ -3,6 +3,7 @@ require_relative "../../test_helper"
 class Test::Proxy::ApiKeyValidation::TestValidation < Minitest::Test
   include ApiUmbrellaTestHelpers::Setup
   include ApiUmbrellaTestHelpers::ExerciseAllWorkers
+
   parallelize_me!
 
   def setup

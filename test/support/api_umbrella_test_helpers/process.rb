@@ -261,47 +261,51 @@ module ApiUmbrellaTestHelpers
     end
 
     def restart_services(services, options = {})
-      services.each do |service|
-        perp_restart(service)
-      end
-      restarted_pids = services.map { |service| perp_pid(service) }.sort
-
-      # After killing and restarting the service, wait for it to come back
-      # online (since this full restart isn't a normal occurrence and will
-      # incur downtime).
-      #
-      # Note that we're currently doing this to reload DNS changes within
-      # Traffic Server. We could also call `traffic_ctl server restart` which
-      # just restarts the traffic_server process (and not the manager), which
-      # appears to work without any downtime. However, while DNS changes are
-      # picked up after that type of restart, it's hard to predict when those
-      # changes are fully live within trafficserver, so that's why we're opting
-      # for this full restart to handle DNS changes in the test suite (in real
-      # live, DNS server changes shouldn't be likely, though, so this is mainly
-      # a test environment issue).
-      response = nil
-      begin
-        Timeout.timeout(options.fetch(:restart_timeout, 40)) do
-          loop do
-            url = "http://127.0.0.1:9080/api-umbrella/v1/health?#{rand}"
-            response = Typhoeus.get(url)
-            if(response.code == 200)
-              break
-            end
-
-            sleep 0.1
-          end
+      if services.any?
+        services.each do |service|
+          perp_restart(service)
         end
-      rescue Timeout::Error
-        raise Timeout::Error, "Services restart failed. Services: #{services.inspect} Status: #{response&.code} Body: #{response&.body}"
+        restarted_pids = services.map { |service| perp_pid(service) }.sort
+
+        # After killing and restarting the service, wait for it to come back
+        # online (since this full restart isn't a normal occurrence and will
+        # incur downtime).
+        #
+        # Note that we're currently doing this to reload DNS changes within
+        # Traffic Server. We could also call `traffic_ctl server restart` which
+        # just restarts the traffic_server process (and not the manager), which
+        # appears to work without any downtime. However, while DNS changes are
+        # picked up after that type of restart, it's hard to predict when those
+        # changes are fully live within trafficserver, so that's why we're opting
+        # for this full restart to handle DNS changes in the test suite (in real
+        # live, DNS server changes shouldn't be likely, though, so this is mainly
+        # a test environment issue).
+        response = nil
+        begin
+          Timeout.timeout(options.fetch(:restart_timeout, 40)) do
+            loop do
+              url = "http://127.0.0.1:9080/api-umbrella/v1/health?#{rand}"
+              response = Typhoeus.get(url)
+              if(response.code == 200)
+                break
+              end
+
+              sleep 0.1
+            end
+          end
+        rescue Timeout::Error
+          raise Timeout::Error, "Services restart failed. Services: #{services.inspect} Status: #{response&.code} Body: #{response&.body}"
+        end
+
+        # Sanity check to ensure the services were only restarted once, and isn't
+        # flapping on and off.
+        current_pids = services.map { |service| perp_pid(service) }.sort
+        if(restarted_pids != current_pids)
+          raise "Services were restarted multiple times, this is not expected (services: #{services.inspect}, post-restart pids: #{restarted_pids.inspect}, current pids: #{current_pids.inspect})"
+        end
       end
 
-      # Sanity check to ensure the services were only restarted once, and isn't
-      # flapping on and off.
-      current_pids = services.map { |service| perp_pid(service) }.sort
-      if(restarted_pids != current_pids)
-        raise "Services were restarted multiple times, this is not expected (services: #{services.inspect}, post-restart pids: #{restarted_pids.inspect}, current pids: #{current_pids.inspect})"
-      end
+      services
     end
 
     def wait_for_config_version(field, version, config = {})

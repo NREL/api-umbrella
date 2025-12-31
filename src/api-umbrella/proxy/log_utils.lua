@@ -155,9 +155,9 @@ local function cache_city_geocode(premature, data)
   end
 
   local _, err = pg_utils.query("INSERT INTO analytics_cities(country, region, city, location) VALUES(:country, :region, :city, point(:lon, :lat)) ON CONFLICT (country, region, city) DO UPDATE SET location = EXCLUDED.location", {
-    country = data["request_ip_country"],
-    region = data["request_ip_region"],
-    city = data["request_ip_city"],
+    country = uppercase_truncate(data["request_ip_country"], 2),
+    region = uppercase_truncate(data["request_ip_region"], 3),
+    city = truncate(data["request_ip_city"], 200),
     lon = data["request_ip_lon"],
     lat = data["request_ip_lat"],
   })
@@ -294,7 +294,7 @@ function _M.normalized_data(data)
     request_ip = lowercase_truncate(data["request_ip"], 45),
     request_ip_city = truncate(data["request_ip_city"], 200),
     request_ip_country = uppercase_truncate(data["request_ip_country"], 2),
-    request_ip_region = uppercase_truncate(data["request_ip_region"], 2),
+    request_ip_region = uppercase_truncate(data["request_ip_region"], 3),
     request_method = uppercase_truncate(data["request_method"], 10),
     request_origin = truncate(data["request_origin"], 200),
     request_referer = truncate(data["request_referer"], 200),

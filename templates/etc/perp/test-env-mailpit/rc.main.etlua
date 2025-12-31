@@ -17,6 +17,8 @@ if [ "${1}" = "start" ]; then
   fi
 
   exec runtool ${run_args[@]+"${run_args[@]}"} mailpit \
+    --smtp-tls-cert "<%- config['_src_root_dir'] %>/test/config/ssl_test.crt" \
+    --smtp-tls-key "<%- config['_src_root_dir'] %>/test/config/ssl_test.key" \
     --smtp "<%- config['mailpit']['bind_addr'] %>:<%- config['mailpit']['smtp_port'] %>" \
     --listen "<%- config['mailpit']['bind_addr'] %>:<%- config['mailpit']['http_port'] %>"
 fi

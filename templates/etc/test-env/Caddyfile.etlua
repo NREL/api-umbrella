@@ -1,0 +1,26 @@
+{
+  auto_https disable_redirects
+  default_bind 127.0.0.1
+}
+
+http://localhost:<%- config["caddy"]["http_port"] %> {
+  tls internal
+  log
+  metrics /metrics
+  respond <<JSON
+    {
+      "http.request.proto": "{http.request.proto}"
+    }
+  JSON
+}
+
+https://localhost:<%- config["caddy"]["https_port"] %> {
+  tls internal
+  log
+  metrics /metrics
+  respond <<JSON
+    {
+      "http.request.proto": "{http.request.proto}"
+    }
+  JSON
+}

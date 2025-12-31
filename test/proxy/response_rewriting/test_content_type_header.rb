@@ -2,6 +2,7 @@ require_relative "../../test_helper"
 
 class Test::Proxy::ResponseRewriting::TestContentTypeHeader < Minitest::Test
   include ApiUmbrellaTestHelpers::Setup
+
   parallelize_me!
 
   def setup

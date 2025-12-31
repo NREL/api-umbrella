@@ -4,6 +4,7 @@ require_relative "../../test_helper"
 # https://docs.trafficserver.apache.org/en/5.3.x/reference/configuration/records.config.en.html#proxy-config-http-normalize-ae-gzip
 class Test::Proxy::RequestRewriting::TestAcceptEncodingNormalization < Minitest::Test
   include ApiUmbrellaTestHelpers::Setup
+
   parallelize_me!
 
   def setup

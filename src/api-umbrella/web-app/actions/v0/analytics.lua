@@ -12,6 +12,7 @@ local json_response = require "api-umbrella.web-app.utils.json_response"
 local pg_utils = require "api-umbrella.utils.pg_utils"
 local respond_to = require "api-umbrella.web-app.utils.respond_to"
 local stable_object_hash = require "api-umbrella.utils.stable_object_hash"
+local t = require("api-umbrella.web-app.utils.gettext").gettext
 local time = require "api-umbrella.utils.time"
 
 local _M = {}
@@ -94,7 +95,10 @@ local function generate_organization_summary(start_time, end_time, recent_start_
     ids = pg_utils.list(analytics_cache_ids),
     interval_name = "monthly",
     date_key_length = 7,
-  }, { fatal = true })[1]["response"]
+  }, {
+    fatal = true,
+    statement_timeout = 5 * 60 * 1000, -- 5 minutes
+  })[1]["response"]
 
   search:set_start_time(recent_start_time)
   search:set_end_time(end_time)
@@ -106,7 +110,10 @@ local function generate_organization_summary(start_time, end_time, recent_start_
     ids = pg_utils.list(recent_analytics_cache_ids),
     interval_name = "daily",
     date_key_length = 10,
-  }, { fatal = true })[1]["response"]
+  }, {
+    fatal = true,
+    statement_timeout = 5 * 60 * 1000, -- 5 minutes
+  })[1]["response"]
 
   response["hits"]["recent"] = recent_response["hits"]
   response["active_api_keys"]["recent"] = recent_response["active_api_keys"]
@@ -130,7 +137,10 @@ local function generate_production_apis_summary(start_time, end_time, recent_sta
     FROM api_backends
       LEFT JOIN api_backend_url_matches ON api_backends.id = api_backend_url_matches.api_backend_id
     WHERE api_backends.status_description = 'Production'
-  ]], nil, { fatal = true })
+  ]], nil, {
+    fatal = true,
+    statement_timeout = 5 * 60 * 1000, -- 5 minutes
+  })
   data["organization_count"] = int64_to_json_number(counts[1]["organization_count"])
   data["api_backend_count"] = int64_to_json_number(counts[1]["api_backend_count"])
   data["api_backend_url_match_count"] = int64_to_json_number(counts[1]["api_backend_url_match_count"])
@@ -150,7 +160,10 @@ local function generate_production_apis_summary(start_time, end_time, recent_sta
     WHERE api_backends.status_description = 'Production'
     GROUP BY api_backends.organization_name
     ORDER BY api_backends.organization_name
-  ]], nil, { fatal = true })
+  ]], nil, {
+    fatal = true,
+    statement_timeout = 5 * 60 * 1000, -- 5 minutes
+  })
   for _, organization in ipairs(organizations) do
     local filters = {
       condition = "OR",
@@ -243,6 +256,7 @@ end
 function _M.summary(self)
   analytics_policy.authorize_summary()
 
+  self.res.headers["Access-Control-Allow-Origin"] = "*"
   local response_json
 
   -- Try to fetch the summary data out of the cache.
@@ -266,10 +280,42 @@ function _M.summary(self)
   else
     -- If it's not cached, generate it now.
     self.res.headers["X-Cache"] = "MISS"
-    response_json = generate_summary()
+
+    -- Trigger analytics generation in background so if it takes longer than
+    -- this request, it can still populate.
+    ngx.timer.at(0, function()
+      -- Ensure only one pre-seed is happening at a time (at least per
+      -- server).
+      interval_lock.mutex_exec("initial_analytics_summary_cache", generate_summary)
+    end)
+
+    -- Poll for cache to be populated up to 60 seconds.
+    local timeout_at = ngx.now() + 30
+    while true do
+      cache = Cache:find("analytics_summary")
+      if cache then
+        response_json = cache.data
+        break
+      end
+
+      if ngx.now() > timeout_at then
+        ngx.ctx.error_status = 503
+        return coroutine.yield("error", {
+          _render = {
+            errors = {
+              {
+                code = "TEMPORARILY_UNAVAILABLE",
+                message = t("Content is temporarily unavailable"),
+              },
+            },
+          },
+        })
+      end
+
+      ngx.sleep(0.5)
+    end
   end
 
-  self.res.headers["Access-Control-Allow-Origin"] = "*"
   return json_response(self, response_json)
 end
 

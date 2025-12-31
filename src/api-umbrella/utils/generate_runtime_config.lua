@@ -387,10 +387,9 @@ local function set_computed_config(config)
   config["envoy"]["_connect_timeout"] = config["nginx"]["proxy_connect_timeout"] .. "s"
   config["envoy"]["_stream_idle_timeout"] = math.max(config["nginx"]["proxy_send_timeout"], config["nginx"]["proxy_read_timeout"]) + 2 .. "s"
   -- Disable default 15 second timeout on the entire response being returned,
-  -- since we will allow long-running streaming responses..
+  -- since we will allow long-running streaming responses.
   config["envoy"]["_route_timeout"] = "0s"
   config["trafficserver"]["_connect_attempts_timeout"] = math.min(5, config["nginx"]["proxy_connect_timeout"])
-  config["trafficserver"]["_post_connect_attempts_timeout"] = math.min(5, config["trafficserver"]["_connect_attempts_timeout"])
   config["trafficserver"]["_transaction_no_activity_timeout_out"] = config["nginx"]["proxy_read_timeout"]
   config["trafficserver"]["_transaction_no_activity_timeout_in"] = config["nginx"]["proxy_send_timeout"]
   config["nginx"]["_initial_proxy_connect_timeout"] = math.min(5, config["nginx"]["proxy_connect_timeout"])
@@ -561,7 +560,6 @@ local function parse_config()
     "export",
     "--out", "json",
     "--all-errors",
-    "--strict",
     "--inject", "src_root_dir=" .. src_root_dir,
     "--inject", "embedded_root_dir=" .. os.getenv("API_UMBRELLA_EMBEDDED_ROOT"),
   }

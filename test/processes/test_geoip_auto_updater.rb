@@ -9,7 +9,6 @@ class Test::Processes::TestGeoipAutoUpdater < Minitest::Test
     setup_server
 
     @@geoip_path = File.join($config.fetch("db_dir"), "geoip/GeoLite2-City.mmdb")
-    assert(ENV.fetch("MAXMIND_LICENSE_KEY", nil), "MAXMIND_LICENSE_KEY environment variable must be set with valid license for geoip tests to run")
 
     once_per_class_setup do
       FileUtils.rm_f(@@geoip_path)
@@ -17,7 +16,8 @@ class Test::Processes::TestGeoipAutoUpdater < Minitest::Test
         "geoip" => {
           "db_path" => @@geoip_path,
           "db_update_frequency" => 1,
-          "maxmind_license_key" => ENV.fetch("MAXMIND_LICENSE_KEY"),
+          "city_download_url" => "http://127.0.0.1:9444/geoip_download/GeoLite2-City.tar.gz",
+          "maxmind_license_key" => "DUMMY_KEY",
         },
       })
     end

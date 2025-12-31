@@ -62,10 +62,10 @@ local function ensure_geoip_db()
     ngx.log(ngx.ERR, "geoip database download failed: ", err)
   else
     config["geoip"]["_enabled"] = true
+  end
 
-    if config["geoip"]["db_update_frequency"] ~= false then
-      config["geoip"]["_auto_updater_enabled"] = true
-    end
+  if config["geoip"]["db_update_frequency"] ~= false then
+    config["geoip"]["_auto_updater_enabled"] = true
   end
 end
 

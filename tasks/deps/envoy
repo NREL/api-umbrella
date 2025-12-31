@@ -3,15 +3,15 @@
 set -e -u -x
 source ./tasks/helpers.sh
 
-envoy_version="1.34.1"
-envoy_hash="88264d651876a9ad28aa7e098e3df843570404cf60b6ce968c4496ca4a2b6e9d"
+envoy_version="1.36.4"
+envoy_hash="5a398095d8c1dd363ecc10b6b9dbd82154a8fbb5eb15510d5fb7cbdb9d0b0e59"
 
 download_arch="$TARGETARCH"
 if [ "$TARGETARCH" == "amd64" ]; then
   download_arch="x86_64"
 elif [ "$TARGETARCH" == "arm64" ]; then
   download_arch="aarch_64"
-  envoy_hash="eeff4ac07750205e1d125b2f4cfc6c24d9e9c5f2c99374d0e2d0a0cf0aac79bb"
+  envoy_hash="45551e3ba31b2368fb80cf4c124b21857c54e0e81aee3b708ebd7b0ba3f755b1"
 fi
 
 task_working_dir

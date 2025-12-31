@@ -6,6 +6,7 @@ module ApiUmbrellaTestHelpers
       message = nil
       if response
         message = <<~EOS
+          response_code: #{response.response_code}
           return_code: #{response.return_code}
           return_message: #{response.return_message}
           total_time: #{response.total_time}
@@ -25,10 +26,9 @@ module ApiUmbrellaTestHelpers
       message
     end
 
-    def assert_response_code(expected_code, response)
-      message = nil
+    def assert_response_code(expected_code, response, message = nil)
       if(expected_code != response.code)
-        message = <<~EOS
+        message ||= <<~EOS
           Response code did not match
           #{response_error_message(response)}
         EOS

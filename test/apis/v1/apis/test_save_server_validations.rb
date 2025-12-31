@@ -4,6 +4,7 @@ class Test::Apis::V1::Apis::TestSaveServerValidations < Minitest::Test
   include ApiUmbrellaTestHelpers::AdminAuth
   include ApiUmbrellaTestHelpers::ApiSaveValidations
   include ApiUmbrellaTestHelpers::Setup
+
   parallelize_me!
 
   def setup

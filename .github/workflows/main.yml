@@ -171,7 +171,6 @@ jobs:
           docker compose run \
             --rm \
             -e TESTS="${tests}" \
-            -e MAXMIND_LICENSE_KEY="${MAXMIND_LICENSE_KEY}" \
             app \
             make test
         env:
@@ -181,7 +180,6 @@ jobs:
           SPLIT_TEST_VERSION: v0.3.0
           CI_NODE_TOTAL: ${{ matrix.ci_node_total }}
           CI_NODE_INDEX: ${{ matrix.ci_node_index }}
-          MAXMIND_LICENSE_KEY: ${{ secrets.MAXMIND_LICENSE_KEY }}
 
       - name: Artifact permissions
         if: ${{ always() }}

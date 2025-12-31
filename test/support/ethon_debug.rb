@@ -1,6 +1,8 @@
 module Ethon
   class Easy
     module Callbacks
+      @@debug_callback_exclude_types = []
+
       # Override Ethon's default debug callback
       # (https://github.com/typhoeus/ethon/blob/v0.9.1/lib/ethon/easy/callbacks.rb#L66-L73)
       # so it only captures the debug output and doesn't print it to the
@@ -11,10 +13,12 @@ module Ethon
       # See https://github.com/typhoeus/typhoeus/issues/247
       def debug_callback
         @debug_callback ||= proc do |handle, type, data, size, udata|
-          message = data.read_string(size)
-          @debug_info.add type, message
-          if(ENV.fetch("DEBUG_HTTP", nil) == "true")
-            print message unless [:data_in, :data_out].include?(type)
+          if !@@debug_callback_exclude_types.include?(type)
+            message = data.read_string(size)
+            @debug_info.add type, message
+            if(ENV.fetch("DEBUG_HTTP", nil) == "true")
+              print message unless [:data_in, :data_out].include?(type)
+            end
           end
           0
         end

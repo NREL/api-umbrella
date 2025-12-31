@@ -1,0 +1,7 @@
+prefix: <%- json_encode(path_join(config["_embedded_root_dir"])) %>
+sysconfdir: <%- json_encode(path_join(config["etc_dir"], "trafficserver")) %>
+localstatedir: <%- json_encode(path_join(config["var_dir"], "trafficserver")) %>
+runtimedir: <%- json_encode(path_join(config["var_dir"], "trafficserver")) %>
+logdir: <%- json_encode(path_join(config["log_dir"], "trafficserver")) %>
+runtimedir: <%- json_encode(path_join(config["var_dir"], "trafficserver")) %>
+cachedir: <%- json_encode(path_join(config["var_dir"], "trafficserver")) %>

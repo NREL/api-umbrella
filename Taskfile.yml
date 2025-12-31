@@ -318,6 +318,15 @@ tasks:
     generates:
       - ./build/work/stamp/test-deps/bundle
 
+  test-deps:caddy:
+    cmds:
+      - ./tasks/test-deps/caddy
+    sources:
+      - ./tasks/test-deps/caddy
+      - ./tasks/helpers.sh
+    generates:
+      - ./build/work/stamp/test-deps/caddy
+
   test-deps:glauth:
     cmds:
       - ./tasks/test-deps/glauth
@@ -363,6 +372,7 @@ tasks:
   test-deps:
     cmds:
       - task: test-deps:bundle
+      - task: test-deps:caddy
       - task: test-deps:glauth
       - task: test-deps:luarocks
       - task: test-deps:mailpit

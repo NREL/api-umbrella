@@ -11,11 +11,11 @@
     "css-loader": "^6.11.0",
     "eslint": "^8.57.1",
     "eslint-config-airbnb-base": "^15.0.0",
-    "eslint-plugin-import": "^2.31.0",
-    "mini-css-extract-plugin": "^2.9.2",
-    "sass": "^1.89.2",
+    "eslint-plugin-import": "^2.32.0",
+    "mini-css-extract-plugin": "^2.9.4",
+    "sass": "^1.97.1",
     "sass-loader": "^13.3.3",
-    "webpack": "^5.99.9",
+    "webpack": "^5.104.1",
     "webpack-cli": "^5.1.4"
   }
 }
