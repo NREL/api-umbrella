@@ -114,10 +114,10 @@ class Test::Apis::TestWebAppLargeBody < Minitest::Test
     # Traffic Server will sometimes return a 502 instead of the original 413
     # since the underlying backend API cancelled the request before Traffic
     # Server fully sent it. While not ideal, this appears to have been present
-    # to some degree for a while in Traffic Server. It didn't surface in
-    # Traffice Server 9.1 since it seemed to require more parallel requests to
-    # occur, but it was still possible. In 9.2+ it happens more frequently
-    # without parallel requests. See
+    # to some degree for a while in Traffic Server. It didn't surface as
+    # readily in Traffic Server 9.1 since it seemed to require more parallel
+    # requests to occur, but it was still possible. In 9.2+ it happens more
+    # frequently without parallel requests. See
     # Test::Proxy::TestUploads#test_mixed_uploads_stress_test and
     # https://github.com/apache/trafficserver/issues/10393.
     if response.code == 502
